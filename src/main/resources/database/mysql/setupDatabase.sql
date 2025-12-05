@@ -4163,6 +4163,7 @@ create table o_cur_element_type (
   c_max_repo_entries bigint default -1 not null,
   c_allow_as_root bool default true not null,
   c_css_class varchar(64),
+  c_type varchar(64),
   primary key (id)
 );
 

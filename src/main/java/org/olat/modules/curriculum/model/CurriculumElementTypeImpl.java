@@ -25,6 +25,8 @@ import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -96,6 +98,9 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	private int maxRepositoryEntryRelations;
 	@Column(name="c_allow_as_root", nullable=true, insertable=true, updatable=true)
 	private boolean allowedAsRootElement;
+	@Enumerated(EnumType.STRING)
+	@Column(name="c_type", nullable=true, insertable=true, updatable=true)
+	private Type type;
 	
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -306,6 +311,16 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 		this.allowedSubTypes = allowedSubTypes;
 	}
 	
+	@Override
+	public Type getType() {
+		return type;
+	}
+
+	@Override
+	public void setType(Type type) {
+		this.type = type;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(128);
