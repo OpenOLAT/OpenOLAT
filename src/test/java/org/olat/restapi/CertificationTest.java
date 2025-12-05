@@ -65,7 +65,7 @@ import jakarta.ws.rs.core.UriBuilder;
 /**
  * 
  * Initial date: 17.11.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CertificationTest extends OlatRestTestCase {
@@ -98,8 +98,6 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		sleep(1000);
-		
 		//wait until the certificate is created
 		waitCertificate(certificate.getKey());
 		
@@ -129,8 +127,8 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		sleep(1000);
-
+		waitCertificate(certificate.getKey());
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates").path(assessedIdentity.getKey().toString()).build();
@@ -173,8 +171,8 @@ public class CertificationTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
-		
-		sleep(2000);
+		// Wait until certificate is processed
+		waitMessageAreConsumed();
 		
 		//check certificate
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
@@ -332,9 +330,6 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		sleep(1000);
-		
-		//wait until certificate is generated
 		waitCertificate(certificate.getKey());
 		
 		// check that there is a real certificate with its file

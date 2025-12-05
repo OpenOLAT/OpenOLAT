@@ -302,7 +302,7 @@ public class CertificationWebService {
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, config);
 		if(certificate != null) {
-			return Response.ok().build();
+			return Response.ok(CertificateVO.valueOf(certificate)).build();
 		}
 		return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	}
