@@ -217,6 +217,19 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		assertThat(stats.numEmail()).isEqualTo(4);
 		assertThat(stats.numPublic()).isEqualTo(5);
 		assertThat(stats.total()).isEqualTo(12);
+		
+		stats = sut.getExecutorParticipationStats(null);
+		assertThat(stats.numExecutor()).isEqualTo(0);
+		assertThat(stats.numEmail()).isEqualTo(0);
+		assertThat(stats.numPublic()).isEqualTo(0);
+		assertThat(stats.total()).isEqualTo(0);
+		
+		searchParams.setDataCollectionKeys(List.of(-1l));
+		stats = sut.getExecutorParticipationStats(searchParams);
+		assertThat(stats.numExecutor()).isEqualTo(0);
+		assertThat(stats.numEmail()).isEqualTo(0);
+		assertThat(stats.numPublic()).isEqualTo(0);
+		assertThat(stats.total()).isEqualTo(0);
 	}
 	
 	@Test
