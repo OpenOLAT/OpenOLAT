@@ -74,6 +74,7 @@ public class CertificateDetailsController extends BasicController {
 
 	private final Certificate certificate;
 	private final RepositoryEntry course;
+	private final Identity assessedIdentity;
 
 	@Autowired
 	private CreditPointService creditPointService;
@@ -87,6 +88,7 @@ public class CertificateDetailsController extends BasicController {
 		super(ureq, wControl, Util
 				.createPackageTranslator(CertificationProgramCertifiedMembersController.class, ureq.getLocale()));
 		certificate = certificateRow.getCertificate();
+		this.assessedIdentity = assessedIdentity;
 		
 		mainVC = createVelocityContainer("certificate_details");
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, CertificatesListOverviewController.THUMBNAIL_MAPPER_ID,
@@ -196,7 +198,7 @@ public class CertificateDetailsController extends BasicController {
 			String pointsRequirement = CertificationHelper.creditPointsToString(program.getCreditPoints(), creditPointSystem);
 			mainVC.contextPut("requiredPoints", StringHelper.escapeHtml(pointsRequirement));
 			
-			CreditPointWallet wallet = creditPointService.getOrCreateWallet(getIdentity(), creditPointSystem);
+			CreditPointWallet wallet = creditPointService.getOrCreateWallet(assessedIdentity, creditPointSystem);
 			String balance = CertificationHelper.creditPointsToString(wallet.getBalance(), creditPointSystem);
 			mainVC.contextPut("balancePoints", StringHelper.escapeHtml(balance));
 			
