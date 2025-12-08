@@ -78,6 +78,7 @@ public class AddTransactionController extends FormBasicController {
 		
 		expirationEl = new ExpirationFormItem("credit.point.validity", true, getTranslator());
 		expirationEl.setLabel("credit.point.validity", null);
+		expirationEl.setVisible(system.getDefaultExpiration() != null && system.getDefaultExpirationUnit() != null);
 		formLayout.add(expirationEl);
 		
 		commentEl = uifactory.addTextAreaElement("credit.point.comment", "credit.point.comment", 1000, 3, 60, false, false, "", formLayout);
@@ -139,8 +140,10 @@ public class AddTransactionController extends FormBasicController {
 			amount = amount.abs();
 		}
 		
-		Date validity = creditPointService.calculateExpirationDate(expirationEl.getValue(), expirationEl.getType(),
-				ureq.getRequestTimestamp(), system);
+		Date validity = expirationEl.isVisible()
+				? creditPointService.calculateExpirationDate(expirationEl.getValue(), expirationEl.getType(),
+						ureq.getRequestTimestamp(), system)
+				: null;
 		CreditPointTransactionAndWallet trx = creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit,
 				amount, validity, commentEl.getValue(), wallet, getIdentity(), null, null, null, null, null);
 		wallet = trx.wallet();
