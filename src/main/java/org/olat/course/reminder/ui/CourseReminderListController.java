@@ -293,10 +293,6 @@ public class CourseReminderListController extends FormBasicController
 			doShowLog(ureq);
 		} else if(previewLink == source) {
 			doShowPreview(ureq);
-		} else if (source == tableEl) {
-			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doAddReminder(ureq);
-			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
@@ -310,7 +306,9 @@ public class CourseReminderListController extends FormBasicController
 				doShowEmail(ureq, row);
 			}
 		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent se) {
+			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doAddReminder(ureq);
+			} else if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				ReminderRow row = tableModel.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
