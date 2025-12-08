@@ -133,7 +133,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		otpContainer = FormLayoutContainer.createCustomFormLayout("otp.cont", getTranslator(), otpPage);
 		formLayout.add(otpContainer);
 		otpContainer.setMandatory(true);
-		otpContainer.setLabel("reg.otp.label", null);
+		otpContainer.setLabel("validation.code", null);
 		
 		otpEl = uifactory.addTextElement("validation.code", null, 8, "", otpContainer);
 		otpEl.setElementCssClass("o_sel_registration_otp");
@@ -143,7 +143,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 
 		uifactory.addStaticTextElement("validation.not.received", null, translate("validation.not.received"), formLayout);
 		
-		resendOtpLink = uifactory.addFormLink("pwchange.otp.resend", formLayout, Link.BUTTON);
+		resendOtpLink = uifactory.addFormLink("validation.code.resend", formLayout, Link.BUTTON);
 	}
 	
 	private void updateUI() {
