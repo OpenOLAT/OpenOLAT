@@ -106,21 +106,32 @@ class QualityParticipationDAO {
 		if (searchParam == null) return QualityParticipationStats.ZEROS;
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select new org.olat.modules.quality.model.QualityParticipationStats(");
-		sb.append("       sum(case when participation.executor is not null then 1 else 0 end)");
+		sb.append("select sum(case when participation.executor is not null then 1 else 0 end)");
 		sb.append("     , sum(case when participation.identifier.type = '").append(EvaluationFormDispatcher.EMAIL_PARTICIPATION_TYPE).append("' then 1 else 0 end)");
 		sb.append("     , sum(case when participation.identifier.type = '").append(EvaluationFormDispatcher.PUBLIC_PARTICIPATION_TYPE).append("'");
 		sb.append("                 and participation.status = '").append(EvaluationFormParticipationStatus.done).append("'");
 		sb.append("                then 1 else 0 end)");
-		sb.append("     )");
 		appendFrom(sb);
 		appendWhereClause(sb, searchParam);
 		
-		TypedQuery<QualityParticipationStats> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QualityParticipationStats.class);
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
 		appendWhereParameters(query, searchParam);
-		List<QualityParticipationStats> stats = query.getResultList();
-		return stats != null && !stats.isEmpty()? stats.get(0): QualityParticipationStats.ZEROS;
+		List<Object[]> results = query.getResultList();
+		
+		if (results.size() != 1) {
+			return QualityParticipationStats.ZEROS;
+		}
+		
+		Object[] result = results.get(0);
+		return new QualityParticipationStats(zeroIfNull(result[0]), zeroIfNull(result[1]), zeroIfNull(result[2]));
+	}
+	
+	private Long zeroIfNull(Object o) {
+		if (o instanceof Long number) {
+			return number;
+		}
+		return Long.valueOf(0);
 	}
 
 	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
