@@ -143,7 +143,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correct_answer { @include o-add-icon('check'); color: $brand-success;}
 .o_icon_correct_response { @include o-add-icon('check-circle', false); color: $brand-success;}
 .o_icon_correction { @include o-add-icon('highlighter');}
-.o_icon_course_bundle { @include o-add-icon('cubes-stacked');}
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_curriculum_manager { @include o-add-icon('eye');}
