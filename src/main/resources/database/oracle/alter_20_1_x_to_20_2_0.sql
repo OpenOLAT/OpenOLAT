@@ -136,6 +136,3 @@ alter table o_cur_curriculum_element add c_catalog_sort_priority number(20);
 
 -- Quality management
 alter table o_qual_report_access add q_todo_access varchar(64);
-
--- Curriculum element type
-alter table o_cur_element_type add c_type varchar(64);

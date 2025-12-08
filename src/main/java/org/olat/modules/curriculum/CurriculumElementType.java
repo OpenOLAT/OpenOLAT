@@ -32,12 +32,6 @@ import org.olat.core.id.ModifiedInfo;
  */
 public interface CurriculumElementType extends CurriculumElementTypeRef, CreateInfo, ModifiedInfo {
 	
-	enum Type {
-		implementation,
-		element,
-		mixed
-	}
-	
 	public String getIdentifier();
 	
 	public void setIdentifier(String identifier);
@@ -96,9 +90,5 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	public void setManagedFlags(CurriculumElementTypeManagedFlag[] flags);
 	
 	public Set<CurriculumElementTypeToType> getAllowedSubTypes();
-
-	public Type getType();
-
-	public void setType(Type type);
 
 }
