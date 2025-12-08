@@ -67,16 +67,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementTypesEditController extends FormBasicController implements Activateable2 {
 	
-	private FormLink addNewImplementationTypeButton;
-	private FormLink addNewElementTypeButton;
+	private FormLink addRootTypeButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementTypesTableModel model;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDialog;
-	private EditCurriculumElementTypeController addNewImplementationTypeCtrl;
-	private EditCurriculumElementTypeController addNewElementTypeCtrl;
+	private EditCurriculumElementTypeController rootElementTypeCtrl;
 	private EditCurriculumElementTypeController editElementTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
 
@@ -91,11 +89,8 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addNewImplementationTypeButton = uifactory.addFormLink("add.new.implementation.type", formLayout, Link.BUTTON);
-		addNewImplementationTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-
-		addNewElementTypeButton = uifactory.addFormLink("add.new.element.type", formLayout, Link.BUTTON);
-		addNewElementTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addRootTypeButton = uifactory.addFormLink("add.root.type", formLayout, Link.BUTTON);
+		addRootTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.key));
@@ -104,7 +99,6 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(displayNameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.type));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -114,7 +108,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TypesCols.tools));
 		
-		model = new CurriculumElementTypesTableModel(columnsModel, getTranslator());
+		model = new CurriculumElementTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableMessageKey("table.type.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-el-types");
@@ -151,7 +145,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (addNewImplementationTypeCtrl == source || addNewElementTypeCtrl == source || editElementTypeCtrl == source) {
+		if(rootElementTypeCtrl == source || editElementTypeCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 			}
@@ -170,20 +164,16 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(addNewImplementationTypeCtrl);
-		removeAsListenerAndDispose(addNewElementTypeCtrl);
+		removeAsListenerAndDispose(rootElementTypeCtrl);
 		removeAsListenerAndDispose(cmc);
-		addNewImplementationTypeCtrl = null;
-		addNewElementTypeCtrl = null;
+		rootElementTypeCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (addNewImplementationTypeButton == source) {
-			doAddNewImplementationType(ureq);
-		} else if (addNewElementTypeButton == source) {
-			doAddNewElementType(ureq);
+		if(addRootTypeButton == source) {
+			doAddRootType(ureq);
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
@@ -225,36 +215,21 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
-	private void doAddNewImplementationType(UserRequest ureq) {
-		addNewImplementationTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), 
-				CurriculumElementType.Type.implementation, null);
-		listenTo(addNewImplementationTypeCtrl);
+	private void doAddRootType(UserRequest ureq) {
+		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), null);
+		listenTo(rootElementTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), addNewImplementationTypeCtrl.getInitialComponent(), true, translate("add.new.implementation.type"));
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doAddNewElementType(UserRequest ureq) {
-		addNewElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), 
-				CurriculumElementType.Type.element, null);
-		listenTo(addNewElementTypeCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), addNewElementTypeCtrl.getInitialComponent(), true, translate("add.new.element.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), rootElementTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
 	private void doEditCurriculElementType(UserRequest ureq, CurriculumElementTypeRef type) {
 		CurriculumElementType reloadedType = curriculumService.getCurriculumElementType(type);
-		editElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), reloadedType.getType(), 
-				reloadedType);
+		editElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), reloadedType);
 		listenTo(editElementTypeCtrl);
 		
-		boolean isElementType = CurriculumElementType.Type.element.equals(reloadedType.getType());
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
-				editElementTypeCtrl.getInitialComponent(), true, 
-				translate(isElementType ? "type.edit.element" : "type.edit.implementation"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editElementTypeCtrl.getInitialComponent(), true, translate("edit"));
 		listenTo(cmc);
 		cmc.activate();
 	}

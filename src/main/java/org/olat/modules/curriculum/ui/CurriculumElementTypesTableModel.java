@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -36,12 +35,9 @@ import org.olat.core.gui.translator.Translator;
  */
 public class CurriculumElementTypesTableModel extends DefaultFlexiTableDataModel<CurriculumElementTypeRow>
 implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
-
-	private final Translator translator;
-
-	public CurriculumElementTypesTableModel(FlexiTableColumnModel columnsModel, Translator translator) {
+	
+	public CurriculumElementTypesTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.translator = translator;
 	}
 	
 	@Override
@@ -65,25 +61,16 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
 			case externalId: return row.getExternalId();
-			case type: return getTypeString(row);
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
 	}
 	
-	private String getTypeString(CurriculumElementTypeRow row) {
-		if (row.getType().getType() == null) {
-			return "";
-		}
-		return translator.translate("curriculum.element.type." + row.getType().getType().name());
-	}
-
 	public enum TypesCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.type.header.type.displayName"),
 		identifier("table.type.header.type.identifier"),
 		externalId("table.type.header.type.externalId"),
-		type("table.type.header.type.type"),
 		tools("action.more");
 		
 		private final String i18nHeaderKey;
