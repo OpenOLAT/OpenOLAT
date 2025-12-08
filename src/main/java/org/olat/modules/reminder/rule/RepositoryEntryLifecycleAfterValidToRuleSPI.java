@@ -69,6 +69,10 @@ public class RepositoryEntryLifecycleAfterValidToRuleSPI implements RepositoryEn
 			if (currentValue == null) {
 				return null;
 			}
+			if ("0".equals(currentValue) || "-0".equals(currentValue)) {
+				return translator.translate("rule.lifecycle.valid.to.same.day");
+			}
+			
 			String i18nBeforeAfter = "after.";
 			if (currentValue.startsWith("-")) {
 				i18nBeforeAfter = "before.";

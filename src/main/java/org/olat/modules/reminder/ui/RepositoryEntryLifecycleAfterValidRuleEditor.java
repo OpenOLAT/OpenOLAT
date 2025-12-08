@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -44,7 +45,8 @@ import org.olat.modules.reminder.rule.LaunchUnit;
  */
 public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFragment {
 	
-	private static final String[] unitKeys = new String[]{
+	private static final String SAME_DAY = "same.day";
+	private static final String[] unitKeys = new String[]{ SAME_DAY,
 		LaunchUnit.day.name(), LaunchUnit.week.name(), LaunchUnit.month.name(), LaunchUnit.year.name()
 	};
 	private static final String KEY_BEFORE = "before";
@@ -89,14 +91,19 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		valueEl.setDisplaySize(3);
 		
 		String[] unitValues = new String[] {
+				trans.translate("same.day"),
 				trans.translate(LaunchUnit.day.name()), trans.translate(LaunchUnit.week.name()),
 				trans.translate(LaunchUnit.month.name()), trans.translate(LaunchUnit.year.name())
 		};
 		
 		unitEl = uifactory.addDropdownSingleselect("launchunit".concat(id), null, ruleCont, unitKeys, unitValues, null);
 		unitEl.setDomReplacementWrapperRequired(false);
+		unitEl.addActionListener(FormEvent.ONCHANGE);
 		boolean unitSelected = false;
-		if(currentUnit != null) {
+		if ("0".equals(currentValue) || "-0".equals(currentValue)) {
+			unitEl.select(SAME_DAY, true);
+			unitSelected = true;
+		} else if(currentUnit != null) {
 			for(String unitKey:unitKeys) {
 				if(currentUnit.equals(unitKey)) {
 					unitEl.select(unitKey, true);
@@ -105,7 +112,7 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 			}
 		}
 		if(!unitSelected) {
-			unitEl.select(unitKeys[1], true);	
+			unitEl.select(unitKeys[2], true);
 		}
 		
 		SelectionValues beforeAfterSV = new SelectionValues();
@@ -120,7 +127,29 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 			beforeAfterEl.select(KEY_AFTER, true);
 		}
 		
+		updateUI();
+		
 		return ruleCont;
+	}
+
+	private void updateUI() {
+		boolean sameDay = unitEl.isOneSelected() && unitEl.isKeySelected(SAME_DAY);
+		
+		valueEl.setVisible(!sameDay);
+		beforeAfterEl.setVisible(!sameDay);
+		if (valueEl.isVisible()) {
+			if (!StringHelper.containsNonWhitespace(valueEl.getValue()) || (StringHelper.isLong(valueEl.getValue()) && Long.valueOf(valueEl.getValue()).equals(0l))) {
+				valueEl.setValue("1");
+			}
+		}
+	}
+
+	@Override
+	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == unitEl) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -134,7 +163,7 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		}
 		
 		valueEl.clearError();
-		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
+		if(valueEl.isVisible() && !StringHelper.containsNonWhitespace(valueEl.getValue())) {
 			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
@@ -171,12 +200,17 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		ReminderRuleImpl configuredRule = new ReminderRuleImpl();
 		configuredRule.setType(ruleType);
 		configuredRule.setOperator(">");
-		String value = String.valueOf(Long.valueOf(valueEl.getValue()));
-		if (beforeAfterEl.isKeySelected(KEY_BEFORE)) {
+		String value = unitEl.isOneSelected() && unitEl.isKeySelected(SAME_DAY)
+				? "0"
+				: String.valueOf(Long.valueOf(valueEl.getValue()));
+		if (beforeAfterEl.isVisible() && beforeAfterEl.isKeySelected(KEY_BEFORE)) {
 			value = "-" + value;
 		}
 		configuredRule.setRightOperand(value);
-		configuredRule.setRightUnit(unitEl.getSelectedKey());
+		String rightUnit = unitEl.isOneSelected() && unitEl.isKeySelected(SAME_DAY)
+				? LaunchUnit.day.name()
+				: unitEl.getSelectedKey();
+		configuredRule.setRightUnit(rightUnit);
 		return configuredRule;
 	}
 }
