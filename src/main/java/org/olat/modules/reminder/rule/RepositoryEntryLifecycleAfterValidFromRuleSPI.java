@@ -114,7 +114,7 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	public boolean evaluate(RepositoryEntryLifecycle lifecycle, ReminderRule rule) {
 		Date now = cleanNow();
 		Date validTo = lifecycle.getValidTo();
-		if(validTo != null && now.compareTo(validTo) >= 0) {
+		if(validTo != null && now.compareTo(validTo) > 0) {
 			return false;//the course is at the end
 		}
 
