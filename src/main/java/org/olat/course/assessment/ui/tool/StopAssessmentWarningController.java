@@ -404,6 +404,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 	}
 
 	private void doStart(AssessmentMode mode) {
+		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		if (mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
 		} else {
