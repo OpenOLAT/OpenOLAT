@@ -39,9 +39,12 @@ import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.modules.certificationprogram.CertificationCoordinator;
+import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
@@ -71,6 +74,8 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	private CreditPointServiceImpl creditPointService;
 	@Autowired
 	private CertificationProgramDAO certificationProgramDao;
+	@Autowired
+	private CertificationCoordinator certificationCoordinator;
 	@Autowired
 	private CertificationProgramLogDAO certificationProgramLogDao;
 	@Autowired
@@ -438,7 +443,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getOverdueCertificatesTwoDays() {
+	public void getOverdueCertificatesTwoDaysUseCase5() {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(2);
@@ -486,6 +491,198 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		List<Certificate> certificatesAfterMail = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
 		Assertions.assertThat(certificatesAfterMail)
 			.isEmpty();
+	}
+	
+	/**
+	 * With validity, recertification time-frame, credit point, automatic
+	 */
+	@Test
+	public void getOverdueCertificatesUseCase6() {
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test mail coins", "CM6", null, null, false, false);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(10);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationMode(RecertificationMode.automatic);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(5);
+		program.setRecertificationWindowUnit(DurationType.day);
+		program.setCreditPoints(new BigDecimal("10"));
+		program.setCreditPointSystem(system);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_overdue;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(3);
+		configuration.setTimeUnit(DurationType.day);
+		configuration.setCreditBalanceTooLow(false);
+		configuration = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6", defaultUnitTestOrganisation, null);
+		dbInstance.commit();
+		
+		CreditPointWallet wallet = creditPointService.getOrCreateWallet(identity, system);
+		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("5"), null, "Give away", wallet, identity, null, null, null, null, null);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		waitMessageAreConsumed();
+
+		Date now = new Date();
+		Date refDate = DateUtils.addDays(now, 3);
+		List<Certificate> certificatesNotYet = certificationProgramMailQueries.getOverdueCertificates(configuration, refDate);
+		Assertions.assertThat(certificatesNotYet)
+			.isEmpty();
+		
+		Date overdueDate = DateUtils.addDays(now, 13);
+		List<Certificate> certificatesOverdue = certificationProgramMailQueries.getOverdueCertificates(configuration, overdueDate);
+		Assertions.assertThat(certificatesOverdue)
+			.hasSize(1)
+			.containsExactly(certificate);
+	}
+	
+	/**
+	 * With validity, recertification time-frame, credit point, automatic<br>
+	 * The participant makes a first certificate, obtains a recertification and
+	 * we test the overdue reminders.
+	 */
+	@Test
+	public void getOverdueCertificatesUseCase6WithHistory() {
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test mail coins", "CM6", null, null, false, false);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(10);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationMode(RecertificationMode.automatic);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(5);
+		program.setRecertificationWindowUnit(DurationType.day);
+		program.setCreditPoints(new BigDecimal("10"));
+		program.setCreditPointSystem(system);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_overdue;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(3);
+		configuration.setTimeUnit(DurationType.day);
+		configuration.setCreditBalanceTooLow(false);
+		configuration = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6", defaultUnitTestOrganisation, null);
+		dbInstance.commit();
+		
+		CreditPointWallet wallet = creditPointService.getOrCreateWallet(identity, system);
+		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("15"), null, "Give away", wallet, identity, null, null, null, null, null);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		waitMessageAreConsumed();
+
+		Date now = new Date();
+		updateCertificate(certificate, DateUtils.addDays(now, -3), program);
+		dbInstance.commit();
+		
+		boolean recertificationOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.AUTOMATIC, now, null);
+		Assert.assertTrue(recertificationOk);
+		waitMessageAreConsumed();
+		
+		Certificate renewedCertifcate = this.certificatesDao.getLastCertificate(identity, program);
+		
+		Date refDate = DateUtils.addDays(now, 3);
+		List<Certificate> certificatesNotYet = certificationProgramMailQueries.getOverdueCertificates(configuration, refDate);
+		Assertions.assertThat(certificatesNotYet)
+			.isEmpty();
+		
+		Date overdueDate = DateUtils.addDays(now, 13);
+		List<Certificate> certificatesOverdue = certificationProgramMailQueries.getOverdueCertificates(configuration, overdueDate);
+		Assertions.assertThat(certificatesOverdue)
+			.hasSize(1)
+			.containsExactly(renewedCertifcate);
+	}
+	
+	/**
+	 * With validity, recertification time-frame, credit point, automatic<br>
+	 * The participant makes a first certificate, obtains a recertification and
+	 * we test the overdue reminders.
+	 */
+	@Test
+	public void getUpcomingCertificatesUseCase8WithHistory() {
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test mail coins", "CM6", null, null, false, false);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(3);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationMode(RecertificationMode.manual);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(2);
+		program.setRecertificationWindowUnit(DurationType.day);
+		program.setCreditPoints(new BigDecimal("10"));
+		program.setCreditPointSystem(system);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_upcoming;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(3);
+		configuration.setTimeUnit(DurationType.day);
+		configuration.setCreditBalanceTooLow(true);
+		configuration = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+
+		Identity coach = JunitTestHelper.getDefaultActor();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6", defaultUnitTestOrganisation, null);
+		dbInstance.commit();
+		
+		CreditPointWallet wallet = creditPointService.getOrCreateWallet(identity, system);
+		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("25"), null, "Give away", wallet, identity, null, null, null, null, null);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		waitMessageAreConsumed();
+
+		Date now = new Date();
+		updateCertificate(certificate, DateUtils.addDays(now, -3), program);
+		dbInstance.commit();
+		
+		boolean recertificationOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COACH, now, coach);
+		Assert.assertTrue(recertificationOk);
+		waitMessageAreConsumed();
+		
+		Date refDate = DateUtils.addDays(now, 3);
+		List<Certificate> certificatesNotYet = certificationProgramMailQueries.getUpcomingCertificates(configuration, refDate);
+		Assertions.assertThat(certificatesNotYet)
+			.isEmpty();
+		Date overdueDate = DateUtils.addDays(now, 13);
+		List<Certificate> certificatesOverdue = certificationProgramMailQueries.getUpcomingCertificates(configuration, overdueDate);
+		Assertions.assertThat(certificatesOverdue)
+			.isEmpty();
+		
+		creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, new BigDecimal("-12"), null, "Give away", wallet, identity, null, null, null, null, null);
+		dbInstance.commit();
+		
+		Certificate lastCertificate = certificatesDao.getLastCertificate(identity, program);
+		
+		refDate = DateUtils.addDays(now, -2);
+		List<Certificate> certificatesNotYetAfterRemoval = certificationProgramMailQueries.getUpcomingCertificates(configuration, refDate);
+		Assertions.assertThat(certificatesNotYetAfterRemoval)
+			.isEmpty();
+		List<Certificate> certificatesOverdueAfterRemoval = certificationProgramMailQueries.getUpcomingCertificates(configuration, overdueDate);
+		Assertions.assertThat(certificatesOverdueAfterRemoval)
+			.hasSize(1)
+			.containsExactly(lastCertificate);
 	}
 	
 	@Test

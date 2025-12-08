@@ -108,7 +108,7 @@ public class CertificationProgramMailQueries {
 				)
 				and (config.creditBalanceTooLow is false or exists (select wallet.key from creditpointwallet as wallet
 					inner join wallet.creditPointSystem system
-					where program.creditPointSystem.key=system.key and wallet.balance<program.creditPoints
+					where program.creditPointSystem.key=system.key and wallet.balance<program.creditPoints and wallet.identity.key=cer.identity.key
 				))
 				""";
 
@@ -148,7 +148,7 @@ public class CertificationProgramMailQueries {
 				)
 				and (config.creditBalanceTooLow is false or exists (select wallet.key from creditpointwallet as wallet
 					inner join wallet.creditPointSystem system
-					where program.creditPointSystem.key=system.key and wallet.balance<program.creditPoints
+					where program.creditPointSystem.key=system.key and wallet.balance<program.creditPoints and wallet.identity.key=cer.identity.key
 				))
 				""";
 
