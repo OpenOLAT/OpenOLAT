@@ -588,7 +588,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void filterMembership() {
+	public void filterByRoles() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", BusinessGroup.BUSINESS_TYPE,
@@ -606,7 +606,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		entries.add(re2.getKey());
 		entries.add(re3.getKey());
 		entries.add(502l);
-		repositoryEntryRelationDao.filterMembership(id, entries);
+		repositoryEntryRelationDao.filterByRoles(id, entries, List.of(GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
 
 		Assert.assertTrue(entries.contains(re1.getKey()));
 		Assert.assertTrue(entries.contains(re2.getKey()));
@@ -615,9 +615,28 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		//unkown
 		Assert.assertFalse(entries.contains(502l));
 		
+		// Check single role
+		entries = new ArrayList<>();
+		entries.add(re1.getKey());
+		entries.add(re2.getKey());
+		entries.add(re3.getKey());
+		entries.add(502l);
+		repositoryEntryRelationDao.filterByRoles(id, entries, List.of(GroupRoles.owner.name()));
+		Assert.assertTrue(entries.size() == 1);
+		entries.add(re2.getKey());
+		
+		// Check no roles
+		entries = new ArrayList<>();
+		entries.add(re1.getKey());
+		entries.add(re2.getKey());
+		entries.add(re3.getKey());
+		entries.add(502l);
+		repositoryEntryRelationDao.filterByRoles(id, entries, List.of());
+		Assert.assertTrue(entries.isEmpty());
+		
 		//check against empty value
 		List<Long> empyEntries = new ArrayList<>();
-		repositoryEntryRelationDao.filterMembership(id, empyEntries);
+		repositoryEntryRelationDao.filterByRoles(id, entries, List.of(GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
 		Assert.assertTrue(empyEntries.isEmpty());
 	}
 	

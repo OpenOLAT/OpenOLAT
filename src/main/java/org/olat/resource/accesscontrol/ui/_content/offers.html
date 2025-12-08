@@ -25,6 +25,11 @@
 		#end
 		<div class="o_ac_offer_custom">
 			$r.render("offer")
-		</div>
+	</div>
+		#if($r.available("start.admin") && $r.visible("start.admin"))
+			<div class="o_ac_start_admin o_block_top">
+				$r.render("start.admin")
+			</div>
+		#end
 	</div>
 </div>

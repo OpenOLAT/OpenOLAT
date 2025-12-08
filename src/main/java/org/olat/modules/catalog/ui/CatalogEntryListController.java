@@ -87,6 +87,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Preferences;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -105,6 +106,8 @@ import org.olat.login.LoginModule;
 import org.olat.login.LoginProcessEvent;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
+import org.olat.modules.catalog.CatalogEntrySecurityCallback;
+import org.olat.modules.catalog.CatalogEntrySecurityCallbackFactory;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
@@ -115,7 +118,9 @@ import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -139,6 +144,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
+import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -522,32 +528,27 @@ public class CatalogEntryListController extends FormBasicController implements A
 		row.setTaxonomyLevelTags(taxonomyLevelTags);
 		
 		if (catalogEntry.isPublicVisible()) {
+			updateAccessMaxParticipants(row);
 			
-			boolean autoBooking = true;
+			CatalogEntrySecurityCallback secCallback = CatalogEntrySecurityCallbackFactory.createSecurityCallback(
+					catalogEntry, searchParams.isGuestOnly(), row.getParticipantsAvailabilityNum().availability());
+			row.setSecCallback(secCallback);
+			
 			Set<String> accessMethodTypes = new HashSet<>(2);
 			List<PriceMethod> priceMethods = new ArrayList<>(2);
 			for (OLATResourceAccess resourceAccess : catalogEntry.getResourceAccess()) {
 				for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
 					accessMethodTypes.add(bundle.getMethod().getType());
 					priceMethods.add(toPriceMethod(bundle));
-					if (!FreeAccessHandler.METHOD_TYPE.equals(bundle.getMethod().getType()) || !bundle.isAutoBooking()) {
-						autoBooking = false;
-					}
 				}
-			}
-			// Prevents auto booking with (only) two auto booking offers
-			if (priceMethods.size() > 1) {
-				autoBooking = false;
 			}
 			
 			if (catalogEntry.isOpenAccess()) {
 				priceMethods.add(new PriceMethod(null, "o_ac_openaccess_icon", translate("open.access.name")));
-				autoBooking = false;
 			}
 			
 			if (!accessMethodTypes.isEmpty()) {
 				row.setAccessMethodTypes(accessMethodTypes);
-				row.setAutoBooking(autoBooking);
 			}
 			
 			updateAccessInfo(row, catalogEntry);
@@ -572,7 +573,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 
 	private void updateAccessInfo(CatalogEntryRow row, CatalogEntry catalogEntry) {
-		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || catalogEntry.isOpenAccess()) {
+		if (searchParams.isGuestOnly() || row.isParticipant() || row.isReservationAvailable() || catalogEntry.isOpenAccess()) {
 			return;
 		}
 		
@@ -628,12 +629,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 
 	private void updateAccessMaxParticipants(CatalogEntryRow row) {
-		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || row.isOpenAccess() || row.getMaxParticipants() == null) {
-			return;
-		}
-		
 		ParticipantsAvailabilityNum participantsAvailabilityNum = acService.getParticipantsAvailability(row.getMaxParticipants(), row.getNumParticipants(), false);
 		row.setParticipantsAvailabilityNum(participantsAvailabilityNum);
+		
+		if (searchParams.isGuestOnly() || row.isParticipant() || row.isReservationAvailable() || row.isOpenAccess() || row.getMaxParticipants() == null) {
+			return;
+		}
 		
 		if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
 			row.setAccessError(getAvailabilityText(participantsAvailabilityNum));
@@ -656,12 +657,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private void forgeLinks(CatalogEntryRow row) {
-		updateAccessMaxParticipants(row);
 		forgeStartLink(row);
 		forgeThumbnail(row);
 		forgeRatings(row);
 	}
-	
+
 	private void forgeRatings(CatalogEntryRow row) {
 		if(!repositoryModule.isRatingEnabled() || row.getRepositotyEntryKey() == null) return;
 		
@@ -676,42 +676,44 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 
 	private void forgeStartLink(CatalogEntryRow row) {
-		String url = row.getStartUrl();
-		String cmd = "start";
-		String label = "open";
 		if (searchParams.isWebPublish() && row.isGuestAccess()) {
-			ExternalLinkItem link = uifactory.addExternalLink("start_" + row.getOlatResource().getKey(), url, "_self", null);
-			link.setCssClass("btn btn-sm btn-primary o_catalog_start");
+			ExternalLinkItem link = uifactory.addExternalLink("open_" + row.getOlatResource().getKey(), row.getStartUrl(), "_self", null);
+			link.setCssClass("btn btn-sm btn-primary o_catalog_open");
 			link.setIconRightCSS("o_icon o_icon_start");
 			link.setName(translate("start.guest"));
 			row.setStartLink(link);
 			return;
 		}
 		
-		if (!searchParams.isGuestOnly() && !row.isMember() && !row.isReservationAvailable() && row.isPublicVisible() && !row.isOpenAccess()) {
+		
+		String cmd;
+		String label;
+		String url;
+		boolean enabled;
+		
+		CatalogEntrySecurityCallback secCallback = row.getSecCallback();
+		if (secCallback.isOpenAvailable()) {
+			cmd = "open";
+			label = "open";
+			enabled = secCallback.isOpenEnabled();
+			url = row.getStartUrl();
+		} else if (secCallback.isBookAvailable()) {
 			cmd = "book";
-			if (!row.isAutoBooking()) {
-				url = row.getInfoUrl();
-				label = "book";
-			}
+			label = "book";
+			enabled = secCallback.isBookEnabled();
+			url =  secCallback.isAutoBooking()? row.getStartUrl(): row.getInfoUrl();
+		} else {
+			return;
 		}
 		
 		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, null, Link.BUTTON_SMALL);
 		link.setUserObject(row);
 		link.setPrimary(true);
-		link.setElementCssClass("o_catalog_start");
+		link.setElementCssClass("o_catalog_open");
 		link.setIconRightCSS("o_icon o_icon_start");
 		link.setUrl(url);
+		link.setEnabled(enabled);
 		row.setStartLink(link);
-		
-		if (StringHelper.containsNonWhitespace(
-				row.getAccessError()) ||
-				row.isReservationAvailable() ||
-				(row.isMember() && row.isUnpublishedImplementation()) ||
-				(row.isAutoBooking() && row.isUnpublishedSingleCourseImplementation())
-				) {
-			link.setEnabled(false);
-		}
 	}
 	
 	private void forgeThumbnail(CatalogEntryRow row) {
@@ -876,6 +878,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			if (event instanceof PopEvent) {
 				if (stackPanel.getLastController() == this) {
 					setWindowTitle();
+					loadModel(false);
 				}
 			}
 		}
@@ -901,9 +904,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if ("start".equals(cmd)){
+			if ("open".equals(cmd)){
 				CatalogEntryRow row = (CatalogEntryRow)link.getUserObject();
-				doStart(ureq, row);
+				doOpenResource(ureq, row);
 			} else if ("startGuest".equals(cmd)){
 				CatalogEntryRow row = (CatalogEntryRow)link.getUserObject();
 				doStartGuest(ureq, row);
@@ -937,7 +940,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		//
 	}
 	
-	private void doStart(UserRequest ureq, CatalogEntryRow row) {
+	private void doOpenResource(UserRequest ureq, CatalogEntryRow row) {
 		if (searchParams.isWebPublish()) {
 			doLogin(ureq, row);
 		} else {
@@ -945,6 +948,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 				String businessPath = getStartBusinessPath(row);
 				if (StringHelper.containsNonWhitespace(businessPath)) {
 					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+				} else {
+					doOpenDetails(ureq, row);
 				}
 			} catch (CorruptedCourseException e) {
 				showError("error.corrupted");
@@ -1008,7 +1013,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry);
+			DetailsHeaderConfig config = null;
+			if (!searchParams.isGuestOnly() && !searchParams.isWebPublish()) {
+				Roles roles = getIdentity() != null && getIdentity().equals(searchParams.getMember())? ureq.getUserSession().getRoles(): Roles.userRoles();
+				config = new CatalogRepositoryEntryHeaderConfig(entry, searchParams.getMember(), roles);
+			}
+			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry, config);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -1029,7 +1039,16 @@ public class CatalogEntryListController extends FormBasicController implements A
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
 			RepositoryEntry entry = getSingleCourse(curriculumElement);
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, searchParams.getMember(), false);
+			DetailsHeaderConfig config = null;
+			if (!searchParams.isGuestOnly() && !searchParams.isWebPublish()) {
+				if (curriculumElement.isSingleCourseImplementation()) {
+					Roles roles = getIdentity() != null && getIdentity().equals(searchParams.getMember())? ureq.getUserSession().getRoles(): Roles.userRoles();
+					config = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry, searchParams.getMember(), roles);
+				} else {
+					config = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, searchParams.getMember());
+				}
+			}
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, searchParams.getMember(), config);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -1070,19 +1089,49 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (row.getRepositotyEntryKey() != null) {
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositotyEntryKey());
 			if (entry != null) {
-				AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
-				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
-					doStart(ureq, row);
+				// Start if accessible as participant.
+				// Auto booking if not a member / manager at all.
+				// If member / manager but not participant: Book opens details.
+				AccessResult acResult = acService.isAccessible(entry, searchParams.getMember(), row.isParticipant(), searchParams.isGuestOnly(), null, false);
+				if (acResult.isAccessible()) {
+					doOpenResource(ureq, row);
 					return;
+				} else if (row.getSecCallback().isAutoBooking()) {
+					boolean canLaunch = repositoryManager.isAllowed(ureq, entry).canLaunch();
+					if (!canLaunch && acService.tryAutoBooking(searchParams.getMember(), entry, acResult)) {
+						doOpenResource(ureq, row);
+						return;
+					}
 				}
 			}
 		} else if (row.getCurriculumElementKey() != null) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(() -> row.getCurriculumElementKey());
 			if (curriculumElement != null) {
-				AccessResult acResult = acService.isAccessible(curriculumElement, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
-				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), curriculumElement, acResult)) {
-					doStart(ureq, row);
+				AccessResult acResult = acService.isAccessible(curriculumElement, searchParams.getMember(), row.isMember(), searchParams.isGuestOnly(), null, false);
+				if (acResult.isAccessible()) {
+					doOpenResource(ureq, row);
 					return;
+				} else if (row.getSecCallback().isAutoBooking()) {
+					boolean canLaunch = false;
+					if (row.getSingleCourseEntryKey() != null) {
+						RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getSingleCourseEntryKey());
+						if (entry != null) {
+							canLaunch = repositoryManager.isAllowed(ureq, entry).canLaunch();
+						} else {
+							// Do not try auto booking if entry not available
+							canLaunch = true;
+						}
+					} else {
+						canLaunch = curriculumService
+								.getCurriculumElementMemberships(
+										List.of(new CurriculumElementRefImpl(row.getCurriculumElementKey())),
+										searchParams.getMember())
+								.stream().anyMatch(CurriculumElementMembership::hasMembership);
+					}
+					if (!canLaunch && acService.tryAutoBooking(getIdentity(), curriculumElement, acResult)) {
+						doOpenResource(ureq, row);
+						return;
+					}
 				}
 			}
 		}

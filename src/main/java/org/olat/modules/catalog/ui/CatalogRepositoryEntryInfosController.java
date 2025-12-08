@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +44,13 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	@Autowired
 	protected ACService acService;
-
+	
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, entry, false, false);
+		this(ureq, wControl, entry, null);
+	}
+
+	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, DetailsHeaderConfig config) {
+		super(ureq, wControl, entry, false, false, config);
 	}
 
 	@Override

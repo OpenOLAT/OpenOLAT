@@ -494,7 +494,7 @@ public class InPreparationListController extends FormBasicController implements 
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, getIdentity(), false);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, getIdentity(), null);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			

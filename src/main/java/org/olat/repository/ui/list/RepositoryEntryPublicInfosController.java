@@ -32,7 +32,7 @@ public class RepositoryEntryPublicInfosController extends RepositoryEntryDetails
 
 
 	public RepositoryEntryPublicInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, entry, true, false);
+		super(ureq, wControl, entry, true, false, null);
 	}
 
 	@Override

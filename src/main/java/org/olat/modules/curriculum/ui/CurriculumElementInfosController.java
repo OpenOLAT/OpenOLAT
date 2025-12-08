@@ -49,6 +49,7 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.MediaContainerFilter;
+import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsHeaderController;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
@@ -91,7 +92,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private LectureService lectureService;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			RepositoryEntry entry, Identity bookedIdentity, boolean preview) {
+			RepositoryEntry entry, Identity bookedIdentity, DetailsHeaderConfig headerConfig) {
 		super(ureq, wControl, Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale()));
 		// The translator is explicitly set so that it is also available in the subclasses.
 		this.element = element;
@@ -117,8 +118,13 @@ public class CurriculumElementInfosController extends BasicController {
 		}
 		
 		
+		
 		// Header
-		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, entry, this.bookedIdentity, isMember, preview);
+		if (headerConfig != null) {
+			headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), headerConfig, element);
+		} else {
+			headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, entry, this.bookedIdentity, isMember);
+		}
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		

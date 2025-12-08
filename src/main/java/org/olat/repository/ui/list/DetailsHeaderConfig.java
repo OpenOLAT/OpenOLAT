@@ -19,30 +19,56 @@
  */
 package org.olat.repository.ui.list;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
+import java.util.List;
+
 import org.olat.core.id.Identity;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
-import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
 /**
  * 
- * Initial date: Sep 8, 2025<br>
+ * Initial date: Dec 1, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ImplementationCurriculumElementInfosController extends CurriculumElementInfosController {
+public interface DetailsHeaderConfig {
+	
+	Identity getBookedIdentity();
+	
+	boolean isOpenAvailable();
+	
+	boolean isOpenEnabled();
+	
+	boolean isBookAvailable();
+	
+	boolean isBookEnabled();
+	
+	boolean isOffersPreview();
+	
+	boolean isOffersWebPublish();
 
-	public ImplementationCurriculumElementInfosController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement element, RepositoryEntry entry, Identity bookedIdentity) {
-		super(ureq, wControl, element, entry, bookedIdentity, null);
-	}
-
-	@Override
-	protected void doStart(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
+	boolean isOffersAvailable();
+	
+	List<OfferAccess> getAvailableMethods();
+	
+	boolean isLeaveAvailable();
+	
+	boolean isLeaveWithCancellationFee();
+	
+	ParticipantsAvailabilityNum getParticipantsAvailabilityNum();
+	
+	boolean isNotPublishedYetMessage();
+	
+	boolean isNoContentYetMessage();
+	
+	boolean isConfirmationPendingMessage();
+	
+	boolean isAvailabilityMessage();
+	
+	boolean isOwnerCoachMessage();
+	
+	boolean isAdministrativOpenAvailable();
+	
+	boolean isAdministrativOpenEnabled();
 
 }

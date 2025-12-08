@@ -274,15 +274,15 @@ public class RepositoryEntryRelationDAO {
 		return !counter.isEmpty();
 	}
 	
-	/**
+	/*
 	 * Membership calculated with business groups too
-	 * 
-	 * @param identity
-	 * @param entry
-	 * @return
 	 */
-	public void filterMembership(IdentityRef identity, Collection<Long> entries) {
+	public void filterByRoles(IdentityRef identity, Collection<Long> entries, Collection<String> roles) {
 		if(entries == null || entries.isEmpty()) return;
+		if(roles == null || roles.isEmpty()) {
+			entries.clear();
+			return;
+		}
 		
 		List<Long> entryKeysList = new ArrayList<>(entries);
 		Set<Object> memberships = new HashSet<>();
@@ -293,9 +293,10 @@ public class RepositoryEntryRelationDAO {
 			int toIndex = Math.min(count + batch, entryKeysList.size());
 			List<Long> toLoad = entryKeysList.subList(count, toIndex);
 			List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
-					.createNamedQuery("filterRepositoryEntryRelationMembership", Object[].class)
+					.createNamedQuery("filterRepositoryEntryRelationByRoles", Object[].class)
 					.setParameter("identityKey", identity.getKey())
 					.setParameter("repositoryEntryKey", toLoad)
+					.setParameter("roles", roles)
 					.setFlushMode(FlushModeType.COMMIT)
 					.getResultList();
 			for(Object[] membership: membershipList) {
@@ -1030,4 +1031,5 @@ public class RepositoryEntryRelationDAO {
 		}
 		return relationKeys;
 	}
+
 }

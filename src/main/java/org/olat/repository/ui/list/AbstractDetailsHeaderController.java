@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.ui.BookEvent;
@@ -39,6 +40,8 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.ParticipantsAvailability;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,12 +54,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractDetailsHeaderController extends BasicController {
 	
 	public static final Event START_EVENT = new Event("details.start");
+	public static final Event START_ADMIN_EVENT = new Event("details.start.admin");
 	public static final Event LEAVE_EVENT = new Event("details.leave");
 	
 	private VelocityContainer mainVC;
 
 	protected final HeaderStartController startCtrl;
 	protected OffersController offersCtrl;
+	
+	protected final DetailsHeaderConfig config;
 
 	@Autowired
 	protected RepositoryService repositoryService;
@@ -64,7 +70,14 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected ACService acService;
 	
 	public AbstractDetailsHeaderController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, null);
+	}
+
+	public AbstractDetailsHeaderController(UserRequest ureq, WindowControl wControl,
+			DetailsHeaderConfig config) {
 		super(ureq, wControl);
+		this.config = config;
+		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setVelocityRoot(Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class));
 		mainVC = createVelocityContainer("details_header");
@@ -108,7 +121,11 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			mainVC.contextPut("educationalType", educationalType);
 		}
 		
-		initAccess(ureq);
+		if (config != null) {
+			initByConfig(ureq);
+		} else {
+			initAccess(ureq);
+		}
 	}
 	
 	protected abstract String getIconCssClass();
@@ -120,12 +137,81 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract VFSLeaf getTeaserImage();
 	protected abstract VFSLeaf getTeaserMovie();
 	protected abstract RepositoryEntryEducationalType getEducationalType();
+	protected abstract String getPendingMessageElementName();
+	protected abstract String getLeaveText(boolean withFee);
 	
 	protected abstract boolean isPreview();
 	protected abstract void initAccess(UserRequest ureq);
 	protected abstract String getStartLinkText();
 	protected abstract boolean tryAutoBooking(UserRequest ureq);
 	protected abstract Long getResourceKey();
+	
+
+
+	private void initByConfig(UserRequest ureq) {
+		// Start
+		startCtrl.getStartLink().setVisible(config.isOpenAvailable());
+		startCtrl.getStartLink().setEnabled(config.isOpenEnabled());
+		
+		if (config.isNoContentYetMessage() || config.isNotPublishedYetMessage()) {
+			// Same message if one of this two reasons
+			setWarning(translate("access.denied.preparation"), translate("access.denied.preparation.hint"));
+		} else if (config.isConfirmationPendingMessage()) {
+			setWarning(translate("access.denied.preparation.element", StringHelper.escapeHtml(getPendingMessageElementName())),
+					translate("access.denied.preparation.hint"));
+		}
+		if (config.isOwnerCoachMessage()) {
+			setWarning2(translate("access.available.roles"), translate("access.available.roles.hint"));
+		}
+		
+		// Book
+		if (!startCtrl.getStartLink().isVisible() && config.isBookAvailable()) {
+			startCtrl.getStartLink().setVisible(config.isBookAvailable());
+			startCtrl.getStartLink().setEnabled(config.isBookEnabled());
+			startCtrl.getStartLink().setIconRightCSS(null);
+			startCtrl.getStartLink().setCustomDisplayText(translate("book"));
+		}
+		
+		if (config.isOffersAvailable()) {
+			showOffers(ureq, config.getAvailableMethods(), false, config.isOffersWebPublish(), config.getBookedIdentity());
+		}
+
+		if (config.isAvailabilityMessage()) {
+			ParticipantsAvailabilityNum availabilityNum = config.getParticipantsAvailabilityNum();
+			if (availabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
+				startCtrl.setError(getAvailabilityText(availabilityNum));
+			} else if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
+				if (offersCtrl != null) {
+					offersCtrl.setWarning(getAvailabilityText(availabilityNum));
+				}
+			}
+		}
+		
+		// Leave
+		if (config.isLeaveAvailable()) {
+			startCtrl.getLeaveLink().setVisible(true);
+			startCtrl.getLeaveLink().setCustomDisplayText(getLeaveText(config.isLeaveWithCancellationFee()));
+		}
+		
+		// Administrative access
+		if (config.isAdministrativOpenAvailable()) {
+			startCtrl.getStartAdminLink().setVisible(config.isAdministrativOpenAvailable());
+			startCtrl.getStartAdminLink().setEnabled(config.isAdministrativOpenEnabled());
+			
+			if (offersCtrl != null) {
+				offersCtrl.getStartAdminLink().setVisible(config.isAdministrativOpenAvailable());
+				offersCtrl.getStartAdminLink().setEnabled(config.isAdministrativOpenEnabled());
+				offersCtrl.getStartAdminLink().setCustomDisplayText(translate("start.admin"));
+			}
+		}
+		
+		startCtrl.getInitialComponent().setVisible(startCtrl.getStartLink().isVisible());
+	}
+	
+	protected String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {
+		return "<i class=\"o_icon " + ParticipantsAvailability.getIconCss(participantsAvailabilityNum) + "\"> </i> " 
+				+ ParticipantsAvailability.getText(getTranslator(), participantsAvailabilityNum);
+	}
 
 	protected void showOffers(UserRequest ureq, List<OfferAccess> offers, boolean guestOnly, Boolean webPublish, Identity bookedIdentity) {
 		if (guestOnly) {
@@ -147,6 +233,11 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		mainVC.contextPut("warningHint", warningHint);
 	}
 	
+	protected void setWarning2(String warning, String warningHint) {
+		mainVC.contextPut("warning2", warning);
+		mainVC.contextPut("warning2Hint", warningHint);
+	}
+	
 	protected void showInfoMessage(String info) {
 		mainVC.contextPut("info", info);
 	}
@@ -160,9 +251,15 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 				} else {
 					fireEvent(ureq, START_EVENT);
 				}
+			} else if (event == START_ADMIN_EVENT) {
+				fireEvent(ureq, START_EVENT);
 			}
 		} else if (source == offersCtrl) {
-			fireEvent(ureq, event);
+			if (event == OffersController.START_ADMIN_EVENT) {
+				fireEvent(ureq, START_EVENT);
+			} else {
+				fireEvent(ureq, event);
+			}
 		}
 		super.event(ureq, source, event);
 	}

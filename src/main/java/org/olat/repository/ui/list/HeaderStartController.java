@@ -45,6 +45,7 @@ public class HeaderStartController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final Link startLink;
 	private final Link leaveLink;
+	private final Link startAdminLink;
 	private final ExternalLink guestStartLink;
 	
 	private boolean autoBooking = false;
@@ -68,6 +69,12 @@ public class HeaderStartController extends BasicController {
 		leaveLink.setGhost(true);
 		leaveLink.setVisible(false);
 		
+		startAdminLink = LinkFactory.createCustomLink("start.admin", "start.admin", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+		startAdminLink.setCustomDisplayText(translate("start.admin"));
+		startAdminLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+		startAdminLink.setGhost(true);
+		startAdminLink.setVisible(false);
+		
 		guestStartLink = new ExternalLink("start.guest", "start.guest");
 		guestStartLink.setName(translate("start.guest"));
 		guestStartLink.setElementCssClass("btn btn-default btn-primary o_button_call_to_action o_nowrap");
@@ -85,6 +92,10 @@ public class HeaderStartController extends BasicController {
 
 	public ExternalLink getGuestStartLink() {
 		return guestStartLink;
+	}
+
+	public Link getStartAdminLink() {
+		return startAdminLink;
 	}
 
 	public void setWarning(String warning) {
@@ -109,6 +120,8 @@ public class HeaderStartController extends BasicController {
 			fireEvent(ureq, AbstractDetailsHeaderController.START_EVENT);
 		} else if (source == leaveLink) {
 			fireEvent(ureq, AbstractDetailsHeaderController.LEAVE_EVENT);
+		} else if (source == startAdminLink) {
+			fireEvent(ureq, AbstractDetailsHeaderController.START_ADMIN_EVENT);
 		}
 	}
 

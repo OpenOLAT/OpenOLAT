@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
@@ -171,7 +172,17 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels = loadRepositoryEntryToTaxonomyLevels(repositoryEntriesInfos);
 		
-		List<Long> reMembershipKeys = loadRepositoryEntryMembershipKeys(repositoryEntriesInfos, searchParams.getMember());
+		List<Long> reMembershipKeys;
+		List<Long> reParticipantKeys;
+		if (searchParams.getMember() == null) {
+			reMembershipKeys = List.of();
+			reParticipantKeys = List.of();
+		} else {
+			reMembershipKeys = repositoryEntriesInfos.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+			reParticipantKeys = new ArrayList<>(reMembershipKeys);
+			repositoryService.filterByRoles(searchParams.getMember(), reMembershipKeys, List.of(GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
+			repositoryService.filterByRoles(searchParams.getMember(), reParticipantKeys, List.of(GroupRoles.participant.name()));
+		}
 		
 		List<UserRating> ratings = searchParams.getMember() == null || !repositoryModule.isRatingEnabled()
 				? List.of()
@@ -196,6 +207,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
 			
 			catalogEntry.setMember(reMembershipKeys.contains(catalogEntry.getRepositoryEntryKey()));
+			catalogEntry.setParticipant(reParticipantKeys.contains(catalogEntry.getRepositoryEntryKey()));
 			
 			if (licenses != null && !licenses.isEmpty()) {
 				ResourceLicense license = licenses.get(new Resourceable(repositoryEntry.getOlatResource()));
@@ -232,7 +244,9 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			Map<Long, List<TaxonomyLevel>> ceKeyTaxonomyLevels = loadCurriculumElementToTaxonomyLevels(curriculumElements);
 			Map<Long, Long> ceKeyToNumParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(curriculumElements, true);
 			Map<Long, RepositoryEntry> ceKeySingleCourse = loadCurriculumElementToSingleCourse(curriculumElements);
-			Set<Long> ceMembershipKeys = loadCurriculumElementMembershipKeys(curriculumElements, searchParams.getMember());
+			List<CurriculumElementMembership> ceMemberships = loadCurriculumElementMemberships(curriculumElements, searchParams.getMember());
+			Set<Long> ceMembershipKeys = getCurriculumElementMembershipKeys(ceMemberships);
+			Set<Long> ceParticipantKeys = getCurriculumElementParticipantKeys(ceMemberships);
 			
 			for (CurriculumElement curriculumElement : curriculumElements) {
 				CatalogEntryImpl catalogEntry = new CatalogEntryImpl(curriculumElement);
@@ -242,6 +256,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 				catalogEntry.setNumParticipants(ceKeyToNumParticipants.get(curriculumElement.getKey()));
 				catalogEntry.setSingleCourse(ceKeySingleCourse.get(curriculumElement.getKey()));
 				catalogEntry.setMember(ceMembershipKeys.contains(curriculumElement.getKey()));
+				catalogEntry.setParticipant(ceParticipantKeys.contains(curriculumElement.getKey()));
 				
 				catalogEntries.add(catalogEntry);
 				resourcesWithAC.add(curriculumElement.getResource());
@@ -285,14 +300,6 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		return reToTaxonomyLevels;
 	}
 	
-	private List<Long> loadRepositoryEntryMembershipKeys(List<RepositoryEntryInfos> repositoryEntries, Identity identity) {
-		if (identity == null) return List.of();
-		
-		List<Long> reMembershipKeys = repositoryEntries.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
-		repositoryService.filterMembership(identity, reMembershipKeys);
-		return reMembershipKeys;
-	}
-	
 	private Map<Long, List<TaxonomyLevel>> loadCurriculumElementToTaxonomyLevels(List<CurriculumElement> curriculumElements) {
 		if (!curriculumElements.isEmpty() && taxonomyModule.isEnabled()) {
 			return curriculumService.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
@@ -318,18 +325,30 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 						Entry::getKey,
 						entry -> new ArrayList<>(entry.getValue()).get(0)));
 	}
-
-	private Set<Long> loadCurriculumElementMembershipKeys(List<CurriculumElement> curriculumElements, Identity member) {
-		if (!curriculumElements.isEmpty() && member != null) {
-			
-			return curriculumService.getCurriculumElementMemberships(curriculumElements, member)
-					.stream()
-					.map(CurriculumElementMembership::getCurriculumElementKey)
-					.collect(Collectors.toSet());
+	
+	private List<CurriculumElementMembership> loadCurriculumElementMemberships(List<CurriculumElement> curriculumElements, Identity member) {
+		if (curriculumElements.isEmpty() || member == null) {
+			return List.of();
 		}
-		return Set.of();
+		return curriculumService.getCurriculumElementMemberships(curriculumElements, member);
 	}
-
+	
+	private Set<Long> getCurriculumElementMembershipKeys(List<CurriculumElementMembership> memberships) {
+		return memberships
+				.stream()
+				.filter(CurriculumElementMembership::hasMembership)
+				.map(CurriculumElementMembership::getCurriculumElementKey)
+				.collect(Collectors.toSet());
+	}
+	
+	private Set<Long> getCurriculumElementParticipantKeys(List<CurriculumElementMembership> memberships) {
+		return memberships
+				.stream()
+				.filter(CurriculumElementMembership::isParticipant)
+				.map(CurriculumElementMembership::getCurriculumElementKey)
+				.collect(Collectors.toSet());
+	}
+	
 	private List<OLATResource> loadResourceOpenAccess(List<OLATResource> resourcesWithAC,
 			boolean webCatalog, List<? extends OrganisationRef> offerOrganisations) {
 		if (!acModule.isEnabled()) return List.of();

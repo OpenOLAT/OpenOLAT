@@ -88,7 +88,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private CourseModule courseModule;
 
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isResourceInfoView, boolean closeTabOnLeave) {
+			boolean isResourceInfoView, boolean closeTabOnLeave, DetailsHeaderConfig config) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -109,7 +109,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			mainVC.put("header", resourceInfoHeaderCtrl.getInitialComponent());
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, true);
 		} else {
-			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, closeTabOnLeave);
+			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, closeTabOnLeave, config);
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, guestOnly);

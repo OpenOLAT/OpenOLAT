@@ -126,7 +126,7 @@ public class ImplementationController extends BasicController {
 		OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		
-		infosCtrl = new ImplementationCurriculumElementInfosController(ureq, bwControl, curriculumElement, null, getIdentity(), false);
+		infosCtrl = new ImplementationCurriculumElementInfosController(ureq, bwControl, curriculumElement, null, getIdentity());
 		listenTo(infosCtrl);
 		addToHistory(ureq, infosCtrl);
 		

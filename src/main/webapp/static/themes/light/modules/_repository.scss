@@ -284,6 +284,10 @@
 .o_ac_offers_container {
 	max-width: $o-ac-offers-container-max-width;
 }
+.o_ac_start_admin {
+	display: flex;
+	justify-content: center;
+}
 .o_ac_offers {
 	.o_ac_offer_details {
 		display: flex;

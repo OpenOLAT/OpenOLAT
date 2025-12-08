@@ -26,6 +26,10 @@ public enum ParticipantsAvailability {
 	
 	public static final record ParticipantsAvailabilityNum(ParticipantsAvailability availability, long numAvailable) {}
 	
+	public static final boolean isParticipantsAvailable(ParticipantsAvailability availability) {
+		return availability == manyLeft || availability == fewLeft;
+	}
+	
 	public static final String getText(Translator translator, ParticipantsAvailabilityNum availabilityNum) {
 		if (availabilityNum == null) return null;
 		

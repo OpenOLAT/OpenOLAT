@@ -68,13 +68,13 @@ public class CatalogV2Page {
 	 * @return Itself
 	 */
 	public CatalogV2Page visitCourse(String title) {
-		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h3[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_start')]");
+		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h3[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_open')]");
 		OOGraphene.waitElement(courseBy, browser).click();
 		return this;
 	}
 	
 	public CatalogV2Page openCourse(String title) {
-		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h3[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_start')]");
+		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h3[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_open')]");
 		OOGraphene.waitElement(courseBy, browser).click();
 		return this;
 	}

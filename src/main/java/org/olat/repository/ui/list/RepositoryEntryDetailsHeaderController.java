@@ -76,8 +76,8 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	private BusinessGroupService businessGroupService;
 
 	public RepositoryEntryDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isMember, boolean closeTabOnLeave) {
-		super(ureq, wControl);
+			boolean isMember, boolean closeTabOnLeave, DetailsHeaderConfig config) {
+		super(ureq, wControl, config);
 		this.entry = entry;
 		this.isMember = isMember;
 		this.closeTabOnLeave = closeTabOnLeave;
@@ -134,6 +134,16 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Override
 	protected RepositoryEntryEducationalType getEducationalType() {
 		return entry.getEducationalType();
+	}
+
+	@Override
+	protected String getPendingMessageElementName() {
+		return translate("CourseModule");
+	}
+	
+	@Override
+	protected String getLeaveText(boolean withFee) {
+		return translate("sign.out");
 	}
 
 	@Override

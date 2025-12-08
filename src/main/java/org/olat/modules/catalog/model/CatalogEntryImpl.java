@@ -74,6 +74,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	
 	private Set<TaxonomyLevel> taxonomyLevels;
 	private boolean member;
+	private boolean participant;
 	private boolean reservationAvailable;
 	private boolean openAccess;
 	private boolean guestAccess;
@@ -84,7 +85,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private License license;
 	private final boolean singleCourseImplementation;
 	private Long singleCourseEntryKey;
-	private RepositoryEntryStatusEnum singleCourseEntryStartus;
+	private RepositoryEntryStatusEnum singleCourseEntryStatus;
 
 	private Integer myRating;
 	private final Double averageRating;
@@ -138,7 +139,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		curriculumElementTypeName = null;
 		singleCourseImplementation = false;
 		singleCourseEntryKey = null;
-		singleCourseEntryStartus = null;
+		singleCourseEntryStatus = null;
 		
 		olatResource = re.getOlatResource();
 	}
@@ -316,6 +317,15 @@ public class CatalogEntryImpl implements CatalogEntry {
 	}
 	
 	@Override
+	public boolean isParticipant() {
+		return participant;
+	}
+	
+	public void setParticipant(boolean participant) {
+		this.participant = participant;
+	}
+
+	@Override
 	public boolean isReservationAvailable() {
 		return reservationAvailable;
 	}
@@ -408,14 +418,14 @@ public class CatalogEntryImpl implements CatalogEntry {
 	}
 
 	@Override
-	public RepositoryEntryStatusEnum getSingleCourseEntryStartus() {
-		return singleCourseEntryStartus;
+	public RepositoryEntryStatusEnum getSingleCourseEntryStatus() {
+		return singleCourseEntryStatus;
 	}
 
 	public void setSingleCourse(RepositoryEntry singleCourse) {
 		if (singleCourse != null)  {
 			singleCourseEntryKey = singleCourse.getKey();
-			singleCourseEntryStartus = singleCourse.getEntryStatus();
+			singleCourseEntryStatus = singleCourse.getEntryStatus();
 		}
 	}
 

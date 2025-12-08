@@ -50,6 +50,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
+import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Order;
@@ -75,24 +76,37 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private ConfirmationController leaveConfirmationCtrl;
 	
 	private final CurriculumElement element;
-	private final RepositoryEntry entry;
 	private final Identity bookedIdentity;
+	private final RepositoryEntry entry;
 	private final boolean isMember;
-	private final boolean preview;
 
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	
+	
+	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl,
+			DetailsHeaderConfig config, CurriculumElement element) {
+		super(ureq, wControl, config);
+		this.element = element;
+		this.bookedIdentity = config.getBookedIdentity();
+		this.entry = null;
+		this.isMember = false;
+		
+		init(ureq);
+	}
+	
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			RepositoryEntry entry, Identity bookedIdentity, boolean isMember, boolean preview) {
+			RepositoryEntry entry, Identity bookedIdentity, boolean isMember) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.element = element;
-		this.bookedIdentity = preview? null: bookedIdentity;
-		this.isMember = preview? false: isMember;
-		this.preview = preview;
+		this.bookedIdentity = bookedIdentity;
+		this.isMember = isMember;
+		
+		// Remove isPreview() if this constructor is deleted.
+		// Get it from the secCallback.
 		
 		init(ureq);
 	}
@@ -143,14 +157,24 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
+	protected String getPendingMessageElementName() {
+		return element.getType().getDisplayName();
+	}
+	
+	@Override
+	protected String getLeaveText(boolean withFee) {
+		return withFee? translate("leave.cancel.fee"): translate("leave.cancel");
+	}
+
+	@Override
 	protected boolean isPreview() {
-		return preview;
+		return config != null && config.isOffersPreview();
 	}
 
 	@Override
 	protected void initAccess(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles() == null) {
-			initOffers(ureq, Boolean.TRUE);
+			initOffers(ureq, Boolean.TRUE, Boolean.FALSE);
 			return;
 		}
 		
@@ -174,22 +198,22 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			}
 			initLeaveButton();
 		} else {
-			if (!preview && (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
+			if (!isPreview() && (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
 					|| acService.getReservation(bookedIdentity, element.getResource()) != null)) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.getStartLink().setEnabled(false);
 				showInfoMessage(translate("access.denied.not.accepted.yet"));
 				initLeaveButton();
 			} else {
-				initOffers(ureq, null);
+				initOffers(ureq, null, isMember);
 			}
 		}
 	}
 
-	private void initOffers(UserRequest ureq, Boolean webPublish) {
-		AccessResult acResult = preview
+	private void initOffers(UserRequest ureq, Boolean webPublish, Boolean knownMember) {
+		AccessResult acResult = isPreview()
 				? acService.isAccessible(element, null, Boolean.FALSE, false, null, false)
-				: acService.isAccessible(element, bookedIdentity, isMember, false, webPublish, false);
+				: acService.isAccessible(element, bookedIdentity, knownMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
 			startCtrl.getInitialComponent().setVisible(true);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
@@ -203,7 +227,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 				return;
 			}
 			
-			if (!preview && acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
+			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.setAutoBooking(true);
 				if (element.isSingleCourseImplementation()) {
@@ -243,7 +267,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	private boolean canLeave() {
-		if (preview) {
+		if (isPreview()) {
 			return false;
 		}
 		
@@ -295,11 +319,6 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		return acService.getParticipantsAvailability(element.getMaxParticipants(), numParticipants, false);
 	}
 	
-	private String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {
-		return "<i class=\"o_icon " + ParticipantsAvailability.getIconCss(participantsAvailabilityNum) + "\"> </i> " 
-				+ ParticipantsAvailability.getText(getTranslator(), participantsAvailabilityNum);
-	}
-	
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", element.getType().getDisplayName());
@@ -307,7 +326,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 
 	@Override
 	protected boolean tryAutoBooking(UserRequest ureq) {
-		if (preview) {
+		if (isPreview()) {
 			return false; // Paranoia. Button should not be displayed anyway.
 		}
 		

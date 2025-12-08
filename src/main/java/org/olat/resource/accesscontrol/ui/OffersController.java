@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,8 +47,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OffersController extends BasicController {
 	
 	public static final Event LOGIN_EVENT = new Event("login.or.register");
+	public static final Event START_ADMIN_EVENT = new Event("offers.start.admin");
 
 	private final VelocityContainer mainVC;
+	private final Link startAdminLink;
 	
 	private OfferSelectionController offerSelectionCtrl;
 	private OfferDetailsController detailsCtrl;
@@ -76,6 +80,11 @@ public class OffersController extends BasicController {
 			mainVC.put("offerSelection", offerSelectionCtrl.getInitialComponent());
 		}
 		
+		startAdminLink = LinkFactory.createCustomLink("start.admin", "start.admin", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+		startAdminLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+		startAdminLink.setGhost(true);
+		startAdminLink.setVisible(false);
+		
 		updateOfferUI(ureq, offers.get(0));
 	}
 	
@@ -87,9 +96,15 @@ public class OffersController extends BasicController {
 		mainVC.contextPut("error", error);
 	}
 
+	public Link getStartAdminLink() {
+		return startAdminLink;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == startAdminLink) {
+			fireEvent(ureq, START_ADMIN_EVENT);
+		}
 	}
 
 	@Override

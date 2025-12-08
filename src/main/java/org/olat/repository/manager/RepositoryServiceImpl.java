@@ -938,9 +938,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public void filterMembership(IdentityRef identity, Collection<Long> entries) {
-		reToGroupDao.filterMembership(identity, entries);
+		reToGroupDao.filterByRoles(identity, entries, List.of(GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
 	}
-
+	
+	@Override
+	public void filterByRoles(IdentityRef identity, Collection<Long> entries, Collection<String> roles)  {
+		reToGroupDao.filterByRoles(identity, entries, roles);
+	}
+	
 	@Override
 	public int countMembers(RepositoryEntryRef re, String role) {
 		return reToGroupDao.countMembers(re, role);
@@ -966,6 +971,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		return reToGroupDao.getRoleToCountMembers(re, false, true);
 	}
 	
+	@Override
 	public Map<String, Long> getRoleToCountRootMembers(RepositoryEntryRef re) {
 		return reToGroupDao.getRoleToCountMembers(re, false, false);
 	}

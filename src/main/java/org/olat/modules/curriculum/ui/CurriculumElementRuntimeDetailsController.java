@@ -35,8 +35,8 @@ import org.olat.repository.RepositoryEntry;
 public class CurriculumElementRuntimeDetailsController extends CurriculumElementInfosController {
 	
 	public CurriculumElementRuntimeDetailsController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			RepositoryEntry entry, Identity bookedIdentity, boolean preview) {
-		super(ureq, wControl, element, entry, bookedIdentity, preview);
+			RepositoryEntry entry, Identity bookedIdentity) {
+		super(ureq, wControl, element, entry, bookedIdentity, null);
 	}
 	
 	@Override

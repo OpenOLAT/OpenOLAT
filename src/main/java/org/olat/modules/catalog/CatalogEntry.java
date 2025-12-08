@@ -95,6 +95,8 @@ public interface CatalogEntry {
 	
 	boolean isMember();
 	
+	boolean isParticipant();
+
 	boolean isReservationAvailable();
 	
 	boolean isOpenAccess();
@@ -115,7 +117,7 @@ public interface CatalogEntry {
 	
 	Long getSingleCourseEntryKey();
 	
-	RepositoryEntryStatusEnum getSingleCourseEntryStartus();
+	RepositoryEntryStatusEnum getSingleCourseEntryStatus();
 	
 	Integer getMyRating();
 	

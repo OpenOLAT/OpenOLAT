@@ -205,6 +205,8 @@ public interface RepositoryService {
 	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry);
 
 	public void filterMembership(IdentityRef identity, Collection<Long> entries);
+	
+	public void filterByRoles(IdentityRef identity, Collection<Long> entries, Collection<String> roles);
 
 	/**
 	 * Count the number of member with the specified role.

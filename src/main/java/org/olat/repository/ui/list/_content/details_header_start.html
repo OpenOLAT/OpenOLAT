@@ -19,6 +19,8 @@
 				#end
 				#if($r.available("leave") && $r.visible("leave"))
 					$r.render("leave")
+				#elseif($r.available("start.admin") && $r.visible("start.admin"))
+					$r.render("start.admin")
 				#end
 			</div>
 		</div>

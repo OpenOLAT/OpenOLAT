@@ -28,6 +28,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.catalog.CatalogEntrySecurityCallback;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -72,11 +73,11 @@ public class CatalogEntryRow {
 	private Set<String> taxonomyLevelDisplayNames;
 	private String taxonomyLevelTags;
 	private final boolean member;
+	private final boolean participant;
 	private final boolean reservationAvailable;
 	private final boolean openAccess;
 	private final boolean guestAccess;
 	private Set<String> accessMethodTypes;
-	private boolean autoBooking;
 	private String accessInfo;
 	private String accessInfoIconCssClass;
 	private String accessWarning;
@@ -85,6 +86,7 @@ public class CatalogEntryRow {
 	private final Long numParticipants;
 	private final Integer sortPriority;
 	private ParticipantsAvailabilityNum participantsAvailabilityNum;
+	private CatalogEntrySecurityCallback secCallback;
 	private final License license;
 	private final boolean singleCourseImplementation;
 	private final Long singleCourseEntryKey;
@@ -123,6 +125,7 @@ public class CatalogEntryRow {
 		olatResource = catalogEntry.getOlatResource();
 		taxonomyLevels = catalogEntry.getTaxonomyLevels();
 		member = catalogEntry.isMember();
+		participant = catalogEntry.isParticipant();
 		reservationAvailable = catalogEntry.isReservationAvailable();
 		openAccess = catalogEntry.isOpenAccess();
 		guestAccess = catalogEntry.isGuestAccess();
@@ -132,7 +135,7 @@ public class CatalogEntryRow {
 		license = catalogEntry.getLicense();
 		singleCourseImplementation = catalogEntry.isSingleCourseImplementation();
 		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
-		singleCourseEntryStatus = catalogEntry.getSingleCourseEntryStartus();
+		singleCourseEntryStatus = catalogEntry.getSingleCourseEntryStatus();
 		
 		averageRating = catalogEntry.getAverageRating();
 		
@@ -213,6 +216,10 @@ public class CatalogEntryRow {
 		return member;
 	}
 	
+	public boolean isParticipant() {
+		return participant;
+	}
+	
 	public boolean isReservationAvailable() {
 		return reservationAvailable;
 	}
@@ -244,6 +251,14 @@ public class CatalogEntryRow {
 	public Integer getSortPriority() {
 		return sortPriority;
 	}
+	
+	public CatalogEntrySecurityCallback getSecCallback() {
+		return secCallback;
+	}
+
+	public void setSecCallback(CatalogEntrySecurityCallback secCallback) {
+		this.secCallback = secCallback;
+	}
 
 	public Set<String> getAccessMethodTypes() {
 		return accessMethodTypes;
@@ -267,14 +282,6 @@ public class CatalogEntryRow {
 
 	public void setAccessInfoIconCssClass(String accessInfoIconCssClass) {
 		this.accessInfoIconCssClass = accessInfoIconCssClass;
-	}
-
-	public boolean isAutoBooking() {
-		return autoBooking;
-	}
-
-	public void setAutoBooking(boolean autoBooking) {
-		this.autoBooking = autoBooking;
 	}
 
 	public String getAccessWarning() {
@@ -431,15 +438,6 @@ public class CatalogEntryRow {
 					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStatus, RepositoryEntryStatusEnum.publishedAndClosed());
 		} if (curriculumElementStatus != null) {
 			return !CurriculumElementStatus.isInArray(curriculumElementStatus, CurriculumElementStatus.visibleUser());
-		}
-		
-		return false;
-	}
-	
-	public boolean isUnpublishedSingleCourseImplementation() {
-		if (isSingleCourseImplementation()) {
-			return singleCourseEntryStatus == null 
-					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStatus, RepositoryEntryStatusEnum.publishedAndClosed());
 		}
 		
 		return false;

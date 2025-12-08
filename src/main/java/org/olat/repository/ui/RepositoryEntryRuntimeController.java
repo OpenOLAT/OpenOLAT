@@ -70,9 +70,9 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -1131,7 +1131,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		Controller ctrl;
 		CurriculumElement curriculumElement = isInSingleCourseImplementation(entry);
 		if(curriculumElement != null) {
-			ctrl = new CurriculumElementRuntimeDetailsController(ureq, bwControl, curriculumElement, entry, getIdentity(), false);
+			ctrl = new CurriculumElementRuntimeDetailsController(ureq, bwControl, curriculumElement, entry, getIdentity());
 		} else {
 			ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, true);
 		}

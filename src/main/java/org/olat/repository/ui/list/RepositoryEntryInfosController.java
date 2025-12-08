@@ -43,7 +43,7 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 
 	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			boolean inRuntime) {
-		super(ureq, wControl, entry, false, true);
+		super(ureq, wControl, entry, false, true, null);
 		this.inRuntime = inRuntime;
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
