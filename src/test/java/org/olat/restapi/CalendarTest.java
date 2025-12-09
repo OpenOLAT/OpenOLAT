@@ -46,6 +46,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -386,7 +387,7 @@ public class CalendarTest extends OlatRestTestCase {
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(calMethod);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<CalendarVO> vos = parseArray(response);
+		List<CalendarVO> vos = conn.parseList(response, CalendarVO.class);
 		assertNotNull(vos);
 		assertTrue(2 <= vos.size());
 		CalendarVO calendar = getCourseCalendar(vos, course2);
@@ -425,7 +426,7 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void putCalendarEventWithLinks() throws IOException, URISyntaxException {
+	public void putCalendarEventWithIdAndLinks() throws IOException, URISyntaxException {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("calendar-");
 
 		RestConnection conn = new RestConnection(identity);
@@ -433,10 +434,10 @@ public class CalendarTest extends OlatRestTestCase {
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(calMethod);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<CalendarVO> vos = parseArray(response);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CalendarVO> vos = conn.parseList(response, CalendarVO.class);
 		CalendarVO calendar = getUserCalendar(vos);
-		assertNotNull(calendar);
+		Assert.assertNotNull(calendar);
 		
 		//create an event
 		EventVO event = new EventVO();
@@ -512,15 +513,85 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testPostCalendarEvents() throws IOException, URISyntaxException {
+	public void putAddUpdateCalendarEvent() throws IOException, URISyntaxException {
+		IdentityWithLogin idl = JunitTestHelper.createAndPersistRndUser("rest-cal-2");
+		RestConnection conn = new RestConnection(idl);
+		
+		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(idl.getKey().toString()).path("calendars").build();
+		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(calMethod);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CalendarVO> vos = conn.parseList(response, CalendarVO.class);
+		Assertions.assertThat(vos)
+			.hasSizeGreaterThanOrEqualTo(1);
+
+		CalendarVO calendar = getUserCalendar(vos);
+	
+		//create an event
+		EventVO event = new EventVO();
+		Calendar cal = Calendar.getInstance();
+		event.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event.setEnd(cal.getTime());
+		String subject = UUID.randomUUID().toString();
+		event.setSubject(subject);
+
+		// Add an event
+		URI addEventUri = UriBuilder.fromUri(getContextURI()).path("users").path(idl.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events").build();
+		HttpPut addEventMethod = conn.createPut(addEventUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(addEventMethod, new EventVO[] { event });
+		HttpResponse addEventResponse = conn.execute(addEventMethod);
+		Assert.assertEquals(200, addEventResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(addEventResponse.getEntity());
+		
+		// Get all events
+		URI getEventUri = UriBuilder.fromUri(getContextURI()).path("users").path(idl.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events").build();
+		HttpGet getEventMethod = conn.createGet(getEventUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse getEventResponse = conn.execute(getEventMethod);
+		Assert.assertEquals(200, getEventResponse.getStatusLine().getStatusCode());
+		List<EventVO> events = conn.parseList(getEventResponse, EventVO.class);
+		Assertions.assertThat(events)
+			.hasSize(1);
+		
+		EventVO reloadedEvent = events.stream()
+				.filter(e -> subject.equals(e.getSubject()))
+				.findFirst().orElse(null);	
+		Assert.assertNotNull(reloadedEvent);
+		
+		// Update event
+		reloadedEvent.setLocation("Geneva");
+		reloadedEvent.setColor("blue");
+		
+		URI updateEventUri = UriBuilder.fromUri(getContextURI()).path("users").path(idl.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events").build();
+		HttpPut updateEventMethod = conn.createPut(updateEventUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(updateEventMethod, new EventVO[] { reloadedEvent });
+		HttpResponse updateEventResponse = conn.execute(updateEventMethod);
+		Assert.assertEquals(200, updateEventResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(updateEventResponse.getEntity());
+		conn.shutdown();
+		
+		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(idl.getIdentity());
+		KalendarEvent updatedEvent = calendarWrapper.getKalendar().getEvents().stream()
+				.filter(e -> subject.equals(e.getSubject()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(updatedEvent);
+		Assert.assertEquals("Geneva", updatedEvent.getLocation());
+		Assert.assertEquals("blue", updatedEvent.getColor());
+	}
+	
+	@Test
+	public void postCalendarEvents() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection(id2);
 		
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(calMethod);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<CalendarVO> vos = parseArray(response);
-		assertTrue(vos != null && !vos.isEmpty());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CalendarVO> vos = conn.parseList(response, CalendarVO.class);
+		Assert.assertTrue(vos != null && !vos.isEmpty());
 		CalendarVO calendar = getCourseCalendar(vos, course2);
 		Assert.assertNotNull(calendar);
 		
@@ -556,7 +627,7 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testAttributeMapping() throws IOException, URISyntaxException {
+	public void attributeMapping() throws IOException, URISyntaxException {
 		// create a user and login
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("cal-3");
 		RestConnection conn = new RestConnection(identity);
@@ -631,7 +702,7 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetPersonalCalendarEventWithLink() throws IOException, URISyntaxException {
+	public void getPersonalCalendarEventWithLink() throws IOException, URISyntaxException {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("cal-perso");
 		
 		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity.getIdentity());
@@ -647,30 +718,29 @@ public class CalendarTest extends OlatRestTestCase {
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(calMethod);
-		List<CalendarVO> vos = parseArray(response);
+		List<CalendarVO> vos = conn.parseList(response, CalendarVO.class);
 		CalendarVO calendar = getUserCalendar(vos);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString())
 				.path("calendars").path(calendar.getId()).path("events").build();
 		HttpGet eventMethod = conn.createGet(eventUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse eventResponse = conn.execute(eventMethod);
-		assertEquals(200, eventResponse.getStatusLine().getStatusCode());
-		
-		List<EventVO> events = parseEventArray(eventResponse);
-		assertNotNull(events);
-		assertEquals(1, events.size());
+		Assert.assertEquals(200, eventResponse.getStatusLine().getStatusCode());
+		List<EventVO> events = conn.parseList(eventResponse, EventVO.class);
+		Assert.assertNotNull(events);
+		Assert.assertEquals(1, events.size());
 		
 		EventVO eventVo = events.get(0);
 		EventLinkVO[] links = eventVo.getLinks();
-		assertNotNull(links);
-		assertEquals(1, links.length);
+		Assert.assertNotNull(links);
+		Assert.assertEquals(1, links.length);
 		
 		EventLinkVO linkVo = links[0];
-		assertEquals("appointments", linkVo.getProvider());
-		assertEquals("app-01", linkVo.getId());
-		assertEquals("Termin", linkVo.getDisplayName());
-		assertEquals("https://www.openolat.org", linkVo.getUri());
-		assertEquals("o_icon", linkVo.getIconCssClass());
+		Assert.assertEquals("appointments", linkVo.getProvider());
+		Assert.assertEquals("app-01", linkVo.getId());
+		Assert.assertEquals("Termin", linkVo.getDisplayName());
+		Assert.assertEquals("https://www.openolat.org", linkVo.getUri());
+		Assert.assertEquals("o_icon", linkVo.getIconCssClass());
 		
 		conn.shutdown();
 	}
@@ -722,7 +792,7 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testDeletePersonalCalendarEvents() throws IOException, URISyntaxException {
+	public void deletePersonalCalendarEvents() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection(id2);
 		
 		//check if the event is saved

@@ -285,11 +285,8 @@ public class CalWebService {
 			}
 		}
 
-		if(!kalEventToAdd.isEmpty()) {
-			calendarManager.addEventTo(calendar.getKalendar(), kalEventToAdd);
-		}
-		if(!kalEventToUpdate.isEmpty()) {
-			calendarManager.updateEventsFrom(calendar.getKalendar(), kalEventToUpdate);
+		if(!kalEventToAdd.isEmpty() || !kalEventToUpdate.isEmpty()) {
+			calendarManager.updateCalendar(calendar.getKalendar(), kalEventToAdd, kalEventToUpdate);
 		}
 		return Response.ok().build();
 	}
