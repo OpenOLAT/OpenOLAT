@@ -47,6 +47,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -130,6 +131,8 @@ public class QualityServiceImpl
 	
 	private static final String REPORT_MEMBER_ROLE = "member";
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
@@ -316,6 +319,7 @@ public class QualityServiceImpl
 				reportAccessDao.deleteUnappropriated(of(updatedDataCollection));
 				sendDoneMails(dataCollection);
 			}
+			dbInstance.commit();
 			log.info("Status of quality data collection updated to " + status + ". " + updatedDataCollection.toString());
 		} catch (Exception e) {
 			log.error("Update of status of quality data collection to " + status + " failed! " + dataCollection.toString(), e);
@@ -804,6 +808,7 @@ public class QualityServiceImpl
 					sendReminder(reminder);
 				}
 				reminderDao.updateDateDone(reminder, until);
+				dbInstance.commit();
 			} catch (Exception e) {
 				log.error("Send reminder of quality data collection failed!" + reminder.toString(), e);
 			}
