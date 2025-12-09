@@ -94,7 +94,7 @@ public class CertificationProgramMailQueries {
 		}
 		
 		// Certificate validity goes up to 23:59:59, add an additional day to catch the late time
-		Date up = DateUtils.getStartOfDay(configuration.getTimeUnit().toDate(referenceDate, configuration.getTime() + 1));
+		Date up = getNextDay(configuration, referenceDate);
 
 		String query = """
 				select cer from certificate as cer
@@ -123,8 +123,14 @@ public class CertificationProgramMailQueries {
 		Date to = configuration.getTimeUnit() == null
 				? DateUtils.addYears(referenceDate, 36)// A lot
 				// Certificate recertification window goes up to 23:59:59, add an additional day to catch the late time
-				: DateUtils.getStartOfDay(configuration.getTimeUnit().toDate(referenceDate, configuration.getTime() + 1));
+				: getNextDay(configuration, referenceDate);
 		return getOverdueCertificates(configuration, referenceDate, to);
+	}
+	
+	private Date getNextDay(CertificationProgramMailConfiguration configuration, Date referenceDate) {
+		Date d = configuration.getTimeUnit().toDate(referenceDate, configuration.getTime());
+		Date nextDays = DateUtils.addDays(d, 1);
+		return DateUtils.getStartOfDay(nextDays);
 	}
 	
 	/**
