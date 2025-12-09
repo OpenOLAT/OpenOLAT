@@ -191,7 +191,7 @@ public class RemindersPage {
 		
 		//enter time
 		By timeBy = By.cssSelector("div.o_sel_row-" + pos + " input[type='text']");
-		browser.findElement(timeBy).sendKeys(Integer.toString(time));
+		OOGraphene.clearAndSendKeys(timeBy, Integer.toString(time), browser);
 		
 		//select time unit
 		By selectUnitBy = By.xpath("//div[contains(@class,'o_sel_row-" + pos + "')]//select[contains(@name,'launchunit')]");
