@@ -125,7 +125,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 
 	private File fStorageBase;
 	// o_clusterOK by:cg 
-	private CacheWrapper<String, Kalendar> calendarCache;
+	private CacheWrapper<String, Kalendar> courseCalendarCache;
+	private CacheWrapper<String, Kalendar> groupCalendarCache;
+	private CacheWrapper<String, Kalendar> defaultCalendarCache;
 
 	private static final Clazz ICAL_CLASS_PRIVATE = new Clazz("PRIVATE");
 	private static final Clazz ICAL_CLASS_PUBLIC = new Clazz("PUBLIC");
@@ -162,7 +164,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// set parser to relax (needed for allday events
 		// see http://sourceforge.net/forum/forum.php?thread_id=1253735&forum_id=368291
 		// made in module System.setProperty("ical4j.unfolding.relaxed", "true");
-		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
+		courseCalendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "coursecalendar");
+		groupCalendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "groupcalendar");
+		defaultCalendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
 	}
 	
 	/**
@@ -188,7 +192,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public Kalendar getCalendar(final String type, final String calendarID) {
 		String key = getKeyFor(type, calendarID);
-		Kalendar cal = calendarCache.get(key);
+		Kalendar cal = getCache(type).get(key);
 		if(cal == null) {
 			cal = getCalendarFromCache(type, calendarID);
 		}
@@ -196,16 +200,20 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 
 	private Kalendar getCalendarFromCache(final String callType, final String callCalendarID) {
-		String calKey = getKeyFor(callType,callCalendarID);	
-		Kalendar cal = calendarCache.get(calKey);
-		if (cal == null) {
-			cal = loadOrCreateCalendar(callType, callCalendarID);
-			Kalendar cacheCal = calendarCache.putIfAbsent(calKey, cal);
-			if(cacheCal != null) {
-				cal = cacheCal;
-			}
+		final String calKey = getKeyFor(callType,callCalendarID);	
+		return getCache(callType).computeIfAbsent(calKey, k -> {
+			return loadOrCreateCalendar(callType, callCalendarID);	
+		});
+	}
+	
+	private CacheWrapper<String, Kalendar> getCache(String type) {
+		if(CalendarManager.TYPE_COURSE.equals(type)) {
+			return courseCalendarCache;
 		}
-		return cal;
+		if(CalendarManager.TYPE_GROUP.equals(type)) {
+			return groupCalendarCache;
+		}
+		return defaultCalendarCache;
 	}
 	
 	/**
@@ -352,7 +360,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	public boolean persistCalendar(Kalendar kalendar) {
 		Calendar calendar = buildCalendar(kalendar);
 		boolean success = writeCalendarFile(calendar, kalendar.getType(), kalendar.getCalendarID());
-		calendarCache.update(getKeyFor(kalendar.getType(), kalendar.getCalendarID()), kalendar);
+		getCache(kalendar.getType()).update(getKeyFor(kalendar.getType(), kalendar.getCalendarID()), kalendar);
 		return success;
 	}
 	
@@ -373,7 +381,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	 */
 	@Override
 	public boolean deleteCalendar(String type, String calendarID) {
-		calendarCache.remove( getKeyFor(type,calendarID) );
+		getCache(type).remove(getKeyFor(type,calendarID));
 		File fKalendarFile = getCalendarFile(type, calendarID);
 		return fKalendarFile.delete();
 	}
@@ -1005,18 +1013,23 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 
 	@Override
 	public boolean addEventTo(final Kalendar cal, final KalendarEvent kalendarEvent) {
-		return addEventTo(cal, Collections.singletonList(kalendarEvent));
+		return updateCalendar(cal, List.of(kalendarEvent), List.of());
   }
 	
 	@Override
-	public boolean addEventTo(final Kalendar cal, final List<KalendarEvent> kalendarEvents) {
+	public boolean updateCalendar(final Kalendar cal, final List<KalendarEvent> newEvents, final List<KalendarEvent> modifiedEvents) {
 		OLATResourceable calOres = getOresHelperFor(cal);
 		Boolean persistSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, () -> {
 			Kalendar loadedCal = getCalendarFromCache(cal.getType(),cal.getCalendarID());
-			for(KalendarEvent kalendarEvent:kalendarEvents) {
-				loadedCal.addEvent(kalendarEvent);
-				kalendarEvent.resetImmutableDates();
+			for(KalendarEvent newEvent:newEvents) {
+				loadedCal.addEvent(newEvent);
+				newEvent.resetImmutableDates();
 			}
+			for(KalendarEvent modifiedEvent:modifiedEvents) {
+				loadedCal.removeEvent(modifiedEvent);
+				loadedCal.addEvent(modifiedEvent);
+			}
+			
 			boolean successfullyPersist = persistCalendar(loadedCal);
 			return Boolean.valueOf(successfullyPersist);
 		});
@@ -1144,26 +1157,6 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
     }
 
 	@Override
-	public boolean updateEventsFrom(Kalendar cal, List<KalendarEvent> kalendarEvents) {
-		final OLATResourceable calOres = getOresHelperFor(cal);
-		Boolean updatedSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, () -> {
-			Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
-			for(KalendarEvent kalendarEvent:kalendarEvents) {
-				loadedCal.removeEvent(kalendarEvent); // remove old event
-				loadedCal.addEvent(kalendarEvent); // add changed event
-			}
-			boolean successfullyPersist = persistCalendar(loadedCal);
-			// inform all controller about calendar change for reload
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new CalendarGUIModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
-			return successfullyPersist;
-		});
-		return updatedSuccessful.booleanValue();
-	}
-
-	/**
-	 * @see org.olat.commons.calendar.CalendarManager#updateEventFrom(org.olat.commons.calendar.model.Kalendar, org.olat.commons.calendar.model.KalendarEvent)
-	 */
-	@Override
 	public boolean updateEventAlreadyInSync(final Kalendar cal, final KalendarEvent kalendarEvent) {
 		OLATResourceable calOres = getOresHelperFor(cal);
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(calOres);
@@ -1267,7 +1260,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	 * @param callCalendarID
 	 * @return
 	 */
-	protected Kalendar loadOrCreateCalendar(final String callType, final String callCalendarID) {
+	private Kalendar loadOrCreateCalendar(final String callType, final String callCalendarID) {
 		if (!calendarExists(callType, callCalendarID)) {
 			return createCalendar(callType, callCalendarID);
 		} else {

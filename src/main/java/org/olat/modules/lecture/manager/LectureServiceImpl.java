@@ -1997,7 +1997,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			eventsToAdd.add(createEvent(entryToAdd.getValue(), entry));
 		}
 		if(!eventsToAdd.isEmpty()) {
-			calendarMgr.addEventTo(cal, eventsToAdd);
+			calendarMgr.updateCalendar(cal, eventsToAdd, List.of());
 		}
 	}
 	

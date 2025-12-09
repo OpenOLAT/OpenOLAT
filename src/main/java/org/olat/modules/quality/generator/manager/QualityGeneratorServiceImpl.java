@@ -236,6 +236,7 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	private void generateDataCollection(QualityGenerator generator, QualityGeneratorOverrides overrides) {
 		try {
 			tryToGenerateDataCollection(generator, overrides);
+			dbInstance.commit();
 		} catch (Exception e) {
 			log.error("Error while generating data collection from generator " + generator.toString(), e);
 		}

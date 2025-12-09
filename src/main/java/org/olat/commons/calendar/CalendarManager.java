@@ -286,13 +286,14 @@ public interface CalendarManager {
 	public boolean addEventTo(Kalendar cal, KalendarEvent kalendarEvent);
 	
 	/**
-	 * Add a list of events to a given calendar and save it.
+	 * Add and update a list of events to a given calendar and save it.
 	 * 
-	 * @param cal
-	 * @param kalendarEvents
+	 * @param cal The calendar
+	 * @param newEvents List of events to add to the calendar
+	 * @param modifiedEvents List of events which was modified in the calendar
 	 * @return
 	 */
-	public boolean addEventTo(Kalendar cal, List<KalendarEvent> kalendarEvents);
+	public boolean updateCalendar(Kalendar cal, List<KalendarEvent> newEvents, List<KalendarEvent> modifiedEvents);
 
 	/**
 	 * Remove an event from given calendar and save calendar. In the case of
@@ -334,15 +335,6 @@ public interface CalendarManager {
 	 * @return true if success
 	 */
 	public boolean updateEventFrom(Kalendar cal, KalendarEvent kalendarEvent);
-	
-	/**
-	 * Update a list of events fron a given calendar and save it.
-	 * 
-	 * @param cal
-	 * @param kalendarEvent
-	 * @return
-	 */
-	public boolean updateEventsFrom(Kalendar cal, List<KalendarEvent> kalendarEvents);
 	
 	/**
 	 * Update an event of given calendar and save calendar. Use this method if the Kalendar is already in a doInSync.

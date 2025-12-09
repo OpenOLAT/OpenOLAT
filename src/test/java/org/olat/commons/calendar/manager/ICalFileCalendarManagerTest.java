@@ -96,6 +96,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
 		Cacher cacher = coordinator.getCoordinator().getCacher();
 		cacher.getCacheContainer().getCache("CalendarManager-calendar").clear();
+		cacher.getCacheContainer().getCache("CalendarManager-coursecalendar").clear();
+		cacher.getCacheContainer().getCache("CalendarManager-groupcalendar").clear();
 	}
 	
 	@Test
