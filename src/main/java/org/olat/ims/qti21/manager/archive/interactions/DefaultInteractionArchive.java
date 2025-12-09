@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -53,7 +54,7 @@ public class DefaultInteractionArchive implements InteractionArchive {
 	}
 
 	@Override
-	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		String choosed = response == null ? null : response.getStringuifiedResponse();
 		dataRow.addCell(col++, choosed, null);
 		return col;

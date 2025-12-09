@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -88,7 +89,7 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
-			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		MatchInteraction matchInteraction = (MatchInteraction)interaction;
 
 		boolean kprim = isKPrim(matchInteraction);

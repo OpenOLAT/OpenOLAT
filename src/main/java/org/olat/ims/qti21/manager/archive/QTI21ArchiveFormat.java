@@ -603,7 +603,7 @@ public class QTI21ArchiveFormat {
 						AssessmentResponse response = responses
 								 .getResponse(itemRefIdentifier, interaction.getResponseIdentifier());
 						col = interactionArchiveMap.get(interaction.getQtiClassName())
-									.writeInteractionData(item.getAssessmentItem(), response, interaction, j, dataRow, col, workbook);
+									.writeInteractionData(item.getAssessmentItem(), response, interaction, j, dataRow, col, workbook, translator);
 					}
 				}
 			

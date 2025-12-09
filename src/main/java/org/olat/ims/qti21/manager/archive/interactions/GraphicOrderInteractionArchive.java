@@ -21,6 +21,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -71,7 +72,7 @@ public class GraphicOrderInteractionArchive extends DefaultInteractionArchive {
 	}
 
 	@Override
-	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		GraphicOrderInteraction orderInteraction = (GraphicOrderInteraction)interaction;
 
 		List<HotspotChoice> choices = orderInteraction.getHotspotChoices();

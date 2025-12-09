@@ -22,6 +22,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -72,7 +73,7 @@ public class GapMatchInteractionArchive extends DefaultInteractionArchive  {
 	
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
-			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		
 		List<Gap> gaps = getGaps(interaction);
 		if(gaps.size() > 0) {

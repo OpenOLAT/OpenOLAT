@@ -22,6 +22,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -71,7 +72,7 @@ abstract class AbstractAssociateInteractionArchive extends DefaultInteractionArc
 
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
-			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		int maxAssociation = getMaxAssociations(interaction);
 		
 		String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();

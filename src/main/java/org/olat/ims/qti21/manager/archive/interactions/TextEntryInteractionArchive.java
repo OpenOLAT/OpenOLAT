@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -47,7 +48,7 @@ public class TextEntryInteractionArchive extends DefaultInteractionArchive {
 
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
-			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		
 		String stringuifiedResponses = response == null ? null : response.getStringuifiedResponse();
 		if(StringHelper.containsNonWhitespace(stringuifiedResponses)) {

@@ -21,6 +21,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -65,7 +66,7 @@ public abstract class AbstractChoiceInteractionArchive extends DefaultInteractio
 	}
 
 	@Override
-	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook, Translator translator) {
 		String stringuifiedResponses = response == null ? null : response.getStringuifiedResponse();
 		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(item, interaction);
 		List<? extends Choice> choices = getChoices(interaction);
