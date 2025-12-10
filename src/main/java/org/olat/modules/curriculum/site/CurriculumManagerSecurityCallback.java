@@ -51,8 +51,8 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 		if(roles == null || roles.isGuestOnly()) return false;
 		
 		Identity id = ureq.getIdentity();
-		return roles != null && (roles.isAdministrator() || roles.isCurriculumManager()
+		return roles.isAdministrator() || roles.isCurriculumManager()
 				|| curriculumService.isCurriculumOwner(id)
-				|| certificationProgramService.isCertificationProgramOwner(id));
+				|| certificationProgramService.isCertificationProgramOwner(id);
 	}
 }

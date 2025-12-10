@@ -21,8 +21,10 @@ package org.olat.modules.curriculum.site;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.CurriculumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,14 +42,19 @@ public class CurriculumManagerAndOwnerSecurityCallback implements SiteSecurityCa
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
 		if(usess == null ) return false;
-		
 		Roles roles = usess.getRoles();
-		return roles != null && (roles.isAdministrator() || roles.isCurriculumManager()
-				|| curriculumService.isCurriculumOrElementOwner(ureq.getIdentity()));
+		if(roles == null || roles.isGuestOnly()) return false;
+		
+		Identity id = ureq.getIdentity();
+		return roles.isAdministrator() || roles.isCurriculumManager()
+				|| curriculumService.isCurriculumOrElementOwner(ureq.getIdentity())
+				|| certificationProgramService.isCertificationProgramOwner(id);
 	}
 }
