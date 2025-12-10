@@ -112,7 +112,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	@Override
 	public boolean isLocked(VFSItem item, VFSMetadata metadata, VFSLockApplicationType type, String appName) {
 		LockInfo lock = getLockInfo(item, metadata);
-		return lock != null && lock.isLocked();
+		return lock != null && lock.isLocked() && item.exists();
 	}
 	
 	@Override
@@ -256,13 +256,13 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	@Override
 	public LockInfo getLockInfo(VFSItem item, VFSMetadata metadata) {
 		final File file = extractFile(item);
-		if(file == null || !file.exists()) {
+		if(file == null) {
 			log.debug("Lock only real file: {}", item);
 			return null;// we only lock real files
 		}
 		
 		LockInfo lock = fileLocks.get(file);
-		if(lock == null && (metadata == null || metadata.isLocked())) {
+		if(lock == null && (metadata == null || metadata.isLocked()) && file.exists()) {
 			lock = fileLocks.computeIfAbsent(file, f -> {
 				VFSMetadata theMetadata;
 				if(metadata == null) {

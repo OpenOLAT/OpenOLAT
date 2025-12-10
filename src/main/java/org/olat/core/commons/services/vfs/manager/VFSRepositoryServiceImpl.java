@@ -439,7 +439,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		File file = toFile(metadata);
 		if(file.isDirectory()) {
-			return new LocalFolderImpl(file);
+			// If the file is a directory, it exists
+			return new LocalFolderImpl(file, null, true);
 		}
 		return new LocalFileImpl(file);
 	}
@@ -538,7 +539,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean directory, Boolean deleted) {
 		Long descendantSize = metadataDao.getDescendantsSize(parentMetadata, directory, deleted);
-		Long revisionsSize = revisionDao.getRevisionsSize(parentMetadata, deleted);
+		Long revisionsSize = versionModule.isEnabled()
+				? revisionDao.getRevisionsSize(parentMetadata, deleted)
+				: Long.valueOf(0l);
 		return descendantSize + revisionsSize;
 	}
 

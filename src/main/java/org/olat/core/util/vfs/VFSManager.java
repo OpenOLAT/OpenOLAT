@@ -441,10 +441,17 @@ public class VFSManager {
 	 * @return
 	 */
 	public static long getUsageKB(VFSItem vfsItem) {
+		if (vfsItem instanceof NamedContainerImpl namedContainer) {
+			vfsItem = namedContainer.getDelegate();
+		}
 		if (vfsItem instanceof VFSContainer) {
 			// VFSContainer
-			if (vfsItem instanceof LocalFolderImpl)
+			if (vfsItem instanceof LocalFolderImpl localFolder) {
+				if (VFSStatus.YES == localFolder.canDescendants()) {
+					return CoreSpringFactory.getImpl(VFSRepositoryService.class).getDescendantsSize(localFolder.getMetaInfo(), Boolean.FALSE, null) / 1024l;
+				}
 				return FileUtils.getDirSize(((LocalFolderImpl)vfsItem).getBasefile()) / 1024;
+			}
 			long usageKB = 0;
 			List<VFSItem> children = ((VFSContainer)vfsItem).getItems();
 			for (VFSItem child:children) {
