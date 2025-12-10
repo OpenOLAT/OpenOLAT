@@ -1107,7 +1107,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		} else if (row.getCurriculumElementKey() != null) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(() -> row.getCurriculumElementKey());
 			if (curriculumElement != null) {
-				AccessResult acResult = acService.isAccessible(curriculumElement, searchParams.getMember(), row.isMember(), searchParams.isGuestOnly(), null, false);
+				AccessResult acResult = acService.isAccessible(curriculumElement, searchParams.getMember(), row.isParticipant(), searchParams.isGuestOnly(), null, false);
 				if (acResult.isAccessible()) {
 					doOpenResource(ureq, row);
 					return;
