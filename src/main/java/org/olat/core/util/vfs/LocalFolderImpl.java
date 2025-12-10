@@ -82,15 +82,18 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	 * @param folderFile The real file of type directory wrapped by this VFSContainer
 	 */
 	public LocalFolderImpl(File folderFile) {
-		this(folderFile, null);
+		this(folderFile, null, folderFile.exists());
 	}
 	
 	/**
 	 * @param folderfile
 	 */
 	public LocalFolderImpl(File folderfile, VFSContainer parent) {
+		this(folderfile, parent, folderfile.exists());
+	}
+	
+	public LocalFolderImpl(File folderfile, VFSContainer parent, boolean alreadyExists) {
 		super(folderfile, parent);
-		boolean alreadyExists = folderfile.exists();
 		boolean succesfullCreated = alreadyExists || folderfile.mkdirs();
 		//check against concurrent creation of the folder, mkdirs return false if the directory exists
 		if (!alreadyExists && !succesfullCreated && folderfile.exists()) {
@@ -135,7 +138,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			File af = children[i];
 			VFSItem item;
 			if (af.isDirectory()) {
-				LocalFolderImpl folderItem = new LocalFolderImpl(af, this);
+				LocalFolderImpl folderItem = new LocalFolderImpl(af, this, true);
 				folderItem.setDefaultItemFilter(defaultFilter);
 				item = folderItem;
 			} else {
@@ -387,9 +390,8 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			return VFSSuccess.SUCCESS;
 		}
 		
-		long usage = VFSManager.getUsageKB(this);
 		long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
-		if (quotaLeft != Quota.UNLIMITED && quotaLeft < usage) {
+		if (quotaLeft != Quota.UNLIMITED && quotaLeft < 0) {
 			return VFSSuccess.ERROR_QUOTA_EXCEEDED;
 		}
 		
@@ -519,7 +521,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		if (!fNewFile.mkdir()) {
 			return null;
 		}
-		LocalFolderImpl locFI =  new LocalFolderImpl(fNewFile, this);
+		LocalFolderImpl locFI =  new LocalFolderImpl(fNewFile, this, true);
 		locFI.setDefaultItemFilter(defaultFilter);
 		locFI.getMetaInfo(); //init metadata
 		return locFI;

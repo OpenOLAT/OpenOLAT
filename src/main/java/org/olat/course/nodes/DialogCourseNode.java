@@ -51,7 +51,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -520,7 +519,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode
 			Long forumKey = dialogElement.getForum().getKey();
 			String path = "/forum/" + forumKey;
 			VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
-			totalUsedKb += VFSManager.getUsageKB(new NamedContainerImpl(this.getShortTitle(), rootFolder));
+			totalUsedKb += VFSManager.getUsageKB(rootFolder);
 		}
 		return totalUsedKb;
 	}
