@@ -19,6 +19,8 @@
  */
 package org.olat.repository.model;
 
+import java.util.Objects;
+
 /**
  * 
  * Initial date: 18 Jan 2021<br>
@@ -29,10 +31,14 @@ public class RepositoryEntryEducationalTypeStat {
 	
 	private final Long educationalTypeKey;
 	private final Long numberOfRepositoryEntries;
+	private final Long numberOfCurriculumElements;
+	private final Long total;
 	
-	public RepositoryEntryEducationalTypeStat(Long educationalTypeKey, Long numberOfRepositoryEntries) {
+	public RepositoryEntryEducationalTypeStat(Long educationalTypeKey, Long numberOfRepositoryEntries, Long numberOfCurriculumElements) {
 		this.educationalTypeKey = educationalTypeKey;
-		this.numberOfRepositoryEntries = numberOfRepositoryEntries;
+		this.numberOfRepositoryEntries = Objects.requireNonNullElse(numberOfRepositoryEntries, Long.valueOf(0));
+		this.numberOfCurriculumElements = Objects.requireNonNullElse(numberOfCurriculumElements, Long.valueOf(0));
+		this.total = this.numberOfRepositoryEntries + this.numberOfCurriculumElements;
 	}
 
 	public Long getEducationalTypeKey() {
@@ -41,6 +47,14 @@ public class RepositoryEntryEducationalTypeStat {
 	
 	public Long getNumberOfRepositoryEntries() {
 		return numberOfRepositoryEntries;
+	}
+	
+	public Long getNumberOfCurriculumElements() {
+		return numberOfCurriculumElements;
+	}
+
+	public Long getTotal() {
+		return total;
 	}
 	
 }

@@ -72,6 +72,7 @@ import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumImpl;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -1378,6 +1379,20 @@ public class CurriculumElementDAO {
 			}
 		}
 		return new ArrayList<>(memberships.values());
+	}
+	
+	public void removeEducationalType(RepositoryEntryEducationalType educationalType) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update curriculumelement ce");
+		sb.append("   set ce.educationalType = null");
+		sb.append("     , ce.lastModified = :now");
+		sb.and().append("ce.educationalType.key = :educationalTypeKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("now", new Date())
+				.setParameter("educationalTypeKey", educationalType.getKey())
+				.executeUpdate();
 	}
 	
 	private final boolean and(StringBuilder sb, boolean and) {

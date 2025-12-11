@@ -20,7 +20,11 @@
 package org.olat.repository.manager;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -125,17 +129,36 @@ public class RepositoryEntryEducationalTypeDAO {
 
 	public List<RepositoryEntryEducationalTypeStat> loadStats() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.repository.model.RepositoryEntryEducationalTypeStat(");
-		sb.append("       re.educationalType.key as key");
-		sb.append("     , count(*) as countRe");
-		sb.append("       )");
+		sb.append("select re.educationalType.key");
+		sb.append("     , count(*)");
 		sb.append("  from repositoryentry as re");
 		sb.append(" where re.educationalType.key is not null");
 		sb.append(" group by re.educationalType.key");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryEducationalTypeStat.class)
-				.getResultList();
+		Map<Long, Long> keyToReCount = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.getResultList()
+				.stream()
+				.collect(Collectors.toMap(object -> (Long) object[0], object -> (Long) object[1]));
+		
+		sb = new StringBuilder();
+		sb.append("select ce.educationalType.key");
+		sb.append("     , count(*)");
+		sb.append("  from curriculumelement as ce");
+		sb.append(" where ce.educationalType.key is not null");
+		sb.append(" group by ce.educationalType.key");
+		
+		Map<Long, Long> keyToCeCount =dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.getResultList()
+				.stream()
+				.collect(Collectors.toMap(object -> (Long) object[0], object -> (Long) object[1]));
+		
+		Set<Long> keys = new HashSet<>(keyToReCount.keySet());
+		keys.addAll(keyToCeCount.keySet());
+		return keys.stream()
+				.map(key -> new RepositoryEntryEducationalTypeStat(key, keyToReCount.get(key), keyToCeCount.get(key)))
+				.toList();
 	}
 
 }
