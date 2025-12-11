@@ -22,6 +22,7 @@ package org.olat.repository.ui.admin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -107,7 +108,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(transCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.cssClass));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.presetMyCourses));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.numberOfCourses));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.numberUsage));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(EducationalTypeCols.edit.i18nHeaderKey(),
 				EducationalTypeCols.edit.ordinal(), CMD_EDIT,
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(EducationalTypeCols.edit.i18nHeaderKey()), CMD_EDIT), null));
@@ -124,15 +125,17 @@ public class EducationalTypeAdminController extends FormBasicController {
 	
 	private void loadModel() {
 		List<RepositoryEntryEducationalType> types = repositoryManager.getAllEducationalTypes();
-		Map<Long, Long> typeKeyToNumberOfEntries = repositoryManager.getEducationalTypeStats().stream()
-				.collect(Collectors.toMap(RepositoryEntryEducationalTypeStat::getEducationalTypeKey, RepositoryEntryEducationalTypeStat::getNumberOfRepositoryEntries));
+		Map<Long, RepositoryEntryEducationalTypeStat> typeKeyToStat = repositoryManager.getEducationalTypeStats().stream()
+				.collect(Collectors.toMap(RepositoryEntryEducationalTypeStat::getEducationalTypeKey, Function.identity()));
 		List<EducationalTypeRow> rows = new ArrayList<>(types.size());
 		for (RepositoryEntryEducationalType type : types) {
 			EducationalTypeRow row = new EducationalTypeRow(type);
 			String translation = translate(RepositoyUIFactory.getI18nKey(type));
 			row.setTranslation(translation);
-			Long numberOfCourse = typeKeyToNumberOfEntries.get(type.getKey());
-			row.setNumberOfCourse(numberOfCourse);
+			RepositoryEntryEducationalTypeStat stat = typeKeyToStat.get(type.getKey());
+			if (stat != null) {
+				row.setNumberUsage(stat.getTotal());
+			}
 			
 			MultipleSelectionElement presetEl = uifactory.addCheckboxesHorizontal("preset_" + type.getKey(), null, dummyCont, onKeys, onValues);
 			presetEl.setAjaxOnly(true);

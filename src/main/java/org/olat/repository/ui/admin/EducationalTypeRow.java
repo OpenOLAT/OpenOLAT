@@ -32,7 +32,7 @@ public class EducationalTypeRow {
 	
 	private final RepositoryEntryEducationalType educationalType;
 	private String translation;
-	private Long numberOfCourse;
+	private Long numberUsage;
 	private MultipleSelectionElement presetMyCoursesEl;
 
 	public EducationalTypeRow(RepositoryEntryEducationalType educationalType) {
@@ -51,12 +51,12 @@ public class EducationalTypeRow {
 		this.translation = translation;
 	}
 
-	public Long getNumberOfCourse() {
-		return numberOfCourse;
+	public Long getNumberUsage() {
+		return numberUsage;
 	}
 
-	public void setNumberOfCourse(Long numberOfCourse) {
-		this.numberOfCourse = numberOfCourse;
+	public void setNumberUsage(Long numberUsage) {
+		this.numberUsage = numberUsage;
 	}
 
 	public MultipleSelectionElement getPresetMyCoursesEl() {
