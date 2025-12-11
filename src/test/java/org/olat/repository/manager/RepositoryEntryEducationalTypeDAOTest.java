@@ -30,10 +30,15 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryEducationalTypeImpl;
 import org.olat.repository.model.RepositoryEntryEducationalTypeStat;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,6 +54,8 @@ public class RepositoryEntryEducationalTypeDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	@Autowired
 	private RepositoryEntryEducationalTypeDAO sut;
@@ -155,19 +162,35 @@ public class RepositoryEntryEducationalTypeDAOTest extends OlatTestCase {
 				null, null, null, null, null, null, null, null, null, null, educationalType2);
 		repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(), null, random(), random(),
 				null, null, null, null, null, null, null, null, null, null, educationalType2);
+		CurriculumElement curriculumElement1 = createCurriculumElement();
+		curriculumElement1.setEducationalType(educationalType2);
+		curriculumService.updateCurriculumElement(curriculumElement1);
 		RepositoryEntryEducationalType educationalType3 = sut.create(random());
+		CurriculumElement curriculumElement2 = createCurriculumElement();
+		curriculumElement2.setEducationalType(educationalType3);
+		curriculumService.updateCurriculumElement(curriculumElement2);
+		RepositoryEntryEducationalType educationalType4 = sut.create(random());
+		dbInstance.commitAndCloseSession();
 
 		List<RepositoryEntryEducationalTypeStat> stats = sut.loadStats();
 		
-		Map<Long, Long> keysToNoEntries = stats.stream()
+		Map<Long, Long> keysToTotal = stats.stream()
 				.collect(Collectors.toMap(
 						RepositoryEntryEducationalTypeStat::getEducationalTypeKey,
-						RepositoryEntryEducationalTypeStat::getNumberOfRepositoryEntries));
+						RepositoryEntryEducationalTypeStat::getTotal));
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(keysToNoEntries.get(educationalType1.getKey())).isEqualTo(1);
-		softly.assertThat(keysToNoEntries.get(educationalType2.getKey())).isEqualTo(2);
-		softly.assertThat(keysToNoEntries.get(educationalType3.getKey())).isNull();
+		softly.assertThat(keysToTotal.get(educationalType1.getKey())).isEqualTo(1);
+		softly.assertThat(keysToTotal.get(educationalType2.getKey())).isEqualTo(3);
+		softly.assertThat(keysToTotal.get(educationalType3.getKey())).isEqualTo(1);
+		softly.assertThat(keysToTotal.get(educationalType4.getKey())).isNull();
 		softly.assertAll();
+	}
+	
+	private CurriculumElement createCurriculumElement() {
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false,
+				JunitTestHelper.getDefaultOrganisation());
+		return curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null,
+				null, null, null, null, null, curriculum);
 	}
 
 }
