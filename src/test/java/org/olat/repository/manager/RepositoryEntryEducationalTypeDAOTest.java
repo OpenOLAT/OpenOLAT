@@ -162,13 +162,9 @@ public class RepositoryEntryEducationalTypeDAOTest extends OlatTestCase {
 				null, null, null, null, null, null, null, null, null, null, educationalType2);
 		repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(), null, random(), random(),
 				null, null, null, null, null, null, null, null, null, null, educationalType2);
-		CurriculumElement curriculumElement1 = createCurriculumElement();
-		curriculumElement1.setEducationalType(educationalType2);
-		curriculumService.updateCurriculumElement(curriculumElement1);
+		createCurriculumElement(educationalType2);
 		RepositoryEntryEducationalType educationalType3 = sut.create(random());
-		CurriculumElement curriculumElement2 = createCurriculumElement();
-		curriculumElement2.setEducationalType(educationalType3);
-		curriculumService.updateCurriculumElement(curriculumElement2);
+		createCurriculumElement(educationalType3);
 		RepositoryEntryEducationalType educationalType4 = sut.create(random());
 		dbInstance.commitAndCloseSession();
 
@@ -186,11 +182,13 @@ public class RepositoryEntryEducationalTypeDAOTest extends OlatTestCase {
 		softly.assertAll();
 	}
 	
-	private CurriculumElement createCurriculumElement() {
+	private CurriculumElement createCurriculumElement(RepositoryEntryEducationalType educationalType) {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false,
 				JunitTestHelper.getDefaultOrganisation());
-		return curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null,
-				null, null, null, null, null, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+		curriculumElement.setEducationalType(educationalType);
+		return curriculumService.updateCurriculumElement(curriculumElement);
 	}
 
 }

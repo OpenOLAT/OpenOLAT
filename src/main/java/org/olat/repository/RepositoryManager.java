@@ -84,6 +84,7 @@ import org.olat.course.PersistingCourseImpl;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.GroupLoggingAction;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
@@ -161,6 +162,8 @@ public class RepositoryManager {
 	private AutoAccessManager autoAccessManager;
 	@Autowired
 	private RepositoryEntryQueries repositoryEntryQueries;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	
 	@PostConstruct
 	public void init() {
@@ -2421,6 +2424,7 @@ public class RepositoryManager {
 
 	public void deleteEducationalType(RepositoryEntryEducationalType educationalType) {
 		repositoryEntryDao.removeEducationalType(educationalType);
+		curriculumElementDao.removeEducationalType(educationalType);
 		repositoryEntryEducationalTypeDao.delete(educationalType);
 	}
 

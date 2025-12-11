@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,6 +66,8 @@ import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +92,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryEducationalTypeDAO repositoryEntryEducationalTypeDAO;
 	
 	@Test
 	public void createCurriculumElement() {
@@ -1777,4 +1782,43 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(actor, historyPoint.getCreator());
 		Assert.assertEquals(element.getGroup(), historyPoint.getGroup());
 	}
+	
+	@Test
+	public void removeEducationalType() {
+		RepositoryEntryEducationalType educationalType1 = repositoryEntryEducationalTypeDAO.create(random());
+		CurriculumElement curriculumElement11 = createCurriculumElement(educationalType1);
+		CurriculumElement curriculumElement12 = createCurriculumElement(educationalType1);
+		RepositoryEntryEducationalType educationalType2 = repositoryEntryEducationalTypeDAO.create(random());
+		CurriculumElement curriculumElement2 = createCurriculumElement(educationalType2);
+		dbInstance.commitAndCloseSession();
+		
+		curriculumElement11 = curriculumElementDao.loadByKey(curriculumElement11.getKey());
+		curriculumElement12 = curriculumElementDao.loadByKey(curriculumElement12.getKey());
+		curriculumElement2 = curriculumElementDao.loadByKey(curriculumElement2.getKey());
+		
+		Assert.assertEquals(curriculumElement11.getEducationalType().getKey(), educationalType1.getKey());
+		Assert.assertEquals(curriculumElement12.getEducationalType().getKey(), educationalType1.getKey());
+		Assert.assertEquals(curriculumElement2.getEducationalType().getKey(), educationalType2.getKey());
+		
+		curriculumElementDao.removeEducationalType(educationalType1);
+		dbInstance.commitAndCloseSession();
+		
+		curriculumElement11 = curriculumElementDao.loadByKey(curriculumElement11.getKey());
+		curriculumElement12 = curriculumElementDao.loadByKey(curriculumElement12.getKey());
+		curriculumElement2 = curriculumElementDao.loadByKey(curriculumElement2.getKey());
+		
+		Assert.assertNull(curriculumElement11.getEducationalType());
+		Assert.assertNull(curriculumElement12.getEducationalType());
+		Assert.assertEquals(curriculumElement2.getEducationalType().getKey(), educationalType2.getKey());
+	}
+	
+	private CurriculumElement createCurriculumElement(RepositoryEntryEducationalType educationalType) {
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+		curriculumElement.setEducationalType(educationalType);
+		return curriculumService.updateCurriculumElement(curriculumElement);
+	}
+	
 }
