@@ -1339,6 +1339,16 @@ table.o_qti_item_kprim {
 		border: 1px solid $o-qti-order-sources-border-color;
 		border-radius: $o-qti-order-border-radius;
 		background: $o-qti-order-sources-bg;
+		
+		> ul {
+			> li {
+				&.oo-selected {
+					border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
+					background: $o-qti-match-selected-bg;
+				}
+			}
+		}
+		
 	}
 	
 	div.box.source.horizontal {
@@ -1353,6 +1363,23 @@ table.o_qti_item_kprim {
 			
 			&.oo-accepted {
 				border-color: $o-qti-order-drop-accept-border-color;
+			}
+			
+			> li {
+				transition: margin 300ms;
+
+				&.oo-selected {
+					border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
+					background: $o-qti-match-selected-bg;
+				}
+			}
+
+			&.oo-selected {
+				> li {
+					margin-top: 20px;
+					margin-bottom: 20px;
+					transition: margin 300ms;
+				}
 			}
 		}	
 	}
