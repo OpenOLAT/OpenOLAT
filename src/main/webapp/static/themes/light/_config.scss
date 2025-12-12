@@ -609,7 +609,7 @@ $o-repo-status-color-bright			: #fff;
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
 $o-repo-info-border						: solid 1px #d4d4d4 !default;
 $o-repo-info-border-radius				: 4px !default;
-$o-repo-info-padding					: 20px !default;
+$o-repo-info-padding					: 20px 20px 5px 20px !default;
 $o-repo-info-header-size-small			: 16px !default;
 $o-repo-info-separator-border			: 1px solid #d4d4d4 !default;
 
@@ -1497,6 +1497,7 @@ $o-users-portrait-img-box-shadow			: 0px 1px 3px 0px rgba(0,0,0,0.2) !default;
 $o-users-portrait-overlap				: 0.3; // 30%
 $o-user-info-border						: solid 1px #d4d4d4 !default;
 $o-user-info-border-radius				: 4px !default;
+$o-user-info-profile-breakpoint			: 280px !default;
 $o-user-info-profile-border-radius		: 4px !default;
 $o-user-info-profile-border				: solid 1px #ccc !default;
 $o-user-info-profile-padding				: 20px !default;
