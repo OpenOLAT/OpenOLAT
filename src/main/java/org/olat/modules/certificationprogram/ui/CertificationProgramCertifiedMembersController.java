@@ -51,6 +51,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -60,6 +62,9 @@ import org.olat.modules.certificationprogram.model.CertificationProgramMemberSea
 import org.olat.modules.certificationprogram.ui.CertificationProgramMembersTableModel.CertificationProgramMembersCols;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDaysFlexiCellRenderer;
 import org.olat.modules.certificationprogram.ui.component.WalletBalanceCellRenderer;
+import org.olat.modules.certificationprogram.ui.wizard.AddProgramMember1Step;
+import org.olat.modules.certificationprogram.ui.wizard.AddProgramMemberFinishStepCallback;
+import org.olat.modules.certificationprogram.ui.wizard.AddProgramMembersContext;
 
 /**
  * 
@@ -85,7 +90,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	
 	private ToolsController	toolsCtrl;
 	private CloseableModalController cmc;
-	private AddProgramMemberController addMemberCtrl;
+	private StepsMainRunController addMemberCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmRenewController renewConfirmationCtrl;
 	private ConfirmRevokeController revokeConfirmationCtrl;
@@ -234,14 +239,23 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
         	}
         	cmc.deactivate();
         	cleanUp();
-        } else if(revokeConfirmationCtrl == source || addMemberCtrl == source) {
+        } else if(revokeConfirmationCtrl == source) {
         	if(event == Event.DONE_EVENT) {
         		loadModel(ureq);
         		fireEvent(ureq, Event.CHANGED_EVENT);
         	}
         	cmc.deactivate();
         	cleanUp();
-        } else if(cmc == source) {
+        } else if(addMemberCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel(ureq);
+	        		fireEvent(ureq, Event.CHANGED_EVENT);
+				}
+				cleanUp();
+			}
+		} else if(cmc == source) {
         	cleanUp();
         }
 		super.event(ureq, source, event);
@@ -275,13 +289,15 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	private void doAddMember(UserRequest ureq) {
 		List<Long> currentMembers = tableModel.getIdentitiesKeys();
 		CertificationProgram program = certificationProgramService.getCertificationProgram(certificationProgram);
-		addMemberCtrl = new AddProgramMemberController(ureq, getWindowControl(), program, currentMembers);
-		listenTo(addMemberCtrl);
+		AddProgramMembersContext context = new AddProgramMembersContext(currentMembers, program);
+		AddProgramMember1Step step = new AddProgramMember1Step(ureq, context);
+		StepRunnerCallback stop = new AddProgramMemberFinishStepCallback(context);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), addMemberCtrl.getInitialComponent(),
-				true, translate("add.member"), true);
-		listenTo(cmc);
-		cmc.activate();
+		removeAsListenerAndDispose(addMemberCtrl);
+		String title = translate("add.member");
+		addMemberCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		listenTo(addMemberCtrl);
+		getWindowControl().pushAsModalDialog(addMemberCtrl.getInitialComponent());
 	}
 
 	private void doConfirmRenew(UserRequest ureq, CertificationProgramMemberRow row) {
