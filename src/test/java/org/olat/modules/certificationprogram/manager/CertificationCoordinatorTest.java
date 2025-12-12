@@ -735,7 +735,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("10.0"), null, "Give away", wallet, participant, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
-		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, RequestMode.COACH, CertificationProgramMailType.certificate_issued, actor);
+		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH, CertificationProgramMailType.certificate_issued, actor);
 		Assert.assertNotNull(certificate);
 		waitMessageAreConsumed();// Wait certificate is generated
 		
@@ -904,7 +904,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		program = certificationProgramService.updateCertificationProgram(program);
 		dbInstance.commit();
 		
-		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, RequestMode.COACH, CertificationProgramMailType.certificate_issued, actor);
+		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH, CertificationProgramMailType.certificate_issued, actor);
 		waitMessageAreConsumed();// Wait certificate is generated
 		Assert.assertNotNull(certificate);
 		
