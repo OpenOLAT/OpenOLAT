@@ -42,18 +42,20 @@ import org.olat.modules.forms.SessionFilter;
 public class SurveysFilter implements SessionFilter {
 
 	private Collection<? extends EvaluationFormSurveyRef> surveys;
+	private Collection<Long> executorKeys;
 	private EvaluationFormSessionStatus status;
 	private boolean fetchExecutor;
 	private EvaluationFormSurveyIdentifier surveyIdentitfier;
 	private Boolean lastRun;
 	
 	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys) {
-		this(surveys, null, null, false);
+		this(surveys, null, null, null, false);
 	}
 
-	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys, EvaluationFormSessionStatus status,
-			Boolean lastRun, boolean fetchExecutor) {
+	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys, Collection<Long> executorKeys,
+			EvaluationFormSessionStatus status, Boolean lastRun, boolean fetchExecutor) {
 		this.surveys = surveys;
+		this.executorKeys = executorKeys;
 		this.status = status;
 		this.lastRun = lastRun;
 		this.fetchExecutor = fetchExecutor;
@@ -73,8 +75,11 @@ public class SurveysFilter implements SessionFilter {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select sessionFilter.key");
 		sb.append("  from evaluationformsession sessionFilter");
-		if (lastRun != null) {
+		if (lastRun != null || (executorKeys != null && !executorKeys.isEmpty())) {
 			sb.append(" inner join sessionFilter.participation participationFilter");
+		}
+		if (executorKeys != null && !executorKeys.isEmpty()) {
+			sb.append(" inner join participationFilter.executor executorFilter");
 		}
 		if (status != null) {
 			sb.and().append("sessionFilter.status = '").append(EvaluationFormSessionStatus.done).append("'");
@@ -95,6 +100,9 @@ public class SurveysFilter implements SessionFilter {
 		if (lastRun != null) {
 			sb.and().append("participationFilter.lastRun = ").append(lastRun);
 		}
+		if (executorKeys != null && !executorKeys.isEmpty()) {
+			sb.and().append("executorFilter.key in :executorFilterKeys");
+		}
 		return sb.toString();
 	}
 
@@ -113,6 +121,9 @@ public class SurveysFilter implements SessionFilter {
 			if (StringHelper.containsNonWhitespace(surveyIdentitfier.getSubident2())) {
 				query.setParameter("surveyResSubident2", surveyIdentitfier.getSubident2());
 			}
+		}
+		if (executorKeys != null && !executorKeys.isEmpty()) {
+			query.setParameter("executorFilterKeys", executorKeys);
 		}
 	}
 

@@ -37,6 +37,8 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -118,6 +120,8 @@ public class FormManagerImpl implements FormManager {
 	private AssessmentService assessmentService;
 	@Autowired
 	private DueDateService dueDateService;
+	@Autowired
+	private PdfModule pdfModule;
 
 	@Override
 	public EvaluationFormSurveyIdentifier getSurveyIdentifier(CourseNode courseNode, ICourse course) {
@@ -525,27 +529,32 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
-	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns) {
+	public MediaResource getExport(WindowControl wControl, Locale locale, Identity doer, CourseEnvironment courseEnv,
+			FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns, Collection<Long> executorKeys) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Form form = loadForm(survey);
 		Boolean lastRun = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)? null: Boolean.TRUE;
-		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, lastRun, true);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, executorKeys, lastRun, true);
 		String nodeName = courseNode.getShortName();
 		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(locale, survey.getFormEntry(), form, filter, null, userColumns, nodeName);
 		
-		List<FileUpload> fileUploads = evaluationFormManager.getUncontainerizedElements(form).stream().filter(element -> element instanceof FileUpload).map(element -> (FileUpload)element).toList();
-		if (fileUploads.isEmpty()) {
+		List<FileUpload> fileUploads = evaluationFormManager.getUncontainerizedElements(form).stream()
+				.filter(element -> element instanceof FileUpload)
+				.map(element -> (FileUpload)element)
+				.toList();
+		if (fileUploads.isEmpty() && !pdfModule.isEnabled()) {
 			return excelExport.createMediaResource();
 		}
-		return new FormExportResource(evaluationFormManager, nodeName, filter, excelExport, fileUploads);
+		return new FormExportResource(wControl, locale, doer, courseEnv, nodeName, filter, excelExport, lastRun == null, fileUploads);
 	}
 
 	@Override
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
-			EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns) {
+			EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns,
+			Collection<Long> executorKeys) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Boolean lastRun = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)? null: Boolean.TRUE;
-		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, lastRun, true);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, executorKeys, lastRun, true);
 		return getExcelExport(courseNode, identifier, locale, filter, userColumns);
 	}
 	

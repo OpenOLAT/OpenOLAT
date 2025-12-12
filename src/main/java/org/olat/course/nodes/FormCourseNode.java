@@ -304,7 +304,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 					.getPropertyHandlerTranslator(Util.createPackageTranslator(FormCourseNode.class, locale));
 			UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, userPropertyTranslator,
 					getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
-			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, locale, userColumns);
+			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, locale, userColumns, null);
 			excelExport.export(exportStream, archivePath);
 		} catch (IOException e) {
 			log.error("", e);

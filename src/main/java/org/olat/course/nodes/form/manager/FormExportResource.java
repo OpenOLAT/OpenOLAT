@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -31,22 +32,38 @@ import java.util.zip.ZipOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.nodes.form.ui.FormParticipationPrintController;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,19 +75,39 @@ public class FormExportResource implements MediaResource {
 	
 	private static final Logger log = Tracing.createLoggerFor(FormExportResource.class);
 	
-	private final EvaluationFormManager evaluationFormManager;
+	private final WindowControl windowControl;
+	private final Identity doer;
+	private final CourseEnvironment courseEnv;
 	private final String nodeName;
 	private final SessionFilter filter;
 	private final EvaluationFormExcelExport excelExport;
+	private final boolean multiParticipation;
 	private final List<String> fileUploadIds;
+	private final UserRequest ureq;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 
-	public FormExportResource(EvaluationFormManager evaluationFormManager, String nodeName, SessionFilter filter,
-			EvaluationFormExcelExport excelExport, List<FileUpload> fileUploads) {
-		this.evaluationFormManager = evaluationFormManager;
+	public FormExportResource(WindowControl windowControl, Locale locale, Identity doer, CourseEnvironment courseEnv,
+			String nodeName, SessionFilter filter, EvaluationFormExcelExport excelExport, boolean multiParticipation,
+			List<FileUpload> fileUploads) {
+		this.windowControl = windowControl;
+		this.doer = doer;
+		this.courseEnv = courseEnv;
 		this.nodeName = nodeName;
 		this.filter = filter;
 		this.excelExport = excelExport;
-		this.fileUploadIds = fileUploads.stream().map(FileUpload::getId).toList();
+		this.multiParticipation = multiParticipation;
+		this.fileUploadIds = fileUploads != null? fileUploads.stream().map(FileUpload::getId).toList(): List.of();
+		
+		ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
+		ureq.getUserSession().setRoles(Roles.userRoles());
+		
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
@@ -132,9 +169,10 @@ public class FormExportResource implements MediaResource {
 							.filter(Objects::nonNull)
 							.toList();
 					
-					if (!vfsLeafs.isEmpty()) {
+					if (pdfModule.isEnabled() || !vfsLeafs.isEmpty()) {
 						String filesPath = "files/";
-						if (session.getParticipation() != null && session.getParticipation().getExecutor() != null) {
+						boolean executorAvailable = session.getParticipation() != null && session.getParticipation().getExecutor() != null;
+						if (executorAvailable) {
 							Identity executor = session.getParticipation().getExecutor();
 							User user = executor.getUser();
 							String name = user.getLastName()
@@ -142,8 +180,15 @@ public class FormExportResource implements MediaResource {
 									+ "_" + (StringHelper.containsNonWhitespace(user.getNickName()) ? user.getNickName() : executor.getName());
 							
 							filesPath += StringHelper.transformDisplayNameToFileSystemName(name);
+							if (multiParticipation) {
+								filesPath += "/" + Formatter.formatDatetimeFilesystemSave(session.getSubmissionDate());
+							}
 						} else {
 							filesPath += session.getKey();
+						}
+						
+						if (pdfModule.isEnabled() && executorAvailable) {
+							exportFormPdf(zout, filesPath, session.getParticipation().getExecutor(), session);
 						}
 						
 						Set<String> uniqueFileNames = new HashSet<>(vfsLeafs.size());
@@ -173,6 +218,22 @@ public class FormExportResource implements MediaResource {
 			}
 		} catch (Exception e) {
 			log.error("Error during export of form course node {}", nodeName, e);
+		}
+	}
+
+	private void exportFormPdf(ZipOutputStream zout, String path, Identity executor, EvaluationFormSession session) {
+		try {
+			ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+				UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+						executor, courseEnv);
+				return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, session);
+			};
+			
+			zout.putNextEntry(new ZipEntry(path + "/form.pdf"));
+			pdfService.convert(doer, printControllerCreator, windowControl, PdfOutputOptions.defaultOptions(), zout);
+			zout.closeEntry();
+		} catch(Exception e) {
+			log.error("", e);
 		}
 	}
 

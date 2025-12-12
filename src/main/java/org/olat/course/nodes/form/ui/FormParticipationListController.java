@@ -22,6 +22,7 @@ package org.olat.course.nodes.form.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,8 +30,12 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -57,6 +62,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -65,8 +71,11 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -85,8 +94,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilterFactory;
@@ -106,9 +117,13 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private static final String ORES_TYPE_IDENTITY = "Identity";
 	private static final String CMD_SELECT = "select";
+	private static final String CMD_PDF = "pdf";
+	private static final String CMD_REOPEN = "reopen";
+	private static final String CMD_RESET = "reset";
 	
 	private FormLink resetAllButton;
 	private FormLink exportButton;
+	private FormLink bulkExportButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormParticipationTableModel dataModel;
 	private FlexiTableElement tableEl;
@@ -136,10 +151,13 @@ public class FormParticipationListController extends FormBasicController impleme
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	protected BaseSecurity securityManager;
+	private BaseSecurity securityManager;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
-	
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	
 	public FormParticipationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			FormCourseNode courseNode, UserCourseEnvironment coachCourseEnv, FormSecurityCallback secCallback) {
@@ -177,14 +195,17 @@ public class FormParticipationListController extends FormBasicController impleme
 		buttonsTopCont.setElementCssClass("o_button_group o_button_group_right");
 		buttonsTopCont.setRootForm(mainForm);
 		formLayout.add(buttonsTopCont);
-			
-		if (secCallback.canResetAll()) {
-			resetAllButton = uifactory.addFormLink("reset.all", buttonsTopCont, Link.BUTTON); 
-			resetAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-		}
 		
-		exportButton = uifactory.addFormLink("excel.export", buttonsTopCont, Link.BUTTON); 
-		exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
+		exportButton = uifactory.addFormLink("export.data", buttonsTopCont, Link.BUTTON); 
+		exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+		
+		if (secCallback.canResetAll()) {
+			DropdownItem dropdown = uifactory.addDropdownMenuMore("cmds", buttonsTopCont, getTranslator());
+			
+			resetAllButton = uifactory.addFormLink("reset.all", formLayout, Link.LINK); 
+			resetAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			dropdown.addElement(resetAllButton);
+		}
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -213,9 +234,13 @@ public class FormParticipationListController extends FormBasicController impleme
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSortSettings(options);
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, FormCourseNode.ICON_CSS);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course.element.form.v2");
+		
 		initFilters();
+		initBulkLinks();
 	}
 
 	private void initFilters() {
@@ -253,7 +278,13 @@ public class FormParticipationListController extends FormBasicController impleme
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
 		
-		tableEl.setFilters(true, filters, false, true);
+		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private void initBulkLinks() {
+		bulkExportButton = uifactory.addFormLink("export.data", flc, Link.BUTTON);
+		bulkExportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+		tableEl.addBatchButton(bulkExportButton);
 	}
 
 	@Override
@@ -284,6 +315,7 @@ public class FormParticipationListController extends FormBasicController impleme
 			FormParticipationRow row = new FormParticipationRow(bundle.getIdentity(), userPropertyHandlers, getLocale());
 			FormParticipation lastParticipation = bundle.getLastParticipation();
 			if (lastParticipation != null) {
+				row.setParticipation(lastParticipation);
 				row.setStatus(lastParticipation.getParticipationStatus());
 				if (EvaluationFormParticipationStatus.done == lastParticipation.getParticipationStatus()) {
 					row.setSubmissionDate(lastParticipation.getSubmissionDate());
@@ -293,7 +325,7 @@ public class FormParticipationListController extends FormBasicController impleme
 				}
 				
 				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-				toolsLink.setUserObject(lastParticipation);
+				toolsLink.setUserObject(row);
 				row.setToolsLink(toolsLink);
 			}
 			rows.add(row);
@@ -371,17 +403,17 @@ public class FormParticipationListController extends FormBasicController impleme
 				reload();
 			}
 		} else if (source == exportButton) {
-			doExport(ureq);
+			doExport(ureq, null);
 		} else if (source == resetAllButton) {
 			doConfirmDeleteAllData(ureq);
+		} else if (source == bulkExportButton) {
+			doBulkExport(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if(cmd != null && cmd.equals("tools")) {
-				FormParticipation formParticipation = (FormParticipation)link.getUserObject();
-				doOpenTools(ureq, formParticipation, link);
+				doOpenTools(ureq, link);
 			}
-
 		}
 	}
 
@@ -446,11 +478,11 @@ public class FormParticipationListController extends FormBasicController impleme
 		stackPanel.pushController(fullName, particpationCtrl);
 	}
 	
-	private void doOpenTools(UserRequest ureq, FormParticipation formParticipation, FormLink link) {
+	private void doOpenTools(UserRequest ureq, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
-
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), formParticipation);
+		
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), (FormParticipationRow)link.getUserObject());
 		listenTo(toolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -458,12 +490,84 @@ public class FormParticipationListController extends FormBasicController impleme
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
-
-	private void doExport(UserRequest ureq) {
+	
+	private void doExport(UserRequest ureq, Collection<Long> executorKeys) {
 		UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, getTranslator(),
 				courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
-		MediaResource mediaResource = formManager.getExport(courseNode, survey.getIdentifier(), getLocale(), userColumns);
+		MediaResource mediaResource = formManager.getExport(getWindowControl(), getLocale(), getIdentity(),
+				coachCourseEnv.getCourseEnvironment(), courseNode, survey.getIdentifier(), userColumns, executorKeys);
 		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
+	}
+	
+	private void doBulkExport(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("export.bulk.empty.selection");
+			return;
+		}
+		
+		List<Long> selectedIdentityKeys = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.filter(row -> row.getStatus() != null && row.getStatus() == EvaluationFormParticipationStatus.done)
+				.map(FormParticipationRow::getIdentityKey)
+				.filter(Objects::nonNull)
+				.toList();
+		if (selectedIdentityKeys.isEmpty()) {
+			showWarning("export.bulk.empty.selection");
+			return;
+		}
+		
+		doExport(ureq, selectedIdentityKeys);
+	}
+	
+	private void doExportPdf(UserRequest ureq, Long identityKey) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		EvaluationFormParticipation participation = formManager.loadLastParticipation(survey, identity);
+		EvaluationFormSession session = formManager.loadOrCreateSession(participation);
+		if (session == null) {
+			showError("error.export.pdf");
+			return;
+		}
+		
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+					identity, coachCourseEnv.getCourseEnvironment());
+			return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, session);
+		};
+		String filename = generateExportPdfName(identity);
+		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private String generateExportPdfName(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+	
+		sb.append("form_");
+		sb.append(StringHelper.transformDisplayNameToFileSystemName(courseEntry.getDisplayname()));
+		sb.append("_");
+		if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortTitle()));
+		} else {
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(courseNode.getLongTitle()));
+		}
+		
+		User user = identity.getUser();
+		if (StringHelper.containsNonWhitespace(user.getLastName())) {
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(user.getLastName()));
+		}
+		if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(user.getFirstName()));
+		}
+		if (StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME))) {
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(user.getProperty(UserConstants.NICKNAME)));
+		}
+		
+		return sb.toString();
 	}
 	
 	private void doConfirmDeleteAllData(UserRequest ureq) {
@@ -509,36 +613,56 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private class ToolsController extends BasicController {
 		
-		private Link reopenLink;
-		private Link resetLink;
+		private final VelocityContainer mainVC;
+		private final List<String> names = new ArrayList<>(3);
 		
-		private final FormParticipation formParticipation;
+		private final FormParticipationRow row;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, FormParticipation formParticipation) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, FormParticipationRow row)  {
 			super(ureq, wControl);
-			this.formParticipation = formParticipation;
+			this.row = row;
 			
-			VelocityContainer mainVC = createVelocityContainer("participation_tools");
-			
-			if (secCallback.canReopen() && EvaluationFormParticipationStatus.done == formParticipation.getParticipationStatus()) {
-				reopenLink = LinkFactory.createLink("reopen", "reopen", getTranslator(), mainVC, this, Link.LINK);
-				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+			mainVC = createVelocityContainer("tools");
+			putInitialPanel(mainVC);
+			mainVC.contextPut("names", names);
+			if (pdfModule.isEnabled() && EvaluationFormParticipationStatus.done == row.getStatus()) {
+				addLink("export.pdf", CMD_PDF, "o_icon o_icon-fw o_icon_export");
+			}
+			if (secCallback.canReopen() && EvaluationFormParticipationStatus.done == row.getStatus()) {
+				if (!names.isEmpty()) {
+					names.add("divider");
+				}
+				addLink("reopen", CMD_REOPEN, "o_icon o_icon-fw o_icon_reopen");
 			}
 			if (secCallback.canReset()) {
-				resetLink = LinkFactory.createLink("reset", "reset", getTranslator(), mainVC, this, Link.LINK);
-				resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+				if (!names.isEmpty()) {
+					names.add("divider");
+				}
+				addLink("reset", CMD_RESET, "o_icon o_icon-fw o_icon_delete_item");
 			}
-			
-			putInitialPanel(mainVC);
 		}
-
+		
+		private void addLink(String name, String cmd, String iconCSS) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if (iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			names.add(name);
+		}
+		
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			this.fireEvent(ureq, Event.DONE_EVENT);
-			if(reopenLink == source) {
-				doConfirmReopen(ureq, formParticipation.getEvaluationFormParticipationRef());
-			} else if(resetLink == source) {
-				doConfirmReset(ureq, formParticipation.getEvaluationFormParticipationRef());
+			fireEvent(ureq, Event.DONE_EVENT);
+			if (source instanceof Link link) {
+				String cmd = link.getCommand();
+				if (CMD_PDF.equals(cmd)) {
+					doExportPdf(ureq, row.getIdentityKey());
+				} else if (CMD_REOPEN.equals(cmd)) {
+					doConfirmReopen(ureq, row.getParticipation().getEvaluationFormParticipationRef());
+				} else if (CMD_RESET.equals(cmd)) {
+					doConfirmReset(ureq, row.getParticipation().getEvaluationFormParticipationRef());
+				}
 			}
 		}
 		
