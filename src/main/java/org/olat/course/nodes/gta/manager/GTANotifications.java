@@ -584,7 +584,7 @@ class GTANotifications {
 				};
 				
 				if(coach) {
-					appendSubscriptionItem("notifications.coach.assignment", params, assessedIdentity, assessmentEntry.getCoachAssignmentDate(), coach);
+					appendSubscriptionItem("notifications.coach.new", params, assessedIdentity, assessmentEntry.getCoachAssignmentDate(), coach);
 				} else {
 					appendSubscriptionItem("notifications.coach.assigned", params, assessedIdentity, assessmentEntry.getCoachAssignmentDate(), coach);
 				}
