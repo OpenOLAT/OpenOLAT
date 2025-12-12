@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
@@ -41,14 +42,17 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow>, FlexiBusines
 	
 	private static final SearchCols[] COLS = SearchCols.values();
 	
-	public CurriculumElementSearchDataModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public CurriculumElementSearchDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<CurriculumElementSearchRow> views = new CurriculumElementSearchTableModelSortDelegate(orderBy, this, null).sort();
+			List<CurriculumElementSearchRow> views = new CurriculumElementSearchTableModelSortDelegate(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}

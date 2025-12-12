@@ -191,7 +191,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
 
-		tableModel = new CurriculumElementSearchDataModel(columnsModel);
+		tableModel = new CurriculumElementSearchDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
@@ -446,7 +446,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		final boolean showStructure = showStructure(element.curriculumElement(), children);
 		final long refs = element.numOfResources() + element.numOfLectureBlocks();
 		CurriculumElementSearchRow row = new CurriculumElementSearchRow(element.curriculumElement(),
-				children, refs, element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
+				refs, children, element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
 				element.numOfCurriculumElementOwners(), element.numOfMasterCoaches(),
 				toolsLink);
 		toolsLink.setUserObject(row);
