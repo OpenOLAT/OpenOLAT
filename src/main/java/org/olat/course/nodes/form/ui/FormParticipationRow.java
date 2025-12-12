@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.form.FormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -38,6 +39,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class FormParticipationRow extends UserPropertiesRow {
 	
+	private FormParticipation participation;
 	private EvaluationFormParticipationStatus status;
 	private Date submissionDate;
 	private Integer numSubmissions;
@@ -45,6 +47,14 @@ public class FormParticipationRow extends UserPropertiesRow {
 	
 	public FormParticipationRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+	}
+
+	public FormParticipation getParticipation() {
+		return participation;
+	}
+
+	public void setParticipation(FormParticipation participation) {
+		this.participation = participation;
 	}
 
 	public EvaluationFormParticipationStatus getStatus() {

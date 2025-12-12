@@ -43,6 +43,7 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,9 +78,9 @@ public class AssessmentEvaluationFormExecutionController extends BasicController
 		AuditEnv auditEnv = AuditEnv.of(auditManager , courseNode, assessedIdentity, getIdentity(), Role.coach);
 
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(config);
-		RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		String nodeIdent = courseNode.getIdent();
-		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, evaluationFormProvider, assessedIdentity, auditEnv);
+		session =  msService.getOrCreateSession(formEntry, courseEntry, nodeIdent, evaluationFormProvider, assessedIdentity, auditEnv);
 		if(edit && session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			if(reopen) {
 				session = msService.reopenSession(session, auditEnv);
@@ -101,6 +102,15 @@ public class AssessmentEvaluationFormExecutionController extends BasicController
 		EvaluationFormSessionStatus evaluationFormStatus = session == null ? null : session.getEvaluationFormSessionStatus();
 		String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), true, true, false).render(evaluationFormStatus);
 		mainVC.contextPut("status", status);
+		
+		if (assessedIdentity != null) {
+			UserPropertiesInfoController userCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), assessedIdentity);
+			listenTo(userCtrl);
+			mainVC.put("user", userCtrl.getInitialComponent());
+		}
+		AssessmentRepositoryEntryInfoCardController entryCtrl = new AssessmentRepositoryEntryInfoCardController(ureq, wControl, courseEntry, courseNode);
+		listenTo(entryCtrl);
+		mainVC.put("repo", entryCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}

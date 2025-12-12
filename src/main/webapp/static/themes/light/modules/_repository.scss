@@ -858,3 +858,40 @@ form { .o_form { .o_radio_cards_wrapper {
 		}
 	}
 }
+
+.o_repo_user_header_container {
+	container-type: inline-size;
+	container-name: o-repo-user-header;
+	
+	$o-repo-user-header-gap: 10px;
+	.o_repo_user_header {
+		display: flex;
+		flex-direction: column;
+		gap: $o-repo-user-header-gap;
+		
+		.o_user_info {
+			display: flex;
+			flex-direction: column;
+			align-items: start;
+			> div:has(.o_user_info_profile) {
+				width: 100%;
+				height: initial;
+				margin-top: 0;
+			}
+		}
+	}
+	
+	$o-repo-user-header-breakpoint: 2*$o-user-info-profile-breakpoint + 2*$o-repo-user-header-gap;
+	@container o-repo-user-header (min-width: #{$o-repo-user-header-breakpoint}) {
+		.o_repo_user_header {
+			flex-direction: row;
+			>div {
+				flex: 1;
+			}
+			// same height of the two panels
+			:is(div, form):has(:is(.o_repo_info, .o_user_info)) {
+				display: grid;
+			}
+		}
+	}
+}

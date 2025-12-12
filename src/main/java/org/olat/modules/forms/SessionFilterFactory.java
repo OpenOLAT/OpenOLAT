@@ -66,10 +66,10 @@ public class SessionFilterFactory {
 	}
 
 	public static SessionFilter createSelectDone(Collection<? extends EvaluationFormSurveyRef> surveys) {
-		return new SurveysFilter(surveys, EvaluationFormSessionStatus.done, null, false);
+		return new SurveysFilter(surveys, null, EvaluationFormSessionStatus.done, null, false);
 	}
 	
-	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey, Boolean lastRun, boolean fetchExecutor) {
-		return new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done, lastRun, fetchExecutor);
+	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey, Collection<Long> executorKeys, Boolean lastRun, boolean fetchExecutor) {
+		return new SurveysFilter(Collections.singletonList(survey), executorKeys, EvaluationFormSessionStatus.done, lastRun, fetchExecutor);
 	}
 }

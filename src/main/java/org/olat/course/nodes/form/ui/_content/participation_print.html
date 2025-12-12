@@ -1,0 +1,8 @@
+#if($r.available("user"))
+	<div class="o_block_large_bottom">
+		$r.render("user")
+	</div>
+#end
+#if($r.available("evaluationForm"))
+	$r.render("evaluationForm")
+#end

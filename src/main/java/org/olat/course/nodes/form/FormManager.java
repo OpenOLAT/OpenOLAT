@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
@@ -106,9 +107,10 @@ public interface FormManager {
 	
 	public void deleteAllData(EvaluationFormSurvey survey, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
-	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns);
+	public MediaResource getExport(WindowControl wControl, Locale locale, Identity doer, CourseEnvironment courseEnv,
+			FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns, Collection<Long> executorKeys);
 	
-	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns);
+	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns, Collection<Long> executorKeys);
 	
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, SessionFilter filter, UserColumns userColumns);
 
