@@ -21,9 +21,11 @@ package org.olat.modules.curriculum.ui.widgets;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -57,7 +59,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -72,7 +73,6 @@ import org.olat.modules.curriculum.ui.widgets.CoursesWidgetDataModel.EntriesCols
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -105,6 +105,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	private final MapperKey mapperThumbnailKey;
 	private final CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 	private final CurriculumElementType curriculumElementType;
 	
 	private CloseableModalController cmc;
@@ -117,8 +118,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -126,7 +125,8 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	public CoursesWidgetController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "courses_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		
 		this.secCallback = secCallback;
 		this.curriculumElement = curriculumElement;
@@ -209,13 +209,16 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		List<RepositoryEntry> repositoryTemplates = curriculumService.getRepositoryTemplates(curriculumElement);
 		final int numOfEntries = repositoryEntries.size();
 		
+		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getRepositoryThumbnails(repositoryEntries);
+		thumbnails.putAll(mapperThumbnail.getRepositoryThumbnails(repositoryTemplates));
+		
 		AccessRenderer renderer = new AccessRenderer(getLocale());
 		List<CourseWidgetRow> rows = new ArrayList<>();
 		for(RepositoryEntry entry:repositoryEntries) {
-			rows.add(forgeRow(entry, false, numOfEntries, renderer));
+			rows.add(forgeRow(entry, false, numOfEntries, thumbnails, renderer));
 		}
 		for(RepositoryEntry template:repositoryTemplates) {
-			rows.add(forgeRow(template, true, numOfEntries, renderer));
+			rows.add(forgeRow(template, true, numOfEntries, thumbnails, renderer));
 		}
 		entriesTableModel.setObjects(rows);
 		entriesTableEl.reset(true, true, true);
@@ -240,7 +243,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		}
 	}
 	
-	private CourseWidgetRow forgeRow(RepositoryEntry entry, boolean template, int numOfEntries, AccessRenderer renderer) {
+	private CourseWidgetRow forgeRow(RepositoryEntry entry, boolean template, int numOfEntries, Map<Long,VFSThumbnailInfos> thumbnails, AccessRenderer renderer) {
 		String displayName = StringHelper.escapeHtml(entry.getDisplayname());
 		FormLink openLink = uifactory.addFormLink("open_" + entry.getKey(), "open", displayName, null, flc, Link.NONTRANSLATED);
 		final String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
@@ -253,12 +256,8 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 			instantiateLink.setUserObject(entry);
 		}
 		
-		VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
-		String thumbnailUrl = null;
-		if(image != null) {
-			thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image);
-		}
 		String status = renderer.renderEntryStatus(entry);
+		String thumbnailUrl = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), entry, thumbnails);
 		CourseWidgetRow row = new CourseWidgetRow(entry, template, openLink, instantiateLink, url, thumbnailUrl, status);
 		openLink.setUserObject(row);
 		return row;

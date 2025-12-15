@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.ui.dashboard;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -27,7 +28,7 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CourseRow {
+public class CourseRow implements OLATResourceable {
 	
 	private Long key;
 	private String externalRef;
@@ -36,6 +37,8 @@ public class CourseRow {
 	private String thumbnailRelPath;
 	private String completion;
 	private String successStatus;
+	private String resourceableTypeName;
+	private Long resourceableId;
 	
 	public Long getKey() {
 		return key;
@@ -51,6 +54,24 @@ public class CourseRow {
 
 	public void setExternalRef(String externalRef) {
 		this.externalRef = externalRef;
+	}
+	
+	@Override
+	public String getResourceableTypeName() {
+		return resourceableTypeName;
+	}
+
+	public void setResourceableTypeName(String resourceableTypeName) {
+		this.resourceableTypeName = resourceableTypeName;
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return resourceableId;
+	}
+	
+	public void setResourceableId(Long resourceableId) {
+		this.resourceableId = resourceableId;
 	}
 
 	public String getTranslatedTechnicalType() {

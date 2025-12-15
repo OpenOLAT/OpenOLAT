@@ -30,6 +30,7 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -64,7 +65,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
@@ -94,7 +94,6 @@ import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -131,6 +130,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private final boolean taxonomyEnabled;
 	private final LectureListRepositoryConfig config;
 	private final LecturesSecurityCallback secCallback;
+	private RepositoryEntryImageMapper mapperThumbnail;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -145,8 +145,6 @@ public class LectureListDetailsController extends FormBasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private UserPortraitService userPortraitService;
 	@Autowired
@@ -171,7 +169,8 @@ public class LectureListDetailsController extends FormBasicController {
 		
 		repositoryEntry = row.getEntry() != null ? repositoryService.loadByKey(row.getEntry().key()) : null;
 		if(repositoryEntry != null) {
-			mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+			mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+			mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		}
 		
 		if(row.getCurriculumElement() != null) {
@@ -258,9 +257,9 @@ public class LectureListDetailsController extends FormBasicController {
 			openEntryLink.setEscapeMode(EscapeMode.html);
 			openEntryLink.setUrl(url);
 			
-			VFSLeaf image = repositoryManager.getImage(repositoryEntry.getKey(), repositoryEntry.getOlatResource());
-			if(image != null) {
-				String thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image);
+			VFSThumbnailInfos thumbnail = mapperThumbnail.getRepositoryThumbnail(repositoryEntry);
+			if (thumbnail != null) {
+				String thumbnailUrl = RepositoryEntryImageMapper.getImageURL(mapperThumbnailKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 				formLayout.contextPut("thumbnailUrl",thumbnailUrl);
 			}
 			

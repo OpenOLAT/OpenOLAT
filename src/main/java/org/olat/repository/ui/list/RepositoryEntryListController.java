@@ -145,8 +145,9 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	private final BreadcrumbPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
-	
+
 	private final MapperKey mapperThumbnailKey;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 	
 	@Autowired
 	private MarkManager markManager;
@@ -174,7 +175,8 @@ public class RepositoryEntryListController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(OpenAccessOfferController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
+		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		this.name = name;
 		this.config = config;
 		this.stackPanel = stackPanel;
@@ -491,6 +493,11 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public String getMapperThumbnailUrl() {
 		return mapperThumbnailKey.getUrl();
+	}	
+
+	@Override
+	public RepositoryEntryImageMapper getImageMapper() {
+		return mapperThumbnail;
 	}
 
 	@Override

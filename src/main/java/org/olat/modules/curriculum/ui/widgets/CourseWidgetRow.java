@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.widgets;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -35,7 +36,11 @@ public record CourseWidgetRow(RepositoryEntry entry, boolean template, FormLink 
 	public Long getKey() {
 		return entry.getKey();
 	}
-	
+
+	public OLATResource getOlatResource() {
+		return entry.getOlatResource();
+	}
+
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailUrl);
 	}

@@ -62,7 +62,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 	public CatalogEntryRow getObjectByRepositoryEntryKey(Long key) {
 		List<CatalogEntryRow> rows = getObjects();
 		for (CatalogEntryRow row: rows) {
-			if (row != null && row.getRepositotyEntryKey() != null && row.getRepositotyEntryKey().equals(key)) {
+			if (row != null && row.getRepositoryEntryKey() != null && row.getRepositoryEntryKey().equals(key)) {
 				return row;
 			}
 		}

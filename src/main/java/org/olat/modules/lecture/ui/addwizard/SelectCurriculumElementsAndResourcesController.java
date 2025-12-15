@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -53,7 +54,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
@@ -64,7 +64,6 @@ import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.lecture.ui.addwizard.CurriculumElementsDataModel.ElementCols;
 import org.olat.modules.lecture.ui.addwizard.RepositoryEntriesDataModel.EntriesCols;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,13 +83,12 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 	
 	private final AddLectureContext addLecture;
 	private final MapperKey mapperThumbnailKey;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 	
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
 	public SelectCurriculumElementsAndResourcesController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			AddLectureContext addLecture, StepsRunContext runContext) {
@@ -98,8 +96,8 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		setTranslator(Util.createPackageTranslator(SelectCurriculumElementsAndResourcesController.class, getLocale(),
 				Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		this.addLecture = addLecture;
-
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+		mapperThumbnail = RepositoryEntryImageMapper.mapper900x600();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_900_600, mapperThumbnail);
 		
 		initForm(ureq);
 		loadCurriculumModel();
@@ -158,9 +156,10 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 			CurriculumElementType type = curriculumElement.getType();
 			if(type == null || type.getMaxRepositoryEntryRelations() != 0) {
 				List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(selectedRow.getCurriculumElement());
+				Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getRepositoryThumbnails(entries);
 				List<RepositoryEntryRow> rows = new ArrayList<>();
 				for(RepositoryEntry entry:entries) {
-					rows.add(forgeRow(entry));
+					rows.add(forgeRow(entry, thumbnails));
 				}
 				entriesTableModel.setObjects(rows);
 				entriesTableEl.reset(true, true, true);
@@ -176,12 +175,10 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		}
 	}
 	
-	private RepositoryEntryRow forgeRow(RepositoryEntry entry) {
+	private RepositoryEntryRow forgeRow(RepositoryEntry entry, Map<Long,VFSThumbnailInfos> thumbnails) {
 		RepositoryEntryRow row = new RepositoryEntryRow(entry);
-		VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
-		if(image != null) {
-			row.setThumbnailUrl(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
-		}
+		String url = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), entry, thumbnails);
+		row.setThumbnailUrl(url);
 		return row;
 	}
 	

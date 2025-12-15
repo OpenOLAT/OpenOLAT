@@ -67,6 +67,7 @@ public class ServletUtil {
 	public static final long CACHE_ONE_HOUR = 60l * 60l;
 	public static final long CACHE_ONE_DAY = 24l * 60l * 60l;
 	public static final long CACHE_ONE_MONTH = 30l * 24l * 60l * 60l;
+	public static final long CACHE_ONE_YEAR = 365l * 24l * 60l * 60l;
 	
 	
 	public static final void printOutRequestParameters(HttpServletRequest request) {

@@ -54,7 +54,7 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<VideoE
 	
 	public VideoEntryRow getRowByKey(Long key) {
 		return getObjects().stream()
-				.filter(row -> row != null && row.getKey().equals(key))
+				.filter(row -> row != null && row.key().equals(key))
 				.findFirst()
 				.orElse(null);
 	}
@@ -67,7 +67,7 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<VideoE
 		}
 		
 		switch(COLS[col]) {
-			case key: return item.getKey();
+			case key: return item.key();
 			default: return null;
 		}
 	}

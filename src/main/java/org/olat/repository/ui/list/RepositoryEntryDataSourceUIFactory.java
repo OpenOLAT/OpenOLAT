@@ -20,6 +20,7 @@
 package org.olat.repository.ui.list;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 
 
 /**
@@ -32,7 +33,9 @@ import org.olat.core.gui.translator.Translator;
  */
 public interface RepositoryEntryDataSourceUIFactory {
 	
-	public String getMapperThumbnailUrl();
+	String getMapperThumbnailUrl();
+	
+	RepositoryEntryImageMapper getImageMapper();
 	
 	public void forgeMarkLink(RepositoryEntryRow row);
 	

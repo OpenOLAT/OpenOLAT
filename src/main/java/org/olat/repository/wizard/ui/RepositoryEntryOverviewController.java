@@ -29,7 +29,9 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,15 +43,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,21 +69,20 @@ public class RepositoryEntryOverviewController extends BasicController {
 	private Link toggleFiguresLink;
 	
 	private Boolean figuresToggle = Boolean.FALSE;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 	
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
-	private RepositoryEntryLicenseHandler licenseHandler;
+	private RepositoryService repositoryService;
 	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
+	private RepositoryEntryLicenseHandler licenseHandler;
 	@Autowired
 	private CatalogV2Module catalogModule;
 	
@@ -92,22 +91,23 @@ public class RepositoryEntryOverviewController extends BasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
+		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+		
 		mainVC = createVelocityContainer("entry_overview");
 		putInitialPanel(mainVC);
 	}
 	
-	public void setRepositoryEntry(UserRequest ureq, RepositoryEntry entry, MoreFigures moreFigures) {
+	public void setRepositoryEntry(RepositoryEntry entry, MoreFigures moreFigures) {
 		mainVC.clear();
 		mainVC.contextPut("entry", entry);
 		
 		String iconCssClass = RepositoyUIFactory.getIconCssClass(entry);
 		mainVC.contextPut("iconCssClass", iconCssClass);
 		
-		VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
-		if(image != null && vfsRepositoryService.isThumbnailAvailable(image)) {
-			VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(image, 150, 150, false);
-			VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
-			String thumbnailUrl = registerCacheableMapper(ureq, null, thumbnailMapper);
+		VFSThumbnailInfos thumbnail = mapperThumbnail.getRepositoryThumbnail(entry);
+		if(thumbnail != null) {
+			MapperKey mapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
+			String thumbnailUrl = RepositoryEntryImageMapper.getImageURL(mapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 			mainVC.contextPut("thumbnailUrl", thumbnailUrl);
 		}
 		

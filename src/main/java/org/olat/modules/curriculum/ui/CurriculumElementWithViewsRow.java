@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -74,7 +73,6 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	private List<PriceMethod> accessTypes;
 
 	private boolean member;
-	private String thumbnailRelPath;
 	private boolean marked;
 	
 	private String startUrl;
@@ -301,17 +299,6 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 
 	public void setPublicVisible(boolean publicVisible) {
 		this.publicVisible = publicVisible;
-	}
-
-	public boolean isThumbnailAvailable() {
-		return StringHelper.containsNonWhitespace(thumbnailRelPath);
-	}
-	
-	public String getThumbnailRelPath() {
-		return thumbnailRelPath;
-	}
-	public void setThumbnailRelPath(String thumbnailRelPath) {
-		this.thumbnailRelPath = thumbnailRelPath;
 	}
 	
 	public Long getRepositoryEntryKey() {

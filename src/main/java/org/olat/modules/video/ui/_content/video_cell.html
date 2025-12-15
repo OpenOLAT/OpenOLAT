@@ -1,21 +1,21 @@
-#set($title=$r.escapeHtml($row.getDisplayName()))
-<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$title" class="o_video_poster" style="background-image: url('$imgUrl/$row.getKey()')">
-	#if ($row.getExpenditureOfWork())
-	<span class="o_timecode">$row.getExpenditureOfWork()</span>
+#set($title=$r.escapeHtml($row.displayName()))
+<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$title" class="o_video_poster" #if($r.isNotEmpty($row.thumbnailUrl)) style="background-image: url('$row.thumbnailUrl()')" #end>
+	#if ($row.expenditureOfWork())
+	<span class="o_timecode">$row.expenditureOfWork()</span>
 	#end
 </a>
 <div class="o_meta text-muted">
 	<h5><a href="javascript:${f.ffXHREvent("select_row","$row.key")}">$title</a></h5>
-	#if ($row.getAuthors())
+	#if ($r.isNotEmpty($row.authors()))
 	<div class="o_author">
 		$r.translateWithPackage("org.olat.repository", "course.made.by") 
-		$r.escapeHtml($row.getAuthors())
+		$r.escapeHtml($row.authors())
 	</div>
 	#end
 	<div class="o_counter pull-left">
-		$r.translate("listing.viewing.counter", "${row.getLaunchCounter()}")
+		$r.translate("listing.viewing.counter", "${row.launchCounter()}")
 	</div>
 	<div class="o_date">
-		$r.formatDate($row.getCreationDate())
+		$r.formatDate($row.creationDate())
 	</div>
 </div>

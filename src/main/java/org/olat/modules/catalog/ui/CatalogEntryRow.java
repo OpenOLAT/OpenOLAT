@@ -146,13 +146,13 @@ public class CatalogEntryRow {
 		creditPointAmount = catalogEntry.getCreditPointAmount();
 	}
 
-	public Long getRepositotyEntryKey() {
+	public Long getRepositoryEntryKey() {
 		return repositotyEntryKey;
 	}
 	
 	public OLATResourceable getRepositoryEntryResourceable() {
 		return repositotyEntryKey != null
-				? OresHelper.createOLATResourceableInstance("RepositoryEntry", getRepositotyEntryKey())
+				? OresHelper.createOLATResourceableInstance("RepositoryEntry", getRepositoryEntryKey())
 				: null;
 	}
 

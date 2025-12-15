@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -36,7 +39,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -54,9 +56,11 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 	private static final String LEVEL = "level";
 	
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
-	private final String curriculumElementImageMapperUrl;
+	private final MapperKey curriculumElementImageMapperKey;
 	private boolean empty;
 	
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private CurriculumService curriculumService;
 
@@ -66,10 +70,9 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("curriculum_element_outline");
 		putInitialPanel(mainVC);
 		
-		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
-				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
-		
+		curriculumElementImageMapper = CurriculumElementImageMapper.mapper210x140();
+		curriculumElementImageMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, curriculumElementImageMapper);
+	
 		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(rootElement);
 		empty = elements.isEmpty();
 		
@@ -108,14 +111,15 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 			}
 		}
 		
+		Map<Long,VFSThumbnailInfos> thumbnails = curriculumElementImageMapper.getThumbnails(rows);
+		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		List<OutlineRow> outlineRows = new ArrayList<>(rows.size());
 		for (CurriculumElementRow row : rows) {
 			OutlineRow outlineRow = new OutlineRow(row);
 			outlineRows.add(outlineRow);
 			
-			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
-					row.getCurriculumElement(), CurriculumElementFileType.teaserImage);
+			String imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperKey.getUrl(), row.getKey(), thumbnails);
 			outlineRow.setThumbnailRelPath(imageUrl);
 			
 			List<LectureBlock> elementLectureBlocks = elementKeyToLectureBlocks.get(row.getKey());
