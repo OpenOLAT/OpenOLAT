@@ -46,6 +46,7 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.AccessDeniedFactory;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.AccessDeniedFactory.AccessDeniedMessage;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
@@ -119,6 +120,11 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Override
 	protected String getTeaser() {
 		return entry.getTeaser();
+	}
+
+	@Override
+	protected boolean hasTeaser() {
+		return RepositoryEntryImageMapper.mapper900x600().hasTeaser(entry);
 	}
 
 	@Override

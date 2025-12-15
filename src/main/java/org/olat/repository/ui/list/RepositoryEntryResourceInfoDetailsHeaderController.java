@@ -49,6 +49,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Offer;
@@ -97,6 +98,9 @@ public class RepositoryEntryResourceInfoDetailsHeaderController extends FormBasi
 	}
 
 	private void addThumbnailIfPresent(UserRequest ureq, FormLayoutContainer container) {
+		boolean hasThumbnails = RepositoryEntryImageMapper.mapper900x600().hasTeaser(entry);
+		if(!hasThumbnails) return;
+		
 		VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
 		VFSLeaf image = repositoryService.getIntroductionImage(entry);
 		if (image != null || movie != null) {
