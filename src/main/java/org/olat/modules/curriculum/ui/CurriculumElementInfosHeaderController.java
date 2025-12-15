@@ -140,6 +140,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	protected String getTeaser() {
 		return element.getTeaser();
 	}
+	
+	@Override
+	protected boolean hasTeaser() {
+		return CurriculumElementImageMapper.mapper900x600().hasTeaser(element);
+	}
 
 	@Override
 	protected VFSLeaf getTeaserImage() {

@@ -268,6 +268,17 @@ public class RepositoryManager {
 		return new File(fResourceFileroot, "media");
 	}
 	
+	public static final String buildPath(OLATResourceable resource) {
+		String type = resource.getResourceableTypeName();
+		if("CurriculumElement".equals(type)) return null;
+		
+		String path = "CourseModule".equals(type)
+				? "course"
+				: "repository";
+		path += "/" + resource.getResourceableId() + "/media";
+		return path;
+	}
+	
 	private VFSContainer getMediaContainer(OLATResourceable re) {
 		File mediaHome = getMediaDirectory(re);
 		return new LocalFolderImpl(mediaHome);

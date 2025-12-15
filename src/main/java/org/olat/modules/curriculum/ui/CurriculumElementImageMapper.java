@@ -126,7 +126,6 @@ public class CurriculumElementImageMapper implements Mapper {
 	
 	public Map<Long,VFSThumbnailInfos> getThumbnailsByPath(List<String> paths) {
 		List<VFSThumbnailInfos> mimages = thumbnailDao.findThumbnails(paths, true, maxWidth, maxHeight);
-		
 		Map<Long, VFSThumbnailInfos> map = new HashMap<>();
 		for(VFSThumbnailInfos mimage:mimages) {
 			String filename = mimage.metadata().getFilename();
@@ -138,6 +137,19 @@ public class CurriculumElementImageMapper implements Mapper {
 			}
 		}
 		return map;
+	}
+	
+	public boolean hasTeaser(CurriculumElementRef c) {
+		List<String> paths = List.of(CurriculumStorage.buildPath(c, CurriculumElementFileType.teaserImage),
+				CurriculumStorage.buildPath(c, CurriculumElementFileType.teaserVideo));
+		List<VFSThumbnailInfos> mimages = thumbnailDao.findThumbnails(paths, true, maxWidth, maxHeight);
+		for(VFSThumbnailInfos mimage:mimages) {
+			String filename = mimage.metadata().getFilename();
+			if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif") || filename.endsWith(".mp4")) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private Long getCurriculumElementKey(String path) {
