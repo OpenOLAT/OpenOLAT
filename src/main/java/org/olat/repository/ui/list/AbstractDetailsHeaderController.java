@@ -136,6 +136,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract String getTeaser();
 	protected abstract VFSLeaf getTeaserImage();
 	protected abstract VFSLeaf getTeaserMovie();
+	protected abstract boolean hasTeaser();
 	protected abstract RepositoryEntryEducationalType getEducationalType();
 	protected abstract String getPendingMessageElementName();
 	protected abstract String getLeaveText(boolean withFee);

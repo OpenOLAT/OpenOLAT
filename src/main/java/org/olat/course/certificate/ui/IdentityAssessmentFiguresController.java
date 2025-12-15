@@ -30,6 +30,9 @@ import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -86,7 +89,7 @@ import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -130,9 +133,9 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	@Autowired
 	private GradeService gradeService;
 	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	private MapperService mapperService;
 	@Autowired
-	private RepositoryService repositoryService;
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -176,7 +179,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		mainVC.put("completion", completionItem);
 		mainVC.contextPut("scoreScalingEnabled", Boolean.valueOf(scoreScalingEnabled));
 		
-		initLinks(ureq);
+		initLinks();
 		initWidgets();
 
 		if (efficiencyStatement != null) {
@@ -219,7 +222,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		widgetGroup.add(certificateWidget);
 	}
 
-	private void initLinks(UserRequest ureq) {
+	private void initLinks() {
 		if(assessedUserCourseEnv != null) {
 			RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())) {
@@ -233,18 +236,16 @@ public class IdentityAssessmentFiguresController extends BasicController {
 					courseWidget.setAdditionalText(entry.getExternalRef());
 				}
 				
-				VFSLeaf vfsLeaf = repositoryService.getIntroductionImage(entry);
-				if (vfsLeaf != null) {
+				RepositoryEntryImageMapper thumbnailMapper = RepositoryEntryImageMapper.mapper210x140();
+				VFSThumbnailInfos thumbnail = thumbnailMapper.getRepositoryThumbnail(entry);
+				if (thumbnail != null) {
+					MapperKey thumbnailMapperKey = mapperService
+							.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, thumbnailMapper);
+					String imageUrl = RepositoryEntryImageMapper.getImageURL(thumbnailMapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 					VelocityContainer courseThumbCont = createVelocityContainer("course_widget_thumb");
 					courseThumbCont.setDomReplacementWrapperRequired(false);
 					courseWidget.setLeftComp(courseThumbCont);
-					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(vfsLeaf, 75, 50, true);
-					if (thumbnail != null) {
-						VFSMediaMapper mapper = new VFSMediaMapper(thumbnail);
-						String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(thumbnail.getRelPath() + thumbnail.getLastModified()));
-						String url = registerCacheableMapper(ureq, mapperId, mapper);
-						courseThumbCont.contextPut("url", url);
-					}
+					courseThumbCont.contextPut("url", imageUrl);
 				}
 			}
 		}

@@ -45,6 +45,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.VFSThumbnailResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,8 +84,27 @@ public class RepositoryEntryImageMapper implements Mapper {
 		return new RepositoryEntryImageMapper(900, 600);
 	}
 	
+	/**
+	 * 
+	 * @param entry The repository entry (course or learn resource)
+	 * @return true if the resource has a teaser image or video
+	 */
+	public boolean hasTeaser(RepositoryEntry entry) {
+		String path = RepositoryManager.buildPath(entry.getOlatResource());
+		if(path == null) return false;
+		
+		List<VFSThumbnailInfos> mimages = thumbnailDao.findThumbnails(List.of(path), true, maxWidth, maxHeight);
+		for(VFSThumbnailInfos mimage:mimages) {
+			String filename = mimage.metadata().getFilename();
+			if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif") || filename.endsWith(".mp4")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public VFSThumbnailInfos getRepositoryThumbnail(RepositoryEntry entry) {
-		String path = buildPath(entry.getOlatResource());
+		String path = RepositoryManager.buildPath(entry.getOlatResource());
 		if(path == null) return null;
 		
 		 Map<Long,VFSThumbnailInfos> map = getThumbnailsByPath(List.of(path));
@@ -93,7 +113,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 	
 	public Map<Long, VFSThumbnailInfos> getRepositoryThumbnails(List<RepositoryEntry> entries) {
 		List<String> pathList = entries.stream()
-				.map(e -> buildPath(e.getOlatResource()))
+				.map(e -> RepositoryManager.buildPath(e.getOlatResource()))
 				.filter(Objects::nonNull)
 				.toList();
 		return  getThumbnailsByPath(pathList);
@@ -101,22 +121,13 @@ public class RepositoryEntryImageMapper implements Mapper {
 	
 	public Map<Long, VFSThumbnailInfos> getResourceableThumbnails(List<? extends OLATResourceable> entries) {
 		List<String> pathList = entries.stream()
-				.map(e -> buildPath(e))
+				.map(e -> RepositoryManager.buildPath(e))
 				.filter(Objects::nonNull)
 				.toList();
 		return  getThumbnailsByPath(pathList);
 	}
 	
-	private static final String buildPath(OLATResourceable resource) {
-		String type = resource.getResourceableTypeName();
-		if("CurriculumElement".equals(type)) return null;
-		
-		String path = "CourseModule".equals(type)
-				? "course"
-				: "repository";
-		path += "/" + resource.getResourceableId() + "/media";
-		return path;
-	}
+
 	
 	private Map<Long, VFSThumbnailInfos> getThumbnailsByPath(List<String> pathList) {
 		List<VFSThumbnailInfos> mimages = thumbnailDao.findThumbnails(pathList, true, maxWidth, maxHeight);
