@@ -107,7 +107,6 @@ import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -255,10 +254,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 		this.repositoryEntryMapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, repositoryEntryMapper);
 		this.taxonomyLevelMapper = new TaxonomyLevelTeaserImageMapper();
 		this.taxonomyLevelMapperKey = mapperService.register(null, "taxonomyLevelTeaserImage", taxonomyLevelMapper);
-		this.curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		this.curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
-				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
-		
+		this.curriculumElementImageMapper = CurriculumElementImageMapper.mapper210x140();
+		this.curriculumElementImageMapperUrl = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, curriculumElementImageMapper).getUrl();
+
 		initForm(ureq);
 		loadModel(true);
 		setWindowTitle();
@@ -440,7 +438,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 				.map(CatalogEntry::getOlatResource)
 				.toList();
 		Map<Long, VFSThumbnailInfos> thumbnails = repositoryEntryMapper.getResourceableThumbnails(resources);
-		rows.forEach( r -> forgeThumbnail(r, thumbnails));
+		Map<Long, VFSThumbnailInfos> elementThumbnails = curriculumElementImageMapper.getResourceableThumbnails(resources);
+		rows.forEach( r -> forgeThumbnail(r, thumbnails, elementThumbnails));
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -687,19 +686,14 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 	}
 	
-	private void forgeThumbnail(CatalogEntryRow row, Map<Long, VFSThumbnailInfos> thumbnails) {
+	private void forgeThumbnail(CatalogEntryRow row, Map<Long, VFSThumbnailInfos> thumbnails, Map<Long, VFSThumbnailInfos> elementThumbnails) {
+		String imageUrl = null;
 		if (row.getRepositoryEntryKey() != null) {
-			String url = repositoryEntryMapper.getThumbnailURL(repositoryEntryMapperKey.getUrl(), row.getRepositoryEntryKey(), thumbnails);
-			if (url != null) {
-				row.setThumbnailRelPath(url);
-			}
+			imageUrl = repositoryEntryMapper.getThumbnailURL(repositoryEntryMapperKey.getUrl(), row.getRepositoryEntryKey(), thumbnails);
 		} else if (row.getCurriculumElementKey() != null) {
-			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
-					() -> row.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
-			if (imageUrl != null) {
-				row.setThumbnailRelPath(imageUrl);
-			}
+			imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperUrl, row.getCurriculumElementKey(), elementThumbnails);
 		}
+		row.setThumbnailRelPath(imageUrl);
 	}
 
 	private void setWindowTitle() {

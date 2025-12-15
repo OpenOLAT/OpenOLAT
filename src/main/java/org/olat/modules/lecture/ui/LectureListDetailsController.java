@@ -258,7 +258,7 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			VFSThumbnailInfos thumbnail = mapperThumbnail.getRepositoryThumbnail(repositoryEntry);
 			if (thumbnail != null) {
-				String thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
+				String thumbnailUrl = RepositoryEntryImageMapper.getImageURL(mapperThumbnailKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 				formLayout.contextPut("thumbnailUrl",thumbnailUrl);
 			}
 			

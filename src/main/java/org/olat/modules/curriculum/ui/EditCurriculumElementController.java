@@ -22,6 +22,8 @@ package org.olat.modules.curriculum.ui;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,10 +35,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -78,9 +80,11 @@ public class EditCurriculumElementController extends BasicController {
 	private final Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
 	private final boolean administrator;
+	private final MapperKey elementImageMapperKey;
 	private final CurriculumElementImageMapper elementImageMapper;
-	private final String mapperUrl;
 	
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -99,10 +103,9 @@ public class EditCurriculumElementController extends BasicController {
 		this.secCallback = secCallback;
 		administrator = ureq.getUserSession().getRoles().isAdministrator();
 		
-		elementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		mapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID, elementImageMapper,
-				CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
-		
+		elementImageMapper = CurriculumElementImageMapper.mapper210x140();
+		elementImageMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, elementImageMapper);
+
 		mainVC = createVelocityContainer("curriculum_element_edit");
 		putInitialPanel(mainVC);
 		exposeToVC();
@@ -186,7 +189,10 @@ public class EditCurriculumElementController extends BasicController {
 			return;
 		}
 		
-		mainVC.contextPut("imageUrl", elementImageMapper.getImageUrl(mapperUrl, element, CurriculumElementFileType.teaserImage));
+		String imageUrl = elementImageMapper.getThumbnailURL(elementImageMapperKey.getUrl(), element);
+		if(StringHelper.containsNonWhitespace(imageUrl)) {
+			mainVC.contextPut("imageUrl", imageUrl);
+		}
 		if (administrator) {
 			mainVC.contextPut("key", element.getKey());
 		}

@@ -107,7 +107,7 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 		VFSThumbnailInfos thumbnail = mapper.getRepositoryThumbnail(entry);
 		if (thumbnail != null) {
 			MapperKey mapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapper);
-			teaserUrl = RepositoryEntryImageMapper.getImageUrl(mapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
+			teaserUrl = RepositoryEntryImageMapper.getImageURL(mapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 		}
 		return teaserUrl;
 	}

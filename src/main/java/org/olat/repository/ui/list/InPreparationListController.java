@@ -77,7 +77,6 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryInfosController;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
@@ -126,7 +125,7 @@ public class InPreparationListController extends FormBasicController implements 
 	private BreadcrumbedStackedPanel stackPanel;
 
 	private final MapperKey repositoryEntryMapperKey;
-	private final String curriculumElementImageMapperUrl;
+	private final MapperKey curriculumElementImageMapperKey;
 	private final RepositoryEntryImageMapper repositoryEntryMapper;
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 
@@ -163,9 +162,8 @@ public class InPreparationListController extends FormBasicController implements 
 		this.stackPanel = stackPanel;
 		repositoryEntryMapper = RepositoryEntryImageMapper.mapper210x140();
 		repositoryEntryMapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, repositoryEntryMapper);
-		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
-				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
+		curriculumElementImageMapper = CurriculumElementImageMapper.mapper210x140();
+		curriculumElementImageMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, curriculumElementImageMapper);
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		
 		participantsOnly = repositoryModule.isMyCoursesParticipantsOnly();
@@ -287,9 +285,12 @@ public class InPreparationListController extends FormBasicController implements 
 		List<InPreparationRow> rows = new ArrayList<>();
 		
 		List<CurriculumElementInPreparation> elements = inPreparationQueries.searchCurriculumElementsInPreparation(getIdentity());
+		List<CurriculumElement> elementsRefs = elements.stream()
+				.map(c -> c.element()).toList();
+		Map<Long,VFSThumbnailInfos> elementThumbnails = curriculumElementImageMapper.getThumbnails(elementsRefs);
 		Set<Long> entriesKeys = new HashSet<>();
 		for(CurriculumElementInPreparation element:elements) {
-			rows.add(forgeRow(element));
+			rows.add(forgeRow(element, elementThumbnails));
 			if(element.entry() != null) {
 				entriesKeys.add(element.entry().getKey());
 			}
@@ -319,7 +320,6 @@ public class InPreparationListController extends FormBasicController implements 
 		forgeSelectLink(row);
 		forgeMarkLink(row);
 		
-		
 		if(StringHelper.containsNonWhitespace(entry.entry().getTechnicalType())) {
 			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.entry().getTechnicalType()), getLocale());
 			row.setTranslatedTechnicalType(translatedType);
@@ -335,7 +335,7 @@ public class InPreparationListController extends FormBasicController implements 
 		return row;
 	}
 	
-	private InPreparationRow forgeRow(CurriculumElementInPreparation element) {
+	private InPreparationRow forgeRow(CurriculumElementInPreparation element, Map<Long,VFSThumbnailInfos> thumbnails) {
 		InPreparationRow row = new InPreparationRow(Long.valueOf(++count), element.element(), element.entry(), element.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
@@ -346,11 +346,9 @@ public class InPreparationListController extends FormBasicController implements 
 				: List.of();
 		row.setTaxonomyLevels(taxonomyLevels);
 		
-		String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
-				row::getCurriculumElementKey, CurriculumElementFileType.teaserImage);
-		if (imageUrl != null) {
-			row.setThumbnailRelPath(imageUrl);
-		}
+		String imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperKey.getUrl(),
+				element.element().getKey(), thumbnails);
+		row.setThumbnailRelPath(imageUrl);
 		return row;
 	}
 	

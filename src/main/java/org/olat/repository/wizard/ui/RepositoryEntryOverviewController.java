@@ -107,7 +107,7 @@ public class RepositoryEntryOverviewController extends BasicController {
 		VFSThumbnailInfos thumbnail = mapperThumbnail.getRepositoryThumbnail(entry);
 		if(thumbnail != null) {
 			MapperKey mapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
-			String thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
+			String thumbnailUrl = RepositoryEntryImageMapper.getImageURL(mapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 			mainVC.contextPut("thumbnailUrl", thumbnailUrl);
 		}
 		

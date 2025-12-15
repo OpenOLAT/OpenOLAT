@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,7 +42,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -64,11 +65,13 @@ public class ImplementationHeaderController extends FormBasicController {
 	private FormLink detailsLink;
 	
 	private final CurriculumElement element;
-	private final String curriculumElementImageMapperUrl;
+	private final MapperKey curriculumElementImageMapperKey;
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 	
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -80,10 +83,9 @@ public class ImplementationHeaderController extends FormBasicController {
 		
 		this.element = element;
 		this.withDetailsLink = withDetailsLink;
-		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
-				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
-		
+		curriculumElementImageMapper = CurriculumElementImageMapper.mapper900x600();
+		curriculumElementImageMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_900_600, curriculumElementImageMapper);
+
 		initForm(ureq);
 	}
 
@@ -93,11 +95,8 @@ public class ImplementationHeaderController extends FormBasicController {
 			InPreparationRow row = new InPreparationRow(element.getKey(), element, null,  false);
 			layoutCont.contextPut("row", row);
 			
-			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
-					() -> row.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
-			if (imageUrl != null) {
-				row.setThumbnailRelPath(imageUrl);
-			}
+			String imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperKey.getUrl(), element);
+			row.setThumbnailRelPath(imageUrl);
 			
 			List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
 			List<TaxonomyLevelNamePath> taxonomyLevels = (levels != null) 

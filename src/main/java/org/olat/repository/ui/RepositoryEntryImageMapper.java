@@ -46,7 +46,6 @@ import org.olat.core.util.vfs.VFSThumbnailResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,8 +83,6 @@ public class RepositoryEntryImageMapper implements Mapper {
 		return new RepositoryEntryImageMapper(900, 600);
 	}
 	
-
-	
 	public VFSThumbnailInfos getRepositoryThumbnail(RepositoryEntry entry) {
 		String path = buildPath(entry.getOlatResource());
 		if(path == null) return null;
@@ -114,7 +111,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 		String type = resource.getResourceableTypeName();
 		if("CurriculumElement".equals(type)) return null;
 		
-		String path = "CourseModule".equals(resource.getResourceableTypeName())
+		String path = "CourseModule".equals(type)
 				? "course"
 				: "repository";
 		path += "/" + resource.getResourceableId() + "/media";
@@ -137,6 +134,17 @@ public class RepositoryEntryImageMapper implements Mapper {
 		return map;
 	}
 	
+	private static final Long getRepositoryEntryKey(String string) {
+		int lastIndex = string.lastIndexOf('.');
+		if(lastIndex >= 0) {
+			string = string.substring(0, lastIndex);
+		}
+		if(StringHelper.isLong(string)) {
+			return Long.valueOf(string);
+		}
+		return null;
+	}
+	
 	public String getThumbnailURL(String mapperUrl, RepositoryEntryRef repoEntry, Map<Long,VFSThumbnailInfos> mimages) {
 		return getThumbnailURL(mapperUrl, repoEntry.getKey(), mimages);
 	}
@@ -145,20 +153,15 @@ public class RepositoryEntryImageMapper implements Mapper {
 		VFSThumbnailInfos mimage = mimages.get(repoEntryKey);
 		return mimage == null
 				? null
-				: getImageUrl(mapperUrl, mimage.metadata(), mimage.thumbnailMetadata());
+				: getImageURL(mapperUrl, mimage.metadata(), mimage.thumbnailMetadata());
 	}
 	
-	public static String getThumbnailURL(String mapperUrl, RepositoryEntryRef repoEntry, OLATResource resource, List<VFSThumbnailInfos> mimages) {
-		String path = buildPath(resource);
-		
-		String filename = repoEntry.getKey() + ".";
-		for(VFSThumbnailInfos mimage:mimages) {
-			String relPath = mimage.metadata().getRelativePath();
-			if(path.equals(relPath) && mimage.metadata().getFilename().startsWith(filename)) {
-				return getImageUrl(mapperUrl, mimage.metadata(), mimage.thumbnailMetadata());
-			}
-		}
-		return null;
+	public static String getImageURL(String mapperUrl, VFSMetadata image, VFSThumbnailMetadata thumbnail) {
+		long lastModified = thumbnail == null 
+				? image.getLastModified().getTime()
+				: thumbnail.getLastModified().getTime();
+		String cachePart = String.valueOf(lastModified);
+		return mapperUrl + "/" + cachePart + "/" + (thumbnail == null ? "none" : thumbnail.getKey()) + "/" + image.getFilename();
 	}
 	
 	@Override
@@ -201,24 +204,5 @@ public class RepositoryEntryImageMapper implements Mapper {
 			resource = new NotFoundMediaResource();
 		}
 		return resource;
-	}
-	
-	public static Long getRepositoryEntryKey(String string) {
-		int lastIndex = string.lastIndexOf('.');
-		if(lastIndex >= 0) {
-			string = string.substring(0, lastIndex);
-		}
-		if(StringHelper.isLong(string)) {
-			return Long.valueOf(string);
-		}
-		return null;
-	}
-	
-	public static String getImageUrl(String mapperUrl, VFSMetadata image, VFSThumbnailMetadata thumbnail) {
-		long lastModified = thumbnail == null 
-				? image.getLastModified().getTime()
-				: thumbnail.getLastModified().getTime();
-		String cachePart = String.valueOf(lastModified);
-		return mapperUrl + "/" + cachePart + "/" + (thumbnail == null ? "none" : thumbnail.getKey()) + "/" + image.getFilename();
 	}
 }

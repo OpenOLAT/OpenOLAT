@@ -55,8 +55,6 @@ import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
 import org.olat.modules.creditpoint.CreditPointModule;
-import org.olat.modules.curriculum.CurriculumElementFileType;
-import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
@@ -95,8 +93,6 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
-	private CurriculumService curriculumService;
-	@Autowired
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private MapperService mapperService;
@@ -116,9 +112,8 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		// Two times the with of the card in mobile view.
 		this.repositoryEntryMapper = RepositoryEntryImageMapper.mapper900x600();
 		this.repositoryEntryMapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_900_600, repositoryEntryMapper);
-		this.curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		this.curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
-				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
+		this.curriculumElementImageMapper = CurriculumElementImageMapper.mapper900x600();
+		this.curriculumElementImageMapperUrl = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_900_600, curriculumElementImageMapper).getUrl();
 		
 		mainVC = createVelocityContainer("launch_catalog_entry");
 		
@@ -137,11 +132,12 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 				.map(CatalogEntry::getOlatResource)
 				.filter(Objects::nonNull).toList();
 		Map<Long, VFSThumbnailInfos> thumbnails = repositoryEntryMapper.getResourceableThumbnails(resources);
+		Map<Long, VFSThumbnailInfos> elementsThumbnails = curriculumElementImageMapper.getResourceableThumbnails(resources);
 		for (CatalogEntry entry : entries) {
 			LauncherItem item = new LauncherItem();
 			
 			appendMetadata(item, entry);
-			appendThumbnail(entry, item, thumbnails);
+			appendThumbnail(entry, item, thumbnails, elementsThumbnails);
 			
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
@@ -242,18 +238,14 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		}
 	}
 	
-	private void appendThumbnail(CatalogEntry entry, LauncherItem item, Map<Long, VFSThumbnailInfos> thumbnails) {
+	private void appendThumbnail(CatalogEntry entry, LauncherItem item, Map<Long, VFSThumbnailInfos> thumbnails, Map<Long, VFSThumbnailInfos> elementsThumbnails) {
 		if (entry.getRepositoryEntryKey() != null) {
 			String url = repositoryEntryMapper.getThumbnailURL(repositoryEntryMapperKey.getUrl(), entry.getRepositoryEntryKey(), thumbnails);
-			if (url != null) {
 				item.setThumbnailRelPath(url);
-			}
 		} else if (entry.getCurriculumElementKey() != null) {
-			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
-					() -> entry.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
-			if (imageUrl != null) {
-				item.setThumbnailRelPath(imageUrl);
-			}
+			String imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperUrl,
+					entry.getCurriculumElementKey(), elementsThumbnails);
+			item.setThumbnailRelPath(imageUrl);
 		}
 	}
 
