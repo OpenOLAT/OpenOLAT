@@ -17,26 +17,17 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.ui;
+package org.olat.core.commons.services.vfs.model;
 
-import java.util.Date;
-
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
 
 /**
  * 
- * Initial date: 29 janv. 2024<br>
+ * Initial date: 12 déc. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record VideoEntryRow(Long key, String authors, Date creationDate, String displayName, long launchCounter,
-		String thumbnailUrl, String expenditureOfWork, OLATResourceable olatResource) {
-	
-	public static final VideoEntryRow valueOf(RepositoryEntry entry, String thumbnailUrl) {
-		return new VideoEntryRow(entry.getKey(), entry.getAuthors(), entry.getCreationDate(),
-				entry.getDisplayname(), entry.getStatistics().getLaunchCounter(), thumbnailUrl,
-				entry.getExpenditureOfWork(), OresHelper.clone(entry.getOlatResource()));
-	}
+public record VFSThumbnailInfos(VFSMetadata metadata, VFSThumbnailMetadata thumbnailMetadata) {
+
 }

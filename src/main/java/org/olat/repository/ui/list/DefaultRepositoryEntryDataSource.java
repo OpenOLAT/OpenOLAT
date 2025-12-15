@@ -25,30 +25,29 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.PriceMethod;
-import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -68,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
+	
 
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
@@ -81,8 +81,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private AccessControlModule acModule;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
@@ -266,26 +264,27 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
 		List<Long> repoKeys = new ArrayList<>(repoEntries.size());
+		List<OLATResource> resources = new ArrayList<>(repoEntries.size());
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
 			repoKeys.add(entry.getKey());
 			if(entry.isValidOfferAvailable()) {
 				resourcesWithAC.add(entry.getOlatResource());
 			}
+			resources.add(entry.getOlatResource());
 		}
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, searchParams.getOfferOrganisations());
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 		
 		final Locale locale = uifactory.getTranslator().getLocale();
-		
-		List<RepositoryEntryRow> items = new ArrayList<>();
+		final Map<Long, VFSThumbnailInfos> mimages = uifactory.getImageMapper().getResourceableThumbnails(resources);
+
+		List<RepositoryEntryRow> items = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
 			
-			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
-			if(image != null) {
-				row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(uifactory.getMapperThumbnailUrl() , image));
-			}
+			String imageUrl = uifactory.getImageMapper().getThumbnailURL(uifactory.getMapperThumbnailUrl(), row, mimages);
+			row.setThumbnailRelPath(imageUrl);
 			
 			String translatedType;
 			if(StringHelper.containsNonWhitespace(entry.getTechnicalType())) {

@@ -22,11 +22,13 @@ package org.olat.modules.video.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
@@ -34,6 +36,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.model.SearchVideoInCollectionParams;
 import org.olat.modules.video.model.SearchVideoInCollectionParams.OrderBy;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 
 
 /**
@@ -46,12 +49,16 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<VideoE
 	
 	private final SearchVideoInCollectionParams searchParams;
 	
+	private final String imageUrl;
 	private final VideoManager videoManager;
+	private final RepositoryEntryImageMapper imageMapper;
 	
 	private Integer count;
 	
-	public VideoEntryDataSource(SearchVideoInCollectionParams searchParams) {
+	public VideoEntryDataSource(SearchVideoInCollectionParams searchParams, String imageUrl, RepositoryEntryImageMapper imageMapper) {
 		this.searchParams = searchParams;
+		this.imageMapper = imageMapper;
+		this.imageUrl = imageUrl;
 		videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 	}
 	
@@ -102,9 +109,11 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<VideoE
 	}
 
 	private List<VideoEntryRow> processViewModel(List<RepositoryEntry> repoEntries) {
-		List<VideoEntryRow> items = new ArrayList<>();
+		List<VideoEntryRow> items = new ArrayList<>(repoEntries.size());
+		Map<Long,VFSThumbnailInfos> thumbnails = imageMapper.getRepositoryThumbnails(repoEntries);
 		for(RepositoryEntry entry:repoEntries) {
-			items.add(new VideoEntryRow(entry));
+			String url = imageMapper.getThumbnailURL(imageUrl, entry, thumbnails);
+			items.add(VideoEntryRow.valueOf(entry, url));
 		}
 		return items;
 	}

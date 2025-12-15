@@ -22,10 +22,9 @@ package org.olat.modules.video.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,8 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -54,8 +51,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.model.SearchVideoInCollectionParams;
 import org.olat.modules.video.model.SearchVideoInCollectionParams.OrderBy;
 import org.olat.modules.video.ui.VideoEntryDataModel.Cols;
@@ -63,6 +58,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,14 +75,17 @@ public class VideoListingController extends FormBasicController implements Activ
 
 	private final TooledStackedPanel toolbarPanel;
 
-	private final String imgUrl;
+	private final MapperKey imgKey;
 	private FlexiTableElement tableEl;
 	private VideoEntryDataModel tableModel;
 	private VideoEntryDataSource dataSource;
 	private SearchVideoInCollectionParams searchParams;
+	private final RepositoryEntryImageMapper imgMapper;
 	
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -98,12 +97,14 @@ public class VideoListingController extends FormBasicController implements Activ
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		this.toolbarPanel = toolbarPanel;
-		
+
+		imgMapper = RepositoryEntryImageMapper.mapper210x140();
+		imgKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, imgMapper);
+
 		searchParams = new SearchVideoInCollectionParams(getIdentity());
 		searchParams.setOrganisations(acService.getOfferOrganisations(getIdentity()));
-		dataSource = new VideoEntryDataSource(searchParams);
-		imgUrl = registerMapper(ureq, new VideoMapper());
-
+		dataSource = new VideoEntryDataSource(searchParams, imgKey.getUrl(), imgMapper);
+		
 		initForm(ureq);
 		tableEl.reloadData();
 	}
@@ -129,7 +130,7 @@ public class VideoListingController extends FormBasicController implements Activ
 		tableEl.setEmptyTableSettings("video.site.empty", isAuthor ? "video.site.empty.hint" : null, "o_icon_video");
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("video_cell");
-		row.contextPut("imgUrl", imgUrl);
+		row.contextPut("imgUrl", imgKey.getUrl());
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new VideoCssDelegate());
@@ -212,27 +213,6 @@ public class VideoListingController extends FormBasicController implements Activ
 		} else {
 			Long id = entries.get(0).getOLATResourceable().getResourceableId();
 			doShowVideo(ureq, id);			
-		}
-	}
-	
-	public class VideoMapper implements Mapper {
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if (StringHelper.containsNonWhitespace(relPath)) {
-				int start = relPath.lastIndexOf("/");
-				if (start != -1) {
-					relPath = relPath.substring(start+1);
-					Long id = Long.valueOf(relPath);
-					VideoEntryRow row = tableModel.getRowByKey(id);
-					if(row != null) {
-						VFSLeaf imageFile = repositoryManager.getImage(id, row.getOLATResourceable());
-						if(imageFile != null) {
-							return new VFSMediaResource(imageFile);
-						}
-					}
-				}
-			}
-			return new NotFoundMediaResource();
 		}
 	}
 	

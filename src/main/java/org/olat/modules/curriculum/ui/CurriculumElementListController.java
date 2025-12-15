@@ -35,8 +35,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -78,7 +76,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
@@ -100,14 +97,12 @@ import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
-import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.OLATResource;
@@ -172,7 +167,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private int counter;
 	private final boolean guestOnly;
 	private final CurriculumRef curriculum;
-	private final MapperKey mapperThumbnailKey;
 	private final Identity assessedIdentity;
 	private final CurriculumElement rootElement;
 	private final CurriculumElementListConfig config;
@@ -186,8 +180,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
-	private MapperService mapperService;
-	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -195,8 +187,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private AssessmentService assessmentService;
 	
@@ -213,7 +203,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 		this.rootElement = rootElement;
 		this.assessedIdentity = assessedIdentity;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		
 		initForm(ureq);
 		loadModel();
@@ -388,14 +377,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 		Map<Long,CurriculumElementWithViewsRow> keyToRow = rows.stream()
 				.collect(Collectors.toMap(CurriculumElementWithViewsRow::getKey, row -> row, (row1, row2) -> row1));
+		
 		rows.forEach(row -> {
 			row.setParent(keyToRow.get(row.getParentKey()));
-			if(row.getOlatResource() != null) {
-				VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable().getResourceableId(), row.getOlatResource());
-				if(image != null) {
-					row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
-				}
-			}
 		});
 		
 		if(rootElement != null) {

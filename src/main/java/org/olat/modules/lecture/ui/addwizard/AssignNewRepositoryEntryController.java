@@ -21,8 +21,10 @@ package org.olat.modules.lecture.ui.addwizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -44,7 +46,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -52,7 +53,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.addwizard.RepositoryEntriesDataModel.EntriesCols;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,13 +71,12 @@ public class AssignNewRepositoryEntryController extends FormBasicController impl
 	private final MapperKey mapperThumbnailKey;
 	private final RepositoryEntry currentEntry;
 	private final CurriculumElement curriculumElement;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
 	private LectureService lectureService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -88,7 +87,8 @@ public class AssignNewRepositoryEntryController extends FormBasicController impl
 		this.lectureBlock = lectureBlock;
 		this.currentEntry = currentEntry;
 		this.curriculumElement = curriculumElement;
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+		mapperThumbnail = RepositoryEntryImageMapper.mapper900x600();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_900_600, mapperThumbnail);
 		
 		initForm(ureq);
 		loadEntriesModel();
@@ -143,10 +143,11 @@ public class AssignNewRepositoryEntryController extends FormBasicController impl
 	
 	private void loadEntriesModel() {
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getRepositoryThumbnails(entries);
 		List<RepositoryEntryRow> rows = new ArrayList<>();
 		for(RepositoryEntry entry:entries) {
 			if(currentEntry == null || !currentEntry.equals(entry)) {
-				rows.add(forgeRow(entry));
+				rows.add(forgeRow(entry, thumbnails));
 			}
 		}
 		entriesTableModel.setObjects(rows);
@@ -154,12 +155,10 @@ public class AssignNewRepositoryEntryController extends FormBasicController impl
 		entriesTableEl.setVisible(true);
 	}
 	
-	private RepositoryEntryRow forgeRow(RepositoryEntry entry) {
+	private RepositoryEntryRow forgeRow(RepositoryEntry entry, Map<Long,VFSThumbnailInfos> thumbnails) {
 		RepositoryEntryRow row = new RepositoryEntryRow(entry);
-		VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
-		if(image != null) {
-			row.setThumbnailUrl(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
-		}
+		String url = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), entry, thumbnails);
+		row.setThumbnailUrl(url);
 		return row;
 	}
 	

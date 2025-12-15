@@ -22,6 +22,7 @@ package org.olat.modules.coach.ui.dashboard;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -52,8 +54,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -65,7 +65,6 @@ import org.olat.modules.coach.ui.CourseListController;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +91,7 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	private FormLink showAllLink;
 
 	private final MapperKey mapperThumbnailKey;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 	
 	@Autowired
 	private MarkManager markManager;
@@ -100,15 +100,14 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	@Autowired
 	private CoachingService coachingService;
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private NodeAccessService nodeAccessService;
 
 	public CourseWidgetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CourseListController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
+		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		completionCellRenderer = new CompletionCellRenderer(getTranslator());
 		successStatusCellRenderer = new SuccessStatusCellRenderer();
 		
@@ -236,6 +235,10 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 				.limit(5)
 				.map(this::toRow)
 				.toList();
+		
+		final Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getResourceableThumbnails(rows);
+		rows.forEach(r -> appendThumbnail(r, thumbnails));
+		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -245,6 +248,8 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 		row.setKey(entry.getRepoKey());
 		row.setDisplayName(entry.getRepoDisplayName());
 		row.setExternalRef(entry.getRepoExternalRef());
+		row.setResourceableId(entry.getResourceableId());
+		row.setResourceableTypeName(entry.getResourceableTypeName());
 		
 		if (StringHelper.containsNonWhitespace(entry.getRepoTechnicalType())) {
 			NodeAccessType type = NodeAccessType.of(entry.getRepoTechnicalType());
@@ -254,11 +259,6 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 			row.setTranslatedTechnicalType(translatedType);
 		} else {
 			row.setTranslatedTechnicalType(translate(entry.getResourceTypeName()));
-		} 
-		
-		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance("CourseModule", entry.getResourceId()));
-		if(image != null) {
-			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
 		}
 		
 		if ("CourseModule".equals(entry.getResourceTypeName())) {
@@ -272,6 +272,12 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 		}
 		
 		return row;
+	}
+	
+
+	private void appendThumbnail(CourseRow row, Map<Long,VFSThumbnailInfos> thumbnails) {
+		String imageUrl = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), row.getKey(), thumbnails);
+		row.setThumbnailRelPath(imageUrl);
 	}
 
 	@Override

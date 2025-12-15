@@ -86,6 +86,10 @@ public class CurriculumStorage {
 		return mediaContainer;
 	}
 	
+	public static final String buildPath(CurriculumElementRef resource, CurriculumElementFileType type) {
+		return "curriculum/element/" + resource.getKey() + "/" + type.name();
+	}
+	
 	public boolean storeCurriculumElementFile(CurriculumElementRef element, CurriculumElementFileType type, Identity savedBy, File file, String filename) {
 		return storeImage(element, type.name(), savedBy, file, filename);
 	}
@@ -153,5 +157,4 @@ public class CurriculumStorage {
 		VFSContainer imageContainer = getOrCreateContainer(element, path);
 		imageContainer.deleteSilently();
 	}
-
 }

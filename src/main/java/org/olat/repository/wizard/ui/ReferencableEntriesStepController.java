@@ -102,7 +102,7 @@ public class ReferencableEntriesStepController extends StepFormBasicController {
 				searchCtrl.getInitialComponent().setVisible(false);
 			}
 			overviewCtrl.getInitialComponent().setVisible(true);
-			overviewCtrl.setRepositoryEntry(ureq, entryContext.getReferencedEntry(), moreFigures);
+			overviewCtrl.setRepositoryEntry(entryContext.getReferencedEntry(), moreFigures);
 			flc.setDirty(true);
 		}
 	}

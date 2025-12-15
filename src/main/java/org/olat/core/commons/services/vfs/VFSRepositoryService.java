@@ -224,6 +224,8 @@ public interface VFSRepositoryService {
 	public boolean isThumbnailAvailable(VFSItem item, VFSMetadata metadata);
 	
 	public VFSLeaf getThumbnail(VFSLeaf file, int maxWidth, int maxHeight, boolean fill);
+	
+	public VFSLeaf getThumbnail(VFSThumbnailMetadata metadata);
 
 	/**
 	 * Store a poster file to be used as a fallback for thumbnail generation.

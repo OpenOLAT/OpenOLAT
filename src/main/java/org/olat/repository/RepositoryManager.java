@@ -295,8 +295,8 @@ public class RepositoryManager {
 		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + targetExtension);
 		if(repoImage == null) {
 			VFSItem item = repositoryHome.resolve(re.getResourceableId() + targetExtension);
-			if(item instanceof VFSLeaf) {
-				repoImage = (VFSLeaf)item;
+			if(item instanceof VFSLeaf image) {
+				repoImage = image;
 			}
 		}
 
@@ -308,6 +308,7 @@ public class RepositoryManager {
 		}
 
 		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTURE_WIDTH, PICTURE_WIDTH, false);
+		repoImage.getMetaInfo();
 		return size != null;
 	}
 	

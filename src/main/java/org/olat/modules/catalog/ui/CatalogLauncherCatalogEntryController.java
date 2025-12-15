@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -45,7 +47,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -54,17 +55,15 @@ import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
 import org.olat.modules.creditpoint.CreditPointModule;
-import org.olat.modules.curriculum.CurriculumElementFileType;
-import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,16 +84,13 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	private final List<CatalogEntry> entries;
 	private final CatalogEntryState state;
 	private final MapperKey repositoryEntryMapperKey;
+	private final RepositoryEntryImageMapper repositoryEntryMapper;
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 	private final String curriculumElementImageMapperUrl;
 	private final Map<Long, CatalogEntry> resourceKeyToEntry;
 
 	@Autowired
 	private CatalogV2Module catalogModule;
-	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private CurriculumService curriculumService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	@Autowired
@@ -113,10 +109,10 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		// Two times the with of the card in mobile view.
-		this.repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
-		this.curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
-		this.curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
-				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
+		this.repositoryEntryMapper = RepositoryEntryImageMapper.mapper900x600();
+		this.repositoryEntryMapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_900_600, repositoryEntryMapper);
+		this.curriculumElementImageMapper = CurriculumElementImageMapper.mapper900x600();
+		this.curriculumElementImageMapperUrl = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_900_600, curriculumElementImageMapper).getUrl();
 		
 		mainVC = createVelocityContainer("launch_catalog_entry");
 		
@@ -131,11 +127,16 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		
 		resourceKeyToEntry = new HashMap<>(entries.size());
 		List<LauncherItem> items = new ArrayList<>(entries.size());
+		List<OLATResource> resources = entries.stream()
+				.map(CatalogEntry::getOlatResource)
+				.filter(Objects::nonNull).toList();
+		Map<Long, VFSThumbnailInfos> thumbnails = repositoryEntryMapper.getResourceableThumbnails(resources);
+		Map<Long, VFSThumbnailInfos> elementsThumbnails = curriculumElementImageMapper.getResourceableThumbnails(resources);
 		for (CatalogEntry entry : entries) {
 			LauncherItem item = new LauncherItem();
 			
 			appendMetadata(item, entry);
-			appendThumbnail(entry, item);
+			appendThumbnail(entry, item, thumbnails, elementsThumbnails);
 			
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
@@ -242,18 +243,14 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		}
 	}
 	
-	private void appendThumbnail(CatalogEntry entry, LauncherItem item) {
+	private void appendThumbnail(CatalogEntry entry, LauncherItem item, Map<Long, VFSThumbnailInfos> thumbnails, Map<Long, VFSThumbnailInfos> elementsThumbnails) {
 		if (entry.getRepositoryEntryKey() != null) {
-			VFSLeaf image = repositoryManager.getImage(entry.getRepositoryEntryKey(), entry.getOlatResource());
-			if (image != null) {
-				item.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(repositoryEntryMapperKey.getUrl() , image));
-			}
+			String url = repositoryEntryMapper.getThumbnailURL(repositoryEntryMapperKey.getUrl(), entry.getRepositoryEntryKey(), thumbnails);
+				item.setThumbnailRelPath(url);
 		} else if (entry.getCurriculumElementKey() != null) {
-			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
-					() -> entry.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
-			if (imageUrl != null) {
-				item.setThumbnailRelPath(imageUrl);
-			}
+			String imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperUrl,
+					entry.getCurriculumElementKey(), elementsThumbnails);
+			item.setThumbnailRelPath(imageUrl);
 		}
 	}
 
