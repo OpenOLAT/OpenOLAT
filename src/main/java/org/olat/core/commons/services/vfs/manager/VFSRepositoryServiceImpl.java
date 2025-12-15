@@ -1254,6 +1254,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		return thumbnailLeaf;
 	}
+	
+	@Override
+	public VFSLeaf getThumbnail(VFSThumbnailMetadata metadata) {
+		String path = "/" + metadata.getOwner().getRelativePath();
+		return VFSManager.olatRootLeaf(path, metadata.getFilename());
+	}
 
 	@Override
 	public VFSLeaf getThumbnail(VFSLeaf file, int maxWidth, int maxHeight, boolean fill) {

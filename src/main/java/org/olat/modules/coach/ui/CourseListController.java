@@ -31,6 +31,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -82,7 +83,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -176,6 +176,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private int counter = 0;
 	private final GroupRoles role;
 	private final MapperKey mapperThumbnailKey;
+	private final RepositoryEntryImageMapper mapperThumbnail;
 	private List<RepositoryEntryEducationalType> educationalTypes;
 	private Map<Long,RepositoryEntryEducationalType> educationalTypesMap;
 	private final CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup;
@@ -208,7 +209,8 @@ public class CourseListController extends FormBasicController implements Activat
 	public CourseListController(UserRequest ureq, WindowControl wControl,
 			GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
+		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		educationalTypesMap = educationalTypes.stream()
 				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, v) -> u));
@@ -480,8 +482,10 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(),
 				role, runtimeTypesGroup);
+		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getResourceableThumbnails(courseStatistics);
+		
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
-				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey())))
+				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey()), thumbnails))
 				.collect(Collectors.toList());
 		loadTaxonomy(rows);
 		
@@ -500,7 +504,7 @@ public class CourseListController extends FormBasicController implements Activat
 		}
 	}
 	
-	private CourseStatEntryRow forgeRow(CourseStatEntry entry, boolean marked) {
+	private CourseStatEntryRow forgeRow(CourseStatEntry entry, boolean marked, Map<Long,VFSThumbnailInfos> thumbnails) {
 		RepositoryEntryEducationalType educationalType = getEducationalType(entry);
 		boolean showStatistics = runtimeTypesGroup.loadStatistics();
 		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
@@ -509,9 +513,9 @@ public class CourseListController extends FormBasicController implements Activat
 		forgeActionsLinks(row);
 		forgeRatings(entry, row);
 		
-		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance(COURSE_MODULE, entry.getResourceId()));
-		if(image != null) {
-			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
+		String url = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), entry.getRepoKey(), thumbnails);
+		if(url != null) {
+			row.setThumbnailRelPath(url);
 		}
 		
 		if(StringHelper.containsNonWhitespace(entry.getRepoTechnicalType())) {

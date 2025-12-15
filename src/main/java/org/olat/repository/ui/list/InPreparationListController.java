@@ -24,11 +24,13 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -70,7 +72,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
@@ -102,6 +103,7 @@ import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterButton;
 import org.olat.repository.ui.list.InPreparationDataModel.InPreparationCols;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -125,6 +127,7 @@ public class InPreparationListController extends FormBasicController implements 
 
 	private final MapperKey repositoryEntryMapperKey;
 	private final String curriculumElementImageMapperUrl;
+	private final RepositoryEntryImageMapper repositoryEntryMapper;
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 
 	private int count = 0;
@@ -158,7 +161,8 @@ public class InPreparationListController extends FormBasicController implements 
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
-		repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
+		repositoryEntryMapper = RepositoryEntryImageMapper.mapper210x140();
+		repositoryEntryMapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, repositoryEntryMapper);
 		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
 		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
 				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
@@ -293,18 +297,23 @@ public class InPreparationListController extends FormBasicController implements 
 		
 		List<RepositoryEntryInPreparation> entries = inPreparationQueries
 				.searchRepositoryEntriesInPreparation(getIdentity(), participantsOnly);
+		List<OLATResource> resources = entries.stream()
+				.map(RepositoryEntryInPreparation::entry)
+				.map(RepositoryEntry::getOlatResource).toList();
+		Map<Long,VFSThumbnailInfos> thumbnails = repositoryEntryMapper.getResourceableThumbnails(resources);
+		
 		for(RepositoryEntryInPreparation entry:entries) {
 			if(entriesKeys.contains(entry.entry().getKey())) {
 				continue;
 			}
-			rows.add(forgeRow(entry));
+			rows.add(forgeRow(entry, thumbnails));
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private InPreparationRow forgeRow(RepositoryEntryInPreparation entry) {
+	private InPreparationRow forgeRow(RepositoryEntryInPreparation entry, Map<Long,VFSThumbnailInfos> thumbnails) {
 		InPreparationRow row = new InPreparationRow(Long.valueOf(++count), entry.entry(), entry.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
@@ -321,10 +330,8 @@ public class InPreparationListController extends FormBasicController implements 
 				: List.of();
 		row.setTaxonomyLevels(taxonomyLevels);
 
-		VFSLeaf image = repositoryManager.getImage(entry.entry().getKey(), entry.entry().getOlatResource());
-		if(image != null) {
-			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(repositoryEntryMapperKey.getUrl(), image));
-		}
+		String url = repositoryEntryMapper.getThumbnailURL(repositoryEntryMapperKey.getUrl(), entry.entry(), thumbnails);
+		row.setThumbnailRelPath(url);
 		return row;
 	}
 	

@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui;
 
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -30,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -53,8 +53,6 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 	
 	@Autowired
 	private MapperService mapperService;
-	@Autowired
-	private RepositoryService repositoryService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
@@ -105,10 +103,11 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 	
 	protected String getTeaserUrl() {
 		String teaserUrl = null;
-		VFSLeaf image = repositoryService.getIntroductionImage(entry);
-		if (image != null) {
-			MapperKey mapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
-			teaserUrl = RepositoryEntryImageMapper.getImageUrl(mapperKey.getUrl() , image);
+		RepositoryEntryImageMapper mapper = RepositoryEntryImageMapper.mapper210x140();
+		VFSThumbnailInfos thumbnail = mapper.getRepositoryThumbnail(entry);
+		if (thumbnail != null) {
+			MapperKey mapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapper);
+			teaserUrl = RepositoryEntryImageMapper.getImageUrl(mapperKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
 		}
 		return teaserUrl;
 	}

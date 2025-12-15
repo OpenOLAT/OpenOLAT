@@ -162,7 +162,7 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 				}
 			}
 			rows.removeIf(row -> {
-				if (row.getRepositotyEntryKey() != null) {
+				if (row.getRepositoryEntryKey() != null) {
 					return row.getOlatResource() == null
 						|| row.getOlatResource().getResourceableTypeName() == null
 						|| !reTypes.contains(row.getOlatResource().getResourceableTypeName());

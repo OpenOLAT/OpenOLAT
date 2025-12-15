@@ -35,6 +35,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -89,7 +90,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -134,6 +134,7 @@ import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.list.LeavingEvent;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -184,6 +185,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private String headerSearchString;
 	private final MapperKey repositoryEntryMapperKey;
+	private final RepositoryEntryImageMapper repositoryEntryMapper;
 	private final TaxonomyLevelTeaserImageMapper taxonomyLevelMapper;
 	private final MapperKey taxonomyLevelMapperKey;
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
@@ -249,7 +251,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 		this.taxonomyLevel = searchParams.getLauncherTaxonomyLevels() != null && !searchParams.getLauncherTaxonomyLevels().isEmpty()
 				? searchParams.getLauncherTaxonomyLevels().get(0)
 				: null;
-		this.repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		this.repositoryEntryMapper = RepositoryEntryImageMapper.mapper210x140();
+		this.repositoryEntryMapperKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, repositoryEntryMapper);
 		this.taxonomyLevelMapper = new TaxonomyLevelTeaserImageMapper();
 		this.taxonomyLevelMapperKey = mapperService.register(null, "taxonomyLevelTeaserImage", taxonomyLevelMapper);
 		this.curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
@@ -432,6 +435,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 		applySearch(rows);
 		
 		rows.forEach(this::forgeLinks);
+		
+		List<OLATResource> resources = catalogEntries.stream()
+				.map(CatalogEntry::getOlatResource)
+				.toList();
+		Map<Long, VFSThumbnailInfos> thumbnails = repositoryEntryMapper.getResourceableThumbnails(resources);
+		rows.forEach( r -> forgeThumbnail(r, thumbnails));
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -622,16 +631,16 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private void forgeLinks(CatalogEntryRow row) {
 		updateAccessMaxParticipants(row);
 		forgeStartLink(row);
-		forgeThumbnail(row);
+		//forgeThumbnail(row);
 		forgeRatings(row);
 	}
 	
 	private void forgeRatings(CatalogEntryRow row) {
-		if(!repositoryModule.isRatingEnabled() || row.getRepositotyEntryKey() == null) return;
+		if(!repositoryModule.isRatingEnabled() || row.getRepositoryEntryKey() == null) return;
 		
 		Double averageRating = row.getAverageRating();
 		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-		RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getRepositotyEntryKey(), null,  averageRatingValue, 5, false, flc);
+		RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getRepositoryEntryKey(), null,  averageRatingValue, 5, false, flc);
 		ratingEl.addActionListener(FormEvent.ONCLICK);
 		ratingEl.setLargeIcon(false);
 		row.setRatingFormItem(ratingEl);
@@ -678,11 +687,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 	}
 	
-	private void forgeThumbnail(CatalogEntryRow row) {
-		if (row.getRepositotyEntryKey() != null) {
-			VFSLeaf image = repositoryManager.getImage(row.getRepositotyEntryKey(), row.getOlatResource());
-			if (image != null) {
-				row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(repositoryEntryMapperKey.getUrl() , image));
+	private void forgeThumbnail(CatalogEntryRow row, Map<Long, VFSThumbnailInfos> thumbnails) {
+		if (row.getRepositoryEntryKey() != null) {
+			String url = repositoryEntryMapper.getThumbnailURL(repositoryEntryMapperKey.getUrl(), row.getRepositoryEntryKey(), thumbnails);
+			if (url != null) {
+				row.setThumbnailRelPath(url);
 			}
 		} else if (row.getCurriculumElementKey() != null) {
 			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
@@ -935,8 +944,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 
 	private String getStartBusinessPath(CatalogEntryRow row) {
 		String businessPath = null;
-		if (row.getRepositotyEntryKey() != null) {
-			businessPath = "[RepositoryEntry:" + row.getRepositotyEntryKey() + "]";
+		if (row.getRepositoryEntryKey() != null) {
+			businessPath = "[RepositoryEntry:" + row.getRepositoryEntryKey() + "]";
 		} else if (row.getCurriculumElementKey() != null) {
 			if (!row.isUnpublishedImplementation()) {
 				if (row.isSingleCourseImplementation()) {
@@ -957,8 +966,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private void doOpenDetails(UserRequest ureq, CatalogEntryRow row) {
-		if (row.getRepositotyEntryKey() != null) {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositotyEntryKey());
+		if (row.getRepositoryEntryKey() != null) {
+			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositoryEntryKey());
 			doOpenDetails(ureq, entry);
 		} else if (row.getCurriculumElementKey() != null) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row::getCurriculumElementKey);
@@ -1031,8 +1040,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (row.getRepositotyEntryKey() != null) {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositotyEntryKey());
+		if (row.getRepositoryEntryKey() != null) {
+			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositoryEntryKey());
 			if (entry != null) {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
 				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {

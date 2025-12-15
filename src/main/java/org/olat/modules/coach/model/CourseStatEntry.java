@@ -22,6 +22,7 @@ package org.olat.modules.coach.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -32,7 +33,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  *  
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseStatEntry {
+public class CourseStatEntry implements OLATResourceable {
 	
 	private static final Certificates NO_CERTIFICATES = new Certificates(0l, 0l, 0l);
 	private static final SuccessStatus NO_SUCCESS = new SuccessStatus(0l, 0l, 0l, 0l);
@@ -157,13 +158,23 @@ public class CourseStatEntry {
 	public Long getResourceId() {
 		return resourceId;
 	}
-
+	
+	@Override
+	public Long getResourceableId() {
+		return getResourceId();
+	}
+	
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
 	}
 
 	public String getResourceTypeName() {
 		return resourceTypeName;
+	}
+
+	@Override
+	public String getResourceableTypeName() {
+		return getResourceTypeName();
 	}
 
 	public void setResourceTypeName(String resourceTypeName) {

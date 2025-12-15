@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailMetadataImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,6 +98,25 @@ public class VFSThumbnailDAO {
 				.getResultList();
 		return metas == null || metas.isEmpty() ? null : metas.get(0);
 	}
+	
+	public List<VFSThumbnailInfos> findThumbnails(List<String> relativePaths, boolean fill, int maxWidth, int maxHeight) {
+		if(relativePaths == null || relativePaths.isEmpty()) return new ArrayList<>();
+		
+		String query = """
+				select new VFSThumbnailInfos(meta, thumb) from filemetadata as meta 
+				left join vfsthumbnail as thumb on (thumb.owner.key=meta.key and thumb.maxWidth=:maxWidth and thumb.maxHeight=:maxHeight and thumb.fill=:fill)
+				where meta.relativePath in (:relativePaths)
+				and (meta.cannotGenerateThumbnails is null or meta.cannotGenerateThumbnails=false) """;
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, VFSThumbnailInfos.class)
+				.setParameter("relativePaths", relativePaths)
+				.setParameter("maxWidth", Integer.valueOf(maxWidth))
+				.setParameter("maxHeight", Integer.valueOf(maxHeight))
+				.setParameter("fill", Boolean.valueOf(fill))
+				.getResultList();
+	}
+	
 	
 	public List<VFSThumbnailMetadata> findThumbnails(String relativePath, String filename) {
 		StringBuilder sb = new StringBuilder();

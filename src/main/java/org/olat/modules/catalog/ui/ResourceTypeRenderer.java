@@ -38,7 +38,7 @@ public class ResourceTypeRenderer extends TypeRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof CatalogEntryRow catalogEntryRow) {
-			if (catalogEntryRow.getRepositotyEntryKey() != null) {
+			if (catalogEntryRow.getRepositoryEntryKey() != null) {
 				super.render(renderer, target, cellValue, row, source, ubu, translator);
 			} else {
 				target.append("<div class='o_nowrap o_repoentry_type'>");

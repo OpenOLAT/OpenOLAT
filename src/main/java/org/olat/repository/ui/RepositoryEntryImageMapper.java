@@ -20,22 +20,33 @@
 package org.olat.repository.ui;
 
 
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
+import org.olat.core.commons.services.vfs.manager.VFSThumbnailDAO;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSThumbnailResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,58 +56,146 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryEntryImageMapper implements Mapper {
+	
+	public static final String MAPPER_ID_210_140 = "repositoryentryImage210x140";
+	public static final String MAPPER_ID_900_600 = "repositoryentryImage900x600";
 
 	private final int maxWidth;
 	private final int maxHeight;
 	
 	@Autowired
+	private VFSThumbnailDAO thumbnailDao;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
-	public RepositoryEntryImageMapper() {
-		this(180, 120);
-	}
-	
-	public RepositoryEntryImageMapper(int maxWidth, int maxHeight) {
+	private RepositoryEntryImageMapper(int maxWidth, int maxHeight) {
 		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
 		CoreSpringFactory.autowireObject(this);
 	}
 	
+	public static final RepositoryEntryImageMapper mapper210x140() {
+		return new RepositoryEntryImageMapper(210, 140);
+	}
+	
+	public static final RepositoryEntryImageMapper mapper900x600() {
+		return new RepositoryEntryImageMapper(900, 600);
+	}
+	
+
+	
+	public VFSThumbnailInfos getRepositoryThumbnail(RepositoryEntry entry) {
+		String path = buildPath(entry.getOlatResource());
+		if(path == null) return null;
+		
+		 Map<Long,VFSThumbnailInfos> map = getThumbnailsByPath(List.of(path));
+		 return map.get(entry.getKey());
+	}
+	
+	public Map<Long, VFSThumbnailInfos> getRepositoryThumbnails(List<RepositoryEntry> entries) {
+		List<String> pathList = entries.stream()
+				.map(e -> buildPath(e.getOlatResource()))
+				.filter(Objects::nonNull)
+				.toList();
+		return  getThumbnailsByPath(pathList);
+	}
+	
+	public Map<Long, VFSThumbnailInfos> getResourceableThumbnails(List<? extends OLATResourceable> entries) {
+		List<String> pathList = entries.stream()
+				.map(e -> buildPath(e))
+				.filter(Objects::nonNull)
+				.toList();
+		return  getThumbnailsByPath(pathList);
+	}
+	
+	private static final String buildPath(OLATResourceable resource) {
+		String type = resource.getResourceableTypeName();
+		if("CurriculumElement".equals(type)) return null;
+		
+		String path = "CourseModule".equals(resource.getResourceableTypeName())
+				? "course"
+				: "repository";
+		path += "/" + resource.getResourceableId() + "/media";
+		return path;
+	}
+	
+	private Map<Long, VFSThumbnailInfos> getThumbnailsByPath(List<String> pathList) {
+		List<VFSThumbnailInfos> mimages = thumbnailDao.findThumbnails(pathList, true, maxWidth, maxHeight);
+		Map<Long, VFSThumbnailInfos> map = new HashMap<>();
+		
+		for(VFSThumbnailInfos mimage:mimages) {
+			String filename = mimage.metadata().getFilename();
+			if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif")) {
+				Long repositoryEntryKey = getRepositoryEntryKey(filename);
+				if(repositoryEntryKey != null) {
+					map.put(repositoryEntryKey, mimage);
+				}
+			}
+		}
+		return map;
+	}
+	
+	public String getThumbnailURL(String mapperUrl, RepositoryEntryRef repoEntry, Map<Long,VFSThumbnailInfos> mimages) {
+		return getThumbnailURL(mapperUrl, repoEntry.getKey(), mimages);
+	}
+	
+	public String getThumbnailURL(String mapperUrl, Long repoEntryKey, Map<Long,VFSThumbnailInfos> mimages) {
+		VFSThumbnailInfos mimage = mimages.get(repoEntryKey);
+		return mimage == null
+				? null
+				: getImageUrl(mapperUrl, mimage.metadata(), mimage.thumbnailMetadata());
+	}
+	
+	public static String getThumbnailURL(String mapperUrl, RepositoryEntryRef repoEntry, OLATResource resource, List<VFSThumbnailInfos> mimages) {
+		String path = buildPath(resource);
+		
+		String filename = repoEntry.getKey() + ".";
+		for(VFSThumbnailInfos mimage:mimages) {
+			String relPath = mimage.metadata().getRelativePath();
+			if(path.equals(relPath) && mimage.metadata().getFilename().startsWith(filename)) {
+				return getImageUrl(mapperUrl, mimage.metadata(), mimage.thumbnailMetadata());
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		int lastIndex = relPath.lastIndexOf('.');
+		String[] rels = relPath.split("/");
+		if(rels == null || rels.length < 2) {
+			return new NotFoundMediaResource();
+		}
+		
+		String repositoryEntryKey = rels[rels.length - 1];
+		int lastIndex = repositoryEntryKey.lastIndexOf('.');
 		if(lastIndex >= 0) {
-			relPath = relPath.substring(0, lastIndex);
+			repositoryEntryKey = repositoryEntryKey.substring(0, lastIndex);
 		}
-		
-		if (relPath.endsWith("/")) {
-			relPath = relPath.substring(0, relPath.length() -1);
-		}
-		
-		// Remove the cache part
-		lastIndex = relPath.lastIndexOf('/');
-		if (lastIndex >= 0) {
-			relPath = relPath.substring(lastIndex + 1, relPath.length());
-		}
+
+		String thumbnailKey = rels[rels.length - 2];
 		
 		MediaResource resource = null;
-		if(StringHelper.isLong(relPath)) {
-			RepositoryEntryRef re = new RepositoryEntryRefImpl(Long.valueOf(relPath));
-			VFSItem image = repositoryService.getIntroductionImage(re);
-			if(image instanceof VFSLeaf) {
-				//121 is needed to fill the div
-				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, maxWidth, maxHeight, true);
-				if(thumbnail != null) {
-					resource = new VFSMediaResource(thumbnail);
-				}
-				
-				if(resource == null) {
-					resource = new VFSMediaResource((VFSLeaf)image);
-				}
+		if(StringHelper.isLong(repositoryEntryKey)) {
+			if(StringHelper.isLong(thumbnailKey)) {
+				VFSThumbnailMetadata mthumbnail = thumbnailDao.loadByKey(Long.valueOf(thumbnailKey));
+				resource = new VFSThumbnailResource(mthumbnail, ServletUtil.CACHE_ONE_YEAR);
 			} else {
-				resource = new NotFoundMediaResource();
+				RepositoryEntry re = repositoryService.loadByKey(Long.valueOf(repositoryEntryKey));
+				VFSItem image = repositoryService.getIntroductionImage(re);
+				if(image instanceof VFSLeaf leaf) {
+					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(leaf, maxWidth, maxHeight, true);
+					if(thumbnail != null) {
+						resource = new VFSMediaResource(thumbnail);
+					}
+					
+					if(resource == null) {
+						resource = new VFSMediaResource(leaf);
+					}
+				} else {
+					resource = new NotFoundMediaResource();
+				}
 			}
 		} else {
 			resource = new NotFoundMediaResource();
@@ -104,9 +203,22 @@ public class RepositoryEntryImageMapper implements Mapper {
 		return resource;
 	}
 	
-	public static String getImageUrl(String mapperUrl, VFSLeaf image) {
-		long lastModified = image.getLastModified();
-		String cachePart = lastModified > 0? String.valueOf(lastModified): UUID.randomUUID().toString().replace("-", "");
-		return mapperUrl + "/" + cachePart + "/" + image.getName();
+	public static Long getRepositoryEntryKey(String string) {
+		int lastIndex = string.lastIndexOf('.');
+		if(lastIndex >= 0) {
+			string = string.substring(0, lastIndex);
+		}
+		if(StringHelper.isLong(string)) {
+			return Long.valueOf(string);
+		}
+		return null;
+	}
+	
+	public static String getImageUrl(String mapperUrl, VFSMetadata image, VFSThumbnailMetadata thumbnail) {
+		long lastModified = thumbnail == null 
+				? image.getLastModified().getTime()
+				: thumbnail.getLastModified().getTime();
+		String cachePart = String.valueOf(lastModified);
+		return mapperUrl + "/" + cachePart + "/" + (thumbnail == null ? "none" : thumbnail.getKey()) + "/" + image.getFilename();
 	}
 }
