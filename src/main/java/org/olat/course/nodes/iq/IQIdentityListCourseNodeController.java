@@ -71,6 +71,7 @@ import org.olat.course.assessment.ui.inspection.CreateInspectionContext;
 import org.olat.course.assessment.ui.inspection.CreateInspectionFinishStepCallback;
 import org.olat.course.assessment.ui.inspection.CreateInspection_1a_CreateConfigurationStep;
 import org.olat.course.assessment.ui.inspection.CreateInspection_3_InspectionStep;
+import org.olat.course.assessment.ui.tool.IdentitiesList;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
@@ -91,7 +92,6 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.ims.qti21.resultexport.QTI21ExportResultsController;
 import org.olat.ims.qti21.ui.QTI21DeleteDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
@@ -127,8 +127,6 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
  *
  */
 public class IQIdentityListCourseNodeController extends IdentityListCourseNodeController {
-	
-	private static final String ORES_TYPE_EXPORT_RESULTS = "Export";
 	
 	private FormLink extraTimeButton;
 	private FormLink exportResultsButton;
@@ -417,7 +415,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(entries != null && !entries.isEmpty()) {
 			ContextEntry entry = entries.get(0);
 			String resourceType = entry.getOLATResourceable().getResourceableTypeName();
-			if(ORES_TYPE_EXPORT_RESULTS.equalsIgnoreCase(resourceType)) {
+			if(ORES_TYPE_EXPORT.equalsIgnoreCase(resourceType)) {
 				doExportResults(ureq);
 			}
 		}
@@ -562,7 +560,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if (!identities.isEmpty()) {
 			CourseEnvironment courseEnv = getCourseEnvironment();
 
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_EXPORT_RESULTS), null);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_EXPORT), null);
 			exportResultsCtrl = new QTI21ExportResultsController(ureq, swControl,
 					courseEnv, (IQTESTCourseNode)courseNode, identities, getAssessmentCallback());
 			listenTo(exportResultsCtrl);

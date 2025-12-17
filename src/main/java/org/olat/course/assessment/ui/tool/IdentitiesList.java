@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.resultexport;
+package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
 

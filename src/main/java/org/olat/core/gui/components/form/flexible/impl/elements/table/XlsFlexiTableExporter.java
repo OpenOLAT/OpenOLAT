@@ -68,26 +68,34 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 	@Override
 	public MediaResource export(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator) {
 
-		String label = StringHelper.containsNonWhitespace(filename) ? filename :
-				"TableExport_"
-				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
-				+ ".xlsx";
+		String label = createFileName();
 		
 		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
-				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
-					OpenXMLWorksheet sheet = workbook.nextWorksheet();
-					createHeader(columns, translator, sheet, workbook);
-					createData(ftC, columns, translator, sheet, workbook);
-					if(ftC.getFormItem().getTableDataModel() instanceof FlexiTableFooterModel) {
-						createFooter(ftC, columns, translator, sheet, workbook);
-					}
-				} catch (IOException e) {
-					log.error("", e);
-				}
+				createWorkbook(out, ftC, columns, translator);
 			}
 		};
+	}
+
+	public String createFileName() {
+		return StringHelper.containsNonWhitespace(filename) ? filename :
+				"TableExport_"
+				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ ".xlsx";
+	}	
+
+	public void createWorkbook(OutputStream out, FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator) {
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			createHeader(columns, translator, sheet, workbook);
+			createData(ftC, columns, translator, sheet, workbook);
+			if(ftC.getFormItem().getTableDataModel() instanceof FlexiTableFooterModel) {
+				createFooter(ftC, columns, translator, sheet, workbook);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 	protected void createHeader(List<FlexiColumnModel> columns, Translator translator,

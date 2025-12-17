@@ -82,7 +82,7 @@ public class SurveysFilter implements SessionFilter {
 			sb.append(" inner join participationFilter.executor executorFilter");
 		}
 		if (status != null) {
-			sb.and().append("sessionFilter.status = '").append(EvaluationFormSessionStatus.done).append("'");
+			sb.and().append("sessionFilter.status = '").append(status.name()).append("'");
 		}
 		if (surveys != null) {
 			sb.and().append("sessionFilter.survey.key in :surveyFilterKeys");

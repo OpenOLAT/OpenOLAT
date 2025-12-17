@@ -17,26 +17,30 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.export;
+package org.olat.core.commons.services.notifications;
+
+import java.util.Date;
+
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 
 /**
- * Only a tag to label the archive.
  * 
- * Initial date: 21 févr. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 16 déc. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public enum ArchiveType {
+public interface SubscriptionMail extends CreateInfo, ModifiedInfo {
 	
-	COMPLETE,
-	PARTIAL,
-	QTI21,
-	MS,
-	GTA,
-	COURSEPLANNER,
-	CURRICULUM,
-	CURRICULUMELEMENT,
-	COACHING,
-	NONE
+	Identity getIdentity();
+	
+	Date getLastMail();
+	
+	void setLastMail(Date lastMail);
+	
+	Date getNextMail();
+	
+	void setNextMail(Date nextMail);
 
 }

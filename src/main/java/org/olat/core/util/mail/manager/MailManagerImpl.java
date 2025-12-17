@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -81,8 +82,10 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.manager.PublisherDAO;
 import org.olat.core.commons.services.taskexecutor.model.DBSecureRunnable;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
@@ -151,6 +154,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	private final MailModule mailModule;
 	@Autowired
 	private GUISettings guiSettings;
+	@Autowired
+	private PublisherDAO publisherDao;
 
 	private FileStorage attachmentStorage;
 	
@@ -164,10 +169,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		VFSContainer root = mailModule.getRootForAttachments();
 		attachmentStorage = new FileStorage(root);
 		
-		PublisherData pdata = getPublisherData();
-		SubscriptionContext scontext = getSubscriptionContext();
-		notificationsManager.getOrCreatePublisher(scontext, pdata);
-		
 		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
@@ -179,23 +180,43 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 	
 	@Override
-	public SubscriptionContext getSubscriptionContext() {
-		return new SubscriptionContext("Inbox", 0l, "");
+	public SubscriptionContext getSubscriptionContext(IdentityRef identity) {
+		return new SubscriptionContext("Inbox", identity.getKey(), "");
 	}
 
 	@Override
-	public PublisherData getPublisherData() {
-		String data = "";
-		String businessPath = "[Inbox:0]";
-		return new PublisherData("Inbox", data, businessPath);
+	public PublisherData getPublisherData(IdentityRef identity) {
+		String key = identity.getKey().toString();
+		String businessPath = "[Inbox:" + key + "]";
+		return new PublisherData("Inbox", key, businessPath);
+	}
+	
+	private void markAsNew(List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) return;
+		
+		List<Long> resIds = new HashSet<>(identities).stream()
+				.map(Identity::getKey)
+				.toList();
+		int updated = publisherDao.updatePublishers("Inbox", resIds, new Date());
+		// If the number of updated publishers match the number of identities, all of them have already subscribed
+		if(updated != identities.size()) {
+			for(Identity identity:identities) {
+				PublisherData data = getPublisherData(identity);
+				SubscriptionContext context = getSubscriptionContext(identity);
+				notificationsManager.asyncSubscribe(identity, context, data);
+			}
+		}
 	}
 
 	@Override
-	public void subscribe(Identity identity) {
-		PublisherData data = getPublisherData();
-		SubscriptionContext context = getSubscriptionContext();
-		if(context != null) {
+	public void subscribe(Identity identity, boolean enabled) {
+		PublisherData data = getPublisherData(identity);
+		SubscriptionContext context = getSubscriptionContext(identity);
+		if(enabled) {
 			notificationsManager.asyncSubscribe(identity, context, data);
+		} else {
+			Publisher publisher = notificationsManager.getOrCreatePublisher(context, data);
+			notificationsManager.createDisabledSubscriberIfAbsent(identity, publisher);
 		}
 	}
 
@@ -1161,14 +1182,11 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			}
 
 			//update subscription
-			for(DBMailRecipient recipient:mail.getRecipients()) {
-				if(recipient.getRecipient() != null) {
-					subscribe(recipient.getRecipient());
-				}
-			}
-
-			SubscriptionContext subContext = getSubscriptionContext();
-			notificationsManager.markPublisherNews(subContext, null, false);
+			List<Identity> recipientsIdentities = mail.getRecipients().stream()
+					.map(DBMailRecipient::getRecipient)
+					.filter(Objects::nonNull)
+					.toList();
+			markAsNew(recipientsIdentities);
 			return mail;
 		} catch (AddressException e) {
 			log.error("Cannot send e-mail: ", e);

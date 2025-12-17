@@ -247,6 +247,10 @@ public interface NotificationsManager {
 	 * @return
 	 */
 	public Date getCompareDateFromInterval(String interval);
+	
+	public Date getNextMail(Date date, String interval);
+	
+	public void updateIntervalSubscriptionMail(Identity identity, String interval);
 
 	/**
 	 * @param identity
@@ -393,6 +397,8 @@ public interface NotificationsManager {
 	 * @return the default notification interval
 	 */
 	public String getDefaultNotificationInterval();
+	
+	public Date getDefaultCompareDate();
 
 	/**
 	 * @param subscriptionContext

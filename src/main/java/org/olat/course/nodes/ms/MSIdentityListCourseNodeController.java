@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -34,11 +35,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.IdentitiesList;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
@@ -58,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MSIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
+	private FormLink expotButton;
 	private FormLink statsButton;
 	
 	private MSStatisticController statsCtrl;
@@ -82,8 +87,10 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		super.initGradeScaleEditButton(formLayout);
 		
-		boolean evaluationFormEnabled = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
-		if (evaluationFormEnabled) {
+		if (hasEvaluationForm()) {
+			expotButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
+			expotButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			
 			statsButton = uifactory.addFormLink("tool.stats", formLayout, Link.BUTTON);
 			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 		}
@@ -106,6 +113,14 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		super.initScoreColumns(columnsModel);
 	}
 	
+	@Override
+	protected void initResetDataTool(FormLayoutContainer formLayout) {
+		if (hasEvaluationForm()) {
+			initBulkExportButton(formLayout);
+		}
+		super.initResetDataTool(formLayout);
+	}
+
 	@Override
 	public void reload(UserRequest ureq) {
 		super.reload(ureq);
@@ -140,17 +155,24 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(statsButton == source) {
+		if (source == expotButton) {
+			doExport(ureq);
+		} else if (statsButton == source) {
 			doLaunchStatistics(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
 	}
-
 	
+	@Override
+	protected ControllerCreator getExportCreator(CourseEnvironment courseEnv, IdentitiesList identities) {
+		return (lureq, lwControl) -> new MSAssessmentExportController(lureq, lwControl, courseEnv, courseNode,
+				identities, MSCourseNode.getEvaluationFormProvider(), ArchiveType.MS);
+	}
+
 	private void doLaunchStatistics(UserRequest ureq) {
-		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), getOptions(),
-				courseNode, MSCourseNode.getEvaluationFormProvider());
+		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), null,
+				getOptions(), courseNode, MSCourseNode.getEvaluationFormProvider());
 		listenTo(statsCtrl);
 		stackPanel.pushController(translate("tool.stats"), statsCtrl);
 	}

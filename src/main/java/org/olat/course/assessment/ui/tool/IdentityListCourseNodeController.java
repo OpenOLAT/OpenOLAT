@@ -75,6 +75,7 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -138,7 +139,6 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -213,7 +213,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IdentityListCourseNodeController extends FormBasicController
 	implements GenericEventListener, AssessmentCourseNodeController {
-
+	
+	protected static final String ORES_TYPE_EXPORT = "Export";
 	public static final String TO_REVIEW_TAB_ID = "ToReview";
 	public static final String TO_RELEASE_TAB_ID = "ToRelease";
 	public static final String ASSIGNED_TO_ME_TAB_ID = "AssignedToMe";
@@ -252,6 +253,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink bulkVisibleButton;
 	private FormLink bulkHiddenButton;
 	private FormLink bulkAwardBadgeButton;
+	private FormLink bulkExportButton;
 	private FormLink resetPassedOverridenButton;
 	private FormLink resetDataBulkButton;
 	protected final TooledStackedPanel stackPanel;
@@ -268,6 +270,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private GradeScaleEditController gradeScaleViewCtrl;
 	private GradeApplyConfirmationController gradeApplyConfirmationCtrl;
 	private AwardBadgesController awardBadgesCtrl;
+	private AssessmentExportsController exportCtrl;
 	private ConfirmResetDataController resetDataCtrl;
 	private StepsMainRunController resetDataWizardCtrl;
 	
@@ -839,6 +842,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_badge");
 			tableEl.addBatchButton(bulkAwardBadgeButton);
 		}
+	}
+	
+	protected void initBulkExportButton(FormLayoutContainer formLayout) {
+		bulkExportButton = uifactory.addFormLink("bulk.export", "export", null, formLayout, Link.BUTTON);
+		bulkExportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+		tableEl.addBatchButton(bulkExportButton);
 	}
 	
 	protected void initResetPassedOverriddenButton(FormLayoutContainer formLayout) {
@@ -1441,6 +1450,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doEmail(ureq);
 		} else if(bulkAwardBadgeButton == source) {
 			doAwardBadges(ureq);
+		} else if(bulkExportButton== source) {
+			doBulkExport(ureq);
 		} else if(resetPassedOverridenButton == source) {
 			doResetPassedOverridden(ureq);
 		} else if(resetDataBulkButton == source) {
@@ -1867,6 +1878,43 @@ public class IdentityListCourseNodeController extends FormBasicController
 		// User which the coach does not see have a score
 		// Total assessment entries with score is higher than visible assessment entries.
 		return scoreCount.intValue() > statistics.getCountScore();
+	}
+	
+	protected void doExport(UserRequest ureq) {
+		IdentitiesList identities = getIdentities(true);
+		doExport(ureq, identities);
+	}
+	
+	protected void doBulkExport(UserRequest ureq) {
+		List<Identity> identities = getSelectedIdentities(row -> true);
+		doExport(ureq, new IdentitiesList(identities, null, false, false));
+	}
+
+	private void doExport(UserRequest ureq, IdentitiesList identities) {
+		if (!identities.isEmpty()) {
+			CourseEnvironment courseEnv = getCourseEnvironment();
+			
+			ControllerCreator exportCreator = getExportCreator(courseEnv, identities);
+			if (exportCreator == null) {
+				return;
+			}
+			
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_EXPORT), null);
+			exportCtrl = new AssessmentExportsController(ureq, swControl, courseEnv, courseNode, getAssessmentCallback(),
+					exportCreator);
+			listenTo(exportCtrl);
+			stackPanel.pushController(translate("export"), exportCtrl);
+		} else {
+			showWarning("error.no.assessed.users");
+		}
+	}
+	
+	/**
+	 * @param courseEnv  
+	 * @param identities 
+	 */
+	protected ControllerCreator getExportCreator(CourseEnvironment courseEnv, IdentitiesList identities) {
+		return null;
 	}
 	
 	private void doResetPassedOverridden(UserRequest ureq) {

@@ -475,8 +475,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		List<Identity> assessedIdentities = participantListCtrl.getAssessableIdentities();
 		options.setIdentities(assessedIdentities);
 
-		statsCtrl = new MSStatisticController(ureq, getWindowControl(), courseEnv, options,
-				gtaNode, GTACourseNode.getEvaluationFormProvider());
+		statsCtrl = new MSStatisticController(ureq, getWindowControl(), courseEnv, null,
+				options, gtaNode, GTACourseNode.getEvaluationFormProvider());
 		listenTo(statsCtrl);
 		
 		assessedIdentityStackPanel.pushController(translate("tool.stats"), statsCtrl);

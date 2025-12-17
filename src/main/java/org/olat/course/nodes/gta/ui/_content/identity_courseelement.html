@@ -17,6 +17,9 @@
 	#if($r.available("group.assessment"))
 		$r.render("group.assessment")
 	#end
+	#if($r.available("export"))
+		$r.render("export")
+	#end
 	#if($r.available("tool.stats"))
 		$r.render("tool.stats")
 	#end

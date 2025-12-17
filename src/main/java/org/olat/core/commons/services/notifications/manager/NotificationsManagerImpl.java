@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.EntityManager;
@@ -65,6 +66,7 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.SubscriptionItem;
+import org.olat.core.commons.services.notifications.SubscriptionMail;
 import org.olat.core.commons.services.notifications.model.NoSubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.PublisherImpl;
 import org.olat.core.commons.services.notifications.model.SubscriberImpl;
@@ -74,10 +76,10 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WorkThreadInformations;
@@ -93,8 +95,6 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.properties.Property;
-import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserDataExportable;
 import org.olat.user.manager.ManifestBuilder;
@@ -117,8 +117,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 
 	private static final int PUB_STATE_OK = 0;
 	private static final int PUB_STATE_NOT_OK = 1;
-	private static final int BATCH_SIZE = 500;
-	private static final String LATEST_EMAIL_USER_PROP = "noti_latest_email";
+	private static final int BATCH_SIZE = 5000;
 	private static final SubscriptionInfo NOSUBSINFO = new NoSubscriptionInfo();
 
 	private final OLATResourceable oresMyself = OresHelper.lookupType(NotificationsManagerImpl.class);
@@ -141,7 +140,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private PropertyManager propertyManager;
+	private SubscriptionMailDAO subscriptionMailDao;
 	
 	private CoordinatorManager coordinatorManager;
 	
@@ -332,139 +331,135 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	
 	@Override
 	public void notifyAllSubscribersByEmail() {
-		log.info(Tracing.M_AUDIT, "starting notification cronjob to send email");
+		log.info(Tracing.M_AUDIT, "Starting notification cronjob to send email");
 		WorkThreadInformations.setLongRunningTask("sendNotifications");
+		long start = System.nanoTime();
 		
-		int counter = 0;
-		int closeConnection = 0;
-		List<Identity> identities;
+		Date now = new Date();
+		Date maxCompareDate = getDefaultCompareDate();
+		Date defaultCompareDate = getCompareDateFromInterval(defaultNotificationInterval);
+		
+		int countSubscribers = 0;
+		int countNotifications = 0;
+		
+		Identity identitySubscribing = null;
+		List<Subscriber> identitySubscribers = new ArrayList<>();
+		
+		List<Subscriber> toNotifyList = subscriberDao.getIdentityWithNews(now, defaultCompareDate, maxCompareDate, 0, BATCH_SIZE);
 		do {
-			identities = securityManager.loadVisibleIdentities(counter, BATCH_SIZE);
-			for(Identity identity:identities) {
-				Roles roles = securityManager.getRoles(identity);
-				if(roles.isGuestOnly()) {
-					continue;
+			int numOfSubscribers = toNotifyList.size();
+			for(int i=0; i<numOfSubscribers; i++) {
+				Subscriber subscriber = toNotifyList.get(i);
+				if(!Objects.equals(identitySubscribing, subscriber.getIdentity())) {
+					if(!identitySubscribers.isEmpty()) {
+						processSubscribersByEmail(identitySubscribing, identitySubscribers);
+					}
+					identitySubscribing = subscriber.getIdentity();
+					identitySubscribers = new ArrayList<>();
 				}
-	
-				closeConnection++;
-				processSubscribersByEmail(identity);
-				if(closeConnection % 20 == 0) {
-					dbInstance.commitAndCloseSession();
+				identitySubscribers.add(subscriber);
+			}
+			
+			countSubscribers += numOfSubscribers;
+			toNotifyList = subscriberDao.getIdentityWithNews(now, defaultCompareDate, maxCompareDate, countSubscribers, BATCH_SIZE);
+			// If nothing to do, process the last subscribers
+			if(toNotifyList.isEmpty() && !identitySubscribers.isEmpty()) {
+				if(processSubscribersByEmail(identitySubscribing, identitySubscribers)) {
+					countNotifications++;
 				}
 			}
-			counter += identities.size();
-			dbInstance.commitAndCloseSession();
-		} while(identities.size() == BATCH_SIZE);
+		} while(!toNotifyList.isEmpty());
 		
 		// done, purge last entry
 		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
-		log.info(Tracing.M_AUDIT, "end notification cronjob to send email");
+		log.info(Tracing.M_AUDIT, "End notification cronjob to send email: {} - {} ({} ms)",
+				countSubscribers, countNotifications, CodeHelper.nanoToMilliTime(start));
 	}
 	
-	private void processSubscribersByEmail(Identity ident) {
-		if(ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
-			return;//send only to active user
-		}
-		
-		String userInterval = getUserIntervalOrDefault(ident);
-		if("never".equals(userInterval)) {
-			return;
-		}
+	private boolean processSubscribersByEmail(Identity identity, List<Subscriber> subscribers) {
+		log.info("Process {} with {} subscriber(s)", identity.getKey(), subscribers.size());
 
-		long start = System.currentTimeMillis();
-		Date compareDate = getCompareDateFromInterval(userInterval);
-		Property p = propertyManager.findProperty(ident, null, null, null, LATEST_EMAIL_USER_PROP);
-		if(p != null) {
-		  	Date latestEmail = new Date(p.getLongValue());
-		  	if(latestEmail.after(compareDate)) {
-		  		return;//nothing to do
-		  	}
-		}
-
+		Date date = new Date();
 		Date defaultCompareDate = getDefaultCompareDate();
-		List<Subscriber> subscribers = getSubscribers(ident, null, PublisherChannel.PULL, true, false);
-		if(subscribers.isEmpty()) {
-			return;
-		}
-		
-		String langPrefs = null;
-		if(ident.getUser() != null && ident.getUser().getPreferences() != null) {
-			langPrefs = ident.getUser().getPreferences().getLanguage();
-		}
+		String langPrefs = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(langPrefs);
 		
-		boolean veto = false;
-		Subscriber latestSub = null;
 		List<SubscriptionItem> items = new ArrayList<>();
-		List<Subscriber> subsToUpdate = new ArrayList<>();
 		for(Subscriber sub:subscribers) {
-			if(!sub.isEnabled()) {
-				continue;
-			}
-			
 			Date latestEmail = sub.getLatestEmailed();
 		
 			SubscriptionItem subsitem = null;
-			if (latestEmail == null || compareDate.after(latestEmail)){
-				// no notif. ever sent until now
-				if (latestEmail == null) {
-					latestEmail = defaultCompareDate;
-				}	else if (latestEmail.before(defaultCompareDate)) {
-					//no notification older than a month
-					latestEmail = defaultCompareDate;
-				}
-				subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML, latestEmail);
-			}	else if(latestEmail != null && latestEmail.after(compareDate)) {
-				//already send an email within the user's settings interval
-				//veto = true;
+			if(latestEmail == null || latestEmail.before(defaultCompareDate)) {
+				// No notification older than a month
+				latestEmail = defaultCompareDate;
 			}
+			
+			subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML, latestEmail);
 			if (subsitem != null) {
 				items.add(subsitem);
-				subsToUpdate.add(sub);
 			}
-			latestSub = sub;
+		}
+
+		boolean sent = false;
+		if(items.isEmpty()) {
+			updateSubscriberLatestEmail(subscribers, date);
+		} else {
+			Translator translator = Util.createPackageTranslator(NotificationSubscriptionController.class, locale);
+			sent = sendMailToUserAndUpdateSubscriber(identity, items, translator, subscribers, date);
 		}
 		
-		Translator translator = Util.createPackageTranslator(NotificationSubscriptionController.class, locale);
-		notifySubscribersByEmail(latestSub, items, subsToUpdate, translator, start, veto);
+		if(sent) {
+			updateSubscriptionMail(identity, date);
+		}
+		
+		dbInstance.commitAndCloseSession();
+		return false;
 	}
 	
-	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto) {
-		if(veto) {
-			if(latestSub != null) {
-				log.info(Tracing.M_AUDIT, latestSub.getIdentity().getKey() + " already received notification email within prefs interval");
-			}
-		} else if (items.size() > 0) {
-			Identity curIdent = latestSub.getIdentity();
-			boolean sentOk = sendMailToUserAndUpdateSubscriber(curIdent, items, translator, subsToUpdate);
-			if (sentOk) {
-				Property p = propertyManager.findProperty(curIdent, null, null, null, LATEST_EMAIL_USER_PROP);
-				if(p == null) {
-					p = propertyManager.createUserPropertyInstance(curIdent, null, LATEST_EMAIL_USER_PROP, null, null, null, null);
-					p.setLongValue(new Date().getTime());
-					propertyManager.saveProperty(p);
-				} else {
-					p.setLongValue(new Date().getTime());
-					propertyManager.updateProperty(p);
-				}
-			  
-				StringBuilder mailLog = new StringBuilder();
-				mailLog.append("Notifications mailed for ").append(curIdent.getKey()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
-				log.info(Tracing.M_AUDIT, mailLog.toString());
-			} else {
-				log.info(Tracing.M_AUDIT, "Error sending notification email to : " + curIdent.getKey());
-			}
+	@Override
+	public void updateIntervalSubscriptionMail(Identity identity, String interval) {
+		SubscriptionMail smail = subscriptionMailDao.loadByIdentity(identity);
+		if(smail == null) {
+			Date now = new Date();
+			Date nextDate = getNextMail(now, identity.getUser().getPreferences().getNotificationInterval());
+			subscriptionMailDao.create(identity, now, nextDate);
+		} else {
+			Date nextDate = getNextMail(smail.getLastMail(), identity.getUser().getPreferences().getNotificationInterval());
+			subscriptionMailDao.update(smail, smail.getLastMail(), nextDate);
 		}
-		//collecting the SubscriptionItem can potentially make a lot of DB calls
-		dbInstance.intermediateCommit();
+	}
+	
+	private void updateSubscriptionMail(Identity identity, Date date) {
+		Date nextDate = getNextMail(date, identity.getUser().getPreferences().getNotificationInterval());
+		SubscriptionMail smail = subscriptionMailDao.loadByIdentity(identity);
+		if(smail == null) {
+			subscriptionMailDao.create(identity, date, nextDate);
+		} else {
+			subscriptionMailDao.update(smail, date, nextDate);
+		}
 	}
 
 	@Override
-	public Date getCompareDateFromInterval(String interval){
+	public Date getCompareDateFromInterval(String interval) {
 		Calendar calNow = Calendar.getInstance();
 		// get hours to subtract from now
 		Integer diffHours = INTERVAL_DEF_MAP.get(interval);
 		calNow.add(Calendar.HOUR_OF_DAY, -diffHours);
+		return calNow.getTime();	
+	}
+	
+	@Override
+	public Date getNextMail(Date date, String interval) {
+		Calendar calNow = Calendar.getInstance();
+		calNow.setTime(date);
+		// get hours to subtract from now
+		Integer diffHours;
+		if(StringHelper.containsNonWhitespace(interval)) {
+			diffHours = INTERVAL_DEF_MAP.get(interval);
+		} else {
+			diffHours = INTERVAL_DEF_MAP.get(getDefaultNotificationInterval());
+		}
+		calNow.add(Calendar.HOUR_OF_DAY, diffHours);
 		return calNow.getTime();	
 	}
 	
@@ -485,9 +480,6 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		return intervalDefMap;
 	}
 	
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getUserIntervalOrDefault(org.olat.core.id.Identity)
-	 */
 	@Override
 	public String getUserIntervalOrDefault(Identity ident){
 		if(ident == null || ident.getUser() == null || ident.getUser().getPreferences() == null) {
@@ -496,10 +488,12 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 		
 		String userInterval = ident.getUser().getPreferences().getNotificationInterval();
-		if (!StringHelper.containsNonWhitespace(userInterval)) userInterval = getDefaultNotificationInterval();
+		if (!StringHelper.containsNonWhitespace(userInterval)) {
+			userInterval = getDefaultNotificationInterval();
+		}
 		List<String> avIntvls = getEnabledNotificationIntervals();
 		if (!avIntvls.contains(userInterval)) {
-			log.warn("Identity " + ident.getKey() + " has an invalid notification-interval (not found in config): " + userInterval);
+			log.warn("Identity {} has an invalid notification-interval (not found in config): {}", ident.getKey(), userInterval);
 			userInterval = getDefaultNotificationInterval();
 		}
 		return userInterval;
@@ -507,16 +501,20 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	
 	@Override
 	public boolean sendMailToUserAndUpdateSubscriber(Identity curIdent, List<SubscriptionItem> items, Translator translator, List<Subscriber> subscribersToUpdate) {
+		return sendMailToUserAndUpdateSubscriber(curIdent, items, translator, subscribersToUpdate, new Date());
+	}
+	
+	private boolean sendMailToUserAndUpdateSubscriber(Identity curIdent, List<SubscriptionItem> items, Translator translator, List<Subscriber> subscribersToUpdate, Date date) {
 		boolean sentOk = sendEmail(curIdent, translator, items);
 		// save latest email sent date for the subscription just emailed
 		// do this only if the mail was successfully sent
 		if (sentOk) {
-			updateSubscriberLatestEmail(subscribersToUpdate);
+			updateSubscriberLatestEmail(subscribersToUpdate, date);
 		}
 		return sentOk;
 	}
 	
-	protected void updateSubscriberLatestEmail(List<Subscriber> subscribersToUpdate) {
+	protected void updateSubscriberLatestEmail(List<Subscriber> subscribersToUpdate, Date date) {
 		if(subscribersToUpdate == null || subscribersToUpdate.isEmpty()) {
 			return;//nothing to do
 		}
@@ -533,7 +531,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		
 		for (Subscriber subscriber :subscribers) {
 			subscriber.setLastModified(new Date());
-			subscriber.setLatestEmailed(new Date());
+			subscriber.setLatestEmailed(date);
 			em.merge(subscriber);
 		}
 	}
@@ -596,6 +594,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		} catch (Exception e) {
 			// FXOLAT-294 :: sending the mail will throw nullpointer exception if To-Identity has no
 			// valid email-address!, catch it...
+			log.error("", e);
 		} 
 		if (result == null || result.getReturnCode() > 0) {
 			if(result!=null)
@@ -1453,7 +1452,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 * maybe the latest user-login could also be used.
 	 * @return Date
 	 */
-	private Date getDefaultCompareDate() {
+	@Override
+	public Date getDefaultCompareDate() {
 		Calendar calNow = Calendar.getInstance();
 		calNow.add(Calendar.DAY_OF_MONTH, -30);
 		return calNow.getTime();

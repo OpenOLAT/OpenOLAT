@@ -20,6 +20,7 @@
 package org.olat.course.nodes.ms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.CssCellRen
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -84,7 +87,7 @@ public class MSStatisticController extends FormBasicController {
 	private MSStatisticDataModel dataModel;
 
 	private final CourseEnvironment courseEnv;
-	private final AssessmentToolOptions asOptions;
+	private final Collection<Identity> identities;
 	private final CourseNode courseNode;
 	private final EvaluationFormProvider evaluationFormProvider;
 	private final Form form;
@@ -106,11 +109,12 @@ public class MSStatisticController extends FormBasicController {
 	private EvaluationFormManager evaluationFormManager;
 
 	public MSStatisticController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			AssessmentToolOptions asOptions, CourseNode courseNode, EvaluationFormProvider evaluationFormProvider) {
+			Collection<Identity> identities, AssessmentToolOptions asOptions, CourseNode courseNode,
+			EvaluationFormProvider evaluationFormProvider) {
 		super(ureq, wControl, "statistic");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.courseEnv = courseEnv;
-		this.asOptions = asOptions;
+		this.identities = identities != null? identities: loadIdentities(asOptions);
 		this.courseNode = courseNode;
 		this.evaluationFormProvider = evaluationFormProvider;
 		this.form = loadForm(courseNode);
@@ -182,7 +186,20 @@ public class MSStatisticController extends FormBasicController {
 			counter++;
 		}
 	}
-
+	
+	@Override
+	public Translator getTranslator() {
+		return super.getTranslator();
+	}
+	
+	public List<FlexiColumnModel> getColumns() {
+		return dataModel.getColumns();
+	}
+	
+	public FlexiTableComponent getTableComponnet() {
+		return  tableEl.getComponent();
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		slidersEnabledEl = uifactory.addCheckboxesHorizontal("sliders.enabled", formLayout, new String[] { "enabled" },
@@ -266,8 +283,6 @@ public class MSStatisticController extends FormBasicController {
 	}
 
 	private void updateModel() {
-		List<Identity> identities = loadIdentities();
-		
 		Map<String, Map<Rubric, RubricStatistic>> identToStatistics = msService
 				.getRubricStatistics(courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), evaluationFormProvider, form);
 		List<MSStatisticRow> rows = new ArrayList<>();
@@ -298,7 +313,7 @@ public class MSStatisticController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 
-	private List<Identity> loadIdentities() {
+	private List<Identity> loadIdentities(AssessmentToolOptions asOptions) {
 		List<Identity> identities;
 		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
 			identities = ScoreAccountingHelper.loadUsers(courseEnv);

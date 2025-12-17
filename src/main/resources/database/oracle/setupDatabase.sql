@@ -223,6 +223,15 @@ CREATE TABLE o_noti_pub (
   PRIMARY KEY (publisher_id)
 );
 
+CREATE TABLE o_noti_mail (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   n_last_mail date,
+   n_next_mail date,
+   fk_identity number(20) not null,
+   primary key (id)
+);
 
 CREATE TABLE o_bs_identity (
   id number(20) NOT NULL,
@@ -5378,6 +5387,9 @@ alter table o_noti_pub add constraint pub_to_root_pub_idx foreign key (fk_root_p
 create index idx_pub_to_root_pub_idx on o_noti_pub (fk_root_publisher);
 alter table o_noti_pub add constraint pub_to_parent_pub_idx foreign key (fk_parent_publisher) references o_noti_pub (publisher_id);
 create index idx_pub_to_parent_pub_idx on o_noti_pub (fk_parent_publisher);
+
+alter table o_noti_mail add constraint noti_mail_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_noti_mail_to_identity_idx on o_noti_mail (fk_identity);
 
 -- catalog entry
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry (id);

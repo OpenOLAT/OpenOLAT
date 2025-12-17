@@ -309,7 +309,9 @@ public class ExportManagerImpl implements ExportManager {
 			archiveNames.add(data.getFilename());
 		}
 		
-		if(params.getArchiveTypes().contains(ArchiveType.QTI21)) {
+		if(params.getArchiveTypes().contains(ArchiveType.QTI21)
+				|| params.getArchiveTypes().contains(ArchiveType.MS)
+				|| params.getArchiveTypes().contains(ArchiveType.GTA)) {
 			VFSContainer exportContainer = getExportContainer(courseEntry, resSubPath);
 			if(exportContainer != null) {
 				List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());

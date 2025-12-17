@@ -94,6 +94,11 @@ public class MSStatisticDataModel extends DefaultFlexiTableDataModel<MSStatistic
 	
 	@Override
 	public MediaResource export(FlexiTableComponent ftC) {
+		List<FlexiColumnModel> columns = getColumns();
+		return new MSStatisticsExport().export(ftC, columns, translator);
+	}
+
+	public List<FlexiColumnModel> getColumns() {
 		FlexiTableColumnModel columnModel = getTableColumnModel();
 		int numOfColumns = columnModel.getColumnCount();
 		List<FlexiColumnModel> columns = new ArrayList<>();
@@ -103,7 +108,7 @@ public class MSStatisticDataModel extends DefaultFlexiTableDataModel<MSStatistic
 				columns.add(column);
 			}
 		}
-		return new MSStatisticsExport().export(ftC, columns, translator);
+		return columns;
 	}
 	
 	@Override
