@@ -673,6 +673,7 @@ public class AssessmentForm extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				evaluationFormExecCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
+		cmc.setCustomWindowCSS("o_modal_large");
 		cmc.activate();
 	}
 	
