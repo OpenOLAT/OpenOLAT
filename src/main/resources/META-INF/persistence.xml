@@ -54,6 +54,8 @@
 		<class>org.olat.core.commons.services.mark.impl.MarkImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
+		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
+		<class>org.olat.core.commons.services.notifications.model.SubscriptionMailImpl</class>
 		<class>org.olat.core.commons.services.tag.model.TagImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>

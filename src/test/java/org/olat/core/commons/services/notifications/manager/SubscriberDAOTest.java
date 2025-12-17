@@ -19,9 +19,11 @@
  */
 package org.olat.core.commons.services.notifications.manager;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,7 +52,13 @@ public class SubscriberDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private PublisherDAO publisherDao;
+	@Autowired
 	private SubscriberDAO subscriberDao;
+	@Autowired
+	private SubscriptionMailDAO subscriptionMailDao;
 	@Autowired
 	private NotificationsManager notificationsManager;
 	
@@ -111,6 +120,98 @@ public class SubscriberDAOTest extends OlatTestCase {
 		Subscriber subscriber = subscriberDao.getSubscriber(id, context, subPublisherData);
 		Assert.assertEquals(subSubscriber, subscriber);
 		Assert.assertNotEquals(rootSubscriber, subscriber);
+	}
+	
+	@Test
+	public void getIdentityWithNews() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b4-");
+
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SubscriberDAOTest", CodeHelper.getForeverUniqueID(), identifier);
+		PublisherData publisherData = new PublisherData("getSubscribersByData", identifier, null);
+		Publisher publisher = notificationsManager.getOrCreatePublisherWithData(context, publisherData, null, PublisherChannel.PULL);
+		publisher.setLatestNewsDate(DateUtils.addHours(new Date(), -1));
+		publisherDao.updatePublisher(publisher);
+		dbInstance.commitAndCloseSession();
+		Subscriber subscriber = notificationsManager.subscribe(id, publisher);
+		subscriber.setLatestEmailed(DateUtils.addDays(new Date(), -2));
+		notificationsManager.mergeSubscriber(subscriber);
+		dbInstance.commitAndCloseSession();
+		
+		Date date = new Date();
+		Date maxCompareDate = notificationsManager.getDefaultCompareDate();
+		Date defaultCompareDate = notificationsManager.getCompareDateFromInterval("daily");
+		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 1000);
+		Assertions.assertThat(subscribers)
+			.containsAnyOf(subscriber);
+	}
+	
+	@Test
+	public void getIdentityWithNewsNextMail() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b5-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b6-");
+
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SubscriberDAOTest", CodeHelper.getForeverUniqueID(), identifier);
+		PublisherData publisherData = new PublisherData("getSubscribersByData", identifier, null);
+		Publisher publisher = notificationsManager.getOrCreatePublisherWithData(context, publisherData, null, PublisherChannel.PULL);
+		publisher.setLatestNewsDate(DateUtils.addHours(new Date(), -1));
+		publisherDao.updatePublisher(publisher);
+		dbInstance.commitAndCloseSession();
+		Subscriber subscriber1 = notificationsManager.subscribe(id1, publisher);
+		Subscriber subscriber2 = notificationsManager.subscribe(id2, publisher);
+		subscriber1.setLatestEmailed(DateUtils.addDays(new Date(), -2));
+		notificationsManager.mergeSubscriber(subscriber1);
+		subscriber2.setLatestEmailed(DateUtils.addDays(new Date(), -2));
+		notificationsManager.mergeSubscriber(subscriber2);
+		
+		Date lastMail = DateUtils.addDays(new Date(), -2);
+		subscriptionMailDao.create(id1, lastMail, null);
+		subscriptionMailDao.create(id2, lastMail, DateUtils.addDays(new Date(), 2));
+		dbInstance.commitAndCloseSession();
+		
+		Date date = new Date();
+		Date maxCompareDate = notificationsManager.getDefaultCompareDate();
+		Date defaultCompareDate = notificationsManager.getCompareDateFromInterval("daily");
+		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 1000);
+		Assertions.assertThat(subscribers)
+			.containsAnyOf(subscriber1)
+			.doesNotContain(subscriber2);
+	}
+	
+	@Test
+	public void getIdentityWithNeverNews() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b7-");
+		Identity idRef = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b8-");
+
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SubscriberDAOTest", CodeHelper.getForeverUniqueID(), identifier);
+		PublisherData publisherData = new PublisherData("getSubscribersByData", identifier, null);
+		Publisher publisher = notificationsManager.getOrCreatePublisherWithData(context, publisherData, null, PublisherChannel.PULL);
+		publisher.setLatestNewsDate(DateUtils.addHours(new Date(), -1));
+		publisherDao.updatePublisher(publisher);
+		dbInstance.commitAndCloseSession();
+		
+		id.getUser().getPreferences().setNotificationInterval("never");
+		userManager.updateUserFromIdentity(id);
+		
+		Subscriber subscriber = notificationsManager.subscribe(id, publisher);
+		subscriber.setLatestEmailed(DateUtils.addDays(new Date(), -15));
+		notificationsManager.mergeSubscriber(subscriber);
+		
+		Subscriber subscriberRef = notificationsManager.subscribe(idRef, publisher);
+		subscriberRef.setLatestEmailed(DateUtils.addDays(new Date(), -15));
+		notificationsManager.mergeSubscriber(subscriberRef);
+		
+		dbInstance.commitAndCloseSession();
+		
+		Date date = new Date();
+		Date maxCompareDate = notificationsManager.getDefaultCompareDate();
+		Date defaultCompareDate = notificationsManager.getCompareDateFromInterval("daily");
+		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 1000);
+		Assertions.assertThat(subscribers)
+			.containsAnyOf(subscriberRef)
+			.doesNotContain(subscriber);
 	}
 
 }

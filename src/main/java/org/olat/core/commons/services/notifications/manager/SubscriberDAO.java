@@ -20,7 +20,10 @@
 package org.olat.core.commons.services.notifications.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import jakarta.persistence.TemporalType;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -155,6 +158,42 @@ public class SubscriberDAO {
 				.setParameter("publisherData", data.getData())
 				.getResultList();
 		return subscribers.isEmpty() ? null : subscribers.get(0);
+	}
+	
+	/**
+	 * Load subscriber which are enabled, with publisher with news older than last email check,
+	 * publisher which are enabled, with news older than a month
+	 * 
+	 * @param date Today
+	 * @param defaultCompareDate Default comparison date if interval is not defined for the user
+	 * @param maxCompareDate Don't search publisher with news older than this date
+	 * @param firstResult
+	 * @param maxResults
+	 * @return
+	 */
+	public List<Subscriber> getIdentityWithNews(Date date, Date defaultCompareDate, Date maxCompareDate, int firstResult, int maxResults) {
+		String query = """
+				select sub from notisub as sub
+				inner join fetch sub.publisher as pub
+				inner join fetch sub.identity as ident
+				inner join fetch ident.user as identUser
+				left join notimail mail on (mail.identity.key=sub.identity.key)
+				where sub.enabled is true and pub.state=0 and ident.status<100 
+				and (identUser.preferences.notificationInterval is null or identUser.preferences.notificationInterval<>'never')
+				and sub.latestEmailed<=pub.latestNewsDate
+				and pub.latestNewsDate>=:maxCompareDate
+				and (mail.lastMail is null or (mail.nextMail is null and mail.lastMail<:defaultCompareDate) or mail.nextMail<=:date)
+				and ((mail.nextMail is null and pub.latestNewsDate>=:defaultCompareDate) or pub.latestNewsDate>=mail.lastMail)
+				order by ident.key, sub.key""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Subscriber.class)
+				.setParameter("date", date, TemporalType.TIMESTAMP)
+				.setParameter("maxCompareDate", maxCompareDate, TemporalType.TIMESTAMP)
+				.setParameter("defaultCompareDate", defaultCompareDate, TemporalType.TIMESTAMP)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 	
 }

@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -859,8 +860,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 					//update email date
 					Publisher publisher = notificationManager.getPublisher(sc);
 					Subscriber subscriber = notificationManager.getSubscriber(id, publisher);
-					List<Subscriber> subscribersToUpdate = Collections.singletonList(subscriber);
-					notificationManager.updateSubscriberLatestEmail(subscribersToUpdate);
+					List<Subscriber> subscribersToUpdate = List.of(subscriber);
+					notificationManager.updateSubscriberLatestEmail(subscribersToUpdate, new Date());
 					
 					dbInstance.closeSession();
 				}

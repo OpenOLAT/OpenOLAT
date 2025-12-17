@@ -95,9 +95,9 @@ public class PreferencesFormController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private NotificationsManager notificiationMgr;
-	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private NotificationsManager notificationManager;
 	@Autowired
 	private UserLifecycleManager userLifecycleManager;
 
@@ -123,9 +123,11 @@ public class PreferencesFormController extends FormBasicController {
 		tobeChangedIdentity = securityManager.loadIdentityByKey(tobeChangedIdentity.getKey());
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();
 		prefs.setLanguage(language.getSelectedKey());
-		if (notificationInterval != null) {
+		if (notificationInterval != null && notificationInterval.isOneSelected()) {
 			// only read notification interval if available, could be disabled by configuration
-			prefs.setNotificationInterval(notificationInterval.getSelectedKey());			
+			String interval = notificationInterval.getSelectedKey();
+			prefs.setNotificationInterval(interval);	
+			notificationManager.updateIntervalSubscriptionMail(tobeChangedIdentity, interval);
 		}
 		
 		if(mailSystem != null && mailSystem.isOneSelected()) {
@@ -220,7 +222,7 @@ public class PreferencesFormController extends FormBasicController {
 		}
 		
 		// Email notification interval
-		List<String> intervals = notificiationMgr.getEnabledNotificationIntervals();
+		List<String> intervals = notificationManager.getEnabledNotificationIntervals();
 		if (!intervals.isEmpty()) {
 			String[] intervalKeys = new String[intervals.size()];
 			intervals.toArray(intervalKeys);
