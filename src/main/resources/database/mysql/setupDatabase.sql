@@ -211,6 +211,16 @@ create table if not exists o_noti_pub (
    primary key (publisher_id)
 );
 
+create table o_noti_mail (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   n_last_mail datetime,
+   n_next_mail datetime,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 create table if not exists o_bs_identity (
    id bigint not null,
    version mediumint unsigned not null,
@@ -5072,6 +5082,7 @@ alter table o_gp_bgtoarea_rel ENGINE = InnoDB;
 alter table o_catentry ENGINE = InnoDB;
 alter table o_noti_pub ENGINE = InnoDB;
 alter table o_noti_sub ENGINE = InnoDB;
+alter table o_noti_mail ENGINE = InnoDB;
 alter table o_note ENGINE = InnoDB;
 alter table o_lifecycle ENGINE = InnoDB;
 alter table o_plock ENGINE = InnoDB;
@@ -5478,6 +5489,8 @@ alter table o_noti_sub add constraint FK4FB8F0476B1F22F8 foreign key (fk_identit
 
 alter table o_noti_pub add constraint pub_to_root_pub_idx foreign key (fk_root_publisher) references o_noti_pub (publisher_id);
 alter table o_noti_pub add constraint pub_to_parent_pub_idx foreign key (fk_parent_publisher) references o_noti_pub (publisher_id);
+
+alter table o_noti_mail add constraint noti_mail_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- catalog entry
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry (id);

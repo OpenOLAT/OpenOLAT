@@ -48,9 +48,9 @@ import org.olat.core.util.vfs.VFSLeaf;
 public interface MailManager {
 	
 
-	public SubscriptionContext getSubscriptionContext();
+	public SubscriptionContext getSubscriptionContext(IdentityRef identity);
 	
-	public PublisherData getPublisherData();
+	public PublisherData getPublisherData(IdentityRef identity);
 
 	
 	/**
@@ -58,7 +58,7 @@ public interface MailManager {
 	 * 
 	 * @param identity The identity which want to subscribe the mails news
 	 */
-	public void subscribe(Identity identity);
+	public void subscribe(Identity identity, boolean enabled);
 	
 	/**
 	 * @param key

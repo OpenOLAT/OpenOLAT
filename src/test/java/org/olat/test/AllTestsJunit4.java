@@ -521,6 +521,7 @@ import org.junit.runners.Suite;
 	org.olat.search.service.document.file.OfficeDocumentTest.class,
 	org.olat.core.commons.services.notifications.manager.PublisherDAOTest.class,
 	org.olat.core.commons.services.notifications.manager.SubscriberDAOTest.class,
+	org.olat.core.commons.services.notifications.manager.SubscriptionMailDAOTest.class,
 	org.olat.core.commons.services.notifications.manager.NotificationsManagerTest.class,
 	org.olat.registration.RegistrationManagerTest.class,
 	org.olat.course.nodes.projectbroker.ProjectBrokerManagerTest.class,

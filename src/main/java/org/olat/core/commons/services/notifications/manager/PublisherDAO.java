@@ -19,8 +19,10 @@
  */
 package org.olat.core.commons.services.notifications.manager;
 
+import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -43,6 +45,23 @@ public class PublisherDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	
+	public Publisher updatePublisher(Publisher publisher) {
+		return dbInstance.getCurrentEntityManager().merge(publisher);
+	}
+	
+	public int updatePublishers(String resName, List<Long> resId, Date lastNews) {
+		if(resId == null || resId.isEmpty()) return 0;
+		
+		String query = """
+				update notipublisher pub set pub.latestNewsDate=:date
+				where pub.resName=:resName and pub.resId in (:resId) and pub.latestNewsDate<:date""";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+			.setParameter("resName", resName)
+			.setParameter("resId", resId)
+			.setParameter("date", lastNews, TemporalType.TIMESTAMP)
+			.executeUpdate();
+	}
 	
 	public List<Publisher> getPublisherByType(String type) {
 		String query = """
