@@ -45,12 +45,12 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.ui.tool.IdentitiesList;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.ui.VideoTaskAssessmentDetailsTableModel.DetailsCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
-import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.modules.video.VideoTaskSession;
 

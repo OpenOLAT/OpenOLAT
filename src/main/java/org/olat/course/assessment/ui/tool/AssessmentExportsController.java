@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,10 +14,10 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.resultexport;
+package org.olat.course.assessment.ui.tool;
 
 import org.olat.core.commons.services.export.ui.ExportsListController;
 import org.olat.core.commons.services.export.ui.ExportsListSettings;
@@ -28,38 +28,38 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.assessment.ui.tool.IdentitiesList;
-import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 1 févr. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: Dec 12, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class QTI21ExportResultsController extends BasicController {
-	
-	private final QTI21NewExportController newExportCtrl;
+public class AssessmentExportsController extends BasicController {
+
+	private final Controller exportCtrl;
 	private final ExportsListController exportListController;
-	
-	public QTI21ExportResultsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			IQTESTCourseNode courseNode, IdentitiesList identities, AssessmentToolSecurityCallback secCallback) {
+
+	public AssessmentExportsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
+			CourseNode courseNode, AssessmentToolSecurityCallback secCallback, ControllerCreator exportCreator) {
 		super(ureq, wControl);
 		
-		newExportCtrl = new QTI21NewExportController(ureq, wControl, courseEnv, courseNode, identities);
-		listenTo(newExportCtrl);
+		exportCtrl = exportCreator.createController(ureq, wControl);
+		listenTo(exportCtrl);
 		
 		ExportsListSettings options = new ExportsListSettings(true);
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		exportListController = new QTI21ExportsListController(ureq, wControl, entry, courseNode.getIdent(), secCallback.isAdmin(), options, getTranslator());
+		exportListController = new ExportsListController(ureq, wControl, entry, courseNode.getIdent(), secCallback.isAdmin(), options, getTranslator());
 		listenTo(exportListController);
 		exportListController.loadModel();
 		
 		VelocityContainer mainVC = createVelocityContainer("export");
-		mainVC.put("new.export", newExportCtrl.getInitialComponent());
+		mainVC.put("export", exportCtrl.getInitialComponent());
 		mainVC.put("export.list", exportListController.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
@@ -71,11 +71,12 @@ public class QTI21ExportResultsController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newExportCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+		if (exportCtrl == source) {
+			if (event == Event.DONE_EVENT) {
 				exportListController.loadModel();
 			}
 		}
 	}
+
 
 }

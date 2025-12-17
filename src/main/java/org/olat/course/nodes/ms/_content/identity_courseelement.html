@@ -6,11 +6,14 @@
 		#if($r.available("tool.grade.scale"))
 			$r.render("tool.grade.scale")
 		#end
-		#if($r.available("tool.stats"))
-			$r.render("tool.stats")
-		#end
 		#if($r.available("bulk.assessment"))
 			$r.render("bulk.assessment")
+		#end
+		#if($r.available("export"))
+			$r.render("export")
+		#end
+		#if($r.available("tool.stats"))
+			$r.render("tool.stats")
 		#end
 	</div>
 #end

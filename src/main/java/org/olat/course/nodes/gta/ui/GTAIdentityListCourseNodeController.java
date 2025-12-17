@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -46,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.IdentitiesList;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
@@ -57,8 +60,10 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.ms.MSAssessmentExportController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MSStatisticController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -84,6 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeController {
 
+	private FormLink expotButton;
 	private FormLink statsButton;
 	private FormLink downloadButton;
 	private FormLink bulkExtendButton;
@@ -139,6 +145,9 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
 		
 		if (assessmentConfig.hasAssessmentForm()) {
+			expotButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
+			expotButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			
 			statsButton = uifactory.addFormLink("tool.stats", formLayout, Link.BUTTON);
 			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 		}
@@ -171,6 +180,9 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		}
 
 		super.initBulkEmailTool(ureq, formLayout);
+		if (assessmentConfig.hasFormEvaluation()) {
+			initBulkExportButton(formLayout);
+		}
 		super.initResetDataTool(formLayout);
 	}
 	
@@ -275,6 +287,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			doBulkDownload(ureq);
 		} else if(bulkExtendButton == source) {
 			doEditMultipleDueDates(ureq);
+		} else if (expotButton == source) {
+			doExport(ureq);
 		} else if(statsButton == source) {
 			doLaunchStatistics(ureq);
 		} else {
@@ -327,6 +341,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
+	@Override
+	protected ControllerCreator getExportCreator(CourseEnvironment courseEnv, IdentitiesList identities) {
+		return (lureq, lwControl) -> new MSAssessmentExportController(lureq, lwControl, courseEnv, courseNode,
+				identities, GTACourseNode.getEvaluationFormProvider(), ArchiveType.GTA);
+	}
+	
 	private void doEditMultipleDueDates(UserRequest ureq) {
 		if(guardModalController(editMultipleDueDatesCtrl)) return;
 		
@@ -362,8 +382,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	}
 	
 	private void doLaunchStatistics(UserRequest ureq) {
-		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), getOptions(),
-				courseNode, GTACourseNode.getEvaluationFormProvider());
+		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), null,
+				getOptions(), courseNode, GTACourseNode.getEvaluationFormProvider());
 		listenTo(statsCtrl);
 		stackPanel.pushController(translate("tool.stats"), statsCtrl);
 	}
