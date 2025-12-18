@@ -78,7 +78,8 @@ public class CurriculumManagerController extends BasicController implements Acti
 		lecturesSecCallback = roles.isLectureManager() || roles.isAdministrator() || roles.isCurriculumManager() || roles.isLearnResourceManager()
 				? LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager)
 				: LecturesSecurityCallbackFactory.getSecurityCallback(false, false, false, null);
-		certificationSecCallback = CertificationProgramSecurityCallbackFactory.getSecurityCallback(roles);
+		certificationSecCallback = CertificationProgramSecurityCallbackFactory
+				.getSecurityCallback(getIdentity(), roles);
 
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setShowCloseLink(false, false);

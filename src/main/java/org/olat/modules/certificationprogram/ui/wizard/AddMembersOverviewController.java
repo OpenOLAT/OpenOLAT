@@ -84,7 +84,7 @@ public class AddMembersOverviewController extends StepFormBasicController {
 		List<UserToCertify> selectedIdentities = membersContext.getSelectedIdentities();	
 		long numToCertify = selectedIdentities == null ? 0 : selectedIdentities.size();
 		long numFutureCertified = numToCertify;
-		if(numToCertify > 0) {
+		if(selectedIdentities != null && numToCertify > 0) {
 			numFutureCertified = selectedIdentities.stream()
 					.filter(t -> t.currentStatus() == null || t.currentStatus() == UserMembershipStatus.CANDIDATE || t.currentStatus() == UserMembershipStatus.ALUMNI)
 					.count();

@@ -26,6 +26,10 @@ package org.olat.modules.certificationprogram.ui;
  *
  */
 public interface CertificationProgramSecurityCallback {
+
+	boolean canViewCertificationPrograms();
+	
+	boolean canNewCertificationProgram();
 	
 	boolean canAddMember();
 

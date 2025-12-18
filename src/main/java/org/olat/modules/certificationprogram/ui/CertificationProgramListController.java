@@ -133,8 +133,10 @@ public class CertificationProgramListController extends FormBasicController impl
 	}
 	
 	private void initButtonForm(FormItemContainer formLayout) {
-		addCertificationProgramButton = uifactory.addFormLink("add.certification.program", formLayout, Link.BUTTON);
-		addCertificationProgramButton.setIconLeftCSS("o_icon o_icon_add");
+		if(secCallback.canNewCertificationProgram()) {
+			addCertificationProgramButton = uifactory.addFormLink("add.certification.program", formLayout, Link.BUTTON);
+			addCertificationProgramButton.setIconLeftCSS("o_icon o_icon_add");
+		}
 	}
 	
 	private void initTableForm(FormItemContainer formLayout, UserRequest ureq) {

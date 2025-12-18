@@ -1,7 +1,9 @@
 <div class="o_header_with_buttons">
 	<h2><i class="o_icon o_icon_certificate"> </i> $r.translate("certification.programs")</h2>
+	#if($r.available("add.certification.program"))
 	<div class="o_button_group o_button_group_right">
 		$r.render("add.certification.program")
 	</div>
+	#end
 </div>
 $r.render("table")

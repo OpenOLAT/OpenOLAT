@@ -132,7 +132,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		certificationProgramsLink = LinkFactory.createLink("certification.programs", "certifications", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		certificationProgramsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_certificate");
 		certificationProgramsLink.setElementCssClass("btn btn-default o_button_mega o_sel_certification_programs");
-		certificationProgramsLink.setVisible(certificationProgramModule.isEnabled());
+		certificationProgramsLink.setVisible(certificationProgramModule.isEnabled() && certificationSecCallback.canViewCertificationPrograms());
 		
 		initDashboard(ureq);
 		putInitialPanel(mainVC);
@@ -174,9 +174,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 				subEntries = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 			}
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-		} else if("Reports".equalsIgnoreCase(type)) {
+		} else if("Reports".equalsIgnoreCase(type) && reportsLink.isVisible()) {
 			doOpenReports(ureq);
-		} else if("Certification".equalsIgnoreCase(type)) {
+		} else if("Certification".equalsIgnoreCase(type) && certificationProgramsLink.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenCertificationPrograms(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
