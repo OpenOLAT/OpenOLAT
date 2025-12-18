@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -247,8 +248,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	public void overrideManaged(UserRequest ureq, boolean override) {
 		if(isAllowedToOverrideManaged(ureq)) {
 			overrideManaged = override;
-			editButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
-			removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
+			if (editButton != null) {
+				editButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
+			}
+			if (removeButton != null) {
+				removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
+			}
 			flc.setDirty(true);
 		}
 	}
@@ -272,13 +277,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		memberListModel = new MemberListTableModel(columnsModel, getLocale(), imModule.isOnlineStatusEnabled());
 		membersTable = uifactory.addTableElement(getWindowControl(), "memberList", memberListModel, 20, false, getTranslator(), formLayout);
-		membersTable.setMultiSelect(true);
 		membersTable.setEmptyTableSettings("nomembers", null, "o_icon_user", null, null, false);
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName() + "-v3");
 		membersTable.setSearchEnabled(true);
 		
 		membersTable.setExportEnabled(true);
-		membersTable.setSelectAllEnable(true);
 		membersTable.setElementCssClass("o_sel_member_list");
 		
 		if(defaultSortKey != null) {
@@ -297,6 +300,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		initFilters(withOwners, withCoaches, withParticipants, withWaitingList);
 		initFiltersPresets(withOwners, withCoaches, withParticipants, withWaitingList);
 
+		initBatchButtons(formLayout);
+		
+		initDetails();
+	}
+	
+	protected void initBatchButtons(FormItemContainer formLayout) {
+		membersTable.setMultiSelect(true);
+		membersTable.setSelectAllEnable(true);
+		
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
 		membersTable.addBatchButton(editButton);
 		editButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
@@ -305,6 +317,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
 		removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
 		membersTable.addBatchButton(removeButton);
+	}
+	
+	protected void initDetails() {
+		// override for row details
 	}
 	
 	protected final void initFiltersPresets(boolean withOwners, boolean withCoaches, boolean withParticipants, boolean withWaitingList) {
@@ -318,7 +334,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		if(withOwners) {
 			// Owners
-			FlexiFiltersTab ownerTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Owners", translate("role.repo.owner"),
+			FlexiFiltersTab ownerTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Owners", translate("role.owners"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.owner.name())));
 			ownerTab.setElementCssClass("o_sel_members_owner");
 			ownerTab.setFiltersExpanded(true);
@@ -327,7 +343,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		// Coaches + participants
 		if(withCoaches) {
-			FlexiFiltersTab coachTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Coaches", translate("role.repo.tutor"),
+			FlexiFiltersTab coachTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Coaches", translate("role.coaches"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.coach.name())));
 			coachTab.setElementCssClass("o_sel_members_coach");
 			coachTab.setFiltersExpanded(true);
@@ -335,7 +351,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		if(withParticipants) {
-			FlexiFiltersTab participantTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Participants", translate("role.repo.participant"),
+			FlexiFiltersTab participantTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Participants", translate("role.participants"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.participant.name())));
 			participantTab.setElementCssClass("o_sel_members_participant");
 			participantTab.setFiltersExpanded(true);
@@ -351,6 +367,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			tabs.add(waitingTab);
 		}
 
+		initOriginFiltersPresets(tabs);
 		
 		// Search
 		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Search", translate("filter.search"),
@@ -363,7 +380,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 		membersTable.setFilterTabs(true, tabs);
 	}
-	
+
+	protected void initOriginFiltersPresets(List<FlexiFiltersTab> tabs) {
+		// override for more filter presets
+	}
+
 	protected void initFilters(boolean withOwners, boolean withCoaches, boolean withParticipants, boolean withWaitingList) {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
@@ -433,13 +454,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		SortKey defaultSortKey = null;
 		String editAction = secCallback.isReadonly() ? null : TABLE_ACTION_EDIT;
 		
-		if(chatEnabled) {
-			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
-			chatCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(chatCol);
-		}
+		initChatColumn(columnsModel);
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identityStatus, new IdentityStatusCellRenderer(getLocale())));
+		initStatusColumn(columnsModel);
 		
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -478,6 +495,18 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		return defaultSortKey;
+	}
+
+	protected void initChatColumn(FlexiTableColumnModel columnsModel) {
+		if (chatEnabled) {
+			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
+			chatCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(chatCol);
+		}
+	}
+
+	protected void initStatusColumn(FlexiTableColumnModel columnsModel) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identityStatus, new IdentityStatusCellRenderer(getLocale())));
 	}
 
 	@Override
@@ -526,6 +555,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			} else if(event instanceof FlexiTableFilterTabEvent) {
 				reloadModel();
+			} else if (event instanceof DetailsToggleEvent detailsToggleEvent) {
+				MemberRow row = memberListModel.getObject(detailsToggleEvent.getRowIndex());
+				if (detailsToggleEvent.isVisible()) {
+					doOpenDetails(ureq, row);
+				} else {
+					doCloseDetails(row);
+				}
 			}
 		} else if(editButton == source) {
 			List<MemberRow> selectedItems = getMultiSelectedRows();
@@ -648,8 +684,14 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		editSingleMemberCtrl = null;
 		editMemberShipStepsController = null;
 	}
-	
-	protected final void doConfirmRemoveMembers(UserRequest ureq, List<MemberRow> members) {
+
+	protected void doOpenDetails(UserRequest ureq, MemberRow row) {
+	}
+
+	protected void doCloseDetails(MemberRow row) {
+	}
+
+ 	protected final void doConfirmRemoveMembers(UserRequest ureq, List<MemberRow> members) {
 		if(members.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {

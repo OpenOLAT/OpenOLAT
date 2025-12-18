@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.MemberView;
@@ -48,6 +49,8 @@ public class MemberRow extends UserPropertiesRow {
 	private String onlineStatus;
 	private FormLink toolsLink;
 	private FormLink chatLink;
+
+	private FormBasicController detailsController;
 
 	public MemberRow(MemberView view, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(view.getIdentity(), userPropertyHandlers, locale);
@@ -137,6 +140,28 @@ public class MemberRow extends UserPropertiesRow {
 		if(this.lastTime == null || this.lastTime.compareTo(lastTime) < 0) {
 			this.lastTime = lastTime;
 		}
+	}
+
+	public FormBasicController getDetailsController() {
+		return detailsController;
+	}
+
+	public void setDetailsController(FormBasicController detailsController) {
+		this.detailsController = detailsController;
+	}
+
+	public String getDetailsControllerName() {
+		if (detailsController != null) {
+			return detailsController.getInitialFormItem().getComponent().getComponentName();
+		}
+		return null;
+	}
+
+	public boolean isDetailsControllerAvailable() {
+		if (detailsController != null) {
+			return detailsController.getInitialFormItem().isVisible();
+		}
+		return false;
 	}
 
 	@Override
