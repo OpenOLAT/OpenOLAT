@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -150,6 +152,17 @@ public class CourseMemberListController extends AbstractMemberListController imp
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
+		if (source instanceof CourseMemberDetailsController detailsCtrl) {
+			if (event == CourseMemberDetailsController.EDIT_EVENT) {
+				MemberRow row = (MemberRow) detailsCtrl.getUserObject();
+				openEdit(ureq, row);
+			}
+		}
 	}
 
 	@Override

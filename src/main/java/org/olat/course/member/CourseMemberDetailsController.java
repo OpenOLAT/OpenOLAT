@@ -22,10 +22,15 @@ package org.olat.course.member;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -48,10 +53,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseMemberDetailsController extends FormBasicController {
 
+	public static final Event EDIT_EVENT = new Event("edit");
+	
 	private Object userObject;
 	private final Identity identity;
 	private final RepositoryEntry repoEntry;
 	private final UserCourseInformations courseInfos;
+	private FormLink editMembershipButton;
 	
 	@Autowired
 	private UserPortraitService userPortraitService;
@@ -86,6 +94,7 @@ public class CourseMemberDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initPortrait(formLayout, ureq);
+		initEditMembership(formLayout);
 	}
 
 	private void initPortrait(FormItemContainer formLayout, UserRequest ureq) {
@@ -129,6 +138,20 @@ public class CourseMemberDetailsController extends FormBasicController {
 				mainForm, identity, userPropsId, lvBuilder.build(), profileConfig);
 		listenTo(profile);
 		formLayout.add("portrait", profile.getInitialFormItem());
+	}
+
+	private void initEditMembership(FormItemContainer formLayout) {
+		editMembershipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
+		editMembershipButton.setIconLeftCSS("o_icon o_icon_edit");
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		super.formInnerEvent(ureq, source, event);
+		
+		if (editMembershipButton == source) {
+			fireEvent(ureq, EDIT_EVENT);
+		}
 	}
 
 	@Override
