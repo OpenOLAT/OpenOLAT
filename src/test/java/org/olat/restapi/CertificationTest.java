@@ -44,6 +44,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
@@ -370,13 +371,14 @@ public class CertificationTest extends OlatRestTestCase {
 		return cal.getTime();
 	}
 	
-	private void waitCertificate(Long certificateKey) {
+	private void waitCertificate(final Long certificateKey) {
 		//wait until the certificate is created
 		waitForCondition(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
 				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
+						&& StringHelper.containsNonWhitespace(reloadedCertificate.getPath());
 			}
 		}, 30000);
 	}
