@@ -19,7 +19,10 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 
 /**
  * 
@@ -29,22 +32,37 @@ import org.olat.core.id.Roles;
  */
 public class CertificationProgramSecurityCallbackFactory {
 	
-	public static CertificationProgramSecurityCallback getSecurityCallback(Roles roles) {
+	public static CertificationProgramSecurityCallback getSecurityCallback(Identity identity, Roles roles) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
-		return new CertificationProgramSecurityCallbackImpl(admin);
+		boolean owner = admin
+				? false
+				: CoreSpringFactory.getImpl(CertificationProgramService.class).isCertificationProgramOwner(identity);
+		return new CertificationProgramSecurityCallbackImpl(admin, owner);
 	}
 
 	private static class CertificationProgramSecurityCallbackImpl implements CertificationProgramSecurityCallback {
 		
 		private final boolean admin;
+		private final boolean owner;
 		
-		public CertificationProgramSecurityCallbackImpl(boolean admin) {
+		public CertificationProgramSecurityCallbackImpl(boolean admin, boolean owner) {
 			this.admin = admin;
+			this.owner = owner;
+		}
+
+		@Override
+		public boolean canViewCertificationPrograms() {
+			return admin || owner;
+		}
+
+		@Override
+		public boolean canNewCertificationProgram() {
+			return admin;
 		}
 
 		@Override
 		public boolean canAddMember() {
-			return admin;
+			return admin || owner;
 		}
 	}
 }
