@@ -1094,6 +1094,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			} else {
 				searchParams.setTeacher(getIdentity());
 			}
+		} else if(secCallback.viewAs() == LectureRoles.mastercoach) {
+			searchParams.setMasterCoach(getIdentity());
 		} else {
 			searchParams.setManager(getIdentity());
 		}

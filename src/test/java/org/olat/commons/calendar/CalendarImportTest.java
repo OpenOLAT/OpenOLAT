@@ -39,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
@@ -62,9 +61,6 @@ public class CalendarImportTest extends OlatTestCase {
 
 	private static final Logger log = Tracing.createLoggerFor(CalendarImportTest.class);
 	
-	@Autowired
-	private CalendarModule calendarModule;
-	
 	/**
 	 * The upgrade to iCal4j 3.0 bring an issue with some calendars where
 	 * the description has line breaks.
@@ -75,7 +71,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportLineBreakCrasher() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_linebreak_crash.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -90,7 +86,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportNewLineCrasher() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_newline_crash.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -105,7 +101,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportMultiLines() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_multiline_crash.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -121,7 +117,7 @@ public class CalendarImportTest extends OlatTestCase {
 	public void testImportMultiLinesFile() throws Exception {
 		URL url = CalendarImportTest.class.getResource("cal_multiline_crash.ics");
 		InputStream in = new FileInputStream(new File(url.toURI()));
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -136,7 +132,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_30.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -144,7 +140,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportWeekFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_7.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -152,7 +148,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportAllFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_Alles.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -160,7 +156,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportOktoberFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_Okt.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -168,7 +164,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Hoffstedde.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -176,21 +172,21 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void testImportRefresh() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Refresh.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
 	}
 
 	@Test
 	public void testImportFromFGiCal() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("EMAIL.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
 	}
 	
 	@Test
 	public void testImportRecurringCal() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("RecurringEvent.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
         
@@ -228,7 +224,7 @@ public class CalendarImportTest extends OlatTestCase {
 	@Test
 	public void importFulldayOpenOlat191() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("manager/Fullday_openolat_191.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
         

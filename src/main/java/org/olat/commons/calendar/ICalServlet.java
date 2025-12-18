@@ -589,7 +589,7 @@ public class ICalServlet extends HttpServlet {
     
     private Calendar buildCalendar(URL resource) {
     	try(InputStream in = resource.openStream()) {
-    		return CalendarUtils.buildCalendar(in, getCalendarModule());
+    		return CalendarUtils.buildCalendar(in);
     	} catch(Exception e) {
     		log.error("", e);
     		return null;

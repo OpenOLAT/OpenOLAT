@@ -272,7 +272,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public Calendar readCalendar(File calendarFile) {
 		try(InputStream fIn = new FileInputStream(calendarFile))  {
-			return CalendarUtils.buildCalendar(fIn, calendarModule);
+			return CalendarUtils.buildCalendar(fIn);
 		} catch (FileNotFoundException fne) {
 			throw new OLATRuntimeException("Not found: " + calendarFile, fne);
 		} catch (Exception e) {
@@ -285,7 +285,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		Kalendar kalendar = null;
 		
 		try {
-			Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
+			Calendar calendar = CalendarUtils.buildCalendar(in);
 			kalendar = createKalendar(calType, calId, calendar);
 		} catch (Exception e) {
 			throw new OLATRuntimeException("Error parsing calendar file.", e);
@@ -296,7 +296,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public boolean synchronizeCalendarFrom(InputStream in, String source, Kalendar targetCalendar) {
 		try {
-			Calendar inCalendar = CalendarUtils.buildCalendar(in, calendarModule);
+			Calendar inCalendar = CalendarUtils.buildCalendar(in);
 			Kalendar inTmpKalendar = createKalendar("TEMP", UUID.randomUUID().toString(), inCalendar);
 			
 			String targetId = "-" + targetCalendar.getType() + "-" + targetCalendar.getCalendarID() + "-";
