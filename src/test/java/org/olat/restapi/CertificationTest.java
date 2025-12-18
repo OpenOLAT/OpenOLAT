@@ -27,7 +27,9 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.Callable;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -44,10 +46,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesManagerTest;
 import org.olat.course.certificate.model.CertificateConfig;
@@ -59,9 +59,6 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -100,7 +97,7 @@ public class CertificationTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		//wait until the certificate is created
-		waitCertificate(certificate.getKey());
+		waitMessageAreConsumed();
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(defaultEntry.getOlatResource().getKey().toString())
@@ -128,7 +125,7 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		waitCertificate(certificate.getKey());
+		waitMessageAreConsumed();
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(defaultEntry.getOlatResource().getKey().toString())
@@ -331,7 +328,7 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		waitCertificate(certificate.getKey());
+		waitMessageAreConsumed();
 		
 		// check that there is a real certificate with its file
 		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
@@ -369,17 +366,5 @@ public class CertificationTest extends OlatRestTestCase {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
-	}
-	
-	private void waitCertificate(final Long certificateKey) {
-		//wait until the certificate is created
-		waitForCondition(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
-						&& StringHelper.containsNonWhitespace(reloadedCertificate.getPath());
-			}
-		}, 30000);
 	}
 }

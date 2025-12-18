@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
@@ -51,12 +50,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
-import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesManagerTest;
 import org.olat.course.certificate.model.CertificateConfig;
@@ -104,7 +101,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		//wait until the certificate is created
-		waitCertificate(certificate.getKey());
+		waitMessageAreConsumed();
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())
@@ -235,7 +232,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		//wait until the certificate is created
-		waitCertificate(certificate.getKey());
+		waitMessageAreConsumed();
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())
@@ -428,7 +425,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		dbInstance.commitAndCloseSession();
 		//wait until the certificate is created
-		waitCertificate(certificate.getKey());
+		waitMessageAreConsumed();
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
@@ -466,17 +463,4 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(updatedCertificateVo.getNextCertificationDate().before(new Date()));
 		Assert.assertTrue(updatedCertificateVo.getRecertificationWindowDate().before(new Date()));
 	}
-	
-	private void waitCertificate(final Long certificateKey) {
-		//wait until the certificate is created
-		waitForCondition(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
-						&& StringHelper.containsNonWhitespace(reloadedCertificate.getPath());
-			}
-		}, 30000);
-	}
-
 }
