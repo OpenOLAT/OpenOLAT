@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>7.0.1</org.springframework.version>
+		<org.springframework.version>7.0.2</org.springframework.version>
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.6</org.glassfish.jaxb.runtime>
@@ -1660,7 +1660,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>4.2.1</version>
+			<version>4.2.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>

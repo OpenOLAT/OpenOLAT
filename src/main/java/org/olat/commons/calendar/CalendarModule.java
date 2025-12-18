@@ -20,7 +20,6 @@
 package org.olat.commons.calendar;
 
 import java.time.ZoneId;
-import java.time.zone.ZoneRulesProvider;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Service;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
-import net.fortuna.ical4j.model.ZoneRulesProviderImpl;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
 /**
@@ -94,8 +92,6 @@ public class CalendarModule extends AbstractSpringModule {
 		log.info("Calendar time zone: {} - {}", defaultTimeZoneID, defaultZoneId.getId());
 		timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
 		defaultTimeZone = timeZoneRegistry.getTimeZone(defaultTimeZoneID);
-		// Do it only once, replace the call made CalendarBuilder / DefaultContentHandler.endCalendar()
-        ZoneRulesProvider.registerProvider(new ZoneRulesProviderImpl(timeZoneRegistry));
 		
 		if(defaultTimeZone == null) {
 			log.error("Cannot match the JVM default time zone to an ical4j time zone: {}", defaultTimeZoneID);

@@ -54,6 +54,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Recur;
@@ -78,11 +79,11 @@ public class CalendarUtils {
 	 * @param in The input stream
 	 * @return A calendar
 	 */
-	public static final net.fortuna.ical4j.model.Calendar buildCalendar(InputStream in, CalendarModule calendarModule) {
+	public static final net.fortuna.ical4j.model.Calendar buildCalendar(InputStream in) {
 		try(InputStream	bin = new BufferedInputStream(in);
 				InputStream fin = new ReplacingInputStream(bin, "\n\\n", "\n \\n");
 				InputStream f2in = new ReplacingInputStream(fin, "\r\\n", "\n \\n");)  {
-			CalendarBuilder builder = new CalendarBuilder(calendarModule.geTimeZoneRegistry());
+			CalendarBuilder builder = new CalendarBuilder();
 			return builder.build(f2in);
 		} catch (Exception e) {
 			throw new OLATRuntimeException("Error parsing calendar", e);
