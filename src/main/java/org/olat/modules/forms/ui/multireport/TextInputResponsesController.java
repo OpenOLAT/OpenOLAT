@@ -32,7 +32,6 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.ReportHelper.Legend;
 import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource.ResponseFormatter;
@@ -46,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TextInputResponsesController extends FormBasicController {
 	
-	private final TextInput textInput;
+	private final String elementId;
 	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
 	private final ResponseFormatter responseFormatter;
@@ -55,11 +54,11 @@ public class TextInputResponsesController extends FormBasicController {
 	private EvaluationFormManager evaluationFormManager;
 	
 	public TextInputResponsesController(UserRequest ureq, WindowControl wControl,
-			TextInput textInput, SessionFilter filter, ResponseFormatter responseFormatter,
+			String elementId, SessionFilter filter, ResponseFormatter responseFormatter,
 			ReportHelper reportHelper, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "text_response_details", mainForm);
 		this.filter = filter;
-		this.textInput = textInput;
+		this.elementId = elementId;
 		this.reportHelper = reportHelper;
 		this.responseFormatter = responseFormatter;
 		
@@ -74,9 +73,9 @@ public class TextInputResponsesController extends FormBasicController {
 	
 	private void loadModel() {
 		List<NamedText> texts = new ArrayList<>();
-		List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(List.of(textInput.getId()), false, filter, Limit.all());
+		List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(List.of(elementId), false, filter, Limit.all());
 		for(EvaluationFormResponse response:responses) {
-			if(textInput.getId().equals(response.getResponseIdentifier())) {
+			if(elementId.equals(response.getResponseIdentifier())) {
 				Legend legend = reportHelper.getLegend(response.getSession());
 				String fullName = legend == null ? "???" : legend.getName();
 				String text = responseFormatter.format(response);

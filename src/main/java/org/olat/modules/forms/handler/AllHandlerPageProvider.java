@@ -49,6 +49,7 @@ public class AllHandlerPageProvider implements PageProvider {
 		handlers.add(new TableHandler());
 		handlers.add(new RubricHandler(false, false));
 		handlers.add(new TextInputHandler(false));
+		handlers.add(new DateInputHandler(false));
 		handlers.add(new FileUploadHandler(false));
 		handlers.add(new SingleChoiceHandler(false));
 		handlers.add(new MultipleChoiceHandler(false));

@@ -41,7 +41,7 @@ public class FormXStream {
 
 	static {
 		Class<?>[] types = new Class[] { AlertBoxSettings.class, BlockLayoutSettings.class, Choice.class, Choices.class,
-				ChoiceSelectedCondition.class, Container.class, Disclaimer.class, FileStoredData.class,
+				ChoiceSelectedCondition.class, Container.class, DateInput.class, Disclaimer.class, FileStoredData.class,
 				FileUpload.class, Form.class, GeneralStyleSettings.class, HTMLParagraph.class, HTMLRaw.class, Image.class,
 				ImageSettings.class, InformationType.class, MultipleChoice.class, Rubric.class, Rule.class, ScaleType.class,
 				SessionInformations.class, SingleChoice.class, Slider.class, Spacer.class, StepLabel.class, Table.class,
@@ -55,6 +55,7 @@ public class FormXStream {
 		xstream.alias("choices", Choices.class);
 		xstream.alias("choiceSelectedCondition", ChoiceSelectedCondition.class);
 		xstream.alias("container", Container.class);
+		xstream.alias("dateinput", DateInput.class);
 		xstream.alias("disclaimer", Disclaimer.class);
 		xstream.alias("fileStoredData", FileStoredData.class);
 		xstream.alias("fileupload", FileUpload.class);

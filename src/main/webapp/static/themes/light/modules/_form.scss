@@ -79,6 +79,9 @@ form .o_form, form.o_form {
 		row-gap: 15px;
 		flex-wrap: wrap;
 	}
+	.o_date.o_no_padding {
+		padding-right: 0;
+	}
 	
 	.o_date.form-inline  {
 		.form-group {

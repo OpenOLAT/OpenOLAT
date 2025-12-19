@@ -49,7 +49,6 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.TextInput;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,17 +58,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TextInputInspectorController extends FormBasicController implements PageElementInspectorController {
-
+	
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String INPUT_TYPE_TEXT_KEY = "textinput.numeric.text";
 	private static final String INPUT_TYPE_NUMERIC_KEY = "textinput.numeric.numeric";
 	private static final String INPUT_TYPE_DATE_KEY = "textinput.numeric.date";
-	private static final String[] NUMERIC_KEYS = new String[] {
-			INPUT_TYPE_TEXT_KEY,
-			INPUT_TYPE_NUMERIC_KEY,
-			INPUT_TYPE_DATE_KEY
-	};
 	private static final String SINGLE_ROW_KEY = "textinput.single.row";
 	private static final String MULTIPLE_ROWS_KEY = "textinput.multiple.rows";
 	private static final String[] ROW_OPTIONS = new String[] {
@@ -104,7 +98,7 @@ public class TextInputInspectorController extends FormBasicController implements
 	
 	@Override
 	public String getTitle() {
-		return translate("inspector.formtextinput");
+		return translate("inspector.formtextblockinput");
 	}
 
 	@Override
@@ -124,9 +118,17 @@ public class TextInputInspectorController extends FormBasicController implements
 		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		formLayout.add(layoutCont);
 		tabbedPane.addTab(getTranslator().translate("tab.general"), layoutCont);
-
+		
+		SelectionValues typeSV = new SelectionValues();
+		typeSV.add(SelectionValues.entry(INPUT_TYPE_TEXT_KEY, translate(INPUT_TYPE_TEXT_KEY)));
+		typeSV.add(SelectionValues.entry(INPUT_TYPE_NUMERIC_KEY, translate(INPUT_TYPE_NUMERIC_KEY)));
+		// Only available for legacy reasons. Is replaced by DateInput.
+		if (textInput.isDate()) {
+			typeSV.add(SelectionValues.entry(INPUT_TYPE_DATE_KEY, translate(INPUT_TYPE_DATE_KEY)));
+		}
+		
 		inputTypeEl = uifactory.addRadiosVertical("textinput_num_" + CodeHelper.getRAMUniqueID(),
-				"textinput.numeric", layoutCont, NUMERIC_KEYS, translateAll(getTranslator(), NUMERIC_KEYS));
+				"textinput.numeric", layoutCont, typeSV.keys(), typeSV.values());
 		if (textInput.isNumeric()) {
 			inputTypeEl.select(INPUT_TYPE_NUMERIC_KEY, true);
 		} else if (textInput.isDate()) {

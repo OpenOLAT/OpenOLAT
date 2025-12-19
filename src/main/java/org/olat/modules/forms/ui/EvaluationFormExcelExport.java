@@ -56,9 +56,11 @@ import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.Figure;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.handler.DateInputHandler;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Choice;
+import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
@@ -211,6 +213,9 @@ public class EvaluationFormExcelExport {
 			case TextInput.TYPE:
 				col.getAndIncrement(); // no header
 				break;
+			case DateInput.TYPE:
+				mergeColumn(element, col);
+				break;
 			case FileUpload.TYPE:
 				mergeColumn(element, col);
 				break;
@@ -293,6 +298,9 @@ public class EvaluationFormExcelExport {
 				break;
 			case TextInput.TYPE:
 				addTextInput(workbook, session, row, col, (TextInput) element);
+				break;
+			case DateInput.TYPE:
+				addDateInput(workbook, session, row, col, (DateInput) element);
 				break;
 			case FileUpload.TYPE:
 				addFileUpload(workbook, session, row, col, (FileUpload) element);
@@ -382,6 +390,22 @@ public class EvaluationFormExcelExport {
 					value = value.replaceAll("\n", "");
 					row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
 				}
+			}
+		}
+		col.getAndIncrement();
+	}
+
+	private void addDateInput(OpenXMLWorkbook workbook, EvaluationFormSession session, Row row, AtomicInteger col,
+			DateInput dateinput) {
+		decrementMergedColumn(dateinput, col);
+		EvaluationFormResponse response = responses.getResponse(session, dateinput.getId());
+		if (response != null) {
+			Date date = DateInputHandler.fromResponseValue(response.getStringuifiedResponse());
+			if (date != null) {
+				CellStyle dateStyle = dateinput.isTime()
+						? workbook.getStyles().getDateTimeStyle()
+						: workbook.getStyles().getDateStyle();
+				row.addCell(col.get(), date, dateStyle);
 			}
 		}
 		col.getAndIncrement();

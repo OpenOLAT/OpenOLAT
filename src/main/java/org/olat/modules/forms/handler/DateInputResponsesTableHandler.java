@@ -25,35 +25,32 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.model.xml.TextInput;
+import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
-import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource;
 import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource.ResponseFormatter;
 import org.olat.modules.forms.ui.multireport.TextInputResponsesController;
 
 /**
- * List all texts.
  * 
- * Initial date: 5 août 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: Dec 17, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TextInputResponsesTableHandler implements EvaluationFormReportHandler {
+public class DateInputResponsesTableHandler implements EvaluationFormReportHandler {
 	
 	@Override
 	public String getType() {
-		return "tilegendtextresponsestable";
+		return "datelegendtextresponsestable";
 	}
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof TextInput textInput) {
-			ResponseFormatter responseFormatter = TextInputLegendTextDataSource.createResponseFormatter(textInput,
-					ureq.getLocale());
-			Controller ctrl = new TextInputResponsesController(ureq, windowControl, textInput.getId(), filter, responseFormatter, reportHelper, rootForm);
+		if (element instanceof DateInput dateInput) {
+			ResponseFormatter responseFormatter = DateInputLegendTextHandler.createFormatter(ureq, dateInput);
+			Controller ctrl = new TextInputResponsesController(ureq, windowControl, dateInput.getId(), filter, responseFormatter, reportHelper, rootForm);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;
