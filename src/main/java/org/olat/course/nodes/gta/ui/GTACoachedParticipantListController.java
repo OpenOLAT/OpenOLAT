@@ -394,8 +394,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			bulkDownloadButton = uifactory.addFormLink("batch.download", "bulk.download.title", null, formLayout, Link.BUTTON);
-			bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			bulkDownloadButton = uifactory.addFormLink("batch.download", "download.submitted.files", null, formLayout, Link.BUTTON);
+			bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 			tableEl.addBatchButton(bulkDownloadButton);
 		}
 		
