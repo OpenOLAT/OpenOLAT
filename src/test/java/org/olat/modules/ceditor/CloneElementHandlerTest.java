@@ -37,6 +37,7 @@ import org.olat.modules.forms.handler.FormDataElementStorage;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
 import org.olat.modules.forms.model.xml.Container;
+import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileStoredData;
 import org.olat.modules.forms.model.xml.FileUpload;
@@ -405,7 +406,6 @@ public class CloneElementHandlerTest {
 	public void shouldCloneEvaluationFormTextInput() {
 		TextInput element = new TextInput();
 		element.setId(random());
-		element.setDate(true);
 		element.setMandatory(false);
 		element.setNumeric(true);
 		Double numericMax = Double.valueOf(8);
@@ -415,19 +415,42 @@ public class CloneElementHandlerTest {
 		int rows = 5;
 		element.setRows(rows);
 		element.setSingleRow(false);
+		element.setDate(true);
 		
 		CloneElementHandler handler = new org.olat.modules.forms.handler.TextInputHandler(false);
 		TextInput clone = (TextInput)handler.clonePageElement(element);
 		
 		assertThat(clone.getId()).isNotEqualTo(element.getId());
 		assertThat(clone.getType()).isEqualTo(element.getType());
-		assertThat(clone.isDate()).isTrue();
 		assertThat(clone.isMandatory()).isFalse();
 		assertThat(clone.isNumeric()).isTrue();
 		assertThat(clone.getNumericMax()).isEqualTo(numericMax);
 		assertThat(clone.getNumericMin()).isEqualTo(numericMin);
 		assertThat(clone.getRows()).isEqualTo(rows);
 		assertThat(clone.isSingleRow()).isFalse();
+		assertThat(clone.isDate()).isTrue();
+	}
+
+	@Test
+	public void shouldCloneEvaluationFormDateInput() {
+		DateInput element = new DateInput();
+		element.setId(random());
+		element.setMandatory(false);
+		element.setDate(true);
+		element.setTime(true);
+		String nowButtonLabel = random();
+		element.setNowButtonLabel(nowButtonLabel);
+		
+		CloneElementHandler handler = new org.olat.modules.forms.handler.DateInputHandler(false);
+		DateInput clone = (DateInput)handler.clonePageElement(element);
+		
+		assertThat(clone.getId()).isNotEqualTo(element.getId());
+		assertThat(clone.getType()).isEqualTo(element.getType());
+		assertThat(clone.isMandatory()).isFalse();
+		assertThat(clone.isDate()).isTrue();
+		assertThat(clone.isTime()).isTrue();
+		assertThat(clone.isDate()).isTrue();
+		assertThat(clone.getNowButtonLabel()).isEqualTo(nowButtonLabel);
 	}
 
 	@Test

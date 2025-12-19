@@ -24,24 +24,20 @@ import org.olat.modules.ceditor.model.BlockLayoutSettings;
 
 /**
  * 
- * Initial date: 7 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: Dec 17, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TextInput extends AbstractElement {
+public class DateInput extends AbstractElement {
 
 	private static final long serialVersionUID = 2420712254825004290L;
 	
-	public static final String TYPE = "formtextblockinput";
+	public static final String TYPE = "formdateinput";
 
 	private boolean mandatory;
-	private int rows;
-	private boolean singleRow;
-	private boolean numeric;
-	private Double numericMin;
-	private Double numericMax;
-	// Only available for legacy reasons. Is replaced by DateInput.
 	private boolean date;
+	private boolean time;
+	private String nowButtonLabel;
 	private BlockLayoutSettings layoutSettings;
 	private AlertBoxSettings alertBoxSettings;
 
@@ -58,52 +54,28 @@ public class TextInput extends AbstractElement {
 		this.mandatory = mandatory;
 	}
 
-	public int getRows() {
-		return rows;
-	}
-
-	public void setRows(int rows) {
-		this.rows = rows;
-	}
-
-	public boolean isSingleRow() {
-		return singleRow;
-	}
-
-	public void setSingleRow(boolean singleRow) {
-		this.singleRow = singleRow;
-	}
-
-	public boolean isNumeric() {
-		return numeric;
-	}
-
-	public void setNumeric(boolean numeric) {
-		this.numeric = numeric;
-	}
-
-	public Double getNumericMin() {
-		return numericMin;
-	}
-
-	public void setNumericMin(Double numericMin) {
-		this.numericMin = numericMin;
-	}
-
-	public Double getNumericMax() {
-		return numericMax;
-	}
-
-	public void setNumericMax(Double numericMax) {
-		this.numericMax = numericMax;
-	}
-
 	public boolean isDate() {
 		return date;
 	}
 
 	public void setDate(boolean date) {
 		this.date = date;
+	}
+
+	public boolean isTime() {
+		return time;
+	}
+
+	public void setTime(boolean time) {
+		this.time = time;
+	}
+
+	public String getNowButtonLabel() {
+		return nowButtonLabel;
+	}
+
+	public void setNowButtonLabel(String nowButtonLabel) {
+		this.nowButtonLabel = nowButtonLabel;
 	}
 
 	public BlockLayoutSettings getLayoutSettings() {
@@ -127,8 +99,8 @@ public class TextInput extends AbstractElement {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TextInput) {
-			TextInput input = (TextInput)obj;
+		if(obj instanceof DateInput) {
+			DateInput input = (DateInput)obj;
 			return getId() != null && getId().equals(input.getId());
 		}
 		return super.equals(obj);

@@ -53,6 +53,7 @@ import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.ContainerHandler;
+import org.olat.modules.forms.handler.DateInputHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
 import org.olat.modules.forms.handler.HTMLParagraphHandler;
@@ -236,6 +237,8 @@ public class EvaluationFormEditorController extends BasicController implements T
 			// handler for text input
 			TextInputHandler textInputHandler = new TextInputHandler(restrictedEdit);
 			handlers.add(textInputHandler);
+			DateInputHandler dateInputHandler = new DateInputHandler(restrictedEdit);
+			handlers.add(dateInputHandler);
 			// handler for file upload
 			FileUploadHandler fileUploadhandler = new FileUploadHandler(restrictedEdit);
 			handlers.add(fileUploadhandler);
@@ -261,6 +264,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 				creationHandlers.add(singleChoiceHandler);
 				creationHandlers.add(multipleChoiceHandler);
 				creationHandlers.add(textInputHandler);
+				creationHandlers.add(dateInputHandler);
 				creationHandlers.add(fileUploadhandler);
 				creationHandlers.add(sessionInformationsHandler);
 				creationHandlers.add(disclaimerHandler);
@@ -306,6 +310,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 			return elements.indexOf(element);
 		}
 
+		@Override
 		public String getAppendRejectionKey(String type) {
 			if (SessionInformations.TYPE.equals(type)) {
 				for (PageElement pageElement : form.getElements()) {

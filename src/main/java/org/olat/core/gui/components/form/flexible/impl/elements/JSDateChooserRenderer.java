@@ -140,7 +140,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		if(!jsdcc.isDomReplacementWrapperRequired() && !jsdcc.isDomLayoutWrapper()) {
 			sb.append(" id='o_c").append(jsdcc.getDispatchID()).append("'");
 		}
-		sb.append(" class='o_date form-inline'>");
+		sb.append(" class='o_date form-inline");
+		if(StringHelper.containsNonWhitespace(jsdcc.getFormItem().getElementCssClass())) {
+			sb.append(" ").append(jsdcc.getFormItem().getElementCssClass());
+		}
+		sb.append("'>");
 		if (source.isEnabled()) {
 			renderDateElement(sb, jsdcc, maxlength, translator);
 		} else{

@@ -30,6 +30,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.handler.DateInputResponsesTableHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
 import org.olat.modules.forms.handler.FileUploadListingHandler;
@@ -37,6 +38,7 @@ import org.olat.modules.forms.handler.MultipleChoiceResponsesTableHandler;
 import org.olat.modules.forms.handler.RubricSliderResponsesTableHandler;
 import org.olat.modules.forms.handler.SingleChoiceResponsesTableHandler;
 import org.olat.modules.forms.handler.TextInputResponsesTableHandler;
+import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
@@ -87,6 +89,7 @@ public class MultiEvaluationsFormController extends BasicController {
 		final SingleChoiceResponsesTableHandler singleChoiceHandler = new SingleChoiceResponsesTableHandler();
 		final MultipleChoiceResponsesTableHandler multipleChoiceHandler = new MultipleChoiceResponsesTableHandler();
 		final TextInputResponsesTableHandler textInputHandler  = new TextInputResponsesTableHandler();
+		final DateInputResponsesTableHandler dateInputHandler  = new DateInputResponsesTableHandler();
 		final FileUploadListingHandler fileListhandler = new FileUploadListingHandler();
 
 		@Override
@@ -96,6 +99,7 @@ public class MultiEvaluationsFormController extends BasicController {
 				case SingleChoice.TYPE -> singleChoiceHandler;
 				case MultipleChoice.TYPE -> multipleChoiceHandler;
 				case TextInput.TYPE -> textInputHandler;
+				case DateInput.TYPE -> dateInputHandler;
 				case FileUpload.TYPE -> fileListhandler;
 				default -> null;
 			};
