@@ -35,7 +35,7 @@ public class SessionInformations extends AbstractElement {
 
 	private static final long serialVersionUID = 8312618903131914158L;
 	
-	public static final String TYPE = "formsessioninformations";
+	public static final String TYPE = "formrespondentdetails";
 	
 	public enum Obligation {
 		optional,

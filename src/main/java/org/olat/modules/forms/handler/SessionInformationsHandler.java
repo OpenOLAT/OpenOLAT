@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -31,12 +32,13 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 import org.olat.modules.forms.ui.SessionInfoInspectorController;
 import org.olat.modules.forms.ui.SessionInformationsController;
@@ -67,7 +69,7 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_eva_session_info";
+		return "o_icon_user";
 	}
 	
 	@Override
@@ -103,7 +105,7 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if (element instanceof SessionInformations sessionInfo) {
-			return new SessionInfoInspectorController(ureq, wControl, sessionInfo);
+			return new SessionInfoInspectorController(ureq, wControl, sessionInfo, restrictedEdit);
 		}
 		return null;
 	}
@@ -123,6 +125,10 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 	public PageElement createPageElement(Locale locale) {
 		SessionInformations informations = new SessionInformations();
 		informations.setId(UUID.randomUUID().toString());
+		List<InformationType> informationTypes = new ArrayList<>(2);
+		informationTypes.add(InformationType.USER_FIRSTNAME);
+		informationTypes.add(InformationType.USER_LASTNAME);
+		informations.setInformationTypes(informationTypes);
 		informations.setObligation(Obligation.optional);
 		return informations;
 	}
