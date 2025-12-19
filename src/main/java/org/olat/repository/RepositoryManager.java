@@ -109,8 +109,6 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
-import org.olat.search.service.document.RepositoryEntryDocument;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.user.UserImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,8 +152,6 @@ public class RepositoryManager {
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
-	@Autowired
-	private LifeFullIndexer lifeIndexer;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -853,7 +849,6 @@ public class RepositoryManager {
 			updatedRe.getLifecycle().getCreationDate();
 		}
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 	
@@ -950,7 +945,6 @@ public class RepositoryManager {
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		updatedRe.getOlatResource().getKey();
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 	
@@ -967,7 +961,6 @@ public class RepositoryManager {
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		updatedRe.getOlatResource().getKey();
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 	
@@ -984,7 +977,6 @@ public class RepositoryManager {
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		updatedRe.getOlatResource().getKey();
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
 
@@ -1056,7 +1048,6 @@ public class RepositoryManager {
 		}
 
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		autoAccessManager.grantAccess(updatedRe);
 		return updatedRe;
 	}
@@ -1191,13 +1182,8 @@ public class RepositoryManager {
 		}
 
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		autoAccessManager.grantAccess(updatedRe);
 		return updatedRe;
-	}
-
-	public void triggerIndexer(RepositoryEntryRef re) {
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, re.getKey());
 	}
 
 	/**

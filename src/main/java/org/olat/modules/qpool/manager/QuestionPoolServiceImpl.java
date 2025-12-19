@@ -81,7 +81,6 @@ import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QEducationalContext;
-import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemAuditLogBuilderImpl;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -98,7 +97,6 @@ import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.resource.OLATResource;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -133,8 +131,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
-	@Autowired
-	private LifeFullIndexer lifeIndexer;
 	@Autowired
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
@@ -186,10 +182,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		// Delete SecurityGroup after the item to avoid foreign key constraint violation.
 		for (SecurityGroup secGroup: secGroups) {
 			securityGroupDao.deleteSecurityGroup(secGroup);
-		}
-		
-		for(QuestionItemShort item:items) {
-			lifeIndexer.deleteDocument(QItemDocument.TYPE, item.getKey());
 		}
 		
 		dbInstance.getCurrentEntityManager().flush();//allow reload of data
@@ -258,7 +250,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 		QuestionItem mergedItem = questionItemDao.merge(item);
 		dbInstance.commit();
-		lifeIndexer.indexDocument(QItemDocument.TYPE, mergedItem.getKey());
 		return mergedItem;
 	}
 	
@@ -280,7 +271,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
-		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override
@@ -445,7 +435,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			TaxonomyLevel taxonLevel, String dir, String rootFilename, QItemType type) {
 		QuestionItemImpl newItem = questionItemDao.createAndPersist(owner, subject, format, language, taxonLevel, dir, rootFilename, type);
 		dbInstance.commit();
-		lifeIndexer.indexDocument(QItemDocument.TYPE, newItem.getKey());
 		return newItem;
 	}
 
@@ -522,7 +511,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			keys.add(item.getKey());
 		}
 		dbInstance.commit();
-		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override
@@ -533,7 +521,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
-		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override
@@ -598,7 +585,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			collectionDao.addItemToCollection(item, Collections.singletonList(coll));
 			keys.add(item.getKey());
 		}
-		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 		return coll;
 	}
 
@@ -623,7 +609,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			collectionDao.addItemToCollection(item, collections);
 			keys.add(item.getKey());
 		}
-		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override

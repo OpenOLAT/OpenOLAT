@@ -99,7 +99,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			parentResourceContext.setParentContextName(course.getCourseTitle());
 			doIndexCourse( parentResourceContext, course,  course.getRunStructure().getRootNode(), indexWriter);			
 		} catch(CorruptedCourseException ex) {
-			log.warn("Can not index repositoryEntry ({})", repositoryEntry.getKey(), ex);
+			log.warn("Can not index repositoryEntry ({})", repositoryEntry.getKey());
 		} catch (Exception ex) {
 			log.warn("Can not index repositoryEntry={}", repositoryEntry,ex);
 		}

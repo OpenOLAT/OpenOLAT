@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +38,6 @@ public class TaxonomyRelationsDAO {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private LifeFullIndexer lifeIndexer;
 	
 	public int countQuestionItems(List<? extends TaxonomyLevelRef> taxonomyLevels) {
 		if(taxonomyLevels == null || taxonomyLevels.isEmpty()) return 0;
@@ -76,9 +72,6 @@ public class TaxonomyRelationsDAO {
 					.setParameter("targetLevelKey", target.getKey())
 					.executeUpdate();
 			dbInstance.commit();
-			for(Long questionItemKey:questionItemKeys) {
-				lifeIndexer.indexDocument(QItemDocument.TYPE, questionItemKey);
-			}
 		}
 		
 		return row;
@@ -97,9 +90,6 @@ public class TaxonomyRelationsDAO {
 					.setParameter("levelKey", level.getKey())
 					.executeUpdate();
 			dbInstance.commit();
-			for(Long questionItemKey:questionItemKeys) {
-				lifeIndexer.indexDocument(QItemDocument.TYPE, questionItemKey);
-			}
 		}
 		
 		return row;
