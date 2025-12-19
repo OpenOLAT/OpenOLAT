@@ -194,7 +194,7 @@ public class FlexiTableOneClickSelectionFilter extends FlexiTableFilter implemen
 		} else {
 			preselectedKeys = getValues();
 		}
-		return new FlexiFilterOneClickSelectionController(ureq, wControl, null, this, preselectedKeys);
+		return new FlexiFilterOneClickSelectionController(ureq, wControl, form, this, preselectedKeys);
 	}
 	
 }
