@@ -91,8 +91,6 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyInfos;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.search.service.document.RepositoryEntryDocument;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -139,8 +137,6 @@ public class CopyServiceImpl implements CopyService {
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyDAO;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
-	@Autowired
-	private LifeFullIndexer lifeIndexer;
 	
 	
 	@Override
@@ -278,9 +274,6 @@ public class CopyServiceImpl implements CopyService {
 		CourseFactory.setCourseConfig(targetCourseOres.getResourceableId(), targetCourseConfig);
 		CourseFactory.saveCourse(targetCourseOres.getResourceableId());
 		CourseFactory.closeCourseEditSession(targetCourseOres.getResourceableId(), true);
-		
-		// Index new course
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, target.getKey());
 		
 		return target;
 	}

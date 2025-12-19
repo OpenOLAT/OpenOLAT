@@ -134,16 +134,15 @@ public class IndexerWebService {
 		if(status instanceof SearchServiceStatusImpl) {
 			SearchServiceStatusImpl statusImpl = (SearchServiceStatusImpl)status;
 			FullIndexerStatus fStatus = statusImpl.getFullIndexerStatus();
-			FullIndexerStatus lStatus = statusImpl.getLifeIndexerStatus();
-
-			stats.setIndexedDocumentCount(fStatus.getDocumentCount() + (long)lStatus.getDocumentCount());
-			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount() + (long)lStatus.getExcludedDocumentCount());
-			stats.setIndexSize(fStatus.getIndexSize() + (long)lStatus.getIndexSize());
-			stats.setIndexingTime(fStatus.getIndexingTime() + lStatus.getIndexingTime());
+			
+			stats.setIndexedDocumentCount(fStatus.getDocumentCount());
+			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount());
+			stats.setIndexSize(fStatus.getIndexSize());
+			stats.setIndexingTime(fStatus.getIndexingTime());
 			stats.setFullIndexStartedAt(fStatus.getFullIndexStartedAt());
-			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize() + (long)lStatus.getDocumentQueueSize());
-			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer() + (long)lStatus.getNumberRunningFolderIndexer());
-			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer() + (long)lStatus.getNumberAvailableFolderIndexer());
+			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize());
+			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer());
+			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer());
 			stats.setLastFullIndexTime(fStatus.getLastFullIndexDateString());
 			stats.setStatus(status.getStatus());
 		} else {

@@ -51,8 +51,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -83,8 +83,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private OrgSelectorElement organisationEl;
 	private MultipleSelectionElement referencesEl;
 	
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -276,8 +274,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			} else {
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 						LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
-				
-				repositoryManager.triggerIndexer(importedEntry);
 			}
 		}
 	}
