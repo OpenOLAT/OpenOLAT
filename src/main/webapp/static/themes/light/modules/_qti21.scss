@@ -1373,14 +1373,6 @@ table.o_qti_item_kprim {
 					background: $o-qti-match-selected-bg;
 				}
 			}
-
-			&.oo-selected {
-				> li {
-					margin-top: 20px;
-					margin-bottom: 20px;
-					transition: margin 300ms;
-				}
-			}
 		}	
 	}
 	
@@ -1389,6 +1381,10 @@ table.o_qti_item_kprim {
 		
 		> ul {
 			padding: 10px;
+
+			&.oo-selected {
+				padding-bottom: 40px;
+			}
 		}
 	}
 	
