@@ -377,7 +377,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 	
 	private boolean processSubscribersByEmail(Identity identity, List<Subscriber> subscribers) {
-		log.info("Process {} with {} subscriber(s)", identity.getKey(), subscribers.size());
+		log.debug("Process {} with {} subscriber(s)", identity.getKey(), subscribers.size());
 
 		Date date = new Date();
 		Date defaultCompareDate = getDefaultCompareDate();

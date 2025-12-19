@@ -100,7 +100,7 @@ public class PublisherImpl implements Publisher  {
 	@Column(name="data", nullable=true, insertable=true, updatable=true)
 	private String data; 
 	// 0 = ok
-	@Column(name="state", nullable=false, insertable=true, updatable=false)
+	@Column(name="state", nullable=false, insertable=true, updatable=true)
 	private int state;
 	@Enumerated(EnumType.STRING)
 	@Column(name="channeltype", nullable=false, insertable=true, updatable=false)
