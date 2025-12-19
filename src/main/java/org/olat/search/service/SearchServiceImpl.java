@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -63,7 +64,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
@@ -80,7 +80,6 @@ import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.indexer.FullIndexerStatus;
 import org.olat.search.service.indexer.Index;
 import org.olat.search.service.indexer.IndexerEvent;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.search.service.indexer.MainIndexer;
 import org.olat.search.service.searcher.ConditionalQueryAnalyzer;
 import org.olat.search.service.searcher.JmsSearchProvider;
@@ -108,7 +107,6 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	private final Analyzer analyzer;
 	private final ConditionalQueryAnalyzer conditionalQueryAnalyzer;
 	
-	private LifeFullIndexer lifeIndexer;
 	private SearchSpellChecker searchSpellChecker;
 	private String indexPath;
 	private String permanentIndexPath;
@@ -157,14 +155,6 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	
 	public void setSearchExecutor(ExecutorService searchExecutor) {
 		this.searchExecutor = searchExecutor;
-	}
-
-	/**
-	 * [user by Spring]
-	 * @param lifeIndexer
-	 */
-	public void setLifeIndexer(LifeFullIndexer lifeIndexer) {
-		this.lifeIndexer = lifeIndexer;
 	}
 	
 	/**
@@ -246,7 +236,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		searchSpellChecker.setSearchExecutor(searchExecutor);
 		searchSpellChecker.setSearchModule(searchModuleConfig);
 		
-		indexer = new Index(searchModuleConfig, this, searchSpellChecker, mainIndexer, lifeIndexer, coordinatorManager);
+		indexer = new Index(searchModuleConfig, this, searchSpellChecker, mainIndexer, coordinatorManager);
 
 		indexPath = searchModuleConfig.getFullIndexPath();	
 		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
@@ -458,7 +448,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 
 	@Override
 	public SearchServiceStatus getStatus() {
-		return new SearchServiceStatusImpl(indexer, lifeIndexer, this);
+		return new SearchServiceStatusImpl(indexer, this);
 	}
 
 	@Override

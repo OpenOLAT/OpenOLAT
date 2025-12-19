@@ -129,8 +129,6 @@ import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.references.ReferenceManager;
-import org.olat.search.service.document.RepositoryEntryDocument;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -220,9 +218,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private LTI13SharedToolDeploymentDAO lti13SharedToolDeploymentDAO;
 	@Autowired
 	private ACOfferDAO acOfferDAO;
-
-	@Autowired
-	private LifeFullIndexer lifeIndexer;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 
@@ -395,8 +390,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
-
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, copyEntry.getKey());
 		return copyEntry;
 	}
 
@@ -405,7 +398,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		re.setLastModified(new Date());
 		RepositoryEntry mergedRe = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, mergedRe.getKey());
 		autoAccessManager.grantAccess(re);
 		return mergedRe;
 	}

@@ -48,7 +48,6 @@ import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ReviewDecision;
-import org.olat.search.service.indexer.LifeFullIndexer;
 
 
 /**
@@ -72,8 +71,6 @@ public class QuestionPoolServiceImplTest {
 	private QuestionItemDAO questionItemDaoMock;
 	@Mock
 	private ReviewService reviewServiceMock;
-	@Mock
-	private LifeFullIndexer lifeIndexerMock;
 	@Mock
 	private CommentAndRatingService commentAndRatingServiceMock;
 	@Mock

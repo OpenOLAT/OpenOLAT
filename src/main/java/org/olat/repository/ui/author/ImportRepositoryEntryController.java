@@ -86,8 +86,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private MultipleSelectionElement referencesEl;
 	
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -269,8 +267,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			} else {
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 						LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
-				
-				repositoryManager.triggerIndexer(importedEntry);
 			}
 		}
 	}

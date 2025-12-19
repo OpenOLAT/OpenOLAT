@@ -442,8 +442,6 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 				String ref = externalRef.getValue().trim();
 				importedEntry.setExternalRef(ref);
-				
-				repositoryManager.triggerIndexer(importedEntry);
 			}
 		}
 	}

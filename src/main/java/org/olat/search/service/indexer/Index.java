@@ -55,18 +55,16 @@ public class Index {
 	
 	private OlatFullIndexer fullIndexer;
 	private SearchSpellChecker spellChecker;
-	private LifeFullIndexer lifeIndexer;
 
 	/**
 	 * 
 	 */
 	public Index(SearchModule searchModule, SearchService searchService, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
-			LifeFullIndexer lifeIndexer, CoordinatorManager coordinatorManager) {
+			CoordinatorManager coordinatorManager) {
 		this.spellChecker = spellChecker;
 		this.indexPath = searchModule.getFullIndexPath();
 		this.tempIndexPath = searchModule.getFullTempIndexPath();
 		this.permanentIndexPath = searchModule.getFullPermanentIndexPath();
-		this.lifeIndexer = lifeIndexer;
 		
 		fullIndexer = new OlatFullIndexer(this, searchModule, searchService, mainIndexer, coordinatorManager);
 	}
@@ -78,7 +76,6 @@ public class Index {
 		// do not start search engine in test mode, some repository tests might lead to nullpointers
 		// since only dummy entries are generated (or fix the search service to handle those correctly)
 		if (!Settings.isJUnitTest()) {
-			lifeIndexer.fullIndex();
 			fullIndexer.startIndexing();
 		}
 	}
