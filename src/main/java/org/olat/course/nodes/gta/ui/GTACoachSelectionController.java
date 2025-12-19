@@ -145,7 +145,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		coachAssignmentButton.setVisible(isCoachAssignmentAvailable()
 				&& GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE)));
 		
-		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
+		downloadButton = LinkFactory.createButton("download.submitted.files", mainVC, this);
+		downloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadButton.setTranslator(getTranslator());
 		downloadButton.setVisible(isDownloadAvailable());
 		
