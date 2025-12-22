@@ -256,8 +256,9 @@ public class OverviewRepositoryListController extends BasicController implements
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 
 			if(CMD_IN_PREPARATION.equalsIgnoreCase(scope) && hasScope(CMD_IN_PREPARATION)) {
-				doOpenInPreparation(ureq);
+				InPreparationListController listCtrl = doOpenInPreparation(ureq);
 				scopesSelection.setSelectedKey(CMD_IN_PREPARATION);
+				listCtrl.activate(ureq, subEntries, state);
 			} else if("Implementation".equals(scope) || "CurriculumElement".equals(scope)) {
 				activateCurriculumElement(ureq, entry.getOLATResourceable().getResourceableId());
 			} else {
