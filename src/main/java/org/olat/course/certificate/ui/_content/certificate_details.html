@@ -31,6 +31,12 @@
 					<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
 					<span>${r.formatDate($creationDate)}</span>
 				</div>
+				#if($r.isTrue($revoked))
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("revoked.on")</strong>
+					<span>$r.formatDate($revocationDate)</span>
+				</div>
+				#else
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.valid.until")</strong>
 					#if($r.isNotNull($nextRecertificationDate))
@@ -39,6 +45,7 @@
 					<span>&ndash;</span>
 					#end
 				</div>
+				#end
 			</div>
 		</div>
 	</div>

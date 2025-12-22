@@ -45,6 +45,7 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
+import org.olat.course.run.userview.CourseCoachCandidates;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -241,7 +242,7 @@ public class SurveyRunController extends BasicController {
 	private void doShowExecution(UserRequest ureq) {
 		removeAllComponents();
 		EvaluationFormSession session = surveyManager.loadOrCreateSesssion(participation);
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, new CourseCoachCandidates(userCourseEnv), null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}

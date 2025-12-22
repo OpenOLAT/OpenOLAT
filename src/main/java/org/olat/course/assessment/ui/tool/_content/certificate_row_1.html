@@ -6,7 +6,7 @@
 	<div class="o_achievement_type">
 		#if($row.status == "pending")
 			<span><i class="o_icon o_icon_pending o_icon-spin"> </i></span>
-		#elseif($row.status == "ok" || $row.status == "archived")
+		#elseif($row.status == "ok" || $row.status == "archived" || $row.status == "revoked")
 			#if($r.isTrue($row.thumbnailAvailable))
 				<span class="o_sel_certificate_icon"><img src="$mapperThumbnailUrl/${row.key}/${row.filename}"></span>
 			#else

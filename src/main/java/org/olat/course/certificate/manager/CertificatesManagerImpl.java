@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.manager;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +58,17 @@ import jakarta.jms.Session;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName;
+import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import org.apache.pdfbox.util.Matrix;
 import org.apache.velocity.app.VelocityEngine;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
@@ -103,6 +115,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.FileStorage;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -523,7 +536,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public List<CertificateWithInfos> getCertificatesWithInfos(IdentityRef identity) {
-		return certificatesDao.getCertificatesWithInfos(identity);
+		List<CertificateWithInfos> infosList = certificatesDao.getCertificatesWithInfos(identity);
+		Set<OLATResource> resources = new HashSet<>();
+		// Deduplicates the certificates, revoked certificates lost their last flag
+		List<CertificateWithInfos> deduplicatedInfos = new ArrayList<>(infosList.size());
+		for(CertificateWithInfos infos:infosList) {
+			Certificate certificate = infos.certificate();
+			if(certificate.getOlatResource() == null) {
+				deduplicatedInfos.add(infos);
+			} else if(!resources.contains(certificate.getOlatResource())) {
+				deduplicatedInfos.add(infos);
+				resources.add(certificate.getOlatResource());
+			}
+		}
+		return deduplicatedInfos;
 	}
 
 	@Override
@@ -1602,6 +1628,83 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.getResultList();
 		return dates.isEmpty() ? null : dates.get(0);
 	}
+	
+	@Override
+	public void revokeCertificate(Certificate certificate) {
+		if(certificate instanceof CertificateImpl impl) {
+			impl.setRevocationDate(new Date());
+			impl.setLast(false);
+			impl.setStatus(CertificateStatus.revoked);
+			certificate = certificatesDao.updateCertificate(impl);
+			dbInstance.commit();
+			
+			addWatermark(certificate);
+		}
+	}
+	
+	private void addWatermark(Certificate certificate) {
+		VFSLeaf vfsFile = getCertificateLeaf(certificate);
+		if(vfsFile instanceof LocalFileImpl localImpl) {
+			File file = localImpl.getBasefile();
+			VFSContainer container = localImpl.getParentContainer();
+			String name = FileUtils.getFileNameWithoutSuffix(file.getName()) + "_revoked.pdf";
+			
+			File revokedFile = new File(file.getParentFile(), name);
+			try (PDDocument doc = Loader.loadPDF(file))
+	        {
+		        PDFont font = new PDType1Font(FontName.HELVETICA);
+	            for (PDPage page : doc.getPages())
+	            {
+	                addWatermarkText(doc, page, font);
+	            }
+	            doc.save(revokedFile);
+	            log.info("Revoked certificate file: {}", file);
+	            doc.close();
+	        } catch(Exception e) {
+	        	log.error("", e);
+	        }
+			VFSItem item = container.resolve(name);
+			if(item instanceof VFSLeaf revokedLeaf) {
+				String path = revokedLeaf.getRelPath();
+				// Ugly hack to make the path relative to /certificates/users/
+				path = path.replace("/certificates/users/", "");
+				((CertificateImpl)certificate).setPath(path);
+				((CertificateImpl)certificate).setMetadata(revokedLeaf.getMetaInfo());
+				certificate = certificatesDao.updateCertificate(certificate);
+				localImpl.deleteSilently();
+				dbInstance.commit();
+			}
+		}
+	}   
+
+	private static void addWatermarkText(PDDocument doc, PDPage page, PDFont font)
+	throws IOException {
+		PDRectangle pageSize = page.getMediaBox();
+		float pageWidth = pageSize.getWidth();
+		float pageHeight = pageSize.getHeight();
+
+		PDPageContentStream contentStream = new PDPageContentStream(doc, page, AppendMode.APPEND, true, true);
+		// Transparency
+		PDExtendedGraphicsState graphicsState = new PDExtendedGraphicsState();
+		graphicsState.setNonStrokingAlphaConstant(0.8f);
+		graphicsState.setStrokingAlphaConstant(0.8f);
+		contentStream.setGraphicsStateParameters(graphicsState);
+       
+		// Text
+		contentStream.beginText();
+		contentStream.setFont(font, 144);
+		contentStream.setNonStrokingColor(Color.red);
+		contentStream.setStrokingColor(Color.red);
+
+		// Don't change the text without changing the placement
+		float tx = (pageWidth / 2f) - 180f;
+		float ty = (pageHeight / 2f) - 220f;
+		contentStream.setTextMatrix(Matrix.getRotateInstance(Math.toRadians(45), tx, ty));
+		contentStream.showText("Revoked");
+		contentStream.endText();
+
+		contentStream.close();	
+    }
 
 	@Override
 	public List<CertificateTemplate> getTemplates() {

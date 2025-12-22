@@ -84,6 +84,7 @@ public class HistoryManager {
 		historyReadStream.omitField(RepositoryEntry.class, "statusCode");
 		historyReadStream.omitField(RepositoryEntry.class, "canLaunch");
 		historyReadStream.omitField(RepositoryEntry.class, "membersOnly");
+		historyReadStream.omitField(RepositoryEntry.class, "deletedBy");
 		
 		historyReadStream.omitField(org.olat.core.commons.persistence.PersistentObject.class, "version");
 		

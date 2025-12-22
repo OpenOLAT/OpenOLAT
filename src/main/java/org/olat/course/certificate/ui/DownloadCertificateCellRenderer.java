@@ -108,6 +108,9 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 			sb.append("_").append(certificate.getCourseTitle());
 		}
 		sb.append("_").append(date);
+		if(certificate.getStatus() == CertificateStatus.revoked) {
+			sb.append("_revoked");
+		}
 		String finalName = StringHelper.transformDisplayNameToFileSystemName(sb.toString());
 		return finalName + ".pdf";
 	}
@@ -117,6 +120,9 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(identity);
 		String date = Formatter.formatShortDateFilesystem(certificate.getCreationDate());
 		sb.append(fullName).append("_").append(certificate.getCourseTitle()).append("_").append(date);
+		if(certificate.getStatus() == CertificateStatus.revoked) {
+			sb.append("_revoked");
+		}
 		String finalName = StringHelper.transformDisplayNameToFileSystemName(sb.toString());
 		return finalName + ".pdf";
 	}

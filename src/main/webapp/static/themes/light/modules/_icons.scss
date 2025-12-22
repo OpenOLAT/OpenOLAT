@@ -1135,6 +1135,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_eva_mc { @include o-add-icon('check-square', false);}
 .o_icon_eva_sc { @include o-add-icon('dot-circle', false);}
 .o_icon_eva_sc { @include o-add-icon('dot-circle', false);}
+.o_icon_eva_coach_apply { @include o-add-icon('wand-magic-sparkles');}
 
 /* Quality management */
 .o_icon_qual_ana_hide_filter { @include o-add-icon('toggle-on');}

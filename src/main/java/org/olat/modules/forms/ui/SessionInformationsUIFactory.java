@@ -19,12 +19,13 @@
  */
 package org.olat.modules.forms.ui;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
@@ -33,6 +34,7 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
+import org.olat.modules.forms.model.xml.UserInfo;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -47,24 +49,12 @@ class SessionInformationsUIFactory {
 		// noninstantiable
 	}
 	
-	static final String[] getTypeKeys() {
-		InformationType[] enumVals = InformationType.values();
-		Arrays.sort(enumVals, (t1, t2) -> Integer.compare(t1.getOrder(), t2.getOrder()));
-		String[] vals = new String[enumVals.length];
-		for(int i=enumVals.length; i-->0; ) {
-			vals[i] = enumVals[i].name();
-		}
-		return vals;
-	}
-	
-	static final String[] getTranslatedTypes(Locale locale) {
-		InformationType[] enumVals = InformationType.values();
-		Arrays.sort(enumVals, (t1, t2) -> Integer.compare(t1.getOrder(), t2.getOrder()));
-		String[] names = new String[enumVals.length];
-		for(int i=enumVals.length; i-->0; ) {
-			names[i] = getTranslatedType(enumVals[i], locale);
-		}
-		return names;
+	static final SelectionValues getInformationsSV(Locale locale, List<InformationType> types) {
+		SelectionValues informationSV = new SelectionValues();
+		types.forEach(type -> informationSV.add(SelectionValues.entry(
+				type.name(),
+				getTranslatedType(type, locale))));
+		return informationSV;
 	}
 	
 	static final String getTranslatedType(InformationType informationType, Locale locale) {
@@ -137,6 +127,23 @@ class SessionInformationsUIFactory {
 			return session.getOrgUnit();
 		case USER_STUDYSUBJECT:
 			return session.getStudySubject();
+		default:
+			return null;
+		}
+	}
+	
+	static String getValue(InformationType informationType, UserInfo userInfo) {
+		if (userInfo == null) {
+			return null;
+		}
+		
+		switch (informationType) {
+		case USER_FIRSTNAME:
+			return userInfo.getFirstName();
+		case USER_LASTNAME:
+			return userInfo.getLastName();
+		case USER_EMAIL:
+			return userInfo.getEmail();
 		default:
 			return null;
 		}

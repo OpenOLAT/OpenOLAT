@@ -266,7 +266,7 @@ public class PreviewConfigurationController extends FormBasicController {
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(reloadedFormEntry.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(reloadedFormEntry);
-		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
+		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null, null);
 		stackPanel.pushController(translate("data.collection.form.preview.title"), previewCtrl);
 	}
 	

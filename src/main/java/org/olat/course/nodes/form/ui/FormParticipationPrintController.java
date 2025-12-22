@@ -50,7 +50,7 @@ public class FormParticipationPrintController extends BasicController {
 		listenTo(userCtrl);
 		mainVC.put("user", userCtrl.getInitialComponent());
 		
-		var executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false,
+		var executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null, true, false,
 				false, FormCourseNode.EMPTY_STATE);
 		listenTo(executionCtrl);
 		mainVC.put("evaluationForm", executionCtrl.getInitialComponent());

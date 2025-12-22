@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.modules.ceditor.model.AlertBoxSettings;
@@ -36,6 +37,7 @@ public class SessionInformations extends AbstractElement {
 	private static final long serialVersionUID = 8312618903131914158L;
 	
 	public static final String TYPE = "formrespondentdetails";
+	public static List<InformationType> AVAILABLE_TYPES = Arrays.asList(InformationType.values());
 	
 	public enum Obligation {
 		optional,
@@ -44,23 +46,13 @@ public class SessionInformations extends AbstractElement {
 	}
 
 	public enum InformationType {
-		USER_FIRSTNAME(1),
-		USER_LASTNAME(2),
-		USER_EMAIL(3),
-		AGE(4),
-		USER_GENDER(5),
-		USER_ORGUNIT(6),
-		USER_STUDYSUBJECT(7);
-		
-		private int order;
-		
-		private InformationType(int order) {
-			this.order = order;
-		}
-		
-		public int getOrder() {
-			return order;
-		}
+		USER_FIRSTNAME,
+		USER_LASTNAME,
+		USER_EMAIL,
+		AGE,
+		USER_GENDER,
+		USER_ORGUNIT,
+		USER_STUDYSUBJECT
 	}
 	
 	private Obligation obligation = Obligation.optional;

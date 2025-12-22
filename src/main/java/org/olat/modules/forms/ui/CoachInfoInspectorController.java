@@ -19,6 +19,9 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -41,39 +44,40 @@ import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
-import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.CoachCandidates.Role;
+import org.olat.modules.forms.model.xml.CoachInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Initial date: 2024-01-25<br>
- *
- * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
+ * Initial date: Dec 19, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public class SessionInfoInspectorController extends FormBasicController implements PageElementInspectorController {
+public class CoachInfoInspectorController extends FormBasicController implements PageElementInspectorController {
 	
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	
+	private SingleSelection roleEl;
 	private SingleSelection obligationEl;
 	
-	private final SessionInformations sessionInfo;
+	private final CoachInformations coachInfo;
 	private final boolean restrictedEdit;
 
 	@Autowired
 	private ColorService colorService;
 
-	public SessionInfoInspectorController(UserRequest ureq, WindowControl wControl, SessionInformations sessionInfo, boolean restrictedEdit) {
-		super(ureq, wControl, "session_info_inspector");
-		this.sessionInfo = sessionInfo;
+	public CoachInfoInspectorController(UserRequest ureq, WindowControl wControl, CoachInformations coachInfo, boolean restrictedEdit) {
+		super(ureq, wControl, "coach_info_inspector");
+		this.coachInfo = coachInfo;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
 	@Override
 	public String getTitle() {
-		return translate("add.formrespondentdetails");
+		return translate("add.formcoachdetails");
 	}
 
 	@Override
@@ -92,14 +96,26 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 		formLayout.add(layoutCont);
 		tabbedPane.addTab(getTranslator().translate("tab.general"), layoutCont);
 		
-		SelectionValues obligationKV = new SelectionValues();
-		obligationKV.add(SelectionValues.entry(Obligation.optional.name(), translate("obligation.optional.empty")));
-		obligationKV.add(SelectionValues.entry(Obligation.mandatory.name(), translate("obligation.mandatory.editable")));
-		obligationKV.add(SelectionValues.entry(Obligation.autofill.name(), translate("obligation.mandatory.not.editable")));
+		SelectionValues roleSV = new SelectionValues();
+		roleSV.add(SelectionValues.entry(Role.coach.name(), translate("coach.information.role.coaches")));
+		roleSV.add(SelectionValues.entry(Role.owner.name(), translate("coach.information.role.coaches.owner")));
+		roleEl = uifactory.addRadiosVertical("gi_r_" + CodeHelper.getRAMUniqueID(), "coach.information.role", layoutCont,
+				roleSV.keys(), roleSV.values());
+		String selectedRole = coachInfo.getRoles() != null && coachInfo.getRoles().contains(Role.owner)
+				? Role.owner.name()
+				: Role.coach.name();
+		roleEl.select(selectedRole, true);
+		roleEl.setEnabled(!restrictedEdit);
+		roleEl.addActionListener(FormEvent.ONCHANGE);
+		
+		SelectionValues obligationSV = new SelectionValues();
+		obligationSV.add(SelectionValues.entry(Obligation.optional.name(), translate("obligation.optional.empty")));
+		obligationSV.add(SelectionValues.entry(Obligation.mandatory.name(), translate("obligation.mandatory.editable")));
+		obligationSV.add(SelectionValues.entry(Obligation.autofill.name(), translate("obligation.mandatory.not.editable")));
 		obligationEl = uifactory.addRadiosVertical("gi_m_" + CodeHelper.getRAMUniqueID(), "obligation", layoutCont,
-				obligationKV.keys(), obligationKV.values());
-		String selectedObligation = sessionInfo.getObligation() != null
-				? sessionInfo.getObligation().name()
+				obligationSV.keys(), obligationSV.values());
+		String selectedObligation = coachInfo.getObligation() != null
+				? coachInfo.getObligation().name()
 				: Obligation.optional.name();
 		obligationEl.select(selectedObligation, true);
 		obligationEl.setEnabled(!restrictedEdit);
@@ -117,22 +133,22 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 	}
 
 	private BlockLayoutSettings getLayoutSettings() {
-		if (sessionInfo.getLayoutSettings() != null) {
-			return sessionInfo.getLayoutSettings();
+		if (coachInfo.getLayoutSettings() != null) {
+			return coachInfo.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
 	}
 
 	private AlertBoxSettings getAlertBoxSettings() {
-		if (sessionInfo.getAlertBoxSettings() != null) {
-			return sessionInfo.getAlertBoxSettings();
+		if (coachInfo.getAlertBoxSettings() != null) {
+			return coachInfo.getAlertBoxSettings();
 		}
 		return AlertBoxSettings.getPredefined();
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == obligationEl) {
+		if (source == roleEl || source == obligationEl) {
 			doSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
@@ -145,23 +161,30 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doSave(ureq);
-		fireEvent(ureq, new ClosePartEvent(sessionInfo));
+		fireEvent(ureq, new ClosePartEvent(coachInfo));
 	}
 
 	private void doSave(UserRequest ureq) {
+		List<Role> roles = new ArrayList<>(2);
+		roles.add(Role.coach);
+		if (roleEl.isOneSelected() && roleEl.isKeySelected(Role.owner.name())) {
+			roles.add(Role.owner);
+		}
+		coachInfo.setRoles(roles);
+		
 		Obligation sselectedObligation = obligationEl.isOneSelected()
 				? Obligation.valueOf(obligationEl.getSelectedKey())
 				: Obligation.optional;
-		sessionInfo.setObligation(sselectedObligation);
+		coachInfo.setObligation(sselectedObligation);
 		
-		fireEvent(ureq, new ChangePartEvent(sessionInfo));
+		fireEvent(ureq, new ChangePartEvent(coachInfo));
 	}
 
 	private void doChangeLayout(UserRequest ureq) {
 		BlockLayoutSettings layoutSettings = getLayoutSettings();
 		layoutTabComponents.sync(layoutSettings);
-		sessionInfo.setLayoutSettings(layoutSettings);
-		fireEvent(ureq, new ChangePartEvent(sessionInfo));
+		coachInfo.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(coachInfo));
 
 		getInitialComponent().setDirty(true);
 	}
@@ -169,8 +192,8 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 	private void doChangeAlertBoxSettings(UserRequest ureq) {
 		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
 		alertBoxComponents.sync(alertBoxSettings);
-		sessionInfo.setAlertBoxSettings(alertBoxSettings);
-		fireEvent(ureq, new ChangePartEvent(sessionInfo));
+		coachInfo.setAlertBoxSettings(alertBoxSettings);
+		fireEvent(ureq, new ChangePartEvent(coachInfo));
 
 		getInitialComponent().setDirty(true);
 	}

@@ -71,7 +71,7 @@ public class MSResultDetailsController extends BasicController {
 		AuditEnv auditEnv = AuditEnv.of(auditManager , courseNode, assessedIdentity, getIdentity(), Role.coach);
 		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, evaluationFormProvider, assessedIdentity, auditEnv);
 		
-		formCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false, false, null);
+		formCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null, true, false, false, null);
 		listenTo(formCtrl);
 		mainVC.put("evaluationForm", formCtrl.getInitialComponent());
 		

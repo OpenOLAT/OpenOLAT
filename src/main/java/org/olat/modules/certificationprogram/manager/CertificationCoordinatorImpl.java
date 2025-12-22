@@ -40,7 +40,6 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
@@ -272,14 +271,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	@Override
 	public Certificate revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity actor) {
 		Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram);
-		if(certificate instanceof CertificateImpl impl) {
-			impl.setRevocationDate(new Date());
-			impl.setLast(false);
-			impl.setStatus(CertificateStatus.revoked);
-			certificate = certificatesDao.updateCertificate(impl);
-			dbInstance.commit();
-			
-			log.info("Certificate revoked {} for {} and program {} by {0}", certificate, identity, certificationProgram, actor);
+		if(certificate != null) {
+			certificatesManager.revokeCertificate(certificate);
+
+			log.info("Certificate revoked {} for {} and program {} by {}", certificate, identity, certificationProgram, actor);
 			activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
 			sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
 		}

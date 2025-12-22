@@ -24,6 +24,7 @@ import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.GeneralStyleSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.forms.CoachCandidates;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 
 import com.thoughtworks.xstream.XStream;
@@ -41,19 +42,19 @@ public class FormXStream {
 
 	static {
 		Class<?>[] types = new Class[] { AlertBoxSettings.class, BlockLayoutSettings.class, Choice.class, Choices.class,
-				ChoiceSelectedCondition.class, Container.class, DateInput.class, Disclaimer.class, FileStoredData.class,
-				FileUpload.class, Form.class, GeneralStyleSettings.class, HTMLParagraph.class, HTMLRaw.class, Image.class,
-				ImageSettings.class, InformationType.class, MultipleChoice.class, Rubric.class, Rule.class, ScaleType.class,
+				ChoiceSelectedCondition.class, CoachInformations.class, Container.class, DateInput.class,
+				Disclaimer.class, FileStoredData.class, FileUpload.class, Form.class, GeneralStyleSettings.class,
+				HTMLParagraph.class, HTMLRaw.class, Image.class, ImageSettings.class, InformationType.class,
+				MultipleChoice.class, CoachCandidates.Role.class, Rubric.class, Rule.class, ScaleType.class,
 				SessionInformations.class, SingleChoice.class, Slider.class, Spacer.class, StepLabel.class, Table.class,
-				TextInput.class, Title.class, VisibilityAction.class
-
-		};
+				TextInput.class, Title.class, UserInfo.class, VisibilityAction.class };
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("alertboxsettings", AlertBoxSettings.class);
 		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.alias("choice", Choice.class);
 		xstream.alias("choices", Choices.class);
 		xstream.alias("choiceSelectedCondition", ChoiceSelectedCondition.class);
+		xstream.alias("coachInformations", CoachInformations.class);
 		xstream.alias("container", Container.class);
 		xstream.alias("dateinput", DateInput.class);
 		xstream.alias("disclaimer", Disclaimer.class);
@@ -65,6 +66,7 @@ public class FormXStream {
 		xstream.alias("imageSettgins", ImageSettings.class);
 		xstream.alias("informationType", InformationType.class);
 		xstream.alias("multiplechoice", MultipleChoice.class);
+		xstream.alias("role", CoachCandidates.Role.class);
 		xstream.alias("rubric", Rubric.class);
 		xstream.alias("rule", Rule.class);
 		xstream.alias("sessioninformations", SessionInformations.class);
@@ -74,12 +76,23 @@ public class FormXStream {
 		xstream.alias("table", Table.class);
 		xstream.alias("textinput", TextInput.class);
 		xstream.alias("title", Title.class);
+		xstream.alias("userInfo", UserInfo.class);
 		xstream.alias("visibilityAction", VisibilityAction.class);
 		xstream.ignoreUnknownElements();
 	}
 	
 	public static XStream getXStream() {
 		return xstream;
+	}
+	
+	public static String toXml(Object obj) {
+		return xstream.toXML(obj);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <U> U fromXml(String xml, @SuppressWarnings("unused") Class<U> cl) {
+		Object obj = xstream.fromXML(xml);
+		return (U)obj;
 	}
 
 }

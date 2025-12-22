@@ -19,6 +19,7 @@
  */
 package org.olat.modules.certificationprogram.ui.wizard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.modules.certificationprogram.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -138,6 +140,14 @@ public class AddMembersOverviewController extends StepFormBasicController {
 
 	@Override
 	protected void formFinish(UserRequest ureq) {
+		List<UserToCertify> selectedIdentities = membersContext.getSelectedIdentities();
+		List<Identity> identitiesToCertify = new ArrayList<>(selectedIdentities.size());
+		for(UserToCertify selectedIdentity:selectedIdentities) {
+			if(selectedIdentity.currentStatus() != UserMembershipStatus.ACTIVE) {
+				identitiesToCertify.add(selectedIdentity.identity());
+			}
+		}
+		membersContext.setIdentitiesToCertify(identitiesToCertify);
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 }

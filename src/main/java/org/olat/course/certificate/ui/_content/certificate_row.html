@@ -16,7 +16,10 @@
 				<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
 				<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())</span>
 			#end
-			#if(${row.isWithRecertification()}) 
+			#if(${row.isRevoked()})
+				<strong class="o_card_title">$r.translate("revoked.on")</strong>
+				<span>${r.formatDate($row.getRevocationDate())}</span>
+			#elseif(${row.isWithRecertification()}) 
 				<strong class="o_card_title">$r.translate("table.header.validity")</strong>
 				<span>${r.formatDate($row.getCreationDate())}#if($r.isNotNull($row.getValidUntil())) &ndash; ${r.formatDate($row.getValidUntil())}#end</span>
 			

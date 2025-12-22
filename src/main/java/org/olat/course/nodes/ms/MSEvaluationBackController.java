@@ -28,6 +28,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.run.userview.CourseCoachCandidates;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 
@@ -43,7 +45,8 @@ public class MSEvaluationBackController extends BasicController {
 	
 	private final EvaluationFormExecutionController editExecutionCtrl;
 	
-	public MSEvaluationBackController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
+	public MSEvaluationBackController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
+			UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("edit_back");
@@ -51,7 +54,8 @@ public class MSEvaluationBackController extends BasicController {
 		backLink = LinkFactory.createLinkBack(mainVC, this);
 		mainVC.put("back", backLink);
 
-		editExecutionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, false, true, false, false, null);
+		editExecutionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null,
+				new CourseCoachCandidates(assessedUserCourseEnv), null, false, true, false, false, null);
 		listenTo(editExecutionCtrl);
 		mainVC.put("execution", editExecutionCtrl.getInitialComponent());
 		

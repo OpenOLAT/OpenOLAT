@@ -305,7 +305,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 							.withHintI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_HINT)
 							.withButtonI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_BUTTON)
 							.build();
-					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage, emptyStateConfig);
+					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage, null, emptyStateConfig);
 			});
 	}
 
