@@ -66,6 +66,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
@@ -475,7 +476,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 				if(certificateLeaf != null) {
 					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), true);
 					if(thumbnail != null) {
-						mr = new VFSMediaResource(thumbnail);
+						mr = new VFSMediaResource(thumbnail, ServletUtil.CACHE_ONE_MONTH);
 					}
 				}
 			}
