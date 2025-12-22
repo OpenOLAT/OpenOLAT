@@ -66,9 +66,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -111,7 +114,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class InPreparationListController extends FormBasicController implements FlexiTableComponentDelegate {
+public class InPreparationListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
 	static final String FAVORITE_TAB = "Marks";
 	static final String ALL_TAB = "All";
@@ -402,6 +405,56 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && !entries.isEmpty()) {
+			ContextEntry entry = entries.get(0);
+			String tabId = entry.getOLATResourceable().getResourceableTypeName();
+			if("Offer".equals(tabId)) {
+				closeInformations();
+				selectFilterTab(ureq, allTab);
+				loadModel();
+				InPreparationRow row = tableModel.getObjectByResourceKey(entry.getOLATResourceable().getResourceableId());
+				if(row != null) {
+					doOpenDetails(ureq, row);
+				}
+			} else if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(tabId)) {
+				FlexiFiltersTab tab = tableEl.getFilterTabById(tabId);
+				if(tab == null) {
+					tab = allTab;
+				}
+				selectFilterTab(ureq, tab);
+				loadModelAndFilter();
+			} else if(tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab().getId().equals(tabId)) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				if(subEntries.isEmpty()) {
+					closeInformations();
+					tableEl.addToHistory(ureq);
+				} else {
+					InPreparationRow row = tableModel.getObjectByResourceKey(subEntries.get(0).getOLATResourceable().getResourceableId());
+					if(row != null) {
+						doOpenDetails(ureq, row);
+					}
+				}
+			} 
+		} else {
+			closeInformations();
+			selectFilterTab(ureq, allTab);
+			loadModelAndFilter();
+		}
+	}
+	
+	private void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		if(tab == null) return;
+		tableEl.setSelectedFilterTab(ureq, tab);
+	}
+	
+	private void loadModelAndFilter() {
+		loadModel();
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		tableEl.reset(true, true, true);
+	}
+	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == mainForm.getInitialComponent()) {
 			if("ONCLICK".equals(event.getCommand())) {
@@ -477,7 +530,8 @@ public class InPreparationListController extends FormBasicController implements 
 	
 	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
 		if (entry != null) {
-			removeAsListenerAndDispose(infosCtrl);
+			closeInformations();
+			
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
@@ -495,7 +549,8 @@ public class InPreparationListController extends FormBasicController implements 
 	
 	private void doOpenDetails(UserRequest ureq, CurriculumElement curriculumElement, RepositoryEntry entry) {
 		if (curriculumElement != null) {
-			removeAsListenerAndDispose(infosCtrl);
+			closeInformations();
+			
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
@@ -509,6 +564,12 @@ public class InPreparationListController extends FormBasicController implements 
 		} else {
 			tableEl.reloadData();
 		}
+	}
+	
+	private void closeInformations() {
+		removeAsListenerAndDispose(infosCtrl);
+		infosCtrl = null;
+		stackPanel.popUpToController(this);
 	}
 	
 	private boolean doMark(UserRequest ureq, InPreparationRow row) {

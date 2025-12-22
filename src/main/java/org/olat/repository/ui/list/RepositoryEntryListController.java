@@ -514,11 +514,19 @@ public class RepositoryEntryListController extends FormBasicController
 				} else {
 					selectFilterTab(ureq, tab);
 				}
+			} else if(tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab().getId().equals(tabId)) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				if(subEntries.isEmpty()) {
+					doCloseDetails(false);
+					tableEl.addToHistory(ureq);
+				}
 			} else {
 				tableEl.addToHistory(ureq);
 			}
 		} else {
+			doCloseDetails(false);
 			selectFilterTab(ureq, myTab);
+			tableEl.addToHistory(ureq);
 		}
 		
 		if(state instanceof RepositoryEntryListState se) {
@@ -673,7 +681,7 @@ public class RepositoryEntryListController extends FormBasicController
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == detailsCtrl) {
 			if (event instanceof BookedEvent) {
-				doCloseDetails();
+				doCloseDetails(true);
 			}
 		}
 		super.event(ureq, source, event);
@@ -753,7 +761,7 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	private void doOpenDetailsInList(UserRequest ureq, RepositoryEntryRow row) {
-		removeAsListenerAndDispose(detailsCtrl);
+		doCloseDetails(false);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", row.getKey());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
@@ -771,12 +779,14 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 	}
 	
-	private void doCloseDetails() {
+	private void doCloseDetails(boolean reloadRows) {
 		removeAsListenerAndDispose(detailsCtrl);
 		detailsCtrl = null;
 		
 		stackPanel.popUpToController(this);
-		reloadRows();
+		if(reloadRows) {
+			reloadRows();
+		}
 	}
 	
 	protected boolean doMark(UserRequest ureq, RepositoryEntryRow row) {
