@@ -160,6 +160,18 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 		return null;
 	}
 	
+	public InPreparationRow getObjectByResourceKey(Long key) {
+		if(key == null) return null;
+		
+		List<InPreparationRow> rows = getObjects();
+		for(InPreparationRow row:rows) {
+			if(row.getOlatResource() != null &&  key.equals(row.getOlatResource().getKey())) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public Object getValueAt(int row, int col) {
 		InPreparationRow entryRow = getObject(row);
