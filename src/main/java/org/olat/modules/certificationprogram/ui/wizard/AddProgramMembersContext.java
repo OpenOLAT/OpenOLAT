@@ -38,6 +38,7 @@ public class AddProgramMembersContext {
 	
 	private List<Identity> searchedIdentities;
 	private List<UserToCertify> selectedIdentities;
+	private List<Identity> identitiesToCertify;
 	
 	private Date issuedDate;
 	
@@ -68,6 +69,14 @@ public class AddProgramMembersContext {
 
 	public void setSelectedIdentities(List<UserToCertify> selectedIdentities) {
 		this.selectedIdentities = selectedIdentities;
+	}
+
+	public List<Identity> getIdentitiesToCertify() {
+		return identitiesToCertify;
+	}
+
+	public void setIdentitiesToCertify(List<Identity> identitiesToCertify) {
+		this.identitiesToCertify = identitiesToCertify;
 	}
 
 	public Date getIssuedDate() {

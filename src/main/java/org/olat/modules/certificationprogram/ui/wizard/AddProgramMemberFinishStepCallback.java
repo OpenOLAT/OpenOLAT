@@ -60,11 +60,10 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		Date issuedDate = membersContext.getIssuedDate();
-		List<UserToCertify> userToCertifyList = membersContext.getSelectedIdentities();
+		List<Identity> userToCertifyList = membersContext.getIdentitiesToCertify();
 		CertificationProgram certificationProgram = membersContext.getProgram();
-		for(UserToCertify userToCertify:userToCertifyList) {
-			Identity identity = userToCertify.identity();
-			certificationCoordinator.generateCertificate(identity, certificationProgram, issuedDate,
+		for(Identity userToCertify:userToCertifyList) {
+			certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate,
 					RequestMode.COACH, CertificationProgramMailType.certificate_issued, ureq.getIdentity());
 		}
 		dbInstance.commit();
