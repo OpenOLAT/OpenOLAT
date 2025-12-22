@@ -20,8 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -31,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,12 +52,14 @@ public class SessionInformationsEditorController extends FormBasicController imp
 	
 	private SessionInformations sessionInformations;
 	private final boolean restrictedEdit;
+	private final List<InformationType> availableTypes;
 	
 	public SessionInformationsEditorController(UserRequest ureq, WindowControl wControl,
-			SessionInformations sessionInformations, boolean restrictedEdit) {
+			SessionInformations sessionInformations, boolean restrictedEdit, List<InformationType> availableTypes) {
 		super(ureq, wControl, "session_informations_editor");
 		this.sessionInformations = sessionInformations;
 		this.restrictedEdit = restrictedEdit;
+		this.availableTypes = availableTypes;
 		
 		initForm(ureq);
 
@@ -78,10 +79,9 @@ public class SessionInformationsEditorController extends FormBasicController imp
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
 		
-		String[] keys = SessionInformationsUIFactory.getTypeKeys();
-		String[] values = SessionInformationsUIFactory.getTranslatedTypes(getLocale());
-		informationsEl = uifactory.addCheckboxesVertical("gi_" + postfix,
-				"session.informations.informations", settingsCont, keys, values, null, null, 2);
+		SelectionValues informationsSV = SessionInformationsUIFactory.getInformationsSV(getLocale(), availableTypes);
+		informationsEl = uifactory.addCheckboxesVertical("gi_" + postfix, "session.informations.informations",
+				settingsCont, informationsSV.keys(), informationsSV.values(), null, null, 2);
 		for (String selectedKey: SessionInformationsUIFactory.getSelectedTypeKeys(sessionInformations)) {
 			informationsEl.select(selectedKey, true);
 		}
@@ -95,9 +95,8 @@ public class SessionInformationsEditorController extends FormBasicController imp
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == informationsEl) {
-			doEnableInformations();
+			doSave(ureq);
 		}
-		fireEvent(ureq, new ChangePartEvent(sessionInformations));
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -112,18 +111,12 @@ public class SessionInformationsEditorController extends FormBasicController imp
 		super.event(ureq, source, event);
 	}
 
-	private void doEnableInformations() {
-		Collection<String> selectedKeys = informationsEl.getSelectedKeys();
-		List<InformationType> informationTypes = new ArrayList<>();
-		InformationType[] types = InformationType.values();
-		Arrays.sort(types, (t1, t2) -> Integer.compare(t1.getOrder(), t2.getOrder()));
-		for (InformationType type: types) {
-			boolean enabled = selectedKeys.contains(type.name());
-			if (enabled) {
-				informationTypes.add(type);
-			}
-		}
-		sessionInformations.setInformationTypes(informationTypes);
+	private void doSave(UserRequest ureq) {
+		List<InformationType> informationTypes = informationsEl.getSelectedKeys().stream()
+				.map(InformationType::valueOf)
+				.toList();
+		sessionInformations.setInformationTypes(new ArrayList<>(informationTypes));
+		fireEvent(ureq, new ChangePartEvent(sessionInformations));
 	}
 
 	@Override

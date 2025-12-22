@@ -169,7 +169,7 @@ public class FormParticipationController extends BasicController {
 	private void doSelectParticipation(UserRequest ureq, EvaluationFormParticipation participation) {
 		EvaluationFormSession session = formManager.loadOrCreateSession(participation);
 		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
-			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false,
+			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null, true, false,
 					false, FormCourseNode.EMPTY_STATE);
 			listenTo(executionCtrl);
 			mainVC.put("evaluationForm", executionCtrl.getInitialComponent());

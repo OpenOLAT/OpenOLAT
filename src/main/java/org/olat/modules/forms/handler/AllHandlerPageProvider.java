@@ -55,6 +55,7 @@ public class AllHandlerPageProvider implements PageProvider {
 		handlers.add(new MultipleChoiceHandler(false));
 		handlers.add(new DisclaimerHandler(false));
 		handlers.add(new SessionInformationsHandler(false));
+		handlers.add(new CoachInformationsHandler(false));
 		handlers.add(new ContainerHandler(null));
 	}
 

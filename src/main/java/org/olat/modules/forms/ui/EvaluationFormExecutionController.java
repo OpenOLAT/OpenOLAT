@@ -56,6 +56,8 @@ import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.ValidationMessage.Level;
 import org.olat.modules.ceditor.ui.component.PageFragmentsElementImpl;
+import org.olat.modules.forms.CoachCandidates;
+import org.olat.modules.forms.CoachCandidatesAware;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -107,6 +109,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private final Form form;
 	private final DataStorage storage;
 	private final ExecutionIdentity executionIdentity;
+	private final CoachCandidates coachCandidates;
 	private final Component header;
 	private EmptyStateConfig emptyStateConfig;
 	private EmptyState emptyState;
@@ -126,8 +129,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
-			EmptyStateConfig emptyStateConfig) {
-		this(ureq, wControl, null, null, session, null, null, false, true, false, false, emptyStateConfig);
+			CoachCandidates coachCandidates, EmptyStateConfig emptyStateConfig) {
+		this(ureq, wControl, null, null, session, null, coachCandidates, null, false, true, false, false, emptyStateConfig);
 	}
 
 	/**
@@ -136,21 +139,23 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
-		this(ureq, wControl, form, storage, session, null, header, false, true, false, false, null);
+		this(ureq, wControl, form, storage, session, null, null, header, false, true, false, false, null);
 		this.responses = responses;
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
-			boolean readOnly, boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
-		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton, false, doneSavesOnly, emptyState);
+			CoachCandidates coachCandidates, boolean readOnly, boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
+		this(ureq, wControl, null, null, session, null, coachCandidates, null, readOnly, showDoneButton, false, doneSavesOnly, emptyState);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
-			EvaluationFormSession session, ExecutionIdentity executionIdentity, Component header, boolean readOnly,
-			boolean showDoneButton, boolean showCancelButton, boolean doneSavesOnly, EmptyStateConfig emptyStateConfig) {
+			EvaluationFormSession session, ExecutionIdentity executionIdentity, CoachCandidates coachCandidates,
+			Component header, boolean readOnly, boolean showDoneButton, boolean showCancelButton, boolean doneSavesOnly,
+			EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
 
 		this.session = session;
+		this.coachCandidates = coachCandidates != null? coachCandidates: CoachCandidates.NONE;
 		this.header = header;
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = readOnly;
@@ -177,7 +182,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile,
-			DataStorage storage, EmptyStateConfig emptyStateConfig) {
+			DataStorage storage, CoachCandidates coachCandidates, EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
 
 		this.form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
@@ -185,6 +190,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		this.session = null;
 		this.responses = null;
+		this.coachCandidates = coachCandidates != null? coachCandidates: CoachCandidates.NONE;
 		this.header = null;
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = false;
@@ -275,6 +281,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(),
 						mainForm, element, executionIdentity);
 				if (executionElement != null) {
+					if (executionElement instanceof CoachCandidatesAware coachCandidatesAware) {
+						coachCandidatesAware.initCoachCandidates(coachCandidates);
+					}
 					String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
 					fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
 				}

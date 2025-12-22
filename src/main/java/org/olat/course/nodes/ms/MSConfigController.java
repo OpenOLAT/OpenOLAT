@@ -72,6 +72,7 @@ import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -783,7 +784,8 @@ public class MSConfigController extends FormBasicController {
 				FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
+				new RepositoryCoachCandidates(ores), null);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

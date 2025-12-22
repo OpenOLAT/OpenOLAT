@@ -45,6 +45,7 @@ import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.model.TaskReviewAssignmentImpl;
 import org.olat.course.nodes.gta.ui.GTAParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.CourseCoachCandidates;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -105,8 +106,8 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 		
 		boolean showCancel = !edit && !options.withRating();
 		EvaluationFormSession session = peerReviewManager.loadOrCreateSession(participation);
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null,
-				!edit, edit, showCancel, false, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null,
+				new CourseCoachCandidates(courseEnv), null, !edit, edit, showCancel, false, null);
 		executionCtrl.setSaveDisplayText(translate("quick.save"));
 		executionCtrl.setDoneI18nKey("save.as.rating");
 		listenTo(executionCtrl);

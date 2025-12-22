@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
+import org.olat.course.run.userview.CourseCoachCandidates;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -106,13 +107,15 @@ public class FormRunController extends BasicController {
 		if (checkDeadline()) {
 			EvaluationFormParticipation participation = formManager.loadOrCreateParticipation(survey, getIdentity());
 			EvaluationFormSession session = formManager.loadOrCreateSession(participation);
-			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
+			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session,
+					new CourseCoachCandidates(userCourseEnv), FormCourseNode.EMPTY_STATE);
 			listenTo(executionCtrl);
 			mainVC.put("form", executionCtrl.getInitialComponent());
 		} else {
 			EvaluationFormSession session = formManager.getDoneSession(survey, getIdentity());
 			if (session != null) {
-				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
+				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session,
+						new CourseCoachCandidates(userCourseEnv), FormCourseNode.EMPTY_STATE);
 				listenTo(executionCtrl);
 				mainVC.put("form", executionCtrl.getInitialComponent());
 			} else {

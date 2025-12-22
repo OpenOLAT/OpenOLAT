@@ -60,10 +60,12 @@ import org.olat.modules.forms.handler.DateInputHandler;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Choice;
+import org.olat.modules.forms.model.xml.CoachInformations;
 import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.model.xml.MultipleChoice;
@@ -75,6 +77,7 @@ import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.Spacer;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.model.xml.Title;
+import org.olat.modules.forms.model.xml.UserInfo;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -225,6 +228,9 @@ public class EvaluationFormExcelExport {
 			case SessionInformations.TYPE:
 				addSessionInformationsHeader(workbook, headerRow, col, (SessionInformations) element);
 				break;
+			case CoachInformations.TYPE:
+				addCoachInformationsHeader(workbook, headerRow, col, (CoachInformations) element);
+				break;
 			case SingleChoice.TYPE:
 				mergeColumn(element, col);
 				break;
@@ -311,6 +317,9 @@ public class EvaluationFormExcelExport {
 			case SessionInformations.TYPE:
 				addSessionInformations(workbook, session, row, col, (SessionInformations) element);
 				break;
+			case CoachInformations.TYPE:
+				addCoachInformations(workbook, session, row, col, (CoachInformations) element);
+				break;
 			case SingleChoice.TYPE:
 				addSingleChoice(workbook, session, row, col, (SingleChoice) element);
 				break;
@@ -366,6 +375,14 @@ public class EvaluationFormExcelExport {
 			SessionInformations sessionInformations) {
 		for (InformationType informationType: sessionInformations.getInformationTypes()) {
 			row.addCell(col.getAndIncrement(), informationType.name(), workbook.getStyles().getBottomAlignStyle());
+		}
+	}
+	
+	private void addCoachInformationsHeader(OpenXMLWorkbook workbook, Row row, AtomicInteger col,
+			CoachInformations coachInformations) {
+		for (InformationType informationType: coachInformations.getInformationTypes()) {
+			String name = informationType.name().replace("USER", "COACH");
+			row.addCell(col.getAndIncrement(), name, workbook.getStyles().getBottomAlignStyle());
 		}
 	}
 	
@@ -439,6 +456,25 @@ public class EvaluationFormExcelExport {
 			AtomicInteger col, SessionInformations sessionInformations) {
 		for (InformationType informationType: sessionInformations.getInformationTypes()) {
 			String value = SessionInformationsUIFactory.getValue(informationType, session);
+			if (StringHelper.containsNonWhitespace(value)) {
+				row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
+			}
+			col.getAndIncrement();
+		}
+	}
+	
+	private void addCoachInformations(OpenXMLWorkbook workbook, EvaluationFormSession session, Row row,
+			AtomicInteger col, CoachInformations coachInformations) {
+		UserInfo userInfo = null;
+		EvaluationFormResponse response = responses.getResponse(session, coachInformations.getId());
+		if (response != null) {
+			if (StringHelper.containsNonWhitespace(response.getStringuifiedResponse())) {
+				userInfo = FormXStream.fromXml(response.getStringuifiedResponse(), UserInfo.class);
+			}
+		}
+		
+		for (InformationType informationType: coachInformations.getInformationTypes()) {
+			String value = SessionInformationsUIFactory.getValue(informationType, userInfo);
 			if (StringHelper.containsNonWhitespace(value)) {
 				row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
 			}

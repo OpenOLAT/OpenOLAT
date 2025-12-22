@@ -81,6 +81,7 @@ import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
@@ -1018,7 +1019,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
 		previewCtr = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
-				FormCourseNode.EMPTY_STATE);
+				new RepositoryCoachCandidates(courseEntry), FormCourseNode.EMPTY_STATE);
 		listenTo(previewCtr);
 
 		stackPanel.pushController(translate("preview"), previewCtr);

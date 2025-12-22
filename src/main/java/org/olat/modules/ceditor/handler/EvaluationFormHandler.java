@@ -127,20 +127,20 @@ public class EvaluationFormHandler implements PageElementHandler {
 		if(pageStatus == null || pageStatus == PageStatus.draft) {
 			if(hasRole(ContentRoles.owner, ureq.getIdentity(), accessRights)) {
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-				ctrl = new EvaluationFormExecutionController(ureq, wControl, session, false, true, true, null);
+				ctrl = new EvaluationFormExecutionController(ureq, wControl, session, null, false, true, true, null);
 			}
 		} else if (assignment.isOnlyAutoEvaluation()) {
 			// only the auto evaluation is shown
 			if(hasRole(ContentRoles.owner, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
+				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, null, readOnly, !readOnly, true, null);
 			} else if(hasRole(ContentRoles.coach, ureq.getIdentity(), accessRights)
 					|| hasRole(ContentRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(ContentRoles.invitee, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, owner);
-				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, true, false, true, null);
+				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, null, true, false, true, null);
 			}
 		} else {
 			if(hasRole(ContentRoles.owner, ureq.getIdentity(), accessRights)) {
@@ -151,7 +151,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, null, readOnly, !readOnly, true, null);
 				}
 			} else if(hasRole(ContentRoles.coach, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
@@ -161,7 +161,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, true, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, false, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, null, readOnly, !readOnly, false, null);
 				}
 			} else if(hasRole(ContentRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(ContentRoles.invitee, ureq.getIdentity(), accessRights)) {
@@ -172,7 +172,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, survey, true, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, false, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, null, readOnly, !readOnly, false, null);
 				}
 			}
 		}
@@ -228,7 +228,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 				File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 				File formFile = new File(repositoryDir, FORM_XML_FILE);
 				DataStorage storage = evaluationFormManager.loadStorage(re);
-				return new EvaluationFormExecutionController(ureq, wControl, formFile, storage, null);
+				return new EvaluationFormExecutionController(ureq, wControl, formFile, storage, null, null);
 			}
 		}
 		return null;

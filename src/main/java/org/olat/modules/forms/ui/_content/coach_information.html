@@ -1,0 +1,10 @@
+#if($r.available($coachDropDownName) && $r.visible($coachDropDownName))
+	<div class="o_block">
+		$r.render($coachDropDownName)
+	</div>
+#end
+<div class="o_form o_form_two_cols">
+	#foreach($wrapper in $wrappers)
+		$r.render($wrapper.getName(), "vertical")
+	#end
+</div>

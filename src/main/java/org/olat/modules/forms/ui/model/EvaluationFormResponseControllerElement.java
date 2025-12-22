@@ -29,6 +29,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
+import org.olat.modules.forms.CoachCandidates;
+import org.olat.modules.forms.CoachCandidatesAware;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.rules.RuleAware;
@@ -40,7 +42,8 @@ import org.olat.modules.forms.rules.RulesEngine;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormResponseControllerElement implements EvaluationFormExecutionElement, ControllerEventListener {
+public class EvaluationFormResponseControllerElement
+		implements EvaluationFormExecutionElement, CoachCandidatesAware, ControllerEventListener {
 	
 	private final EvaluationFormResponseController controller;
 	private boolean visible = true;
@@ -62,6 +65,14 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 	@Override
 	public FormItem getFormItem() {
 		return controller.getInitialFormItem();
+	}
+
+	@Override
+	public void initCoachCandidates(CoachCandidates coachCandidates) {
+		if (controller instanceof CoachCandidatesAware coachCandidatesAware) {
+			coachCandidatesAware.initCoachCandidates(coachCandidates);
+		}
+		
 	}
 
 	@Override

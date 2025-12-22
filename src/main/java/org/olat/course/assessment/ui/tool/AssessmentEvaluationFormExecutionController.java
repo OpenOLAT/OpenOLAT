@@ -34,6 +34,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ms.AuditEnv;
 import org.olat.course.nodes.ms.MSService;
+import org.olat.course.run.userview.CourseCoachCandidates;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
@@ -91,8 +92,8 @@ public class AssessmentEvaluationFormExecutionController extends BasicController
 	
 		boolean readOnly = !edit;
 		boolean showDoneButton = edit;
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null,
-				readOnly, showDoneButton, edit, false, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null,
+				new CourseCoachCandidates(assessedUserCourseEnv), null, readOnly, showDoneButton, edit, false, null);
 		executionCtrl.setSaveDisplayText(translate("save"));
 		listenTo(executionCtrl);
 		

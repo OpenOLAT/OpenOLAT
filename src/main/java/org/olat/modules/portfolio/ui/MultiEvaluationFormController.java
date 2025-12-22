@@ -200,7 +200,8 @@ public class MultiEvaluationFormController extends BasicController {
 	 */
 	private Controller createReadOnlyEvalutationForm(UserRequest ureq, Identity evaluator) {
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
-		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false, false, null);
+		Controller evalutionFormCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null,
+				true, false, false, null);
 		listenTo(evalutionFormCtrl);
 		return evalutionFormCtrl;
 	}
@@ -221,7 +222,7 @@ public class MultiEvaluationFormController extends BasicController {
 			boolean me = portfolioOwner.equals(getIdentity());
 			segmentView.addSegment(ownerLink, me);
 			if(me) {
-				doOpenEvalutationForm(ureq, portfolioOwner);
+				doOpenEvaluationForm(ureq, portfolioOwner);
 			}
 		}
 		
@@ -244,7 +245,7 @@ public class MultiEvaluationFormController extends BasicController {
 				otherEvaluatorLinks.add(evaluatorLink);
 				segmentView.addSegment(evaluatorLink, me);
 				if(me) {
-					doOpenEvalutationForm(ureq, evaluator);
+					doOpenEvaluationForm(ureq, evaluator);
 				}
 			}
 		}
@@ -293,25 +294,26 @@ public class MultiEvaluationFormController extends BasicController {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == ownerLink) {
-					doOpenEvalutationForm(ureq, portfolioOwner);
+					doOpenEvaluationForm(ureq, portfolioOwner);
 				} else if(clickedLink == compareLink) {
 					doOpenOverview(ureq);
 				} else if (clickedLink instanceof Link link) {
 					Object uobject = link.getUserObject();
 					if(uobject instanceof Identity ident) {
-						doOpenEvalutationForm(ureq, ident);
+						doOpenEvaluationForm(ureq, ident);
 					}
 				}
 			}
 		}
 	}
 
-	private void doOpenEvalutationForm(UserRequest ureq, Identity evaluator) {
+	private void doOpenEvaluationForm(UserRequest ureq, Identity evaluator) {
 		boolean doneButton = !readOnly && evaluator.equals(getIdentity());
 		boolean ro = !doneButton;
 		
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
-		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton, !doneButton, null);
+		currentEvalutionFormCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null, ro,
+				doneButton, !doneButton, null);
 		listenTo(currentEvalutionFormCtrl);
 		mainVC.put("segmentCmp", currentEvalutionFormCtrl.getInitialComponent());
 	}

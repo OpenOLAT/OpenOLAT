@@ -37,39 +37,39 @@ import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
-import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.CoachCandidates.Role;
+import org.olat.modules.forms.model.xml.CoachInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
-import org.olat.modules.forms.ui.SessionInfoInspectorController;
-import org.olat.modules.forms.ui.SessionInformationsController;
+import org.olat.modules.forms.ui.CoachInfoInspectorController;
+import org.olat.modules.forms.ui.CoachInformationsController;
 import org.olat.modules.forms.ui.SessionInformationsEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
-import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 /**
  * 
- * Initial date: 14.05.2018<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: Dec 19, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class SessionInformationsHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
+public class CoachInformationsHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private final boolean restrictedEdit;
 	
-	public SessionInformationsHandler(boolean restrictedEdit) {
+	public CoachInformationsHandler(boolean restrictedEdit) {
 		this.restrictedEdit = restrictedEdit;
 	}
 
 	@Override
 	public String getType() {
-		return SessionInformations.TYPE;
+		return CoachInformations.TYPE;
 	}
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_user";
+		return "o_icon_coach";
 	}
 	
 	@Override
@@ -79,15 +79,14 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public int getSortOrder() {
-		return 10;
+		return 11;
 	}
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			RenderingHints options) {
-		if(element instanceof SessionInformations) {
-			SessionInformations sessionInformations = (SessionInformations) element;
-			EvaluationFormResponseController ctrl = new SessionInformationsController(ureq, wControl, sessionInformations);
+		if (element instanceof CoachInformations coachInformations) {
+			CoachInformationsController ctrl = new CoachInformationsController(ureq, wControl, coachInformations);
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;
@@ -95,17 +94,17 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof SessionInformations sessionInformations) {
-			return new SessionInformationsEditorController(ureq, wControl, sessionInformations, restrictedEdit,
-					SessionInformations.AVAILABLE_TYPES);
+		if (element instanceof CoachInformations coachInformations) {
+			return new SessionInformationsEditorController(ureq, wControl, coachInformations,
+					restrictedEdit, CoachInformations.AVAILABLE_TYPES);
 		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if (element instanceof SessionInformations sessionInfo) {
-			return new SessionInfoInspectorController(ureq, wControl, sessionInfo, restrictedEdit);
+		if (element instanceof CoachInformations coachInformations) {
+			return new CoachInfoInspectorController(ureq, wControl, coachInformations, restrictedEdit);
 		}
 		return null;
 	}
@@ -113,9 +112,8 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
 			PageElement element, ExecutionIdentity executionIdentity) {
-		if (element instanceof SessionInformations) {
-			SessionInformations sessionInformations = (SessionInformations) element;
-			EvaluationFormResponseController ctrl = new SessionInformationsController(ureq, wControl, sessionInformations, rootForm, executionIdentity);
+		if (element instanceof CoachInformations coachInformations) {
+			CoachInformationsController ctrl = new CoachInformationsController(ureq, wControl, coachInformations, rootForm);
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;
@@ -123,27 +121,33 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		SessionInformations informations = new SessionInformations();
+		CoachInformations informations = new CoachInformations();
 		informations.setId(UUID.randomUUID().toString());
 		List<InformationType> informationTypes = new ArrayList<>(2);
 		informationTypes.add(InformationType.USER_FIRSTNAME);
 		informationTypes.add(InformationType.USER_LASTNAME);
 		informations.setInformationTypes(informationTypes);
+		List<Role> roles = new ArrayList<>(1);
+		roles.add(Role.coach);
+		informations.setRoles(roles);
 		informations.setObligation(Obligation.optional);
 		return informations;
 	}
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof SessionInformations sessionInformations) {
-			SessionInformations clone = new SessionInformations();
+		if (element instanceof CoachInformations coachInformations) {
+			CoachInformations clone = new CoachInformations();
 			clone.setId(UUID.randomUUID().toString());
-			if (sessionInformations.getInformationTypes() != null) {
-				clone.setInformationTypes(new ArrayList<>(sessionInformations.getInformationTypes()));
+			if (coachInformations.getInformationTypes() != null) {
+				clone.setInformationTypes(new ArrayList<>(coachInformations.getInformationTypes()));
 			}
-			clone.setObligation(sessionInformations.getObligation());
-			clone.setLayoutSettings(BlockLayoutSettings.clone(sessionInformations.getLayoutSettings()));
-			clone.setAlertBoxSettings(AlertBoxSettings.clone(sessionInformations.getAlertBoxSettings()));
+			if (coachInformations.getRoles() != null) {
+				clone.setRoles(new ArrayList<>(coachInformations.getRoles()));
+			}
+			clone.setObligation(coachInformations.getObligation());
+			clone.setLayoutSettings(BlockLayoutSettings.clone(coachInformations.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(coachInformations.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;

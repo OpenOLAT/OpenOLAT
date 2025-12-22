@@ -143,7 +143,8 @@ public class StandaloneExecutionController extends BasicController {
 		} else {
 			executionIdentity = ExecutionIdentity.ofNone();
 		}
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, executionIdentity, null, false, true, false, false, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session,
+				executionIdentity, null, null, false, true, false, false, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}

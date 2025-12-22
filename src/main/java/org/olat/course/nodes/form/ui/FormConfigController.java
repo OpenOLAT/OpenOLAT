@@ -60,6 +60,7 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +97,7 @@ public class FormConfigController extends FormBasicController {
 	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
 	private RepositoryEntry formEntry;
+	private final RepositoryEntry courseEntry;
 	private boolean reportUserEmail;
 	
 	@Autowired
@@ -105,6 +107,7 @@ public class FormConfigController extends FormBasicController {
 			RepositoryEntry courseEntry) {
 		super(ureq, wControl);
 		this.formCourseNode = formCourseNode;
+		this.courseEntry = courseEntry;
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.config = formCourseNode.getModuleConfiguration();
 		this.relativeToDates = formManager.getRelativeToDateTypes(courseEntry);
@@ -301,7 +304,7 @@ public class FormConfigController extends FormBasicController {
 		File formFile = formManager.getFormFile(formEntry);
 		DataStorage storage = formManager.loadStorage(formEntry);
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
-				FormCourseNode.EMPTY_STATE);
+				new RepositoryCoachCandidates(courseEntry), FormCourseNode.EMPTY_STATE);
 		
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

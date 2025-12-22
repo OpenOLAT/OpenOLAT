@@ -129,7 +129,8 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 			removeAsListenerAndDispose(executionCtrl);
 		}
 		
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, true, false, false, false, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null,
+				null, true, false, false, false, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}
@@ -204,7 +205,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private void doEditEvaluation(UserRequest ureq) {
 		removeAsListenerAndDispose(editExecutionCtrl);
 		
-		editExecutionCtrl = new MSEvaluationBackController(ureq, getWindowControl(), session);
+		editExecutionCtrl = new MSEvaluationBackController(ureq, getWindowControl(), session, assessedUserCourseEnv);
 		listenTo(editExecutionCtrl);
 		if(stackPanel != null) {
 			stackPanel.pushController(translate("evaluation.edit.crumb"), editExecutionCtrl);

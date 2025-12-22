@@ -52,6 +52,7 @@ import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.handler.CoachInformationsHandler;
 import org.olat.modules.forms.handler.ContainerHandler;
 import org.olat.modules.forms.handler.DateInputHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
@@ -252,6 +253,8 @@ public class EvaluationFormEditorController extends BasicController implements T
 			handlers.add(disclaimerHandler);
 			SessionInformationsHandler sessionInformationsHandler = new SessionInformationsHandler(restrictedEdit);
 			handlers.add(sessionInformationsHandler);
+			CoachInformationsHandler coachInformationsHandler = new CoachInformationsHandler(restrictedEdit);
+			handlers.add(coachInformationsHandler);
 			ContainerHandler containerHandler = new ContainerHandler(EvaluationFormEditorController.this);
 			handlers.add(containerHandler);
 
@@ -267,6 +270,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 				creationHandlers.add(dateInputHandler);
 				creationHandlers.add(fileUploadhandler);
 				creationHandlers.add(sessionInformationsHandler);
+				creationHandlers.add(coachInformationsHandler);
 				creationHandlers.add(disclaimerHandler);
 				creationHandlers.add(hrHandler);
 				creationHandlers.add(htmlHandler); // legacy

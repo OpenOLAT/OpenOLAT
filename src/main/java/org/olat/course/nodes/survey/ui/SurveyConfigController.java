@@ -46,6 +46,7 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,7 @@ public class SurveyConfigController extends FormBasicController {
 	private ReferencableEntriesSearchController searchCtrl;
 	private LayoutMain3ColsPreviewController previewCtr;
 	
+	private final RepositoryEntry courseEntry;
 	private final ModuleConfiguration moduleConfiguration;
 	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
@@ -78,6 +80,7 @@ public class SurveyConfigController extends FormBasicController {
 	public SurveyConfigController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
 			RepositoryEntry courseEntry) {
 		super(ureq, wControl);
+		this.courseEntry = courseEntry;
 		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
 		this.surveyIdent = surveyManager.getSurveyIdentifier(surveyCourseNode, courseEntry);
 		survey = surveyManager.loadSurvey(surveyIdent);
@@ -210,7 +213,8 @@ public class SurveyConfigController extends FormBasicController {
 		survey = surveyManager.loadSurvey(surveyIdent);
 		File formFile = surveyManager.getFormFile(survey);
 		DataStorage storage = surveyManager.loadStorage(survey);
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
+				new RepositoryCoachCandidates(courseEntry), null);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

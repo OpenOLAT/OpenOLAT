@@ -62,6 +62,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
@@ -470,7 +471,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
 		previewCtr = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
-				FormCourseNode.EMPTY_STATE);
+				new RepositoryCoachCandidates(courseEntry), FormCourseNode.EMPTY_STATE);
 		listenTo(previewCtr);
 
 		stackPanel.pushController(translate("preview"), previewCtr);
