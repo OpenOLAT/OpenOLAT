@@ -141,7 +141,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 	}
 	
 	public CertificateRow getObjectByCertificateKey(Long certificateKey) {
-		List<CertificateRow> rows = this.getObjects();
+		List<CertificateRow> rows = getObjects();
 		return rows.stream()
 				.filter(row -> row.getKey().equals(certificateKey))
 				.findFirst().orElse(null);
