@@ -273,6 +273,8 @@ public interface CertificatesManager {
 	
 	public Certificate generateCertificate(CertificateInfos infos, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateConfig config);
 	
+	public void revokeCertificate(Certificate certificate);
+	
 	public void deleteCertificate(Certificate certificate);
 	
 	public void deleteStandalonCertificate(Certificate certificate);

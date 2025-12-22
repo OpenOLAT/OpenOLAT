@@ -158,6 +158,14 @@ public class CertificateDetailsController extends BasicController {
 		String statusString = status.asLabelExplained(certificate, ureq.getRequestTimestamp(), getTranslator());
 		mainVC.contextPut("statusExplained", statusString);
 		
+		if(status == CertificationStatus.REVOKED) {
+			mainVC.contextPut("revocationDate", certificate.getRevocationDate());
+			mainVC.contextPut("revoked", Boolean.TRUE);	
+		} else {
+			mainVC.contextPut("revoked", Boolean.FALSE);
+			mainVC.contextRemove("revocationDate");
+		}
+		
 		if(certificate.getNextRecertificationDate() != null) {
 			mainVC.contextPut("nextRecertificationDate", certificate.getNextRecertificationDate());
 		} else {

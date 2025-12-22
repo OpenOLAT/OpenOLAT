@@ -153,6 +153,10 @@ public class CertificateRow {
 		return recertificationInDays != null && recertificationInDays.isDanger();
 	}
 	
+	public boolean isRevoked() {
+		return status == CertificationStatus.REVOKED;
+	}
+	
 	public CertificationProgram getCertificationProgram() {
 		return certificationProgram;
 	}
@@ -163,6 +167,10 @@ public class CertificateRow {
 	
 	public Date getCreationDate() {
 		return certificate.getCreationDate();
+	}
+	
+	public Date getRevocationDate() {
+		return certificate.getRevocationDate();
 	}
 	
 	public RepositoryEntry getCourse() {

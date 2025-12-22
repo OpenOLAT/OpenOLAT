@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -79,7 +80,7 @@ public class CertificatesDAO {
 				inner join fetch cer.identity ident
 				inner join fetch ident.user identUser
 				where ident.key=:identityKey and cer.certificationProgram.key=:certificationProgramKey
-				order by cer.last, cer.creationDate desc""";
+				order by cer.last, cer.key desc""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, Certificate.class)
 				.setParameter("identityKey", identity.getKey())
@@ -129,6 +130,11 @@ public class CertificatesDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * 
+	 * @param identity The identity
+	 * @return
+	 */
 	public List<CertificateWithInfos> getCertificatesWithInfos(IdentityRef identity) {
 		String query = """
 				select new CertificateWithInfos(cer, course, certificateConfig,
@@ -142,11 +148,12 @@ public class CertificatesDAO {
 				left join fetch certificateentryconfig as certificateConfig on (certificateConfig.entry.key=course.key)
 				left join fetch cer.uploadedBy as uploadedByIdent
 				left join fetch uploadedByIdent.user as uploadedByUser
-				where cer.identity.key=:identityKey and cer.last=true
-				order by cer.creationDate desc""";
+				where cer.identity.key=:identityKey and (cer.last=true or cer.statusString=:revokedStatus)
+				order by cer.key desc""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, CertificateWithInfos.class)
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("revokedStatus", CertificateStatus.revoked.name())
 				.getResultList();
 	}
 	

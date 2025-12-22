@@ -48,7 +48,11 @@ public enum CertificationStatus {
 	public static CertificationStatus evaluate(Certificate certificate, Date referenceDate) {
 		if(certificate.getStatus() == CertificateStatus.archived) {
 			return ARCHIVED;
-		} else if(certificate.isLast()) {
+		}
+		if(certificate.getStatus() == CertificateStatus.revoked) {
+			return REVOKED;
+		}
+		if(certificate.isLast()) {
 			Date nextRecertificationDate = certificate.getNextRecertificationDate();
 			Date recertificationWindowDate = certificate.getRecertificationWindowDate();
 			if(nextRecertificationDate == null || nextRecertificationDate.compareTo(referenceDate) >= 0) {
@@ -58,8 +62,6 @@ public enum CertificationStatus {
 				return EXPIRED_RENEWABLE;
 			}
 			return EXPIRED;
-		} else if(certificate.getStatus() == CertificateStatus.revoked) {
-			return REVOKED;
 		}
 		return ARCHIVED;
 	}
