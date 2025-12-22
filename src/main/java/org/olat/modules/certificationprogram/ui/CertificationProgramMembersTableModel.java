@@ -109,7 +109,17 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 	
 	private boolean accept(String searchValue, CertificationProgramMemberRow memberRow) {
 		if(searchValue == null) return true;
-		return accept(searchValue, memberRow.getIdentityExternalId());
+		return accept(searchValue, memberRow.getIdentityExternalId())
+				|| accept(searchValue, memberRow.getIdentityProps());
+	}
+	
+	private boolean accept(String searchValue, String[] values) {
+		for(String val:values) {
+			if(accept(searchValue, val)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean accept(String searchValue, String val) {
