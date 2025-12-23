@@ -24,6 +24,7 @@
 */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
@@ -149,6 +150,8 @@ public interface FormLink extends FormItem {
 	 * @param textReasonForDisabling
 	 */
 	public void setTextReasonForDisabling(String textReasonForDisabling);
+	
+	public void setInnerComponent(Component component);
 	
 	/**
 	 * @param true: set link to active state (only render issue); false set to not active (default)

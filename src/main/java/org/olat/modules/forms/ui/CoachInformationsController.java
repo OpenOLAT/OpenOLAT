@@ -24,6 +24,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,6 +40,11 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.RenderResult;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -55,7 +64,11 @@ import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 import org.olat.modules.forms.model.xml.UserInfo;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.Progress;
-import org.olat.user.UserManager;
+import org.olat.user.PortraitSize;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,7 +93,7 @@ public class CoachInformationsController extends FormBasicController
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
-	private UserManager userManager;
+	private UserPortraitService portraitService;
 
 	public CoachInformationsController(UserRequest ureq, WindowControl wControl, CoachInformations coachInformations) {
 		super(ureq, wControl, "coach_information");
@@ -152,9 +165,11 @@ public class CoachInformationsController extends FormBasicController
 	}
 
 	private FormLink createCoachLink(Identity coach) {
-		String displayName = StringHelper.escapeHtml(userManager.getUserDisplayName(coach));
+		UserDropdownComponent userDropdownComp = new UserDropdownComponent("odc_" + CodeHelper.getRAMUniqueID(), coach);
+		
 		FormLink coachLink = uifactory.addFormLink(COACH_SELECTION_PREFIX + CodeHelper.getRAMUniqueID(), null, null, flc, Link.LINK + Link.NONTRANSLATED);
-		coachLink.setI18nKey(displayName);
+		coachLink.setI18nKey(userDropdownComp.getPortraitUser().getDisplayName());
+		coachLink.setInnerComponent(userDropdownComp);
 		coachLink.setUserObject(coach);
 		return coachLink;
 	}
@@ -373,6 +388,67 @@ public class CoachInformationsController extends FormBasicController
 		
 		public String getValue() {
 			return informationEl.getValue();
+		}
+		
+	}
+	
+	/**
+	 * Prototype for a user dropdown component.
+	 * Feel free to convert it in a standalone, reusable component.
+	 * 
+	 * Initial date: Dec 23, 2025<br>
+	 * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
+	 *
+	 */
+	public class UserDropdownComponent extends AbstractComponent {
+		
+		private static final ComponentRenderer RENDERER = new UserDropdownRenderer();
+		
+		private final PortraitUser portraitUser;
+		private final UserPortraitComponent userPortraitComp;
+		
+		public UserDropdownComponent(String name, Identity identity) {
+			super(name);
+			portraitUser = portraitService.createPortraitUser(getLocale(), identity);
+			userPortraitComp = UserPortraitFactory.createUserPortrait("user_" + CodeHelper.getRAMUniqueID(), flc.getFormItemComponent(), getLocale());
+			userPortraitComp.setSize(PortraitSize.	small);
+			userPortraitComp.setPortraitUser(portraitUser);
+		}
+		
+		@Override
+		protected void doDispatchRequest(UserRequest ureq) {
+			//
+		}
+		
+		@Override
+		public ComponentRenderer getHTMLRendererSingleton() {
+			return RENDERER;
+		}
+		
+		public PortraitUser getPortraitUser() {
+			return portraitUser;
+		}
+		
+		public UserPortraitComponent getUserPortraitComp() {
+			return userPortraitComp;
+		}
+		
+		private static class UserDropdownRenderer extends DefaultComponentRenderer {
+			
+			@Override
+			public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+					Translator translator, RenderResult renderResult, String[] args) {
+				
+				UserDropdownComponent udc = (UserDropdownComponent)source;
+				
+				sb.append("<div class=\"o_user_dropdown_user\">");
+				renderer.render(udc.getUserPortraitComp(), sb, args);
+				sb.append("<div class=\"o_user_dropdown_name\">");
+				sb.append(StringHelper.escapeHtml(udc.getPortraitUser().getDisplayName()));
+				sb.append("</div>");
+				sb.append("</div>");
+			}
+			
 		}
 		
 	}

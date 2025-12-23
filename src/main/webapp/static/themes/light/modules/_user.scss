@@ -425,6 +425,11 @@
 	}
 }
 
+.o_user_dropdown_user {
+	display: flex;
+	column-gap: 10px;
+	align-items: center;
+}
 
 .o_useradmin {
 	.o_user_infos .o_user_infos_inner {
