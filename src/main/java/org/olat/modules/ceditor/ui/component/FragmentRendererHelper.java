@@ -44,6 +44,7 @@ import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.ui.model.PageFragment;
+import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
@@ -143,6 +144,9 @@ public class FragmentRendererHelper {
 		}
 		if (element instanceof TextInput textInput) {
 			return textInput.getAlertBoxSettings();
+		}
+		if (element instanceof DateInput dateInput) {
+			return dateInput.getAlertBoxSettings();
 		}
 		if (element instanceof FileUpload fileUpload) {
 			return fileUpload.getAlertBoxSettings();
