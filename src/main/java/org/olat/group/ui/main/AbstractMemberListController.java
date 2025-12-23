@@ -481,17 +481,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 		}
 
+		CourseRoleCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, roleRenderer));
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime));
 		if(isLastVisitVisible) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime));
 		}
 		
-		CourseRoleCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, roleRenderer));
-		if(repoEntry != null) {
-			GroupCellRenderer groupRenderer = new GroupCellRenderer();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groups, groupRenderer));
-		}
+		initGroupsColumn(columnsModel);
 		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		return defaultSortKey;
@@ -507,6 +505,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 	protected void initStatusColumn(FlexiTableColumnModel columnsModel) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identityStatus, new IdentityStatusCellRenderer(getLocale())));
+	}
+
+	protected void initGroupsColumn(FlexiTableColumnModel columnsModel) {
+		if (repoEntry != null) {
+			GroupCellRenderer groupRenderer = new GroupCellRenderer();
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groups, groupRenderer));
+		}
 	}
 
 	@Override

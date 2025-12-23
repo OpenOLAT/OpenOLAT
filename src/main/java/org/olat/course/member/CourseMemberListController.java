@@ -80,6 +80,11 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	}
 
 	@Override
+	protected void initGroupsColumn(FlexiTableColumnModel columnsModel) {
+		//
+	}
+
+	@Override
 	protected void initBatchButtons(FormItemContainer formLayout) {
 		//
 	}
