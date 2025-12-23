@@ -19,15 +19,21 @@
  */
 package org.olat.course.member;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -38,6 +44,10 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.member.manager.OriginQueries;
+import org.olat.course.member.model.OriginCoursePlannerRow;
+import org.olat.course.member.model.OriginCourseRow;
+import org.olat.course.member.model.OriginGroupRow;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -60,6 +70,12 @@ public class CourseMemberDetailsController extends FormBasicController {
 	private final RepositoryEntry repoEntry;
 	private final UserCourseInformations courseInfos;
 	private FormLink editMembershipButton;
+	private OriginCourseTableModel originCourseTableModel;
+	private FlexiTableElement originCourseTable;
+	private OriginGroupTableModel originGroupTableModel;
+	private FlexiTableElement originGroupTable;
+	private OriginCoursePlannerTableModel originCoursePlannerTableModel;
+	private FlexiTableElement originCoursePlannerTable;
 	
 	@Autowired
 	private UserPortraitService userPortraitService;
@@ -71,6 +87,8 @@ public class CourseMemberDetailsController extends FormBasicController {
 	private UserCourseInformationsManager userCourseInfosMgr;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OriginQueries originQueries;
 
 	public CourseMemberDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 										 Identity identity, Long repoEntryKey) {
@@ -81,6 +99,7 @@ public class CourseMemberDetailsController extends FormBasicController {
 		this.repoEntry = repositoryService.loadByKey(repoEntryKey);
 		this.courseInfos = userCourseInfosMgr.getUserCourseInformations(repoEntry.getOlatResource(), identity);
 		initForm(ureq);
+		reloadModel();
 	}
 
 	public Object getUserObject() {
@@ -95,6 +114,9 @@ public class CourseMemberDetailsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initPortrait(formLayout, ureq);
 		initEditMembership(formLayout);
+		initOriginCourseTable(formLayout);
+		initOriginGroupTable(formLayout);
+		initOriginCoursePlannerTable(formLayout);
 	}
 
 	private void initPortrait(FormItemContainer formLayout, UserRequest ureq) {
@@ -143,6 +165,63 @@ public class CourseMemberDetailsController extends FormBasicController {
 	private void initEditMembership(FormItemContainer formLayout) {
 		editMembershipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
 		editMembershipButton.setIconLeftCSS("o_icon o_icon_edit");
+	}
+	
+	private void initOriginCourseTable(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), false);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCourseTableModel.Cols.role, originRoleCellRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCourseTableModel.Cols.created));
+		originCourseTableModel = new OriginCourseTableModel(columnsModel);
+		originCourseTable = uifactory.addTableElement(getWindowControl(), "originCourseTable", originCourseTableModel, 
+				20, false, getTranslator(), formLayout);
+		originCourseTable.setCustomizeColumns(false);
+		originCourseTable.setNumOfRowsEnabled(false);
+	}
+	
+	private void initOriginGroupTable(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), false);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.role, originRoleCellRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.group));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.created));
+		originGroupTableModel = new OriginGroupTableModel(columnsModel);
+		originGroupTable = uifactory.addTableElement(getWindowControl(), "originGroupTable", originGroupTableModel, 
+				20, false, getTranslator(), formLayout);
+		originGroupTable.setCustomizeColumns(false);
+		originGroupTable.setNumOfRowsEnabled(false);
+	}
+	
+	private void initOriginCoursePlannerTable(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), true);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.role, originRoleCellRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.extRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.product));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.created));
+		originCoursePlannerTableModel = new OriginCoursePlannerTableModel(columnsModel);
+		originCoursePlannerTable = uifactory.addTableElement(getWindowControl(), "originCoursePlannerTable", originCoursePlannerTableModel, 
+				20, false, getTranslator(), formLayout);
+		originCoursePlannerTable.setCustomizeColumns(false);
+		originCoursePlannerTable.setNumOfRowsEnabled(false);
+	}
+	
+	public void reloadModel() {
+		List<OriginCourseRow> originCourseRows = originQueries.getCourseOrigins(repoEntry.getKey(), identity.getKey());
+		originCourseTableModel.setObjects(originCourseRows);
+		originCourseTable.reset(true, true, true);
+		originCourseTable.setVisible(!originCourseRows.isEmpty());
+		
+		List<OriginGroupRow> originGroupRows = originQueries.getGroupOrigins(repoEntry.getKey(), identity.getKey());
+		originGroupTableModel.setObjects(originGroupRows);
+		originGroupTable.reset(true, true, true);
+		originGroupTable.setVisible(!originGroupRows.isEmpty());
+		
+		List<OriginCoursePlannerRow> originCoursePlannerRows = originQueries.getCoursePlannerOrigins(repoEntry.getKey(), identity.getKey());
+		originCoursePlannerTableModel.setObjects(originCoursePlannerRows);
+		originCoursePlannerTable.reset(true, true, true);
+		originCoursePlannerTable.setVisible(!originCoursePlannerRows.isEmpty());
 	}
 
 	@Override

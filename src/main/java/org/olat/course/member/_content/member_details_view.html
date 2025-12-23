@@ -8,12 +8,23 @@ $r.render("portrait")
 	</div>
 </div>
 
+#if($r.visible("originCourseTable"))
 <fieldset class="o_block">
-	<legend>$r.translate("table.header.origin") : $r.translate("origin.repo")</legend>
+	<legend class="o_origin_legend">$r.translate("table.header.origin"): $r.translate("origin.repo")</legend>
+	$r.render("originCourseTable")
 </fieldset>
+#end
+
+#if($r.visible("originGroupTable"))
 <fieldset class="o_block">
-	<legend>$r.translate("table.header.origin") : $r.translate("origin.group")</legend>
+	<legend class="o_origin_legend">$r.translate("table.header.origin"): $r.translate("origin.group")</legend>
+	$r.render("originGroupTable")
 </fieldset>
+#end
+
+#if($r.visible("originCoursePlannerTable"))
 <fieldset class="o_block">
-	<legend>$r.translate("table.header.origin") : $r.translate("origin.curriculum")</legend>
+	<legend class="o_origin_legend">$r.translate("table.header.origin"): $r.translate("origin.course.planner")</legend>
+	$r.render("originCoursePlannerTable")
 </fieldset>
+#end

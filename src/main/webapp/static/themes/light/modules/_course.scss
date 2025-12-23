@@ -1474,3 +1474,13 @@ div.o_correction_navigation {
 		display: inline;
 	}
 }
+
+.o_members_mgmt {
+	.o_block {
+		margin-bottom: 2em;
+		
+		> legend.o_origin_legend {
+			margin-bottom: 0;
+		}
+	}
+}
