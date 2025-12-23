@@ -233,7 +233,7 @@ public class QualityServiceImpl
 	private QualityDataCollection createDataCollection(QualityGenerator generator,
 			Long generatorProviderKey) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection(generator, generatorProviderKey);
-		log.info("Quality data collection " + dataCollection + " created by generator " + generator);
+		log.info("Quality data collection {} created by generator {}", dataCollection, generator);
 		return dataCollection;
 	}
 	
@@ -293,7 +293,7 @@ public class QualityServiceImpl
 	@Override
 	public void startDataCollection(Date until) {
 		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingStart(until);
-		log.debug("Update status to RUNNING. Number of pending data collections: " + dataCollections.size());
+		log.debug("Update status to RUNNING. Number of pending data collections: {}", dataCollections.size());
 		for (QualityDataCollection dataCollection: dataCollections) {
 			updateDataCollectionStatus(dataCollection, RUNNING);
 		}
@@ -302,7 +302,7 @@ public class QualityServiceImpl
 	@Override
 	public void stopDataCollections(Date until) {
 		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingDeadline(until);
-		log.debug("Update status to FINISHED. Number of pending data collections: " + dataCollections.size());
+		log.debug("Update status to FINISHED. Number of pending data collections: {}", dataCollections.size());
 		for (QualityDataCollection dataCollection: dataCollections) {
 			updateDataCollectionStatus(dataCollection, FINISHED);
 		}
@@ -321,9 +321,9 @@ public class QualityServiceImpl
 				sendDoneMails(dataCollection);
 			}
 			dbInstance.commit();
-			log.info("Status of quality data collection updated to " + status + ". " + updatedDataCollection.toString());
+			log.info("Status of quality data collection updated to {}. {}", status, updatedDataCollection);
 		} catch (Exception e) {
-			log.error("Update of status of quality data collection to " + status + " failed! " + dataCollection.toString(), e);
+			log.error("Update of status of quality data collection to {} failed! {}", status, dataCollection, e);
 		}
 		return updatedDataCollection;
 	}
@@ -523,7 +523,7 @@ public class QualityServiceImpl
 		reminderDao.deleteReminders(dataCollection);
 		dataCollectionToOrganisationDao.deleteRelations(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
-		log.info("Quality management data collection deleted: " + dataCollection.toString());
+		log.info("Quality management data collection deleted: {}", dataCollection);
 	}
 
 	@Override
@@ -800,7 +800,7 @@ public class QualityServiceImpl
 	@Override
 	public void sendReminders(Date until) {
 		Collection<QualityReminder> reminders = reminderDao.loadPending(until);
-		log.debug("Send emails for quality remiders. Number of pending reminders: " + reminders.size());
+		log.debug("Send emails for quality remiders. Number of pending reminders: {}", reminders.size());
 		for (QualityReminder reminder: reminders) {
 			try {
 				if (QualityReminderType.ANNOUNCEMENT_COACH_TOPIC == reminder.getType()) {
@@ -811,7 +811,7 @@ public class QualityServiceImpl
 				reminderDao.updateDateDone(reminder, until);
 				dbInstance.commit();
 			} catch (Exception e) {
-				log.error("Send reminder of quality data collection failed!" + reminder.toString(), e);
+				log.error("Send reminder of quality data collection failed! {}", reminder, e);
 			}
 		}	
 	}

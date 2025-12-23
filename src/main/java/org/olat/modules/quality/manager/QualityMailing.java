@@ -29,7 +29,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -224,11 +223,11 @@ class QualityMailing {
 	private void logMailerResult(MailerResult result, QualityDataCollectionRef dataCollection,
 			QualityReminderType reminderType, String reciver) {
 		if (result.isSuccessful()) {
-			log.info(MessageFormat.format("{0} for quality data collection [key={1}] sent to {2}",
-					reminderType.name(), dataCollection.getKey(), reciver));
+			log.info("{} for quality data collection [key={}] sent to {}",
+					reminderType.name(), dataCollection.getKey(), reciver);
 		} else {
-			log.warn(MessageFormat.format("Sending {0} for quality data collection [key={1}] to {2} failed: {3}",
-					reminderType.name(), dataCollection.getKey(), reciver, result.getErrorMessage()));
+			log.warn("Sending {} for quality data collection [key={}] to {} failed: {}",
+					reminderType.name(), dataCollection.getKey(), reciver, result.getErrorMessage());
 		}
 	}
 
@@ -316,7 +315,7 @@ class QualityMailing {
 		try {
 			Files.createDirectories(tempDir);
 		} catch (Exception e) {
-			log.error("Creation of temp directory for PDF report in quality e-mail failed! Path: " + tempDir, e);
+			log.error("Creation of temp directory for PDF report in quality e-mail failed! Path: {}", tempDir, e);
 		}
 		
 		for (Identity recipient : recipients) {
@@ -341,11 +340,11 @@ class QualityMailing {
 			result = mailManager.sendMessage(bundle);
 			if (result.isSuccessful()) {
 				log.info("Report access email send");
-				log.info(MessageFormat.format("Report access email for quality data collection [key={0}] sent to {1}",
-						dataCollection.getKey(), recipient));
+				log.info("Report access email for quality data collection [key={}] sent to {}",
+						dataCollection.getKey(), recipient);
 			} else {
-				log.warn(MessageFormat.format("Sending report access email for quality data collection [key={0}] to {1} failed: {2}",
-						dataCollection.getKey(), recipient, result.getErrorMessage()));
+				log.warn("Sending report access email for quality data collection [key={}] to {} failed: {}",
+						dataCollection.getKey(), recipient, result.getErrorMessage());
 			}
 		}
 	}
@@ -576,11 +575,11 @@ class QualityMailing {
 			appendMimeFrom(bundle);
 			result = mailManager.sendMessage(bundle);
 			if (result.isSuccessful()) {
-				log.info(MessageFormat.format("Qualitative feedback email for quality data collection [key={0}] sent to {1}",
-						dataCollection.getKey(), recipient));
+				log.info("Qualitative feedback email for quality data collection [key={}] sent to {}",
+						dataCollection.getKey(), recipient);
 			} else {
-				log.warn(MessageFormat.format("Qualitative feedback email for quality data collection [key={0}] to {1} failed: {2}",
-						dataCollection.getKey(), recipient, result.getErrorMessage()));
+				log.warn("Qualitative feedback email for quality data collection [key={}] to {} failed: {}",
+						dataCollection.getKey(), recipient, result.getErrorMessage());
 			}
 		}
 	}

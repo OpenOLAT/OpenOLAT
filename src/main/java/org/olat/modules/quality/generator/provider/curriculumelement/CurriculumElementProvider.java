@@ -342,11 +342,11 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	}
 
 	private List<CurriculumElement> loadCurriculumElements(QualityGenerator generator, SearchParameters searchParams) {
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
+		if(log.isDebugEnabled()) log.debug("Generator {} searches with {}", generator, searchParams);
 		
 		List<CurriculumElement> elements = providerDao.loadPending(searchParams);
 		
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + elements.size() + " curriculum elements");
+		if(log.isDebugEnabled()) log.debug("Generator {} found {} curriculum elements", generator, elements.size());
 		return elements;
 	}
 	

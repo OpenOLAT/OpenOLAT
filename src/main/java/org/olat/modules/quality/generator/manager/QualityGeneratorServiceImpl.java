@@ -238,14 +238,14 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 			tryToGenerateDataCollection(generator, overrides);
 			dbInstance.commit();
 		} catch (Exception e) {
-			log.error("Error while generating data collection from generator " + generator.toString(), e);
+			log.error("Error while generating data collection from generator {}", generator.toString(), e);
 		}
 	}
 
 	private void tryToGenerateDataCollection(QualityGenerator generator, QualityGeneratorOverrides overrides) {
 		if (generator.isEnabled()) {
 			if (generator.getFormEntry() == null) {
-				log.warn("Evaluation form of quality data generator is not available: " + generator);
+				log.warn("Evaluation form of quality data generator is not available: {}", generator);
 			} else if (providerFactory.isAvailable(generator)) {
 				QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 				QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
@@ -257,10 +257,10 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 				generatorDao.save(reloadedGenerator);
 				dbInstance.commit();
 				if (!dataCollections.isEmpty()) {
-					log.info(dataCollections.size() + " data collections created by generator " + generator.toString());
+					log.info("{} data collections created by generator {}", dataCollections.size(), generator.toString());
 				}
 			} else {
-				log.warn("Provider not found for quality data generator: " + generator.getType());
+				log.warn("Provider not found for quality data generator: {}", generator.getType());
 			}
 		}
 	}

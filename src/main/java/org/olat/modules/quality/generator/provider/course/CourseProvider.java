@@ -511,10 +511,10 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 
 	private List<RepositoryEntry> loadCourses(QualityGenerator generator, SearchParameters seachParameters) {
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + seachParameters);
+		if(log.isDebugEnabled()) log.debug("Generator {} searches with {}", generator, seachParameters);
 		
 		List<RepositoryEntry> courses = providerDao.loadCourses(seachParameters);
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + courses.size() + " entries");
+		if(log.isDebugEnabled()) log.debug("Generator {} found {} entries", generator, courses.size());
 		return courses;
 	}
 	
@@ -572,7 +572,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 			// Do not load anything
 			searchParams.setEndFrom(new Date());
 			searchParams.setEndTo(addDays(searchParams.getEndFrom(), "-1"));
-			log.warn("Quality data collection generator is not properly configured: " + generator);
+			log.warn("Quality data collection generator is not properly configured: {}", generator);
 		}
 	}
 

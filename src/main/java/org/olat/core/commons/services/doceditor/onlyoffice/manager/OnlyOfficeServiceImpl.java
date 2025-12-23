@@ -340,7 +340,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	private boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled) {
-		log.debug("Update content from ONLYOFICE: " + url);
+		log.debug("Update content from ONLYOFICE: {}", url);
 		boolean updated = false;
 		
 		String token = onlyOfficeSecurityService.getFileDonwloadToken();
@@ -357,10 +357,10 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 					updated = VFSManager.copyContent(content, vfsLeaf, identity);
 				}
 			} else {
-				log.warn("Update content from ONLYOFICE failed. URL: " + url);
+				log.warn("Update content from ONLYOFICE failed. URL: {}", url);
 			}
 		} catch (Exception e) {
-			log.warn("Update content from ONLYOFICE failed. URL: " + url);
+			log.warn("Update content from ONLYOFICE failed. URL: {}", url);
 			log.error("", e);
 		}
 		
@@ -404,7 +404,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
 		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, OnlyOfficeEditor.TYPE);
-		log.debug("Locked file. File name: " + vfsLeaf.getName() + ", Identity: " + identity);
+		log.debug("Locked file. File name: {}, Identity: {}", vfsLeaf.getName(), identity);
 		return lock;
 	}
 
@@ -414,7 +414,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		if (lock != null && OnlyOfficeEditor.TYPE.equals(lock.getAppName())) {
 			lock.getTokens().clear();
 			lockManager.unlock(vfsLeaf, VFSLockApplicationType.collaboration);
-			log.debug("Unlocked file. File name: " + vfsLeaf.getName());
+			log.debug("Unlocked file. File name: {}", vfsLeaf.getName());
 		}
 	}
 

@@ -105,7 +105,7 @@ public class StatisticsCalculator {
 	}
 
 	GroupedStatistic getGroupedStatistic(RawGroupedStatistic rawStatistic, Rubric rubric) {
-		log.debug("Raw grouped statistic: " + rawStatistic.toString());
+		log.debug("Raw grouped statistic: {}", rawStatistic);
 		Double rawAvg = rawStatistic.getRawAvg();
 		boolean rawAvgMaxGood = !rubric.isStartGoodRating();
 		Double scaledAvg = rubric.getScaleType().getStepValue(rubric.getSteps(), rawAvg);
@@ -113,7 +113,7 @@ public class StatisticsCalculator {
 		int steps = rubric.getSteps();
 		GroupedStatistic statistic = new GroupedStatisticImpl(rawStatistic.getIdentifier(), rawStatistic.getMultiKey(),
 				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, rawAvgMaxGood, scaledAvg, rating, steps);
-		log.debug("Grouped statistic:        " + statistic.toString());
+		log.debug("Grouped statistic:     {}", statistic);
 		return statistic;
 	}
 
@@ -187,7 +187,7 @@ public class StatisticsCalculator {
 	List<RawGroupedStatistic> reduceIdentifier(List<RawGroupedStatistic> statisticsList, Set<Rubric> rubrics) {
 		Map<String, Integer> sliderToWeight = rubrics.stream()
 				.map(Rubric::getSliders)
-				.flatMap(s -> s.stream())
+				.flatMap(List::stream)
 				.collect(Collectors.toMap(Slider::getId, Slider::getWeight));
 		List<MultiKey> multiKeys = statisticsList.stream()
 				.map(RawGroupedStatistic::getMultiKey)

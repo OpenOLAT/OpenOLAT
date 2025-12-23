@@ -414,12 +414,12 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 				searchParams.setSelectingLecture(selectingLecture);
 			} catch (Exception e) {
 				searchParams.setSelectingLecture(-1); // select nothing
-				log.warn("Quality data collection generator is not properly configured: " + generator);
+				log.warn("Quality data collection generator is not properly configured: {}", generator);
 			}
 			break;
 		default:
 			searchParams.setSelectingLecture(-1); // select nothing
-			log.warn("Quality data collection generator is not properly configured: " + generator);
+			log.warn("Quality data collection generator is not properly configured: {}", generator);
 			break;
 		}
 		
@@ -447,7 +447,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		boolean surveyLectureNotSet = !StringHelper.containsNonWhitespace(surveyLecture);
 		if (surveyLectureNotSet) {
 			configs.setValue(CONFIG_KEY_SURVEY_LECTURE, CONFIG_KEY_SURVEY_LECTURE_NUMBER);
-			log.info("Updated CONFIG_KEY_SURVEY_LECTURE to CONFIG_KEY_SURVEY_LECTURE_NUMBER for quality generator: " + generator);
+			log.info("Updated CONFIG_KEY_SURVEY_LECTURE to CONFIG_KEY_SURVEY_LECTURE_NUMBER for quality generator: {}", generator);
 		}
 	}
 
