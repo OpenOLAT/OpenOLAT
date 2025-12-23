@@ -26,13 +26,11 @@ import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -46,7 +44,6 @@ import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +78,6 @@ public class TextInputInspectorController extends FormBasicController implements
 	private TextElement numericMinEl;
 	private TextElement numericMaxEl;
 	private SingleSelection obligationEl;
-	private FormLink saveButton;
 	
 	private final TextInput textInput;
 	private final boolean restrictedEdit;
@@ -151,16 +147,19 @@ public class TextInputInspectorController extends FormBasicController implements
 			rows = Integer.toString(textInput.getRows());
 		}
 		rowsEl = uifactory.addTextElement("textinput_rows_" + CodeHelper.getRAMUniqueID(), "textinput.rows", 8, rows, layoutCont);
+		rowsEl.addActionListener(FormEvent.ONCHANGE);
 
 		String numericMin = textInput.getNumericMin() != null? textInput.getNumericMin().toString(): "";
 		numericMinEl = uifactory.addTextElement("textinput_nmin_" + CodeHelper.getRAMUniqueID(),
 				"textinput.numeric.min", 8, numericMin, layoutCont);
 		numericMinEl.setEnabled(!restrictedEdit);
+		numericMinEl.addActionListener(FormEvent.ONCHANGE);
 
 		String numericMax = textInput.getNumericMax() != null? textInput.getNumericMax().toString(): "";
 		numericMaxEl = uifactory.addTextElement( "textinput_nmax_" + CodeHelper.getRAMUniqueID(),
 				"textinput.numeric.max", 8, numericMax, layoutCont);
 		numericMaxEl.setEnabled(!restrictedEdit);
+		numericMaxEl.addActionListener(FormEvent.ONCHANGE);
 
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
@@ -170,8 +169,7 @@ public class TextInputInspectorController extends FormBasicController implements
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, textInput.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !textInput.isMandatory());
 		obligationEl.setEnabled(!restrictedEdit);
-
-		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, layoutCont, Link.BUTTON);
+		obligationEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
@@ -256,11 +254,9 @@ public class TextInputInspectorController extends FormBasicController implements
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (inputTypeEl == source || singleRowEl == source) {
 			updateUI();
-			doSave(ureq);
-		} else if (saveButton == source) {
-			if(validateFormLogic(ureq)) {
-				formOK(ureq);
-			}	
+			doValidateAndSave(ureq);
+		} else if (rowsEl == source || numericMinEl == source || numericMaxEl == source || obligationEl == source) {
+			doValidateAndSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
 		} else if (alertBoxComponents.matches(source)) {
@@ -271,11 +267,18 @@ public class TextInputInspectorController extends FormBasicController implements
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSave(ureq);
-		fireEvent(ureq, new ClosePartEvent(textInput));
+		doSave();
+		fireEvent(ureq, new ChangePartEvent(textInput));
 	}
 	
-	private void doSave(UserRequest ureq) {
+	private void doValidateAndSave(UserRequest ureq) {
+		if(validateFormLogic(ureq)) {
+			doSave();
+			fireEvent(ureq, new ChangePartEvent(textInput));
+		}
+	}
+	
+	private void doSave() {
 		boolean numeric = INPUT_TYPE_NUMERIC_KEY.equals(inputTypeEl.getSelectedKey());
 		textInput.setNumeric(numeric);
 		
@@ -316,7 +319,6 @@ public class TextInputInspectorController extends FormBasicController implements
 		
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		textInput.setMandatory(mandatory);
-		fireEvent(ureq, new ChangePartEvent(textInput));
 	}
 
 	private void doChangeLayout(UserRequest ureq) {

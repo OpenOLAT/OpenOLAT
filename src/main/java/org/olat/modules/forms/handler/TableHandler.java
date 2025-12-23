@@ -102,7 +102,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TableElement) {
-			return new TableInspectorController(ureq, wControl, (TableElement)element, this, true);
+			return new TableInspectorController(ureq, wControl, (TableElement)element, this);
 		}
 		return null;
 	}
