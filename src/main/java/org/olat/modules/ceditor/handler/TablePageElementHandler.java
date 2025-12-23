@@ -93,7 +93,7 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TablePart tablePart) {
-			return new TableInspectorController(ureq, wControl, tablePart, this, false);
+			return new TableInspectorController(ureq, wControl, tablePart, this);
 		}
 		return null;
 	}

@@ -26,14 +26,12 @@ import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -47,7 +45,6 @@ import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.DateInput;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +75,6 @@ public class DateInputInspectorController extends FormBasicController implements
 	private MultipleSelectionElement nowButtonEnabledEl;
 	private TextElement nowButtonLabelEl;
 	private SingleSelection obligationEl;
-	private FormLink saveButton;
 	
 	private final DateInput dateInput;
 	private final boolean restrictedEdit;
@@ -137,6 +133,7 @@ public class DateInputInspectorController extends FormBasicController implements
 		nowButtonLabelEl = uifactory.addTextElement("dateinput_now_label" + CodeHelper.getRAMUniqueID(), null, 64,
 				dateInput.getNowButtonLabel(), layoutCont);
 		nowButtonLabelEl.setAriaLabel(translate("dateinput.now.button.label"));
+		nowButtonLabelEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
@@ -146,8 +143,6 @@ public class DateInputInspectorController extends FormBasicController implements
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, dateInput.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !dateInput.isMandatory());
 		obligationEl.setEnabled(!restrictedEdit);
-		
-		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, layoutCont, Link.BUTTON);
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
@@ -200,10 +195,9 @@ public class DateInputInspectorController extends FormBasicController implements
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (nowButtonEnabledEl == source) {
 			updateUI();
-		} else if (saveButton == source) {
-			if(validateFormLogic(ureq)) {
-				formOK(ureq);
-			}
+			doValidateAndSave(ureq);
+		} else if (inputTypeEl == source || nowButtonLabelEl == source || obligationEl == source) {
+			doValidateAndSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
 		} else if (alertBoxComponents.matches(source)) {
@@ -214,11 +208,18 @@ public class DateInputInspectorController extends FormBasicController implements
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSave(ureq);
-		fireEvent(ureq, new ClosePartEvent(dateInput));
+		doSave();
+		fireEvent(ureq, new ChangePartEvent(dateInput));
 	}
 	
-	private void doSave(UserRequest ureq) {
+	private void doValidateAndSave(UserRequest ureq) {
+		if(validateFormLogic(ureq)) {
+			doSave();
+			fireEvent(ureq, new ChangePartEvent(dateInput));
+		}
+	}
+	
+	private void doSave() {
 		dateInput.setDate(true);
 		
 		boolean time = INPUT_TYPE_DATE_TIME_KEY.equals(inputTypeEl.getSelectedKey());
@@ -232,7 +233,6 @@ public class DateInputInspectorController extends FormBasicController implements
 		
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		dateInput.setMandatory(mandatory);
-		fireEvent(ureq, new ChangePartEvent(dateInput));
 	}
 
 	private void doChangeLayout(UserRequest ureq) {

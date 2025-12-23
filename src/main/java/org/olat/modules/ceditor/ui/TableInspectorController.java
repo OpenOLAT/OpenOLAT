@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,24 +58,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TableInspectorController extends FormBasicController implements PageElementInspectorController {
+
+	private static final String KEY_ROW_HEADER = "row.header";
+	private static final String KEY_COLUMN_HEADER = "column.header";
+	private static final String KEY_STRIPED = "striped";
+	private static final String KEY_BORDERED = "bordered";
+	
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
-	private static final String[] onKeys = new String[] { "on" };
-	
 	private TextElement rowsEl;
 	private TextElement columnsEl;
-	private SingleSelection styleEl;
-
-	private MultipleSelectionElement stripedEl;
-	private MultipleSelectionElement borderedEl;
-	private MultipleSelectionElement rowHeaderEl;
-	private MultipleSelectionElement columnHeaderEl;
+	private MultipleSelectionElement dataGridEl;
+	private MultipleSelectionElement rowStyleEl;
+	private SingleSelection colorEl;
 	
 	private TableElement table;
 	private final PageElementStore<TableElement> store;
-	private final boolean inForm;
 
 	@Autowired
 	private DB dbInstance;
@@ -84,11 +85,10 @@ public class TableInspectorController extends FormBasicController implements Pag
 	private ColorService colorService;
 
 	public TableInspectorController(UserRequest ureq, WindowControl wControl,
-			TableElement table, PageElementStore<TableElement> store, boolean inForm) {
+			TableElement table, PageElementStore<TableElement> store) {
 		super(ureq, wControl, "tabs_inspector");
 		this.table = table;
 		this.store = store;
-		this.inForm = inForm;
 		initForm(ureq);
 	}
 
@@ -102,48 +102,44 @@ public class TableInspectorController extends FormBasicController implements Pag
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
-
+		
+		addGeneralTab(formLayout);
 		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
-	private void addStyleTab(FormItemContainer formLayout) {
-		String page = velocity_root + "/table_inspector.html";
-		FormLayoutContainer layoutCont = FormLayoutContainer.createCustomFormLayout("style", getTranslator(), page);
+	private void addGeneralTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		formLayout.add(layoutCont);
-		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.general"), layoutCont);
 
 		TableContent content = table.getTableContent();
 		int numOfRows = content.getNumOfRows() < 1 ? 3 : content.getNumOfRows();
 		int numOfColumns = content.getNumOfColumns() < 1 ? 4 : content.getNumOfColumns();
 
-		rowsEl = uifactory.addTextElement("table.row", null, 4, Integer.toString(numOfRows), layoutCont);
+		rowsEl = uifactory.addTextElement("table.row", "table.row", 4, Integer.toString(numOfRows), layoutCont);
 		rowsEl.addActionListener(FormEvent.ONCHANGE);
-		columnsEl = uifactory.addTextElement("table.column", null, 4, Integer.toString(numOfColumns), layoutCont);
+		columnsEl = uifactory.addTextElement("table.column", "table.column", 4, Integer.toString(numOfColumns), layoutCont);
 		columnsEl.addActionListener(FormEvent.ONCHANGE);
 
 		TableSettings settings = table.getTableSettings();
 		flc.contextPut("settings", settings);
 
-		String[] rowHeaderValues = new String[] { translate("table.row.header") };
-		rowHeaderEl = uifactory.addCheckboxesHorizontal("table.row.header", "table.row.header", layoutCont, onKeys, rowHeaderValues);
-		rowHeaderEl.addActionListener(FormEvent.ONCHANGE);
-		rowHeaderEl.select(onKeys[0], settings.isRowHeaders());
+		SelectionValues dataGridSV = new SelectionValues();
+		dataGridSV.add(SelectionValues.entry(KEY_ROW_HEADER, translate("table.row.header")));
+		dataGridSV.add(SelectionValues.entry(KEY_COLUMN_HEADER, translate("table.column.header")));
+		dataGridEl = uifactory.addCheckboxesVertical("table.data.grid", "table.data.grid", layoutCont, dataGridSV.keys(), dataGridSV.values(), 1);
+		dataGridEl.addActionListener(FormEvent.ONCHANGE);
+		dataGridEl.select(KEY_ROW_HEADER, settings.isRowHeaders());
+		dataGridEl.select(KEY_COLUMN_HEADER, settings.isColumnHeaders());
 
-		String[] columnHeaderValues = new String[] { translate("table.column.header") };
-		columnHeaderEl = uifactory.addCheckboxesHorizontal("table.column.header", "table.column.header", layoutCont, onKeys, columnHeaderValues);
-		columnHeaderEl.addActionListener(FormEvent.ONCHANGE);
-		columnHeaderEl.select(onKeys[0], settings.isColumnHeaders());
-
-		String[] stripedValues = new String[] { translate("table.style.striped") };
-		stripedEl = uifactory.addCheckboxesHorizontal("table.style.striped", "table.style.striped", layoutCont, onKeys, stripedValues);
-		stripedEl.addActionListener(FormEvent.ONCHANGE);
-		stripedEl.select(onKeys[0], settings.isStriped());
-
-		String[] borderedValues = new String[] { translate("table.style.bordered") };
-		borderedEl = uifactory.addCheckboxesHorizontal("table.style.bordered", "table.style.bordered", layoutCont, onKeys, borderedValues);
-		borderedEl.addActionListener(FormEvent.ONCHANGE);
-		borderedEl.select(onKeys[0], settings.isBordered());
+		SelectionValues rowStyleSV = new SelectionValues();
+		rowStyleSV.add(SelectionValues.entry(KEY_STRIPED, translate("table.style.striped")));
+		rowStyleSV.add(SelectionValues.entry(KEY_BORDERED, translate("table.style.bordered")));
+		rowStyleEl = uifactory.addCheckboxesVertical("table.row.style", "table.row.style", layoutCont, rowStyleSV.keys(), rowStyleSV.values(), 1);
+		rowStyleEl.addActionListener(FormEvent.ONCHANGE);
+		rowStyleEl.select(KEY_STRIPED, settings.isStriped());
+		rowStyleEl.select(KEY_BORDERED, settings.isBordered());
 
 		List<String> styleList = contentEditorModule.getTableStyleList();
 		String[] styles = new String[styleList.size() + 1];
@@ -160,20 +156,22 @@ public class TableInspectorController extends FormBasicController implements Pag
 				stylesValues[si] = styles[si];
 			}
 		}
-		styleEl = uifactory.addDropdownSingleselect("table.style", "table.style", layoutCont, styles, stylesValues, null);
-		styleEl.addActionListener(FormEvent.ONCHANGE);
+		colorEl = uifactory.addDropdownSingleselect("table.style.color", "table.style.color", layoutCont, styles, stylesValues, null);
+		colorEl.addActionListener(FormEvent.ONCHANGE);
 		String settingsTableStyle = settings.getTableStyle();
 		if(StringHelper.containsNonWhitespace(settingsTableStyle)) {
 			for(String style:styles) {
 				if(settingsTableStyle.equals(style)) {
-					styleEl.select(style, true);
+					colorEl.select(style, true);
 				}
 			}
 		} else {
-			styleEl.select(styles[0], true);
+			colorEl.select(styles[0], true);
 		}
+	}
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
 				getAlertBoxSettings(getTableSettings()), colorService, getLocale());
 	}
 
@@ -216,15 +214,40 @@ public class TableInspectorController extends FormBasicController implements Pag
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(rowHeaderEl == source || columnHeaderEl == source || rowsEl == source || columnsEl == source
-				|| styleEl == source || stripedEl == source || borderedEl == source) {
-			doSaveSettings(ureq);
+		if (dataGridEl == source || rowsEl == source || columnsEl == source || colorEl == source
+				|| rowStyleEl == source) {
+			doValidateAndSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
 		} else if (alertBoxComponents.matches(source)) {
 			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		rowsEl.clearError();
+		if(!StringHelper.containsNonWhitespace(rowsEl.getValue())) {
+			rowsEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if (!StringHelper.isLong(rowsEl.getValue())) {
+			rowsEl.setErrorKey("form.error.positive.integer");
+			allOk &= false;
+		}
+		
+		columnsEl.clearError();
+		if(!StringHelper.containsNonWhitespace(columnsEl.getValue())) {
+			columnsEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if (!StringHelper.isLong(columnsEl.getValue())) {
+			columnsEl.setErrorKey("form.error.positive.integer");
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -239,16 +262,23 @@ public class TableInspectorController extends FormBasicController implements Pag
 		}
 	}
 	
-	private void doSaveSettings(UserRequest ureq) {
+	private void doValidateAndSave(UserRequest ureq) {
+		if(validateFormLogic(ureq)) {
+			doSave();
+			fireEvent(ureq, new ChangePartEvent(table));
+		}
+	}
+	
+	private void doSave() {
 		TableContent content = table.getTableContent();
 		TableSettings settings = table.getTableSettings();
 		
-		settings.setRowHeaders(rowHeaderEl.isAtLeastSelected(1));
-		settings.setColumnHeaders(columnHeaderEl.isAtLeastSelected(1));
-		settings.setStriped(stripedEl.isAtLeastSelected(1));
-		settings.setBordered(borderedEl.isAtLeastSelected(1));
-		if(styleEl.isOneSelected() && !styleEl.isSelected(0)) {
-			settings.setTableStyle(styleEl.getSelectedKey());
+		settings.setRowHeaders(dataGridEl.isKeySelected(KEY_ROW_HEADER));
+		settings.setColumnHeaders(dataGridEl.isKeySelected(KEY_COLUMN_HEADER));
+		settings.setStriped(rowStyleEl.isKeySelected(KEY_STRIPED));
+		settings.setBordered(rowStyleEl.isKeySelected(KEY_BORDERED));
+		if(colorEl.isOneSelected() && !colorEl.isSelected(0)) {
+			settings.setTableStyle(colorEl.getSelectedKey());
 		} else {
 			settings.setTableStyle(null);
 		}
@@ -270,7 +300,6 @@ public class TableInspectorController extends FormBasicController implements Pag
 		table.setContent(contentXml);
 		table = store.savePageElement(table);
 		dbInstance.commit();
-		fireEvent(ureq, new ChangePartEvent(table));	
 	}
 
 	private void doChangeLayout(UserRequest ureq) {
