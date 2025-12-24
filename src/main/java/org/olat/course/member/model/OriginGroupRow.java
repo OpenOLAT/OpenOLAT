@@ -21,5 +21,5 @@ import java.util.Date;
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-public record OriginGroupRow(String role, String groupName, Date created) {
+public record OriginGroupRow(String role, Long groupKey, String groupName, String groupManagedFlagsString, Date created) {
 }

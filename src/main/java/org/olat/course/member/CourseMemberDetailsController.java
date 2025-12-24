@@ -21,6 +21,7 @@ package org.olat.course.member;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -34,6 +35,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,6 +52,7 @@ import org.olat.course.member.model.OriginCoursePlannerRow;
 import org.olat.course.member.model.OriginCourseRow;
 import org.olat.course.member.model.OriginGroupRow;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserInfoProfileConfig;
@@ -65,6 +69,8 @@ public class CourseMemberDetailsController extends FormBasicController {
 
 	public static final Event EDIT_EVENT = new Event("edit");
 	
+	private static final String LAUNCH_GROUP = "launchGroup";
+
 	private Object userObject;
 	private final Identity identity;
 	private final RepositoryEntry repoEntry;
@@ -183,7 +189,9 @@ public class CourseMemberDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), false);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.role, originRoleCellRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.group));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.group.i18nHeaderKey(),
+				OriginGroupTableModel.Cols.group.ordinal(), LAUNCH_GROUP, 
+				new StaticFlexiCellRenderer(LAUNCH_GROUP, new BusinessGroupNameCellRenderer())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginGroupTableModel.Cols.created));
 		originGroupTableModel = new OriginGroupTableModel(columnsModel);
 		originGroupTable = uifactory.addTableElement(getWindowControl(), "originGroupTable", originGroupTableModel, 
@@ -230,7 +238,19 @@ public class CourseMemberDetailsController extends FormBasicController {
 		
 		if (editMembershipButton == source) {
 			fireEvent(ureq, EDIT_EVENT);
+		} else if (originGroupTable == source) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				if (selectionEvent.getIndex() >= 0 && selectionEvent.getIndex() < originGroupTableModel.getRowCount()) {
+					Long groupKey = originGroupTableModel.getObject(selectionEvent.getIndex()).groupKey();
+					doLaunchGroup(ureq, groupKey);
+				}
+			}
 		}
+	}
+
+	private void doLaunchGroup(UserRequest ureq, Long groupKey) {
+		String businessPath = "[BusinessGroup:" + groupKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	@Override

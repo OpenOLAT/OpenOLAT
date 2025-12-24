@@ -23,6 +23,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.course.member.model.OriginGroupRow;
+import org.olat.group.model.MemberView;
 
 /**
  * Initial date: 2025-12-22<br>
@@ -46,7 +47,7 @@ public class OriginGroupTableModel extends DefaultFlexiTableDataModel<OriginGrou
 	private Object getValueAt(OriginGroupRow row, int col) {
 		return switch (COLS[col]) {
 			case role -> row.role();
-			case group -> row.groupName();
+			case group -> new MemberView.BusinessGroupShortImpl(row.groupKey(), row.groupName(), row.groupManagedFlagsString());
 			case created -> row.created();
 		};
 	}

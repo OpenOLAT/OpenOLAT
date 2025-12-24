@@ -67,7 +67,7 @@ public class OriginQueries {
 	
 	public List<OriginGroupRow> getGroupOrigins(Long repositoryEntryKey, Long identityKey) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select gm.role, bg.name, gm.creationDate");
+		sb.append("select gm.role, bg.key, bg.name, bg.managedFlagsString, gm.creationDate");
 		sb.append(" from repositoryentry r");
 		sb.append(" inner join r.groups r2g");
 		sb.append(" inner join r2g.group g");
@@ -86,9 +86,11 @@ public class OriginQueries {
 	
 	private OriginGroupRow mapToOriginGroupRow(Object[] objects) {
 		String role = (String) objects[0];
-		String name = (String) objects[1];
-		Date creationDate = (Date) objects[2];
-		return new OriginGroupRow(role, name, creationDate);
+		Long groupKey = (Long) objects[1];
+		String groupName = (String) objects[2];
+		String groupManagedFlagsString = (String) objects[3];
+		Date creationDate = (Date) objects[4];
+		return new OriginGroupRow(role, groupKey, groupName, groupManagedFlagsString, creationDate);
 	}
 
 	public List<OriginCoursePlannerRow> getCoursePlannerOrigins(Long repositoryEntryKey, Long identityKey) {
