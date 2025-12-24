@@ -70,6 +70,8 @@ public class CourseMemberDetailsController extends FormBasicController {
 	public static final Event EDIT_EVENT = new Event("edit");
 	
 	private static final String LAUNCH_GROUP = "launchGroup";
+	private static final String LAUNCH_CURRICULUM_ELEMENT = "launchCurriculumElement";
+	private static final String LAUNCH_CURRICULUM = "launchCurriculum";
 
 	private Object userObject;
 	private final Identity identity;
@@ -204,9 +206,13 @@ public class CourseMemberDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.role, originRoleCellRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element.i18nHeaderKey(),
+				OriginCoursePlannerTableModel.Cols.element.ordinal(), LAUNCH_CURRICULUM_ELEMENT,
+				new StaticFlexiCellRenderer(LAUNCH_CURRICULUM_ELEMENT, new CurriculumElementCellRenderer())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.extRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.product));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.product.i18nHeaderKey(),
+				OriginCoursePlannerTableModel.Cols.product.ordinal(), LAUNCH_CURRICULUM,
+				new StaticFlexiCellRenderer(LAUNCH_CURRICULUM, new CurriculumCellRenderer())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.created));
 		originCoursePlannerTableModel = new OriginCoursePlannerTableModel(columnsModel);
 		originCoursePlannerTable = uifactory.addTableElement(getWindowControl(), "originCoursePlannerTable", originCoursePlannerTableModel, 
@@ -245,11 +251,34 @@ public class CourseMemberDetailsController extends FormBasicController {
 					doLaunchGroup(ureq, groupKey);
 				}
 			}
+		} else if (originCoursePlannerTable == source) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				if (selectionEvent.getIndex() >= 0 && selectionEvent.getIndex() < originCoursePlannerTableModel.getRowCount()) {
+					if (LAUNCH_CURRICULUM_ELEMENT.equals(selectionEvent.getCommand())) {
+						Long curriculumElementKey = originCoursePlannerTableModel.getObject(selectionEvent.getIndex()).elementKey();
+						doLaunchCurriculumElement(ureq, curriculumElementKey);
+					}
+					if (LAUNCH_CURRICULUM.equals(selectionEvent.getCommand())) {
+						Long curriculumKey = originCoursePlannerTableModel.getObject(selectionEvent.getIndex()).curriculumKey();
+						doLaunchCurriculum(ureq, curriculumKey);
+					}
+				}
+			}
 		}
 	}
 
 	private void doLaunchGroup(UserRequest ureq, Long groupKey) {
 		String businessPath = "[BusinessGroup:" + groupKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private void doLaunchCurriculumElement(UserRequest ureq, Long curriculumElementKey) {
+		String businessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElementKey + "][Overview:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private void doLaunchCurriculum(UserRequest ureq, Long curriculumKey) {
+		String businessPath = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + curriculumKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 

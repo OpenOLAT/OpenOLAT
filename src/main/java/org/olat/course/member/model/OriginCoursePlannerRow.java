@@ -21,5 +21,5 @@ import java.util.Date;
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-public record OriginCoursePlannerRow(String role, String elementName, String elementIdentifier, String curriculumName, Date created) {
+public record OriginCoursePlannerRow(String role, Long elementKey, String elementName, String elementIdentifier, Long curriculumKey, String curriculumName, Date created) {
 }

@@ -95,7 +95,7 @@ public class OriginQueries {
 
 	public List<OriginCoursePlannerRow> getCoursePlannerOrigins(Long repositoryEntryKey, Long identityKey) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select gm.role, ce.displayName, ce.identifier, c.displayName, gm.creationDate");
+		sb.append("select gm.role, ce.key, ce.displayName, ce.identifier, c.key, c.displayName, gm.creationDate");
 		sb.append(" from repositoryentry r");
 		sb.append(" inner join r.groups r2g");
 		sb.append(" inner join r2g.group g");
@@ -115,10 +115,12 @@ public class OriginQueries {
 
 	private OriginCoursePlannerRow mapToOriginCoursePlannerRow(Object[] objects) {
 		String role = (String) objects[0];
-		String elementName = (String) objects[1];
-		String identifier = (String) objects[2];
-		String curriculumName = (String) objects[3];
-		Date creationDate = (Date) objects[4];
-		return new OriginCoursePlannerRow(role, elementName, identifier, curriculumName, creationDate);
+		Long elementKey = (Long) objects[1];
+		String elementName = (String) objects[2];
+		String identifier = (String) objects[3];
+		Long curriculumKey = (Long) objects[4];
+		String curriculumName = (String) objects[5];
+		Date creationDate = (Date) objects[6];
+		return new OriginCoursePlannerRow(role, elementKey, elementName, identifier, curriculumKey, curriculumName, creationDate);
 	}
 }
