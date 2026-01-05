@@ -45,6 +45,7 @@
 	        		jQuery(container).addClass('oo-accepted');
 	        }
 		}).on('drop', function(el, target, source, sibling) {
+			jQuery(el).removeClass('oo-selected');
 			recalculate(settings);
 			setFlexiFormDirty(settings.formDispatchFieldId);
 		}).on('dragend', function(el) {
