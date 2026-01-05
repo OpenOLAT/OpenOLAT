@@ -1,17 +1,19 @@
-<div class="o_header_with_buttons o_sel_curriculum_management">
-<h2><i class="o_icon o_icon-fw o_icon_curriculum"> </i> $r.translate("curriculums.header")</h2>
-<div class="o_button_group o_button_group_right">
-	#if($r.available("add.curriculum") || $r.available("more.menu"))
-	<div class="btn-group">
-	#if($r.available("add.curriculum"))
-		$r.render("add.curriculum")
-	#end
-	#if($r.available("more.menu"))
-		$r.render("more.menu")
-	#end
-	</div>	
-	#end
-	$r.contextHelpWithWrapper("manual_user/area_modules/Course_Planner_Products/")
-</div>
-$r.render("table")
+<div class="o_sel_curriculum_management">
+	<div class="o_header_with_buttons">
+		<h2><i class="o_icon o_icon-fw o_icon_curriculum"> </i> $r.translate("curriculums.header")</h2>
+		<div class="o_button_group o_button_group_right">
+			#if($r.available("add.curriculum") || $r.available("more.menu"))
+			<div class="btn-group">
+			#if($r.available("add.curriculum"))
+				$r.render("add.curriculum")
+			#end
+			#if($r.available("more.menu"))
+				$r.render("more.menu")
+			#end
+			</div>
+			#end
+			$r.contextHelpWithWrapper("manual_user/area_modules/Course_Planner_Products/")
+		</div>
+	</div>
+	$r.render("table")
 </div>
