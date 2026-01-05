@@ -1183,6 +1183,17 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Override
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1,
 			String custom2, String custom3) {
+		return previewCertificate(template, entry, null, locale, custom1, custom2, custom3);
+	}
+	
+	@Override
+	public PreviewCertificate previewCertificate(CertificateTemplate template, CertificationProgram certificationProgram, Locale locale, String custom1,
+			String custom2, String custom3) {
+		return previewCertificate(template, null, certificationProgram, locale, custom1, custom2, custom3);
+	}
+	
+	private PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, CertificationProgram certificationProgram, Locale locale, String custom1,
+			String custom2, String custom3) {
 		Identity identity = getPreviewIdentity();
 		
 		File certificateFile;
@@ -1195,20 +1206,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String certUrl = sb.toString();
 		
 		if(template == null) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, null, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, null, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else if (pdfModule.isEnabled()) {
-			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, null, entry, 2.0f, 10.0f, true,
+			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true,
 					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager,
 					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, null, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		}

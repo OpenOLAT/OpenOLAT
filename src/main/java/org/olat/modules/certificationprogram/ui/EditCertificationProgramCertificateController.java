@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -48,7 +49,9 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateChooserController;
+import org.olat.course.certificate.ui.PreviewMediaResource;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +92,7 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		mapperUrl = registerMapper(ureq, new TemplateMapper());
 		
 		initForm(ureq);
+		updateUI();
 	}
 	
 	public CertificationProgram getCertificationProgram() {
@@ -120,12 +124,31 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
+	
+	private void updateUI() {
+		if(selectedTemplate == null) {
+			templateCont.contextPut("templateName", translate("default.template"));
+			previewTemplateLink.setEnabled(false);
+		} else {
+			templateCont.contextPut("templateName", selectedTemplate.getName());
+			previewTemplateLink.setEnabled(true);
+		}
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == previewTemplateLink) {
+			doPreviewTemplate(ureq);
+		} 
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == certificateChooserCtrl) {
 			if(event == Event.DONE_EVENT) {
 				doSetTemplate(certificateChooserCtrl.getSelectedTemplate());
+				updateUI();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -184,6 +207,16 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 			templateCont.contextPut("templateName", template.getName());
 			previewTemplateLink.setEnabled(true);
 		}
+	}
+	
+	private void doPreviewTemplate(UserRequest ureq) {
+		selectedTemplate = certificatesManager.getTemplateById(selectedTemplate.getKey());
+		String custom1 = certificationCustom1El.getValue();
+		String custom2 = certificationCustom2El.getValue();
+		String custom3 = certificationCustom3El.getValue();
+		PreviewCertificate preview = certificatesManager.previewCertificate(selectedTemplate, certificationProgram, getLocale(), custom1, custom2, custom3);
+		MediaResource resource = new PreviewMediaResource(preview);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	public class TemplateMapper implements Mapper {
