@@ -191,6 +191,9 @@ public class CertificatesListOverviewController extends FormBasicController impl
 				dateCellRenderer));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.dateRecertification,
 				new RecertificationInDaysFlexiCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.dateRevocation,
+				dateCellRenderer));
+		
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.recertificationCount));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.status,
 				new CertificationStatusCellRenderer(getTranslator())));
@@ -212,6 +215,11 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		
 		initFilters();
 		initFiltersPresets(ureq);
+		
+		String prefsId = !getIdentity().equals(assessedIdentity)
+				? "certificates-list-user-overview-v1"
+				: "certificates-list-admin-overview-v1";
+		tableEl.setAndLoadPersistedPreferences(ureq, prefsId);
 	}
 	
 	private void initFilters() {
