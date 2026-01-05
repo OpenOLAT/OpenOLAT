@@ -213,8 +213,8 @@ public class CertificationProgramListController extends FormBasicController impl
 			CertificationProgram certificationProgram = program.certificationProgram();
 			String creditPoints = CertificationHelper.creditPointsToString(certificationProgram);
 			long candidates = program.candidates();
-			long activeUsers = program.validCertificates() + program.expiredCertificates();
-			long removedUsers = program.notRenewableCertificates() + program.revokedCertificates();
+			long activeUsers = program.activeUsers();
+			long removedUsers = program.alumniUsers();
 			CertificationProgramRow row = new CertificationProgramRow(program.certificationProgram(), activeUsers, candidates, removedUsers, creditPoints);
 			rows.add(row);
 		}
