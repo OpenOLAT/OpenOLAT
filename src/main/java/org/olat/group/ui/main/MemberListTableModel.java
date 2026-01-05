@@ -89,6 +89,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 				case firstTime: return row.getFirstTime();
 				case lastTime: return row.getLastTime();
 				case role: return row.getMembership();
+				case origin: return row;
 				case groups: return row;
 				case online: return getChatLink(row);
 				case curriculumDisplayName: {
@@ -159,6 +160,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),
+		origin("table.header.origin"),
 		groups("table.header.groups"),
 		online("table.header.online"),
 		tools("action.more"),

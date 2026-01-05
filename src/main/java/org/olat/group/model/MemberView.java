@@ -22,6 +22,7 @@ package org.olat.group.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityNames;
@@ -303,6 +304,20 @@ public class MemberView implements IdentityRef, IdentityNames {
 		@Override
 		public CurriculumElementManagedFlag[] getManagedFlags() {
 			return managedFlags;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			CurriculumElementShortImpl that = (CurriculumElementShortImpl) o;
+			return Objects.equals(key, that.key);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(key);
 		}
 	}
 }

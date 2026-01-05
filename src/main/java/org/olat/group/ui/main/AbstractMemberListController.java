@@ -484,6 +484,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		CourseRoleCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, roleRenderer));
 
+		initOriginColumn(columnsModel);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime));
 		if(isLastVisitVisible) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime));
@@ -505,6 +507,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 	protected void initStatusColumn(FlexiTableColumnModel columnsModel) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identityStatus, new IdentityStatusCellRenderer(getLocale())));
+	}
+	
+	protected void initOriginColumn(FlexiTableColumnModel columnsModel) {
+		// override to add an origin column
 	}
 
 	protected void initGroupsColumn(FlexiTableColumnModel columnsModel) {

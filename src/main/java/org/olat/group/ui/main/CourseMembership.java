@@ -71,6 +71,10 @@ public class CourseMembership {
 	public boolean isBusinessGroupMember() {
 		return businessGroupCoach || businessGroupParticipant || businessGroupWaiting;
 	}
+	
+	public boolean isCurriculumElementMember() {
+		return curriculumElementOwner || curriculumElementCoach || curriculumElementMasterCoach || curriculumElementParticipant;
+	}
 
 	public boolean isWaiting() {
 		return businessGroupWaiting;

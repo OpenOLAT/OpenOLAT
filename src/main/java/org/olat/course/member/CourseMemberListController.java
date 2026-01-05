@@ -22,10 +22,14 @@ package org.olat.course.member;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -40,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberListSecurityCallback;
+import org.olat.group.ui.main.MemberListTableModel;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -77,6 +82,11 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	@Override
 	protected void initStatusColumn(FlexiTableColumnModel columnsModel) {
 		//
+	}
+	
+	@Override
+	protected void initOriginColumn(FlexiTableColumnModel columnsModel) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberListTableModel.Cols.origin, new OriginCellRenderer()));
 	}
 
 	@Override
@@ -168,6 +178,33 @@ public class CourseMemberListController extends AbstractMemberListController imp
 				openEdit(ureq, row);
 			}
 		}
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (membersTable == source) {
+			for (String parameterKey : ureq.getParameterSet()) {
+				if (parameterKey.startsWith(OriginCellRenderer.BUSINESS_GROUP_ACTION_PREFIX)) {
+					String businessGroupKey = parameterKey.substring(OriginCellRenderer.BUSINESS_GROUP_ACTION_PREFIX.length());
+				    doLaunchBusinessGroup(ureq, businessGroupKey);
+				}
+				if (parameterKey.startsWith(OriginCellRenderer.CURRICULUM_ELEMENT_ACTION_PREFIX)) {
+					String curriculumElementKey = parameterKey.substring(OriginCellRenderer.CURRICULUM_ELEMENT_ACTION_PREFIX.length());
+					doLaunchCurriculumElement(ureq, curriculumElementKey);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doLaunchBusinessGroup(UserRequest ureq, String businessGroupKey) {
+		String businessPath = "[BusinessGroup:" + businessGroupKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private void doLaunchCurriculumElement(UserRequest ureq, String curriculumElementKey) {
+		String businessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElementKey + "][Overview:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	@Override
