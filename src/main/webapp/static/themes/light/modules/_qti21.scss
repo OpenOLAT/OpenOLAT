@@ -1335,6 +1335,7 @@ table.o_qti_item_kprim {
 	}
 	
 	div.box.source {
+		cursor: grab;
 		padding: 5px 10px;
 		border: 1px solid $o-qti-order-sources-border-color;
 		border-radius: $o-qti-order-border-radius;
@@ -1356,6 +1357,8 @@ table.o_qti_item_kprim {
 	}
 	
 	div.box.target {
+		cursor: grab;
+
 		> ul {
 			border: 2px solid $o-qti-order-target-border-color;
 			border-radius: $o-qti-order-border-radius;
