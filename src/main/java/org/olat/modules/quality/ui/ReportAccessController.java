@@ -240,7 +240,8 @@ public abstract class ReportAccessController extends FormBasicController {
 		rows.add(createRow(translate("report.access.name.repo.owner"), Type.GroupRoles, GroupRoles.owner.name()));
 		rows.add(createRow(translate("report.access.name.repo.coach"), Type.GroupRoles, GroupRoles.coach.name()));
 		if (curriculumModule.isEnabled()) {
-			rows.add(createRow(translate("report.access.name.repo.master.coach"), Type.GroupRoles, CurriculumRoles.mastercoach.name()));
+			rows.add(createRow(translate("report.access.name.master.coach"), Type.GroupRoles, CurriculumRoles.mastercoach.name()));
+			rows.add(createRow(translate("report.access.name.element.owner"), Type.GroupRoles, CurriculumRoles.curriculumelementowner.name()));
 		}
 		rows.add(createRow(translate("report.access.name.repo.lrm"), Type.LearnResourceManager, null));
 		

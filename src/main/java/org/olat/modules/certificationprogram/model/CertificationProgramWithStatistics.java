@@ -34,4 +34,23 @@ public record CertificationProgramWithStatistics(CertificationProgram certificat
 	public long revokedCertificates() {
 		return userWithCertificates - userWithLastCertificate;
 	}
+	
+	public long activeUsers() {
+		if(recertificationWithWindow()) {
+			return validCertificates() + expiredCertificates();
+		}
+		return validCertificates();
+	}
+	
+	public long alumniUsers() {
+		if(recertificationWithWindow()) {
+			return notRenewableCertificates() + revokedCertificates();
+		}
+		return notRenewableCertificates() + revokedCertificates() + expiredCertificates();
+	}
+	
+	public boolean recertificationWithWindow() {
+		return certificationProgram.isRecertificationEnabled()
+				&& certificationProgram.getRecertificationWindowUnit() != null;
+	}
 }

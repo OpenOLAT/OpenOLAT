@@ -45,6 +45,7 @@
 	        		jQuery(container).addClass('oo-accepted');
 	        }
 		}).on('drop', function(el, target, source, sibling) {
+			jQuery(el).removeClass('oo-selected');
 			recalculate(settings);
 			setFlexiFormDirty(settings.formDispatchFieldId);
 		}).on('dragend', function(el) {
@@ -80,12 +81,12 @@
 			if (e.target === targetList.get(0)) {
 				handleTargetBackgroundClick(e, sourceList, targetList, settings);
 			} else {
-				handleTargetClick(e.target, sourceList, targetList);
+				handleTargetClick(e.target, sourceList, targetList, settings);
 			}
 		});
 	}
 	
-	function handleTargetClick(clickedEl, sourceList, targetList) {
+	function handleTargetClick(clickedEl, sourceList, targetList, settings) {
 		var listItem = jQuery(clickedEl).closest('li.o_assessmentitem_order_item');
 		if (listItem.length > 0) {
 			unselectAllItems(sourceList, targetList);

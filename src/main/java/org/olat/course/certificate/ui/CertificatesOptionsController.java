@@ -20,16 +20,12 @@
 package org.olat.course.certificate.ui;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -54,9 +50,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
@@ -466,60 +460,6 @@ public class CertificatesOptionsController extends FormBasicController {
 				resource = new StreamedMediaResource(stream, "Certificate_template.pdf", "application/pdf");
 			}
 			return resource;
-		}
-	}
-	
-	private static class PreviewMediaResource implements MediaResource {
-		private static final Logger log = Tracing.createLoggerFor(PreviewMediaResource.class);
-		private PreviewCertificate preview;
-		
-		public PreviewMediaResource(PreviewCertificate preview) {
-			this.preview = preview;
-		}
-		
-		@Override
-		public long getCacheControlDuration() {
-			return 0;
-		}
-
-		@Override
-		public boolean acceptRanges() {
-			return true;
-		}
-		
-		@Override
-		public String getContentType() {
-			return "application/type";
-		}
-
-		@Override
-		public Long getSize() {
-			return preview.getCertificate().length();
-		}
-
-		@Override
-		public InputStream getInputStream() {
-			try {
-				return new FileInputStream(preview.getCertificate());
-			} catch (FileNotFoundException e) {
-				log.error("", e);
-				return null;
-			}
-		}
-
-		@Override
-		public Long getLastModified() {
-			return null;
-		}
-
-		@Override
-		public void prepare(HttpServletResponse hres) {
-			hres.setHeader("Content-Disposition", "filename*=UTF-8''Certificate_preview.pdf");
-		}
-
-		@Override
-		public void release() {
-			FileUtils.deleteDirsAndFiles(preview.getTmpDirectory(), true, true);
 		}
 	}
 }
