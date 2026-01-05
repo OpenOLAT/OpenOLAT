@@ -49,7 +49,7 @@
 			</div>
 		</div>
 	</div>
-	#if($r.isTrue($recertificationEnable))
+	#if($r.isTrue($recertificationEnable) && $r.isFalse($revoked))
 	<fieldset class="o_certificate_recertification_wrapper">
 		<legend>$r.translate("recertification.title")</legend>
 		#if($r.isTrue($recertificationWindowClosed))
