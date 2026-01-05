@@ -60,7 +60,7 @@ public class CurriculumElementHistoryController extends AbstractHistoryControlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initButtonsForm(formLayout);
-		initTableForm(formLayout);
+		initTableForm(formLayout, ureq);
 	}
 	
 	private void initButtonsForm(FormItemContainer formLayout) {
@@ -71,10 +71,12 @@ public class CurriculumElementHistoryController extends AbstractHistoryControlle
 		thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
 	}
 	
-	private void initTableForm(FormItemContainer formLayout) {
+	private void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
 		initTable(formLayout, true, true);
 		initFilters();
 		initFiltersPresets();
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-memberships-history-v1");
 	}
 	
 	@Override

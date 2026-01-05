@@ -142,8 +142,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	}
 
 	@Override
-	protected void initTableForm(FormItemContainer formLayout) {
-		super.initTableForm(formLayout);
+	protected void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
+		super.initTableForm(formLayout, ureq);
 		
 		if(acceptBatchButton != null) {
 			tableEl.addBatchButton(acceptBatchButton);
@@ -151,6 +151,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		if(declineBatchButton != null) {
 			tableEl.addBatchButton(declineBatchButton);
 		}
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-pending-members-v1");
 	}
 
 	@Override

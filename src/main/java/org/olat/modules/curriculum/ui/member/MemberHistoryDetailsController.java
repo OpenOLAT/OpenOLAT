@@ -67,6 +67,8 @@ public class MemberHistoryDetailsController extends AbstractHistoryController {
 		initTable(formLayout, false, false);
 		initFilters();
 		initFiltersPresets();
+
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-details-memberships-history-v1");
 	}
 	
 	@Override

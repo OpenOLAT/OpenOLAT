@@ -170,7 +170,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initButtonsForm(formLayout);
-		initTableForm(formLayout);
+		initTableForm(formLayout, ureq);
 	}
 	
 	protected void initButtonsForm(FormItemContainer formLayout) {
@@ -181,7 +181,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
 	}
 
-	protected void initTableForm(FormItemContainer formLayout) {
+	protected void initTableForm(FormItemContainer formLayout, @SuppressWarnings("unused") UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		if(chatEnabled) {

@@ -154,8 +154,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	}
 	
 	@Override
-	protected void initTableForm(FormItemContainer formLayout) {
-		super.initTableForm(formLayout);
+	protected void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
+		super.initTableForm(formLayout, ureq);
 		tableEl.addBatchButton(contactBatchButton);
 		if(editBatchButton != null) {
 			tableEl.addBatchButton(editBatchButton);
@@ -163,6 +163,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		if(removeBatchButton != null) {
 			tableEl.addBatchButton(removeBatchButton);
 		}
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v1");
 	}
 	
 	@Override

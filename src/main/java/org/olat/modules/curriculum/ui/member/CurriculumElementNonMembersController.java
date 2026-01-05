@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -86,6 +87,13 @@ public class CurriculumElementNonMembersController extends AbstractMembersContro
 	@Override
 	protected void initFiltersPresets(List<FlexiFiltersTab> tabs) {
 		//
+	}
+
+	@Override
+	protected void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
+		super.initTableForm(formLayout, ureq);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v1");
 	}
 
 	@Override
