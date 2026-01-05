@@ -143,6 +143,7 @@ public class DateInputInspectorController extends FormBasicController implements
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, dateInput.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !dateInput.isMandatory());
 		obligationEl.setEnabled(!restrictedEdit);
+		obligationEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
