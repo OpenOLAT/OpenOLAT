@@ -20,14 +20,20 @@
 package org.olat.course.member;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -45,11 +51,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberListTableModel;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.modules.curriculum.CurriculumElementShort;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +68,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CourseMemberListController extends AbstractMemberListController implements FlexiTableComponentDelegate {
+	public static final String FILTER_BUSINESS_GROUP = "filter.business.group";
+	public static final String FILTER_CURRICULUM_ELEMENT = "filter.curriculum.element";
 	
 	private final SearchMembersParams searchParams;
 	
@@ -108,6 +119,38 @@ public class CourseMemberListController extends AbstractMemberListController imp
 
 		membersTable.setDetailsRenderer(detailsVC, this);
 		membersTable.setMultiDetails(true);
+	}
+
+	@Override
+	protected void initExtraFilters(List<FlexiTableExtendedFilter> filters) {
+		SearchMembersParams searchParams = new SearchMembersParams(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant);
+		List<MemberView> memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, searchParams);
+		Set<BusinessGroupShort> businessGroups = new HashSet<>();
+		Set<CurriculumElementShort> curriculumElements = new HashSet<>();
+		for (MemberView memberView : memberViews) {
+			if (memberView.getGroups() != null) {
+				businessGroups.addAll(memberView.getGroups());
+			}
+			if (memberView.getCurriculumElements() != null) {
+				curriculumElements.addAll(memberView.getCurriculumElements());
+			}
+		}
+
+		SelectionValues businessGroupKV = new SelectionValues();
+		businessGroups.stream().sorted(Comparator.comparing(BusinessGroupShort::getName))
+				.forEach(bg -> businessGroupKV.add(SelectionValues.entry("" + bg.getKey(), bg.getName())));
+		if (!businessGroupKV.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.member.group"),
+					FILTER_BUSINESS_GROUP, businessGroupKV, true));
+		}
+
+		SelectionValues curriculumElementKV = new SelectionValues();
+		curriculumElements.stream().sorted(Comparator.comparing(CurriculumElementShort::getDisplayName))
+				.forEach(ce -> curriculumElementKV.add(SelectionValues.entry("" + ce.getKey(), ce.getDisplayName())));
+		if (!curriculumElementKV.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.member.cpl.element"),
+					FILTER_CURRICULUM_ELEMENT, curriculumElementKV, true));
+		}
 	}
 
 	@Override
@@ -232,5 +275,35 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	@Override
 	public SearchMembersParams getSearchParams() {
 		return searchParams;
+	}
+
+	@Override
+	protected void setExtraSearchCriteria(SearchMembersParams searchParams) {
+		searchParams.setBusinessGroupKeys(getBusinessGroupKeys());
+		searchParams.setCurriculumElementKeys(getCurriculumElementKeys());
+	}
+
+	private List<Long> getBusinessGroupKeys() {
+		List<FlexiTableFilter> filters = membersTable.getFilters();
+		FlexiTableFilter businessGroupFilter = FlexiTableFilter.getFilter(filters, FILTER_BUSINESS_GROUP);
+		if (businessGroupFilter != null) {
+			List<String> businessGroupValues = ((FlexiTableExtendedFilter)businessGroupFilter).getValues();
+			if (businessGroupValues != null && !businessGroupValues.isEmpty()) {
+				return businessGroupValues.stream().map(Long::parseLong).toList();
+			}
+		}
+		return Collections.emptyList();
+	}
+
+	private List<Long> getCurriculumElementKeys() {
+		List<FlexiTableFilter> filters = membersTable.getFilters();
+		FlexiTableFilter curriculumElementFilter = FlexiTableFilter.getFilter(filters, FILTER_CURRICULUM_ELEMENT);
+		if (curriculumElementFilter != null) {
+			List<String> curriculumElementValues = ((FlexiTableExtendedFilter)curriculumElementFilter).getValues();
+			if (curriculumElementValues != null && !curriculumElementValues.isEmpty()) {
+				return curriculumElementValues.stream().map(Long::parseLong).toList();
+			}
+		}
+		return Collections.emptyList();
 	}
 }

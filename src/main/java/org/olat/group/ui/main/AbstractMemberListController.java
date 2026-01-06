@@ -189,7 +189,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
-	private MemberViewQueries memberQueries;
+	protected MemberViewQueries memberQueries;
 	@Autowired
 	protected UserManager userManager;
 	@Autowired
@@ -404,8 +404,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.role"),
 				FILTER_ROLE, rolesValues, true));
-		
-		initOriginFilter(filters, withOwners);
 
 		// User types
 		SelectionValues typeValues = new SelectionValues();
@@ -414,6 +412,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.user.type"),
 				FILTER_TYPE, typeValues, true));
 
+		initOriginFilter(filters, withOwners);
+		initExtraFilters(filters);
+		
 		membersTable.setFilters(true, filters, false, false);
 	}
 
@@ -424,6 +425,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		originValues.add(SelectionValues.entry(Origin.curriculum.name(), translate("filter.origin.curriculum")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.origin"),
 				FILTER_ORIGIN, originValues, withOwners));
+	}
+
+	protected void initExtraFilters(List<FlexiTableExtendedFilter> filters) {
+		// override for more filters after the origin filter
 	}
 
 	public void switchToAllMembers(UserRequest ureq) {
@@ -1090,6 +1095,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		params.setPending(params.isRole(GroupRoles.waiting));
 		params.setOrigins(getOrigins());
 		params.setUserTypes(getUserTypes());
+		setExtraSearchCriteria(params);
 		
 		String search = membersTable.getQuickSearchString();
 		Map<String,String> propertiesSearch = new HashMap<>();
@@ -1155,6 +1161,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 		memberListModel.setObjects(memberList);
 		membersTable.reset(true, true, true);
+	}
+
+	protected void setExtraSearchCriteria(SearchMembersParams params) {
+		// override to set extra search criteria for the extra filters (see initExtraFilters above)
 	}
 
 	public Long getMemberParticipantsSize() {
