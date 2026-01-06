@@ -100,6 +100,7 @@
 			listItem.remove();
 			
 			recalculate(settings);
+			setFlexiFormDirty(settings.formDispatchFieldId);
 		}
 	}
 	
@@ -127,6 +128,7 @@
 		selectedSourceEl.remove();
 		
 		recalculate(settings);
+		setFlexiFormDirty(settings.formDispatchFieldId);
 	}
 
 	function recalculate(settings) {
