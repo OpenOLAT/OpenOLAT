@@ -167,6 +167,7 @@ public class DataCollectionListController extends FormBasicController
 		defaultSearchParams.setReportAccessIdentity(getIdentity());
 		defaultSearchParams.setLearnResourceManagerOrganisationRefs(secCallback.getLearnResourceManagerOrganisationRefs());
 		defaultSearchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
+		defaultSearchParams.setIgnoreCurriculumRole(!secCallback.isCurriculumOwner());
 		defaultSearchParams.setCountToDoTasks(qualityModule.isToDoEnabled());
 		dataSource = new DataCollectionDataSource(getTranslator(), defaultSearchParams, this);
 		dataSource.setSearchParams(new QualityDataCollectionViewSearchParams());

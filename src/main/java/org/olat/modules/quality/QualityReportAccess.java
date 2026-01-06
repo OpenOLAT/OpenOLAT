@@ -33,7 +33,6 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 
 	public enum Type {
 		GroupRoles,
-		MasterCoach,
 		LearnResourceManager,
 		TopicIdentity,
 		Participants,

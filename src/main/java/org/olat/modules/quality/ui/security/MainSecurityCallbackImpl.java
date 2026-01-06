@@ -47,6 +47,7 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	private final List<OrganisationRef> viewOnlyOrganisationRefs;
 	private final List<OrganisationRef> editOrganisationRefs;
 	private final List<OrganisationRef> learnResourceManagerOrganisationRefs;
+	private final boolean curriculumOwner;
 	private final QualityDataCollectionViewSearchParams reportAccessParams;
 	private boolean canViewDataCollections;
 	
@@ -59,13 +60,15 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 
 	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit,
 			List<OrganisationRef> viewerOrganisationRefs, List<OrganisationRef> viewOnlyOrganisationRefs,
-			List<OrganisationRef> editOrganisationRefs, List<OrganisationRef> learnResourceManagerOrganisationRefs) {
+			List<OrganisationRef> editOrganisationRefs, List<OrganisationRef> learnResourceManagerOrganisationRefs,
+			boolean curriculumOwner) {
 		this.canView = canView;
 		this.canEdit = canEdit;
 		this.viewerOrganisationRefs = viewerOrganisationRefs;
 		this.viewOnlyOrganisationRefs = viewOnlyOrganisationRefs;
 		this.editOrganisationRefs = editOrganisationRefs;
 		this.learnResourceManagerOrganisationRefs = learnResourceManagerOrganisationRefs;
+		this.curriculumOwner = curriculumOwner;
 		CoreSpringFactory.autowireObject(this);
 		
 		reportAccessParams = new QualityDataCollectionViewSearchParams();
@@ -73,6 +76,7 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 		reportAccessParams.setReportAccessIdentity(identityRef);
 		reportAccessParams.setLearnResourceManagerOrganisationRefs(learnResourceManagerOrganisationRefs);
 		reportAccessParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
+		reportAccessParams.setIgnoreCurriculumRole(!curriculumOwner);
 	}
 
 	@Override
@@ -118,6 +122,11 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	@Override
 	public List<OrganisationRef> getLearnResourceManagerOrganisationRefs() {
 		return learnResourceManagerOrganisationRefs;
+	}
+
+	@Override
+	public boolean isCurriculumOwner() {
+		return curriculumOwner;
 	}
 
 	@Override

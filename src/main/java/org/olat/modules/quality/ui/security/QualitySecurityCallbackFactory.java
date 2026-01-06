@@ -30,6 +30,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
@@ -63,11 +65,12 @@ public class QualitySecurityCallbackFactory {
 		List<OrganisationRef> viewOnlyOrganisations = getViewOnlyOrganisations(roles, canView);
 		List<OrganisationRef> editOrganisations = getEditOrganisations(roles, canEdit);
 		List<OrganisationRef> learnResourceManagerOrganisations = getLearnResourceManagerOrganisations(roles);
+		boolean curriculumOwner = isCurriculumOwner(identityRef);
 		
 		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, viewOrganisations, viewOnlyOrganisations,
-				editOrganisations, learnResourceManagerOrganisations);
+				editOrganisations, learnResourceManagerOrganisations, curriculumOwner);
 	}
-	
+
 	private static List<OrganisationRef> getViewOrganisations(Roles roles, boolean canView) {
 		if (canView) {
 			OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
@@ -107,6 +110,16 @@ public class QualitySecurityCallbackFactory {
 			return roles.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager);
 		}
 		return null; // all organisations
+	}
+	
+	private static boolean isCurriculumOwner(IdentityRef identityRef) {
+		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+		
+		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+		return curriculumService.isCurriculumOwner(identityRef);
 	}
 	
 	public static MainSecurityCallback createForbiddenSecurityCallback() {

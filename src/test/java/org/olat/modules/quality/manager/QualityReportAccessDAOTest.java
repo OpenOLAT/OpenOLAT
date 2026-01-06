@@ -418,6 +418,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	public void shouldLoadReceiversForGroupRole() {
 		Identity reportViewerEntry1 = JunitTestHelper.createAndPersistIdentityAsRndUser("course1");
 		Identity reportViewerEntry2 = JunitTestHelper.createAndPersistIdentityAsRndUser("course1");
+		Identity reportViewerCurriculum = JunitTestHelper.createAndPersistIdentityAsRndUser("curriculum");
 		Identity reportViewerElement = JunitTestHelper.createAndPersistIdentityAsRndUser("curriculumElement1");
 		Identity reportViewerOtherRole = JunitTestHelper.createAndPersistIdentityAsRndUser("other-role");
 		Identity reportViewerNoParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("no-participant");
@@ -443,8 +444,9 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		RepositoryEntry entryNoParticipation = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addRole(reportViewerNoParticipant, entryNoParticipation, reportViewerRole.name());
 		repositoryService.addRole(executor, entryNoParticipation, executorRole.name());
-		// Report Viewer is member of the curriculum element
+		// Report Viewer is member of the curriculum (element)
 		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(element.getCurriculum(), reportViewerCurriculum, CurriculumRoles.owner);
 		curriculumService.addMember(element, reportViewerElement, CurriculumRoles.owner, executor);
 		curriculumService.addMember(element, executor, CurriculumRoles.participant, executor);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
@@ -456,7 +458,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		List<Identity> receivers = sut.loadRecipients(reportAccess);
 		
 		assertThat(receivers)
-				.containsExactlyInAnyOrder(reportViewerEntry1, reportViewerEntry2, reportViewerElement)
+				.containsExactlyInAnyOrder(reportViewerEntry1, reportViewerEntry2, reportViewerCurriculum, reportViewerElement)
 				.doesNotContain(reportViewerOtherRole, reportViewerNoParticipant);
 	}
 	

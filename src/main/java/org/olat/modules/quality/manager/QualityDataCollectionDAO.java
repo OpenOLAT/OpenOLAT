@@ -684,6 +684,25 @@ public class QualityDataCollectionDAO {
 					sb.append("   and membership.role = ra.role");
 					sb.append("   and membership.identity.key = :reportAccessIdentityKey");
 					sb.append(")");
+					if (!searchParams.isIgnoreCurriculumRole()) {
+						sb.append(" or ");
+						sb.append("collection.key in (");
+						sb.append("select ra.dataCollection.key");
+						sb.append("  from qualityreportaccess ra");
+						sb.append("       join ra.dataCollection dc");
+						sb.append("       join qualitycontext as context");
+						sb.append("         on context.dataCollection.key = dc.key");
+						sb.append("       join contexttocurriculum as contexttocurriculum");
+						sb.append("         on contexttocurriculum.context.key = context.key");
+						sb.append("       join bgroupmember as membership");
+						sb.append("         on membership.group.key = contexttocurriculum.curriculum.group.key");
+						sb.append("   where ra.online = true");
+						sb.append("   and ra.type = '").append(QualityReportAccess.Type.GroupRoles).append("'");
+						sb.append("   and dc.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+						sb.append("   and membership.role = ra.role");
+						sb.append("   and membership.identity.key = :reportAccessIdentityKey");
+						sb.append(")");
+					}
 					sb.append(" or ");
 					sb.append("collection.key in (");
 					sb.append("select ra.dataCollection.key");
