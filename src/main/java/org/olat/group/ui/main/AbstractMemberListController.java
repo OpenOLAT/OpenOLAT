@@ -405,13 +405,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.role"),
 				FILTER_ROLE, rolesValues, true));
 		
-		// User origins
-		SelectionValues originValues = new SelectionValues();
-		originValues.add(SelectionValues.entry(Origin.repositoryEntry.name(), translate("filter.origin.repo")));
-		originValues.add(SelectionValues.entry(Origin.businessGroup.name(), translate("filter.origin.group")));
-		originValues.add(SelectionValues.entry(Origin.curriculum.name(), translate("filter.origin.curriculum")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.origin"),
-				FILTER_ORIGIN, originValues, withOwners));
+		initOriginFilter(filters, withOwners);
 
 		// User types
 		SelectionValues typeValues = new SelectionValues();
@@ -422,7 +416,16 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 		membersTable.setFilters(true, filters, false, false);
 	}
-	
+
+	protected void initOriginFilter(List<FlexiTableExtendedFilter> filters, boolean withOwners) {
+		SelectionValues originValues = new SelectionValues();
+		originValues.add(SelectionValues.entry(Origin.repositoryEntry.name(), translate("filter.origin.repo")));
+		originValues.add(SelectionValues.entry(Origin.businessGroup.name(), translate("filter.origin.group")));
+		originValues.add(SelectionValues.entry(Origin.curriculum.name(), translate("filter.origin.curriculum")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.origin"),
+				FILTER_ORIGIN, originValues, withOwners));
+	}
+
 	public void switchToAllMembers(UserRequest ureq) {
 		membersTable.setSelectedFilterTab(ureq, allTab);
 		reloadModel();

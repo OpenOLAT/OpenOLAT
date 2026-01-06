@@ -27,15 +27,18 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -133,6 +136,16 @@ public class CourseMemberListController extends AbstractMemberListController imp
 			originCplTab.setFiltersExpanded(true);
 			tabs.add(originCplTab);
 		}
+	}
+
+	@Override
+	protected void initOriginFilter(List<FlexiTableExtendedFilter> filters, boolean withOwners) {
+		SelectionValues originValues = new SelectionValues();
+		originValues.add(SelectionValues.entry(SearchMembersParams.Origin.repositoryEntry.name(), translate("filter.member.origin.course")));
+		originValues.add(SelectionValues.entry(SearchMembersParams.Origin.businessGroup.name(), translate("filter.member.origin.group")));
+		originValues.add(SelectionValues.entry(SearchMembersParams.Origin.curriculum.name(), translate("filter.member.origin.course.planner")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.member.origin"),
+				FILTER_ORIGIN, originValues, withOwners));
 	}
 
 	@Override
