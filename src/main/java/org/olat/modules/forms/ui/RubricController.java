@@ -272,7 +272,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		if (element.isSliderCommentsEnabled()) {
 			sliderCommentEl = uifactory.addTextAreaElement("o_slider_comment_" + CodeHelper.getRAMUniqueID(),
 					"slider.comment", Rubric.MAX_COMMENT_LENGTH, 3, 72, 
-					true, false, true, null, flc);
+					true, false, false, null, flc);
 			sliderCommentEl.setDomReplacementWrapperRequired(false);
 		}
 		return sliderCommentEl;
