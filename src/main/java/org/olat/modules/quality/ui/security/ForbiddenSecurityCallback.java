@@ -69,6 +69,11 @@ public class ForbiddenSecurityCallback implements MainSecurityCallback {
 	}
 
 	@Override
+	public boolean isCurriculumOwner() {
+		return false;
+	}
+
+	@Override
 	public boolean canCreateDataCollections() {
 		return false;
 	}

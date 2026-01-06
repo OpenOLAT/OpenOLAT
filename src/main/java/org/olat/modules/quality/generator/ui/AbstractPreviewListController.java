@@ -380,6 +380,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		searchParams.setReportAccessIdentity(getIdentity());
 		searchParams.setLearnResourceManagerOrganisationRefs(getLearnResourceManagerOrganisationRefs());
 		searchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
+		searchParams.setIgnoreCurriculumRole(true);
 		searchParams.setCountToDoTasks(false);
 		searchParams.setTopicOrAudienceRepositoryEntries(getRestrictRepositoryEntries());
 		searchParams.setTopicOrAudienceCurriculumElements(getRestrictCurriculumElements());

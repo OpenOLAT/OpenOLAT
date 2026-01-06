@@ -74,6 +74,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 		this.searchParams.setReportAccessIdentity(defaultSearchParams.getReportAccessIdentity());
 		this.searchParams.setLearnResourceManagerOrganisationRefs(defaultSearchParams.getLearnResourceManagerOrganisationRefs());
 		this.searchParams.setIgnoreReportAccessRelationRole(defaultSearchParams.isIgnoreReportAccessRelationRole());
+		this.searchParams.setIgnoreCurriculumRole(defaultSearchParams.isIgnoreCurriculumRole());
 		this.searchParams.setCountToDoTasks(defaultSearchParams.isCountToDoTasks());
 		count = null;
 	}

@@ -41,6 +41,7 @@ public class QualityDataCollectionViewSearchParams {
 	private IdentityRef reportAccessIdentity;
 	private Collection<? extends OrganisationRef> learnResourceManagerOrganisationRefs;
 	private boolean ignoreReportAccessRelationRole;
+	private boolean ignoreCurriculumRole = true;
 	private String searchString;
 	private String title;
 	private String topic;
@@ -91,6 +92,14 @@ public class QualityDataCollectionViewSearchParams {
 		this.ignoreReportAccessRelationRole = ignoreReportAccessRelationRole;
 	}
 	
+	public boolean isIgnoreCurriculumRole() {
+		return ignoreCurriculumRole;
+	}
+
+	public void setIgnoreCurriculumRole(boolean ignoreCurriculumRole) {
+		this.ignoreCurriculumRole = ignoreCurriculumRole;
+	}
+
 	public String getSearchString() {
 		return searchString;
 	}

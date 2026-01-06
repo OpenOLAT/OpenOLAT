@@ -263,6 +263,24 @@ class QualityReportAccessDAO {
 					.setParameter("reportAccessKey", reportAccess.getKey())
 					.getResultList();
 		
+		sb = new QueryBuilder();
+		sb.append("select membership.identity");
+		sb.append("  from qualitycontext as context");
+		sb.append("       join context.dataCollection as collection");
+		sb.append("       join qualityreportaccess as ra");
+		sb.append("         on ra.dataCollection.key = context.dataCollection.key");
+		sb.append("       join contexttocurriculum as contexttocurriculum");
+		sb.append("         on contexttocurriculum.context.key = context.key");
+		sb.append("       join bgroupmember as membership");
+		sb.append("         on membership.group.key = contexttocurriculum.curriculum.group.key");
+		sb.append("        and membership.role = ra.role");
+		sb.and().append("ra.key = :reportAccessKey");
+		
+		List<Identity> curriculumMembers = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Identity.class)
+					.setParameter("reportAccessKey", reportAccess.getKey())
+					.getResultList();
+		
 		QueryBuilder sbEle = new QueryBuilder();
 		sbEle.append("select membership.identity");
 		sbEle.append("  from qualitycontext as context");
@@ -283,6 +301,7 @@ class QualityReportAccessDAO {
 		
 		HashSet<Identity> all = new HashSet<>();
 		all.addAll(coureseMembers);
+		all.addAll(curriculumMembers);
 		all.addAll(curriculumElementMembers);
 		
 		List<Identity> allList = new ArrayList<>();

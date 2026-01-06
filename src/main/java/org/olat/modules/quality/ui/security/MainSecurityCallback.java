@@ -46,6 +46,8 @@ public interface MainSecurityCallback {
 	public List<OrganisationRef> getEditDataCollectionOrganisationRefs();
 	
 	public List<OrganisationRef> getLearnResourceManagerOrganisationRefs();
+
+	public boolean isCurriculumOwner();
 	
 	public boolean canCreateDataCollections();
 	
