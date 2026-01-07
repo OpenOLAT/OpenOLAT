@@ -30,6 +30,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
@@ -59,6 +60,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private Date offerValidAt;
 	private Collection<Long> educationalTypeKeys;
 	private List<? extends CurriculumRef> curriculums;
+	private List<? extends RepositoryEntryRef> repositoryEntries;
 
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -130,6 +132,14 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setCurriculums(List<? extends CurriculumRef> curriculums) {
 		this.curriculums = curriculums;
+	}
+
+	public List<? extends RepositoryEntryRef> getRepositoryEntries() {
+		return repositoryEntries;
+	}
+
+	public void setRepositoryEntries(List<? extends RepositoryEntryRef> repositoryEntries) {
+		this.repositoryEntries = repositoryEntries;
 	}
 
 	public String getIdAndRefs() {

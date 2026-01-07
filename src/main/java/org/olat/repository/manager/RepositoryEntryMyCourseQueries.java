@@ -51,6 +51,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
@@ -237,6 +238,7 @@ public class RepositoryEntryMyCourseQueries {
 		}
 
 		sb.append(" where ");
+		
 		boolean membershipMandatory = params.isMembershipMandatory() || params.isMembershipOnly();
 		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(),
 				membershipMandatory, params.isParticipantsOnly(), params.getOfferValidAt(), params.getOfferOrganisations(),
@@ -253,6 +255,11 @@ public class RepositoryEntryMyCourseQueries {
 				needIdentityKey |= appendFiltersInWhereClause(filter, sb);
 			}
 		}
+		
+		if(params.getRepositoryEntries() != null && !params.getRepositoryEntries().isEmpty()) {
+			sb.append(" and v.key in :vKeys");
+		}
+		
 		if(params.isLifecycleFilterDefined()) {
 			boolean or = false;
 			sb.append(" and (");
@@ -397,6 +404,11 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		if(params.isLifecycleFilterDefined()) {
 			dbQuery.setParameter("now", new Date());
+		}
+		if(params.getRepositoryEntries() != null && !params.getRepositoryEntries().isEmpty()) {
+			List<Long> keys = params.getRepositoryEntries().stream()
+					.map(RepositoryEntryRef::getKey).toList();
+			dbQuery.setParameter("vKeys", keys);
 		}
 		if(id != null) {
 			dbQuery.setParameter("vKey", id);
