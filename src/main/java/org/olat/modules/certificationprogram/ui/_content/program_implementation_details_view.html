@@ -1,13 +1,6 @@
-#if($r.available("implementationDetails"))
-	<h3>$r.translate("details.element.title")</h3>
-	<div class="o_table_details o_entry_wrapper o_element_wrapper">
-		$r.render("implementationDetails")
-	</div>
+#if($numOfEntries == 1)
+<h3>$r.translate("details.course.title")</h3>
 #else
-	#if($numOfEntries == 1)
-	<h3>$r.translate("details.course.title")</h3>
-	#else
-	<h3>$r.translate("details.courses.title")</h3>
-	#end
-	$r.render("courseDetails")
+<h3>$r.translate("details.courses.title")</h3>
 #end
+$r.render("courseDetails")

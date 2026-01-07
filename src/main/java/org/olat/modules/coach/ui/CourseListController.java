@@ -241,6 +241,10 @@ public class CourseListController extends FormBasicController implements Activat
 		initForm(ureq);
 	}
 	
+	public int getNumOfCourses() {
+		return tableModel.getRowCount();
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -321,7 +325,9 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(config.withToolbar());
 		tableEl.setSearchEnabled(config.withToolbar());
 		tableEl.setNumOfRowsEnabled(config.withToolbar());
-		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
+		String[] emptyI18nArgs = getEmptyArgs();
+		tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon",
+				null, null, false, emptyI18nArgs);
 		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.6-" + runtimeTypesGroup.name());
 		
 		VelocityContainer row = createVelocityContainer("row_1");
@@ -335,6 +341,17 @@ public class CourseListController extends FormBasicController implements Activat
 		if(config.withPresetsFilters()) {
 			initFiltersPresets(ureq);
 		}
+	}
+	
+	private String[] getEmptyArgs() {
+		String type;
+		if(curriculumElement != null && curriculumElement.getType() != null) {
+			type = StringHelper.escapeHtml(curriculumElement.getType().getDisplayName());
+		} else {
+			type = translate("table.resources.empty.default.type");
+		}
+		
+		return new String[] { type };
 	}
 	
     private void initFilters() {

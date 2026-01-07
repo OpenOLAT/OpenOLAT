@@ -67,11 +67,11 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void render(StringOutput sb, Certificate certificate, Identity identity) {
-		String name = formatter.formatDate(certificate.getCreationDate());
+		String name = getName(certificate, identity);
 		sb.append("<a href='").append(getUrl(certificate, identity))
 		  .append("' rel='noopener noreferrer' target='_blank'>")
 		  .append("<i class='o_icon o_filetype_pdf'> </i> ")
-		  .append(name).append(".pdf").append("</a>");
+		  .append(name).append("</a>");
 	}
 	
 	private String getUrl(Certificate certificate, Identity identity) {
