@@ -62,7 +62,6 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	private Curriculum curriculum;
 	
 	private boolean hasChildren;
-	private boolean isTaxonomy;
 	private boolean isCurriculumElement;
 	private boolean holdsScore = true;
 	private boolean isStatement = false;
@@ -218,11 +217,7 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	}
 	
 	public boolean isTaxonomy() {
-		return isTaxonomy;
-	}
-	
-	public void setTaxonomy(boolean isTaxonomy) {
-		this.isTaxonomy = isTaxonomy;
+		return taxonomyLevel != null;
 	}
 	
 	public void setHoldsScore(boolean holdsScore) {
@@ -311,29 +306,23 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 
 	@Override
 	public String getCrump() {
-		String crump = "";
-		
+		StringBuilder crump = new StringBuilder();
 		if (parent != null) {
-			crump += "/";
-			crump += parent.getCrump();
+			crump.append(parent.getCrump());
 		}
 		
-		if (isTaxonomy) {
-			crump += "/";
-			crump += taxonomyLevel.getKey().toString();
+		if (taxonomyLevel != null) {
+			crump.append("/TL-").append(taxonomyLevel.getKey().toString());
 		}
 		
 		if (isCurriculumElement) {
-			crump += "/";
-			crump += curriculumElement.getKey().toString();
+			crump.append("/CL-").append(curriculumElement.getKey().toString());
 		}
 		
 		if (isStatement) {
-			crump += "/";
-			crump += efficiencyStatementKey.toString();
+			crump.append("/ES-").append(efficiencyStatementKey.toString());
 		}
 		
-		return crump;
+		return crump.toString();
 	}
-
 }

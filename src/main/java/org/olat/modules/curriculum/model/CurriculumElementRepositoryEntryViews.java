@@ -72,6 +72,12 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 		return entries;
 	}
 	
+	public List<Long> getEntriesKeys() {
+		return entries == null || entries.isEmpty()
+				? List.of()
+				: entries.stream().map(RepositoryEntryMyView::getKey).toList();
+	}
+	
 	public CurriculumElementMembership getCurriculumMembership() {
 		return curriculumMembership;
 	}
