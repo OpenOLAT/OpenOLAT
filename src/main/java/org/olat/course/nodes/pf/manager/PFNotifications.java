@@ -87,16 +87,17 @@ public class PFNotifications {
 	public List<SubscriptionListItem> getItems() {
 		Publisher p = subscriber.getPublisher();
 		Identity identity = subscriber.getIdentity();
-		ICourse course = CourseFactory.loadCourse(p.getResId());
-		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		if(!courseEnv.getCourseGroupManager().isNotificationsAllowed()) {
-			return Collections.emptyList();
-		}
-		
-		CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
 		Date latestNews = p.getLatestNewsDate();
 
 		if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
+			ICourse course = CourseFactory.loadCourse(p.getResId());
+			CourseEnvironment courseEnv = course.getCourseEnvironment();
+			if(!courseEnv.getCourseGroupManager().isNotificationsAllowed()) {
+				return Collections.emptyList();
+			}
+
+			CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
+			
 			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			this.displayname = entry.getDisplayname();
 
