@@ -20,6 +20,7 @@
 package org.olat.modules.creditpoint.ui;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.certificationprogram.ui.component.CreditPointSystemNameComparator;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointFormat;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -91,6 +93,9 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		} else {
 			systems = creditPointService.getCreditPointSystems();
 		}
+		if(systems.size() > 1) {
+			Collections.sort(systems, new CreditPointSystemNameComparator(getLocale()));
+		}
 
 		this.editable = editable
 				// Need to be author
@@ -123,7 +128,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 				systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName()));
 			}
 		}
-		if(selectedSystem != null && systemPK.containsKey(selectedSystem.getKey().toString())) {
+		if(selectedSystem != null && !systemPK.containsKey(selectedSystem.getKey().toString())) {
 			systemPK.add(SelectionValues.entry(selectedSystem.getKey().toString(), selectedSystem.getName()));
 		}
 		

@@ -17,16 +17,44 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.certificationprogram.ui.wizard;
+package org.olat.modules.certificationprogram.ui.component;
 
-import org.olat.core.id.Identity;
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.Locale;
+
+import org.olat.modules.creditpoint.CreditPointSystem;
 
 /**
  * 
- * Initial date: 12 déc. 2025<br>
+ * Initial date: 7 janv. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record UserToCertify(Identity identity,  UserMembershipStatus currentStatus) {
-	//
+public class CreditPointSystemNameComparator implements Comparator<CreditPointSystem> {
+
+	private final Collator collator; 
+	
+	public CreditPointSystemNameComparator(Locale locale) {
+		collator = Collator.getInstance(locale);
+	}
+
+	@Override
+	public int compare(CreditPointSystem o1, CreditPointSystem o2) {
+		String n1 = o1.getName();
+		String n2 = o2.getName();
+		
+		int c = 0;
+		if(n1 == null || n2 == null) {
+			boolean n2n = n2 == null;
+			c = n1 == null ? (n2n ? 0: 1) : (n2n ? -1: 0);
+		} else if(n1 != null && n2 != null) {
+			c = collator.compare(n1, n2);
+		}
+		
+		if(c == 0) {
+			c = o1.getKey().compareTo(o2.getKey());
+		}
+		return c;
+	}
 }

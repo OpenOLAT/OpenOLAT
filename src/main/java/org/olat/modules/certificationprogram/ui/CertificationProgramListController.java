@@ -20,6 +20,7 @@
 package org.olat.modules.certificationprogram.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -62,6 +63,7 @@ import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
 import org.olat.modules.certificationprogram.ui.CertificationProgramListTableModel.ProgramCols;
 import org.olat.modules.certificationprogram.ui.component.CertificationProgramStatusCellRenderer;
+import org.olat.modules.certificationprogram.ui.component.CreditPointSystemNameComparator;
 import org.olat.modules.certificationprogram.ui.component.DurationCellRenderer;
 import org.olat.modules.certificationprogram.ui.component.RecertificationModeCellRenderer;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -122,6 +124,9 @@ public class CertificationProgramListController extends FormBasicController impl
 		this.toolbarPanel = toolbarPanel;
 		
 		creditPointSystems = creditPointService.getCreditPointSystems();
+		if(creditPointSystems.size() > 1) {
+			Collections.sort(creditPointSystems, new CreditPointSystemNameComparator(getLocale()));
+		}
 		
 		initForm(ureq);
 	}

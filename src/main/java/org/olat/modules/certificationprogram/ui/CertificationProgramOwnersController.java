@@ -133,6 +133,7 @@ public class CertificationProgramOwnersController extends FormBasicController {
 		tableEl.setSelectAllEnable(false);
 		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-programs-element-owners");
 		
 		tableEl.addBatchButton(removeOwnersButton);
 	}
