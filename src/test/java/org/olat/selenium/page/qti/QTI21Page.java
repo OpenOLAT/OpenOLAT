@@ -456,12 +456,11 @@ public class QTI21Page {
 		By targetBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul");
 		WebElement targetEl = browser.findElement(targetBy);
 		
-		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize());
-		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize());
 		new Actions(browser)
-			.moveToElement(sourceEl, sourcePos.getX(), sourcePos.getY())
+			.moveToElement(sourceEl)
 			.clickAndHold()
-			.moveToElement(targetEl, targetPos.getX(), targetPos.getY())
+			.pause(10)
+			.moveToElement(targetEl)
 			.release()
 			.build()
 			.perform();
@@ -472,7 +471,12 @@ public class QTI21Page {
 		} else {
 			sourceDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li[text()[contains(.,'" + source + "')]]");
 		}
-		OOGraphene.waitElement(sourceDroppedBy, browser);
+		try {
+			OOGraphene.waitElement(sourceDroppedBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Droporder", browser);
+			throw e;
+		}
 		return this;
 	}
 	
@@ -488,17 +492,22 @@ public class QTI21Page {
 		By targetContainerBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul");
 		WebElement targetContainerEl = browser.findElement(targetContainerBy);
 		
-		Position sourcePos = Position.valueOf(30, 30, sourceDroppedEl.getSize());
 		Position targetPos = Position.valueOf(5, 5, targetContainerEl.getSize());
 		new Actions(browser)
-			.moveToElement(sourceDroppedEl, sourcePos.getX(), sourcePos.getY())
+			.moveToElement(sourceDroppedEl)
 			.clickAndHold()
+			.pause(10)
 			.moveToElement(targetContainerEl, targetPos.getX(), targetPos.getY())
 			.release()
 			.build()
 			.perform();
-
-		OOGraphene.waitElement(sourceDroppedBy, browser);
+		
+		try {
+			OOGraphene.waitElement(sourceDroppedBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Droporder", browser);
+			throw e;
+		}
 		return this;
 	}
 	
