@@ -79,7 +79,8 @@ public class CertificatesDAO {
 				select cer from certificate cer
 				inner join fetch cer.identity ident
 				inner join fetch ident.user identUser
-				where ident.key=:identityKey and cer.certificationProgram.key=:certificationProgramKey
+				left join fetch cer.certificationProgram as program
+				where ident.key=:identityKey and program.key=:certificationProgramKey
 				order by cer.last, cer.key desc""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, Certificate.class)

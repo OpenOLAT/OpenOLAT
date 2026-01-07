@@ -111,6 +111,7 @@ public class CertificateImpl extends AbstractCertificate {
 		this.recertificationPaused = recertificationPaused;
 	}
 
+	@Override
 	public CertificationProgram getCertificationProgram() {
 		return certificationProgram;
 	}

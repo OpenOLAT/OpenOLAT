@@ -202,8 +202,8 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program, Date referenceDate) {
-		return certificationProgramToCurriculumElementDao.getCurriculumElementsFor(program, referenceDate);
+	public List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program) {
+		return certificationProgramToCurriculumElementDao.getCurriculumElementsFor(program);
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.resource.OLATResource;
 
 /**
@@ -63,6 +64,11 @@ public class CertificateStandalone extends AbstractCertificate {
 	
 	@Override
 	public Date getRecertificationWindowDate() {
+		return null;
+	}
+	
+	@Override
+	public CertificationProgram getCertificationProgram() {
 		return null;
 	}
 

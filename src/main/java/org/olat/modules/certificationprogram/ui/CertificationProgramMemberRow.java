@@ -72,11 +72,17 @@ public class CertificationProgramMemberRow extends UserPropertiesRow {
 				? 0l
 				: certificate.getRecertificationCount().longValue();
 	}
-	
+
 	public Date getNextRecertificationDate() {
 		return certificate == null
 				? null
 				: certificate.getNextRecertificationDate();
+	}
+	
+	public Date getRevocationDate() {
+		return certificate != null && certificateStatus == CertificationStatus.REVOKED
+				? certificate.getRevocationDate()
+				: null;
 	}
 	
 	public NextRecertificationInDays getNextRecertification() {

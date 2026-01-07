@@ -225,6 +225,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 					? Long.valueOf(row.getRecertificationCount())
 					: null;
 				case validUntil -> row.getNextRecertificationDate();
+				case revocationDate -> row.getRevocationDate();
 				case nextRecertificationDays -> row.getNextRecertification();
 				case walletBalance -> row.getWalletBalance();
 				case tools -> Boolean.TRUE;
@@ -248,6 +249,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		certificateStatus("table.header.certificate"),
 		recertificationCount("table.header.recertification.count"),
 		validUntil("table.header.valid.until"),
+		revocationDate("table.header.revocation.date"),
 		nextRecertificationDays("table.header.next.recertification.days"),
 		walletBalance("table.header.wallet.balance"),
 		tools("action.more");

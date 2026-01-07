@@ -26,6 +26,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -44,6 +46,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
+import org.olat.modules.certificationprogram.ui.CertificationProgramMembersTableModel.CertificationProgramMembersCols;
 
 /**
  * 
@@ -72,12 +75,13 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-removed-members-v1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-removed-members-v1.1");
 	}
 
 	@Override
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
-		//
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.revocationDate,
+				new DateFlexiCellRenderer(getLocale())));
 	}
 
 	@Override
@@ -92,13 +96,13 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 
 	@Override
 	protected void initFiltersPresets(List<FlexiFiltersTab> tabs) {
-		FlexiFiltersTab revokedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(REVOKED_ID, translate("filter.revoked"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.REVOKED.name())));
-		tabs.add(revokedTab);
-		
 		FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRED_ID, translate("filter.expired"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.EXPIRED.name())));
 		tabs.add(expiredTab);
+		
+		FlexiFiltersTab revokedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(REVOKED_ID, translate("filter.revoked"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.REVOKED.name())));
+		tabs.add(revokedTab);
 	}
 	
 	@Override

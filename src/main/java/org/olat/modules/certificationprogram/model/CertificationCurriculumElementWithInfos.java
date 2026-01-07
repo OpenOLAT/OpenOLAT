@@ -29,6 +29,6 @@ import org.olat.modules.curriculum.CurriculumElement;
  *
  */
 public record CertificationCurriculumElementWithInfos(CurriculumElement curriculumElement, Curriculum curriculum,
-		long numOfParticipants, long numOfCertifiedParticipants, long numOfResources) {
+		long numOfParticipants, long numOfPassedParticipants, long numOfResources) {
 
 }

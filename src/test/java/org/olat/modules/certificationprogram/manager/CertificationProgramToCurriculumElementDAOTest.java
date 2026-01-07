@@ -134,7 +134,7 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 		Assert.assertNotNull(program);
 		Assert.assertNotNull(relation);
 		
-		List<CertificationCurriculumElementWithInfos> elementsInfosList = certificationProgramToCurriculumElementDao.getCurriculumElementsFor(program, new Date());
+		List<CertificationCurriculumElementWithInfos> elementsInfosList = certificationProgramToCurriculumElementDao.getCurriculumElementsFor(program);
 		dbInstance.commitAndCloseSession();
 		Assertions.assertThat(elementsInfosList)
 			.hasSize(1)
