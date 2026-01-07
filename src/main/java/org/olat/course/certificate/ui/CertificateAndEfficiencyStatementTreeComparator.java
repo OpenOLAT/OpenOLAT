@@ -24,11 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * 
@@ -39,11 +35,9 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNodeComparator {
 	
 	private final Collator collator;
-	private final Translator taxonomyTranslator;
 	
 	public CertificateAndEfficiencyStatementTreeComparator(Locale locale) {
 		collator = Collator.getInstance(locale);
-		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 	}
 
 	@Override
@@ -53,11 +47,9 @@ public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNo
 		
 		int c = 0;
 		if(r1.isTaxonomy() && r2.isTaxonomy()) {
-			TaxonomyLevel t1 = r1.getTaxonomyLevel();
-			TaxonomyLevel t2 = r2.getTaxonomyLevel();
-			c = compareStrings(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, t1), TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, t2));
+			c = compareStrings(r1.getDisplayName(), r2.getDisplayName());
 			if(c == 0) {
-				c = compareLongs(t1.getKey(), t2.getKey());
+				c = compareLongs(r1.getTaxonomyLevel().getKey(), r2.getTaxonomyLevel().getKey());
 			}
 		} else if(r1.isTaxonomy()) {
 			c = -1;
@@ -77,10 +69,12 @@ public class CertificateAndEfficiencyStatementTreeComparator extends FlexiTreeNo
 		if(c1 == null || c2 == null) {
 			c = compareNullObjects(c1, c2);
 		} else {
-			Integer p1 = c1.getPos();
-			Integer p2 = c2.getPos();
-			c = compareIntegers(p1, p2);
+			c = compareIntegers(c1.getPos(), c2.getPos());
+			if(c == 0) {
+				c = compareLongs(c1.getKey(), c2.getKey());
+			}
 		}
+		
 		return c;
 	}
 	

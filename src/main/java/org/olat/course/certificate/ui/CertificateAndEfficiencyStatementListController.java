@@ -375,13 +375,14 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.filter(certificate -> !(certificate.getOlatResourceKey().equals(0l) || certificate.getOlatResourceKey().equals(-1l)))
 				.collect(Collectors.toMap(CertificateLight::getOlatResourceKey, Function.identity()));
 		
-		List<Long> courseEntryKeys = efficiencyStatementsList.stream()
-				.map(UserEfficiencyStatementLight::getCourseRepoKey)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-		Map<Long, String> courseEntryKeyToDisplayName = repositoryManager.lookupRepositoryEntries(courseEntryKeys)
-				.stream()
-				.collect(Collectors.toMap(RepositoryEntry::getKey, RepositoryEntry::getDisplayname));
+		Roles userRoles = baseSecurityManager.getRoles(assessedIdentity);
+		List<CurriculumElementRepositoryEntryViews> curriculumElements = curriculumService
+				.getCurriculumElements(assessedIdentity, userRoles, List.of(curriculum), CurriculumElementStatus.notDeleted());
+		Set<Long> courseEntryKeys = new HashSet<>();
+		for(CurriculumElementRepositoryEntryViews curriculumElement:curriculumElements) {
+			courseEntryKeys.addAll(curriculumElement.getEntriesKeys());
+		}
+		
 		Map<Long, AssessmentEntryScoring> courseEntryKeysToScoring = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
@@ -396,25 +397,23 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			} 			
 		});
 		
-		Roles userRoles = baseSecurityManager.getRoles(assessedIdentity);
-		List<CurriculumElementRepositoryEntryViews> curriculumElements = curriculumService
-				.getCurriculumElements(assessedIdentity, userRoles, List.of(curriculum), CurriculumElementStatus.notDeleted());
+		Map<Long,List<TaxonomyLevel>> levelsMap = curriculumService.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
 
 		Map<CurriculumElement, CertificateAndEfficiencyStatementRow> curriculumElToRows = new HashMap<>();
 		Map<CurriculumElement, Map<TaxonomyLevel, CertificateAndEfficiencyStatementRow>> taxonomyLevelToCurriculumElements = new HashMap<>();
 		Set<RepositoryEntryMyView> allEntries = new HashSet<>();
-
+		
 		// Create row for every curriculum element
 		List<CertificateAndEfficiencyStatementRow> tableRows = new ArrayList<>();
 		for(CurriculumElementRepositoryEntryViews element : curriculumElements) {
-			List<TaxonomyLevel> taxonomyLevels = curriculumService.getTaxonomy(element.getCurriculumElement());
+			List<TaxonomyLevel> taxonomyLevels = levelsMap.get(element.getKey());
 			CurriculumElement parent = element.getCurriculumElement().getParent();
 			if(element.getEntries() != null) {
 				allEntries.addAll(element.getEntries());
 			}
 			
 			// Create row directly, if no taxonomy levels are assigned
-			if (taxonomyLevels.isEmpty()) {
+			if (taxonomyLevels == null || taxonomyLevels.isEmpty()) {
 				CertificateAndEfficiencyStatementRow curriculumElementRow = forgeRow(element.getCurriculumElement());
 				curriculumElementRow.setParent(curriculumElToRows.get(parent));
 				curriculumElementRow.setIsCurriculumElement(true);
@@ -423,7 +422,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				curriculumElToRows.put(element.getCurriculumElement(), curriculumElementRow);
 				
 				forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement,
-						olatResourceKeyToCertificate, courseEntryKeyToDisplayName, tableRows);
+						olatResourceKeyToCertificate, element.getEntries(), tableRows);
 			} else {	
 				// Create first taxonomy level rows, if existent
 				Map<TaxonomyLevel, CertificateAndEfficiencyStatementRow> taxonomyLevelToRows = taxonomyLevelToCurriculumElements.get(parent);
@@ -439,7 +438,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					if (taxonomyRow == null) {
 						taxonomyRow = new CertificateAndEfficiencyStatementRow();
 						taxonomyRow.setDisplayName(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
-						taxonomyRow.setTaxonomy(true);
 						taxonomyRow.setTaxonomyLevel(taxonomyLevel);
 						taxonomyRow.setParentElement(parent);
 						taxonomyRow.setParent(curriculumElToRows.get(parent));
@@ -457,10 +455,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					curriculumElToRows.put(element.getCurriculumElement(), curriculumElementRow);
 					
 					forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement,
-							olatResourceKeyToCertificate, courseEntryKeyToDisplayName, tableRows);
+							olatResourceKeyToCertificate, element.getEntries(), tableRows);
 				}
 			}
-		}		
+		}
 		
 		// Parent line
 		for(CertificateAndEfficiencyStatementRow row:tableRows) {
@@ -496,10 +494,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		
-		try {//TODO sort, the sort made a few red screens difficult to reproduce
+		try {//The sort made a few red screens difficult to reproduce @see https://track.frentix.com/issue/OO-9078
 			tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
 		} catch (Exception e) {
-			logError("", e);
+			getLogger().error("Sort error with identity: {} and curriculum {}", assessedIdentity.getKey(), curriculum.getKey(), e);
 		}
 		tableRows.forEach(this::forgeToolsLinks);
 		
@@ -514,7 +512,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			CertificateAndEfficiencyStatementRow parentRow, 
 			Map<Long, UserEfficiencyStatementLight> olatResourceKeyToStatement, 
 			Map<Long, CertificateLight> olatResourceKeyToCertificate,
-			Map<Long, String> courseEntryKeyToDisplayName,
+			List<RepositoryEntryMyView> courseEntryKeyToDisplayName,
 			List<CertificateAndEfficiencyStatementRow> tableRows) {
 		Set<UserEfficiencyStatementLight> efficiencyStatements = new HashSet<>();
 		
@@ -533,8 +531,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			for (UserEfficiencyStatementLight efficiencyStatement : efficiencyStatements) {
 				CertificateAndEfficiencyStatementRow statementRow = new CertificateAndEfficiencyStatementRow();
 				statementRow.setParent(parentRow);
-				String title = courseEntryKeyToDisplayName.getOrDefault(
-						efficiencyStatement.getCourseRepoKey(),
+				String title = getOrDefault(efficiencyStatement.getCourseRepoKey(), courseEntryKeyToDisplayName,
 						efficiencyStatement.getTitle());
 				statementRow.setDisplayName(title);
 				statementRow.setPassed(efficiencyStatement.getPassed());
@@ -562,6 +559,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				parentRow.setStatement(true);
 			}
 		}
+	}
+	
+	private String getOrDefault(Long key, List<RepositoryEntryMyView> entries, String title) {
+		if(key != null && entries != null && !entries.isEmpty()) {
+			for(RepositoryEntryMyView entry:entries) {
+				if(entry.getKey().equals(key)) {
+					return entry.getDisplayname();
+				}
+			}
+		}
+		return title;
 	}
 	
 	private CertificateAndEfficiencyStatementRow forgeRow(CurriculumElement curriculumElement) {

@@ -67,27 +67,27 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
-		if(!NotificationsUpgradeHelper.checkCourse(p)) {
-			//course don't exist anymore
-			notificationsManager.deactivate(p);
-			return notificationsManager.getNoSubscriptionInfo();
-		}
-		
+
 		try {
 			Date latestNews = p.getLatestNewsDate();
 			Identity identity = subscriber.getIdentity();
-			Translator trans = Util.createPackageTranslator(CertificateController.class, locale);
 
 			// do not try to create a subscription info if state is deleted - results in
 			// exceptions, course
 			// can't be loaded when already deleted
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
+				if(!NotificationsUpgradeHelper.checkCourse(p)) {
+					//course don't exist anymore
+					notificationsManager.deactivate(p);
+					return notificationsManager.getNoSubscriptionInfo();
+				}
+				
 				Long courseId = Long.valueOf(p.getData());
 				final ICourse course = CourseFactory.loadCourse(courseId);
 				if (courseStatus(course)) {
 					// course admins or users with the course right to have full access to
 					// the assessment tool will have full access to user tests
-					
+					Translator trans = Util.createPackageTranslator(CertificateController.class, locale);
 					RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 					List<Certificate> certificates = certificatesManager.getCertificatesForNotifications(identity, entry, compareDate);
 					for(Certificate certificate:certificates) {

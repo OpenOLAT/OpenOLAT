@@ -156,6 +156,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.manager.RepositoryTemplateRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
@@ -1786,19 +1787,30 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao
 				.getCurriculumElementsWithRepositoryEntryKeys(curriculums, status);
+		
 		List<CurriculumElementRepositoryEntryViews> elements = new ArrayList<>(elementsMap.size());
 		if(!elementsMap.isEmpty()) {
-			SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
-			params.setCurriculums(curriculums);
-			params.setOfferOrganisations(organisationDao.getOrganisationsWithParentLine(identity, List.of(OrganisationRoles.user.name())));
-			params.setOfferValidAt(new Date());
-			params.setRuntimeTypes(runtimeTypes);
-			params.setFilters(Filter.rolesFilters(asRoles));
-			
-			List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
+
 			Map<Long, RepositoryEntryMyView> viewMap = new HashMap<>();
-			for(RepositoryEntryMyView view:views) {
-				viewMap.put(view.getKey(), view);
+			Set<RepositoryEntryRef> entriesRefs = new HashSet<>();
+			for(List<Long> keys:elementsMap.values()) {
+				for(Long key:keys) {
+					entriesRefs.add(new RepositoryEntryRefImpl(key));
+				}
+			}
+			if(!entriesRefs.isEmpty()) {
+				SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
+				params.setCurriculums(curriculums);
+				params.setOfferOrganisations(organisationDao.getOrganisationsWithParentLine(identity, List.of(OrganisationRoles.user.name())));
+				params.setOfferValidAt(new Date());
+				params.setRuntimeTypes(runtimeTypes);
+				params.setFilters(Filter.rolesFilters(asRoles));
+				params.setRepositoryEntries(List.copyOf(entriesRefs));
+				
+				List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
+				for(RepositoryEntryMyView view:views) {
+					viewMap.put(view.getKey(), view);
+				}
 			}
 			
 			Map<Long,CurriculumElementRepositoryEntryViews> elementKeyMap = new HashMap<>();
