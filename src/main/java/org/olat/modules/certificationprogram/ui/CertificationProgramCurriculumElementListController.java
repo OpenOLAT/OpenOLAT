@@ -20,7 +20,6 @@
 package org.olat.modules.certificationprogram.ui;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -66,7 +65,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
@@ -132,7 +130,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 		detailsVC = createVelocityContainer("program_implementation_details");
 		
 		initForm(ureq);
-		loadModel(ureq);
+		loadModel();
 	}
 
 	@Override
@@ -161,7 +159,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementCols.numOfParticipants));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementCols.numOfCertifiedParticipants));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementCols.numOfPassedParticipants));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 		
@@ -251,10 +249,9 @@ implements Activateable2, FlexiTableComponentDelegate {
 		return true;
 	}
 	
-	private void loadModel(UserRequest ureq) {
-		Date referenceDate = DateUtils.getEndOfDay(ureq.getRequestTimestamp());
+	private void loadModel() {
 		List<CertificationCurriculumElementWithInfos> elementsInfosList = certificationProgramService
-				.getCurriculumElementsFor(certificationProgram, referenceDate);
+				.getCurriculumElementsFor(certificationProgram);
 		List<CurriculumElementRow> rows = new ArrayList<>(elementsInfosList.size());
 		for(CertificationCurriculumElementWithInfos elementsInfos:elementsInfosList) {
 			CurriculumElementRow row = forgeRow(elementsInfos);
@@ -266,7 +263,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 	
 	private CurriculumElementRow forgeRow(CertificationCurriculumElementWithInfos elementsInfos) {
 		CurriculumElementRow row = new CurriculumElementRow(elementsInfos.curriculumElement(), elementsInfos.curriculum(),
-				elementsInfos.numOfParticipants(), elementsInfos.numOfCertifiedParticipants(), elementsInfos.numOfResources());
+				elementsInfos.numOfParticipants(), elementsInfos.numOfPassedParticipants(), elementsInfos.numOfResources());
 		long refs = elementsInfos.numOfResources();
 		if(refs > 0) {
 			FormLink resourcesLink = uifactory.addFormLink("resources_" + (++counter), CMD_RESOURCES, String.valueOf(refs), null, null, Link.NONTRANSLATED);
@@ -305,7 +302,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(curriculumElementListController == source) {
 			if(event == FormEvent.DONE_EVENT) {
-				loadModel(ureq);
+				loadModel();
 			}
 			cmc.deactivate();
 			cleanUp();

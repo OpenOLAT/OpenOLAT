@@ -38,7 +38,7 @@ public class CurriculumElementRow implements CurriculumElementRef {
 
 	private final long numOfResources;
 	private final long numOfParticipants;
-	private final long numOfCertifiedParticipants;
+	private final long numOfPassedParticipants;
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	private final CurriculumElementType curriculumElementType;
@@ -47,10 +47,10 @@ public class CurriculumElementRow implements CurriculumElementRef {
 	private CertificationProgramCurriculumElementDetailsController detailsCtrl;
 	
 	public CurriculumElementRow(CurriculumElement curriculumElement, Curriculum curriculum,
-			long numOfParticipants, long numOfCertifiedParticipants, long numOfResources) {
+			long numOfParticipants, long numOfPassedParticipants, long numOfResources) {
 		this.numOfResources = numOfResources;
 		this.numOfParticipants = numOfParticipants;
-		this.numOfCertifiedParticipants = numOfCertifiedParticipants;
+		this.numOfPassedParticipants = numOfPassedParticipants;
 		this.curriculumElement = curriculumElement;
 		curriculumElementType = curriculumElement.getType();
 		this.curriculum = curriculum;
@@ -105,8 +105,8 @@ public class CurriculumElementRow implements CurriculumElementRef {
 		return numOfParticipants;
 	}
 	
-	public long getNumOfCertifiedParticipants() {
-		return numOfCertifiedParticipants;
+	public long getNumOfPassedParticipants() {
+		return numOfPassedParticipants;
 	}
 	
 	public FormLink getResources() {

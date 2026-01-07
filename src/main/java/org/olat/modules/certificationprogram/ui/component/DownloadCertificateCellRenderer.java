@@ -67,11 +67,11 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void render(StringOutput sb, Certificate certificate, Identity identity) {
-		String name = formatter.formatDate(certificate.getCreationDate());
+		String name = getName(certificate, identity);
 		sb.append("<a href='").append(getUrl(certificate, identity))
 		  .append("' rel='noopener noreferrer' target='_blank'>")
 		  .append("<i class='o_icon o_filetype_pdf'> </i> ")
-		  .append(name).append(".pdf").append("</a>");
+		  .append(name).append("</a>");
 	}
 	
 	private String getUrl(Certificate certificate, Identity identity) {
@@ -85,7 +85,13 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 		StringBuilder sb = new StringBuilder(100);
 		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(identity);
 		String date = Formatter.formatShortDateFilesystem(certificate.getCreationDate());
-		sb.append(fullName).append("_").append(certificate.getCourseTitle()).append("_").append(date);
+		sb.append(fullName).append("_");
+		if(certificate.getCertificationProgram() != null) {
+			sb.append(certificate.getCertificationProgram().getDisplayName());
+		} else {
+			sb.append(certificate.getCourseTitle());
+		}
+		sb.append("_").append(date);
 		String finalName = StringHelper.transformDisplayNameToFileSystemName(sb.toString());
 		return finalName + ".pdf";
 	}

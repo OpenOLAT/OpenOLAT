@@ -134,19 +134,20 @@ public class CertificationProgramToCurriculumElementDAO {
 				&& relationsKeys.get(0) != null && relationsKeys.get(0).longValue() > 0;
 	}
 	
-	public List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program, Date referenceDate) {
+	public List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program) {
 		String query = """
 				select new CertificationCurriculumElementWithInfos(curEl, cur,
 				 (select count(distinct participants.identity.key) from bgroupmember as participants
 				   where participants.group.key=curEl.group.key and participants.role='participant'
 				 ) as numOfParticipants,
-				 (select count(distinct validCertificate.key) from certificate as validCertificate
-				  inner join validCertificate.certificationProgram as certificationProgram
-				  inner join certificationprogramtoelement as rel2prog on (certificationProgram.key=rel2prog.certificationProgram.key)
-				  where rel2prog.curriculumElement.key=curEl.key
-				  and validCertificate.last=true and validCertificate.recertificationPaused=false
-				  and (validCertificate.nextRecertificationDate is null or validCertificate.nextRecertificationDate>=:referenceDate)
-				 ) as validCertificates,
+				 (select count(distinct ae.key) from assessmententry as ae
+				  inner join ae.repositoryEntry as re
+				  inner join re.groups as reToParticipantGroup
+				  inner join reToParticipantGroup.group as participantGroup
+				  inner join participantGroup.members as participant on (participant.role='participant')
+				  inner join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae.subIdent)
+				  where reToParticipantGroup.group.key=curEl.group.key and ae.entryRoot=true and ae.passed=true and rootElement.passedMode<>'none'
+				 ) as passedParticipants,
 				 (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup
 				  where reToGroup.group.key=curEl.group.key
 				 ) as numOfElements
@@ -159,7 +160,6 @@ public class CertificationProgramToCurriculumElementDAO {
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationCurriculumElementWithInfos.class)
 				.setParameter("programKey", program.getKey())
-				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
 				.getResultList();
 	}
 	

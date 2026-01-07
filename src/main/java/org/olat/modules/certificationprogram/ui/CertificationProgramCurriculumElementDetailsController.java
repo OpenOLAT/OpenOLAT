@@ -32,8 +32,6 @@ import org.olat.modules.coach.ui.CourseListConfig;
 import org.olat.modules.coach.ui.CourseListController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.ui.list.ImplementationHeaderController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,12 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificationProgramCurriculumElementDetailsController extends FormBasicController {
 	
-	private final List<RepositoryEntry> entries;
 	private final CurriculumElement curriculumElement;
 	private final CurriculumElementRow curriculumElementRow;
 	
 	private CourseListController courseListCtrl;
-	private ImplementationHeaderController headerCtrl;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -59,7 +55,6 @@ public class CertificationProgramCurriculumElementDetailsController extends Form
 		super(ureq, wControl, LAYOUT_CUSTOM, "program_implementation_details_view", rootForm);
 		this.curriculumElementRow = curriculumElementRow;
 		curriculumElement = curriculumService.getCurriculumElement(curriculumElementRow);
-		entries = curriculumService.getRepositoryEntries(curriculumElementRow);
 
 		initForm(ureq);
 	}
@@ -70,20 +65,14 @@ public class CertificationProgramCurriculumElementDetailsController extends Form
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("numOfEntries", Integer.valueOf(entries.size()));
-		}
+		CourseListConfig config = CourseListConfig.minimalConfig();
+		courseListCtrl = new CourseListController(ureq, getWindowControl(), mainForm, curriculumElement, config);
+		listenTo(courseListCtrl);
+		formLayout.add("courseDetails", courseListCtrl.getInitialFormItem());
+		courseListCtrl.activate(ureq, List.of(), null);
 		
-		if(entries.isEmpty()) {
-			headerCtrl = new ImplementationHeaderController(ureq, getWindowControl(), curriculumElement, false);
-			listenTo(headerCtrl);
-			formLayout.add("implementationDetails", headerCtrl.getInitialFormItem());
-		} else {
-			CourseListConfig config = CourseListConfig.minimalConfig();
-			courseListCtrl = new CourseListController(ureq, getWindowControl(), mainForm, curriculumElement, config);
-			listenTo(courseListCtrl);
-			formLayout.add("courseDetails", courseListCtrl.getInitialFormItem());
-			courseListCtrl.activate(ureq, List.of(), null);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("numOfEntries", courseListCtrl.getNumOfCourses());
 		}
 	}
 

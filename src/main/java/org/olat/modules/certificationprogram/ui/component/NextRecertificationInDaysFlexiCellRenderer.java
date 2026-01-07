@@ -46,11 +46,15 @@ public class NextRecertificationInDaysFlexiCellRenderer implements FlexiCellRend
 		if(cellValue instanceof NextRecertificationInDays next) {
 			Long nextDays = next.days();
 			Long overdueDays = next.overdueDays();
-			if(nextDays != null &&  nextDays.longValue() > 0l) {
+			if(nextDays != null &&  nextDays.longValue() == 1l) {
+				target.append(translator.translate("next.recertification.tomorrow", nextDays.toString()));
+			} else if(nextDays != null &&  nextDays.longValue() > 1l) {
 				target.append(translator.translate("next.recertification.in", nextDays.toString()));
 			} else if(nextDays != null && nextDays.longValue() == 0l) {
 				target.append(translator.translate("next.recertification.today"));
-			} else if(overdueDays != null && overdueDays.longValue() >= 0l) {
+			} else if(overdueDays != null && overdueDays.longValue() == 0l) {
+				target.append(translator.translate("next.recertification.overdue.today"));
+			} else if(overdueDays != null && overdueDays.longValue() > 0l) {
 				target.append(translator.translate("next.recertification.overdue", overdueDays.toString()));
 			} else if(overdueDays != null && overdueDays.longValue() < 0l) {
 				target.append(translator.translate("next.recertification.not.renewable"));

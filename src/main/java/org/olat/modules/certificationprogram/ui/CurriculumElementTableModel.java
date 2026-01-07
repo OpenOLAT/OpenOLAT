@@ -152,7 +152,7 @@ implements SortableFlexiTableDataModel<CurriculumElementRow>, FilterableFlexiTab
 			case status -> row.getElementStatus();
 			case resources -> row.getResources();
 			case numOfParticipants -> Long.valueOf(row.getNumOfParticipants());
-			case numOfCertifiedParticipants -> Long.valueOf(row.getNumOfCertifiedParticipants());
+			case numOfPassedParticipants -> Long.valueOf(row.getNumOfPassedParticipants());
 			case tools -> Boolean.TRUE;
 			default -> "ERROR";
 		};
@@ -176,7 +176,7 @@ implements SortableFlexiTableDataModel<CurriculumElementRow>, FilterableFlexiTab
 		status("table.header.status"),
 		resources("table.header.resources"),
 		numOfParticipants("table.header.num.of.participants"),
-		numOfCertifiedParticipants("table.header.users.certified"),
+		numOfPassedParticipants("table.header.users.passed"),
 		tools("action.more");
 		
 		private final String i18nHeaderKey;

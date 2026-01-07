@@ -79,7 +79,7 @@ public interface CertificationProgramService {
 	void removeCertificationProgramOwner(CertificationProgram program, Identity identity);
 	
 	
-	List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program, Date referenceDate);
+	List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program);
 	
 	CertificationProgram getCertificationProgram(CurriculumElementRef element);
 	

@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.resource.OLATResource;
 
 /**
@@ -65,6 +66,8 @@ public interface Certificate extends CreateInfo {
 	Long getArchivedResourceKey();
 	
 	OLATResource getOlatResource();
+	
+	CertificationProgram getCertificationProgram();
 	
 	Identity getIdentity();
 	
