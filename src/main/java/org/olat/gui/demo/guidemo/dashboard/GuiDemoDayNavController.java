@@ -19,58 +19,62 @@
  */
 package org.olat.gui.demo.guidemo.dashboard;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.daynav.DayNavComponent;
+import org.olat.core.gui.components.daynav.DayNavFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 
 /**
  * 
- * Initial date: Oct 27, 2025<br>
+ * Initial date: Jan 6, 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class GuiDemoDashboardController extends BasicController {
+public class GuiDemoDayNavController extends BasicController {
+
+	private VelocityContainer mainVC;
+	private DayNavComponent dayNav1;
+	private DayNavComponent dayNav2;
+	private DayNavComponent dayNav3;
 	
-	private Controller ctrl;
-	
-	public GuiDemoDashboardController(UserRequest ureq, WindowControl wControl) {
+	public GuiDemoDayNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		VelocityContainer mainVC = createVelocityContainer("dashboard");
+		
+		mainVC = createVelocityContainer("day_nav");
 		putInitialPanel(mainVC);
 		
-		TabbedPane tabPane = new TabbedPane("tabs", getLocale());
-		mainVC.put("tabs", tabPane);
-		initTabPane(ureq, tabPane);
+		dayNav1 = DayNavFactory.createComponent("day.nav.1", mainVC);
+		
+		dayNav2 = DayNavFactory.createComponent("day.nav.2", mainVC);
+		dayNav2.setStartDate(DateUtils.addDays(new Date(), -1));
+		dayNav2.setSelectedDate(DateUtils.addDays(new Date(), 1));
+		
+		dayNav3 = DayNavFactory.createComponent("day.nav.3", mainVC);
+		dayNav3.setStartDate(DateUtils.addDays(new Date(), 100));
+		dayNav3.setSelectedDate(DateUtils.addDays(new Date(), 105));
 	}
 	
-	private void initTabPane(UserRequest ureq, TabbedPane tabPane) {
-		tabPane.addTab(ureq, translate("tables.title"), null, uureq -> {
-			removeAsListenerAndDispose(ctrl);
-			ctrl = new GuiDemoTableWidgetsController(uureq, getWindowControl());
-			listenTo(ctrl);
-			return ctrl.getInitialComponent();
-		}, true);
-		tabPane.addTab(ureq, translate("indicators.title"), null, uureq -> {
-			removeAsListenerAndDispose(ctrl);
-			ctrl = new GuiDemoIndicatorsController(uureq, getWindowControl());
-			listenTo(ctrl);
-			return ctrl.getInitialComponent();
-		}, true);
-		tabPane.addTab(ureq, translate("day.nav.title"), null, uureq -> {
-			removeAsListenerAndDispose(ctrl);
-			ctrl = new GuiDemoDayNavController(uureq, getWindowControl());
-			listenTo(ctrl);
-			return ctrl.getInitialComponent();
-		}, true);
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == dayNav1) {
+			doShowDay(dayNav1.getSelectedDate());
+		} else if (source == dayNav2) {
+			doShowDay(dayNav2.getSelectedDate());
+		} else if (source == dayNav3) {
+			doShowDay(dayNav3.getSelectedDate());
+		}
 	}
+	
+	private void doShowDay(Date date) {
+		showInfo("show.label.value", new String[] { Formatter.getInstance(getLocale()).formatDate(date) } );
+	}
+
 }

@@ -27,6 +27,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -295,6 +296,14 @@ public class DateUtils {
 		return calendar.getTime();
 	}
 	
+	public static Date getPreviousDay(Date date, DayOfWeek dayOfWeek) {
+		return toDate(toLocalDate(date).with(TemporalAdjusters.previous(dayOfWeek)));
+	}
+	
+	public static Date getNextDay(Date date, DayOfWeek dayOfWeek) {
+		return toDate(toLocalDate(date).with(TemporalAdjusters.next(dayOfWeek)));
+	}
+	
 	/**
 	 * Keeps the day of the date but copies the date from the from date.
 	 *
@@ -435,6 +444,13 @@ public class DateUtils {
 			}
 		}
 		return true;
+	}
+	
+	public static boolean isWeekend(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+		return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
 	}
 	
 	public static long countDays(Date date1, Date date2) {

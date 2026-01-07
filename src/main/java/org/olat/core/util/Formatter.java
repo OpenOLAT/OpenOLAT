@@ -93,7 +93,9 @@ public class Formatter {
 	private final DateFormat longDateTimeFormat;
 	private final DateFormat shortTimeFormat;
 	private final DateFormat mediumTimeFormat;
-	
+	private final DateFormat monthLongFormat;
+	private final DateFormat monthLongYearFormat;
+	private final DateFormat weekdayLongFormat;
 
 	private final DateTimeFormatter shortTimeFormatter;
 	private final DateTimeFormatter shortDateFormatter;
@@ -140,6 +142,13 @@ public class Formatter {
 		
 		longDateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
 		longDateTimeFormat.setLenient(false);
+		
+		monthLongFormat = new SimpleDateFormat("MMMM", locale);
+		monthLongFormat.setLenient(false);
+		monthLongYearFormat = new SimpleDateFormat("MMMM yyyy", locale);
+		monthLongYearFormat.setLenient(false);
+		weekdayLongFormat = new SimpleDateFormat("EEEE", locale);
+		weekdayLongFormat.setLenient(false);
 		
 		shortTimeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).localizedBy(locale);
 		
@@ -323,6 +332,26 @@ public class Formatter {
 		return longDateTimeFormatter.format(date);
 	}
 	
+	public String formatMonthLong(Date date) {
+		if (date == null) return null;
+		synchronized (monthLongFormat) {
+			return monthLongFormat.format(date);
+		}
+	}
+		
+	public String formatMonthLongYear(Date date) {
+		if (date == null) return null;
+		synchronized (monthLongYearFormat) {
+			return monthLongYearFormat.format(date);
+		}
+	}
+	
+	public String formatWeekdayLong(Date date) {
+		if (date == null) return null;
+		synchronized (weekdayLongFormat) {
+			return weekdayLongFormat.format(date);
+		}
+	}
 	
 	/**
 	 * Generate a simple date pattern that formats a date using the locale of the

@@ -2034,3 +2034,102 @@ ul.o_list_narrow {
 	}
 	
 }
+
+/* Day navigation */
+.o_day_nav {
+	display: flex;
+	gap: 10px;
+	flex-direction: column;
+	
+	button {
+		background: none;
+		border: none;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	
+		&:hover {
+			background-color: #f9f9f9;
+		}
+	}
+	
+	.o_day_nav_header {
+		display: flex;
+		gap:5px;
+		align-items: baseline;
+		flex-wrap: wrap;
+		
+		.o_today {
+			display: flex;
+			align-items: center;
+			
+			.o_today_day_button {
+				height: 40px;
+				aspect-ratio: 1;
+				
+				font-size: $o-day-nav-today-button-font-size;
+				color: $o-datepicker-today-color;
+			}
+			.o_today_text {
+				display: flex;
+				flex-direction: column;
+				
+				font-size: $o-day-nav-today-month-font-size;
+				.o_today_month {
+					@extend %o_muted;
+				}
+			}
+		}
+		
+		.o_week_steper {
+			display: flex;
+			align-items: center;
+			margin-left: auto;
+			
+			.o_week {
+				margin-right: 5px;
+				font-size: $o-day-nav-week-font-size;
+			}
+		}
+	}
+
+	ul {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: 10px;
+		
+		.o_day_nav_day {
+			width: 100%;
+			
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: $o-day-nav-day-gap;
+			
+			&.o_day_weekend {
+				@extend %o_muted;
+			}
+			
+			&.o_day_abbr {
+				font-size: $o-day-nav-abbr-font-size;
+			}
+			.o_day_button {
+				height: 36px;
+				aspect-ratio: 1;
+				
+				font-size: $o-day-nav-num-font-size;
+				
+				&.o_day_selected {
+					background-color: hsl(217, 71%, 53%);
+					color: #fff;
+					font-weight: 600;
+				}
+				&.o_day_today {
+					color: $o-datepicker-today-color;
+					border: 1px solid $o-datepicker-today-border-color;
+				}
+			}
+		}
+	}
+}
