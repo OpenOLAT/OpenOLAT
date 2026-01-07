@@ -1324,6 +1324,12 @@ table.o_qti_item_kprim {
 		
 		> ul {
 			min-height: 200px;
+			
+			> li {
+				&.o_assessmentitem_order_item:last-child {
+					margin-bottom: 0;
+				}
+			}
 		}
 	}
 	
@@ -1336,11 +1342,12 @@ table.o_qti_item_kprim {
 	
 	div.box.source {
 		padding: 5px 10px;
-		border: 1px solid $o-qti-order-sources-border-color;
-		border-radius: $o-qti-order-border-radius;
-		background: $o-qti-order-sources-bg;
 		
 		> ul {
+			border: 1px solid $o-qti-order-sources-border-color;
+			border-radius: $o-qti-order-border-radius;
+			background: $o-qti-order-sources-bg;
+
 			> li {
 				cursor: grab;
 				&.oo-selected {
@@ -1353,9 +1360,21 @@ table.o_qti_item_kprim {
 	}
 	
 	div.box.source.horizontal {
-		padding: 5px 10px 15px 10px;
+		padding: 0;
+		
+		> ul {
+			padding: 10px 10px 0 10px;
+		}
 	}
-	
+
+	div.box.source.vertical {
+		padding: 6px 0 0 0;
+		
+		> ul {
+			padding: 10px;
+		}
+	}
+
 	div.box.target {
 
 		> ul {
