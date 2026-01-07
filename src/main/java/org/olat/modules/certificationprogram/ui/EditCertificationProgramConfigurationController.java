@@ -20,6 +20,7 @@
 package org.olat.modules.certificationprogram.ui;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -43,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.RecertificationMode;
+import org.olat.modules.certificationprogram.ui.component.CreditPointSystemNameComparator;
 import org.olat.modules.certificationprogram.ui.component.DurationFormItem;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -89,6 +91,9 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			systems = creditPointService.getCreditPointSystems(roles);
 		} else {
 			systems = creditPointService.getCreditPointSystems();
+		}
+		if(systems.size() > 1) {
+			Collections.sort(systems, new CreditPointSystemNameComparator(getLocale()));
 		}
 		
 		initForm(ureq);

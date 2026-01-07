@@ -170,7 +170,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			tabs.add(certifiedTab);
 		}
 
-		if(certificationProgram.isRecertificationEnabled()) {
+		if(certificationProgram.isRecertificationEnabled() && certificationProgram.isRecertificationWindowEnabled()) {
 			inRecertificationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(IN_RECERTIFICATION_TAB_ID, translate("filter.recertifying"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationIdentityStatus.RECERTIFYING.name())));
 			tabs.add(inRecertificationTab);

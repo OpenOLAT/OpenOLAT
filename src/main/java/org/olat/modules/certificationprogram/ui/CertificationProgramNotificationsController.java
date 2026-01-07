@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -55,14 +54,12 @@ import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
-import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailing;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailing.CPMailTemplate;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailing.I18nKeys;
 import org.olat.modules.certificationprogram.ui.CertificationProgramNotificationsTableModel.NotificationsCols;
 import org.olat.modules.certificationprogram.ui.component.CertificationProgramMailConfigurationComparator;
 import org.olat.modules.certificationprogram.ui.component.CustomizedCellRenderer;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -79,11 +76,6 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 	private ToolsController toolsCtrl;
 	private SingleKeyTranslatorController translatorCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
-
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private CertificationProgramService certificationProgramService;
 	
 	public CertificationProgramNotificationsController(UserRequest ureq, WindowControl wControl,
 			CertificationProgram certificationProgram) {
@@ -108,6 +100,7 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 		
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-notifications-v1");
 	}
 	
 	@Override

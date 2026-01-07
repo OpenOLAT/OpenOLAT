@@ -103,17 +103,21 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.reminder));
 		
+		StringBuilder prefsId = new StringBuilder("certification-program-reminders");
 		if(certificationProgram.isRecertificationWindowEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.type,
 				new ReminderTypeCellRenderer(getTranslator())));
+			prefsId.append("-type");
 		}
 		if(certificationProgram.getCreditPointSystem() != null && certificationProgram.getCreditPoints() != null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.conditions,
 					new ReminderConditionsCellRenderer(getTranslator())));
+			prefsId.append("-cp");
 		}
 		if(certificationProgram.isValidityEnabled() || certificationProgram.isRecertificationWindowEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.time,
 					new ReminderTimeCellRenderer(getTranslator())));
+			prefsId.append("-w");
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.content,
 				new CustomizedCellRenderer(getTranslator())));
@@ -127,6 +131,7 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 		tableEl.setEmptyTableSettings("table.reminder.empty", "table.reminder.empty.hint", "o_icon_reminder", "add.reminder", "o_icon_add", true);
+		tableEl.setAndLoadPersistedPreferences(ureq, prefsId.toString());
 	}
 	
 	@Override
