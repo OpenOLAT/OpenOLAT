@@ -71,6 +71,7 @@ implements SortableFlexiTableDataModel<CertificationProgramRecertificationRow> {
 			case validUntil -> recertificationRow.getNextRecertificationDate();
 			case nextRecertificationDays -> recertificationRow.getNextRecertification();
 			case recertificationDeadline -> recertificationRow.getRecertificationWindowDate();
+			case revocationDate -> recertificationRow.getRevocationDate();
 			case tools -> Boolean.TRUE;
 			default -> "ERROR";
 		};
@@ -85,6 +86,7 @@ implements SortableFlexiTableDataModel<CertificationProgramRecertificationRow> {
 		validUntil("table.header.valid.until"),
 		nextRecertificationDays("table.header.next.recertification.days"),
 		recertificationDeadline("table.header.recertification.deadline"),
+		revocationDate("table.header.revocation.date"),
 		tools("action.more");
 		
 		private final String i18nKey;

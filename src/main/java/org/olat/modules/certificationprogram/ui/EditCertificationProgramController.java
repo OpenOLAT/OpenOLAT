@@ -37,6 +37,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.ui.component.Duration;
 import org.olat.modules.certificationprogram.ui.component.DurationCellRenderer;
+import org.olat.modules.certificationprogram.ui.component.DurationType;
 
 /**
  * 
@@ -94,11 +95,12 @@ public class EditCertificationProgramController extends BasicController implemen
 			mainVC.contextPut("key", certificationProgram.getKey());
 		}
 		
+		if(certificationProgram.isRecertificationEnabled()
+				&& certificationProgram.getRecertificationMode() != null) {
+			mainVC.contextPut("rmode", translate("recertification.mode." + certificationProgram.getRecertificationMode().name()));
+		}
+		
 		if(certificationProgram.getCreditPointSystem() != null) {
-			// Only available with credit points
-			if(certificationProgram.getRecertificationMode() != null) {
-				mainVC.contextPut("rmode", translate("recertification.mode." + certificationProgram.getRecertificationMode().name()));
-			}
 			String text = CertificationHelper.creditPointsToString(certificationProgram);
 			mainVC.contextPut("creditPoints", text);
 		}
@@ -107,6 +109,13 @@ public class EditCertificationProgramController extends BasicController implemen
 		if(duration != null) {
 			String text = DurationCellRenderer.toString(duration, getTranslator());
 			mainVC.contextPut("validity", text);
+		}
+		
+		DurationType windowUnitType = certificationProgram.getRecertificationWindowUnit();
+		int window = certificationProgram.getRecertificationWindow();
+		if(windowUnitType != null && window > 0) {
+			String text = DurationCellRenderer.toString(new Duration(window, windowUnitType), getTranslator());
+			mainVC.contextPut("window", text);
 		}
 	}
 

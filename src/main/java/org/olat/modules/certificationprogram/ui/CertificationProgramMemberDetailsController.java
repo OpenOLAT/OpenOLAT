@@ -146,13 +146,15 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.recertificationDeadline,
 				new DateFlexiCellRenderer(getLocale())));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.revocationDate,
+				new DateFlexiCellRenderer(getLocale())));
         ActionsColumnModel actionsCol = new ActionsColumnModel(RecertificationCols.tools);
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
 		certificatesTableModel = new CertificationProgramRecertificationTableModel(columnsModel, getLocale());
 		certificatesTableEl = uifactory.addTableElement(getWindowControl(), "recertificationTable", certificatesTableModel, 10, true, getTranslator(), formLayout);
-		certificatesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1.1");
+		certificatesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1.2");
 
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(RecertificationCols.issuedOn.name(), false));
