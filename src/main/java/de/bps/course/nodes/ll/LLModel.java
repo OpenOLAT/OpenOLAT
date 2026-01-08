@@ -33,6 +33,8 @@ import java.io.Serializable;
  */
 public class LLModel implements Serializable {
 
+	private static final long serialVersionUID = -1061655329525531253L;
+	
 	private String target = "";
 	private String description = "";
 	private String comment = "";

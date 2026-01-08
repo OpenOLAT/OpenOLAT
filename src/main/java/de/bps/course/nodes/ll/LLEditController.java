@@ -110,7 +110,7 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 				try {
 					target = new URL(link.getTarget());
 				} catch (MalformedURLException e) {
-					target = null;
+					//
 				}
 				if (target == null) {  return false; }
 			}
