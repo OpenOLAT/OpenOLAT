@@ -26,7 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,9 +46,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
-import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.AssessmentModeManagedFlag;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.CurriculumElementSelectionController;
 import org.olat.course.condition.GroupSelectionController;
@@ -65,16 +65,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeEditRestrictionController extends FormBasicController {
 
-	private static final String[] onKeys = new String[]{ "on" };
-	private static final String[] onValues = new String[]{ "" };
-
 	private StaticTextElement startElementEl;
 	private FormLink chooseStartElementButton;
 	private FormLink removeStartElementButton;
 	private FormLink chooseElementsButton;
 
 	private FormLayoutContainer chooseElementsCont;
-	private MultipleSelectionElement courseElementsRestrictionEl;
+	private FormToggle courseElementsRestrictionEl;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCtrl;
@@ -140,10 +137,10 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		Status status = assessmentMode.getStatus();
 
 		//course elements
-		courseElementsRestrictionEl = uifactory.addCheckboxesHorizontal("cer", "mode.course.element.restriction", formLayout, onKeys, onValues);
+		courseElementsRestrictionEl = uifactory.addToggleButton("cer", "mode.course.element.restriction", translate("on"), translate("off"), formLayout);
 		courseElementsRestrictionEl.setElementCssClass("o_sel_assessment_mode_restriction_elements");
 		courseElementsRestrictionEl.addActionListener(FormEvent.ONCHANGE);
-		courseElementsRestrictionEl.select(onKeys[0], assessmentMode.isRestrictAccessElements());
+		courseElementsRestrictionEl.toggle(assessmentMode.isRestrictAccessElements());
 		courseElementsRestrictionEl.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.restrictions));
 		
@@ -260,10 +257,18 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		startElementEl.clearError();
 		courseElementsRestrictionEl.clearError();
-		if(courseElementsRestrictionEl.isAtLeastSelected(1) && elementKeys.isEmpty()) {
-			courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory");
-			allOk &= false;
+		if(courseElementsRestrictionEl.isOn()) {
+			if(elementKeys.isEmpty()) {
+				courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory");
+				allOk &= false;
+			}
+			
+			if(startElementKey != null && !elementKeys.contains(startElementKey)) {
+				startElementEl.setErrorKey("error.course.element.start");
+				allOk &= false;
+			}
 		}
 
 		return allOk;
@@ -305,7 +310,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 			assessmentMode = assessmentModeMgr.getAssessmentModeById(assessmentMode.getKey());
 		}
 
-		boolean elementRestrictions = courseElementsRestrictionEl.isAtLeastSelected(1);
+		boolean elementRestrictions = courseElementsRestrictionEl.isOn();
 		assessmentMode.setRestrictAccessElements(elementRestrictions);
 		if(elementRestrictions) {
 			StringBuilder sb = new StringBuilder();
@@ -340,7 +345,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(courseElementsRestrictionEl == source) {
-			boolean enabled = courseElementsRestrictionEl.isAtLeastSelected(1);
+			boolean enabled = courseElementsRestrictionEl.isOn();
 			chooseElementsCont.setVisible(enabled);
 		} else if(chooseElementsButton == source) {
 			doChooseElements(ureq);
@@ -373,7 +378,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 	private void doChooseStartElement(UserRequest ureq) {
 		if(guardModalController(chooseElementsCtrl)) return;
 		
-		List<String> allowedKeys = courseElementsRestrictionEl.isAtLeastSelected(1)
+		List<String> allowedKeys = courseElementsRestrictionEl.isOn()
 				? new ArrayList<>(elementKeys) : null;
 		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, allowedKeys, courseOres);
 		listenTo(chooseStartElementCtrl);
