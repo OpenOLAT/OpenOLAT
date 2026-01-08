@@ -48,7 +48,7 @@ public class CreditPointSystemNameComparator implements Comparator<CreditPointSy
 		if(n1 == null || n2 == null) {
 			boolean n2n = n2 == null;
 			c = n1 == null ? (n2n ? 0: 1) : (n2n ? -1: 0);
-		} else if(n1 != null && n2 != null) {
+		} else {
 			c = collator.compare(n1, n2);
 		}
 		
