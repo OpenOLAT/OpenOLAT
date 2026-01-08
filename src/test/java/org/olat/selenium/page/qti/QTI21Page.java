@@ -460,10 +460,10 @@ public class QTI21Page {
 		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize());
 		
 		new Actions(browser)
-			.moveToElement(sourceEl, sourcePos.getX(), sourcePos.getY())
+			.moveToElement(sourceEl, 0, sourcePos.getY())
 			.clickAndHold()
 			.pause(25)
-			.moveToElement(targetEl, targetPos.getX(), targetPos.getY())
+			.moveToElement(targetEl, 0, targetPos.getY())
 			.release()
 			.build()
 			.perform();
@@ -500,7 +500,7 @@ public class QTI21Page {
 			.moveToElement(sourceDroppedEl)
 			.clickAndHold()
 			.pause(10)
-			.moveToElement(targetContainerEl, targetPos.getX(), targetPos.getY())
+			.moveToElement(targetContainerEl, 0, targetPos.getY())
 			.release()
 			.build()
 			.perform();
