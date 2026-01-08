@@ -104,6 +104,18 @@ public class AbsenceNoticeDAO {
 				.getResultList();
 	}
 	
+	public List<Long> getRollCallsKeys(AbsenceNotice notice) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rollCall.key from lectureblockrollcall rollCall")
+		  .append(" inner join rollCall.absenceNotice as notice")
+		  .append(" where notice.key=:noticeKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("noticeKey", notice.getKey())
+				.getResultList();
+	}
+	
 	public List<LectureBlockWithNotice> loadLectureBlocksOf(List<AbsenceNotice> notices, AbsenceNoticeTarget target) {
 		if(notices.isEmpty()) return new ArrayList<>();
 		

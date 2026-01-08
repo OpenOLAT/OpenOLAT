@@ -57,6 +57,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
@@ -518,11 +519,9 @@ public class LectureBlockWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
-		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
-		if(level == null) {
-			return Response.ok(Status.NOT_FOUND).build();
-		}
+		TaxonomyLevelRef level = new TaxonomyLevelRefImpl(taxonomyLevelKey);
 		lectureBlockToTaxonomyLevelDao.deleteRelation(lectureBlock, level);
+		dbInstance.commitAndCloseSession();
 		return Response.ok().build();
 	}
 	

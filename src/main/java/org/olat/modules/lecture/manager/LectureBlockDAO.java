@@ -142,16 +142,14 @@ public class LectureBlockDAO {
 	
 	/**
 	 * Delete the relation to group, the roll call, the reminders and at the
-	 * end the lecture block itself.
+	 * end the lecture block itself. The lecture block needs to be loaded
 	 * 
 	 * @param lectureBlock The block to delete
 	 * @return The number of rows deleted
 	 */
 	public int delete(LectureBlock lectureBlock) {
-		LectureBlock reloadedBlock = dbInstance.getCurrentEntityManager()
-			.getReference(LectureBlockImpl.class, lectureBlock.getKey());
-		
-		AssessmentMode assessmentMode = assessmentModeDao.getAssessmentModeByLecture(reloadedBlock);
+
+		AssessmentMode assessmentMode = assessmentModeDao.getAssessmentModeByLecture(lectureBlock);
 		if(assessmentMode != null) {
 			assessmentModeDao.delete(assessmentMode);
 		}
@@ -160,32 +158,32 @@ public class LectureBlockDAO {
 		String deleteToGroup = "delete from lectureblocktogroup blocktogroup where blocktogroup.lectureBlock.key=:lectureBlockKey";
 		int rows = dbInstance.getCurrentEntityManager()
 			.createQuery(deleteToGroup)
-			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.setParameter("lectureBlockKey", lectureBlock.getKey())
 			.executeUpdate();
 		
 		//delete LectureBlockRollCallImpl
 		String deleteRollCall = "delete from lectureblockrollcall rollcall where rollcall.lectureBlock.key=:lectureBlockKey";
 		rows += dbInstance.getCurrentEntityManager()
 			.createQuery(deleteRollCall)
-			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.setParameter("lectureBlockKey", lectureBlock.getKey())
 			.executeUpdate();
 		
 		//delete LectureBlockReminderImpl
 		String deleteReminder = "delete from lecturereminder reminder where reminder.lectureBlock.key=:lectureBlockKey";
 		rows += dbInstance.getCurrentEntityManager()
 			.createQuery(deleteReminder)
-			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.setParameter("lectureBlockKey", lectureBlock.getKey())
 			.executeUpdate();
 		
 		//delete LectureBlockToTaxonomyLevelImpl
 		String deleteTaxanomyLevels = "delete from lectureblocktotaxonomylevel relTax where relTax.lectureBlock.key=:lectureBlockKey";
 		rows += dbInstance.getCurrentEntityManager()
 			.createQuery(deleteTaxanomyLevels)
-			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.setParameter("lectureBlockKey", lectureBlock.getKey())
 			.executeUpdate();
 
 		dbInstance.getCurrentEntityManager()
-			.remove(reloadedBlock);
+			.remove(lectureBlock);
 		rows++;
 
 		return rows;

@@ -496,9 +496,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			unsyncInternalCalendar(lectureBlock, teachers);
 		}
 		
-		List<AbsenceNotice> absenceNotices = getAbsenceNoticeUniquelyRelatedTo(Collections.singletonList(lectureBlock));
+		List<AbsenceNotice> absenceNotices = getAbsenceNoticeUniquelyRelatedTo(List.of(lectureBlock));
 		for(AbsenceNotice absenceNotice:absenceNotices) {
-			deleteAbsenceNotice(absenceNotice, actingIdentity);
+			internalDeleteAbsenceNotice(absenceNotice, actingIdentity);
 		}
 		int rows = absenceNoticeToLectureBlockDao.deleteRelations(lectureBlock);
 		rows += lectureBlockDao.delete(lectureBlock);
@@ -689,25 +689,28 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity) {
 		AbsenceNotice notice = absenceNoticeDao.loadAbsenceNotice(absenceNotice.getKey());
 		if(notice == null) return; // nothing to do
-		
-		String beforeNotice = toAuditXml(absenceNotice);
+		internalDeleteAbsenceNotice(absenceNotice, actingIdentity);
+	}
+	
+	private void internalDeleteAbsenceNotice(AbsenceNotice notice, Identity actingIdentity) {
+		String beforeNotice = toAuditXml(notice);
 		Identity assessedIdentity = notice.getIdentity();
 		AbsenceNoticeRelationsAuditImpl beforeRelations = new AbsenceNoticeRelationsAuditImpl();
 		
-		List<AbsenceNoticeToLectureBlock> noticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(absenceNotice);
+		List<AbsenceNoticeToLectureBlock> noticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(notice);
 		if(noticeToBlocks != null && !noticeToBlocks.isEmpty()) {
 			beforeRelations.setNoticeToBlocks(noticeToBlocks);
 			absenceNoticeToLectureBlockDao.deleteRelations(noticeToBlocks);
 		}
-		List<AbsenceNoticeToRepositoryEntry> noticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(absenceNotice);
+		List<AbsenceNoticeToRepositoryEntry> noticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(notice);
 		if(noticeToEntries != null && !noticeToEntries.isEmpty()) {
 			beforeRelations.setNoticeToEntries(noticeToEntries);
 			absenceNoticeToRepositoryEntryDao.deleteRelations(noticeToEntries);
 		}
 		
-		List<LectureBlockRollCall> rollCalls = absenceNoticeDao.getRollCalls(notice);
+		List<Long> rollCalls = absenceNoticeDao.getRollCallsKeys(notice);
 		if(rollCalls != null && !rollCalls.isEmpty()) {
-			for(LectureBlockRollCall rollCall:rollCalls) {
+			for(Long rollCall:rollCalls) {
 				lectureBlockRollCallDao.removeLectureBlockRollCallAbsenceNotice(rollCall);
 			}
 		}
@@ -715,10 +718,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		absenceNoticeDao.deleteAbsenceNotice(notice);
 		dbInstance.commit();
 
-		auditLog(Action.deleteAbsenceNotice, beforeNotice, null, null, absenceNotice, assessedIdentity, actingIdentity);
+		auditLog(Action.deleteAbsenceNotice, beforeNotice, null, null, notice, assessedIdentity, actingIdentity);
 		if((noticeToBlocks != null && !noticeToBlocks.isEmpty()) || (noticeToEntries != null && !noticeToEntries.isEmpty())) {
 			String beforeXml = auditLogDao.toXml(beforeRelations);
-			auditLog(Action.deleteAbsenceNotice, beforeXml, null, null, absenceNotice, assessedIdentity, actingIdentity);
+			auditLog(Action.deleteAbsenceNotice, beforeXml, null, null, notice, assessedIdentity, actingIdentity);
 		}
 		dbInstance.commit();
 	}

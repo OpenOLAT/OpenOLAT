@@ -1385,7 +1385,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Long blockKey = block.getKey();
 		
 		// delete the block
-		lectureBlockDao.delete(block);
+		LectureBlock loadedBlock = lectureBlockDao.loadByKey(blockKey);
+		lectureBlockDao.delete(loadedBlock);
 		dbInstance.commitAndCloseSession();
 		
 		// try to relaod the block

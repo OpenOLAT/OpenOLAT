@@ -157,7 +157,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@JoinColumn(name="fk_lecture_block")
 	private Set<LectureBlockToGroup> groups;
 	
-	@OneToMany(targetEntity=LectureBlockToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
+	@OneToMany(targetEntity=LectureBlockToTaxonomyLevelImpl.class, fetch=FetchType.LAZY, orphanRemoval=true)
 	@JoinColumn(name="fk_lecture_block")
 	private Set<LectureBlockToTaxonomyLevel> taxonomyLevels;
 	

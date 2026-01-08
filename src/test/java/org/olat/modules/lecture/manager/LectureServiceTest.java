@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -54,6 +56,10 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -76,9 +82,13 @@ public class LectureServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -871,7 +881,26 @@ public class LectureServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteNotice_lectureblocks() {
+	public void updateTaxonomyLevels() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-299", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", random(), "My second taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-3", random(), "My third taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level4 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-4", random(), "My forth taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		dbInstance.commit();
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block = createMinimalLectureBlock(entry);
+		lectureService.updateTaxonomyLevels(block, Set.of(level1.getKey(), level2.getKey()));
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		lectureService.updateTaxonomyLevels(reloadedBlock, Set.of(level3.getKey(), level4.getKey()));
+		dbInstance.commit();
+	}
+	
+	@Test
+	public void deleteNoticeLectureblocks() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
@@ -899,6 +928,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotNull(notice);
 		Assert.assertNotNull(reloadedRollCall);
 		Assert.assertEquals(notice, reloadedRollCall.getAbsenceNotice());
+		dbInstance.commitAndCloseSession();
 		
 		// Delete the lecture block
 		lectureService.deleteLectureBlock(block, teacher);
@@ -937,6 +967,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotNull(notice);
 		Assert.assertNotNull(reloadedRollCall);
 		Assert.assertEquals(notice, reloadedRollCall.getAbsenceNotice());
+		dbInstance.commitAndCloseSession();
 		
 		// Delete the lecture block
 		lectureService.delete(entry);

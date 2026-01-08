@@ -251,9 +251,13 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	public int removeLectureBlockRollCallAbsenceNotice(LectureBlockRollCall rollCall) {
+		return removeLectureBlockRollCallAbsenceNotice(rollCall.getKey());
+	}
+
+	public int removeLectureBlockRollCallAbsenceNotice(Long rollCallKey) {
 		String q = "update lectureblockrollcall rollcall set rollcall.absenceNotice.key = null where rollcall.key=:rollCallKey";
 		return dbInstance.getCurrentEntityManager().createQuery(q)
-				.setParameter("rollCallKey", rollCall.getKey())
+				.setParameter("rollCallKey", rollCallKey)
 				.executeUpdate();
 	}
 	
