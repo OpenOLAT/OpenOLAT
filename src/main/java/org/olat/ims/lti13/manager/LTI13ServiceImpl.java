@@ -653,7 +653,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		} else if(tool.getEntry() != null) {
 			// check if participant, if not
 			RepositoryEntry entry = tool.getEntry();
-			if(!repositoryService.hasRole(identity, entry, role.name())) {
+			if(!repositoryService.hasRoleExpanded(identity, entry, role.name())) {
 				Roles roles = securityManager.getRoles(identity);
 				IdentitiesAddEvent iae = new IdentitiesAddEvent(identity);
 				if(role == GroupRoles.participant) {

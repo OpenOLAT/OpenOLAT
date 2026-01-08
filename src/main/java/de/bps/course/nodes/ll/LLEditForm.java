@@ -123,11 +123,6 @@ public class LLEditForm extends FormBasicController {
 			}
 			link.setTarget(linkValue);
 			boolean blank = lHtmlTargetInputList.get(i).isSelected(0);
-			if(linkValue.startsWith(Settings.getServerContextPathURI())) {
-				// links to OO pages open in same window
-				blank = false;
-				lHtmlTargetInputList.get(i).select(SELF_KEY, true);
-			}
 			link.setHtmlTarget(blank ? BLANK_KEY : SELF_KEY);
 			link.setDescription(lDescriptionInputList.get(i).getValue());
 			link.setComment(lCommentInputList.get(i).getValue());
@@ -156,9 +151,8 @@ public class LLEditForm extends FormBasicController {
 			}
 		}
 		else if (source.getComponent() instanceof Link) {
-			if (lAddButtonList.contains(source)) {
+			if (lAddButtonList.contains(source) && source.getUserObject() instanceof LLModel link) {
 				// add a new form link
-				final LLModel link = (LLModel) ((FormLink) source).getUserObject();
 				final LLModel newLink = new LLModel();
 				linkList.add(linkList.indexOf(link) + 1, newLink);
 				addNewFormLink(linkList.indexOf(link) + 1, newLink);
@@ -171,11 +165,11 @@ public class LLEditForm extends FormBasicController {
 					lDescriptionInputList.get(0).setValue("");
 					lCommentInputList.get(0).setValue("");
 				} else {
-					final LLModel link = (LLModel) ((FormLink) source).getUserObject();
+					final LLModel link = (LLModel)source.getUserObject();
 					removeFormLink(link);
 				}
-			} else if (lCustomMediaButtonList.contains(source)) {
-				currentLink = (LLModel) ((FormLink) source).getUserObject();
+			} else if (lCustomMediaButtonList.contains(source) && source.getUserObject() instanceof LLModel link) {
+				currentLink = link;
 				doChooseMedia(ureq);
 			}
 		}
@@ -332,6 +326,7 @@ public class LLEditForm extends FormBasicController {
 		// add link add action button
 		FormLink addButton = new FormLinkImpl("add" + counter, "add" + counter, "", Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		addButton.setUserObject(link);
+		addButton.setTitle(translate("add"));
 		addButton.setDomReplacementWrapperRequired(false);
 		addButton.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_add");
 		flc.add(addButton);
@@ -339,6 +334,7 @@ public class LLEditForm extends FormBasicController {
 		// add link deletion action button
 		FormLink delButton = new FormLinkImpl("delete" + counter, "delete" + counter, "", Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		delButton.setUserObject(link);
+		delButton.setTitle(translate("delete"));
 		delButton.setDomReplacementWrapperRequired(false);
 		delButton.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
 		flc.add(delButton);
@@ -348,6 +344,7 @@ public class LLEditForm extends FormBasicController {
 		mediaButton.setIconLeftCSS("o_icon o_icon_browse o_icon-lg");
 		mediaButton.setDomReplacementWrapperRequired(false);
 		mediaButton.setUserObject(link);
+		mediaButton.setTitle(translate("browse"));
 		flc.add(mediaButton);
 		lCustomMediaButtonList.add(index, mediaButton);
 		

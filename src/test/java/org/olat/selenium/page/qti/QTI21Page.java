@@ -454,13 +454,16 @@ public class QTI21Page {
 		
 		WebElement sourceEl = OOGraphene.waitElement(sourceBy, browser);
 		By targetBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul");
-		WebElement targetEl = browser.findElement(targetBy);
+		WebElement targetEl = OOGraphene.waitElement(targetBy, browser);
+		
+		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize());
+		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize());
 		
 		new Actions(browser)
-			.moveToElement(sourceEl)
+			.moveToElement(sourceEl, sourcePos.getX(), sourcePos.getY())
 			.clickAndHold()
-			.pause(10)
-			.moveToElement(targetEl)
+			.pause(25)
+			.moveToElement(targetEl, targetPos.getX(), targetPos.getY())
 			.release()
 			.build()
 			.perform();

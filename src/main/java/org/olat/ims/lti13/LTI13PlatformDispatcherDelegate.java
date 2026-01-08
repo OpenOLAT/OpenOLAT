@@ -27,6 +27,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -804,7 +805,10 @@ public class LTI13PlatformDispatcherDelegate {
 	}
 	
 	private MembershipContainer handleNrpsRepositoryEntry(LTI13Context ltiContext, LTI13Tool tool) {
-		List<Identity> participants = repositoryService.getMembers(ltiContext.getEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+		List<Identity> participants = repositoryService.getMembers(ltiContext.getEntry(),
+				RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		// Deduplicate the list
+		participants = new ArrayList<>(new HashSet<>(participants));
 		
 		MembershipContainer container = new MembershipContainer();
 		RepositoryEntry entry = ltiContext.getEntry();

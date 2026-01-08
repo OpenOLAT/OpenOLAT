@@ -196,11 +196,11 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 	public void onMessage(Message message) {
 		try {
 			if(message instanceof MapMessage mm) {
-				Long identityKey = mm.getLong("identity");
+				long identityKey = mm.getLong("identity");
 				Long serviceKey = mm.getLong("service");
 				String operation = mm.getString("operation");
 				LTI13SharedToolService service = sharedToolServiceDao.loadByKey(serviceKey);
-				if("push-score".equals(operation) && service != null && identityKey != null) {
+				if("push-score".equals(operation) && service != null) {
 					pushScore(new IdentityRefImpl(identityKey), service);
 				}
 			}
