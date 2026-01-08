@@ -432,7 +432,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 			ResourceReservation reservation = resourceToCurriculumElements.get(curriculumElement.getResource());
 			
 			Date confirmationUntil = reservation == null ? null : reservation.getExpirationDate();
-			ConfirmationByEnum confirmation = reservation.getConfirmableBy();
+			ConfirmationByEnum confirmation = reservation == null ? null : reservation.getConfirmableBy();
 			
 			MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
 					null, confirmation, confirmationUntil, false, null);

@@ -314,6 +314,9 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Assert.assertTrue(userCurriculums.isEmpty());
 	}
 	
+	/**
+	 * Repository entry owners cannot see curriculums anymore. @see https://track.frentix.com/issue/OO-9148
+	 */
 	@Test
 	public void searchWithInfos_repoOwner() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-6");
@@ -334,8 +337,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
 		managerParams.setElementOwner(owner);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
-		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
+		Assert.assertTrue(managedCurriculums.isEmpty());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
