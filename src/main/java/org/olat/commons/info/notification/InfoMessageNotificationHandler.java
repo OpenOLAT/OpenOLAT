@@ -128,7 +128,7 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 						si.addSubscriptionListItem(subListItem);
 					}
 
-					if (info.getModifier() != null) {
+					if (showModificationItem(info, subscriber.getIdentity())) {
 						Identity modifierIdent = info.getModifier();
 						String modifiedDesc = translator.translate("notifications.entry.edited", info.getTitle(), NotificationHelper.getFormatedName(modifierIdent));
 						Date modifiedDateInfo = info.getModificationDate();
@@ -146,6 +146,18 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 		return si;
 	}
 	
+	private boolean showModificationItem(InfoMessage info, Identity identity) {
+		if (info.getModifier() == null) {
+			return false;
+		}
+
+		if (info.getModifier().equals(identity)) {
+			return true;
+		}
+		
+		return !info.getPublishDate().after(info.getModificationDate());
+	}
+
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
