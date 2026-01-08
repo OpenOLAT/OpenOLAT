@@ -58,6 +58,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
+import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,7 +85,7 @@ public class CourseCertificationTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void getCertificate_file() throws IOException, URISyntaxException {
+	public void getCertificateFile() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
@@ -112,7 +113,7 @@ public class CourseCertificationTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void getCertificate_head() throws IOException, URISyntaxException {
+	public void getCertificateHead() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-11");
@@ -213,6 +214,11 @@ public class CourseCertificationTest extends OlatRestTestCase {
 		CertificateVO certificateVo = certificateVoes.getCertificates().get(0);
 		Assert.assertNotNull(certificateVo);
 		Assert.assertEquals(certificate.getKey(), certificateVo.getKey());
+		
+		UserVO user = certificateVo.getUser();
+		Assert.assertNotNull(user);
+		Assert.assertEquals(assessedIdentity.getUser().getFirstName(), user.getFirstName());
+		Assert.assertEquals(assessedIdentity.getUser().getLastName(), user.getLastName());
 
 		conn.shutdown();
 	}

@@ -51,7 +51,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -63,6 +62,8 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -107,9 +108,9 @@ public class RepositoryEntryCertificationWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<CertificateLight> certificates = certificatesManager.getCertificates(null, entry.getOlatResource(), externalId, managed, last);
+		List<Certificate> certificates = certificatesManager.getCertificates(null, entry.getOlatResource(), externalId, managed, last);
 		List<CertificateVO> certificatesVoList = certificates.stream()
-				.map(CertificateVO::valueOf)
+				.map(cert -> CertificateVO.valueOf(cert, UserVOFactory.get(cert.getIdentity(), true, true)))
 				.collect(Collectors.toList());
 		CertificateVOes certificateVOes = new CertificateVOes();
 		certificateVOes.setCertificates(certificatesVoList);
@@ -235,7 +236,8 @@ public class RepositoryEntryCertificationWebService {
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
-		if(!isAdminOf(assessedIdentity, request)) {
+		boolean isAdmin = isAdminOf(assessedIdentity, request);
+		if(!isAdmin) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
@@ -261,7 +263,8 @@ public class RepositoryEntryCertificationWebService {
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, config);
 		if(certificate != null) {
-			return Response.ok(CertificateVO.valueOf(certificate)).build();
+			UserVO user = UserVOFactory.get(assessedIdentity, true, isAdmin);
+			return Response.ok(CertificateVO.valueOf(certificate, user)).build();
 		}
 		return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	}

@@ -53,7 +53,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
@@ -62,6 +61,8 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -119,18 +120,19 @@ public class UserCertificationWebService {
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
-		if(!isAdminOf(identity, request)) {
+		final boolean isAdmin = isAdminOf(identity, request);
+		if(!isAdmin) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<CertificateLight> certificates;
+		List<Certificate> certificates;
 		if(managed != null || last != null || StringHelper.containsNonWhitespace(externalId)) {
 			certificates = certificatesManager.getCertificates(identity, null, externalId, managed, last);
 		} else {
-			certificates = certificatesManager.getLastCertificates(identity);
+			certificates = certificatesManager.getCertificates(identity, null, null, null, true);
 		}
 		List<CertificateVO> certificatesVoList = certificates.stream()
-				.map(CertificateVO::valueOf)
+				.map(cert -> CertificateVO.valueOf(cert, UserVOFactory.get(cert.getIdentity(), true, isAdmin)))
 				.collect(Collectors.toList());
 		CertificateVOes certificateVOes = new CertificateVOes();
 		certificateVOes.setCertificates(certificatesVoList);
@@ -180,7 +182,8 @@ public class UserCertificationWebService {
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
-		if(!isAdminOf(identity, request)) {
+		boolean isAdmin = isAdminOf(identity, request);
+		if(!isAdmin) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Certificate certificate = certificatesManager.getCertificateById(certificateKey);
@@ -190,7 +193,8 @@ public class UserCertificationWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 
-		CertificateVO certificateVo = CertificateVO.valueOf(certificate);
+		UserVO user = UserVOFactory.get(certificate.getIdentity(), true, isAdmin);
+		CertificateVO certificateVo = CertificateVO.valueOf(certificate, user);
 		return Response.ok(certificateVo).build();
 	}
 
@@ -433,7 +437,8 @@ public class UserCertificationWebService {
 		}
 		
 		Certificate mergedCertificate = certificatesDao.updateCertificate(certificate);
-		CertificateVO mergedCertificateVo = CertificateVO.valueOf(mergedCertificate);
+		UserVO user = UserVOFactory.get(mergedCertificate.getIdentity(), true, true);// Only for admin
+		CertificateVO mergedCertificateVo = CertificateVO.valueOf(mergedCertificate, user);
 		return Response.ok(mergedCertificateVo).build();
 	}
 	
