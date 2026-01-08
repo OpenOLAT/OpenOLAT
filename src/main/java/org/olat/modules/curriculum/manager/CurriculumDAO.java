@@ -381,14 +381,7 @@ public class CurriculumDAO {
 	
 		if(params.getElementOwner() != null) {
 			needOr = true;
-			sb.append("exists (select courseCurEl.key from curriculumelement as courseCurEl")
-			  .append(" inner join repoentrytogroup as curRelGroup on (courseCurEl.group.key=curRelGroup.group.key)")
-			  .append(" inner join repoentrytogroup as courseRelGroup on (courseRelGroup.entry.key=curRelGroup.entry.key)")
-			  .append(" inner join courseRelGroup.group as courseBaseGroup")
-			  .append(" inner join courseBaseGroup.members as courseMembership")
-			  .append(" where courseMembership.identity.key=:ownerKey and courseMembership.role='").append(GroupRoles.owner.name()).append("'")
-			  .append(" and courseCurEl.curriculum.key=cur.key")
-			  .append(") or exists (select ownedCurEl.key from curriculumelement as ownedCurEl")
+			sb.append("exists (select ownedCurEl.key from curriculumelement as ownedCurEl")
 			  .append(" inner join ownedCurEl.group as ownedBaseGroup")
 			  .append(" inner join ownedBaseGroup.members as ownedMembership")
 			  .append(" where ownedMembership.identity.key=:ownerKey and ownedMembership.role ").in(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner)

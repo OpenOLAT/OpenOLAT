@@ -171,7 +171,6 @@ public class CurriculumElementImageMapper implements Mapper {
 			return new NotFoundMediaResource();
 		}
 		
-		MediaResource mediaResource = null;
 		String key = rels[rels.length - 2];
 		if("none".equals(key) && StringHelper.isLong(rels[rels.length - 3])) {
 			Long metadataKey = Long.valueOf(rels[rels.length - 3]);
@@ -188,10 +187,7 @@ public class CurriculumElementImageMapper implements Mapper {
 			VFSThumbnailMetadata mthumbnail = thumbnailDao.loadByKey(Long.valueOf(thumbnailKey));
 			return new VFSThumbnailResource(mthumbnail, ServletUtil.CACHE_ONE_YEAR);
 		}
-		if(mediaResource == null) {
-			mediaResource = new NotFoundMediaResource();
-		}
-		return mediaResource;
+		return new NotFoundMediaResource();
 	}
 	
 	public static String getImageURL(String mapperUrl, VFSMetadata image, VFSThumbnailMetadata thumbnail) {

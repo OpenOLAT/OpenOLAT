@@ -111,9 +111,9 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		elementEntryCount = 0;
 		
 		if(alone) {
-			parentKey = element.getParent() == null ? null : element.getParent().getKey();
+			parentKey = element == null || element.getParent() == null ? null : element.getParent().getKey();
 		} else {
-			parentKey = element.getKey();
+			parentKey = element == null ? null : element.getKey();
 			// add ourself as level
 			level++;
 		}
@@ -124,8 +124,10 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		setShortenedDescription(repositoryEntryView.getDescription());
 		
 		// calculate level of current curr element based on parent chain
-		for(CurriculumElement parentEl=element.getParent(); parentEl != null; parentEl=parentEl.getParent()) {
-			level++;
+		if(element != null) {
+			for(CurriculumElement parentEl=element.getParent(); parentEl != null; parentEl=parentEl.getParent()) {
+				level++;
+			}
 		}
 	}
 	
