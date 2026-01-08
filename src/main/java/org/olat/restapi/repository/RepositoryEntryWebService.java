@@ -84,6 +84,7 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.certificate.restapi.RepositoryEntryCertificationWebService;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -97,10 +98,10 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.ErrorList;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -265,9 +266,19 @@ public class RepositoryEntryWebService {
 	@Path("invitations")
 	@Operation(summary = "To get the web service for the invitations and external users of a specific course",
 		description = "To get the web service for the invitations and external users of a specific course")
-	@ApiResponse(responseCode = "200", description = "The web service for invitations and externa users")	
+	@ApiResponse(responseCode = "200", description = "The web service for invitations and external users")	
 	public RepositoryEntryInvitationsWebService getInvitationsWebService() {
 		RepositoryEntryInvitationsWebService service = new RepositoryEntryInvitationsWebService(entry);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	@Path("certificates")
+	@Operation(summary = "To get the web service for the certificates",
+		description = "To get the web service for the certificates")
+	@ApiResponse(responseCode = "200", description = "The web service for certificates")	
+	public RepositoryEntryCertificationWebService getCertificatesWebService() {
+		RepositoryEntryCertificationWebService service = new RepositoryEntryCertificationWebService(entry);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

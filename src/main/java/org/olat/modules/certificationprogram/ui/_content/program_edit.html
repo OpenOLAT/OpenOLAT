@@ -28,6 +28,15 @@
 				</div>
 			#end
 			
+			#if($r.isNotEmpty($window))
+				<div class="o_curriculum_metadata_header_key">
+					<div>
+						<strong>$r.translate("window")</strong>
+					</div>
+					<div>$r.escapeHtml($window)</div>
+				</div>
+			#end
+
 			#if($r.isNotEmpty($creditPoints))
 				<div class="o_curriculum_metadata_header_key">
 					<div>

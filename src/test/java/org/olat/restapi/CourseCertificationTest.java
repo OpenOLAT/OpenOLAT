@@ -58,6 +58,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
+import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificationTest extends OlatRestTestCase {
+public class CourseCertificationTest extends OlatRestTestCase {
 
 	@Autowired
 	private DB dbInstance;
@@ -84,7 +85,7 @@ public class CertificationTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void getCertificate_file() throws IOException, URISyntaxException {
+	public void getCertificateFile() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
@@ -112,7 +113,7 @@ public class CertificationTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void getCertificate_head() throws IOException, URISyntaxException {
+	public void getCertificateHead() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-11");
@@ -213,6 +214,11 @@ public class CertificationTest extends OlatRestTestCase {
 		CertificateVO certificateVo = certificateVoes.getCertificates().get(0);
 		Assert.assertNotNull(certificateVo);
 		Assert.assertEquals(certificate.getKey(), certificateVo.getKey());
+		
+		UserVO user = certificateVo.getUser();
+		Assert.assertNotNull(user);
+		Assert.assertEquals(assessedIdentity.getUser().getFirstName(), user.getFirstName());
+		Assert.assertEquals(assessedIdentity.getUser().getLastName(), user.getLastName());
 
 		conn.shutdown();
 	}
@@ -228,7 +234,7 @@ public class CertificationTest extends OlatRestTestCase {
 				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates").path(assessedIdentity.getKey().toString()).build();
 
-		URL certificateUrl = CertificationTest.class.getResource("certificate.pdf");
+		URL certificateUrl = CourseCertificationTest.class.getResource("certificate.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI());
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
@@ -259,54 +265,6 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertEquals("CWS-4543231", certificate.getExternalId());
 		Assert.assertEquals(1, certificate.getManagedFlags().length);
 		
-		//check the certificate file
-		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-		Assert.assertNotNull(certificateLeaf);
-		Assert.assertEquals(certificateFile.length(), certificateLeaf.getSize());
-	}
-	
-	@Test
-	public void uploadCertificate_standalone() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection("administrator", "openolat");
-
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
-		dbInstance.commitAndCloseSession();
-
-		Long resourceKey = 23687468l;
-		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(resourceKey.toString())
-				.path("certificates").path(assessedIdentity.getKey().toString()).build();
-
-		URL certificateUrl = CertificationTest.class.getResource("certificate.pdf");
-		Assert.assertNotNull(certificateUrl);
-		File certificateFile = new File(certificateUrl.toURI());
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
-		
-		Date creationDate = createDate(2014, 7, 1);
-		Date nextCertificationDate = createDate(2030, 8, 1);
-		
-		MultipartEntityBuilder builder = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addTextBody("filename", certificateFile.getName())
-				.addBinaryBody("file", certificateFile, ContentType.APPLICATION_OCTET_STREAM, certificateFile.getName())
-				.addTextBody("externalId", "CWS-264810")
-				.addTextBody("managedFlags", "delete")
-				.addTextBody("creationDate", ObjectFactory.formatDate(creationDate))
-				.addTextBody("nextRecertificationDate", ObjectFactory.formatDate(nextCertificationDate));
-		method.setEntity(builder.build());
-
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-
-		//check certificate
-		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, resourceKey);
-		Assert.assertNotNull(certificate);
-		Assert.assertEquals(creationDate, certificate.getCreationDate());
-		Assert.assertEquals(nextCertificationDate, certificate.getNextRecertificationDate());
-		Assert.assertEquals("CWS-264810", certificate.getExternalId());
-		Assert.assertEquals(1, certificate.getManagedFlags().length);
-
 		//check the certificate file
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		Assert.assertNotNull(certificateLeaf);

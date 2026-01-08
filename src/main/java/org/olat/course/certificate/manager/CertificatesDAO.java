@@ -23,9 +23,12 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateStatus;
@@ -33,6 +36,7 @@ import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramRef;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -129,6 +133,48 @@ public class CertificatesDAO {
 				.createQuery(query, CertificateLight.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
+	}
+	
+	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource,
+			String externalId, Boolean managedOnly, Boolean lastOnly) {
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select cer from certificate cer")
+		  .append(" inner join fetch cer.identity ident")
+		  .append(" inner join fetch ident.user identUser");
+		if(identity != null) {
+			sb.and().append("ident.key=:identityKey");
+		}
+		if(resource != null) {
+			sb.and().append("cer.olatResource.key=:resourceKey");
+		}
+		if(lastOnly != null && lastOnly.booleanValue()) {
+			sb.and().append("cer.last=true");
+		}
+		
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			sb.and().append("cer.externalId=:externalId");
+		} else if(managedOnly != null) {
+			if(managedOnly.booleanValue()) {
+				sb.and().append("cer.externalId is not null");
+			} else {
+				sb.and().append("cer.externalId is null");
+			}
+		}
+		
+		sb.append(" order by cer.creationDate desc");
+		TypedQuery<Certificate> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Certificate.class);
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		if(resource != null) {
+			query.setParameter("resourceKey", resource.getKey());
+		}
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			query.setParameter("externalId", externalId);
+		}
+		return query.getResultList();
 	}
 	
 	/**

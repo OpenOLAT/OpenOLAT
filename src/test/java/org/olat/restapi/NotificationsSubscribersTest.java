@@ -186,6 +186,10 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 				subscriberId2VO = subscriberVO;
 			}
 		}
+		
+		if(subscriberId2VO == null) {
+			throw new NullPointerException("subscriberId2VO can never be null");
+		}
 
 		//delete id2
 		URI deleteSubscriberUri = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers")

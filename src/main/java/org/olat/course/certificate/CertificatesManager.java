@@ -160,7 +160,7 @@ public interface CertificatesManager {
 	 * @param lastOnly if true returns only the last one, if false all
 	 * @return A list of light certificates
 	 */
-	public List<CertificateLight> getCertificates(IdentityRef identity, OLATResource resource,
+	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource,
 			String externalId, Boolean managedOnly, Boolean lastOnly);
 	
 	/**

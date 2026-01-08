@@ -26,9 +26,9 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.model.CertificateImpl;
+import org.olat.user.restapi.UserVO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
@@ -58,28 +58,13 @@ public class CertificateVO {
 	private String externalId;
 	private String managedFlags;
 	
+	private UserVO user;
+	
 	public CertificateVO() {
 		// make JAX-RS happy
 	}
 	
-	public static CertificateVO valueOf(CertificateLight certificate) {
-		CertificateVO vo = new CertificateVO();
-		vo.setKey(certificate.getKey());
-		vo.setCreationDate(certificate.getCreationDate());
-		vo.setNextCertificationDate(certificate.getNextRecertificationDate());
-		vo.setRecertificationCount(certificate.getRecertificationCount());
-		vo.setRecertificationWindowDate(certificate.getRecertificationWindowDate());
-		vo.setIdentityKey(certificate.getIdentityKey());
-		vo.setCourseTitle(certificate.getCourseTitle());
-		vo.setCourseResourceKey(certificate.getOlatResourceKey());
-		vo.setCertificationProgramKey(certificate.getCertificationProgramKey());
-		vo.setUuid(certificate.getUuid());
-		vo.setExternalId(certificate.getExternalId());
-		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
-		return vo;
-	}
-	
-	public static CertificateVO valueOf(Certificate certificate) {
+	public static CertificateVO valueOf(Certificate certificate, UserVO user) {
 		CertificateVO vo = new CertificateVO();
 		vo.setKey(certificate.getKey());
 		vo.setCreationDate(certificate.getCreationDate());
@@ -97,6 +82,7 @@ public class CertificateVO {
 		vo.setUuid(certificate.getUuid());
 		vo.setExternalId(certificate.getExternalId());
 		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
+		vo.setUser(user);
 		return vo;
 	}
 
@@ -196,6 +182,14 @@ public class CertificateVO {
 		this.managedFlags = managedFlags;
 	}
 	
+	public UserVO getUser() {
+		return user;
+	}
+
+	public void setUser(UserVO user) {
+		this.user = user;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 236489 : getKey().hashCode();

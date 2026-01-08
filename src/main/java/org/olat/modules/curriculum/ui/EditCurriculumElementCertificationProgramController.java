@@ -94,6 +94,7 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 		if(certificationProgram != null && !programsPK.containsKey(certificationProgram.getKey().toString())) {
 			programsPK.add(SelectionValues.entry(certificationProgram.getKey().toString(), certificationProgram.getDisplayName()));
 		}
+		programsPK.sort(SelectionValues.VALUE_ASC);
 		
 		programsEl = uifactory.addDropdownSingleselect("certification.program", "certification.program", formLayout,
 				programsPK.keys(), programsPK.values());

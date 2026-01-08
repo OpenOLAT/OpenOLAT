@@ -657,44 +657,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public List<CertificateLight> getCertificates(IdentityRef identity, OLATResource resource,
+	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource,
 			String externalId, Boolean managedOnly, Boolean lastOnly) {
-		
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select cer from certificatelight cer");
-		if(identity != null) {
-			sb.and().append("cer.identityKey=:identityKey");
-		}
-		if(resource != null) {
-			sb.and().append("cer.olatResourceKey=:resourceKey");
-		}
-		if(lastOnly != null && lastOnly.booleanValue()) {
-			sb.and().append("cer.last=true");
-		}
-		
-		if(StringHelper.containsNonWhitespace(externalId)) {
-			sb.and().append("cer.externalId=:externalId");
-		} else if(managedOnly != null) {
-			if(managedOnly.booleanValue()) {
-				sb.and().append("cer.externalId is not null");
-			} else {
-				sb.and().append("cer.externalId is null");
-			}
-		}
-		
-		sb.append(" order by cer.creationDate desc");
-		TypedQuery<CertificateLight> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CertificateLight.class);
-		if(identity != null) {
-			query.setParameter("identityKey", identity.getKey());
-		}
-		if(resource != null) {
-			query.setParameter("resourceKey", resource.getKey());
-		}
-		if(StringHelper.containsNonWhitespace(externalId)) {
-			query.setParameter("externalId", externalId);
-		}
-		return query.getResultList();
+		return certificatesDao.getCertificates(identity, resource, externalId, managedOnly, lastOnly);
 	}
 
 	@Override

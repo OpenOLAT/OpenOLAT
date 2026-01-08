@@ -66,6 +66,10 @@ public class CertificationProgramRecertificationRow {
 	public Date getRecertificationWindowDate() {
 		return certificate.getRecertificationWindowDate();
 	}
+	
+	public Date getRevocationDate() {
+		return certificate.getRevocationDate();
+	}
 
 	public CertificationStatus getCertificationStatus() {
 		return certificationStatus;

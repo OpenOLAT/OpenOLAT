@@ -68,6 +68,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
+import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -120,6 +121,11 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(certificate.getKey(), certificateVo.getKey());
 		Assert.assertEquals(assessedIdentity.getKey(), certificateVo.getIdentityKey());
 		Assert.assertEquals(certificate.getUuid(), certificateVo.getUuid());
+		
+		UserVO user = certificateVo.getUser();
+		Assert.assertNotNull(user);
+		Assert.assertEquals(assessedIdentity.getUser().getFirstName(), user.getFirstName());
+		Assert.assertEquals(assessedIdentity.getUser().getLastName(), user.getLastName());
 
 		conn.shutdown();
 	}
@@ -303,7 +309,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 				.path(assessedIdentity.getKey().toString())
 				.path("certificates").build();
 
-		URL certificateUrl = CertificationTest.class.getResource("certificate.pdf");
+		URL certificateUrl = CourseCertificationTest.class.getResource("certificate.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI());
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
