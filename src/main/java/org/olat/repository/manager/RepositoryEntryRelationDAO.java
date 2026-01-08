@@ -569,7 +569,7 @@ public class RepositoryEntryRelationDAO {
 		if(res == null || res.isEmpty()) return Collections.emptyList();
 		
 		List<String> roleList = GroupRoles.toList(roles);
-		List<Long> repoKeys = res.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+		List<Long> repoKeys = res.stream().map(RepositoryEntryRef::getKey).toList();
 		return getMembers(repoKeys, roleList, type, Identity.class);
 	}
 	
