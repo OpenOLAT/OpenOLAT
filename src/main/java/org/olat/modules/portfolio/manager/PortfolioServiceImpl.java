@@ -538,8 +538,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 		Binder reloadedBinder = reloadedAssignment.getBinder();
 
 		if(reloadedSection != null) {
-			((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
 			assignmentDao.deleteAssignment(reloadedAssignment);
+			((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
 			binderDao.updateSection(reloadedSection);
 		} else if(reloadedBinder != null) {
 			Set<Binder> bindersToUpdate = new HashSet<>();

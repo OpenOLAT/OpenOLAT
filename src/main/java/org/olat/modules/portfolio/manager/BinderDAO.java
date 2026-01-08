@@ -450,28 +450,37 @@ public class BinderDAO {
 		BinderImpl binder = (BinderImpl)loadByKey(binderRef.getKey());
 		List<Section> sections = new ArrayList<>(binder.getSections());
 		for(Section section:sections) {
+			// Delete pages
 			List<Page> pages = new ArrayList<>(section.getPages());
-			section.getPages().clear();
-			section = dbInstance.getCurrentEntityManager().merge(section);
-			
 			for(Page page:pages) {
 				if(page != null) {
-					rows += pageDao.deletePage(page);
 					rows += pageUserInfosDao.delete(page);
+					rows += pageDao.deletePage(page);
+					section.getPages().remove(page);
 				}
 			}
 			
+			// Delete assignments
+			List<Assignment> assignments = new ArrayList<>(((SectionImpl)section).getAssignments());
+			for(Assignment assignment:assignments) {
+				assignmentDao.deleteAssignmentReference(assignment);
+				assignmentDao.deleteAssignment(assignment);
+				((SectionImpl)section).getAssignments().remove(assignment);
+			}
 			rows += assessmentSectionDao.deleteAssessmentSections(section);
 			
+			// Clean up bi-directional relations
+			section = dbInstance.getCurrentEntityManager().merge(section);
+			
+			// Remove the rest
 			Group baseGroup = section.getBaseGroup();
 			rows += groupDao.removeMemberships(baseGroup);
 			
 			dbInstance.getCurrentEntityManager().remove(section);
+			binder.getSections().remove(section);
 			dbInstance.getCurrentEntityManager().remove(baseGroup);
 			rows += 2;
 		}
-		
-		binder.getSections().clear();
 		
 		Group baseGroup = binder.getBaseGroup();
 		invitationDao.deleteInvitation(baseGroup);
@@ -487,10 +496,11 @@ public class BinderDAO {
 		List<Section> sections = new ArrayList<>(binder.getSections());
 		for(Section section:sections) {
 			binder = (BinderImpl)deleteSection(binder, section);
+			
 		}
 		
-		dbInstance.getCurrentEntityManager().flush();
-		
+		dbInstance.commit();
+
 		//remove reference via template
 		String sb = "update pfbinder binder set binder.template=null where binder.template.key=:binderKey";
 		rows += dbInstance.getCurrentEntityManager()
@@ -777,8 +787,9 @@ public class BinderDAO {
 		List<Assignment> assignments = assignmentDao.loadAssignments(section, null);
 		for(Assignment assignment:assignments) {
 			assignmentDao.deleteAssignmentReference(assignment);
+			assignmentDao.deleteAssignment(assignment);
+			((SectionImpl)section).getAssignments().remove(assignment);
 		}
-		assignmentDao.deleteAssignmentBySection(section);
 		assessmentSectionDao.deleteAssessmentSections(section);
 
 		//remove reference via template

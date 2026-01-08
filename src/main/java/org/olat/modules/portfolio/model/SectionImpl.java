@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,9 +42,9 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
-import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.ceditor.ContentElementType;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.portfolio.Binder;
@@ -104,16 +103,13 @@ public class SectionImpl implements Persistable, CreateInfo, Section {
 	@JoinColumn(name="fk_binder_id", nullable=false, insertable=true, updatable=false)
 	private Binder binder;
 	
-	@OneToMany(targetEntity=PageImpl.class, mappedBy="section", fetch=FetchType.LAZY,
-			orphanRemoval=true, cascade={CascadeType.REMOVE})
+	@OneToMany(targetEntity=PageImpl.class, mappedBy="section", fetch=FetchType.LAZY)
 	@OrderColumn(name="pos")
 	private List<Page> pages;
 	
-	@OneToMany(targetEntity=AssignmentImpl.class, mappedBy="section", fetch=FetchType.LAZY,
-			orphanRemoval=true, cascade={CascadeType.REMOVE})
+	@OneToMany(targetEntity=AssignmentImpl.class, mappedBy="section", fetch=FetchType.LAZY)
 	@OrderColumn(name="pos")
 	private List<Assignment> assignments;
-	
 
 	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_template_reference_id", nullable=true, insertable=true, updatable=false)
