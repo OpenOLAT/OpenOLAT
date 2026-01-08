@@ -285,11 +285,11 @@ public class InfoDisplayController extends FormBasicController {
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
-		String modifier = null;
-		if(info.getModifier() != null) {
-			String formattedName = userManager.getUserDisplayName(info.getModifier());
-			String creationDate = formatter.formatDateAndTime(info.getModificationDate());
-			modifier = translate("display.modifier", StringHelper.escapeHtml(formattedName), creationDate);
+		String modificationString = null;
+		if (showModificationString(info)) {
+			String modifierDisplayName = userManager.getUserDisplayName(info.getModifier());
+			String modificationDate = formatter.formatDateAndTime(info.getModificationDate());
+			modificationString = translate("display.modifier", StringHelper.escapeHtml(modifierDisplayName), modificationDate);
 		}
 
 		String authorName = userManager.getUserDisplayName(info.getAuthor());
@@ -307,7 +307,20 @@ public class InfoDisplayController extends FormBasicController {
 			infos = translate("display.info.scheduled", publishDate, StringHelper.escapeHtml(authorName), creationDate);
 		}
 		List<VFSLeaf> attachments = infoMessageManager.getAttachments(info);
-		return new InfoMessageForDisplay(info.getKey(), info.getTitle(), message, attachments, infos, modifier, info.isPublished());
+		return new InfoMessageForDisplay(info.getKey(), info.getTitle(), message, attachments, infos, modificationString, info.isPublished());
+	}
+
+	private boolean showModificationString(InfoMessage info) {
+		if (info.getModifier() == null || info.getModificationDate() == null) {
+			return false;
+		}
+		
+		if (!secCallback.canEdit(info)) {
+			if (info.getPublishDate().after(info.getModificationDate())) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	@Override
