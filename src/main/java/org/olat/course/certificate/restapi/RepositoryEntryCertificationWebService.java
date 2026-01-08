@@ -47,13 +47,9 @@ import jakarta.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
@@ -63,13 +59,11 @@ import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -78,23 +72,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * 
- * Initial date: 17.11.2014<br>
+ * Initial date: 8 janv. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Tag(name = "Certificates")
-@Component
-@Path("repo/courses/{resourceKey}/certificates")
-public class CertificationWebService {
+public class RepositoryEntryCertificationWebService {
 	
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private CertificatesManager certificatesManager;
-	@Autowired
-	private OLATResourceManager resourceManager;
-	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CertificatesManager certificatesManager;
+	
+	private final RepositoryEntry entry;
+	
+	public RepositoryEntryCertificationWebService(RepositoryEntry entry) {
+		this.entry = entry;
+	}
 	
 	@GET
 	@Path("")
@@ -103,15 +99,10 @@ public class CertificationWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCertificate(@PathParam("resourceKey") Long resourceKey,
-			@QueryParam("managed") Boolean managed, @QueryParam("last") Boolean last,
+	public Response getCertificate(@QueryParam("managed") Boolean managed, @QueryParam("last") Boolean last,
 			@QueryParam("externalId") String externalId,
 			@Context HttpServletRequest request) {
-		
-		RepositoryEntry entry = repositoryService.loadByResourceKey(resourceKey);
-		if(entry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
+
 		if(!isAdminOf(entry, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -132,8 +123,7 @@ public class CertificationWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({"application/pdf"})
-	public Response headCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@Context HttpServletRequest request) {
+	public Response headCertificateInfo(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -142,16 +132,7 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
-		OLATResource resource = resourceManager.findResourceable(courseOres);
-		if(resource == null) {
-			resource = resourceManager.findResourceById(resourceKey);
-		}
-		if(resource == null) {
-			return Response.serverError().status(Response.Status.NOT_FOUND).build();
-		}
-		
-		Certificate certificate = certificatesManager.getLastCertificate(identity, resource.getKey());
+		Certificate certificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
 		if(certificate == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
@@ -178,8 +159,7 @@ public class CertificationWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({"application/pdf"})
-	public Response getCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@Context HttpServletRequest request) {
+	public Response getCertificate(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -188,7 +168,7 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Certificate certificate = certificatesManager.getLastCertificate(identity, resourceKey);
+		Certificate certificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
 		if(certificate == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
@@ -206,8 +186,7 @@ public class CertificationWebService {
 	@ApiResponse(responseCode = "200", description = "The certificate was deleted")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
-	public Response deleteCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@Context HttpServletRequest request) {
+	public Response deleteCertificateInfo(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -216,16 +195,7 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
-		OLATResource resource = resourceManager.findResourceable(courseOres);
-		if(resource == null) {
-			resource = resourceManager.findResourceById(resourceKey);
-		}
-		if(resource == null) {
-			return Response.serverError().status(Response.Status.NOT_FOUND).build();
-		}
-		
-		Certificate certificate = certificatesManager.getLastCertificate(identity, resource.getKey());
+		Certificate certificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
 		if(certificate == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
@@ -252,7 +222,7 @@ public class CertificationWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
 	@ApiResponse(responseCode = "500", description = "An unexpected error happened during the creation of the certificate")
-	public Response putCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
+	public Response putCertificate(@PathParam("identityKey") Long identityKey,
 			@QueryParam("score")@Parameter(description = "The score which appears in the certificate") Float score,
 			@QueryParam("maxScore")@Parameter(description = "The max score which appears in the certificate") Float maxScore,
 			@QueryParam("passed") @Parameter(description = "The passed/failed which appears in the certificate (true/false)") Boolean passed,
@@ -269,17 +239,6 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		OLATResource resource = resourceManager.findResourceById(resourceKey);
-		if(resource == null) {
-			resource = resourceManager.findResourceable(resourceKey, "CourseModule");
-		}
-		
-		if(resource == null) {	
-			return Response.serverError().status(Response.Status.NOT_FOUND).build();
-		}
-		
-		ICourse course = CourseFactory.loadCourse(resource);
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
 		CertificateTemplate template = certificateConfig.getTemplate();
 		
@@ -322,13 +281,11 @@ public class CertificationWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@Context HttpServletRequest request) {
+	public Response postCertificate(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		MultipartReader partsReader = null;
 		try {
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
-			String courseTitle = partsReader.getValue("courseTitle");
 			String externalId = partsReader.getValue("externalId");
 			CertificateManagedFlag[] managedFlags = CertificateManagedFlag.toEnum(partsReader.getValue("managedFlags"));
 			
@@ -352,15 +309,8 @@ public class CertificationWebService {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
-			OLATResource resource = resourceManager.findResourceById(resourceKey);
-			if(resource == null) {
-				Identity identity = getUserRequest(request).getIdentity();
-				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate,
-						externalId, managedFlags, courseTitle, resourceKey, nextRecertificationDate, tmpFile, identity);
-			} else {
-				certificatesManager.uploadCertificate(assessedIdentity, creationDate,
-						externalId, managedFlags, resource, nextRecertificationDate, tmpFile);
-			}
+			certificatesManager.uploadCertificate(assessedIdentity, creationDate,
+				externalId, managedFlags, entry.getOlatResource(), nextRecertificationDate, tmpFile);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
@@ -369,7 +319,7 @@ public class CertificationWebService {
 		}
 	}
 	
-	private boolean isAdminOf(RepositoryEntry entry, HttpServletRequest request) {
+	private boolean isAdminOf(RepositoryEntryRef entry, HttpServletRequest request) {
 		try {
 			Identity identity = getUserRequest(request).getIdentity();
 			return repositoryService.hasRoleExpanded(identity, entry, OrganisationRoles.administrator.name(),

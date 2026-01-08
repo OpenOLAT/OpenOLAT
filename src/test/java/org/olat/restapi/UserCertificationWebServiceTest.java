@@ -303,7 +303,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 				.path(assessedIdentity.getKey().toString())
 				.path("certificates").build();
 
-		URL certificateUrl = CertificationTest.class.getResource("certificate.pdf");
+		URL certificateUrl = CourseCertificationTest.class.getResource("certificate.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI());
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
