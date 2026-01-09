@@ -130,6 +130,7 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
         Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
 
         organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
+        dbInstance.commitAndCloseSession();
 
         organisationService.deleteOrganisation(root, null, JunitTestHelper.getDefaultActor());
 
