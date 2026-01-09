@@ -126,8 +126,10 @@ public class AssessmentModePage {
 		By formBy = By.cssSelector("fieldset.o_sel_assessment_mode_edit_restrictions_form");
 		OOGraphene.waitElement(formBy, browser);
 		
-		By elementRestrictionsBy = By.cssSelector(".o_sel_assessment_mode_restriction_elements input[type='checkbox']");
+		By elementRestrictionsBy = By.cssSelector(".o_sel_assessment_mode_restriction_elements button.o_button_toggle");
 		browser.findElement(elementRestrictionsBy).click();
+		By elementRestrictionsEnabledBy = By.cssSelector(".o_sel_assessment_mode_restriction_elements button.o_button_toggle.o_toggle_on");
+		OOGraphene.waitElement(elementRestrictionsEnabledBy, browser);
 		
 		By selectBy = By.cssSelector(".o_sel_assessment_mode_edit_restrictions_form a.o_sel_assessment_mode_select_elements");
 		OOGraphene.waitElement(selectBy, browser).click();

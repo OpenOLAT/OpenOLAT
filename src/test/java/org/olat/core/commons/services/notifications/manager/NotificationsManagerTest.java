@@ -142,6 +142,61 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedPublisher);
 		Assert.assertEquals(publisher, reloadedPublisher);
 	}
+	
+	@Test
+	public void updatePublisher() {
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SIMPLE", Long.valueOf(130), identifier);
+		PublisherData data = new PublisherData("testPublisherWithNoData", "one", "[Publisher:0][" + identifier + ":0]");
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, data);
+		dbInstance.commitAndCloseSession();
+
+		PublisherData newData = new PublisherData("completNew", "two", "[SomethingElse:0][" + identifier + ":0]");
+		notificationManager.updatePublisherData(context, newData);
+		dbInstance.commitAndCloseSession();
+		
+		Publisher updatedPublisher = notificationManager.getPublisher(context);
+		Assert.assertNotNull(updatedPublisher);
+		Assert.assertEquals(publisher, updatedPublisher);
+	}
+	
+	/**
+	 * @see https://track.frentix.com/issue/OO-9150
+	 */
+	@Test
+	public void updateDoubledPublishers() {
+		// Generate 2 publishers with the same context but different data
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		String type = "testDoublePublisher";
+		String businessPath = "[Publisher:0][One:0][" + identifier + ":0]";
+		
+		SubscriptionContext context = new SubscriptionContext("DOUBLE", Long.valueOf(130), identifier);
+		PublisherData data1 = new PublisherData(type, "one", businessPath);
+		Publisher publisher1 = notificationManager.getOrCreatePublisherWithData(context, data1, null, PublisherChannel.PULL);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher1);
+		
+		PublisherData data2 = new PublisherData(type, "two", businessPath);
+		Publisher publisher2 = notificationManager.getOrCreatePublisherWithData(context, data2, null, PublisherChannel.PULL);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher2);
+		Assert.assertNotEquals(publisher1, publisher2);
+		
+		PublisherData newData = new PublisherData(type, "three", businessPath);
+		Publisher updatedPublisher = notificationManager.updatePublisherData(context, newData);
+		dbInstance.commitAndCloseSession();
+		
+		Publisher reloadedUpdatedPublisher = notificationManager.getPublisher(context);
+		Assert.assertNotNull(reloadedUpdatedPublisher);
+		Assert.assertEquals(updatedPublisher, reloadedUpdatedPublisher);
+		Assert.assertEquals("three", reloadedUpdatedPublisher.getData());
+		
+		Publisher updatedPublisherWithData = notificationManager.getPublisher(context, newData);
+		Assert.assertNotNull(updatedPublisherWithData);
+		Assert.assertEquals(updatedPublisher, updatedPublisherWithData);
+		Assert.assertEquals("three", updatedPublisherWithData.getData());
+		
+	}
 
 	@Test
 	public void updateAllSubscribers() {

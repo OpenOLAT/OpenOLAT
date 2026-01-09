@@ -81,6 +81,23 @@ public class SubscriberDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void countSubscribers() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b8-");
+
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SubscriberDAOTest", Long.valueOf(123008), identifier);
+		PublisherData publisherData = new PublisherData("getSubscribersByData", identifier, null);
+		Publisher publisher = notificationsManager.getOrCreatePublisherWithData(context, publisherData, null, PublisherChannel.DIRECT_EMAIL);
+		dbInstance.commitAndCloseSession();
+		Subscriber subscriber = notificationsManager.subscribe(id, publisher);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(subscriber);
+
+		long subscribers = subscriberDao.countSubscribers(publisher);
+		Assert.assertEquals(1l, subscribers);
+	}
+	
+	@Test
 	public void getSubscriberOfRootPublisher() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b2-");
 

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -31,6 +32,7 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * 
@@ -51,7 +53,7 @@ public class PublisherDAOTest extends OlatTestCase {
 	public void getPublisherByType() {
 		String identifier = UUID.randomUUID().toString();
 		String publisherType = "TYPE-" + identifier;
-		SubscriptionContext context = new SubscriptionContext("PS", Long.valueOf(123), identifier);
+		SubscriptionContext context = new SubscriptionContext("PS", Long.valueOf(312), identifier);
 		PublisherData publisherData = new PublisherData(publisherType, "data-field-getPublisherByType-1", "[JUNIT:0]");
 		
 		Publisher publisher = notificationsManager.getOrCreatePublisher(context, publisherData);
@@ -62,5 +64,35 @@ public class PublisherDAOTest extends OlatTestCase {
 			.hasSize(1)
 			.containsExactly(publisher);
 	}
-
+	
+	@Test
+	public void getPublishers() {
+		String identifier = UUID.randomUUID().toString();
+		String publisherType = "TYPE-" + identifier;
+		SubscriptionContext context = new SubscriptionContext("PS", Long.valueOf(313), identifier);
+		PublisherData publisherData = new PublisherData(publisherType, "data-field-getPublishers-1", "[JUNIT:0]");
+		
+		Publisher publisher = notificationsManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		
+		List<Publisher> publishers = publisherDao.getPublishers(context);
+		Assertions.assertThat(publishers)
+			.hasSize(1)
+			.containsExactly(publisher);
+	}
+	
+	@Test
+	public void countPublishers() {
+		String identifier = UUID.randomUUID().toString();
+		String publisherType = "TYPE-" + identifier;
+		SubscriptionContext context = new SubscriptionContext("PS", Long.valueOf(314), identifier);
+		PublisherData publisherData = new PublisherData(publisherType, "data-field-countPublishers-1", "[JUNIT:0]");
+		
+		Publisher publisher = notificationsManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher);
+		
+		long publishers = publisherDao.countPublishers(context);
+		Assert.assertEquals(1l, publishers);
+	}
 }

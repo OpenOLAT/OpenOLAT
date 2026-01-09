@@ -22,13 +22,11 @@ package org.olat.course.nodes.bc;
 import java.io.File;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.folder.ui.FolderController;
 import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -98,6 +96,8 @@ public class BCCourseNodeConfigController extends FormBasicController {
 	
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private NotificationsManager notifManager;
 	
 	public BCCourseNodeConfigController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			BCCourseNode bcNode, ICourse course) {
@@ -306,17 +306,12 @@ public class BCCourseNodeConfigController extends FormBasicController {
 	private void updatePublisher(VFSContainer container){
 		File realFile = VFSManager.getRealFile(container);
 		String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
-
-		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), node);
 
-		Publisher publisher = notifManager.getPublisher(nodefolderSubContext);
-		if (publisher != null) {
-			String businessPath = getWindowControl().getBusinessControl().getAsString();
-			String data = "/"+relPath;
-			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(BCCourseNode.class), data, businessPath);
-			notifManager.updatePublisherData(nodefolderSubContext, pdata);
-		}
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		String data = "/" + relPath;
+		PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(BCCourseNode.class), data, businessPath);
+		notifManager.updatePublisherData(nodefolderSubContext, pdata);
 	}
 	
 	private void doOpenFolder(UserRequest ureq) {

@@ -49,6 +49,18 @@ public class SubscriberDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	public long countSubscribers(Publisher publisher) {
+		String query = """
+				select count(sub.key) from notisub as sub
+				where sub.publisher.key = :publisherKey""";
+		
+		List<Long> count = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("publisherKey", publisher.getKey())
+				.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).longValue() : 0l;
+	}
+	
 	public List<Subscriber> getSubscriber(IdentityRef identity, Publisher publisher) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("subscribersByPublisherAndIdentity", Subscriber.class)

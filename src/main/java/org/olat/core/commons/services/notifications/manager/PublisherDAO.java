@@ -22,6 +22,7 @@ package org.olat.core.commons.services.notifications.manager;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.Query;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
@@ -94,6 +95,27 @@ public class PublisherDAO {
 		return query.getResultList();
 	}
 	
+	public long countPublishers(SubscriptionContext subsContext) {
+		QueryBuilder q = new QueryBuilder();
+		q.append("select count(pub.key) from notipublisher pub ")
+		 .where().append(" pub.resName=:resName and pub.resId=:resId");
+		if(StringHelper.containsNonWhitespace(subsContext.getSubidentifier())) {
+			q.and().append(" pub.subidentifier=:subidentifier");
+		} else {
+			q.and().append(" (pub.subidentifier='' or pub.subidentifier is null)");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), Long.class)
+				.setParameter("resName", subsContext.getResName())
+				.setParameter("resId", subsContext.getResId());
+		if(StringHelper.containsNonWhitespace(subsContext.getSubidentifier())) {
+			query.setParameter("subidentifier", subsContext.getSubidentifier());
+		}
+		List<Long> count = query.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).longValue() : 0l;
+	}
+	
 	public List<Publisher> getPublishers(String publisherType, String data) {
 		String q = """
 				select pub from notipublisher pub
@@ -129,5 +151,24 @@ public class PublisherDAO {
 		if (res.isEmpty()) return null;
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
 		return res.get(0);
+	}
+	
+	public int deletePublishersAndSubscribers(List<Publisher> pubs) {
+		if(pubs == null || pubs.isEmpty()) return 0;
+		
+		String q1 = "delete from notisub sub where sub.publisher in (:publishers)";
+		Query query1 = dbInstance.getCurrentEntityManager().createQuery(q1);
+		query1.setParameter("publishers", pubs);
+		int rows = query1.executeUpdate();
+		
+		String q2 = "delete from notipublisher pub where pub in (:publishers)";
+		Query query2 = dbInstance.getCurrentEntityManager().createQuery(q2);
+		query2.setParameter("publishers", pubs);
+		rows += query2.executeUpdate();
+		return rows;
+	}
+	
+	public void deletePublisher(Publisher publisher) {
+		dbInstance.getCurrentEntityManager().remove(publisher);
 	}
 }
