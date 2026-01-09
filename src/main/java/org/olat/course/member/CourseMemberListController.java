@@ -60,6 +60,7 @@ import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.curriculum.CurriculumElementShort;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -149,8 +150,6 @@ public class CourseMemberListController extends AbstractMemberListController imp
 
 	@Override
 	protected void initOriginFiltersPresets(List<FlexiFiltersTab> tabs) {
-		boolean showOriginCpl = curriculumModule.isEnabled();
-		
 		FlexiFiltersTab originCourseTab = FlexiFiltersTabFactory.tabWithImplicitFilters("OriginCourse", 
 				translate("filter.preset.origin.course"), TabSelectionBehavior.reloadData, 
 				List.of(FlexiTableFilterValue.valueOf(FILTER_ORIGIN, SearchMembersParams.Origin.repositoryEntry.name())));
@@ -165,7 +164,7 @@ public class CourseMemberListController extends AbstractMemberListController imp
 		originGroupTab.setFiltersExpanded(true);
 		tabs.add(originGroupTab);
 
-		if (showOriginCpl) {
+		if (showOriginCpl()) {
 			FlexiFiltersTab originCplTab = FlexiFiltersTabFactory.tabWithImplicitFilters("OriginCPL",
 					translate("filter.preset.origin.cpl"), TabSelectionBehavior.reloadData,
 					List.of(FlexiTableFilterValue.valueOf(FILTER_ORIGIN, SearchMembersParams.Origin.curriculum.name())));
@@ -173,6 +172,26 @@ public class CourseMemberListController extends AbstractMemberListController imp
 			originCplTab.setFiltersExpanded(true);
 			tabs.add(originCplTab);
 		}
+	}
+
+	private boolean showOriginCpl() {
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+
+		if (RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType())) {
+			return true;
+		}
+
+		if (RepositoryEntryRuntimeType.template.equals(repoEntry.getRuntimeType())) {
+			return false;
+		}
+
+		if (RepositoryEntryRuntimeType.standalone.equals(repoEntry.getRuntimeType())) {
+			return curriculumService.hasCurriculumElements(repoEntry);	
+		}
+		
+		return true;
 	}
 
 	@Override

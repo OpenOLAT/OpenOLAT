@@ -195,6 +195,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	@Autowired
 	protected BaseSecurity securityManager;
 	@Autowired
+	protected CurriculumService curriculumService;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -204,8 +206,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
-	@Autowired
-	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupModule groupModule;
 	@Autowired
