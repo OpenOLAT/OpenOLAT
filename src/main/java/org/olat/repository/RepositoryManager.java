@@ -83,6 +83,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.GroupLoggingAction;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -100,6 +101,7 @@ import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntrySecurityImpl;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
+import org.olat.repository.model.RoleAndDefault;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -134,6 +136,8 @@ public class RepositoryManager {
 	private ImageService imageHelper;
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -640,11 +644,11 @@ public class RepositoryManager {
 					&& acService.isAccessible(re, identity, null, true, null, false).isAccessible();
 		} else {
 			// allow if identity is owner
-			List<Object[]> roleAndDefs = repositoryEntryRelationDao.getRoleAndDefaults(identity, re);
-			for(Object[] roleAndDef:roleAndDefs) {
-				String role = (String)roleAndDef[0];
-				Boolean def = (Boolean)roleAndDef[1];
-				Object curriculumElementKey = roleAndDef[2];
+			List<RoleAndDefault> roleAndDefs = getRolesAndDefaults(identity, re);
+			for(RoleAndDefault roleAndDef:roleAndDefs) {
+				String role = roleAndDef.role();
+				Boolean def = roleAndDef.defaultGroup();
+				Object curriculumElementKey = roleAndDef.elementKey();
 				
 				if(GroupRoles.isValue(role)) {
 					switch(GroupRoles.valueOf(role)) {
@@ -704,6 +708,9 @@ public class RepositoryManager {
 						case mastercoach:
 							isMasterCoach = true;
 							break;
+						case curriculumowner:
+							isCurriculumManager = true;
+							break;
 						default: break;
 					}
 				}
@@ -759,6 +766,17 @@ public class RepositoryManager {
 				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,
 				isAuthor, isAdministrator, isLearnRessourceManager, isPrincipal, isCurriculumManager,
 				canLaunch, readOnly);
+	}
+	
+	public List<RoleAndDefault> getRolesAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
+		List<RoleAndDefault> roleAndDefs = repositoryEntryRelationDao.getRoleAndDefaults(identity, re);
+		if(curriculumModule.isEnabled()) {
+			List<RoleAndDefault> curriculumRoles = repositoryEntryRelationDao.getCurriculumRoleAndDefaults(identity, re);
+			if(!curriculumRoles.isEmpty()) {
+				roleAndDefs.addAll(curriculumRoles);
+			}
+		}
+		return roleAndDefs;
 	}
 	
 	public RepositoryEntry setOptions(final RepositoryEntry re,
