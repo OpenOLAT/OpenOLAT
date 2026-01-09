@@ -45,7 +45,6 @@ import java.util.Set;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -728,13 +727,45 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 
 	@Override
-	public void updatePublisherData(SubscriptionContext subsContext, PublisherData data){
-		Publisher publisher= getPublisherForUpdate(subsContext);
+	public Publisher updatePublisherData(SubscriptionContext subsContext, PublisherData data) {
+		long numOfPublishers = publisherDao.countPublishers(subsContext);
+		if(numOfPublishers == 0) {
+			return null;// Nothing to do
+		}
+		if(numOfPublishers > 1) {
+			reducePublishers(subsContext);
+		}
+		
+		Publisher publisher = getPublisherForUpdate(subsContext);
 		if(publisher != null){
 			publisher.setData(data.getData());
-			dbInstance.getCurrentEntityManager().merge(publisher);
+			publisher = dbInstance.getCurrentEntityManager().merge(publisher);
 			dbInstance.commit();
 		}
+		return publisher;
+	}
+	
+	/**
+	 * The method doesn't check root publisher, it reduces all publishers
+	 * in the same context to one.
+	 * 
+	 * @param subsContext The subscription context
+	 */
+	private void reducePublishers(SubscriptionContext subsContext) {
+		List<Publisher> publishers = getInternalPublishers(subsContext, null);
+		for(Publisher publisher:publishers) {
+			if(subscriberDao.countSubscribers(publisher) == 0) {
+				publisherDao.deletePublisher(publisher);
+				publishers.remove(publisher);
+			}
+		}
+		
+		if(publishers.size() > 1) {
+			List<Publisher> publishersToDelete = publishers.subList(1, publishers.size());
+			publisherDao.deletePublishersAndSubscribers(publishersToDelete);
+		}
+		
+		dbInstance.commitAndCloseSession();
 	}
 
 	@Override
@@ -850,17 +881,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		if (type == null || id == null) throw new AssertException("type/id cannot be null! type:" + type + " / id:" + id);
 		List<Publisher> pubs = getPublishers(type, id);
 		if(pubs.isEmpty()) return 0;
-
-		String q1 = "delete from notisub sub where sub.publisher in (:publishers)";
-		Query query1 = dbInstance.getCurrentEntityManager().createQuery(q1);
-		query1.setParameter("publishers", pubs);
-		int rows = query1.executeUpdate();
 		
-		String q2 = "delete from notipublisher pub where pub in (:publishers)";
-		Query query2 = dbInstance.getCurrentEntityManager().createQuery(q2);
-		query2.setParameter("publishers", pubs);
-		rows += query2.executeUpdate();
-		return rows;
+		return publisherDao.deletePublishersAndSubscribers(pubs);
 	}
 
 	/**
@@ -1402,8 +1424,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			for (Subscriber subscriber : subscribers) {
 				deleteSubscriber(subscriber);
 			}
-			// else:
-			dbInstance.deleteObject(p);
+			publisherDao.deletePublisher(p);
 		}
 	}
 

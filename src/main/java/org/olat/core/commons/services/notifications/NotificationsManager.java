@@ -404,7 +404,7 @@ public interface NotificationsManager {
 	 * @param subscriptionContext
 	 * @param publisherData new data to write
 	 */
-	public void updatePublisherData(SubscriptionContext subscriptionContext, PublisherData publisherData);
+	public Publisher updatePublisherData(SubscriptionContext subscriptionContext, PublisherData publisherData);
 
 	/**
 	 * update all subscribers regarding their enabled status for the given publisher
