@@ -201,11 +201,10 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public void deleteOrganisation(OrganisationRef organisation, OrganisationRef organisationAlt, Identity doer) {
 		// Delete all rights for this organisation
-		Organisation org = getOrganisation(organisation);
-		for (OrganisationRoles role : OrganisationRoles.values()) {
-			setGrantedOrganisationRights(org, role, Collections.emptyList());
-		}
 		OrganisationImpl reloadedOrganisation = (OrganisationImpl)getOrganisation(organisation);
+		for (OrganisationRoles role : OrganisationRoles.values()) {
+			setGrantedOrganisationRights(reloadedOrganisation, role, Collections.emptyList());
+		}
 		if(DEFAULT_ORGANISATION_IDENTIFIER.equals(reloadedOrganisation.getIdentifier())) {
 			log.error("Someone try to delete the default organisation");
 			return;
@@ -241,10 +240,14 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		Map<String,OrganisationDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(OrganisationDataDeletable.class);
 		for(OrganisationDataDeletable delegate:deleteDelegates.values()) {
 			delete &= delegate.deleteOrganisationData(reloadedOrganisation, replacementOrganisation);
+			dbInstance.commitAndCloseSession();
 		}
 		
 		if(delete) {
-			organisationDao.delete(reloadedOrganisation);
+			Organisation referenceOrganisation = dbInstance.getCurrentEntityManager()
+					.getReference(OrganisationImpl.class, reloadedOrganisation.getKey());
+			organisationDao.delete(referenceOrganisation);
+			dbInstance.commitAndCloseSession();
 		} else {
 			for(GroupMembership membership:memberships) {
 				groupMembershipHistoryDao.createMembershipHistory(organisationGroup, membership.getIdentity(),

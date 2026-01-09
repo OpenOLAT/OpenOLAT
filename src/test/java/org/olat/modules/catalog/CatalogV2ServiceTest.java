@@ -160,6 +160,8 @@ public class CatalogV2ServiceTest extends OlatTestCase {
 		// Replace one organisation
 		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null,
 				null, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+		
 		organisationService.deleteOrganisation(organisation2, organisation3, null);
 		dbInstance.commitAndCloseSession();
 		
