@@ -83,6 +83,7 @@ public class CoachInformationsController extends FormBasicController
 	private static final String COACH_SELECTION_PREFIX = "ci_sel_";
 	
 	private DropdownItem coachDropdown;
+	private List<FormLink> coachLinks = List.of();
 	private List<SessionInformationWrapper> sessionInformationWrappers = List.of();
 	
 	private CoachInformations coachInformations;
@@ -155,8 +156,10 @@ public class CoachInformationsController extends FormBasicController
 	@Override
 	public void initCoachCandidates(CoachCandidates coachCandidates) {
 		coachDropdown.removeAllFormItems();
-		
-		coachCandidates.getCoaches(coachInformations.getRoles()).stream()
+
+		Set<Identity> coaches = coachCandidates.getCoaches(coachInformations.getRoles());
+		coachLinks = new ArrayList<>(coaches.size());
+		coaches.stream()
 			.map(this::createCoachLink)
 			.sorted((l1, l2) -> l1.getI18nKey().compareToIgnoreCase(l2.getI18nKey()))
 			.forEach(coachLink -> coachDropdown.addElement(coachLink));
@@ -171,6 +174,7 @@ public class CoachInformationsController extends FormBasicController
 		coachLink.setI18nKey(userDropdownComp.getPortraitUser().getDisplayName());
 		coachLink.setInnerComponent(userDropdownComp);
 		coachLink.setUserObject(coach);
+		coachLinks.add(coachLink);
 		return coachLink;
 	}
 	
@@ -187,8 +191,10 @@ public class CoachInformationsController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink link) { 
 			if (link.getName().startsWith(COACH_SELECTION_PREFIX)) {
-				if (link.getUserObject() instanceof Identity coach) {
-					doCoachSelected(coach);
+				if (coachLinks.contains(link)) {
+					if (link.getUserObject() instanceof Identity coach) {
+						doCoachSelected(coach);
+					}
 				}
 			}
 		}
@@ -203,6 +209,7 @@ public class CoachInformationsController extends FormBasicController
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		sessionInformationWrappers.forEach(wrapper -> wrapper.getInformationEl().clearError());
+		flc.contextRemove("error");
 		if (!validationEnabled) return true;
 		
 		boolean allOk = super.validateFormLogic(ureq);
@@ -214,6 +221,11 @@ public class CoachInformationsController extends FormBasicController
 					informationEl.setErrorKey("form.legende.mandatory");
 					allOk = false;
 				}
+			}
+		} else if (isMandatoryNotEditable()) {
+			if (!isAnyValueAvailable()) {
+				flc.contextPut("error", translate("coach.information.error.mandatory"));
+				allOk = false;
 			}
 		}
 		
@@ -259,6 +271,11 @@ public class CoachInformationsController extends FormBasicController
 		
 		boolean fillInVisible = !readOnly && coachDropdown.size() > 0;
 		coachDropdown.setVisible(fillInVisible);
+		if(!readOnly && coachDropdown.size() == 0 && isMandatoryNotEditable()) {
+			flc.contextPut("warning", translate("coach.information.error.no.coaches.available"));
+		} else {
+			flc.contextRemove("warning");
+		}
 	}
 
 	@Override
@@ -302,7 +319,7 @@ public class CoachInformationsController extends FormBasicController
 			} else {
 				evaluationFormManager.updateStringResponse(response, xmlValue);
 			}
-		} else {
+		} else if (response != null) {
 			evaluationFormManager.deleteResponse(response);
 		}
 	}
@@ -355,6 +372,10 @@ public class CoachInformationsController extends FormBasicController
 	
 	private boolean isMandatory() {
 		return Obligation.mandatory.equals(coachInformations.getObligation());
+	}
+	
+	private boolean isMandatoryNotEditable() {
+		return Obligation.autofill.equals(coachInformations.getObligation());
 	}
 	
 	private boolean isObligationEditable() {
