@@ -77,7 +77,7 @@ public class MailUserDataManager implements UserDataDeletable, UserDataExportabl
 		//set as deleted all recipients
 		log.info("Delete intern messages for identity::{}", identity.getKey());
 		
-		Collection<DBMailLight> inbox = new HashSet<>(mailManager.getInbox(identity, null, Boolean.FALSE, null, 0, 0));
+		Collection<DBMailLight> inbox = new HashSet<>(mailManager.getInbox(identity, false, false, false, null, 0, 0));
 		for(DBMailLight inMail:inbox) {
 			mailManager.delete(inMail, identity, true);
 		}
@@ -116,7 +116,7 @@ public class MailUserDataManager implements UserDataDeletable, UserDataExportabl
 			header.addCell(2, "Subject");
 			header.addCell(3, "From");
 			
-			List<DBMailLight> mails = mailManager.getInbox(identity, null, null, null, 0, -1);
+			List<DBMailLight> mails = mailManager.getInbox(identity, false, true, false, null, 0, -1);
 			dbInstance.commitAndCloseSession();
 			for(DBMailLight mail:mails) {
 				Row row = sheet.newRow();

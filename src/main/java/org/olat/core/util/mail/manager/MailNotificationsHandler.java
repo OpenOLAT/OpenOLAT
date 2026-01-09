@@ -89,7 +89,7 @@ public class MailNotificationsHandler implements NotificationsHandler  {
 		// can't be loaded when already deleted
 		if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 			try {
-				List<DBMailLight> inbox = mailManager.getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, -1);
+				List<DBMailLight> inbox = mailManager.getInbox(subscriber.getIdentity(), true, false, false, compareDate, 0, -1);
 				if(!inbox.isEmpty()) {
 					Translator translator = Util.createPackageTranslator(MailModule.class, locale);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate("mail.notification.type"), "o_co_icon"), null);

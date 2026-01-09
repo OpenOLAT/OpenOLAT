@@ -81,6 +81,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -579,18 +580,19 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 * @return
 	 */
 	@Override
-	public List<DBMailLight> getInbox(IdentityRef identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder();
-		String fetchOption = (fetchRecipients != null && fetchRecipients.booleanValue()) ? "fetch" : "";
+	public List<DBMailLight> getInbox(IdentityRef identity,
+			boolean unreadOnly, boolean fetchFrom, boolean fetchRecipients,
+			Date from, int firstResult, int maxResults) {
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
-		  .append(" inner join fetch ").append(" mail.from fromRecipient")
-		  .append(" left join fetch ").append(" fromRecipient.recipient fromRecipientIdentity")
-		  .append(" left join fetch ").append(" fromRecipientIdentity.user fromRecipientUser")
-		  .append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
-		  .append(" left join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
-		  .append(" left join ").append(fetchOption).append(" recipientIdentity.user recipientUser")
+		  .append(" inner join ").append("fetch", fetchFrom).append(" mail.from fromRecipient")
+		  .append(" left join ").append("fetch", fetchFrom).append(" fromRecipient.recipient fromRecipientIdentity")
+		  .append(" left join ").append("fetch", fetchFrom).append(" fromRecipientIdentity.user fromRecipientUser")
+		  .append(" inner join ").append("fetch", fetchRecipients).append(" mail.recipients recipient")
+		  .append(" left join ").append("fetch", fetchRecipients).append(" recipient.recipient recipientIdentity")
+		  .append(" left join ").append("fetch", fetchRecipients).append(" recipientIdentity.user recipientUser")
 		  .append(" where recipientIdentity.key=:recipientKey and recipient.deleted=false");
-		if(unreadOnly != null && unreadOnly.booleanValue()) {
+		if(unreadOnly) {
 			sb.append(" and recipient.read=false");
 		}
 		if(from != null) {

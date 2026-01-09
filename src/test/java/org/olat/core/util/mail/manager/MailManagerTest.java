@@ -110,7 +110,7 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the inbox of toId
-		List<DBMailLight> incomingMails = mailManager.getInbox(toId, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingMails = mailManager.getInbox(toId, true, true, true, null, 0, -1);
 		Assert.assertNotNull(incomingMails);
 		Assert.assertEquals(1, incomingMails.size());
 		
@@ -206,7 +206,7 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the inbox of 1
-		List<DBMailLight> incomingsMails = mailManager.getInbox(toId_1, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingsMails = mailManager.getInbox(toId_1, true, true, true, null, 0, -1);
 		Assert.assertNotNull(incomingsMails);
 		Assert.assertEquals(1, incomingsMails.size());
 		DBMailLight incomingMail = incomingsMails.get(0);
@@ -214,13 +214,13 @@ public class MailManagerTest extends OlatTestCase {
 		Assert.assertEquals("Hello ccList", incomingMail.getSubject());
 		
 		//retrieve the inbox of 2
-		List<DBMailLight> incomingsMails_2 = mailManager.getInbox(toId_2, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingsMails_2 = mailManager.getInbox(toId_2, true, true, true, null, 0, -1);
 		Assert.assertNotNull(incomingsMails_2);
 		Assert.assertEquals(1, incomingsMails_2.size());
 		Assert.assertEquals(incomingMail, incomingsMails_2.get(0));
 		
 		//retrieve the inbox of 3
-		List<DBMailLight> incomingsMails_3 = mailManager.getInbox(toId_2, Boolean.TRUE, Boolean.TRUE, null, 0, -1);
+		List<DBMailLight> incomingsMails_3 = mailManager.getInbox(toId_2, true, true, true, null, 0, -1);
 		Assert.assertNotNull(incomingsMails_3);
 		Assert.assertEquals(1, incomingsMails_3.size());
 		Assert.assertEquals(incomingMail, incomingsMails_3.get(0));

@@ -85,13 +85,13 @@ public class MailUserDataManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check inbox / outbox
-		List<DBMailLight> deletedMails_1 = mailManager.getInbox(toId_1, null, null, null, 0, -1);
+		List<DBMailLight> deletedMails_1 = mailManager.getInbox(toId_1, false, false, false, null, 0, -1);
 		Assert.assertNotNull(deletedMails_1);
 		Assert.assertTrue(deletedMails_1.isEmpty());
-		List<DBMailLight> deletedMails_2 = mailManager.getInbox(toId_2, null, null, null, 0, -1);
+		List<DBMailLight> deletedMails_2 = mailManager.getInbox(toId_2, false, false, false, null, 0, -1);
 		Assert.assertNotNull(deletedMails_2);
 		Assert.assertTrue(deletedMails_2.isEmpty());
-		List<DBMailLight> deletedMails_3 = mailManager.getInbox(toId_3, null, null, null, 0, -1);
+		List<DBMailLight> deletedMails_3 = mailManager.getInbox(toId_3, false, false, false, null, 0, -1);
 		Assert.assertNotNull(deletedMails_3);
 		Assert.assertTrue(deletedMails_3.isEmpty());
 		List<DBMailLight> deletedMails_4 = mailManager.getOutbox(fromId, 0, -1, true);

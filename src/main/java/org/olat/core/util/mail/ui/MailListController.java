@@ -251,7 +251,7 @@ public class MailListController extends BasicController implements Activateable2
 				}
 			}
 		} else {
-			mails = mailManager.getInbox(getIdentity(), null, Boolean.TRUE, null, 0, -1);
+			mails = mailManager.getInbox(getIdentity(), false, true, true, null, 0, -1);
 		}
 		
 		//extract contexts

@@ -128,7 +128,7 @@ public interface MailManager {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<DBMailLight> getInbox(IdentityRef identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults);
+	public List<DBMailLight> getInbox(IdentityRef identity, boolean unreadOnly, boolean fetchFrom, boolean fetchRecipients, Date from, int firstResult, int maxResults);
 	
 	/**
 	 * Forward an E-Mail from the OpenOLAt mail box to the real one
