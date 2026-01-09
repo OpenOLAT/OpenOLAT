@@ -250,7 +250,7 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		allOk &= validateIsMandatory(titleEl);
 		allOk &= validateIsMandatory(topicEl);
 		allOk &= validateIsMandatory(surveyLectureEl) && validateInteger(surveyLectureEl, 1, 10000);
-		allOk &= validateIsMandatory(minutesBeforeEndEl) && validateInteger(minutesBeforeEndEl, 0, 1000);
+		allOk &= validateIsMandatory(minutesBeforeEndEl) && validateInteger(minutesBeforeEndEl, 0, 9999);
 		allOk &= validateIsMandatory(durationEl) && validateInteger(durationEl, 1, 10000);
 		allOk &= validateInteger(announcementCoachDaysEl, 0, 10000);
 		allOk &= validateInteger(invitationDaysEl, 0, 10000);

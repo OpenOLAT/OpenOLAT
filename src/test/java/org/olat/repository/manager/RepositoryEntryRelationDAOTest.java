@@ -58,6 +58,7 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
+import org.olat.repository.model.RoleAndDefault;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,14 +169,37 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		List<Object[]> participantRoles = repositoryEntryRelationDao.getRoleAndDefaults(id, re);
+		List<RoleAndDefault> participantRoles = repositoryEntryRelationDao.getRoleAndDefaults(id, re);
 		Assert.assertNotNull(participantRoles);
 		Assert.assertEquals(2, participantRoles.size());
 	
-		Object[] firstRole = participantRoles.get(0);
-		Object[] secondRole = participantRoles.get(1);
-		assertThat((String)firstRole[0]).isIn(GroupRoles.participant.name(), OrganisationRoles.user.name());
-		assertThat((String)secondRole[0]).isIn(GroupRoles.participant.name(), OrganisationRoles.user.name());
+		RoleAndDefault firstRole = participantRoles.get(0);
+		RoleAndDefault secondRole = participantRoles.get(1);
+		Assertions.assertThat(firstRole.role()).isIn(GroupRoles.participant.name(), OrganisationRoles.user.name());
+		Assertions.assertThat(secondRole.role()).isIn(GroupRoles.participant.name(), OrganisationRoles.user.name());
+	}
+	
+	@Test
+	public void getCurriculumRoleAndDefaults() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("get-roles-2-");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for role", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for role",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(curriculum, id, CurriculumRoles.curriculumowner);
+		
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(id);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, true);
+		dbInstance.commit();
+		
+		List<RoleAndDefault> curriculumOwnerRoles = repositoryEntryRelationDao.getCurriculumRoleAndDefaults(id, entry);
+		Assert.assertNotNull(curriculumOwnerRoles);
+		Assert.assertEquals(1, curriculumOwnerRoles.size());
+		
+		RoleAndDefault firstRole = curriculumOwnerRoles.get(0);
+		Assertions.assertThat(firstRole.role()).isIn(CurriculumRoles.curriculumowner.name());
 	}
 	
 	@Test

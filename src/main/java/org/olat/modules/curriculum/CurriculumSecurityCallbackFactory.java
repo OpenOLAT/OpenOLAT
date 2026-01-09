@@ -102,7 +102,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewImplementations() {
-			return admin || !ownedElementKeys.isEmpty();
+			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementKeys.isEmpty();
 		}
 
 		@Override
@@ -123,7 +123,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canManagerCurriculumUsers() {
-			return admin;
+			return admin || !ownedCurriculumKeys.isEmpty();
 		}
 
 		@Override
@@ -206,7 +206,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canCurriculumsReports() {
-			return admin;
+			return admin || !ownedCurriculumKeys.isEmpty();
 		}
 
 		@Override

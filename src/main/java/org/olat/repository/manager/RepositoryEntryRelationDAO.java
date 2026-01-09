@@ -54,6 +54,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.model.MembershipInfos;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
+import org.olat.repository.model.RoleAndDefault;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -102,16 +103,33 @@ public class RepositoryEntryRelationDAO {
 	 * @param re
 	 * @return Return an array with the role and true if the relation is the default one.
 	 */
-	public List<Object[]> getRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
-		StringBuilder sb = new StringBuilder(512);
-		sb.append("select membership.role, relGroup.defaultGroup, curEl.key")
-		  .append(" from repoentrytogroup as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" left join curriculumelement curEl on (curEl.group.key=baseGroup.key)")
-		  .append(" where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey");
+	public List<RoleAndDefault> getRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
+		String sb = """
+				select new RoleAndDefault(membership.role, relGroup.defaultGroup, curEl.key)
+				from repoentrytogroup as relGroup
+				inner join relGroup.group as baseGroup
+				inner join baseGroup.members as membership
+				left join curriculumelement curEl on (curEl.group.key=baseGroup.key)
+				where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
+				.createQuery(sb, RoleAndDefault.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", re.getKey())
+				.getResultList();
+	}
+	
+	public List<RoleAndDefault> getCurriculumRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
+		String sb = """
+				select new RoleAndDefault(membership.role, null, curEl.key)
+				from repoentrytogroup as relGroup
+				inner join relGroup.group as baseGroup
+				inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)
+				inner join curEl.curriculum as cur
+				inner join cur.group as curGroup
+				inner join curGroup.members as membership
+				where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RoleAndDefault.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repoKey", re.getKey())
 				.getResultList();

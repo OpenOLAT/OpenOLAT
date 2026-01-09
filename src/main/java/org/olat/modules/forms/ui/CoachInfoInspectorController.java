@@ -105,7 +105,6 @@ public class CoachInfoInspectorController extends FormBasicController implements
 				? Role.owner.name()
 				: Role.coach.name();
 		roleEl.select(selectedRole, true);
-		roleEl.setEnabled(!restrictedEdit);
 		roleEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValues obligationSV = new SelectionValues();
