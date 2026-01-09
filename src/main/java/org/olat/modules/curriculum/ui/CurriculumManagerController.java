@@ -75,7 +75,7 @@ public class CurriculumManagerController extends BasicController implements Acti
 		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
 		Roles roles = usess.getRoles();
 		secCallback = CurriculumSecurityCallbackFactory.createCallback(roles, ownedCurriculums);
-		lecturesSecCallback = roles.isLectureManager() || roles.isAdministrator() || roles.isCurriculumManager() || roles.isLearnResourceManager()
+		lecturesSecCallback = roles.isLectureManager() || roles.isAdministrator() || roles.isCurriculumManager() || roles.isLearnResourceManager() || !ownedCurriculums.isEmpty()
 				? LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager)
 				: LecturesSecurityCallbackFactory.getSecurityCallback(false, false, false, null);
 		certificationSecCallback = CertificationProgramSecurityCallbackFactory
