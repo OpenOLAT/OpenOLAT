@@ -31,7 +31,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
@@ -105,11 +104,6 @@ public class CourseMemberListController extends AbstractMemberListController imp
 
 	@Override
 	protected void initGroupsColumn(FlexiTableColumnModel columnsModel) {
-		//
-	}
-
-	@Override
-	protected void initBatchButtons(FormItemContainer formLayout) {
 		//
 	}
 
