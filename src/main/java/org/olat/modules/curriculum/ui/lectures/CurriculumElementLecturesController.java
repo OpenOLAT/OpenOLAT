@@ -110,7 +110,8 @@ public class CurriculumElementLecturesController extends BasicController {
 		if(element != null) {
 			entries = curriculumService
 					.getRepositoryEntriesWithLectures(element, checkByIdentity, withDescendants);
-			elements = List.of(element);
+			elements = curriculumService.getCurriculumElementsDescendants(element);
+			elements.add(0, element);
 		} else {
 			entries = curriculumService
 					.getRepositoryEntriesWithLectures(curriculum, checkByIdentity);
