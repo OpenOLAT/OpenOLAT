@@ -27,8 +27,11 @@
 package org.olat.core.commons.persistence;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -39,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -478,6 +482,21 @@ public class PersistenceHelper {
 		if(results == null || pos >= results.length) return def;
 		Object obj = results[pos];
 		return obj == null ? def : ((Boolean)obj).booleanValue();
+	}
+	
+	public static Date extractDate(Object[] results, int pos) {
+		if(results == null || pos >= results.length) return null;
+		Object obj = results[pos];
+		if(obj instanceof Date d) {
+			return d;
+		}
+		if(obj instanceof LocalDateTime ldt) {
+			return DateUtils.toDate(ldt);
+		}
+		if(obj instanceof LocalDate ld) {
+			return DateUtils.toDate(ld);
+		}
+		return null;
 	}
 	
 	public static final String convert(String content) {

@@ -499,7 +499,7 @@ public class ACOrderDAO {
 			String billingAddressIdentifier = (String)order[pos++];
 			String purchseOrderNumber = (String)order[pos++];
 			String comment = (String)order[pos++];
-			Date creationDate = (Date)order[pos++];
+			Date creationDate = PersistenceHelper.extractDate(order, pos++);
 			String orderStatus = (String)order[pos++];
 			Long deliveryKey = ((Number)order[pos++]).longValue();
 			BigDecimal orderAmountLines = (BigDecimal)order[pos++];

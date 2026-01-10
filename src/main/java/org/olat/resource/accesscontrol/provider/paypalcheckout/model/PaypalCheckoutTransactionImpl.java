@@ -32,7 +32,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
-import org.hibernate.annotations.Target;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Price;
@@ -81,10 +80,9 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 	private Long methodId;
 	
 	@Embedded
-	@Target(PriceImpl.class)
     @AttributeOverride(name="amount", column = @Column(name="p_amount_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="p_amount_currency_code"))
-	private Price securePrice;
+	private PriceImpl securePrice;
 	
 	@Column(name="p_status", nullable=false, insertable=true, updatable=true)
 	private String status;
@@ -102,10 +100,9 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 	private String paypalCaptureId;
 	
 	@Embedded
-	@Target(PriceImpl.class)
     @AttributeOverride(name="amount", column = @Column(name="p_capture_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="p_capture_currency_code"))
-	private Price capturePrice;
+	private PriceImpl capturePrice;
 	
 	@Column(name="p_paypal_invoice_id", nullable=true, insertable=true, updatable=true)
 	private String paypalInvoiceId;
@@ -183,6 +180,7 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 		this.orderPartId = orderPartId;
 	}
 
+	@Override
 	public Long getMethodId() {
 		return methodId;
 	}
@@ -190,13 +188,14 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 	public void setMethodId(Long methodId) {
 		this.methodId = methodId;
 	}
-	
+
+	@Override
 	public Price getSecurePrice() {
 		return securePrice;
 	}
 	
 	public void setSecurePrice(Price securePrice) {
-		this.securePrice = securePrice;
+		this.securePrice = (PriceImpl)securePrice;
 	}
 
 	@Override
@@ -274,7 +273,7 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 
 	@Override
 	public void setCapturePrice(Price capturePrice) {
-		this.capturePrice = capturePrice;
+		this.capturePrice = (PriceImpl)capturePrice;
 	}
 
 	@Override

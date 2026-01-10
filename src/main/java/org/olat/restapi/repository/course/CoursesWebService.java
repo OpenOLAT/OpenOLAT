@@ -692,7 +692,7 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}
-			addedEntry = repositoryManager.setTechnicalType(addedEntry, type.getType());
+			addedEntry.setTechnicalType(type.getType());
 			addedEntry.setLocation(location);
 			addedEntry.setAuthors(authors);
 			addedEntry.setExternalId(externalId);

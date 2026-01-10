@@ -22,17 +22,6 @@ package org.olat.resource.accesscontrol.provider.paypal.model;
 
 import java.util.Date;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Target;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.model.PSPTransaction;
-import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
-import org.olat.resource.accesscontrol.model.PriceImpl;
-
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -43,6 +32,16 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
+import org.olat.resource.accesscontrol.model.PriceImpl;
 
 /**
  * 
@@ -90,10 +89,9 @@ public class PaypalTransaction implements CreateInfo, Persistable, PSPTransactio
 	private String secureCancelUUID;
 	
 	@Embedded
-	@Target(PriceImpl.class)
     @AttributeOverride(name="amount", column = @Column(name="amount_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="amount_currency_code"))
-	private Price securePrice;
+	private PriceImpl securePrice;
 
 	@Column(name="order_id", nullable=false, insertable=true, updatable=true)
 	private Long orderId;
@@ -386,7 +384,7 @@ public class PaypalTransaction implements CreateInfo, Persistable, PSPTransactio
 	}
 	
 	public void setSecurePrice(Price securePrice) {
-		this.securePrice = securePrice;
+		this.securePrice = (PriceImpl)securePrice;
 	}
 	
 	@Override

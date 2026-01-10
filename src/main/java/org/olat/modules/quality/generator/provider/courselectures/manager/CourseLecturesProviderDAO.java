@@ -29,6 +29,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -105,7 +106,7 @@ public class CourseLecturesProviderDAO {
 			Long lectureBlockKey = ((Number)rawLectureBlockInfo[pos++]).longValue();
 			Long teacherKey = ((Number)rawLectureBlockInfo[pos++]).longValue();
 			Long courseRepoKey = ((Number)rawLectureBlockInfo[pos++]).longValue();
-			Date lectureEndDate = (Date)rawLectureBlockInfo[pos++];
+			Date lectureEndDate = PersistenceHelper.extractDate(rawLectureBlockInfo, pos++); 
 			Long lecturesTotal = ((Number)rawLectureBlockInfo[pos++]).longValue();
 			Long firstLecture = ((Number)rawLectureBlockInfo[pos++]).longValue();
 			Long lastLecture = ((Number)rawLectureBlockInfo[pos++]).longValue();

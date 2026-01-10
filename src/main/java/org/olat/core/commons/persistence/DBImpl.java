@@ -41,7 +41,6 @@ import jakarta.persistence.RollbackException;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
-import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
@@ -280,10 +279,6 @@ public class DBImpl implements DB, Destroyable {
 		return threadBoundedEm;
 	}
 	
-	private Session getSession(EntityManager em) {
-		return em.unwrap(Session.class);
-	}
-	
 	private boolean unusableTrx(EntityTransaction trx) {
 		return trx == null || !trx.isActive() || trx.getRollbackOnly();
 	}
@@ -388,7 +383,7 @@ public class DBImpl implements DB, Destroyable {
 			throw new DBRuntimeException("cannot update in a transaction that is rolledback or committed " + object);
 		}
 		try {
-			getSession(em).update(object);								
+			em.merge(object);							
 		} catch (HibernateException e) { // we have some error
 			trx.setRollbackOnly();
 			getData().setError(e);

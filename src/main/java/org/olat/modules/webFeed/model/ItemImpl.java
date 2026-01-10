@@ -38,7 +38,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
-import org.hibernate.annotations.Target;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.Enclosure;
@@ -115,14 +114,13 @@ public class ItemImpl implements Item, Serializable {
 	
 	private transient FileElement mediaFile;
 	@Embedded
-	@Target(EnclosureImpl.class)
     @AttributeOverrides( {
     	@AttributeOverride(name="fileName", column = @Column(name="f_filename") ),
     	@AttributeOverride(name="type", column = @Column(name="f_type") ),
     	@AttributeOverride(name="length", column = @Column(name="f_length") ),
     	@AttributeOverride(name="externalUrl", column = @Column(name="f_external_url") )
     })
-	private Enclosure enclosure;
+	private EnclosureImpl enclosure;
 	@Column(name="f_width", nullable=true, insertable=true, updatable=true)
 	private Integer width;
 	@Column(name="f_height", nullable=true, insertable=true, updatable=true)
@@ -307,7 +305,7 @@ public class ItemImpl implements Item, Serializable {
 
 	@Override
 	public void setEnclosure(Enclosure enclosure) {
-		this.enclosure = enclosure;
+		this.enclosure = (EnclosureImpl)enclosure;
 	}
 
 	@Override
