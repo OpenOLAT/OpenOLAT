@@ -165,7 +165,7 @@ public class CoachingDAO {
 			inner join v.groups as relGroup
 			inner join relGroup.group as baseGroup
 			inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role=:role)
-			where v.status in :status and v.runtimeType in :runtimeTypes""";
+			where v.status in :status and v.runtimeTypeString in :runtimeTypes""";
 		
 		List<String> runtimeTypes = runtimeTypesGroup.runtimeTypes().stream()
 				.map(RepositoryEntryRuntimeType::name)
@@ -543,7 +543,7 @@ public class CoachingDAO {
 		  .append(" left join v.lifecycle as lifecycle")
 		  .append(" left join v.statistics as stats")
 		  .where()
-		  .append(" v.status in :status and v.runtimeType in :runtimeTypes")
+		  .append(" v.status in :status and v.runtimeTypeString in :runtimeTypes")
 		  .and();
 		
 		if(element != null) {
@@ -569,8 +569,8 @@ public class CoachingDAO {
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
  				.createQuery(sb.toString(), Object[].class)
 				.setFlushMode(FlushModeType.COMMIT)
-				.setParameter("runtimeTypes", runtimeTypesList)
-				.setParameter("status", statusList);
+				.setParameter("status", statusList)
+				.setParameter("runtimeTypes", runtimeTypesList);
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
 		} else {
@@ -629,7 +629,7 @@ public class CoachingDAO {
 		}
 		  
 		sb.where()
-		  .append(" v.status in :status and v.runtimeType in :runtimeTypes")
+		  .append(" v.status in :status and v.runtimeTypeString in :runtimeTypes")
 		  .and();
 		
 		if(element != null) {
@@ -910,7 +910,7 @@ public class CoachingDAO {
 		  .append(" v.status ").in(role == GroupRoles.owner
 		  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and()
-		  .append(" v.runtimeType in :runtimeTypes")
+		  .append(" v.runtimeTypeString in :runtimeTypes")
 		  .and();
 
 		if(role == GroupRoles.owner) {

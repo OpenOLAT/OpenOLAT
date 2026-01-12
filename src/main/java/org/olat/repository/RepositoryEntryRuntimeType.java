@@ -34,6 +34,10 @@ public enum RepositoryEntryRuntimeType {
 	embedded,
 	curricular,
 	template;
+	
+	private RepositoryEntryRuntimeType() {
+		//
+	}
 
 	public static ILoggingAction loggingAction(RepositoryEntryRuntimeType status) {
 		return switch(status) {

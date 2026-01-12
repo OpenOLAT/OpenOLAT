@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:15.0 https://infinispan.org/schemas/infinispan-config-15.0.xsd"
-        xmlns="urn:infinispan:config:15.0">
+        xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd"
+        xmlns="urn:infinispan:config:16.0">
 
 	<cache-container name="NonTransactionalCacheManager" default-cache="default">
 		<local-cache name="default" />
@@ -215,7 +215,7 @@
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="10000" when-full="REMOVE" />
-			<expiration max-idle="300000" lifespan="300000" interval="5000" />
+			<expiration max-idle="300000" lifespan="301000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="NotificationHelper-userPropertiesCache" simple-cache="true" statistics="true">

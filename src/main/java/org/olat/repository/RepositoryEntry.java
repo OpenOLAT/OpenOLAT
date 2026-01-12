@@ -32,8 +32,6 @@ import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -44,6 +42,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -137,9 +136,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@ManyToOne(targetEntity=RepositoryEntryEducationalTypeImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_educational_type", nullable=true, insertable=true, updatable=true)
 	private RepositoryEntryEducationalType educationalType;
-	@Enumerated(EnumType.STRING)
 	@Column(name="runtime_type", nullable=true, insertable=true, updatable=true)
-	private RepositoryEntryRuntimeType runtimeType;
+	private String runtimeTypeString;
 	
 	@Column(name="resourcename", nullable=false, insertable=true, updatable=true)
 	private String resourcename; // mandatory
@@ -376,12 +374,22 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.educationalType = educationalType;
 	}
 
-	public RepositoryEntryRuntimeType getRuntimeType() {
-		return runtimeType;
+	public String getRuntimeTypeString() {
+		return runtimeTypeString;
 	}
 
+	public void setRuntimeTypeString(String runtimeType) {
+		this.runtimeTypeString = runtimeType;
+	}
+	
+	@Transient
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return getRuntimeTypeString() == null ? null : RepositoryEntryRuntimeType.valueOf(getRuntimeTypeString());
+	}
+
+	@Transient
 	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
-		this.runtimeType = runtimeType;
+		setRuntimeTypeString(runtimeType == null ? null : runtimeType.name());
 	}
 
 	/**
@@ -510,7 +518,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
+	@Transient
 	public RepositoryEntryStatusEnum getEntryStatus() {
 		return RepositoryEntryStatusEnum.valueOf(status);
 	}
@@ -605,7 +614,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	public void setAllowToLeave(String allowToLeave) {
 		this.allowToLeave = allowToLeave;
 	}
-	
+
+	@Transient
 	public RepositoryEntryAllowToLeaveOptions getAllowToLeaveOption() {
 		RepositoryEntryAllowToLeaveOptions setting;
 		if(StringHelper.containsNonWhitespace(allowToLeave)) {
@@ -657,6 +667,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.externalRef = externalRef;
 	}
 
+	@Transient
 	public RepositoryEntryManagedFlag[] getManagedFlags() {
 		return RepositoryEntryManagedFlag.toEnum(managedFlagsString);
 	}

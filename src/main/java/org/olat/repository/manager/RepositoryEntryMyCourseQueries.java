@@ -52,6 +52,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
@@ -293,7 +294,7 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append(" and v.educationalType.key in (:educationalTypeKeys)");
 		}
 		if (params.getRuntimeTypes() != null && params.getRuntimeTypes().length > 0) {
-			sb.append(" and (v.runtimeType in (:runtimeTypes) or v.runtimeType is null)");
+			sb.append(" and (v.runtimeTypeString in (:runtimeTypes) or v.runtimeTypeString is null)");
 		}
 		
 		if(params.getParentEntry() != null) {
@@ -432,7 +433,10 @@ public class RepositoryEntryMyCourseQueries {
 			dbQuery.setParameter("educationalTypeKeys", params.getEducationalTypeKeys());
 		}
 		if (params.getRuntimeTypes() != null && params.getRuntimeTypes().length > 0) {
-			dbQuery.setParameter("runtimeTypes", List.of(params.getRuntimeTypes()));
+			List<String> runtimeTypes = List.of(params.getRuntimeTypes()).stream()
+					.map(RepositoryEntryRuntimeType::name)
+					.toList();
+			dbQuery.setParameter("runtimeTypes", runtimeTypes);
 		}
 		if(StringHelper.containsNonWhitespace(text)) {
 			dbQuery.setParameter("displaytext", text);

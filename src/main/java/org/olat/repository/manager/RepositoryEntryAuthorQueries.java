@@ -239,7 +239,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" and v.educationalType.key in (:educationalTypeKeys)");
 		}
 		if (params.getRuntimeTypes() != null && !params.getRuntimeTypes().isEmpty()) {
-			sb.append(" and v.runtimeType in (:runtimeTypes)");
+			sb.append(" and v.runtimeTypeString in (:runtimeTypes)");
 		}
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
 			needIdentity = true;
@@ -392,7 +392,10 @@ public class RepositoryEntryAuthorQueries {
 			dbQuery.setParameter("educationalTypeKeys", params.getEducationalTypeKeys());
 		}
 		if (params.getRuntimeTypes() != null && !params.getRuntimeTypes().isEmpty()) {
-			dbQuery.setParameter("runtimeTypes", params.getRuntimeTypes());
+			List<String> runtimeTypes = params.getRuntimeTypes().stream()
+					.map(RepositoryEntryRuntimeType::name)
+					.toList();
+			dbQuery.setParameter("runtimeTypes", runtimeTypes);
 		}
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);
@@ -481,7 +484,7 @@ public class RepositoryEntryAuthorQueries {
 				sb.append(" membership.role in (:additionalOrgRoles) ");
 				sb.append(" and membership.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
 				sb.append(" and ");
-				sb.append(" v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
+				sb.append(" v.runtimeTypeString ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
 				sb.append(" and v.status ");
 				if (params.hasStatus()) {
 					sb.in(params.getStatus());

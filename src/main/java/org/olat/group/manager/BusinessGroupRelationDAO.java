@@ -597,11 +597,11 @@ public class BusinessGroupRelationDAO {
 				.append(" inner join v.groups as relGroup")
 				.append(" inner join businessgroup as bgi on (bgi.baseGroup.key=relGroup.group.key)")
 				.append(" where bgi.key=:groupKey")
-				.append(" and v.runtimeType=:runtimeType");
+				.append(" and v.runtimeTypeString=:runtimeType");
 		return !dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("groupKey", group.getKey())
-				.setParameter("runtimeType", runtimeType)
+				.setParameter("runtimeType", runtimeType.name())
 				.getResultList().isEmpty();
 	}
 

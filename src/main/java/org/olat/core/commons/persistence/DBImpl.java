@@ -41,13 +41,14 @@ import jakarta.persistence.RollbackException;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
+import org.hibernate.cache.spi.RegionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.stat.Statistics;
-import org.infinispan.hibernate.cache.v62.InfinispanRegionFactory;
+import org.infinispan.hibernate.cache.v6.InfinispanRegionFactory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.logging.DBRuntimeException;
@@ -549,8 +550,13 @@ public class DBImpl implements DB, Destroyable {
 		EmbeddedCacheManager cm;
 		try {
 			Cache cache = emf.getCache();
-			InfinispanRegionFactory region = cache.unwrap(InfinispanRegionFactory.class);
-			cm = region.getCacheManager();
+			RegionFactory region = cache.unwrap(RegionFactory.class);
+			if(region instanceof InfinispanRegionFactory irf) {
+				cm = irf.getCacheManager();
+			} else {
+				log.warn("Unkown region factory: {}", region);
+				cm = null;
+			}
 		} catch (Exception e) {
 			log.error("", e);
 			cm = null;
