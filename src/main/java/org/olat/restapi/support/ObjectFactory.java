@@ -181,6 +181,9 @@ public class ObjectFactory {
 		vo.setEfficencyStatement(Boolean.valueOf(config.isEfficiencyStatementEnabled()));
 		vo.setGlossarySoftkey(config.getGlossarySoftKey());
 		vo.setSharedFolderSoftKey(config.getSharedFolderSoftkey());
+		vo.setBigBlueButton(config.isBigBlueButtonEnabled());
+		vo.setBigBlueButtonModeratorStartsMeeting(config.isBigBlueButtonModeratorStartsMeeting());
+		vo.setTeams(config.isTeamsEnabled());
 		return vo;
 	}
 	
