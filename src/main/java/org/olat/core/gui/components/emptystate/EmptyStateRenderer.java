@@ -42,7 +42,12 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		EmptyState emptyState = (EmptyState)source;
 		
-		sb.append("<div  class='o_empty_state'>");
+		sb.append("<div class='o_empty_state");
+		if (StringHelper.containsNonWhitespace(emptyState.getElementCssClass())) {
+			sb.append(" ").append(emptyState.getElementCssClass());
+		}
+		sb.append("'>");
+		
 		String indicatorIconCss = StringHelper.containsNonWhitespace(emptyState.getIndicatorIconCss())
 				? emptyState.getIndicatorIconCss()
 				: "o_icon_empty_indicator";

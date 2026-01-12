@@ -179,6 +179,10 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		return key;
 	}
 	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
 	@Override
 	public Date getCreationDate() {
 		return creationDate;
@@ -373,6 +377,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		this.effectiveEndDate = effectiveEndDate;
 	}
 
+	@Override
 	public Date getAutoClosedDate() {
 		return autoClosedDate;
 	}

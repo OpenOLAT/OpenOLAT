@@ -160,9 +160,13 @@ ul.o_dropdown {
 .o_empty_state {
 	text-align: center;
 	padding: 1.5em 2em 1em 2em;
-	margin: 1em 0;
-	border: $o-empty-border-color;
-	border-radius: $o-empty-border-radius;
+	&:not(.o_no_margin) {
+		margin: 1em 0;
+	}
+	&:not(.o_no_border) {
+		border: $o-empty-border-color;
+		border-radius: $o-empty-border-radius;
+	}
 	
 	.o_empty_visual {
 		display: inline-block;
@@ -201,7 +205,9 @@ ul.o_dropdown {
 	}
 	
 	@media (max-width: $screen-xs-max) { 
-		margin: 2em auto 1.5em auto;
+		&:not(.o_no_margin) {
+			margin: 2em auto 1.5em auto;
+		}
 		
 		.o_empty_visual {
 			i:first-child {
@@ -2066,7 +2072,6 @@ ul.o_list_narrow {
 			
 			.o_today_day_button {
 				height: 40px;
-				aspect-ratio: 1;
 				
 				font-size: $o-day-nav-today-button-font-size;
 				color: $o-datepicker-today-color;
@@ -2090,6 +2095,9 @@ ul.o_list_narrow {
 			.o_week {
 				margin-right: 5px;
 				font-size: $o-day-nav-week-font-size;
+			}
+			.o_week_button {
+				height: 30px;
 			}
 		}
 	}

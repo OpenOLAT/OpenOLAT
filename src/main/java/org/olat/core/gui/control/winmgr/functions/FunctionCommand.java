@@ -47,6 +47,7 @@ public class FunctionCommand extends Command {
 		DISPOSE_AUDIO_RECORDER("disposeaudiorecorder"),
 		DISPOSE_VIDEO_RECORDER("disposevideorecorder"),
 		SCROLL_TO_ID("scrolltoid"),
+		SCROLL_IN_CONTAINER("scrollincontainer"),
 		
 		SET_DOCUMENT_TITLE("setdocumenttitle"),
 		SET_BUSINESS_PATH("setbusinesspath"),
@@ -147,6 +148,14 @@ public class FunctionCommand extends Command {
 
 	public static FunctionCommand scrollToElemId(String elemId) {
 		return valueOf(Functions.SCROLL_TO_ID, "elemId", elemId);
+	}
+	
+	public static FunctionCommand scrollInContainer(String elemId, String containerCss, String behavior) {
+		JSONObject parameters = new JSONObject();
+		parameters.put("elemId", elemId);
+		parameters.put("containerCss", containerCss);
+		parameters.put("behavior", behavior);
+		return new FunctionCommand(Functions.SCROLL_IN_CONTAINER.feature(), parameters);
 	}
 	
 	/**

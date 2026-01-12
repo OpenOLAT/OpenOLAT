@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
@@ -58,7 +59,8 @@ public class DayNavElementImpl extends FormItemImpl implements DayNavElement {
 
 	@Override
 	public void dispatchFormRequest(UserRequest ureq) {
-		//
+		component.doDispatchRequest(ureq);
+		getRootForm().fireFormEvent(ureq, new FormEvent("change", this, FormEvent.ONCLICK));
 	}
 
 	@Override
@@ -74,6 +76,11 @@ public class DayNavElementImpl extends FormItemImpl implements DayNavElement {
 	@Override
 	public void setStartDate(Date startDate) {
 		component.setStartDate(startDate);
+	}
+
+	@Override
+	public Date getEndDate() {
+		return component.getEndDate();
 	}
 
 	@Override

@@ -564,6 +564,25 @@ function o_aexecute(command, parameters) {
 		}
 	}
 	
+	function o_scrollInContainer(elementId, containerCss, behavior) {
+		try {
+			setTimeout(function() {
+				const target = document.getElementById(elementId);
+				const container = target.closest(containerCss);
+				const top =
+					target.getBoundingClientRect().top -
+					container.getBoundingClientRect().top +
+					container.scrollTop;
+				container.scrollTo({
+					top,
+					behavior: behavior,
+				});
+			}, 1);
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
 	// console.log('o_aexecute', command, parameters);
 	switch(command) {
 		case "addclassbody":
@@ -650,6 +669,9 @@ function o_aexecute(command, parameters) {
 			setTimeout(function () {
 				o_scrollToElement(parameters["elemId"])
 			}, 1)
+			break;
+		case "scrollincontainer":
+			o_scrollInContainer(parameters["elemId"], parameters["containerCss"], parameters["behavior"])
 			break;
 		default:
 			console.log("Unkown command", command, parameters);

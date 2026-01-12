@@ -333,13 +333,24 @@
 	.o_table_wrapper.o_table_flexi {
 		.table, .o_table_body {
 			margin-top: 0;
+			&.o_dashboard_table_fix_height {
+				max-height: $o-dashboard-widget-table-fix-height	;
+				overflow: auto;
+			}
 		}
 	}
 	
 	.o_rendertype_custom {
 		.o_table_row {
 			background-color: $o-dashboard-widget-table-bg-color;
-			border-top: 1px solid $table-border-color;
+			
+			&:not(.o_dashboard_table_widget_noborder) {
+				border-top: 1px solid $table-border-color;
+			}
+			.o_cell_top_border {
+				border-top: 1px solid $table-border-color;
+			}
+			
 			&:last-child {
 				border-bottom: 1px solid $table-border-color;
 			}
@@ -348,5 +359,8 @@
 			}
 		}
 	}
+}
+.o_dashboard_widget_empty {
+	background-color: $o-dashboard-widget-table-bg-color;
 }
 

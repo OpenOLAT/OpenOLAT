@@ -35,6 +35,8 @@ public interface DayNavElement extends FormItem {
 	
 	public void setStartDate(Date startDate);
 	
+	public Date getEndDate();
+	
 	public Date getSelectedDate();
 	
 	public void setSelectedDate(Date selectedDate);

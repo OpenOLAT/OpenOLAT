@@ -19,6 +19,11 @@
 			$r.render($tableComponentName)
 		</div>
 	#end
+	#if($r.available($emptyComponentName) && $r.visible($emptyComponentName))
+		<div class="o_dashboard_widget_empty">
+			$r.render($emptyComponentName)
+		</div>
+	#end
 	<div class="o_dashboard_widget_space"></div>
 	#if($r.available($showAllComponentName) && $r.visible($showAllComponentName))
 		<div class="o_dashboard_widget_footer">

@@ -17,33 +17,27 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.daynav;
+package org.olat.modules.lecture.ui;
 
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
  * 
- * Initial date: Jan 6, 2026<br>
+ * Initial date: Jan 8, 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class DayNavFactory {
+public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<LectureBlocksWidgetRow> {
 	
-	public static DayNavComponent createComponent(String name, VelocityContainer vc) {
-		DayNavComponent cmp = new DayNavComponent(name);
-		if (vc != null) {
-			vc.put(cmp.getComponentName(), cmp);
-		}
-		return cmp;
+	public LectureBlocksWidgetTableModel(FlexiTableColumnModel tableColumnModel) {
+		super(tableColumnModel);
 	}
-	
-	public static DayNavElement createElement(String name, FormItemContainer formLayout) {
-		DayNavElementImpl element = new DayNavElementImpl(name);
-		if (formLayout != null) {
-			formLayout.add(element);
-		}
-		return element;
+
+	@Override
+	public Object getValueAt(int row, int col) {
+		// No table view => No columns available.
+		return null;
 	}
 
 }

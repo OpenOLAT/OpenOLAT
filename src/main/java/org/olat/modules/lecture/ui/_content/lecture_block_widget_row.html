@@ -1,0 +1,35 @@
+<div #if($r.isNotEmpty($row.id))id="$row.id"#end class="o_lecture_widget_row">
+	<div class="o_row_day #if($r.isNotEmpty($row.dayAbbr))o_cell_top_border#end">
+		#if($r.isNotEmpty($row.dayAbbr))
+			<div class="o_row_day_abbr">
+				$row.dayAbbr
+			</div>
+			<div class="o_row_day_num">
+				$row.day
+			</div>
+		#end
+	</div>
+	<div class="o_row_status o_cell_top_border">
+		<div class="$row.statusCss"></div>
+	</div>
+	<div class="o_row_event o_cell_top_border">
+		#if($r.isNotEmpty($row.externalRef))
+			<div class="o_ext_ref">
+				<span class="o_external_ref">$r.escapeHtml($row.externalRef)</span>
+			</div>
+		#end
+		<h4 class="o_title o_nowrap">$r.escapeHtml($row.title)</h4>
+	</div>
+	<div class="o_row_location o_cell_top_border">
+		#if($r.isNotEmpty($row.location))
+			<span><i class="o_icon o_icon_location"></i> $r.escapeHtml($row.location)</span>
+		#elseif($row.isOnlineMeeting())
+			<span><i class="o_icon o_vc_icon"></i> $r.translate("lecture.online.meeting")</span>
+		#end
+	</div>
+	<div class="o_row_time o_cell_top_border">
+		#if($r.isNotEmpty($row.time))
+			<span><i class="o_icon o_icon_time"></i> $row.time</span>
+		#end
+	</div>
+</div>

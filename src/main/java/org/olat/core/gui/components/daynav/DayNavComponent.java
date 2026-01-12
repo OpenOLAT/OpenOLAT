@@ -119,7 +119,7 @@ public class DayNavComponent extends FormBaseComponentImpl {
 		this.startDate = startDate;
 		selectedDateIndex = 0;
 		setDirty(true);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireChanged(ureq);
 	}
 
 	private void doChangeDay(UserRequest ureq, String dayIndexParam) {
@@ -129,8 +129,15 @@ public class DayNavComponent extends FormBaseComponentImpl {
 				selectedDateIndex = dayIndex;
 				setDirty(true);
 			}
+			fireChanged(ureq);
+		}
+	}
+
+	private void fireChanged(UserRequest ureq) {
+		if (element == null) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
+		// else the element fires the event
 	}
 
 	public Date getStartDate() {
@@ -140,6 +147,10 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 		setDirty(true);
+	}
+
+	public Date getEndDate() {
+		return DateUtils.addDays(startDate, 6);
 	}
 
 	int getSelectedDateIndex() {

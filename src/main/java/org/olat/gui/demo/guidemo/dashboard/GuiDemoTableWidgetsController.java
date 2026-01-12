@@ -19,12 +19,15 @@
  */
 package org.olat.gui.demo.guidemo.dashboard;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.gui.demo.guidemo.GuiDemoFlexiTablesController;
 
@@ -66,6 +69,16 @@ public class GuiDemoTableWidgetsController extends BasicController {
 				translate("select.3"), true, false, true);
 		listenTo(table4Ctrl);
 		mainVC.put("table4", table4Ctrl.getInitialComponent());
+		
+		GuiDemoLectureBlocksWidgetController lectureBlockCtrl1 = new GuiDemoLectureBlocksWidgetController(ureq,
+				wControl, new Date());
+		listenTo(lectureBlockCtrl1);
+		mainVC.put("lecures1", lectureBlockCtrl1.getInitialComponent());
+		
+		GuiDemoLectureBlocksWidgetController lectureBlockCtrl2 = new GuiDemoLectureBlocksWidgetController(ureq,
+				wControl, DateUtils.addDays(new Date(), 17));
+		listenTo(lectureBlockCtrl2);
+		mainVC.put("lecures2", lectureBlockCtrl2.getInitialComponent());
 	}
 
 	@Override

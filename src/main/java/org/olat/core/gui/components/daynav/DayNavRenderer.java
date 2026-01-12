@@ -193,7 +193,7 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		if(cmp.isEnabled()) {
 			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
 			if(cmp.getFormItem() != null) {
-				sb.append(FormJSHelper.getXHRFnCallFor(cmp.getFormItem().getRootForm(), elementId, 1, false, true, false, nameValue));
+				sb.append(FormJSHelper.getXHRFnCallFor(cmp.getFormItem().getRootForm(), cmp.getFormDispatchId(), 1, false, true, false, nameValue));
 				sb.append(";\"");
 			} else {
 				ubu.buildXHREvent(sb, "", false, true, nameValue);

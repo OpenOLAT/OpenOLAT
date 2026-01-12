@@ -58,6 +58,7 @@ public abstract class TableWidgetController extends FormBasicController {
 		widgetCont.contextPut("tableTitle", getTableTitle());
 		widgetCont.contextPut("indicatorsComponentName", createIndicators(widgetCont));
 		widgetCont.contextPut("tableComponentName", createTable(widgetCont));
+		widgetCont.contextPut("emptyComponentName", createEmptyState(widgetCont));
 		widgetCont.contextPut("showAllComponentName", createShowAll(widgetCont));
 	}
 	
@@ -66,6 +67,13 @@ public abstract class TableWidgetController extends FormBasicController {
 	protected abstract String createIndicators(FormLayoutContainer widgetCont);
 	protected abstract String createTable(FormLayoutContainer widgetCont);
 	protected abstract String createShowAll(FormLayoutContainer widgetCont);
+	
+	/**
+	 * @param widgetCont 
+	 */
+	protected String createEmptyState(FormLayoutContainer widgetCont) {
+		return null;
+	}
 	
 	public FlexiCellRenderer wrapCellLink(FlexiCellRenderer renderer) {
 		StaticFlexiCellRenderer staticRenderer = new StaticFlexiCellRenderer(CMD_ROW_CLICKED, renderer);
