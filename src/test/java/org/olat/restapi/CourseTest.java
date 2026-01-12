@@ -140,7 +140,7 @@ public class CourseTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetCourseConfig() throws IOException, URISyntaxException {
+	public void getCourseConfig() throws IOException, URISyntaxException {
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				"REST-Course-2", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -157,6 +157,9 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertNotNull(courseConfig.getCalendar());
 		Assert.assertNotNull(courseConfig.getChat());
 		Assert.assertNotNull(courseConfig.getEfficencyStatement());
+		Assert.assertNotNull(courseConfig.getBigBlueButton());
+		Assert.assertNotNull(courseConfig.getBigBlueButtonModeratorStartsMeeting());
+		Assert.assertNotNull(courseConfig.getTeams());
 		
 		conn.shutdown();
 	}
@@ -174,6 +177,10 @@ public class CourseTest extends OlatRestTestCase {
 		config.setChat(Boolean.TRUE);
 		config.setEfficencyStatement(Boolean.TRUE);
 		config.setCssLayoutRef("pink");
+		config.setEfficencyStatement(Boolean.TRUE);
+		config.setBigBlueButton(Boolean.TRUE);
+		config.setBigBlueButtonModeratorStartsMeeting(Boolean.TRUE);
+		config.setTeams(Boolean.TRUE);
 
 		URI uri = conn.getContextURI().path("repo").path("courses")
 				.path(course.getResourceableId().toString()).path("configuration")
@@ -189,6 +196,45 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertEquals(Boolean.TRUE, courseConfig.getCalendar());
 		Assert.assertEquals(Boolean.TRUE, courseConfig.getChat());
 		Assert.assertEquals(Boolean.TRUE, courseConfig.getEfficencyStatement());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getBigBlueButton());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getBigBlueButtonModeratorStartsMeeting());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getTeams());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void updateCourseConfigByForm() throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
+				"REST-Course-3b", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		
+		URI uri = conn.getContextURI().path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("configuration")
+				.build();
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
+		method.addHeader("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
+		conn.addEntity(method, new BasicNameValuePair("calendar", "true"),
+				new BasicNameValuePair("chat", "true"),
+				new BasicNameValuePair("efficencyStatement", "true"),
+				new BasicNameValuePair("cssLayoutRef", "pink"),
+				new BasicNameValuePair("bigBlueButton", "true"),
+				new BasicNameValuePair("bigBlueButtonModeratorStartsMeeting", "true"),
+				new BasicNameValuePair("teams", "true"));
+
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseConfigVO courseConfig = conn.parse(response, CourseConfigVO.class);
+		Assert.assertNotNull(courseConfig);
+		Assert.assertEquals("pink", courseConfig.getCssLayoutRef());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getCalendar());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getChat());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getEfficencyStatement());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getBigBlueButton());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getBigBlueButtonModeratorStartsMeeting());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getTeams());
 		
 		conn.shutdown();
 	}

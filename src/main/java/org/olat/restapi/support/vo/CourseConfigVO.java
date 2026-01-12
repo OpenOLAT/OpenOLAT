@@ -42,6 +42,9 @@ public class CourseConfigVO {
 	private Boolean efficencyStatement;
 	private String glossarySoftkey;
 	private String sharedFolderSoftKey;
+	private Boolean bigBlueButton;
+	private Boolean bigBlueButtonModeratorStartsMeeting;
+	private Boolean teams;
 	
 	public CourseConfigVO() {
 		//make JAXB happy
@@ -93,5 +96,29 @@ public class CourseConfigVO {
 
 	public void setSharedFolderSoftKey(String sharedFolderSoftKey) {
 		this.sharedFolderSoftKey = sharedFolderSoftKey;
+	}
+
+	public Boolean getBigBlueButton() {
+		return bigBlueButton;
+	}
+
+	public void setBigBlueButton(Boolean bigBlueButton) {
+		this.bigBlueButton = bigBlueButton;
+	}
+
+	public Boolean getBigBlueButtonModeratorStartsMeeting() {
+		return bigBlueButtonModeratorStartsMeeting;
+	}
+
+	public void setBigBlueButtonModeratorStartsMeeting(Boolean bigBlueButtonModeratorStartsMeeting) {
+		this.bigBlueButtonModeratorStartsMeeting = bigBlueButtonModeratorStartsMeeting;
+	}
+
+	public Boolean getTeams() {
+		return teams;
+	}
+
+	public void setTeams(Boolean teams) {
+		this.teams = teams;
 	}
 }

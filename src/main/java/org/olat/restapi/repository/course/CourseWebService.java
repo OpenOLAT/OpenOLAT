@@ -895,6 +895,8 @@ public class CourseWebService {
 			@FormParam("calendar") Boolean calendar, @FormParam("chat") Boolean chat,
 			@FormParam("cssLayoutRef") String cssLayoutRef, @FormParam("efficencyStatement") Boolean efficencyStatement,
 			@FormParam("glossarySoftkey") String glossarySoftkey, @FormParam("sharedFolderSoftkey") String sharedFolderSoftkey,
+			@FormParam("bigBlueButton") Boolean bigBlueButton, @FormParam("bigBlueButtonModeratorStartsMeeting") Boolean bigBlueButtonModeratorStartsMeeting,
+			@FormParam("teams") Boolean teams,
 			@Context HttpServletRequest request) {
 		if(!isManager(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
@@ -920,6 +922,16 @@ public class CourseWebService {
 		}
 		if(StringHelper.containsNonWhitespace(sharedFolderSoftkey)) {
 			courseConfig.setSharedFolderSoftkey(sharedFolderSoftkey);
+		}
+		
+		if(bigBlueButton != null) {
+			courseConfig.setBigBlueButtonEnabled(bigBlueButton.booleanValue());
+		}
+		if(bigBlueButtonModeratorStartsMeeting != null) {
+			courseConfig.setBigBlueButtonModeratorStartsMeeting(bigBlueButtonModeratorStartsMeeting.booleanValue());
+		}
+		if(teams != null) {
+			courseConfig.setTeamsEnabled(teams.booleanValue());
 		}
 
 		CourseFactory.setCourseConfig(editedCourse.getResourceableId(), courseConfig);
@@ -975,7 +987,17 @@ public class CourseWebService {
 		if(StringHelper.containsNonWhitespace(configuration.getSharedFolderSoftKey())) {
 			courseConfig.setSharedFolderSoftkey(configuration.getSharedFolderSoftKey());
 		}
-
+		
+		if(configuration.getBigBlueButton() != null) {
+			courseConfig.setBigBlueButtonEnabled(configuration.getBigBlueButton().booleanValue());
+		}
+		if(configuration.getBigBlueButtonModeratorStartsMeeting() != null) {
+			courseConfig.setBigBlueButtonModeratorStartsMeeting(configuration.getBigBlueButtonModeratorStartsMeeting().booleanValue());
+		}
+		if(configuration.getTeams() != null) {
+			courseConfig.setTeamsEnabled(configuration.getTeams().booleanValue());
+		}
+		
 		CourseFactory.setCourseConfig(editedCourse.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(editedCourse.getResourceableId(),true);
 		

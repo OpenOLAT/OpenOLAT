@@ -287,9 +287,9 @@ public class RestConnection {
 	}
 
 	public HttpPost createPost(URI uri, String accept) {
-		HttpPost get = new HttpPost(uri);
-		decorateHttpMessage(get,accept, "en", true);
-		return get;
+		HttpPost post = new HttpPost(uri);
+		decorateHttpMessage(post, accept, "en", true);
+		return post;
 	}
 	
 	public HttpDelete createDelete(URI uri, String accept) {
