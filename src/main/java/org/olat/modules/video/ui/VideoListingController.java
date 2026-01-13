@@ -142,7 +142,7 @@ public class VideoListingController extends FormBasicController implements Activ
 	
 	private void initSorters(FlexiTableElement tableElement) {
 		List<FlexiTableSort> sorters = new ArrayList<>(8);
-		sorters.add(new FlexiTableSort(translate("orderby.automatic"), OrderBy.automatic.name()));
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.automatic.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.title"), OrderBy.title.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.author"), OrderBy.author.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));

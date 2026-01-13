@@ -429,7 +429,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 		
 		List<FlexiTableSort> sorters = new ArrayList<>();
-		sorters.add(new FlexiTableSort(translate("orderby.automatic"), CatalogEntryDataModel.SORT_BY_PRIORITY));
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), CatalogEntryDataModel.SORT_BY_PRIORITY));
 		sorters.add(FlexiTableSort.SPACER);
 		Arrays.stream(CatalogEntryDataModel.COLS)
 				.filter(CatalogEntryCols::sortable)

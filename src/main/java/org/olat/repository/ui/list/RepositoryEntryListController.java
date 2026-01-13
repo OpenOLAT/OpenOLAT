@@ -460,7 +460,7 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	private void initSorters(FlexiTableElement tableElement) {
 		List<FlexiTableSort> sorters = new ArrayList<>(14);
-		sorters.add(new FlexiTableSort(translate("orderby.automatic"), OrderBy.automatic.name()));
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.automatic.name()));
 		if (searchParams.getParentEntry() != null) {
 			sorters.add(new FlexiTableSort(translate("orderby.custom"), OrderBy.custom.name()));
 		}
