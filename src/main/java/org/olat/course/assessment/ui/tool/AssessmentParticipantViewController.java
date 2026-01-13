@@ -234,13 +234,14 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			
 			if (assessmentConfig.isScoreScalingEnabled()) {
 				if (displayWeightedScoreAsScore) {
-					Float weightedScore = assessmentEval.getWeightedScore();
-					if (weightedScore != null) {
-						scoreWidget.setSubTitle(translate("score.weighted.subtitle"));
-						scoreWidget.setValue(AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()));
-						if (assessmentEval.getWeightedMaxScore() != null) {
-							scoreWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedMaxScore())));
-						}
+					scoreWidget.setSubTitle(translate("score.weighted.subtitle"));
+					String weightedScoreValue = AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore());
+					if (!StringHelper.containsNonWhitespace(weightedScoreValue)) {
+						weightedScoreValue = translate("assessment.value.not.visible");
+					}
+					scoreWidget.setValue(weightedScoreValue);
+					if (assessmentEval.getWeightedMaxScore() != null) {
+						scoreWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedMaxScore())));
 					}
 				} else {
 					if (resultsVisible) {
