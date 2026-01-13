@@ -384,7 +384,7 @@ public class CurriculumDAO {
 			sb.append("exists (select ownedCurEl.key from curriculumelement as ownedCurEl")
 			  .append(" inner join ownedCurEl.group as ownedBaseGroup")
 			  .append(" inner join ownedBaseGroup.members as ownedMembership")
-			  .append(" where ownedMembership.identity.key=:ownerKey and ownedMembership.role ").in(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner)
+			  .append(" where ownedMembership.identity.key=:ownerKey and ownedMembership.role ").in(CurriculumRoles.curriculumelementowner)
 			  .append(" and ownedCurEl.curriculum.key=cur.key")
 			  .append(")");
 		}
