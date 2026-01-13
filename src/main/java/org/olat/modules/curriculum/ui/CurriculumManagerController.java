@@ -35,7 +35,7 @@ import org.olat.core.util.UserSession;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallbackFactory;
 import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
@@ -75,7 +75,7 @@ public class CurriculumManagerController extends BasicController implements Acti
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setCurriculumAdmin(getIdentity());
 		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
-		List<CurriculumElementRef> ownedElements = curriculumService.getCurriculumElements(getIdentity(), CurriculumRoles.curriculumelementowner);
+		List<CurriculumElement> ownedElements = curriculumService.getCurriculumElements(getIdentity(), CurriculumRoles.curriculumelementowner);
 		
 		Roles roles = usess.getRoles();
 		secCallback = CurriculumSecurityCallbackFactory.createCallback(roles, ownedCurriculums, ownedElements);

@@ -108,8 +108,10 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		
 		FormLayoutContainer lastCont = uifactory.addDefaultFormLayout("buttons", null, formLayout);
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, lastCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		if(canEdit) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		}
 	}
 	
 	private void initCourseTemplateForm(FormLayoutContainer formLayout) {

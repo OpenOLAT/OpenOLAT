@@ -515,12 +515,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 						.withDetailsUnits(true)
 						.withDetailsExternalRef(true)
 						.withinCurriculums(true);
-				
-				LecturesSecurityCallback callback = secCallback.canEditCurriculumElement(curriculumElement)
-						? lecturesSecCallback
-						: lecturesSecCallback.readOnlyCopy();
+				LecturesSecurityCallback elementLecturesSecCallback = evaluateLecturesSecurityCallback();
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculumElement, config,
-						callback, secCallback);
+						elementLecturesSecCallback, secCallback);
 				listenTo(lectureBlocksCtrl);
 				
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
@@ -596,8 +593,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewCtrl.addWidget("members", membersWidgetCtrl);
 
 		if(lectureModule.isEnabled()) {
+			LecturesSecurityCallback elementLecturesSecCallback = evaluateLecturesSecurityCallback();
 			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
-					curriculumElement, lecturesSecCallback, secCallback);
+					curriculumElement, elementLecturesSecCallback, secCallback);
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}
@@ -615,6 +613,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 		
 		return overviewCtrl;
+	}
+	
+	private LecturesSecurityCallback evaluateLecturesSecurityCallback() {
+		return secCallback.canEditCurriculumElement(curriculumElement)
+				? lecturesSecCallback
+				: lecturesSecCallback.readOnlyCopy();
 	}
 
 	@Override

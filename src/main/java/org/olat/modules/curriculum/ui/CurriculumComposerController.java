@@ -553,7 +553,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		CurriculumElementInfosSearchParams searchParams = getSearchParams();
 		
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
-		loadGapsInElements(elements);
+		if(rootElement == null) {
+			loadViewOnlyImplementations(elements);
+		} else {
+			loadGapsInElements(elements);
+		}
 		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
 		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
 		for(CurriculumElementInfos element:elements) {
@@ -572,6 +576,52 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableModel.setObjects(rows);
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
+	}
+	
+	private void loadViewOnlyImplementations(List<CurriculumElementInfos> elements) {
+		if(rootElement != null) return;
+
+		Set<Long> elementsMap = elements.stream()
+				.map(CurriculumElementInfos::getKey)
+				.collect(Collectors.toSet());
+		
+		List<CurriculumElement> ownedElements = secCallback.getOwnedCurriculumElements();
+		
+		Set<Long> implementationsKeys = new HashSet<>();
+		for(CurriculumElement ownedElement:ownedElements) {
+
+			if(!elementsMap.contains(ownedElement.getKey())) {
+				if(ownedElement.getParent() == null) {
+					implementationsKeys.add(ownedElement.getKey());
+				} else {
+					List<Long> ancestors = ownedElement.getMaterializedPathKeysList();
+					if(!ancestors.isEmpty()) {
+						Long implementationKey = ancestors.get(0);
+						if(!elementsMap.contains(implementationKey)) {
+							implementationsKeys.add(implementationKey);
+							
+						}
+						
+					}
+				}
+			}
+		}
+		
+		if(!implementationsKeys.isEmpty()) {
+			List<CurriculumElementRef> implementsRefs = implementationsKeys.stream()
+					.map(CurriculumElementRefImpl::new)
+					.map(CurriculumElementRef.class::cast).toList();
+			
+			CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams(null);
+			if(curriculum != null) {
+				searchParams.setCurriculum(curriculum);
+			}
+			searchParams.setCurriculumElements(implementsRefs);
+			searchParams.setRootElementsOnly(true);
+			
+			List<CurriculumElementInfos> implementations = curriculumService.getCurriculumElementsWithInfos(searchParams);
+			elements.addAll(implementations);
+		}
 	}
 	
 	/**

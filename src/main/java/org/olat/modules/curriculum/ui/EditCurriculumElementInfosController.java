@@ -106,10 +106,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private RichTextElement creditsEl;
 	private FileElement videoEl;
 	
+	private final boolean canEdit;
 	private CurriculumElement element;
 	private final boolean isRootElement;
 	private final List<CreditPointSystem> systems;
-	private final CurriculumSecurityCallback secCallback;
 	private CurriculumElementCreditPointConfiguration creditPointConfig;
 	private VFSContainer mediaContainer;
 	
@@ -130,7 +130,8 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.element = element;
 		this.isRootElement = element.getParent() == null;
-		this.secCallback = secCallback;
+
+		canEdit = secCallback.canEditCurriculumElementSettings(element);
 		creditPointConfig = creditPointService.getConfiguration(element);
 		systems = creditPointService.getCreditPointSystems();
 		
@@ -153,7 +154,6 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		setFormInfo("curriculum.element.infos.desc");
 		
 		UserSession usess = ureq.getUserSession();
-		boolean canEdit = element == null || secCallback.canEditCurriculumElementSettings(element);
 		
 		if (isRootElement) {
 			teaserEl = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, element.getTeaser(), formLayout);
