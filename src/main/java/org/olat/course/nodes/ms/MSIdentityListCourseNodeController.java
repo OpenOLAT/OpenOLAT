@@ -44,7 +44,6 @@ import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.Ident
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -67,7 +66,6 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private MSStatisticController statsCtrl;
 
-	private Boolean hasEvaluationForm;
 	private final EvaluationFormProvider evaluationFormProvider;
 
 	@Autowired
@@ -87,7 +85,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		super.initGradeScaleEditButton(formLayout);
 		
-		if (hasEvaluationForm()) {
+		if (assessmentConfig.hasFormEvaluation()) {
 			expotButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
 			expotButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 			
@@ -106,7 +104,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
-		if (hasEvaluationForm()) {
+		if (assessmentConfig.hasFormEvaluation()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel( IdentityCourseElementCols.evaluationForm,
 					new EvaluationFormSessionStatusCellRenderer(getLocale(), true, false, true)));
 		}
@@ -115,7 +113,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected void initResetDataTool(FormLayoutContainer formLayout) {
-		if (hasEvaluationForm()) {
+		if (assessmentConfig.hasFormEvaluation()) {
 			initBulkExportButton(formLayout);
 		}
 		super.initResetDataTool(formLayout);
@@ -125,7 +123,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	public void reload(UserRequest ureq) {
 		super.reload(ureq);
 		
-		if (hasEvaluationForm()) {
+		if (assessmentConfig.hasFormEvaluation()) {
 			List<EvaluationFormSession> sessions = msService.getSessions(getCourseRepositoryEntry(), courseNode.getIdent(), evaluationFormProvider);
 			Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
 					.collect(Collectors.toMap(
@@ -141,16 +139,6 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				row.setEvaluationFormStatus(status);
 			}
 		}
-	}
-
-	private boolean hasEvaluationForm() {
-		if (hasEvaluationForm == null) {
-			ModuleConfiguration config = courseNode.getModuleConfiguration();
-			String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
-			hasEvaluationForm = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)
-					|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
-		}
-		return hasEvaluationForm.booleanValue();
 	}
 
 	@Override
