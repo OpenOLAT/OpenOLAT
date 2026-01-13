@@ -215,6 +215,7 @@ import org.junit.runners.Suite;
 	org.olat.course.core.manager.CourseElementDAOTest.class,
 	org.olat.course.core.manager.CourseNodeServiceTest.class,
 	org.olat.course.disclaimer.CourseDisclaimerManagerTest.class,
+	org.olat.course.duedate.manager.DueDateServiceTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,
 	org.olat.course.learningpath.LearningPathServiceTest.class,
 	org.olat.course.nodes.cl.manager.CheckboxManagerTest.class,
