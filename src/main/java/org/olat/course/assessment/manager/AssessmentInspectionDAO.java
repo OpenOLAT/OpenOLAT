@@ -271,10 +271,7 @@ public class AssessmentInspectionDAO {
 			query.setParameter("subIdents", params.getSubIdents());
 		}
 		if(inspectionStatus != null && !inspectionStatus.isEmpty()) {
-			List<String> statusList = params.getInspectionStatus().stream()
-					.map(AssessmentInspectionStatusEnum::toString)
-					.toList();
-			query.setParameter("inspectionStatus", statusList);	
+			query.setParameter("inspectionStatus", params.getInspectionStatus());	
 		}
 		if(params.getActiveInspections() != null) {
 			query.setParameter("now", new Date(), TemporalType.TIMESTAMP);	
