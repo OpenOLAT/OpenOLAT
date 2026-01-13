@@ -425,6 +425,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private void initSorters() {
 		if (!catalogModule.isPrioritySortingEnabled()) {
+			FlexiTableSortOptions options = new FlexiTableSortOptions();
+			options.setDefaultOrderBy(new SortKey(CatalogEntryCols.title.name(), true));
+			tableEl.setSortSettings(options);
 			return;
 		}
 		
