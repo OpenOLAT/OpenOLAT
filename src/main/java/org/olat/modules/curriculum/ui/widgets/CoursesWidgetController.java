@@ -157,7 +157,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		coursesLink = uifactory.addFormLink("curriculum.courses", "tab.resources", null, formLayout, Link.LINK);
 		coursesLink.setIconRightCSS("o_icon o_icon-fw o_icon_course_next");
 		
-		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)) {
+		if(!resourcesManaged && secCallback.canManageCurriculumElementResources(curriculumElement)) {
 			if(curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0) {
 				addResourceButton = uifactory.addFormLink("add.resource", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");

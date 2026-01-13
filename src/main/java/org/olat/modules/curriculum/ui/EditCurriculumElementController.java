@@ -280,7 +280,7 @@ public class EditCurriculumElementController extends BasicController {
 	private void doOpenAutomation(UserRequest ureq) {
 		removeAsListenerAndDispose(automationCtrl);
 		
-		automationCtrl = new EditCurriculumElementAutomationController(ureq, getWindowControl(), element);
+		automationCtrl = new EditCurriculumElementAutomationController(ureq, getWindowControl(), element, secCallback);
 		listenTo(automationCtrl);
 		mainVC.put("content", automationCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(automationLink);

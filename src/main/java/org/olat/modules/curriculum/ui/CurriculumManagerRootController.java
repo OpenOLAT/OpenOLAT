@@ -143,7 +143,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(overviewCtrl);
 		
 		if(lectureModule.isEnabled()) {
-			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), lecturesSecCallback);
+			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), lecturesSecCallback, secCallback);
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}

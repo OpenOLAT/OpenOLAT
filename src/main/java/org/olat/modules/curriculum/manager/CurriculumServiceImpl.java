@@ -989,6 +989,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
 		return curriculumElementDao.loadElements(curriculum, status);
 	}
+	
+	@Override
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, Identity managerIdentity,
+			CurriculumElementStatus[] status) {
+		return curriculumElementDao.loadElements(curriculum, managerIdentity, status);
+	}
 
 	@Override
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumElementInfosSearchParams searchParams) {
@@ -1591,7 +1597,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}	
 		descendants.add(element);
 		List<String> roles = Arrays.asList(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(),
-				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name(), CurriculumRoles.mastercoach.name());
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name(),
+				CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name());
 		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
 		return curriculumRepositoryEntryRelationDao
 				.getRepositoryEntries(null, descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), true, identity, roles);
@@ -1600,7 +1607,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<RepositoryEntry> getRepositoryEntriesWithLectures(Curriculum curriculum, Identity identity) {
 		List<String> roles = Arrays.asList(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(),
-				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name(), CurriculumRoles.mastercoach.name());
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name(),
+				CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name());
 		return curriculumRepositoryEntryRelationDao
 				.getRepositoryEntries(curriculum, null, RepositoryEntryStatusEnum.preparationToClosed(), true, identity, roles);
 	}
@@ -1764,6 +1772,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		roles.add(GroupRoles.coach.name());
 		roles.add(GroupRoles.participant.name());
 		return curriculumRepositoryEntryRelationDao.getCurriculumElementInfosForWebDAV(identity, roles);
+	}
+	
+	@Override
+	public List<CurriculumElementRef> getCurriculumElements(Identity identity, CurriculumRoles role) {
+		return curriculumElementDao.loadElements(identity, role);
 	}
 
 	@Override

@@ -711,6 +711,9 @@ public class RepositoryManager {
 						case curriculumowner:
 							isCurriculumManager = true;
 							break;
+						case curriculumelementowner:
+							isCurriculumManager = true;
+							break;
 						default: break;
 					}
 				}
@@ -774,6 +777,10 @@ public class RepositoryManager {
 			List<RoleAndDefault> curriculumRoles = repositoryEntryRelationDao.getCurriculumRoleAndDefaults(identity, re);
 			if(!curriculumRoles.isEmpty()) {
 				roleAndDefs.addAll(curriculumRoles);
+			}
+			List<RoleAndDefault> elementRoles = repositoryEntryRelationDao.getCurriculumElementRoleAndDefaults(identity, re);
+			if(!elementRoles.isEmpty()) {
+				roleAndDefs.addAll(elementRoles);
 			}
 		}
 		return roleAndDefs;

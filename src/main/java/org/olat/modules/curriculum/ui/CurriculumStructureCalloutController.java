@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
@@ -69,16 +71,19 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 	private final boolean withRoot;
 	private final CurriculumElement rootElement;
 	private final CurriculumElement activeElement;
+	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumStructureCalloutController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement rootElement, CurriculumElement activeElement, boolean withRoot) {
+			CurriculumElement rootElement, CurriculumElement activeElement, boolean withRoot,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "structure");
 		this.withRoot = withRoot;
 		this.rootElement = rootElement;
 		this.activeElement = activeElement;
+		this.secCallback = secCallback;
 		initForm(ureq);
 		loadModel();
 	}
@@ -86,7 +91,7 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(new NameRenderer(), "select");
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new ElementTreeNodeFlexiCellRenderer(new NameRenderer(), "select");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef,
 				new CurriculumElementSmallCellRenderer()));
@@ -99,6 +104,20 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
+	}
+	
+	private class ElementTreeNodeFlexiCellRenderer extends TreeNodeFlexiCellRenderer {
+		
+		public ElementTreeNodeFlexiCellRenderer(FlexiCellRenderer renderer, String action) {
+			super(renderer, action);
+		}
+		
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			CurriculumElementRow elementRow = tableModel.getObject(row);
+			renderIndented(renderer, target, cellValue, row, source, ubu, translator, false, elementRow.isSelectable());
+		}
 	}
 	
 	private class NameRenderer implements FlexiCellRenderer {
@@ -129,16 +148,36 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 		for(CurriculumElement element:elements) {
 			CurriculumElementRow row = new CurriculumElementRow(element);
 			row.setActive(activeElement != null && activeElement.equals(element));
+			boolean canSelect = secCallback.canViewCurriculumElement(element);
+			row.setSelectable(canSelect);
 			rows.add(row);
 			keyToRows.put(element.getKey(), row);
 		}
-		//parent line
+		// Build parent line
 		for(CurriculumElementRow row:rows) {
 			if(row.getParentKey() != null) {
 				row.setParent(keyToRows.get(row.getParentKey()));
 			}
 		}
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
+		
+		// Propagate viewable from selectable element up-to top element
+		for(CurriculumElementRow row:rows) {
+			if(row.isSelectable()) {
+				for(CurriculumElementRow parent=row; parent != null; parent=parent.getParent()) {
+					if(!parent.isViewable()) {
+						parent.setViewable(true);
+					}
+				}
+			}
+		}
+		// Remove not viewable elements
+		for(Iterator<CurriculumElementRow> rowIterator=rows.iterator(); rowIterator.hasNext(); ) {
+			if(!rowIterator.next().isViewable()) {
+				rowIterator.remove();
+			}
+		}
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}

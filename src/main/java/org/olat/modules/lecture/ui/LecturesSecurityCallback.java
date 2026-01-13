@@ -29,53 +29,55 @@ package org.olat.modules.lecture.ui;
  */
 public interface LecturesSecurityCallback {
 	
-	public boolean canNewLectureBlock();
+	boolean canNewLectureBlock();
 	
-	public boolean canChangeRates();
+	boolean canChangeRates();
 	
-	public boolean canSeeAppeals();
+	boolean canSeeAppeals();
 	
-	public boolean canSeeAbsencesInDailyOverview();
+	boolean canSeeAbsencesInDailyOverview();
 	
-	public boolean canSelectCoursesInDailyOverview();
+	boolean canSelectCoursesInDailyOverview();
 	
-	public boolean canSeeStatisticsInDailyOverview();
+	boolean canSeeStatisticsInDailyOverview();
 	
-	public boolean canSeeWarningsAndAlertsInDailyOverview();
+	boolean canSeeWarningsAndAlertsInDailyOverview();
 	
-	public boolean canApproveAppeal();
+	boolean canApproveAppeal();
 	
-	public boolean canEditConfiguration();
+	boolean canEditConfiguration();
 	
-	public boolean canAuthorizeAbsence();
+	boolean canAuthorizeAbsence();
 	
-	public boolean canReopenLectureBlock();
+	boolean canReopenLectureBlock();
 	
-	public boolean canAddAbsences();
+	boolean canAddAbsences();
 	
-	public boolean canAddNoticeOfAbsences();
+	boolean canAddNoticeOfAbsences();
 	
-	public boolean canAddDispensations();
+	boolean canAddDispensations();
 	
-	public boolean canViewLog();
+	boolean canViewLog();
 	
-	public boolean canViewList();
+	boolean canViewList();
 	
-	public boolean canAssessmentMode();
+	boolean canAssessmentMode();
 	
 	/**
 	 * @return true if a E-mail to the teaches after creating a notice is mandatory
 	 */
-	public boolean needToInformTeacher();
+	boolean needToInformTeacher();
 
-	public boolean canEditAbsenceNotices();
+	boolean canEditAbsenceNotices();
 	
-	public boolean canDeleteAbsenceNotices();
+	boolean canDeleteAbsenceNotices();
 	
-	public LectureRoles viewAs();
+	LectureRoles viewAs();
 	
-	public boolean isOnlineMeetingModerator();
+	boolean isOnlineMeetingModerator();
 	
-	public boolean isOnlineMeetingAdministrator();
+	boolean isOnlineMeetingAdministrator();
+	
+	LecturesSecurityCallback readOnlyCopy();
 
 }

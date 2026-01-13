@@ -32,14 +32,19 @@ import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
  */
 public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
+	private final boolean selectable;
 	private final Long numOfReferences;
 	private CurriculumElementRow parent;
 	private final Long parentElementKey;
 	private final CurriculumElement curriculumElement;
 	
-	public CurriculumElementRow(CurriculumElement curriculumElement, Long numOfReferences) {
+	private boolean viewable;
+	
+	public CurriculumElementRow(CurriculumElement curriculumElement, Long numOfReferences, boolean selectable) {
 		this.curriculumElement = curriculumElement;
 		this.numOfReferences = numOfReferences;
+		this.selectable = selectable;
+		this.viewable = selectable;
 		parentElementKey = curriculumElement.getParent() == null ? null : curriculumElement.getParent().getKey();
 	}
 
@@ -96,6 +101,18 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		return curriculumElement.getBeginDate();
 	}
 	
+	public boolean isSelectable() {
+		return selectable;
+	}
+	
+	public boolean isViewable() {
+		return viewable;
+	}
+
+	public void setViewable(boolean viewable) {
+		this.viewable = viewable;
+	}
+
 	public Date getEndDate() {
 		return curriculumElement.getEndDate();
 	}

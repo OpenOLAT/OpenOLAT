@@ -74,6 +74,9 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private boolean active = false;
 	private boolean acceptedByFilter = true;
 	
+	private boolean viewable = false;
+	private boolean selectable = false;
+	
 	public CurriculumElementRow(CurriculumElement element) {
 		this.element = element;
 		curriculum = element.getCurriculum();
@@ -373,6 +376,22 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 
 	public void setCurriculumUrl(String curriculumUrl) {
 		this.curriculumUrl = curriculumUrl;
+	}
+
+	public boolean isViewable() {
+		return viewable;
+	}
+
+	public void setViewable(boolean viewable) {
+		this.viewable = viewable;
+	}
+
+	public boolean isSelectable() {
+		return selectable;
+	}
+
+	public void setSelectable(boolean selectable) {
+		this.selectable = selectable;
 	}
 
 	@Override

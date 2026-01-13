@@ -430,6 +430,20 @@ public class CurriculumElementDAO {
 		return curriculums == null || curriculums.isEmpty() ? null : curriculums.get(0);
 	}
 	
+	public List<CurriculumElementRef> loadElements(Identity identity, CurriculumRoles role) {
+		String query = """
+				select new org.olat.modules.curriculum.model.CurriculumElementRefImpl(el.key) from curriculumelement el
+				inner join el.group baseGroup
+				inner join baseGroup.members membership
+				where membership.identity.key=:identityKey and membership.role=:role""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, CurriculumElementRef.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", role.name())
+				.getResultList();
+	}
+	
 	public List<CurriculumElement> loadElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el from curriculumelement el")
@@ -441,6 +455,24 @@ public class CurriculumElementDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("curriculumKey", curriculum.getKey())
+				.getResultList();
+	}
+	
+	public List<CurriculumElement> loadElements(CurriculumRef curriculum, Identity managerIdentity, CurriculumElementStatus[] status) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select el from curriculumelement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" inner join fetch el.group baseGroup")
+		  .append(" left join fetch el.parent parentEl")
+		  .append(" left join curriculum.organisation organis")
+		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(status);
+		
+		appendManagerAccess(sb);
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("curriculumKey", curriculum.getKey())
+				.setParameter("managerKey", managerIdentity.getKey())
 				.getResultList();
 	}
 	
@@ -584,6 +616,34 @@ public class CurriculumElementDAO {
 					numOfCurriculumElementOwners, numOfMasterCoaches, numOfPending));
 		}
 		return infos;
+	}
+	
+	/**
+	 * Need curriculum, organis of curriculum, baseGroup of curriculum element
+	 * and a parameter: managerKey.
+	 * 
+	 * @param sb The query builder
+	 */
+	private void appendManagerAccess(QueryBuilder sb) {
+		// curriculum administrator at level curriculum
+		sb.and()
+		  .append("(curriculum.group.key in (select cGroup.key from bgroupmember as cMembership")
+		  .append("  inner join cMembership.group as cGroup")
+		  .append("  where cMembership.identity.key=:managerKey")
+		  .append("  and cMembership.role ").in(CurriculumRoles.curriculumowner)
+		  .append(" )");
+		
+		sb.append(" or baseGroup.key in (select cGroup.key from bgroupmember as cMembership")
+		  .append("  inner join cMembership.group as cGroup")
+		  .append("  where cMembership.identity.key=:managerKey")
+		  .append("  and cMembership.role ").in(CurriculumRoles.curriculumelementowner)
+		  .append(" )");
+		// curriculum administrator from the organisation
+		sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
+		  .append("  inner join oMembership.group as oGroup")
+		  .append("  where oMembership.identity.key=:managerKey")
+		  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+		  .append(" ))");
 	}
 	
 	public Long countElements(RepositoryEntryRef entry) {

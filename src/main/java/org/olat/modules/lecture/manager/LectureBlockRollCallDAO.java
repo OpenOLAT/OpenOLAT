@@ -1042,7 +1042,7 @@ public class LectureBlockRollCallDAO {
 		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ) or exists (select masterCoachMembership from bgroupmember as masterCoachMembership")
 		  .append("     where masterCoachMembership.group.key=bGroup.key and masterCoachMembership.identity.key=:identityKey")
-		  .append("     and masterCoachMembership.role").in(CurriculumRoles.mastercoach)
+		  .append("     and masterCoachMembership.role").in(CurriculumRoles.mastercoach, CurriculumRoles.curriculumelementowner)
 		  .append(" ))");
 	}
 	

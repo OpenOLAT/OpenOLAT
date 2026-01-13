@@ -117,7 +117,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		super.initButtonsForm(formLayout);
 		
 		// Add/remove buttons
-		if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
+		if(!membersManaged && secCallback.canManageCurriculumElementUsers(curriculumElement)) {
 			acceptAllButton = uifactory.addFormLink("accept.all", formLayout, Link.BUTTON);
 			acceptAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_accepted");
 			

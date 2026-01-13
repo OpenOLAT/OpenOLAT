@@ -84,7 +84,7 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("curriculum.element.execution");
 		
-		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
+		boolean canEdit = element == null || secCallback.canEditCurriculumElementSettings(element);
 		
 		periodEl = uifactory.addDateChooser("cif.dates", "cif.dates", null, formLayout);
 		periodEl.setHelpText(translate("curriculum.element.period.help"));

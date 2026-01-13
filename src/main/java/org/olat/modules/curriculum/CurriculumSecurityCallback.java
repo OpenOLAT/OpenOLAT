@@ -36,38 +36,50 @@ public interface CurriculumSecurityCallback {
 	boolean canEditCurriculum(Curriculum curriculum);
 	
 	
-	public boolean canDeleteCurriculum();
+	boolean canDeleteCurriculum();
 	
-	public boolean canManagerCurriculumUsers();
+	boolean canManagerCurriculumUsers();
 	
-	public boolean canNewCurriculumElement(Curriculum curriculum);
+	boolean canNewCurriculumElement(Curriculum curriculum);
 	
-	public boolean canEditCurriculumElements(Curriculum curriculum);
+	boolean canEditCurriculumElements(Curriculum curriculum);
+
+	boolean canViewCurriculumElement(CurriculumElement element);
 	
 	/**
 	 * @param element The curriculum element
 	 * @return true if the user can edit the specified curriculum element
 	 */
-	public boolean canEditCurriculumElement(CurriculumElement element);
+	boolean canEditCurriculumElement(CurriculumElement element);
 	
-	public boolean canEditCurriculumTree();
+	boolean canMoveCurriculumElement(CurriculumElement element);
 	
-	public boolean canManagerCurriculumElementsUsers(Curriculum curriculum);
+	boolean canDeleteCurriculumElement(CurriculumElement element);
 	
-	public boolean canManagerCurriculumElementUsers(CurriculumElement element);
+	boolean canEditCurriculumElementSettings(CurriculumElement element);
 	
-	public boolean canManagerCurriculumElementResources(CurriculumElement element);
+	boolean canEditCurriculumTree();
 	
-	public boolean canViewAllCalendars();
+	boolean canManageCurriculumElementsUsers(Curriculum curriculum);
 	
-	public boolean canNewLectureBlock();
+	boolean canManageCurriculumElementUsers(CurriculumElement element);
+
+	boolean canViewCurriculumElementResources(CurriculumElement element);
 	
-	public boolean canViewAllLectures(Curriculum curriculum);
+	boolean canManageCurriculumElementResources(CurriculumElement element);
 	
-	public boolean canViewAllLearningProgress();
+	boolean canViewCatalogSettings(CurriculumElement element);
 	
-	public boolean canCurriculumReports(Curriculum curriculum);
+	boolean canViewAllCalendars();
 	
-	public boolean canCurriculumsReports();
+	boolean canNewLectureBlock();
+	
+	boolean canViewAllLectures(Curriculum curriculum);
+	
+	boolean canViewAllLearningProgress();
+	
+	boolean canCurriculumReports(Curriculum curriculum);
+	
+	boolean canCurriculumsReports();
 
 }

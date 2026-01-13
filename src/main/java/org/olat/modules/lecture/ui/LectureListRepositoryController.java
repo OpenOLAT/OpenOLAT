@@ -134,6 +134,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
@@ -296,6 +297,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
 	private final IdentityComparator identityComparator;
+	private final CurriculumSecurityCallback curriculumSecCallback;
+	
 
 	@Autowired
 	private DB dbInstance;
@@ -341,6 +344,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		curriculumElement = null;
 		this.config = config;
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = null;
 		identityComparator = new IdentityComparator(getLocale());
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
@@ -361,6 +365,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		curriculumElement = null;
 		this.config = config;
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = null;
 		identityComparator = new IdentityComparator(getLocale());
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
@@ -373,7 +378,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			CurriculumElement curriculumElement, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
+			CurriculumElement curriculumElement, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback,
+			CurriculumSecurityCallback curriculumSecCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.stackPanel = stackPanel;
 		this.entry = null;
@@ -381,6 +387,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.curriculumElement = curriculumElement;
 		this.config = config;
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = curriculumSecCallback;
 		identityComparator = new IdentityComparator(getLocale());
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
@@ -393,7 +400,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			Curriculum curriculum, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
+			Curriculum curriculum, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback,
+			CurriculumSecurityCallback curriculumSecCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.stackPanel = stackPanel;
 		entry = null;
@@ -401,6 +409,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		curriculumElement = null;
 		this.config = config;
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = curriculumSecCallback;
 		identityComparator = new IdentityComparator(getLocale());
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
@@ -1634,9 +1643,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			showWarning("error.no.entry.curriculum");
 		} else if(entry != null) {
 			doAddLectureBlockSimplified(ureq, entry);
-		} else if(curriculumElement != null) {
-			List<RepositoryEntry> entries = this.curriculumService.getRepositoryEntries(curriculumElement);
-			AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement);
+		} else if(curriculumElement != null && curriculumSecCallback != null) {
+			List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+			AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, curriculumSecCallback);
 			addLecture.setCurriculumElement(curriculumElement);
 			
 			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
@@ -1645,8 +1654,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			} else {
 				doAddLectureBlockWizard(ureq, addLecture);
 			}
-		} else {
-			AddLectureContext addLecture = new AddLectureContext(curriculum, null);
+		} else if(curriculum != null && curriculumSecCallback != null) {
+			AddLectureContext addLecture = new AddLectureContext(curriculum, null, curriculumSecCallback);
 			doAddLectureBlockWizard(ureq, addLecture);
 		}
 	}

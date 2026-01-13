@@ -174,7 +174,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 				curriculumElementType == null ? "" : StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 			};
 		// special rights for managers
-		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)
+		if(!resourcesManaged && secCallback.canManageCurriculumElementResources(curriculumElement)
 				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
 			// 1) add
 			addResourceButton = uifactory.addFormLink("add.resource", formLayout, Link.BUTTON);
