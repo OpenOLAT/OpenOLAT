@@ -86,6 +86,11 @@ public class LecturesSecurityCallbackFactory {
 			lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
 		}
 		
+		@Override
+		public LecturesSecurityCallback readOnlyCopy() {
+			return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, true, true, true);
+		}
+		
 		public boolean isReadOnly()  {
 			return courseReadOnlyByStatus || courseReadOnlyByRole || courseReadOnlyManaged;
 		}

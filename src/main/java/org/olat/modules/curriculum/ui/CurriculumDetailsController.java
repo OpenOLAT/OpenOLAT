@@ -210,7 +210,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						.withDetailsUnits(true)
 						.withDetailsExternalRef(true)
 						.withinCurriculums(true);
-				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculum, config, lecturesSecCallback);
+				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculum, config,
+						lecturesSecCallback, secCallback);
 				listenTo(lectureBlocksCtrl);
 
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
@@ -253,7 +254,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		overviewCtrl = new CurriculumDashboardController(ureq, getWindowControl());
 		listenTo(overviewCtrl);
 		if(lectureModule.isEnabled()) {
-			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), curriculum, lecturesSecCallback);
+			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
+					curriculum, lecturesSecCallback, secCallback);
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}

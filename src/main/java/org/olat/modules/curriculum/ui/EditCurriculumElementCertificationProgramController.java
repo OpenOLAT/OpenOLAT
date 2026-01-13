@@ -69,7 +69,7 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 			Curriculum curriculum, CurriculumElement element, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.element = element;
-		canEdit = secCallback.canEditCurriculumElement(element);
+		canEdit = secCallback.canEditCurriculumElementSettings(element);
 		
 		Organisation curriculumOrganisation = curriculum.getOrganisation();
 		if(curriculumOrganisation == null || !organisationModule.isEnabled()) {
@@ -86,6 +86,7 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		enableEl = uifactory.addToggleButton("certification.program.enable", "curriculum.element.certification.program", translate("on"), translate("off"), formLayout);
 		enableEl.toggle(certificationProgram != null);
+		enableEl.setEnabled(canEdit);
 		
 		SelectionValues programsPK = new SelectionValues();
 		for(CertificationProgram program:programsList) {

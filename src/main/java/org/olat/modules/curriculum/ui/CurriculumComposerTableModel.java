@@ -64,7 +64,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		this.locale = locale;
 		setObjects(new ArrayList<>());
 	}
-	
+
 	@Override
 	public int getTotalNodesCount() {
 		if(flat) {
@@ -324,13 +324,13 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case structure -> element.getStructureLink();
 			case status -> element.getStatus();
 			case tools -> element.getTools();
-			case numOfMembers -> element.getNumOfMembers();
-			case numOfParticipants -> element.getNumOfParticipants();
-			case numOfCoaches -> element.getNumOfCoaches();
-			case numOfOwners -> element.getNumOfOwners();
-			case numOfCurriculumElementOwners -> element.getNumOfCurriculumElementOwners();
-			case numOfMasterCoaches -> element.getNumOfMasterCoaches();
-			case numOfPending -> element.getNumOfPending();
+			case numOfMembers -> returnSelectable(element, element.getNumOfMembers());
+			case numOfParticipants -> returnSelectable(element, element.getNumOfParticipants());
+			case numOfCoaches -> returnSelectable(element, element.getNumOfCoaches());
+			case numOfOwners -> returnSelectable(element, element.getNumOfOwners());
+			case numOfCurriculumElementOwners -> returnSelectable(element, element.getNumOfCurriculumElementOwners());
+			case numOfMasterCoaches -> returnSelectable(element, element.getNumOfMasterCoaches());
+			case numOfPending -> returnSelectable(element, element.getNumOfPending());
 			case offers -> element;
 			case calendars -> element.getCalendarsLink();
 			case lectures -> element.getLecturesLink();
@@ -340,6 +340,10 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case availability -> element.getParticipantsAvailabilityNum();
 			default -> "ERROR";
 		};
+	}
+	
+	private Long returnSelectable(CurriculumElementRow element, long value) {
+		return element.isSelectable() ? Long.valueOf(value) : null;
 	}
 	
 	private String getCurriculum(CurriculumElementRow element) {

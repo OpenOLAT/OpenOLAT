@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +57,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -214,7 +216,8 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 					.searchElementsOf(null, addLecture.getCurriculum());
 		}
 		
-		if(searchParams != null) {
+		if(searchParams != null && addLecture.getSecCallback() != null) {
+			CurriculumSecurityCallback secCallback = addLecture.getSecCallback();
 			List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			Map<Long,CurriculumElementRow> keyToRows = new HashMap<>();
 			for(CurriculumElementInfos element:elements) {
@@ -224,14 +227,32 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 					numOfCourses = element.numOfResources();
 				}
 				
-				CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), numOfCourses);
+				boolean canSelect = secCallback.canEditCurriculumElement(element.curriculumElement());
+				CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), numOfCourses, canSelect);
 				rows.add(row);
 				keyToRows.put(row.getKey(), row);
 			}
-			//parent line
+			// Build the parent line
 			for(CurriculumElementRow row:rows) {
 				if(row.getParentKey() != null) {
 					row.setParent(keyToRows.get(row.getParentKey()));
+				}
+			}
+			
+			// Mark viewable elements (all parents of selectable elements)
+			for(CurriculumElementRow row:rows) {
+				if(row.isSelectable()) {
+					for(CurriculumElementRow parent=row; parent != null; parent=parent.getParent()) {
+						if(!parent.isViewable()) {
+							parent.setViewable(true);
+						}
+					}
+				}
+			}
+			// Remove not viewable elements
+			for(Iterator<CurriculumElementRow> rowIterator=rows.iterator(); rowIterator.hasNext(); ) {
+				if(!rowIterator.next().isViewable()) {
+					rowIterator.remove();
 				}
 			}
 			

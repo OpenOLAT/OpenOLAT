@@ -78,7 +78,7 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("curriculum.element.options");
 		
-		boolean canEdit = secCallback.canEditCurriculumElement(element);
+		boolean canEdit = secCallback.canEditCurriculumElementSettings(element);
 		
 		String[] configValues = new String[] {
 				translate("option.adopt", StringHelper.escapeHtml(element.getType().getDisplayName()),

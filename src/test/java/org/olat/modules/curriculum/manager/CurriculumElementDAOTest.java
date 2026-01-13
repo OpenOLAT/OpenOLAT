@@ -1725,6 +1725,23 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadElementsByRole() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24c", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24c", "4. Element (c)",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner, actor);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementRef> elements = curriculumElementDao.loadElements(owner, CurriculumRoles.curriculumelementowner);
+		Assert.assertNotNull(elements);
+		Assert.assertEquals(1, elements.size());
+		Assert.assertEquals(element.getKey(), elements.get(0).getKey());
+	}
+	
+	@Test
 	public void getMembershipInfos_elements() {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");

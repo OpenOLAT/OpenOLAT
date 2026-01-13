@@ -50,6 +50,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.ui.CurriculumDashboardController;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
@@ -92,6 +93,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	private final String preferencesId;
 	private CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
+	private final CurriculumSecurityCallback curriculumSecCallback;
 
 	private StepsMainRunController addLectureCtrl;
 	
@@ -99,35 +101,39 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	private LectureService lectureService;
 	
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
-			LecturesSecurityCallback secCallback) {
+			LecturesSecurityCallback secCallback, CurriculumSecurityCallback curriculumSecCallback) {
 		super(ureq, wControl, "events_widget", Util
 				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale(), Util
 						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale())));
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = curriculumSecCallback;
 		preferencesId = "widget-cur-mgmt";
 		initForm(ureq);
 		loadModel(ureq.getRequestTimestamp());
 	}
 	
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
-			Curriculum curriculum, LecturesSecurityCallback secCallback) {
+			Curriculum curriculum, LecturesSecurityCallback secCallback, CurriculumSecurityCallback curriculumSecCallback) {
 		super(ureq, wControl, "events_widget", Util
 				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale(), Util
 						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale())));
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = curriculumSecCallback;
 		preferencesId = "widget-lectures-cur-" + curriculum.getKey();
 		initForm(ureq);
 		loadModel(ureq.getRequestTimestamp());
 	}
 	
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
+			CurriculumElement curriculumElement, LecturesSecurityCallback secCallback,
+			CurriculumSecurityCallback curriculumSecCallback) {
 		super(ureq, wControl, "events_widget", Util
 				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale(), Util
 						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale())));
 		this.curriculumElement = curriculumElement;
 		this.secCallback = secCallback;
+		this.curriculumSecCallback = curriculumSecCallback;
 		preferencesId = "widget-lectures-cur-el-" + curriculumElement.getKey();
 		initForm(ureq);
 		loadModel(ureq.getRequestTimestamp());
@@ -381,7 +387,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			return;
 		}
 		
-		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement);
+		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, curriculumSecCallback);
 		addLecture.setCurriculumElement(curriculumElement);
 		
 		AddLectureBlock1ResourcesStep step = new AddLectureBlock1ResourcesStep(ureq, addLecture);

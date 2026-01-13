@@ -370,8 +370,6 @@ public class EditMembershipController extends FormBasicController {
 		}
 		return curriculumElements;
 	}
-
-
 	
 	private List<CurriculumElement> orderCurriculumElements(List<CurriculumElement> curriculumElements) {
 		try {

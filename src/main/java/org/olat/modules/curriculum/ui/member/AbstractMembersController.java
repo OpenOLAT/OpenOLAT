@@ -203,12 +203,14 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		}
 		
 		initColumns(columnsModel);
-
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(MemberCols.tools);
-		toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		
+		if(secCallback.canManageCurriculumElementUsers(curriculumElement)) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(MemberCols.tools);
+			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
+			toolsColumn.setExportable(false);
+			toolsColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsColumn);
+		}
 
 		tableModel = new MemberManagementTableModel(columnsModel, getTranslator(), getLocale(),
 				imModule.isOnlineStatusEnabled()); 
@@ -483,8 +485,11 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, true, false, true,
-				true, true, true, false);
+		
+		boolean canManagerUsers = secCallback.canManageCurriculumElementUsers(curriculumElement);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null,
+				withEdit && canManagerUsers, withAcceptDecline && canManagerUsers, canManagerUsers,
+				true, false, true, true, true, canManagerUsers, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, curriculumElement, elements, member, config);
 		detailsCtrl.setUserObject(row);

@@ -135,6 +135,21 @@ public class RepositoryEntryRelationDAO {
 				.getResultList();
 	}
 	
+	public List<RoleAndDefault> getCurriculumElementRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
+		String sb = """
+				select new RoleAndDefault(membership.role, null, curEl.key)
+				from repoentrytogroup as relGroup
+				inner join relGroup.group as baseGroup
+				inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)
+				inner join baseGroup.members as membership
+				where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RoleAndDefault.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", re.getKey())
+				.getResultList();
+	}
+	
 	/**
 	 * Has role in the repository entry only without following relations
 	 * to business groups and other entities.

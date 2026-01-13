@@ -181,7 +181,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			}
 		}
 		
-		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
+		boolean canEdit = element == null || secCallback.canEditCurriculumElementSettings(element);
 		
 		String displayName = element == null ? "" : element.getDisplayName();
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.display.name", 255, displayName, formLayout);

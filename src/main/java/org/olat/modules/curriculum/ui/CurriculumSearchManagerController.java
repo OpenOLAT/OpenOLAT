@@ -553,7 +553,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			rootElement = parentLine.get(0);
 		}
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
-				rootElement, curriculumElement, true);
+				rootElement, curriculumElement, true, secCallback);
 		listenTo(curriculumStructureCalloutCtrl);
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
@@ -652,7 +652,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
 			openLink.setNewWindow(true, true);
 
-			if(secCallback.canManagerCurriculumElementUsers(element)) {
+			if(secCallback.canManageCurriculumElementUsers(element)) {
 				if(!links.isEmpty()) {
 					links.add("-");
 				}

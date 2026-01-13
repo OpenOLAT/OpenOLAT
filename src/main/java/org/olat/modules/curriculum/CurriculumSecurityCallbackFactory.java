@@ -52,9 +52,10 @@ public class CurriculumSecurityCallbackFactory {
 		return new UserLookCurriculumSecurityCallback();
 	}
 	
-	public static final CurriculumSecurityCallback createCallback(Roles roles, List<Curriculum> ownedCurriculums) {
+	public static final CurriculumSecurityCallback createCallback(Roles roles, List<Curriculum> ownedCurriculums,
+			List<CurriculumElementRef> ownedElements) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
-		return new DefaultCurriculumSecurityCallback(admin, ownedCurriculums, List.of());
+		return new DefaultCurriculumSecurityCallback(admin, ownedCurriculums, ownedElements);
 	}
 	
 	private static class UserLookCurriculumSecurityCallback extends DefaultCurriculumSecurityCallback {
@@ -97,7 +98,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewCurriculums() {
-			return admin || !ownedCurriculumKeys.isEmpty();
+			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementKeys.isEmpty();
 		}
 
 		@Override
@@ -131,6 +132,12 @@ public class CurriculumSecurityCallbackFactory {
 			return admin
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
+		
+		@Override
+		public boolean canDeleteCurriculumElement(CurriculumElement curriculumElement) {
+			return admin
+					|| (curriculumElement != null && ownedCurriculumKeys.contains(curriculumElement.getCurriculum().getKey()));
+		}
 
 		@Override
 		public boolean canEditCurriculumElements(Curriculum curriculum) {
@@ -144,14 +151,34 @@ public class CurriculumSecurityCallbackFactory {
 			if(element == null || element.getCurriculum() == null) {
 				return false;
 			}
+			return admin
+					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
+					|| ownedElementKeys.contains(element.getKey());
+		}
+		
+		@Override
+		public boolean canViewCurriculumElement(CurriculumElement element) {
+			return canEditCurriculumElement(element);
+		}
+		
+		@Override
+		public boolean canMoveCurriculumElement(CurriculumElement element) {
+			if(element == null || element.getCurriculum() == null) {
+				return false;
+			}
 			if(admin || ownedCurriculumKeys.contains(element.getCurriculum().getKey())) {
 				return true;
 			}
-			
-			for(CurriculumElement el=element ; el != null; el=el.getParent()) {
-				if(ownedElementKeys.contains(el.getKey())) {
-					return true;
-				}
+			return false;
+		}
+		
+		@Override
+		public boolean canEditCurriculumElementSettings(CurriculumElement element) {
+			if(element == null || element.getCurriculum() == null) {
+				return false;
+			}
+			if(admin || ownedCurriculumKeys.contains(element.getCurriculum().getKey())) {
+				return true;
 			}
 			return false;
 		}
@@ -162,13 +189,25 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canManagerCurriculumElementsUsers(Curriculum curriculum) {
+		public boolean canManageCurriculumElementsUsers(Curriculum curriculum) {
 			return admin
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 
 		@Override
-		public boolean canManagerCurriculumElementUsers(CurriculumElement element) {
+		public boolean canManageCurriculumElementUsers(CurriculumElement element) {
+			return element != null && element.getCurriculum() != null && (
+					admin
+					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey()));
+		}
+		
+		@Override
+		public boolean canViewCurriculumElementResources(CurriculumElement element) {
+			return canManageCurriculumElementResources(element);
+		}
+
+		@Override
+		public boolean canManageCurriculumElementResources(CurriculumElement element) {
 			return element != null && element.getCurriculum() != null && (
 					admin
 					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
@@ -176,11 +215,9 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canManagerCurriculumElementResources(CurriculumElement element) {
-			return element != null && element.getCurriculum() != null && (
-					admin
-					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
-					|| ownedElementKeys.contains(element.getKey()));
+		public boolean canViewCatalogSettings(CurriculumElement element) {
+			return element != null && element.getCurriculum() != null
+					&& (admin || ownedCurriculumKeys.contains(element.getCurriculum().getKey()));
 		}
 
 		@Override

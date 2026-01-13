@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
@@ -45,6 +46,7 @@ public class AddLectureContext {
 	
 	private final Curriculum curriculum;
 	private final CurriculumElement rootElement;
+	private final CurriculumSecurityCallback secCallback;
 
 	private boolean withTeamsMeeting;
 	private boolean withBigBlueButtonMeeting;
@@ -53,9 +55,11 @@ public class AddLectureContext {
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
 	private Set<Long> taxonomyLevelKeys;
 
-	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement) {
+	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement,
+			CurriculumSecurityCallback secCallback) {
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
+		this.secCallback = secCallback;
 	}
 	
 	public Curriculum getCurriculum() {
@@ -64,6 +68,10 @@ public class AddLectureContext {
 
 	public CurriculumElement getRootElement() {
 		return rootElement;
+	}
+
+	public CurriculumSecurityCallback getSecCallback() {
+		return secCallback;
 	}
 
 	public RepositoryEntry getEntry() {

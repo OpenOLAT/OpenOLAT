@@ -46,6 +46,12 @@ public class CurriculumElementsDataModel extends DefaultFlexiTreeTableDataModel<
 	}
 	
 	@Override
+	public boolean isSelectable(int row) {
+		CurriculumElementRow elementRow = getObject(row);
+		return elementRow.isSelectable();
+	}
+
+	@Override
 	public boolean hasOpenCloseAll() {
 		return false;
 	}

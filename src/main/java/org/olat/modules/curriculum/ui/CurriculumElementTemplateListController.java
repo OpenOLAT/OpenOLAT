@@ -148,7 +148,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-templates-list");
 				
 		// special rights for managers
-		if(secCallback.canManagerCurriculumElementResources(curriculumElement)
+		if(secCallback.canManageCurriculumElementResources(curriculumElement)
 				&& (curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == 1)) {
 			// 1) add
 			addTemplateButton = uifactory.addFormLink("add.template", formLayout, Link.BUTTON);

@@ -33,6 +33,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -190,6 +191,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 	
 	private boolean canRepositoryEntries(CurriculumElement element) {
+		if(!secCallback.canViewCurriculumElementResources(element)) {
+			return false;
+		}
+		
 		CurriculumElementType type = element.getType();
 		if(type != null && type.getMaxRepositoryEntryRelations() == 0) {
 			return curriculumService.hasRepositoryEntries(element);
@@ -246,7 +251,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		List<CurriculumElementRow> rows = new ArrayList<>(implementations.size());
 		for(CurriculumElement element:implementations) {
 			CurriculumElementStatus status = element.getElementStatus();
-			if(status != CurriculumElementStatus.deleted) {
+			if(status != CurriculumElementStatus.deleted && secCallback.canViewCurriculumElement(element)) {
 				rows.add(new CurriculumElementRow(element));
 			}
 		}
@@ -309,6 +314,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			CurriculumElementStatus status = element.getElementStatus();
 			if(status != CurriculumElementStatus.deleted) {
 				CurriculumElementRow row = new CurriculumElementRow(element);
+				row.setViewable(secCallback.canViewCurriculumElement(element));
 				rows.add(row);
 				keyToRows.put(element.getKey(), row);
 			}
@@ -323,6 +329,13 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(rows.size() > 1) {
 			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		}
+		
+		for(Iterator<CurriculumElementRow> rowIterator=rows.iterator(); rowIterator.hasNext(); ) {
+			if(!rowIterator.next().isViewable()) {
+				rowIterator.remove();
+			}
+		}
+		
 		return rows;
 	}
 	
@@ -502,7 +515,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 						.withDetailsUnits(true)
 						.withDetailsExternalRef(true)
 						.withinCurriculums(true);
-				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculumElement, config, lecturesSecCallback);
+				
+				LecturesSecurityCallback callback = secCallback.canEditCurriculumElement(curriculumElement)
+						? lecturesSecCallback
+						: lecturesSecCallback.readOnlyCopy();
+				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculumElement, config,
+						callback, secCallback);
 				listenTo(lectureBlocksCtrl);
 				
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
@@ -523,7 +541,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}, false);
 		
 		// Offers
-		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null) {
+		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
+				&& secCallback.canViewCatalogSettings(curriculumElement)) {
 			offersTab = tabPane.addTab(ureq, translate("tab.offers"), "o_sel_curriculum_offers", uureq -> {
 				offersCtrl = new CurriculumElementOffersController(uureq, getWindowControl(),
 						curriculumElement, secCallback);
@@ -578,17 +597,18 @@ public class CurriculumElementDetailsController extends BasicController implemen
 
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
-					curriculumElement, lecturesSecCallback);
+					curriculumElement, lecturesSecCallback, secCallback);
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}
-		
+
 		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
 		listenTo(coursesWidgetCtrl);
 		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
-		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null) {
+		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
+				&& secCallback.canViewCatalogSettings(curriculumElement)) {
 			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(offersWidgetCtrl);
 			overviewCtrl.addWidget("offers", offersWidgetCtrl);
@@ -764,7 +784,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void doOpenStructure(UserRequest ureq, Link link) {
 		CurriculumElement rootElement = getRootElement();
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
-				rootElement, curriculumElement, true);
+				rootElement, curriculumElement, true, secCallback);
 		listenTo(curriculumStructureCalloutCtrl);
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);

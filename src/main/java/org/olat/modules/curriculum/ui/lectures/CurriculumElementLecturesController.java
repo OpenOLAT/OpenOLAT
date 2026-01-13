@@ -38,7 +38,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
@@ -87,7 +86,8 @@ public class CurriculumElementLecturesController extends BasicController {
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 * @param breadcrumbPanel A breadcrumb panel (mandatory)
-	 * @param element The curriculum element
+	 * @param curriculum The curriculum (mandatory)
+	 * @param element The curriculum element (mandatory)
 	 * @param withDescendants Show the lectures of the specified curriculum and all its descendants (or not)
 	 * @param secCallback The security callback
 	 */
@@ -100,6 +100,7 @@ public class CurriculumElementLecturesController extends BasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
 
 		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");
+		putInitialPanel(mainVC);
 		
 		boolean all = secCallback.canViewAllLectures(curriculum)
 				|| (lectureModule.isOwnerCanViewAllCoursesInCurriculum() && secCallback.canEditCurriculumElement(element));
@@ -112,11 +113,13 @@ public class CurriculumElementLecturesController extends BasicController {
 					.getRepositoryEntriesWithLectures(element, checkByIdentity, withDescendants);
 			elements = curriculumService.getCurriculumElementsDescendants(element);
 			elements.add(0, element);
+			elements = elements.stream()
+					.filter(el -> secCallback.canViewCurriculumElement(el))
+					.toList();
 		} else {
-			entries = curriculumService
-					.getRepositoryEntriesWithLectures(curriculum, checkByIdentity);
-			elements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
-		}
+			mainVC.contextPut("hasLectures", Boolean.FALSE);
+			return;
+		}	
 		
 		List<RepositoryEntryRef> filterByEntry = new ArrayList<>(entries);
 		if(filterByEntry.isEmpty()) {
@@ -153,8 +156,6 @@ public class CurriculumElementLecturesController extends BasicController {
 				mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
 			}
 		}
-
-		putInitialPanel(mainVC);
 	}
 	
 	private void calculateWarningRates(List<LectureBlockIdentityStatistics> rawStatistics, List<LectureBlockIdentityStatistics> aggregatedStatistics) {

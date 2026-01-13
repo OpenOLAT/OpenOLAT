@@ -292,6 +292,8 @@ public interface CurriculumService {
 
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs);
 	
+	public List<CurriculumElementRef> getCurriculumElements(Identity identity, CurriculumRoles role);
+	
 	/**
 	 * The element will be flagged as deleted.
 	 * 
@@ -308,6 +310,15 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status);
+	
+	/**
+	 * 
+	 * @param curriculum The curriculum
+	 * @param managerIdentity Search with this identity as curriculummanager, curriculumowner...
+	 * @param status The status
+	 * @return A list of elements
+	 */
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, Identity managerIdentity, CurriculumElementStatus[] status);
 	
 	public List<CurriculumElement> getCurriculumElementsByCurriculums(Collection<? extends CurriculumRef> curriculumRefs);
 	

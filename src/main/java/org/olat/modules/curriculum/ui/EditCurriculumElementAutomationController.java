@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Automation;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.AutomationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,15 +69,19 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	private SingleSelection finishedUnitEl;
 	private FormLayoutContainer finishedContainer;
 
+	private final boolean canEdit;
 	private CurriculumElement curriculumElement;
 	private final SelectionValues unitPK = new SelectionValues();
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public EditCurriculumElementAutomationController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public EditCurriculumElementAutomationController(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.curriculumElement = curriculumElement;
+
+		canEdit = secCallback.canEditCurriculumElementSettings(curriculumElement);
 		
 		unitPK.add(SelectionValues.entry(AutomationUnit.SAME_DAY.name(), translate("same.day")));
 		unitPK.add(SelectionValues.entry(AutomationUnit.DAYS.name(), translate("unit.days")));
@@ -115,12 +120,15 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		instantiationEnabledEl = uifactory.addToggleButton("instantiation.enabled", "automation.instantiation.enabled",
 				translate("on"), translate("off"), formLayout);
 		instantiationEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		instantiationEnabledEl.setEnabled(canEdit);
 		
 		instantiationContainer = uifactory.addInlineFormLayout("instantiationvalues", null, formLayout);
 		instantiationValueEl = uifactory.addTextElement("instantiation.value", null, 6, "", instantiationContainer);
 		instantiationValueEl.setDisplaySize(6);
+		instantiationValueEl.setEnabled(canEdit);
 		instantiationUnitEl = uifactory.addDropdownSingleselect("instantiation.unit", null, instantiationContainer, unitPK.keys(), unitPK.values());
 		instantiationUnitEl.addActionListener(FormEvent.ONCHANGE);
+		instantiationUnitEl.setEnabled(canEdit);
 		uifactory.addStaticTextElement("instantiation.infos", null, translate("automation.addon"), instantiationContainer);
 		initValueUnit(curriculumElement.getAutoInstantiation(),instantiationEnabledEl, instantiationValueEl, instantiationUnitEl);
 	}
@@ -136,12 +144,15 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		accessForCoachEnabledEl = uifactory.addToggleButton("access.for.coach.enabled", "automation.access.for.coach.enabled",
 				translate("on"), translate("off"), formLayout);
 		accessForCoachEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		accessForCoachEnabledEl.setEnabled(canEdit);
 		
 		accessForCoachContainer = uifactory.addInlineFormLayout("accessforcoachesvalues", null, formLayout);
 		accessForCoachValueEl = uifactory.addTextElement("access.for.coach.value", null, 6, "", accessForCoachContainer);
 		accessForCoachValueEl.setDisplaySize(6);
+		accessForCoachValueEl.setEnabled(canEdit);
 		accessForCoachUnitEl = uifactory.addDropdownSingleselect("access.for.coach.unit", null, accessForCoachContainer, unitPK.keys(), unitPK.values());
 		accessForCoachUnitEl.addActionListener(FormEvent.ONCHANGE);
+		accessForCoachUnitEl.setEnabled(canEdit);
 		uifactory.addStaticTextElement("access.for.coach.infos", null, translate("automation.addon"), accessForCoachContainer);
 		initValueUnit(curriculumElement.getAutoAccessForCoach(), accessForCoachEnabledEl, accessForCoachValueEl, accessForCoachUnitEl);
 		
@@ -149,12 +160,15 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		publishedEnabledEl = uifactory.addToggleButton("published.enabled", "automation.published.enabled",
 				translate("on"), translate("off"), formLayout);
 		publishedEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		publishedEnabledEl.setEnabled(canEdit);
 		
 		publishedContainer = uifactory.addInlineFormLayout("publishedvalues", null, formLayout);
 		publishedValueEl = uifactory.addTextElement("published.value", null, 6, "", publishedContainer);
 		publishedValueEl.setDisplaySize(6);
+		publishedValueEl.setEnabled(canEdit);
 		publishedUnitEl = uifactory.addDropdownSingleselect("published.unit", null, publishedContainer, unitPK.keys(), unitPK.values());
 		publishedUnitEl.addActionListener(FormEvent.ONCHANGE);
+		publishedUnitEl.setEnabled(canEdit);
 		uifactory.addStaticTextElement("published.infos", null, translate("automation.addon"), publishedContainer);
 		initValueUnit(curriculumElement.getAutoPublished(), publishedEnabledEl, publishedValueEl, publishedUnitEl);
 		
@@ -162,12 +176,15 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		finishedEnabledEl = uifactory.addToggleButton("finished.enabled", "automation.finished.enabled",
 				translate("on"), translate("off"), formLayout);
 		finishedEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		finishedEnabledEl.setEnabled(canEdit);
 		
 		finishedContainer = uifactory.addInlineFormLayout("finishedvalues", null, formLayout);
 		finishedValueEl = uifactory.addTextElement("finished.value", null, 6, "", finishedContainer);
 		finishedValueEl.setDisplaySize(6);
+		finishedValueEl.setEnabled(canEdit);
 		finishedUnitEl = uifactory.addDropdownSingleselect("finished.unit", null, finishedContainer, unitPK.keys(), unitPK.values());
 		finishedUnitEl.addActionListener(FormEvent.ONCHANGE);
+		finishedUnitEl.setEnabled(canEdit);
 		uifactory.addStaticTextElement("finished.infos", null, translate("automation.after.addon"), finishedContainer);
 		initValueUnit(curriculumElement.getAutoClosed(), finishedEnabledEl, finishedValueEl, finishedUnitEl);
 	}

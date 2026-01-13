@@ -153,7 +153,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		setFormInfo("curriculum.element.infos.desc");
 		
 		UserSession usess = ureq.getUserSession();
-		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
+		boolean canEdit = element == null || secCallback.canEditCurriculumElementSettings(element);
 		
 		if (isRootElement) {
 			teaserEl = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, element.getTeaser(), formLayout);
