@@ -430,15 +430,17 @@ public class CurriculumElementDAO {
 		return curriculums == null || curriculums.isEmpty() ? null : curriculums.get(0);
 	}
 	
-	public List<CurriculumElementRef> loadElements(Identity identity, CurriculumRoles role) {
+	public List<CurriculumElement> loadElements(Identity identity, CurriculumRoles role) {
 		String query = """
-				select new org.olat.modules.curriculum.model.CurriculumElementRefImpl(el.key) from curriculumelement el
+				select el from curriculumelement el
+				inner join fetch el.curriculum curriculum
+				left join fetch el.parent parentEl
 				inner join el.group baseGroup
 				inner join baseGroup.members membership
 				where membership.identity.key=:identityKey and membership.role=:role""";
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, CurriculumElementRef.class)
+				.createQuery(query, CurriculumElement.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("role", role.name())
 				.getResultList();

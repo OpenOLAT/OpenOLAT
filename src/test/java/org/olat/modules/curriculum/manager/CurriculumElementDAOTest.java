@@ -1735,10 +1735,10 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner, actor);
 		dbInstance.commitAndCloseSession();
 		
-		List<CurriculumElementRef> elements = curriculumElementDao.loadElements(owner, CurriculumRoles.curriculumelementowner);
-		Assert.assertNotNull(elements);
-		Assert.assertEquals(1, elements.size());
-		Assert.assertEquals(element.getKey(), elements.get(0).getKey());
+		List<CurriculumElement> elements = curriculumElementDao.loadElements(owner, CurriculumRoles.curriculumelementowner);
+		Assertions.assertThat(elements)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
 	}
 	
 	@Test

@@ -292,7 +292,7 @@ public interface CurriculumService {
 
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs);
 	
-	public List<CurriculumElementRef> getCurriculumElements(Identity identity, CurriculumRoles role);
+	public List<CurriculumElement> getCurriculumElements(Identity identity, CurriculumRoles role);
 	
 	/**
 	 * The element will be flagged as deleted.

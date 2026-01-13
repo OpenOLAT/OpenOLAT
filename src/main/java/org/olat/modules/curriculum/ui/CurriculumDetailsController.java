@@ -210,8 +210,9 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						.withDetailsUnits(true)
 						.withDetailsExternalRef(true)
 						.withinCurriculums(true);
+				LecturesSecurityCallback curriculumLecturesSecCallback = evaluateLecturesSecurityCallback();
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculum, config,
-						lecturesSecCallback, secCallback);
+						curriculumLecturesSecCallback, secCallback);
 				listenTo(lectureBlocksCtrl);
 
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
@@ -254,12 +255,19 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		overviewCtrl = new CurriculumDashboardController(ureq, getWindowControl());
 		listenTo(overviewCtrl);
 		if(lectureModule.isEnabled()) {
+			LecturesSecurityCallback curriculumLecturesSecCallback = evaluateLecturesSecurityCallback();
 			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
-					curriculum, lecturesSecCallback, secCallback);
+					curriculum, curriculumLecturesSecCallback, secCallback);
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}
 		return overviewCtrl;
+	}
+	
+	private LecturesSecurityCallback evaluateLecturesSecurityCallback() {
+		return secCallback.canEditCurriculum(curriculum)
+				? lecturesSecCallback
+				: lecturesSecCallback.readOnlyCopy();
 	}
 
 	@Override

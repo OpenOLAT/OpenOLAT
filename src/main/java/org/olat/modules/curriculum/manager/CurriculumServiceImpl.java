@@ -1775,7 +1775,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public List<CurriculumElementRef> getCurriculumElements(Identity identity, CurriculumRoles role) {
+	public List<CurriculumElement> getCurriculumElements(Identity identity, CurriculumRoles role) {
 		return curriculumElementDao.loadElements(identity, role);
 	}
 
