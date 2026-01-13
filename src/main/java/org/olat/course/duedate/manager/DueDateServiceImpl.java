@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.Persistence;
+
 import org.hibernate.LazyInitializationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -148,9 +150,12 @@ public class DueDateServiceImpl implements DueDateService {
 	 * @param re The repository entry
 	 * @return The repository entry life cycle
 	 */
-	private RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry re) {
+	protected RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry re) {
 		try {
 			RepositoryEntryLifecycle lifecycle = re.getLifecycle();
+			if(lifecycle != null && !Persistence.getPersistenceUtil().isLoaded(lifecycle)) {
+				lifecycle = repositoryEntryLifecycleDao.loadByEntry(re);
+			}
 			if(lifecycle != null) {
 				lifecycle.getValidTo();
 			}
