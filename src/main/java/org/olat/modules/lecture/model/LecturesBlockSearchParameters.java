@@ -45,6 +45,7 @@ public class LecturesBlockSearchParameters {
 	
 	private String searchString;
 	private Date startDate;
+	private Date startDateBefore;
 	private Date endDate;
 	private IdentityRef teacher;
 	private IdentityRef manager;
@@ -83,6 +84,14 @@ public class LecturesBlockSearchParameters {
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
+	}
+
+	public Date getStartDateBefore() {
+		return startDateBefore;
+	}
+
+	public void setStartDateBefore(Date startDateBefore) {
+		this.startDateBefore = startDateBefore;
 	}
 
 	public Date getEndDate() {

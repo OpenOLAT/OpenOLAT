@@ -921,6 +921,9 @@ public class LectureBlockDAO {
 		if(searchParams.getStartDate() != null) {
 			sb.and().append(" block.startDate>=:startDate");
 		}
+		if(searchParams.getStartDateBefore() != null) {
+			sb.and().append(" block.startDate<=:startDateBefore");
+		}
 		if(searchParams.getEndDate() != null) {
 			sb.and().append(" block.endDate<=:endDate");
 		}
@@ -1064,6 +1067,9 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getStartDate() != null) {
 			query.setParameter("startDate", searchParams.getStartDate(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getStartDateBefore() != null) {
+			query.setParameter("startDateBefore", searchParams.getStartDateBefore(), TemporalType.TIMESTAMP);
 		}
 		if(searchParams.getEndDate() != null) {
 			query.setParameter("endDate", searchParams.getEndDate(), TemporalType.TIMESTAMP);

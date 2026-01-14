@@ -307,10 +307,11 @@ public class LectureBlockDAOTest extends OlatTestCase {
 
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setManager(id);
-		searchParams.setEndDate(new Date());
-		searchParams.setParticipant(id);
 		searchParams.setSearchString("Hello");
 		searchParams.setStartDate(new Date());
+		searchParams.setStartDateBefore(new Date());
+		searchParams.setEndDate(new Date());
+		searchParams.setParticipant(id);
 		searchParams.setTeacher(id);
 		searchParams.setMasterCoach(id);
 		searchParams.setManager(id);

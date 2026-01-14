@@ -5,5 +5,10 @@
 				$r.render("courseCoach")
 			</div>
 		#end
+		#if($r.available("lectureBlocks"))
+			<div class="o_bento_box o_bento_box_4_1">
+				$r.render("lectureBlocks")
+			</div>
+		#end
 	</div>
 </div>

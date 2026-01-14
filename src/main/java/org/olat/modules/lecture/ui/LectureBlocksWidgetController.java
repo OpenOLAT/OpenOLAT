@@ -65,8 +65,8 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 	private final Formatter formatter;
 	protected DayNavElement dayNavEl;
-	private LectureBlocksWidgetTableModel dataModel;
-	private FlexiTableElement tableEl;
+	protected LectureBlocksWidgetTableModel dataModel;
+	protected FlexiTableElement tableEl;
 	private final LectureBlockTodayDateCellRenderer timeRenderer;
 	private FormLayoutContainer emptyCont;
 	protected FormLink backButton;
@@ -191,6 +191,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		List<LectureBlocksWidgetRow> rows = new ArrayList<>(lectureBlocks.size());
 		for (LectureBlock lectureBlock : lectureBlocks) {
 			LectureBlocksWidgetRow row = new LectureBlocksWidgetRow();
+			row.setKey(lectureBlock.getKey());
 			row.setExternalRef(lectureBlock.getExternalRef());
 			row.setTitle(lectureBlock.getTitle());
 			row.setLocation(lectureBlock.getLocation());

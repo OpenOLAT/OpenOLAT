@@ -36,6 +36,7 @@ import org.olat.modules.coach.model.CoachingSecurity;
 public class CoachDashboardController extends BasicController {
 
 	private CourseWidgetController courseCoachCtrl;
+	private CoachLectureBlocksWidgetController lectureBlocksCtrl;
 
 	public CoachDashboardController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
@@ -47,6 +48,10 @@ public class CoachDashboardController extends BasicController {
 			courseCoachCtrl = new CourseWidgetController(ureq, wControl);
 			listenTo(courseCoachCtrl);
 			mainVC.put("courseCoach", courseCoachCtrl.getInitialComponent());
+			
+			lectureBlocksCtrl = new CoachLectureBlocksWidgetController(ureq, wControl);
+			listenTo(lectureBlocksCtrl);
+			mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
 		}
 	}
 
@@ -58,6 +63,9 @@ public class CoachDashboardController extends BasicController {
 	public void reload() {
 		if (courseCoachCtrl != null) {
 			courseCoachCtrl.reload();
+		}
+		if (lectureBlocksCtrl != null) {
+			lectureBlocksCtrl.reload();
 		}
 	}
 

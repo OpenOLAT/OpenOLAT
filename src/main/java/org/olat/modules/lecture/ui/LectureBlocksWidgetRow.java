@@ -27,6 +27,7 @@ package org.olat.modules.lecture.ui;
  */
 public class LectureBlocksWidgetRow {
 
+	private Long key;
 	private String id;
 	private String statusCss;
 	private String dayAbbr;
@@ -37,7 +38,13 @@ public class LectureBlocksWidgetRow {
 	private boolean onlineMeeting;
 	private String time;
 	
-	
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
 
 	public String getId() {
 		return id;
