@@ -129,7 +129,7 @@ public class CurriculumElementLecturesController extends BasicController {
 			params.setEntries(entries);
 			params.setCurriculumElements(List.copyOf(elements));
 			List<LectureBlockIdentityStatistics> rawStatistics = lectureService
-					.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
+					.getLecturesStatistics(params, userPropertyHandlers, checkByIdentity);
 			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
 			calculateWarningRates(rawStatistics, aggregatedStatistics);
 
@@ -145,16 +145,14 @@ public class CurriculumElementLecturesController extends BasicController {
 			mainVC.contextPut("curriculumIdentifier", curriculum.getIdentifier());
 		}
 		
-		if(element != null) {
-			mainVC.contextPut("elementName", element.getDisplayName());
-			mainVC.contextPut("elementIdentifier", element.getIdentifier());
-			Formatter formatter = Formatter.getInstance(getLocale());
-			if(element.getBeginDate() != null) {
-				mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
-			}
-			if(element.getEndDate() != null) {
-				mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
-			}
+		mainVC.contextPut("elementName", element.getDisplayName());
+		mainVC.contextPut("elementIdentifier", element.getIdentifier());
+		Formatter formatter = Formatter.getInstance(getLocale());
+		if(element.getBeginDate() != null) {
+			mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
+		}
+		if(element.getEndDate() != null) {
+			mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
 		}
 	}
 	

@@ -1035,7 +1035,7 @@ public class LectureBlockRollCallDAO {
 	private void appendCheckAccess(QueryBuilder sb) {
 		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
 		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
-		  .append("     and membership.role").in(OrganisationRoles.educationmanager.name(), OrganisationRoles.administrator, OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name())
+		  .append("     and membership.role").in(OrganisationRoles.educationmanager.name(), OrganisationRoles.administrator, OrganisationRoles.curriculummanager.name(), OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name())
 		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
 		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")

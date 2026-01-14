@@ -398,7 +398,11 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 					fireEvent(ureq, new RollCallEvent(RollCallEvent.WORK_ON_ROLL_CALL, lectureBlocks));
 				} else if("open.course".equals(cmd)) {
 					DailyLectureBlockRow row = tableModel.getObject(se.getIndex());
-					doOpenCourseLectures(ureq, row);
+					if(row == null) {
+						loadModel();
+					} else {
+						doOpenCourseLectures(ureq, row);
+					}
 				}
 			}
 		} else if(source == closeButton) {

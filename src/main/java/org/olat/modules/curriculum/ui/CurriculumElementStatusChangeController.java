@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -45,6 +46,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.member.CustomizeNotificationController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,14 +71,16 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 	
 	private CurriculumElement curriculumElement;
 	private final CurriculumElementStatus newStatus;
+	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumElementStatusChangeController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement curriculumElement, CurriculumElementStatus newStatus) {
+			CurriculumElement curriculumElement, CurriculumElementStatus newStatus, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.curriculumElement = curriculumElement;
+		this.secCallback = secCallback;
 		this.newStatus = newStatus;
 		initForm(ureq);
 	}
@@ -98,9 +102,7 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 		statusCont.contextPut("statusNew", newStatus);
 		
 		if (!curriculumElement.getElementStatus().isCancelledOrClosed()) {
-			long numChildren = curriculumService.getCurriculumElementsDescendants(curriculumElement).stream()
-					.filter(element -> !element.getElementStatus().isCancelledOrClosed())
-					.count();
+			long numChildren = numOfEditableChildren();
 			if (numChildren > 0) {
 				SelectionValues changeForSV = new SelectionValues();
 				String allI18nKey;
@@ -137,6 +139,24 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 			
 			applyWithoutNotificationButton = uifactory.addFormLink("apply.without.notifications", buttonsCont, Link.BUTTON);
 		}
+	}
+	
+	/**
+	 * If all descendants are not editable, there is no editable children.
+	 * 
+	 * @return Number of children, or 0 if one of them is not editable
+	 */
+	private long numOfEditableChildren() {
+		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(curriculumElement).stream()
+				.filter(element -> !element.getElementStatus().isCancelledOrClosed())
+				.toList();
+		
+		long numChildren = elements.size();
+		long numOfEditableChildren = elements.stream()
+				.filter(element -> secCallback.canEditCurriculumElement(element))
+				.count();
+		
+		return numOfEditableChildren == numChildren ? numOfEditableChildren : 0;
 	}
 	
 	private void updateWarning() {
