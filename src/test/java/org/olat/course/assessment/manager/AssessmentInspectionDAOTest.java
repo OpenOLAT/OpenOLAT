@@ -293,6 +293,40 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void searchInspectionByInspectionStatus() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-14-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-15-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		AssessmentInspection inspection1 = inspectionDao
+				.createInspection(id1, new Date(), new Date(), null, null, "123457G", config);
+		AssessmentInspection inspection2 = inspectionDao
+				.createInspection(id2, new Date(), new Date(), null, null, "123457G", config);
+		dbInstance.commitAndCloseSession();
+		
+		// Search matches
+		SearchAssessmentInspectionParameters params = new SearchAssessmentInspectionParameters();
+		params.setEntry(entry);
+		params.setSubIdents(List.of("123457G"));
+		params.setInspectionStatus(List.of(AssessmentInspectionStatusEnum.scheduled, AssessmentInspectionStatusEnum.inProgress));
+		List<AssessmentEntryInspection> loadedInspectionsToIdentities = inspectionDao.searchInspection(params);
+		Assertions.assertThat(loadedInspectionsToIdentities)
+			.hasSize(2)
+			.map(AssessmentEntryInspection::inspection)
+			.containsExactlyInAnyOrder(inspection1, inspection2);
+		
+		// Search empty
+		SearchAssessmentInspectionParameters paramsEmpty = new SearchAssessmentInspectionParameters();
+		paramsEmpty.setEntry(entry);
+		paramsEmpty.setSubIdents(List.of("123457G"));
+		paramsEmpty.setInspectionStatus(List.of(AssessmentInspectionStatusEnum.carriedOut, AssessmentInspectionStatusEnum.cancelled));
+		List<AssessmentEntryInspection> noInspectionsToIdentities = inspectionDao.searchInspection(paramsEmpty);
+		Assertions.assertThat(noInspectionsToIdentities)
+			.isEmpty();
+	}
+	
+	@Test
 	public void searchNoShowInspections() {
 		Date now = new Date();
 		String subIdent = "123799A";
