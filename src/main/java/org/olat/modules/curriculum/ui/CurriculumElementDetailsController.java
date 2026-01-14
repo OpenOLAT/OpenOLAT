@@ -347,7 +347,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		mainVC.put("status", statusDropdown);
 		updateStatusDropdown();
 		
-		if(secCallback.canEditCurriculumElement(curriculumElement)
+		if(secCallback.canDeleteCurriculumElement(curriculumElement)
 				&& !CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.delete)) {
 			Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
 			commandsDropdown.setDomReplaceable(false);
@@ -822,7 +822,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			return;
 		}
 		
-		statusChangeCtrl = new CurriculumElementStatusChangeController(ureq, getWindowControl(), curriculumElement, newStatus);
+		statusChangeCtrl = new CurriculumElementStatusChangeController(ureq, getWindowControl(),
+				curriculumElement, newStatus, secCallback);
 		listenTo(statusChangeCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
