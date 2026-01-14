@@ -38,6 +38,7 @@ public class LectureBlocksWidgetRow {
 	private String location;
 	private boolean onlineMeeting;
 	private String time;
+	private String url;
 	
 	public Long getKey() {
 		return key;
@@ -125,6 +126,14 @@ public class LectureBlocksWidgetRow {
 	
 	public void setTime(String time) {
 		this.time = time;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 }

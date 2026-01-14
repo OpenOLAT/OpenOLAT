@@ -100,6 +100,11 @@ public class CoachLectureBlocksWidgetController extends LectureBlocksWidgetContr
 	}
 	
 	@Override
+	protected String getLectureBlockUrl(LectureBlock lectureBlock) {
+		return BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(getBusinessPath(lectureBlock.getKey()));
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl) {
 			if (event instanceof SelectionEvent se) {
@@ -121,7 +126,11 @@ public class CoachLectureBlocksWidgetController extends LectureBlocksWidgetContr
 	
 	private void doOpenLectureBlock(UserRequest ureq, int index) {
 		LectureBlocksWidgetRow row = dataModel.getObject(index);
-		doOpen(ureq, "[CoachSite:0][Events:0][Teacher:0][Teacher:0][Lecture:" + row.getKey() + "]");
+		doOpen(ureq, getBusinessPath(row.getKey()));
+	}
+
+	private String getBusinessPath(Long lectureBlockId) {
+		return "[CoachSite:0][Events:0][Teacher:0][Teacher:0][Lecture:" + lectureBlockId + "]";
 	}
 	
 	private void doOpen(UserRequest ureq, String businessPath) {

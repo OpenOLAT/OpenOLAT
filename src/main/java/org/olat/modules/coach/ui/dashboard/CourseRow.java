@@ -39,6 +39,7 @@ public class CourseRow implements OLATResourceable {
 	private String successStatus;
 	private String resourceableTypeName;
 	private Long resourceableId;
+	private String url;
 	
 	public Long getKey() {
 		return key;
@@ -116,6 +117,14 @@ public class CourseRow implements OLATResourceable {
 
 	public void setSuccessStatus(String successStatus) {
 		this.successStatus = successStatus;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 	
 }

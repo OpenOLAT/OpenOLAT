@@ -131,7 +131,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
 			String jsCode = FormJSHelper.getXHRFnCallFor(ftC.getFormItem().getRootForm(), ftC.getFormDispatchId(), 1, false, true, true, pair);
 			sb.append("<a class=\"o_row_link ");
 			sb.append(compDelegate.getRowClickCss(), StringHelper.containsNonWhitespace(compDelegate.getRowClickCss()));
-			sb.append("\" href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false;\"");
+			sb.append("\" href=\"").append(href(ftC, row) ).append("\" onclick=\"").append(jsCode).append("; return false;\"");
 			sb.append(FormJSHelper.triggerClickOnKeyDown(compDelegate.isRowClickButton()));
 			sb.append(" draggable=\"false\">");
 		}
@@ -143,5 +143,18 @@ class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
 		}
 		
 		sb.append("</div>");
+	}
+	
+	private String href(FlexiTableComponent source, int row) {
+		String href = null;
+		FlexiTableDataModel<?> model = source.getFormItem().getTableDataModel();
+		if(model instanceof FlexiBusinessPathModel businessPathModel) {
+			Object object = source.getFormItem().getTableDataModel().getObject(row);
+			href = businessPathModel.getUrl(source, object, null);
+		}
+		if(!StringHelper.containsNonWhitespace(href)) {
+			href = "javascript:;";
+		} 
+		return href;
 	}
 }

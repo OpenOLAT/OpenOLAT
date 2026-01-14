@@ -271,6 +271,9 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 			row.setSuccessStatus(target.toString());
 		}
 		
+		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString("[RepositoryEntry:" + row.getKey() + "]");
+		row.setUrl(url);
+		
 		return row;
 	}
 	

@@ -225,6 +225,9 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			row.setStatusText(statusText);
 			row.setStatusCss(statusCss);
 			
+			String url = getLectureBlockUrl(lectureBlock);
+			row.setUrl(url);
+			
 			rows.add(row);
 		}
 		
@@ -244,7 +247,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			emptyCont.setVisible(false);
 		}
 	}
-	
+		
 	private void updateEmptyButtonUI() {
 		Date prevLectureBlock = getPrevLectureBlock(dayNavEl.getStartDate());
 		backButton.setUserObject(prevLectureBlock);
@@ -257,6 +260,10 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	protected abstract Date getPrevLectureBlock(Date date);
 
 	protected abstract Date getNextLectureBlock(Date date);
+
+	protected String getLectureBlockUrl(LectureBlock lectureBlock) {
+		return null;
+	}
 
 	private final static class TableCssDelegate implements FlexiTableCssDelegate {
 		

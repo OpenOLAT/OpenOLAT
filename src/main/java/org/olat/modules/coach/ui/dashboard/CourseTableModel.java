@@ -19,7 +19,9 @@
  */
 package org.olat.modules.coach.ui.dashboard;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -28,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CourseTableModel extends DefaultFlexiTableDataModel<CourseRow> {
+public class CourseTableModel extends DefaultFlexiTableDataModel<CourseRow> implements FlexiBusinessPathModel {
 	
 	public CourseTableModel(FlexiTableColumnModel tableColumnModel) {
 		super(tableColumnModel);
@@ -38,6 +40,12 @@ public class CourseTableModel extends DefaultFlexiTableDataModel<CourseRow> {
 	public Object getValueAt(int row, int col) {
 		// No table view => No columns available.
 		return null;
+	}
+
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		CourseRow row = (CourseRow)object;
+		return row.getUrl();
 	}
 
 }
