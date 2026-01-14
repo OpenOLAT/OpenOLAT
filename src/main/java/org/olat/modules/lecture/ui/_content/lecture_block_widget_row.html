@@ -10,7 +10,11 @@
 		#end
 	</div>
 	<div class="o_row_status o_cell_top_border">
-		<div class="$row.statusCss"></div>
+		<div class="$row.statusCss">
+			#if($r.isNotEmpty($row.statusText))
+				<span class="sr-only">$row.statusText</span>
+			#end
+		</div>
 	</div>
 	<div class="o_row_event o_cell_top_border">
 		#if($r.isNotEmpty($row.externalRef))

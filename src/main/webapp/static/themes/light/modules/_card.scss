@@ -333,9 +333,27 @@
 	.o_table_wrapper.o_table_flexi {
 		.table, .o_table_body {
 			margin-top: 0;
-			&.o_dashboard_table_fix_height {
-				max-height: $o-dashboard-widget-table-fix-height	;
+			&.o_dashboard_table_max_height {
+				max-height: $o-dashboard-widget-table-max-height	;
 				overflow: auto;
+				
+				&::before,
+				&::after {
+					content: "";
+					display: block;
+					margin: 0px -15px;
+					position: sticky;
+					min-height: 10px;
+					pointer-events: none;
+				}
+				&::before {
+					top: 0;
+					background: linear-gradient(rgba(99, 99, 99, 0.1), transparent);
+				}
+				&::after {
+					bottom: 0;
+					background: linear-gradient(transparent, rgba(99, 99, 99, 0.1));
+				}
 			}
 		}
 	}

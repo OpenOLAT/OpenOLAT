@@ -2072,6 +2072,8 @@ ul.o_list_narrow {
 			
 			.o_today_day_button {
 				height: 40px;
+				padding: $o-day-nav-today-button-padding;
+				margin-left: -$o-day-nav-today-button-padding;
 				
 				font-size: $o-day-nav-today-button-font-size;
 				color: $o-datepicker-today-color;

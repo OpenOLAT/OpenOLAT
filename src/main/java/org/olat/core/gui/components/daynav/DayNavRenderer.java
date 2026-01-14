@@ -181,8 +181,9 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		sb.append("</li>");
 	}
 	
-	private void renderButton(StringOutput sb, URLBuilder ubu, DayNavComponent cmp, String elementId, String buttonCss, String buttonText, NameValuePair nameValue) {
+	private void renderButton(StringOutput sb, URLBuilder ubu, DayNavComponent cmp, String buttonId, String buttonCss, String buttonText, NameValuePair nameValue) {
 		sb.append("<button type=\"button\" ");
+		sb.append("id = \"").append(buttonId).append("\" ");
 		sb.append("class=\"");
 		sb.append("o_can_have_focus ");
 		if (StringHelper.containsNonWhitespace(buttonCss)) {
@@ -199,7 +200,7 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 				ubu.buildXHREvent(sb, "", false, true, nameValue);
 				sb.append("\" ");
 			}
-			sb.append("onfocus=\"o_info.lastFormFocusEl='").append(elementId).append("';\" ");
+			sb.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ");
 		} else {
 			sb.append("disabled=\"true\" ");
 		}

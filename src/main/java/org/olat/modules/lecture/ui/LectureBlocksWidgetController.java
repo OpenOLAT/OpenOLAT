@@ -214,11 +214,15 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			boolean nextScheduled = nextScheduledBlock != null && nextScheduledBlock.getKey().equals(lectureBlock.getKey());
 			
 			String statusCss = "";
+			String statusText = null;
 			if (nextScheduled && vStatus != LectureBlockVirtualStatus.RUNNING) {
+				statusText = translate("next");
 				statusCss = "o_lecture_widget_status_next";
 			} else if (vStatus == LectureBlockVirtualStatus.RUNNING) {
+				statusText = translate("running");
 				statusCss = "o_lecture_widget_status_running";
 			}
+			row.setStatusText(statusText);
 			row.setStatusCss(statusCss);
 			
 			rows.add(row);
@@ -265,7 +269,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
-			return "o_table_body container-fluid o_dashboard_table_fix_height";
+			return "o_table_body container-fluid o_dashboard_table_max_height";
 		}
 
 		@Override

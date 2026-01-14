@@ -29,6 +29,7 @@ public class LectureBlocksWidgetRow {
 
 	private Long key;
 	private String id;
+	private String statusText;
 	private String statusCss;
 	private String dayAbbr;
 	private String day;
@@ -52,6 +53,14 @@ public class LectureBlocksWidgetRow {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getStatusText() {
+		return statusText;
+	}
+
+	public void setStatusText(String statusText) {
+		this.statusText = statusText;
 	}
 
 	public String getStatusCss() {

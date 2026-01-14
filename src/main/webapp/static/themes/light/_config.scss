@@ -1826,7 +1826,7 @@ $o-dashboard-widget-indicators-margin-bottom		: 20px !default;
 $o-dashboard-widget-table-bg-color				: #fff !default;
 $o-dashboard-widget-table-th-font-size			: 12px !default;
 $o-dashboard-widget-table-th-font-weight			: normal !default;
-$o-dashboard-widget-table-fix-height				: 300px !default;
+$o-dashboard-widget-table-max-height				: 400px !default;
 
 /* Course Quota */
 $o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
@@ -1920,6 +1920,7 @@ $o-indicator-focus-figure-padding-top		: 0.15 * $o-indicator-figure-font-size !d
 $o-indicator-focus-figure-font-size			: 0.85 * $o-indicator-figure-font-size !default;
 
 /* day navigation */
+$o-day-nav-today-button-padding				: 5px !default;
 $o-day-nav-today-button-font-size			: 40px !default;
 $o-day-nav-today-month-font-size				: 14px !default;
 $o-day-nav-week-font-size					: 18px !default;
