@@ -676,6 +676,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RelationRolesWebServiceTest.class,
 	org.olat.restapi.IdentityToIdentityRelationsWebServiceTest.class,
 	org.olat.restapi.RepositoryEntryLifecycleTest.class,
+	org.olat.restapi.RepositoryEntryTeamsMeetingTest.class,
 	org.olat.restapi.RepositoryEntriesTest.class,
 	org.olat.restapi.RepositoryEntryWebServiceTest.class,
 	org.olat.restapi.RepositoryEntryInvitationsWebServiceTest.class,

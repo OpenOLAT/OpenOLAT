@@ -49,6 +49,8 @@ public interface TeamsService {
 	 */
 	public TeamsMeeting getMeeting(TeamsMeeting meeting);
 	
+	public TeamsMeeting getMeetingByKey(Long meetingKey);
+	
 	public TeamsMeeting updateMeeting(TeamsMeeting meeting, boolean isCalendarEvent);
 	
 	public void deleteMeeting(TeamsMeeting meeting);

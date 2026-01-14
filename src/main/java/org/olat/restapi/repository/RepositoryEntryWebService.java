@@ -97,6 +97,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
+import org.olat.modules.teams.restapi.RepositoryEntryTeamsMeetingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
@@ -281,6 +282,19 @@ public class RepositoryEntryWebService {
 		RepositoryEntryCertificationWebService service = new RepositoryEntryCertificationWebService(entry);
 		CoreSpringFactory.autowireObject(service);
 		return service;
+	}
+	
+	@Path("teams")
+	@Operation(summary = "To get the web service for the Teams meetings",
+		description = "To get the web service for the Teams meetings")
+	@ApiResponse(responseCode = "200", description = "The web service for Teams meetings")
+	public RepositoryEntryTeamsMeetingWebService getTeamsMeetingWebService() {
+		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			RepositoryEntryTeamsMeetingWebService service = new RepositoryEntryTeamsMeetingWebService(entry);
+			CoreSpringFactory.autowireObject(service);
+			return service;
+		}
+    	throw new WebApplicationException(Status.NOT_IMPLEMENTED);
 	}
 	
 	@GET
