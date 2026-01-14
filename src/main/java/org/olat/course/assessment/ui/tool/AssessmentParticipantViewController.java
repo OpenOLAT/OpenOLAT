@@ -247,12 +247,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 					if (resultsVisible) {
 						String weightedScore = AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore());
 						String weightedMaxScore = AssessmentHelper.getRoundedScore(assessmentEval.getWeightedMaxScore());
-						String scale = "";
-						try {
-							scale = SCALE_FORMAT.format(Double.valueOf(assessmentConfig.getScoreScale()));
-						} catch (NumberFormatException e) {
-							// should not happen
-						}
+						String scale = assessmentConfig.getScoreScale();
 						String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
 								? "score.weighted.fraction.desc" : "score.weighted.decorated.desc";
 						scoreWWeightedWidget = WidgetFactory.createFigureWidget("scoreWeighted", null,
