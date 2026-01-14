@@ -457,15 +457,31 @@ public class QTI21Page {
 		WebElement targetEl = OOGraphene.waitElement(targetBy, browser);
 		
 		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize());
-		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize());
+		Position targetPos = Position.valueOf(40, 40,  targetEl.getSize());
 		
 		new Actions(browser)
 			.moveToElement(sourceEl, 0, sourcePos.getY())
 			.clickAndHold()
-			.pause(25)
+			.pause(100)
 			.moveToElement(targetEl, 0, targetPos.getY())
+			.perform();
+		
+		By shadowDroppedBy;
+		if(wrappedInParagraph) {
+			shadowDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li/p[text()[contains(.,'" + source + "')]]");
+		} else {
+			shadowDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li[text()[contains(.,'" + source + "')]]");
+		}
+		
+		try {
+			OOGraphene.waitElement(shadowDroppedBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("ShadowDroporder", browser);
+			throw e;
+		}
+
+		new Actions(browser)
 			.release()
-			.build()
 			.perform();
 
 		By sourceDroppedBy;
