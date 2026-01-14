@@ -1243,16 +1243,16 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumRoles role:rolesToChange) {
 			GroupMembershipStatus nextStatus = changes.getNextStatus(role);
 			String adminNote = changes.getAdminNoteBy(role);
-			updateCurriculumElementMembership(element, changes.getMember(), role, inheritanceMode, nextStatus,
-					changes.getConfirmationBy(), changes.getConfirmUntil(),
-					actor, adminNote);
+			updateCurriculumElementMembership(element, changes.getMember(), role, inheritanceMode,
+					changes.isApplyDescendants(), nextStatus, changes.getConfirmationBy(),
+					changes.getConfirmUntil(), actor, adminNote);
 		}
 	}
 	
 	private void updateCurriculumElementMembership(CurriculumElement element,
 			Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode,
-			GroupMembershipStatus nextStatus, ConfirmationByEnum confirmationBy, Date confirmUntil,
-			Identity actor, String adminNote) {
+			boolean applyDescendants, GroupMembershipStatus nextStatus, ConfirmationByEnum confirmationBy,
+			Date confirmUntil, Identity actor, String adminNote) {
 		
 		if(nextStatus == GroupMembershipStatus.active) {
 			removeMemberReservation(element, member, role, null, null, null);
@@ -1260,10 +1260,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		} else if(nextStatus == GroupMembershipStatus.reservation) {
 			addMemberReservation(element, member, role, confirmUntil, confirmationBy, actor, adminNote);
 		} else if(nextStatus == GroupMembershipStatus.removed) {
-			removeMember(element, member, role, nextStatus, actor, adminNote);
+			removeMember(element, member, role, applyDescendants, nextStatus, actor, adminNote);
 		} else if(nextStatus == GroupMembershipStatus.declined) {
 			boolean removed = removeMemberReservation(element, member, role, nextStatus, actor, adminNote);
-			removed |= removeMember(element, member, role, nextStatus, actor, adminNote);
+			removed |= removeMember(element, member, role, true, nextStatus, actor, adminNote);
 			if(!removed) {
 				groupMembershipHistoryDao.createMembershipHistory(element.getGroup(), member, role.name(),
 						nextStatus, inheritanceMode == GroupMembershipInheritance.inherited,
@@ -1272,7 +1272,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		} else if(nextStatus == GroupMembershipStatus.cancel
 				|| nextStatus == GroupMembershipStatus.cancelWithFee) {
 			removeMemberReservation(element, member, role, nextStatus, actor, adminNote);
-			removeMember(element, member, role, nextStatus, actor, adminNote);
+			removeMember(element, member, role, true, nextStatus, actor, adminNote);
 			groupMembershipHistoryDao.createMembershipHistory(element.getGroup(), member, role.name(),
 					nextStatus, inheritanceMode == GroupMembershipInheritance.inherited,
 					null, null, actor, adminNote);
@@ -1379,6 +1379,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public boolean removeMember(CurriculumElement element, Identity member, CurriculumRoles role,
 			GroupMembershipStatus reason, Identity actor, String adminNote) {
+		return removeMember(element, member, role, true, reason, actor, adminNote);
+	}
+	
+	private boolean removeMember(CurriculumElement element, Identity member, CurriculumRoles role,
+			boolean applyToDescendants, GroupMembershipStatus reason, Identity actor, String adminNote) {
+	
 		Group elementGroup = element.getGroup();
 		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 		GroupMembership membership = groupDao.getMembership(elementGroup, member, role.name());
@@ -1393,8 +1399,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
 				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
 			CurriculumElementNode elementNode = curriculumElementDao.getDescendantTree(element);
-			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-				removeInheritedMembership(child, member, role.name(), reason, actor, adminNote, true, events);
+			if(applyToDescendants) {
+				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+					removeInheritedMembership(child, member, role.name(), reason, actor, adminNote, true, events);
+				}
+			} else {
+				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+					GroupMembership childMembership = groupDao.getMembership(child.getElement().getGroup(), member, role.name());
+					if(childMembership != null && childMembership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+						groupDao.updateInheritanceMode(childMembership, GroupMembershipInheritance.root);
+					}
+				}
 			}
 		}
 		dbInstance.commitAndCloseSession();
