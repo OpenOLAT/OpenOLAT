@@ -44,15 +44,16 @@ public class TeamsMeetingVO {
 	private Long key;
 	private String subject;
 	private String description;
+	private String mainPresenter;
 	
 	private Date startDate;
 	private long leadTime;
 	private Date endDate;
-	public long followupTime;
+	private long followupTime;
 	private Boolean permanent;
 	
-	private String mainPresenter;
-	
+	private Boolean guest;
+	private String readableIdentifier;
 	private String allowedPresenters;
 	
 	public TeamsMeetingVO() {
@@ -72,6 +73,8 @@ public class TeamsMeetingVO {
 		vo.setFollowupTime(meeting.getFollowupTime());
 		vo.setPermanent(meeting.isPermanent());
 		
+		vo.setGuest(meeting.isGuest());
+		vo.setReadableIdentifier(meeting.getReadableIdentifier());
 		vo.setAllowedPresenters(meeting.getAllowedPresenters());
 		return vo;
 	}
@@ -97,6 +100,13 @@ public class TeamsMeetingVO {
 		meeting.setFollowupTime(meetingVo.getFollowupTime());
 		if(meetingVo.getPermanent() != null) {
 			meeting.setPermanent(meetingVo.getPermanent().booleanValue());
+		}
+		
+		if(meetingVo.getReadableIdentifier() != null) {
+			meeting.setReadableIdentifier(meetingVo.getReadableIdentifier());
+		}
+		if(meetingVo.getGuest() != null) {
+			meeting.setGuest(meetingVo.getGuest().booleanValue());
 		}
 		
 		if(StringHelper.containsNonWhitespace(meetingVo.getAllowedPresenters())) {
@@ -179,6 +189,22 @@ public class TeamsMeetingVO {
 
 	public void setMainPresenter(String mainPresenter) {
 		this.mainPresenter = mainPresenter;
+	}
+
+	public String getReadableIdentifier() {
+		return readableIdentifier;
+	}
+
+	public void setReadableIdentifier(String readableIdentifier) {
+		this.readableIdentifier = readableIdentifier;
+	}
+
+	public Boolean getGuest() {
+		return guest;
+	}
+
+	public void setGuest(Boolean guest) {
+		this.guest = guest;
 	}
 
 	public String getAllowedPresenters() {
