@@ -503,7 +503,3 @@ Run single test as JUnit Test in Eclipse
 
 ###### This software is developed and maintaned by frentix GmbH, a Switzerland based company specialized in e-learning services: 
 <a href="https://www.frentix.com"><img src="https://www.frentix.com/wp-content/uploads/2022/01/Frentix_Logo_claim_RGB.png"  alt="The logo of frentix - Wissen vermitteln" width="480px;"/></a>
-
-###### This software is supported by the tool vendor YourKit:
-
-<a href="https://www.yourkit.com"><img src="https://www.yourkit.com/images/yk_logo.svg" alt="The logo of YourKit" height="60" width="220"></a>

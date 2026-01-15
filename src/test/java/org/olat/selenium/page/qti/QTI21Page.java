@@ -457,7 +457,7 @@ public class QTI21Page {
 		WebElement targetEl = OOGraphene.waitElement(targetBy, browser);
 		
 		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize());
-		Position targetPos = Position.valueOf(40, 40,  targetEl.getSize());
+		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize());
 		
 		new Actions(browser)
 			.moveToElement(sourceEl, 0, sourcePos.getY())

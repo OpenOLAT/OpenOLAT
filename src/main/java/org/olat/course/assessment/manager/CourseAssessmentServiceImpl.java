@@ -556,7 +556,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		}
 		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
 				userCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
-		return new AssessmentToolSecurityCallback(admin, reSecurity.isOnlyPrincipal(), nonMembers, reSecurity.isCourseCoach(),
+		return new AssessmentToolSecurityCallback(admin, reSecurity.isOnlyPrincipal() || reSecurity.isOnlyCurriculumManager(), nonMembers, reSecurity.isCourseCoach(),
 				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 

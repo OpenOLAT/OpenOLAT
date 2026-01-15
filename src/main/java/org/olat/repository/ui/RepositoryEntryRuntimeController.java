@@ -398,7 +398,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolbarPanel.addTool(tools, Align.left, true);
 		}
 		
-		if (reSecurity.isEntryAdmin()) {
+		if (reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager()) {
 			status = new Dropdown("toolbox.status", "cif.status", false, getTranslator());
 			status.setElementCssClass("o_sel_repository_status");
 			status.setIconCSS("o_icon o_icon_edit");

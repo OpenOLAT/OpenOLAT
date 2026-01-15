@@ -736,7 +736,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
 				lifecycle, null, null, entry.getEducationalType());
 		instantiatedEntry = repositoryManager.setRuntimeType(instantiatedEntry, RepositoryEntryRuntimeType.curricular);
-
+		
+		if(doer != null) {
+			Group defGroup = repositoryEntryRelationDao.getDefaultGroup(instantiatedEntry);
+			groupDao.removeMembership(defGroup, doer, GroupRoles.owner.name());
+		}
+		
 		boolean hasRepositoryEntries = hasRepositoryEntries(curriculumElement);
 		boolean moveLectureBlocks = !hasRepositoryEntries;
 		addRepositoryEntry(curriculumElement, instantiatedEntry, moveLectureBlocks);

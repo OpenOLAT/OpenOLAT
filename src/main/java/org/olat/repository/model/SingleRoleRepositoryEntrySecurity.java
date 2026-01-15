@@ -279,6 +279,11 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	public boolean isOnlyPrincipal() {
 		return Role.principal == currentRole && wrappedSecurity.isOnlyPrincipal();
 	}
+	
+	@Override
+	public boolean isOnlyCurriculumManager() {
+		return Role.curriculumManager == currentRole && wrappedSecurity.isOnlyCurriculumManager();
+	}
 
 	@Override
 	public boolean isOnlyMasterCoach() {
