@@ -199,6 +199,19 @@ implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 		}
 		return null;
 	}
+	
+	public int getIndex(Identity identity) {
+		if(identity == null) return -1;
+		
+		List<MemberRow> objects = getObjects();
+		int numOfObjects = objects.size();
+		for(int i=0; i<numOfObjects; i++) {
+			if(objects.get(i).getIdentityKey().equals(identity.getKey())) {
+				return i;
+			}
+		}
+		return -1;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

@@ -107,6 +107,12 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 		if(meeting == null || meeting.getKey() == null) return null;
 		return teamsMeetingDao.loadByKey(meeting.getKey());
 	}
+	
+	@Override
+	public TeamsMeeting getMeetingByKey(Long meetingKey) {
+		if(meetingKey == null) return null;
+		return teamsMeetingDao.loadByKey(meetingKey);
+	}
 
 	@Override
 	public List<TeamsMeeting> getMeetings(RepositoryEntry entry, String subIdent,
