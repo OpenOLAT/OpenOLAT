@@ -92,6 +92,8 @@ public interface RepositoryEntrySecurity {
 	 * 		entry.
 	 */
 	boolean isOnlyPrincipal();
+	
+	boolean isOnlyCurriculumManager();
 
 	boolean isOnlyMasterCoach();
 

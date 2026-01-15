@@ -199,6 +199,11 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 	}
 	
 	@Override
+	public boolean isOnlyCurriculumManager() {
+		return curriculumManager && !isMember() && !isEntryAdmin();
+	}
+
+	@Override
 	public boolean isOnlyMasterCoach() {
 		return masterCoach && !isMember() && !isEntryAdmin();
 	}

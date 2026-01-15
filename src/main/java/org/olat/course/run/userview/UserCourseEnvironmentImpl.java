@@ -121,8 +121,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			List<BusinessGroup> coachedGroups, List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists,
 			RepositoryEntrySecurity reSecurity) {
 		this(identityEnvironment, courseEnvironment, windowControl, coachedGroups, participatingGroups, waitingLists,
-				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() , reSecurity.isParticipant(),
-				reSecurity.isReadOnly(), reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
+				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCurriculumManager() || reSecurity.isMasterCoach() , reSecurity.isParticipant(),
+				reSecurity.isReadOnly(), reSecurity.isOnlyPrincipal() || reSecurity.isOnlyCurriculumManager() || reSecurity.isOnlyMasterCoach());
 	}
 	
 	private UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, WindowControl windowControl,

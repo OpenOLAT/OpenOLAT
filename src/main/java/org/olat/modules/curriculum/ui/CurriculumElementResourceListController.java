@@ -81,6 +81,7 @@ import org.olat.repository.ui.author.AuthorListConfiguration;
 import org.olat.repository.ui.author.AuthorListController;
 import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.olat.repository.ui.author.GuestAccessRenderer;
+import org.olat.repository.ui.author.ModifyStatusController;
 import org.olat.repository.ui.author.RuntimeTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 	
 	private FormLink addResourceButton;
 	private FormLink removeResourcesButton;
+	private FormLink changeStatusResourcesButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementRepositoryTableModel tableModel;
 
@@ -106,6 +108,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 	private AuthorListController repoSearchCtr;
 	private ReferencesController referencesCtrl;
 	private DialogBoxController confirmRemoveCtrl;
+	private ModifyStatusController modifyStatusCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmInstantiateTemplateController confirmInstantiateCtrl;
 	
@@ -180,7 +183,10 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			addResourceButton = uifactory.addFormLink("add.resource", formLayout, Link.BUTTON);
 			addResourceButton.setElementCssClass("o_sel_curriculum_element_add_resource");
 			addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			// 2) remove
+			// 2) change status
+			changeStatusResourcesButton = uifactory.addFormLink("change.status.title", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(changeStatusResourcesButton);
+			// 3) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeResourcesButton);
 			
@@ -277,6 +283,12 @@ class CurriculumElementResourceListController extends FormBasicController implem
 				doRemove(ureq, rows);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+		} else if(modifyStatusCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(repoSearchCtr == source) {
 			if(event instanceof AuthoringEntryRowSelectionEvent se) {
 				doAddRepositoryEntry(se.getRow());
@@ -318,6 +330,8 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			doChooseResources(ureq);
 		} else if(removeResourcesButton == source) {
 			doConfirmRemoveResources(ureq);
+		} else if(changeStatusResourcesButton == source) {
+			doModifyStatus(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				if("select".equals(se.getCommand())) {
@@ -472,6 +486,40 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		toolsCalloutCtrl.activate();
 	}
 	
+	private void doModifyStatus(UserRequest ureq) {
+		Set<Integer> selectedRows = tableEl.getMultiSelectedIndex();
+		if(selectedRows.isEmpty()) {
+			showWarning("warning.atleastone.resource");
+		} else {
+			List<RepositoryEntry> entries = new ArrayList<>(selectedRows.size());
+			for(Integer selectedRow:selectedRows) {
+				CurriculumElementRepositoryRow row = tableModel.getObject(selectedRow.intValue());
+				if(row != null) {
+					entries.add(row.getRepositoryEntry());
+				}
+			}
+			doModifyStatus(ureq, entries);
+		}
+	}
+	
+	private void doModifyStatus(UserRequest ureq, CurriculumElementRepositoryRow row) {
+		RepositoryEntry entry = row.getRepositoryEntry();
+		doModifyStatus(ureq, List.of(entry));
+	}
+	
+	private void doModifyStatus(UserRequest ureq, List<RepositoryEntry> entries) {
+		removeAsListenerAndDispose(modifyStatusCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		modifyStatusCtrl = new ModifyStatusController(ureq, getWindowControl(), entries);
+		listenTo(modifyStatusCtrl);
+		
+		String title = translate("tools.modify.status");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), modifyStatusCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRepositoryRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -488,6 +536,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 	private class ToolsController extends BasicController {
 		
 		private Link removeLink;
+		private Link changeStatusLink;
 		private CurriculumElementRepositoryRow row;
 		
 		private final VelocityContainer mainVC;
@@ -497,10 +546,11 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-			
+
 			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this, Link.LINK);
+			changeStatusLink = LinkFactory.createLink("change.status.title", "change.status", getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put("remove", removeLink);
-			mainVC.contextPut("links", List.of("remove"));
+			mainVC.contextPut("links", List.of("change.status.title", "remove"));
 
 			putInitialPanel(mainVC);
 		}
@@ -510,6 +560,9 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			if(removeLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doConfirmRemoveResource(ureq, row);
+			} else if(changeStatusLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doModifyStatus(ureq, row);
 			}
 		}
 	}
