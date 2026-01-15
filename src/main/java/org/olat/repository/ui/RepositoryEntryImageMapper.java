@@ -96,7 +96,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 		List<VFSThumbnailInfos> mimages = thumbnailDao.findThumbnails(List.of(path), true, maxWidth, maxHeight);
 		for(VFSThumbnailInfos mimage:mimages) {
 			String filename = mimage.metadata().getFilename();
-			if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif") || filename.endsWith(".mp4")) {
+			if(filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png") || filename.endsWith(".gif") || filename.endsWith(".mp4")) {
 				return true;
 			}
 		}
@@ -121,7 +121,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 	
 	public Map<Long, VFSThumbnailInfos> getResourceableThumbnails(List<? extends OLATResourceable> entries) {
 		List<String> pathList = entries.stream()
-				.map(e -> RepositoryManager.buildPath(e))
+				.map(RepositoryManager::buildPath)
 				.filter(Objects::nonNull)
 				.toList();
 		return  getThumbnailsByPath(pathList);
@@ -135,7 +135,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 		
 		for(VFSThumbnailInfos mimage:mimages) {
 			String filename = mimage.metadata().getFilename();
-			if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif")) {
+			if(filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png") || filename.endsWith(".gif")) {
 				Long repositoryEntryKey = getRepositoryEntryKey(filename);
 				if(repositoryEntryKey != null) {
 					map.put(repositoryEntryKey, mimage);
