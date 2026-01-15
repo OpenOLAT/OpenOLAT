@@ -280,15 +280,21 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	
 	protected void reloadMember(UserRequest ureq, Identity member) {
 		boolean openDetails = false;
-		MemberRow row = tableModel.getObject(member);
-		if(row != null && row.getDetailsController() != null) {
-			doCloseMemberDetails(row);
-			openDetails = true;
+		for(MemberRow row:tableModel.getObjects()) {
+			if(row != null && row.getDetailsController() != null) {
+				doCloseMemberDetails(row);
+				if(row.getIdentity().equals(member)) {
+					openDetails = true;
+				}
+			}
 		}
+		tableEl.collapseAllDetails();
 		loadModel(false);
 		if(openDetails) {
 			MemberRow reloadedRow = tableModel.getObject(member);
+			int index = tableModel.getIndex(member);
 			doOpenMemberDetails(ureq, reloadedRow);
+			tableEl.expandDetails(index);
 		}
 	}
 	
