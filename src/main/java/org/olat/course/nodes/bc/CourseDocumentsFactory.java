@@ -22,12 +22,14 @@ package org.olat.course.nodes.bc;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.MergedCourseContainer;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -54,7 +56,9 @@ public class CourseDocumentsFactory {
 			return getFileContainer(courseEnv.getCourseBaseContainer());
 		}
 		VFSItem documentsItem = courseEnv.getCourseFolderContainer().resolve(documentsPath);
-		if (documentsItem instanceof VFSContainer) {
+		if ("/".equals(documentsPath) && documentsItem instanceof MergedCourseContainer mergedCont) {
+			return mergedCont.getRootWriteContainer();
+		} else if (documentsItem instanceof VFSContainer) {
 			return (VFSContainer)documentsItem;
 		}
 		return null;
@@ -69,11 +73,11 @@ public class CourseDocumentsFactory {
 		if (documentsPath == null) {
 			return getFileDirectory(courseEnv.getCourseBaseContainer());
 		}
-		return courseEnv.getCourseFolderContainer().getRelPath() + documentsPath;
+		return StringHelper.blankIfNull(courseEnv.getCourseFolderContainer().getRelPath()) + documentsPath;
 	}
 	
 	public static String getFileDirectory(VFSContainer courseBaseContainer) {
-		return courseBaseContainer.getRelPath() + "/" + FOLDER_NAME;
+		return StringHelper.blankIfNull(courseBaseContainer.getRelPath()) + "/" + FOLDER_NAME;
 	}
 	
 	public static SubscriptionContext getSubscriptionContext(RepositoryEntry courseEntry) {
