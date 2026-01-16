@@ -261,6 +261,9 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 	protected abstract Date getNextLectureBlock(Date date);
 
+	/**
+	 * @param lectureBlock  
+	 */
 	protected String getLectureBlockUrl(LectureBlock lectureBlock) {
 		return null;
 	}

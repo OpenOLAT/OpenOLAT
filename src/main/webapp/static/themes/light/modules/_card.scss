@@ -283,9 +283,14 @@
 		font-size: $o-dashboard-widget-sub-title-font-size;
 	}
 	
-	.o_dashboard_widget_title {
-		margin: $o-dashboard-widget-title-margin	;
-		
+	.o_dashboard_widget_header {
+		margin: $o-dashboard-widget-header-margin;
+		&:has(a) {
+			margin: $o-dashboard-widget-header-button-margin	;
+		}
+		h3 {
+			margin: 0;
+		}
 	}
 	.o_dashboard_widget_sub_title {
 		margin: $o-dashboard-widget-sub-title-margin;

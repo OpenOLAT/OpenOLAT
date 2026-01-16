@@ -1,8 +1,11 @@
 <div class="o_dashboard_widget o_dashboard_table_widget o_bento_content">
-	<div class="o_dashboard_widget_header">
+	<div class="o_dashboard_widget_header o_flex_first_grow_base">
 		<div class="o_dashboard_widget_title">
 			<h3>$title</h3>
 		</div>
+		#if($r.available("prefs") && $r.visible("prefs"))
+			$r.render("prefs")
+		#end
 	</div>
 	#if($r.available($indicatorsComponentName) && $r.visible($indicatorsComponentName))
 		<div class="o_dashboard_widget_indicators">

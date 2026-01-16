@@ -20,6 +20,7 @@
 package org.olat.gui.demo.guidemo.dashboard;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -41,8 +42,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.indicators.IndicatorsFactory;
 import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs.FilterType;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -55,7 +60,8 @@ import org.olat.gui.demo.guidemo.dashboard.GuiDemoIndicatorsController.LabelFigu
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class GuiDemoTableWidgetController extends TableWidgetController implements FlexiTableComponentDelegate {
+public class GuiDemoTableWidgetController extends TableWidgetController
+		implements TableWidgetConfigProvider, FlexiTableComponentDelegate {
 	
 	private static final String CMD_INDICATOR = "indicator";
 	
@@ -68,9 +74,12 @@ public class GuiDemoTableWidgetController extends TableWidgetController implemen
 	private final boolean showHeader;
 	private final boolean linkCells;
 	private final boolean listView;
+	private final String prefsId;
+	private final SelectionValues figureValues;
+
 
 	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, String tableTitle,
-			boolean showHeader, boolean linkCells, boolean listView) {
+			boolean showHeader, boolean linkCells, boolean listView, String prefsId) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
 		this.title = title;
@@ -78,6 +87,13 @@ public class GuiDemoTableWidgetController extends TableWidgetController implemen
 		this.showHeader = showHeader;
 		this.linkCells = linkCells;
 		this.listView = listView;
+		this.prefsId = prefsId;
+		
+		figureValues = new SelectionValues();
+		figureValues.add(SelectionValues.entry("1", translate("select.1")));
+		figureValues.add(SelectionValues.entry("2", translate("select.2")));
+		figureValues.add(SelectionValues.entry("4", translate("select.4")));
+		figureValues.add(SelectionValues.entry("5", ""));
 		
 		initForm(ureq);
 	}
@@ -171,6 +187,37 @@ public class GuiDemoTableWidgetController extends TableWidgetController implemen
 	}
 
 	@Override
+	protected TableWidgetConfigProvider getConfigProvider() {
+		return this;
+	}
+
+	@Override
+	public String getId() {
+		return prefsId;
+	}
+
+	@Override
+	public SelectionValues getFigureValues() {
+		return figureValues;
+	}
+
+	@Override
+	public TableWidgetConfigPrefs getDefault() {
+		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
+		Set<String> allFigureKeys = Set.of(figureValues.keys());
+		prefs.setKeyFigureKeys(allFigureKeys);
+		prefs.setFilterType(FilterType.relevant);
+		prefs.setFilterFigureKeys(allFigureKeys);
+		prefs.setNumRows(5);
+		return prefs;
+	}
+
+	@Override
+	public void update(TableWidgetConfigPrefs prefs) {
+		// It's just a demo.
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl) {
 			if (event instanceof SelectionEvent se) {
@@ -243,5 +290,4 @@ public class GuiDemoTableWidgetController extends TableWidgetController implemen
 			return col3;
 		}
 	}
-
 }
