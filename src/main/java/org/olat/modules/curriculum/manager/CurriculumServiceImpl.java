@@ -994,12 +994,6 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
 		return curriculumElementDao.loadElements(curriculum, status);
 	}
-	
-	@Override
-	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, Identity managerIdentity,
-			CurriculumElementStatus[] status) {
-		return curriculumElementDao.loadElements(curriculum, managerIdentity, status);
-	}
 
 	@Override
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumElementInfosSearchParams searchParams) {
@@ -1795,7 +1789,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public List<CurriculumElement> getCurriculumElements(Identity identity, CurriculumRoles role) {
+	public List<CurriculumElementRef> getCurriculumElements(Identity identity, CurriculumRoles role) {
 		return curriculumElementDao.loadElements(identity, role);
 	}
 

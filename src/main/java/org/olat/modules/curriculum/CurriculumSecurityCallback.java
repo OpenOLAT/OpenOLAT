@@ -19,8 +19,6 @@
  */
 package org.olat.modules.curriculum;
 
-import java.util.List;
-
 /**
  * 
  * Initial date: 15 févr. 2018<br>
@@ -83,7 +81,5 @@ public interface CurriculumSecurityCallback {
 	boolean canCurriculumReports(Curriculum curriculum);
 	
 	boolean canCurriculumsReports();
-	
-	List<CurriculumElement> getOwnedCurriculumElements();
 
 }

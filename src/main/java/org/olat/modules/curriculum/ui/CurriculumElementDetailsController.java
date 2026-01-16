@@ -465,7 +465,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				CurriculumComposerConfig config = new CurriculumComposerConfig();
 				config.setTitle(translate("curriculum.structure"), TITLE_SIZE, "o_icon_structure");
 				config.setDefaultNumOfParticipants(true);
-				config.setRootElementsOnly(false);
+				config.setImplementationsOnly(false);
 				config.setFlat(false);
 				
 				WindowControl subControl = addToHistory(uureq, OresHelper

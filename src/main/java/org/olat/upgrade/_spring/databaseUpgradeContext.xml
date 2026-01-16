@@ -224,6 +224,10 @@
 					<constructor-arg index="0" value="OLAT_20.2.0" />
 					<property name="alterDbStatements" value="alter_20_1_x_to_20_2_0.sql" />
 				</bean>
+				<bean id="database_upgrade_20_3_0" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_20.3.0" />
+					<property name="alterDbStatements" value="alter_20_2_x_to_20_3_0.sql" />
+				</bean>
 			</list>
 		</property>
 	</bean>

@@ -132,7 +132,7 @@ public class LecturesMainController extends BasicController implements Activatea
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-				.getSecurityCallback(false, false, true, LectureRoles.teacher);
+				.getSecurityCallback(false, false, false, true, List.of(), List.of(), LectureRoles.teacher);
 		lecturesCtrl = new LecturesCoachingController(ureq, bwControl, content, secCallback);
 		listenTo(lecturesCtrl);
 		mainVC.put(MAIN_CONTROLLER, lecturesCtrl.getInitialComponent());
@@ -146,7 +146,7 @@ public class LecturesMainController extends BasicController implements Activatea
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-				.getSecurityCallback(false, true, false, LectureRoles.mastercoach);
+				.getSecurityCallback(false, false, true, false, List.of(), List.of(), LectureRoles.mastercoach);
 		lecturesCtrl = new LecturesCoachingController(ureq, bwControl, content, secCallback);
 		listenTo(lecturesCtrl);
 		mainVC.put(MAIN_CONTROLLER, lecturesCtrl.getInitialComponent());

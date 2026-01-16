@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -33,6 +34,7 @@ import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -620,7 +622,7 @@ public class LectureBlockDAO {
 		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
 		for(LectureBlock block:blocks) {
 			blockMap.put(block.getKey(), new LectureBlockWithTeachers(block, config,
-					null, null, -1l, -1l, -1l, assessedBlockKeySet.contains(block.getKey())));
+					null, null, null, -1l, -1l, -1l, assessedBlockKeySet.contains(block.getKey()), new ArrayList<>(3)));
 		}
 		
 		// append the coaches
@@ -665,6 +667,7 @@ public class LectureBlockDAO {
 		  .append(" curEl.key as cKey,")
 		  .append(" curEl.displayName as cDisplayName,")
 		  .append(" curEl.identifier as cIdentifier,")
+		  .append(" cur.key as curKey,")
 		  .append(" (select count(distinct participant.identity.key) from lectureblocktogroup as ltogroup")
 		  .append("   inner join ltogroup.group lgroup")
 		  .append("   inner join lgroup.members as participant")
@@ -705,17 +708,19 @@ public class LectureBlockDAO {
 			Long assessmentModeFollowUpTime = PersistenceHelper.extractLong(rawCoach, 5);
 			Reference entryRef = new Reference((Long)rawCoach[6], (String)rawCoach[7], (String)rawCoach[8]);
 			Reference elementRef = new Reference((Long)rawCoach[9], (String)rawCoach[10], (String)rawCoach[11]);
-			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 12);
-			Long teamsMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 13);
-			Long teamsMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 14);
-			Long bigBlueButtonMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 15);
-			Long bigBlueButtonMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 16);
+			Long curriculumKey = (Long)rawCoach[12];
+			
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 13);
+			Long teamsMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 14);
+			Long teamsMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 15);
+			Long bigBlueButtonMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 16);
+			Long bigBlueButtonMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 17);
 			long leadTime = time(assessmentModeLeadTime, teamsMeetingLeadTime, bigBlueButtonMeetingLeadTime);
 			long followupTime = time(assessmentModeFollowUpTime, teamsMeetingFollowUpTime, bigBlueButtonMeetingFollowUpTime);
 			
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 				new LectureBlockWithTeachers(block, lectureConfiguration,
-						elementRef, entryRef, numOfParticipants, leadTime, followupTime, assessmentMode));
+						elementRef, curriculumKey, entryRef, numOfParticipants, leadTime, followupTime, assessmentMode, new ArrayList<>(3)));
 			blockWith.getTeachers().add(coach);
 		}
 		return new ArrayList<>(blockMap.values());
@@ -765,6 +770,7 @@ public class LectureBlockDAO {
 		  .append(" curEl.key as cKey,")
 		  .append(" curEl.displayName as cDisplayName,")
 		  .append(" curEl.identifier as cIdentifier,")
+		  .append(" cur.key as curKey,")
 		  .append(" (select count(distinct participant.identity.key) from lectureblocktogroup as ltogroup")
 		  .append("   inner join ltogroup.group lgroup")
 		  .append("   inner join lgroup.members as participant")
@@ -803,17 +809,18 @@ public class LectureBlockDAO {
 			Long assessmentModeFollowUpTime = PersistenceHelper.extractLong(rawCoach, 5);
 			Reference entryRef = new Reference((Long)rawCoach[6], (String)rawCoach[7], (String)rawCoach[8]);
 			Reference elementRef = new Reference((Long)rawCoach[9], (String)rawCoach[10], (String)rawCoach[11]);
-			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 12);
-			Long teamsMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 13);
-			Long teamsMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 14);
-			Long bigBlueButtonMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 15);
-			Long bigBlueButtonMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 16);
+			Long curriculumKey = (Long)rawCoach[12];
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 13);
+			Long teamsMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 14);
+			Long teamsMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 15);
+			Long bigBlueButtonMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 16);
+			Long bigBlueButtonMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 17);
 			long leadTime = time(assessmentModeLeadTime, teamsMeetingLeadTime, bigBlueButtonMeetingLeadTime);
 			long followupTime = time(assessmentModeFollowUpTime, teamsMeetingFollowUpTime, bigBlueButtonMeetingFollowUpTime);
 			
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 					new LectureBlockWithTeachers(block, lectureConfiguration,
-							elementRef, entryRef, numOfParticipants, leadTime, followupTime, assessmentMode));
+							elementRef, curriculumKey, entryRef, numOfParticipants, leadTime, followupTime, assessmentMode, new ArrayList<>(3)));
 			if(coach != null) {
 				blockWith.getTeachers().add(coach);
 			}
@@ -932,7 +939,7 @@ public class LectureBlockDAO {
 			// Course
 			  .append(" (exists (select managerMembership.key from repoentrytogroup as rel, bgroupmember as managerMembership")
 	          .append("   where rel.entry.key=entry.key and rel.group.key=managerMembership.group.key and managerMembership.identity.key=:managerKey")
-	          .append("   and managerMembership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.lecturemanager, GroupRoles.owner.name())
+	          .append("   and managerMembership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, OrganisationRoles.lecturemanager, GroupRoles.owner.name())
 	          .append(" )");
 			// Curriculum element
 			sb.append(" or exists (select elementOwner.key from bgroupmember as elementOwner")
@@ -947,7 +954,7 @@ public class LectureBlockDAO {
 			// Curriculum organisation
 			sb.append(" or exists (select curOrgManager.key from bgroupmember as curOrgManager")
 	          .append("   where organis.group.key=curOrgManager.group.key and curOrgManager.identity.key=:managerKey")
-	          .append("   and curOrgManager.role ").in(OrganisationRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.lecturemanager)
+	          .append("   and curOrgManager.role ").in(OrganisationRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.lecturemanager)
 	          .append(" ))");
 		}
 		if(searchParams.getMasterCoach() != null) {
@@ -1057,7 +1064,7 @@ public class LectureBlockDAO {
 			if(statusList.contains(LectureBlockVirtualStatus.PLANNED)
 					|| statusList.contains(LectureBlockVirtualStatus.RUNNING)
 					|| statusList.contains(LectureBlockVirtualStatus.DONE)) {
-				query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+				query.setParameter("now", LocalDateTime.now());
 			}
 		}
 		
@@ -1066,13 +1073,13 @@ public class LectureBlockDAO {
 			query.setParameter("fuzzySearchString", fuzzySearchString);
 		}
 		if(searchParams.getStartDate() != null) {
-			query.setParameter("startDate", searchParams.getStartDate(), TemporalType.TIMESTAMP);
+			query.setParameter("startDate", DateUtils.toLocalDateTime(searchParams.getStartDate()));
 		}
 		if(searchParams.getStartDateBefore() != null) {
-			query.setParameter("startDateBefore", searchParams.getStartDateBefore(), TemporalType.TIMESTAMP);
+			query.setParameter("startDateBefore", DateUtils.toLocalDateTime(searchParams.getStartDateBefore()));
 		}
 		if(searchParams.getEndDate() != null) {
-			query.setParameter("endDate", searchParams.getEndDate(), TemporalType.TIMESTAMP);
+			query.setParameter("endDate", DateUtils.toLocalDateTime(searchParams.getEndDate()));
 		}
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());

@@ -89,7 +89,6 @@ import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -129,7 +128,6 @@ public class LectureListDetailsController extends FormBasicController {
 	private final boolean lectureManagementManaged;
 	private final boolean taxonomyEnabled;
 	private final LectureListRepositoryConfig config;
-	private final LecturesSecurityCallback secCallback;
 	private RepositoryEntryImageMapper mapperThumbnail;
 	
 	private ToolsController toolsCtrl;
@@ -152,17 +150,13 @@ public class LectureListDetailsController extends FormBasicController {
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
-	private TaxonomyService taxonomyService;
-	@Autowired
 	private RepositoryModule repositoryModule;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged, 
-										boolean inRepoEntry, boolean taxonomyEnabled) {
+			LectureListRepositoryConfig config, boolean lectureManagementManaged, boolean inRepoEntry, boolean taxonomyEnabled) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
 		this.config = config;
-		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
 		this.taxonomyEnabled = taxonomyEnabled;
 		profileConfig = userPortraitService.createProfileConfig();
@@ -187,7 +181,7 @@ public class LectureListDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+		if(!lectureManagementManaged && row.canEdit()) {
 			editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			editButton.setElementCssClass("o_lecture_details_edit");

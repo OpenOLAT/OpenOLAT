@@ -107,9 +107,9 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 				}
 				
 				rows.add(new LectureBlockRow(block, null, entry.getDisplayname(), entry.getExternalRef(), teachers.toString(), true,
-						blockWithTeachers.getCurriculumElementRef(), blockWithTeachers.getEntryRef(),
+						blockWithTeachers.curriculumElementRef(), blockWithTeachers.getCurriculum(), blockWithTeachers.entryRef(),
 						blockWithTeachers.getNumOfParticipants(), blockWithTeachers.getLeadTime(), blockWithTeachers.getFollowupTime(),
-						blockWithTeachers.isAssessmentMode(), false, getTranslator()));
+						blockWithTeachers.isAssessmentMode(), false, false, getTranslator()));
 			}
 		}
 		return rows;

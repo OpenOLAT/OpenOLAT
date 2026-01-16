@@ -78,7 +78,6 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListDetailsController;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
-import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LocationCellRenderer;
@@ -124,7 +123,6 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private final boolean taxonomyEnabled;
 	private final RepositoryEntry entry;
 	private final List<LectureBlockRow> lectureBlocksRows;
-	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
 	
 	private TeachersController assignTeachersCtrl;
@@ -145,13 +143,11 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private RepositoryService repositoryService;
 	
 	public ManageTeachersController(UserRequest ureq, WindowControl wControl, List<LectureBlockRow> lectureBlocksRows,
-									LectureListRepositoryConfig config, LecturesSecurityCallback secCallback,
-									RepositoryEntry entry, boolean taxonomyEnabled) {
+			LectureListRepositoryConfig config, RepositoryEntry entry, boolean taxonomyEnabled) {
 		super(ureq, wControl, "manage_teachers", Util
 				.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale()));
 		this.entry = entry;
 		this.config = config;
-		this.secCallback = secCallback;
 		this.lectureBlocksRows = new ArrayList<>(lectureBlocksRows);
 		teachers = loadTeacherList(lectureBlocksRows);
 		this.taxonomyEnabled = taxonomyEnabled;
@@ -576,7 +572,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		}
 
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row.getLectureBlockRow(),
-				mainForm, config, secCallback, true, entry != null, taxonomyEnabled);
+				mainForm, config, true, entry != null, taxonomyEnabled);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

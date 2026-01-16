@@ -4239,6 +4239,7 @@ create table o_cur_curriculum_element (
   fk_group bigint not null,
   fk_resource bigint,
   fk_parent bigint,
+  fk_implementation bigint,
   fk_curriculum bigint not null,
   fk_curriculum_parent bigint,
   fk_educational_type bigint,
@@ -6387,6 +6388,7 @@ alter table o_cur_curriculum add constraint cur_to_org_idx foreign key (fk_organ
 
 alter table o_cur_curriculum_element add constraint cur_el_to_group_idx foreign key (fk_group) references o_bs_group (id);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_el_idx foreign key (fk_parent) references o_cur_curriculum_element (id);
+alter table o_cur_curriculum_element add constraint cur_el_to_impl_el_idx foreign key (fk_implementation) references o_cur_curriculum_element (id);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
 alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);
 alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);

@@ -1735,10 +1735,11 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner, actor);
 		dbInstance.commitAndCloseSession();
 		
-		List<CurriculumElement> elements = curriculumElementDao.loadElements(owner, CurriculumRoles.curriculumelementowner);
+		List<CurriculumElementRef> elements = curriculumElementDao.loadElements(owner, CurriculumRoles.curriculumelementowner);
 		Assertions.assertThat(elements)
 			.hasSize(1)
-			.containsExactlyInAnyOrder(element);
+			.map(CurriculumElementRef::getKey)
+			.containsExactlyInAnyOrder(element.getKey());
 	}
 	
 	@Test

@@ -37,13 +37,20 @@ public class CurriculumSearchParameters {
 	
 	private String searchString;
 	private Identity elementOwner;
+	private Identity curriculumOwner;
 	private Identity managerIdentity;
 	private Identity principalIdentity;
 	private List<CurriculumStatus> statusList;
 	private List<? extends CurriculumRef> curriculums;
 	private List<? extends OrganisationRef> organisations;
 	
+	private List<String> roles;
+	
 	private boolean withDeleted = false;
+	
+	public CurriculumSearchParameters() {
+		//
+	}
 
 	public List<? extends OrganisationRef> getOrganisations() {
 		if(organisations == null) {
@@ -54,6 +61,14 @@ public class CurriculumSearchParameters {
 
 	public void setOrganisations(List<? extends OrganisationRef> organisations) {
 		this.organisations = organisations;
+	}
+	
+	public boolean searchRoles(String role) {
+		return roles == null ? true : roles.add(role);
+	}
+	
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
 	}
 
 	public String getSearchString() {
@@ -83,6 +98,14 @@ public class CurriculumSearchParameters {
 	
 	public void setCurriculumPrincipal(Identity identity) {
 		principalIdentity = identity;
+	}
+
+	public Identity getCurriculumOwner() {
+		return curriculumOwner;
+	}
+
+	public void setCurriculumOwner(Identity curriculumOwner) {
+		this.curriculumOwner = curriculumOwner;
 	}
 
 	public Identity getElementOwner() {

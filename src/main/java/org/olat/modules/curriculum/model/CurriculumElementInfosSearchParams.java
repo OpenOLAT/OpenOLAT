@@ -43,7 +43,7 @@ public class CurriculumElementInfosSearchParams {
 	private CurriculumElement parentElement;
 	private boolean parentElementInclusive;
 	
-	private boolean rootElementsOnly;
+	private boolean implementationsOnly;
 	private List<CurriculumElementStatus> statusList;
 	
 	private final IdentityRef identity;
@@ -123,12 +123,12 @@ public class CurriculumElementInfosSearchParams {
 		this.parentElementInclusive = parentElementInclusive;
 	}
 
-	public boolean isRootElementsOnly() {
-		return rootElementsOnly;
+	public boolean isImplementationsOnly() {
+		return implementationsOnly;
 	}
 
-	public void setRootElementsOnly(boolean rootElementsOnly) {
-		this.rootElementsOnly = rootElementsOnly;
+	public void setImplementationsOnly(boolean implementationsOnly) {
+		this.implementationsOnly = implementationsOnly;
 	}
 
 	public List<CurriculumElementStatus> getStatusList() {

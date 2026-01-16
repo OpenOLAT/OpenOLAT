@@ -174,7 +174,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			config.setTitle(translate("curriculum.implementations"), TITLE_SIZE, "o_icon_curriculum_implementations");
 			config.setDefaultNumOfParticipants(true);
 			config.setWithMixMaxColumn(true);
-			config.setRootElementsOnly(true);
+			config.setImplementationsOnly(true);
 			config.setFlat(true);
 			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_IMPLEMENTATIONS), null);
 			implementationsCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,

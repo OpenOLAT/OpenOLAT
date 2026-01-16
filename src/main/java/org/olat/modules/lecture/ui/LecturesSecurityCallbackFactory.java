@@ -19,8 +19,14 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.run.userview.CourseReadOnlyDetails;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.lecture.LectureModule;
 
 /**
@@ -31,10 +37,10 @@ import org.olat.modules.lecture.LectureModule;
  */
 public class LecturesSecurityCallbackFactory {
 	
-	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole,
-			CourseReadOnlyDetails readOnly, boolean readOnlyManaged) {
+	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean principalRole, boolean masterCoachRole, boolean teacherRole,
+			List<CurriculumElementRef> ownedElements, List<CurriculumRef> ownedCurriculums, CourseReadOnlyDetails readOnly, boolean readOnlyManaged) {
 		LectureRoles viewAs;
-		if(adminRole) {
+		if(adminRole || principalRole) {
 			viewAs = LectureRoles.lecturemanager;
 		} else if(masterCoachRole) {
 			viewAs = LectureRoles.mastercoach;
@@ -45,8 +51,8 @@ public class LecturesSecurityCallbackFactory {
 		}
 		boolean readOnlyByStatus = readOnly.getByStatus() != null && readOnly.getByStatus().booleanValue();
 		boolean readOnlyByRole = readOnly.getByRole() != null && readOnly.getByRole().booleanValue();
-		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole,
-				viewAs, readOnlyByStatus, readOnlyByRole, readOnlyManaged);
+		return new LecturesSecurityCallbackImpl(adminRole, principalRole, masterCoachRole, teacherRole,
+				ownedElements, ownedCurriculums, viewAs, readOnlyByStatus, readOnlyByRole, readOnlyManaged);
 	}
 	
 	/**
@@ -57,28 +63,40 @@ public class LecturesSecurityCallbackFactory {
 	 * @param viewAs
 	 * @return
 	 */
-	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole,
-			LectureRoles viewAs) {
-		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, false, false, false);
+	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean principalRole, boolean masterCoachRole, boolean teacherRole,
+			List<CurriculumElementRef> ownedElements, List<CurriculumRef> ownedCurriculums, LectureRoles viewAs) {
+		return new LecturesSecurityCallbackImpl(adminRole, principalRole, masterCoachRole, teacherRole, ownedElements, ownedCurriculums, viewAs, false, false, false);
 	}
 	
 	private static class LecturesSecurityCallbackImpl implements LecturesSecurityCallback {
 		
 		private final boolean adminRole;
+		private final boolean principalRole;
 		private final boolean masterCoachRole;
 		private final boolean teacherRole;
 		private final boolean courseReadOnlyByStatus;
 		private final boolean courseReadOnlyByRole;
 		private final boolean courseReadOnlyManaged;
+		private final Set<Long> ownedElementsKeys;
+		private final Set<Long> ownedCurriculumKeys;
 		
 		private final LectureRoles viewAs;
 		private LectureModule lectureModule;
 		
-		public LecturesSecurityCallbackImpl(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs,
-				boolean readOnlyByStatus, boolean readOnlyByRole, boolean readOnlyManaged) {
+		public LecturesSecurityCallbackImpl(boolean adminRole, boolean principalRole, boolean masterCoachRole, boolean teacherRole,
+				List<CurriculumElementRef> ownedElements, List<CurriculumRef> ownedCurriculums,
+				LectureRoles viewAs, boolean readOnlyByStatus, boolean readOnlyByRole, boolean readOnlyManaged) {
 			this.adminRole = adminRole;
+			this.principalRole = principalRole;
 			this.masterCoachRole = masterCoachRole;
 			this.teacherRole = teacherRole;
+			ownedElementsKeys = ownedElements == null
+					? Set.of()
+					: ownedElements.stream().map(CurriculumElementRef::getKey).collect(Collectors.toSet());
+			ownedCurriculumKeys = ownedCurriculums == null
+					? Set.of()
+					: ownedCurriculums.stream().map(CurriculumRef::getKey).collect(Collectors.toSet());
+			
 			this.viewAs = viewAs;
 			this.courseReadOnlyByStatus = readOnlyByStatus;
 			this.courseReadOnlyByRole = readOnlyByRole;
@@ -88,7 +106,7 @@ public class LecturesSecurityCallbackFactory {
 		
 		@Override
 		public LecturesSecurityCallback readOnlyCopy() {
-			return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, true, true, true);
+			return new LecturesSecurityCallbackImpl(adminRole, principalRole, masterCoachRole, teacherRole, List.of(), List.of(), viewAs, true, true, true);
 		}
 		
 		public boolean isReadOnly()  {
@@ -96,10 +114,28 @@ public class LecturesSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canNewLectureBlock() {
+		public boolean canNewLectureBlock(CurriculumElementRef element, CurriculumRef curriculum) {
 			if(isReadOnly()) return false;
 			
-			return adminRole;
+			return adminRole
+					|| (element != null && ownedElementsKeys.contains(element.getKey()))
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
+		}
+		
+		@Override
+		public boolean canEditLectureBlocks() {
+			if(isReadOnly()) return false;
+			
+			return adminRole || !ownedElementsKeys.isEmpty() || !ownedCurriculumKeys.isEmpty();
+		}
+
+		@Override
+		public boolean canEditLectureBlock(CurriculumElementRef element, CurriculumRef curriculum) {
+			if(isReadOnly()) return false;
+			
+			return adminRole
+					|| (element != null && ownedElementsKeys.contains(element.getKey()))
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 
 		@Override
@@ -133,7 +169,7 @@ public class LecturesSecurityCallbackFactory {
 				return masterCoachRole && lectureModule.isMasterCoachCanSeeAppeal();
 			}
 			if(viewAs == LectureRoles.lecturemanager) {
-				return adminRole && lectureModule.isAbsenceAppealEnabled();
+				return (adminRole || principalRole) && lectureModule.isAbsenceAppealEnabled();
 			}
 			return false;
 		}
@@ -235,12 +271,12 @@ public class LecturesSecurityCallbackFactory {
 		
 		@Override
 		public boolean canViewLog() {
-			return adminRole || masterCoachRole || teacherRole;
+			return adminRole || principalRole || masterCoachRole || teacherRole;
 		}
 
 		@Override
 		public boolean canViewList() {
-			return adminRole || masterCoachRole || teacherRole;
+			return adminRole || principalRole || masterCoachRole || teacherRole;
 		}
 
 		@Override
@@ -250,7 +286,7 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean needToInformTeacher() {
-			if(adminRole || masterCoachRole) {
+			if(adminRole || principalRole || masterCoachRole) {
 				return false;
 			}
 			return viewAs == LectureRoles.participant;
@@ -258,14 +294,14 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditAbsenceNotices() {
-			if(isReadOnly()) return false;
+			if(isReadOnly() || principalRole) return false;
 			
 			return viewAs == LectureRoles.teacher || viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
 		}
 
 		@Override
 		public boolean canDeleteAbsenceNotices() {
-			if(isReadOnly()) return false;
+			if(isReadOnly() || principalRole) return false;
 			
 			return viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
 		}

@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.lecture.ui.coach.LecturesCoachingController;
@@ -53,9 +54,11 @@ public class LecturesMainController extends MainLayoutBasicController implements
 		content.setNeverDisposeRootController(true);
 		content.setToolbarAutoEnabled(true);
 		
-		// TODO principal
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean adminRole = roles.isAdministrator() || roles.isLectureManager();
+		boolean principalRole = roles.isPrincipal();
 		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-				.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
+				.getSecurityCallback(adminRole, principalRole, false, false, List.of(), List.of(), LectureRoles.lecturemanager);
 		lectureCoachingCtrl = new LecturesCoachingController(ureq, getWindowControl(), content, secCallback);
 		listenTo(lectureCoachingCtrl);
 		

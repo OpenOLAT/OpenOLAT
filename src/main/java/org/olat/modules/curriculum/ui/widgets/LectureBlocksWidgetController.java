@@ -158,7 +158,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		minimizeButton.setElementCssClass("o_button_details");
 		updateMinimizeButton();
 		
-		if(secCallback.canNewLectureBlock() && (curriculum != null || curriculumElement != null)) {
+		if(secCallback.canNewLectureBlock(curriculumElement, curriculum) && (curriculum != null || curriculumElement != null)) {
 			addLecturesLink = uifactory.addFormLink("curriculum.add.lectures", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
 			addLecturesLink.setIconLeftCSS("o_icon o_icon_add");
 			addLecturesLink.setTitle(translate("curriculum.add.lectures"));
@@ -380,7 +380,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	}
 	
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(guardModalController(addLectureCtrl) || !secCallback.canNewLectureBlock()) return;
+		if(guardModalController(addLectureCtrl) || !secCallback.canNewLectureBlock(curriculumElement, curriculum)) return;
 		
 		if(curriculumElement == null && curriculum == null) {
 			showWarning("error.no.entry.curriculum");

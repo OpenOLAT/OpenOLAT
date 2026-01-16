@@ -192,6 +192,10 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@JoinColumn(name="fk_parent", nullable=true, insertable=true, updatable=true)
 	private CurriculumElement parent;
 	
+	@ManyToOne(targetEntity=CurriculumElementImpl.class)
+	@JoinColumn(name="fk_implementation", nullable=true, insertable=true, updatable=true)
+	private CurriculumElement implementation;
+	
 	@OneToMany(targetEntity=CurriculumElementImpl.class, mappedBy="parent", fetch=FetchType.LAZY)
 	@OrderColumn(name="pos")
 	private List<CurriculumElement> children;
@@ -753,6 +757,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setParent(CurriculumElement parent) {
 		this.parent = parent;
+	}
+
+	@Override
+	public CurriculumElement getImplementation() {
+		return implementation;
+	}
+
+	public void setImplementation(CurriculumElement implementation) {
+		this.implementation = implementation;
 	}
 
 	public Curriculum getCurriculumParent() {

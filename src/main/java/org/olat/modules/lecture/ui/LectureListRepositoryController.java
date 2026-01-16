@@ -132,6 +132,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -228,7 +229,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String FILTER_SUBJECT_PATHS = "SubjectPaths";
 	
 	private static final String NO_TEACHER = "noteacher";
-	
+
+	private static final String CMD_EDIT = "edit";
 	private static final String CMD_ROLLCALL = "lrollcall";
 	protected static final String CMD_REPOSITORY_ENTRY = "lentry";
 	protected static final String CMD_CURRICULUM_ELEMENT = "element";
@@ -452,7 +454,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			onlyMineButton.setPrimary(!all);
 		}
 		
-		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+		if(!lectureManagementManaged && secCallback.canNewLectureBlock(curriculumElement, curriculum)) {
 			if(entry != null || curriculum != null || curriculumElement != null) {
 				addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 				addLectureButton.setIconLeftCSS("o_icon o_icon_add");
@@ -571,12 +573,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withOnlineMeeting() == Visibility.SHOW, BlockCols.onlineMeeting));
 		}
 
-		if(!lectureManagementManaged && secCallback.canNewLectureBlock() && config.withCompulsoryPresence() != Visibility.NO) {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
-			editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		if(!lectureManagementManaged && secCallback.canEditLectureBlocks() && config.withEdit() != Visibility.NO) {	
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", BlockCols.edit.ordinal(), CMD_EDIT,
+					new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_EDIT, null, "o_icon o_icon-lg o_icon_edit", translate("edit")), null));
 			editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 			editColumn.setExportable(false);
-			editColumn.setAlwaysVisible(config.withCompulsoryPresence() == Visibility.SHOW);
+			editColumn.setAlwaysVisible(config.withEdit() == Visibility.SHOW);
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
 		
@@ -1005,15 +1007,27 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		final boolean rollCallEnabled = config.withRollCall() != Visibility.NO
 				&& ConfigurationHelper.isRollCallEnabled(block.getLecturesConfigurations(), lectureModule);
 		final ZonedDateTime date = DateUtils.toZonedDateTime(block.getLectureBlock().getStartDate(), calendarModule.getDefaultZoneId());
+		final CurriculumRef rowCurriculum = curriculum == null
+				? block.getCurriculum()
+				: curriculum;
+		final CurriculumElementRef rowCurriculumElement = curriculumElement == null
+				? block.getCurriculumElement()
+				: curriculumElement;
+		final boolean canEdit = secCallback.canEditLectureBlock(rowCurriculumElement, rowCurriculum);
 		
 		LectureBlockRow row = new LectureBlockRow(b, date, displayname, externalRef,
-				teachers.toString(), iAmTeacher, block.getCurriculumElementRef(), block.getEntryRef(),
+				teachers.toString(), iAmTeacher, block.curriculumElementRef(), rowCurriculum, block.entryRef(),
 				block.getNumOfParticipants(), block.getLeadTime(), block.getFollowupTime(),
-				block.isAssessmentMode(), rollCallEnabled, getTranslator());
+				block.isAssessmentMode(), rollCallEnabled, canEdit, getTranslator());
 		row.setTeachersList(teachersList);
-		row.setSubjects(block.getLectureBlock().getTaxonomyLevels().stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toList()));
-		for (TaxonomyLevel taxonomyLevel : row.getSubjects()) {
-			taxonomyLevel.getIdentifier(); // fetch taxonomy levels now to avoid reloading them later
+		
+		if(taxonomyEnabled) {
+			row.setSubjects(block.getLectureBlock().getTaxonomyLevels().stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toList()));
+			for (TaxonomyLevel taxonomyLevel : row.getSubjects()) {
+				taxonomyLevel.getIdentifier(); // fetch taxonomy levels now to avoid reloading them later
+			}
+		} else {
+			row.setSubjects(List.of());
 		}
 		
 		if(config.withOnlineMeeting() != Visibility.NO) {
@@ -1378,7 +1392,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				LectureBlockRow row = tableModel.getObject(se.getIndex());
-				if("edit".equals(cmd)) {
+				if(CMD_EDIT.equals(cmd)) {
 					doEditLectureBlock(ureq, row);
 				} else if(TOGGLE_DETAILS_CMD.equals(cmd)) {
 					if(row.getDetailsController() != null) {
@@ -1610,12 +1624,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(block == null) {
 			loadModel(ureq);
 		} else {
-			doEditLectureBlock(ureq, block);
+			doEditLectureBlock(ureq, block, row.canEdit());
 		}
 	}
 	
-	private void doEditLectureBlock(UserRequest ureq, LectureBlock block) {
-		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
+	private void doEditLectureBlock(UserRequest ureq, LectureBlock block, boolean canEdit) {
+		boolean readOnly = lectureManagementManaged || !canEdit;
 		if(entry != null) {
 			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
 		} else if(curriculumElement != null) {
@@ -1637,7 +1651,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(guardModalController(addLectureWizardCtrl) || !secCallback.canNewLectureBlock()) return;
+		if(guardModalController(addLectureWizardCtrl) || !secCallback.canNewLectureBlock(curriculumElement, curriculum)) return;
 		
 		if(entry == null && curriculumElement == null && curriculum == null) {
 			showWarning("error.no.entry.curriculum");
@@ -1757,7 +1771,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			LectureBlock block = selectedBlocks.get(0);
 			String newTitle = translate("lecture.block.copy", block.getTitle());
 			LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, block, false);
-			doEditLectureBlock(ureq, copiedBlock);
+			doEditLectureBlock(ureq, copiedBlock, true);
 		} else {
 			for(LectureBlock block:selectedBlocks) {
 				String newTitle = translate("lecture.block.copy", block.getTitle());
@@ -1781,7 +1795,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		LectureBlock block = lectureService.getLectureBlock(row);
 		String newTitle = translate("lecture.block.copy", block.getTitle());
 		LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, block, false);
-		doEditLectureBlock(ureq, copiedBlock);
+		doEditLectureBlock(ureq, copiedBlock, true);
 	}
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {
@@ -1828,7 +1842,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			showWarning("error.atleastone.lecture");
 		} else {
 			manageTeachersCtrl = new ManageTeachersController(ureq, getWindowControl(), blocks,
-					config, secCallback, entry, taxonomyEnabled);
+					config, entry, taxonomyEnabled);
 			listenTo(manageTeachersCtrl);
 			
 			String title = translate("manage.teachers");
@@ -1896,7 +1910,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				mainForm, config, secCallback, lectureManagementManaged, entry != null, taxonomyEnabled);
+				mainForm, config, lectureManagementManaged, entry != null, taxonomyEnabled);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -2254,23 +2268,25 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
 			
 			LectureBlock lectureBlock = row.getLectureBlock();
-			if(StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl())) {
-				changeToLocationMeetingLink = LinkFactory.createLink("change.to.location.meeting", "change.to.location.meeting", getTranslator(), mainVC, this, Link.LINK);
-				changeToLocationMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_location");
-			} else if((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled())
-					|| (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())) {
-				if(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null) {			
-					openOnlineMeetingLink = LinkFactory.createLink("open.online.meeting", CMD_OPEN_ONLINE_MEETING, getTranslator(), mainVC, this, Link.LINK);
-					openOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+			if(secCallback.canEditLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
+				if(StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl())) {
 					changeToLocationMeetingLink = LinkFactory.createLink("change.to.location.meeting", "change.to.location.meeting", getTranslator(), mainVC, this, Link.LINK);
 					changeToLocationMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_location");
-				} else if(lectureBlock.getEndDate() != null && lectureBlock.getEndDate().after(ureq.getRequestTimestamp())) {
-					changeToOnlineMeetingLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
-					changeToOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+				} else if((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled())
+						|| (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())) {
+					if(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null) {			
+						openOnlineMeetingLink = LinkFactory.createLink("open.online.meeting", CMD_OPEN_ONLINE_MEETING, getTranslator(), mainVC, this, Link.LINK);
+						openOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+						changeToLocationMeetingLink = LinkFactory.createLink("change.to.location.meeting", "change.to.location.meeting", getTranslator(), mainVC, this, Link.LINK);
+						changeToLocationMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_location");
+					} else if(lectureBlock.getEndDate() != null && lectureBlock.getEndDate().after(ureq.getRequestTimestamp())) {
+						changeToOnlineMeetingLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
+						changeToOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+					}
+				} else {
+					changeToOnlineMeetingURLLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
+					changeToOnlineMeetingURLLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
 				}
-			} else {
-				changeToOnlineMeetingURLLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
-				changeToOnlineMeetingURLLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
 			}
 			
 			RepositoryEntryLectureConfiguration entryConfig = null;
@@ -2298,7 +2314,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				}
 			}
 			
-			if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+			if(!lectureManagementManaged && secCallback.canEditLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
 				editLink = addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", mainVC);
 			}
 
@@ -2308,7 +2324,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				reopenLink = addLink("reopen.lecture.blocks", "reopen", "o_icon o_icon-fw o_icon_reopen", mainVC);
 			}
 			
-			if(secCallback.canNewLectureBlock()) {
+			if(secCallback.canNewLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
 				copyLink = addLink("copy", "copy", "o_icon o_icon-fw o_icon_copy", mainVC);
 			}
 
@@ -2316,7 +2332,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				logLink = addLink("log", "log", "o_icon o_icon-fw o_icon_log", mainVC);
 			}
 			
-			if(secCallback.canNewLectureBlock()) {
+			if(secCallback.canNewLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
 				if(canAssignNewRepositoryEntry()) {
 					assignNewEntry = addLink("assign.new.entry", "assign.new.entry", "o_icon o_icon-fw o_icon_assign_new_item", mainVC);
 				}

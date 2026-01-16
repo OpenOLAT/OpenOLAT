@@ -256,7 +256,7 @@ public class CurriculumElementSelectionController extends FormBasicController {
 	
 	private CurriculumElementInfosSearchParams getSearchParams() {
 		CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams(getIdentity());
-		searchParams.setRootElementsOnly(true);
+		searchParams.setImplementationsOnly(true);
 		return searchParams;
 	}
 	

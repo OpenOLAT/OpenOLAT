@@ -142,6 +142,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case followUptime -> getTime(row.getFollowupTime());
 			case subjects -> row.getSubjects();
 			case subjectPaths -> row.getSubjects();
+			case edit -> row.canEdit();
 		};
 	}
 	
@@ -193,7 +194,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		leadTime("table.header.lead.time"),
 		followUptime("table.header.followup.time"),
 		subjects("lecture.subjects"),
-		subjectPaths("lecture.subject.paths"),;
+		subjectPaths("lecture.subject.paths"),
+		edit("edit");
 		
 		private final String i18nKey;
 		

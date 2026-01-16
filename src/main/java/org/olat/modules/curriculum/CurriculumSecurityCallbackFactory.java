@@ -41,7 +41,7 @@ public class CurriculumSecurityCallbackFactory {
 	 * @return A security callback without any administration permissions.
 	 */
 	public static final CurriculumSecurityCallback createDefaultCallback() {
-		return new DefaultCurriculumSecurityCallback(false, List.of(), List.of());
+		return new DefaultCurriculumSecurityCallback(false, false, List.of(), List.of());
 	}
 	
 	/**
@@ -53,15 +53,16 @@ public class CurriculumSecurityCallbackFactory {
 	}
 	
 	public static final CurriculumSecurityCallback createCallback(Roles roles, List<Curriculum> ownedCurriculums,
-			List<CurriculumElement> ownedElements) {
+			List<CurriculumElementRef> ownedElements) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
-		return new DefaultCurriculumSecurityCallback(admin, ownedCurriculums, ownedElements);
+		boolean principal = roles.isPrincipal();
+		return new DefaultCurriculumSecurityCallback(admin, principal, ownedCurriculums, ownedElements);
 	}
 	
 	private static class UserLookCurriculumSecurityCallback extends DefaultCurriculumSecurityCallback {
 
 		public UserLookCurriculumSecurityCallback() {
-			super(false, List.of(), List.of());
+			super(false, false, List.of(), List.of());
 		}
 
 		@Override
@@ -83,25 +84,29 @@ public class CurriculumSecurityCallbackFactory {
 	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {
 		
 		private final boolean admin;
+		private final boolean principal;
 		private final Set<Long> ownedCurriculumKeys;
-		private final Set<CurriculumElement> ownedElements;
+		private final Set<Long> ownedElementsKeys;
 		
-		public DefaultCurriculumSecurityCallback(boolean admin, List<Curriculum> ownedCurriculums, List<CurriculumElement> ownedElements) {
+		public DefaultCurriculumSecurityCallback(boolean admin, boolean principal, List<Curriculum> ownedCurriculums, List<CurriculumElementRef> ownedElements) {
 			this.admin = admin;
+			this.principal = principal;
 			ownedCurriculumKeys = ownedCurriculums.stream()
 					.map(Curriculum::getKey)
 					.collect(Collectors.toSet());
-			this.ownedElements = Set.copyOf(ownedElements);
+			ownedElementsKeys = ownedElements.stream()
+					.map(CurriculumElementRef::getKey)
+					.collect(Collectors.toSet());
 		}
 
 		@Override
 		public boolean canViewCurriculums() {
-			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElements.isEmpty();
+			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
 		}
 
 		@Override
 		public boolean canViewImplementations() {
-			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElements.isEmpty();
+			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
 		}
 
 		@Override
@@ -141,7 +146,7 @@ public class CurriculumSecurityCallbackFactory {
 		public boolean canEditCurriculumElements(Curriculum curriculum) {
 			return admin
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()))
-					|| !ownedElements.isEmpty();
+					|| !ownedElementsKeys.isEmpty();
 		}
 		
 		@Override
@@ -151,12 +156,12 @@ public class CurriculumSecurityCallbackFactory {
 			}
 			return admin
 					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
-					|| ownedElements.contains(element);
+					|| ownedElementsKeys.contains(element.getKey());
 		}
 		
 		@Override
 		public boolean canViewCurriculumElement(CurriculumElement element) {
-			return canEditCurriculumElement(element);
+			return principal || canEditCurriculumElement(element);
 		}
 		
 		@Override
@@ -201,7 +206,7 @@ public class CurriculumSecurityCallbackFactory {
 		
 		@Override
 		public boolean canViewCurriculumElementResources(CurriculumElement element) {
-			return canManageCurriculumElementResources(element);
+			return principal || canManageCurriculumElementResources(element);
 		}
 
 		@Override
@@ -209,18 +214,18 @@ public class CurriculumSecurityCallbackFactory {
 			return element != null && element.getCurriculum() != null && (
 					admin
 					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
-					|| ownedElements.contains(element));
+					|| ownedElementsKeys.contains(element.getKey()));
 		}
 
 		@Override
 		public boolean canViewCatalogSettings(CurriculumElement element) {
 			return element != null && element.getCurriculum() != null
-					&& (admin || ownedCurriculumKeys.contains(element.getCurriculum().getKey()));
+					&& (admin || principal || ownedCurriculumKeys.contains(element.getCurriculum().getKey()));
 		}
 
 		@Override
 		public boolean canViewAllCalendars() {
-			return admin;
+			return admin || principal;
 		}
 		
 		@Override
@@ -230,13 +235,13 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewAllLectures(Curriculum curriculum) {
-			return admin
+			return admin || principal
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 
 		@Override
 		public boolean canViewAllLearningProgress() {
-			return admin;
+			return admin || principal;
 		}
 
 		@Override
@@ -248,11 +253,6 @@ public class CurriculumSecurityCallbackFactory {
 		public boolean canCurriculumReports(Curriculum curriculum) {
 			return admin
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
-		}
-
-		@Override
-		public List<CurriculumElement> getOwnedCurriculumElements() {
-			return List.copyOf(ownedElements);
 		}
 	}
 }

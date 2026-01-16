@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.ui;
 
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
+
 /**
  * Very simple security callback for the principals
  * 
@@ -29,7 +32,11 @@ package org.olat.modules.lecture.ui;
  */
 public interface LecturesSecurityCallback {
 	
-	boolean canNewLectureBlock();
+	boolean canNewLectureBlock(CurriculumElementRef element, CurriculumRef curriculum);
+	
+	boolean canEditLectureBlocks();
+	
+	boolean canEditLectureBlock(CurriculumElementRef element, CurriculumRef curriculum);
 	
 	boolean canChangeRates();
 	

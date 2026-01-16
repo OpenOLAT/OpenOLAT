@@ -4310,6 +4310,7 @@ create table o_cur_curriculum_element (
   fk_group number(20) not null,
   fk_resource number(20),
   fk_parent number(20),
+  fk_implementation number(20),
   fk_curriculum number(20) not null,
   fk_curriculum_parent number(20),
   fk_type number(20),
@@ -6557,6 +6558,8 @@ alter table o_cur_curriculum_element add constraint cur_el_to_group_idx foreign 
 create index idx_cur_el_to_group_idx on o_cur_curriculum_element (fk_group);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_el_idx foreign key (fk_parent) references o_cur_curriculum_element (id);
 create index idx_cur_el_to_cur_el_idx on o_cur_curriculum_element (fk_parent);
+alter table o_cur_curriculum_element add constraint cur_el_to_impl_el_idx foreign key (fk_implementation) references o_cur_curriculum_element (id);
+create index idx_cur_el_to_impl_el_idx on o_cur_curriculum_element (fk_implementation);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
 create index idx_cur_el_to_cur_idx on o_cur_curriculum_element (fk_curriculum);
 alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);

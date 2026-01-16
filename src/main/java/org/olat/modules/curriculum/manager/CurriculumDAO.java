@@ -215,7 +215,7 @@ public class CurriculumDAO {
 			sb.append(")");	
 		}
 		
-		if(params.getElementOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
+		if(params.getElementOwner() != null || params.getCurriculumOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
 			appendCurriculumPermissions(sb, params);
 		}
 
@@ -237,6 +237,8 @@ public class CurriculumDAO {
 		}
 		if(params.getCurriculumAdmin() != null) {
 			query.setParameter("managerKey", params.getCurriculumAdmin().getKey());
+		} else if(params.getCurriculumOwner() != null) {
+			query.setParameter("curriculumOwnerKey", params.getCurriculumOwner().getKey());
 		}
 		if(params.getCurriculumPrincipal() != null) {
 			query.setParameter("principalKey", params.getCurriculumPrincipal().getKey());
@@ -244,6 +246,7 @@ public class CurriculumDAO {
 		if(params.getElementOwner() != null) {
 			query.setParameter("ownerKey", params.getElementOwner().getKey());
 		}
+
 		return query.getResultList();
 	}
 	
@@ -318,7 +321,7 @@ public class CurriculumDAO {
 			sb.append(")");	
 		}
 		
-		if(params.getElementOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
+		if(params.getElementOwner() != null || params.getCurriculumOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
 			appendCurriculumPermissions(sb, params);
 		}
 
@@ -351,6 +354,9 @@ public class CurriculumDAO {
 		}
 		if(params.getElementOwner() != null) {
 			query.setParameter("ownerKey", params.getElementOwner().getKey());
+		}
+		if(params.getCurriculumOwner() != null) {
+			query.setParameter("curriculumOwnerKey", params.getCurriculumOwner().getKey());
 		}
 		
 		List<Object[]> rawObjects = query.getResultList();
@@ -402,8 +408,18 @@ public class CurriculumDAO {
 			sb.append("or organis.group.key in (select admGroup.key from bgroupmember as admMembership")
 			  .append("  inner join admMembership.group as admGroup")
 			  .append("  where admMembership.identity.key=:managerKey")
-				  .append("  and admMembership.role ").in(OrganisationRoles.administrator, CurriculumRoles.curriculummanager)
+				  .append("  and admMembership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.curriculummanager)
 				  .append(")");
+		} else if(params.getCurriculumOwner() != null) {
+			if(needOr) {
+				sb.append(" or ");
+			}
+			needOr = true;
+			sb.append("baseGroup.key in (select mgrGroup.key from bgroupmember as mgrMembership")
+			  .append("  inner join mgrMembership.group as mgrGroup")
+			  .append("  where mgrMembership.identity.key=:curriculumOwnerKey")
+			  .append("  and mgrMembership.role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager)
+			  .append(")");
 		}
 		
 		if(params.getCurriculumPrincipal() != null) {

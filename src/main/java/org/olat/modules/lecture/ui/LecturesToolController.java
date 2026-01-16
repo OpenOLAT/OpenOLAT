@@ -34,7 +34,7 @@ import org.olat.modules.lecture.ui.profile.IdentityProfileController;
 /**
  * 
  * Initial date: 13 juin 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LecturesToolController extends BasicController implements Activateable2 {
@@ -44,7 +44,7 @@ public class LecturesToolController extends BasicController implements Activatea
 	public LecturesToolController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-				.getSecurityCallback(false, false, false, LectureRoles.participant);
+				.getSecurityCallback(false, false, false, false, List.of(), List.of(), LectureRoles.participant);
 		profileCtrl = new IdentityProfileController(ureq, getWindowControl(), ureq.getIdentity(), secCallback, false);
 		listenTo(profileCtrl);
 		

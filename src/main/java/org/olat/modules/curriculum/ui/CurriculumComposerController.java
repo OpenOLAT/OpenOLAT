@@ -585,7 +585,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				.map(CurriculumElementInfos::getKey)
 				.collect(Collectors.toSet());
 		
-		List<CurriculumElement> ownedElements = secCallback.getOwnedCurriculumElements();
+		List<CurriculumElement> ownedElements = new ArrayList<>();//TODO curriculum secCallback.getOwnedCurriculumElements();
 		
 		Set<Long> implementationsKeys = new HashSet<>();
 		for(CurriculumElement ownedElement:ownedElements) {
@@ -617,7 +617,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				searchParams.setCurriculum(curriculum);
 			}
 			searchParams.setCurriculumElements(implementsRefs);
-			searchParams.setRootElementsOnly(true);
+			searchParams.setImplementationsOnly(true);
 			
 			List<CurriculumElementInfos> implementations = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			elements.addAll(implementations);
@@ -681,8 +681,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(rootElement != null) {
 			searchParams.setParentElement(rootElement, false);
 		}
-		if(config.isRootElementsOnly()) {
-			searchParams.setRootElementsOnly(true);
+		if(config.isImplementationsOnly()) {
+			searchParams.setImplementationsOnly(true);
 		}
 		return searchParams;
 	}

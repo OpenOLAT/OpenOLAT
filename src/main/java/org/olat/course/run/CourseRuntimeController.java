@@ -291,7 +291,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
 	private CourseReminderListController remindersCtrl;
-	//TODO online private TeacherOverviewController lecturesCtrl;
 	private LectureRepositoryAdminController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
 	private CourseToDoTaskController toDoTaskCtrl;
@@ -2394,9 +2393,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 				boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 				boolean adminRole = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+				boolean principalRole = reSecurity.isPrincipal() || reSecurity.isCurriculumManager();
 				boolean masterCoachRole = reSecurity.isMasterCoach();
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-						.getSecurityCallback(adminRole, masterCoachRole, false, readOnlyDetails, readOnlyManaged);
+						.getSecurityCallback(adminRole, principalRole, masterCoachRole, false, List.of(), List.of(), readOnlyDetails, readOnlyManaged);
 				LectureListRepositoryConfig config = getLecturesAdminConfig();
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, entry, config, secCallback);
 				listenTo(ctrl);
@@ -2449,10 +2449,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 			boolean teacher = !reSecurity.isParticipant() && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
 			boolean admin = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+			boolean principalRole = reSecurity.isPrincipal() || reSecurity.isCurriculumManager();
 			boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 			LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-					.getSecurityCallback(admin, reSecurity.isMasterCoach(), teacher,
-							readOnlyDetails, readOnlyManaged);
+					.getSecurityCallback(admin, principalRole, reSecurity.isMasterCoach(), teacher, List.of(), List.of(), readOnlyDetails, readOnlyManaged);
 			LectureListRepositoryConfig config = getLecturesConfig(secCallback, entry);
 			LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, entry, config, secCallback);
 			listenTo(ctrl);

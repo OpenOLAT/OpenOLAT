@@ -28,7 +28,7 @@ package org.olat.modules.curriculum.ui;
 public class CurriculumComposerConfig {
 	
 	private boolean flat = false;
-	private boolean rootElementsOnly = false;
+	private boolean implementationsOnly = false;
 	private boolean defaultNumOfParticipants = false;
 	
 	private String title;
@@ -41,14 +41,14 @@ public class CurriculumComposerConfig {
 	public static CurriculumComposerConfig curriculumView() {
 		CurriculumComposerConfig config = new CurriculumComposerConfig();
 		config.setFlat(false);
-		config.setRootElementsOnly(true);
+		config.setImplementationsOnly(true);
 		return config;
 	}
 	
 	public static CurriculumComposerConfig implementationsView() {
 		CurriculumComposerConfig config = new CurriculumComposerConfig();
 		config.setFlat(true);
-		config.setRootElementsOnly(true);
+		config.setImplementationsOnly(true);
 		config.setWithMixMaxColumn(true);
 		return config;
 	}
@@ -61,12 +61,12 @@ public class CurriculumComposerConfig {
 		this.flat = flat;
 	}
 
-	public boolean isRootElementsOnly() {
-		return rootElementsOnly;
+	public boolean isImplementationsOnly() {
+		return implementationsOnly;
 	}
 
-	public void setRootElementsOnly(boolean rootElementsOnly) {
-		this.rootElementsOnly = rootElementsOnly;
+	public void setImplementationsOnly(boolean implementationsOnly) {
+		this.implementationsOnly = implementationsOnly;
 	}
 
 	public boolean isDefaultNumOfParticipants() {

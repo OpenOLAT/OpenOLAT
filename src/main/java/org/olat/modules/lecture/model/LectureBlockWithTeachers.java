@@ -19,10 +19,13 @@
  */
 package org.olat.modules.lecture.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 
@@ -32,31 +35,9 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockWithTeachers {
-	
-	private final boolean assessmentMode;
-	private final Reference entryRef;
-	private final LectureBlock lectureBlock;
-	private final Reference curriculumElementRef;
-	private final RepositoryEntryLectureConfiguration lecturesConfiguration;
-	
-	private final long leadTime;
-	private final long followupTime;
-	private final long numOfParticipants;
-	private final List<Identity> teachers = new ArrayList<>(3);
-	
-	public LectureBlockWithTeachers(LectureBlock lectureBlock, RepositoryEntryLectureConfiguration lecturesConfiguration,
-			Reference curriculumElementRef, Reference entryRef,
-			long numOfParticipants, long leadTime, long followupTime, boolean assessmentMode) {
-		this.entryRef = entryRef;
-		this.lectureBlock = lectureBlock;
-		this.assessmentMode = assessmentMode;
-		this.leadTime = leadTime;
-		this.followupTime = followupTime;
-		this.numOfParticipants = numOfParticipants;
-		this.curriculumElementRef = curriculumElementRef;
-		this.lecturesConfiguration = lecturesConfiguration;
-	}
+public record LectureBlockWithTeachers(LectureBlock lectureBlock, RepositoryEntryLectureConfiguration lecturesConfiguration,
+			Reference curriculumElementRef, Long curriculumKey, Reference entryRef,
+			long numOfParticipants, long leadTime, long followupTime, boolean assessmentMode, List<Identity> teachers) {
 	
 	public boolean isAssessmentMode() {
 		return assessmentMode;
@@ -77,15 +58,17 @@ public class LectureBlockWithTeachers {
 	public long getFollowupTime() {
 		return followupTime;
 	}
-
-	public Reference getEntryRef() {
-		return entryRef;
+	
+	public CurriculumElementRef getCurriculumElement() {
+		return curriculumElementRef == null
+				? null
+				: new CurriculumElementRefImpl(curriculumElementRef.key());
 	}
-
-	public Reference getCurriculumElementRef() {
-		return curriculumElementRef;
+	
+	public CurriculumRef getCurriculum() {
+		return curriculumKey == null ? null : new CurriculumRefImpl(curriculumKey);
 	}
-
+	
 	public List<Identity> getTeachers() {
 		return teachers;
 	}

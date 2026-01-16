@@ -35,7 +35,7 @@ import org.olat.core.util.UserSession;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallbackFactory;
 import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
@@ -73,16 +73,18 @@ public class CurriculumManagerController extends BasicController implements Acti
 		UserSession usess = ureq.getUserSession();
 		
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
-		params.setCurriculumAdmin(getIdentity());
+		params.setCurriculumOwner(getIdentity());
 		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
-		List<CurriculumElement> ownedElements = curriculumService.getCurriculumElements(getIdentity(), CurriculumRoles.curriculumelementowner);
+		List<CurriculumElementRef> ownedElements = curriculumService.getCurriculumElements(getIdentity(), CurriculumRoles.curriculumelementowner);
 		
 		Roles roles = usess.getRoles();
 		secCallback = CurriculumSecurityCallbackFactory.createCallback(roles, ownedCurriculums, ownedElements);
-		lecturesSecCallback = roles.isLectureManager() || roles.isAdministrator() || roles.isCurriculumManager() || roles.isLearnResourceManager()
-				|| !ownedCurriculums.isEmpty() || !ownedElements.isEmpty()
-				? LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager)
-				: LecturesSecurityCallbackFactory.getSecurityCallback(false, false, false, null);
+		boolean adminRole = roles.isLectureManager() || roles.isAdministrator() || roles.isCurriculumManager() || roles.isLearnResourceManager();
+		boolean principalRole = roles.isPrincipal();
+		lecturesSecCallback = adminRole || principalRole
+				|| !ownedCurriculums.isEmpty() || !ownedElements.isEmpty()//TODO curriculum
+				? LecturesSecurityCallbackFactory.getSecurityCallback(adminRole, principalRole, false, false, ownedElements, List.copyOf(ownedCurriculums), LectureRoles.lecturemanager)
+				: LecturesSecurityCallbackFactory.getSecurityCallback(false, false, false, false, List.of(), List.of(), null);
 		certificationSecCallback = CertificationProgramSecurityCallbackFactory
 				.getSecurityCallback(getIdentity(), roles);
 

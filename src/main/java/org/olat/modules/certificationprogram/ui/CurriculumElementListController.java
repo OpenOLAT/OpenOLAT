@@ -97,7 +97,7 @@ public class CurriculumElementListController extends FormBasicController {
 	
 	private void loadModel() {
 		CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams(getIdentity());
-		searchParams.setRootElementsOnly(true);
+		searchParams.setImplementationsOnly(true);
 		
 		List<CurriculumElementInfos> elementInfosList = curriculumService.getCurriculumElementsWithInfos(searchParams);
 		List<CurriculumElementRow> rows = new ArrayList<>(elementInfosList.size());

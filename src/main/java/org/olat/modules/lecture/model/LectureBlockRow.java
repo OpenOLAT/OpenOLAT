@@ -32,6 +32,9 @@ import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.LectureListDetailsController;
@@ -58,8 +61,10 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private long followupTime;
 	private final Reference curriculumElement;
 	private final Reference entry;
+	private final CurriculumRef curriculum;
 	private final boolean rollCallEnabled;
 	private boolean nextScheduled;
+	private boolean canEdit;
 	
 	private FormLink toolsLink;
 	private LectureListDetailsController detailsCtrl;
@@ -79,9 +84,9 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 
 	public LectureBlockRow(LectureBlock lectureBlock, ZonedDateTime date,
 			String entryDisplayname, String externalRef,
-			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
+			String teachers, boolean iamTeacher, Reference curriculumElement, CurriculumRef curriculum, Reference entry,
 			long numOfParticipants, long leadTime, long followupTime,
-			boolean assessmentMode, boolean rollcallEnabled, Translator translator) {
+			boolean assessmentMode, boolean rollcallEnabled, boolean canEdit, Translator translator) {
 		this.translator = translator;
 		this.lectureBlock = lectureBlock;
 		this.date = date;
@@ -94,7 +99,9 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		this.followupTime = followupTime;
 		this.numOfParticipants = numOfParticipants;
 		this.curriculumElement = curriculumElement;
+		this.curriculum = curriculum;
 
+		this.canEdit = canEdit;
 		this.iamTeacher = iamTeacher;
 		this.entryExternalRef = externalRef;
 		this.entryDisplayname = entryDisplayname;
@@ -194,8 +201,16 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		return teachers;
 	}
 	
+	public CurriculumRef getCurriculum() {
+		return curriculum;
+	}
+	
 	public Reference getCurriculumElement() {
 		return curriculumElement;
+	}
+	
+	public CurriculumElementRef getCurriculumElementRef() {
+		return curriculumElement == null ? null : new CurriculumElementRefImpl(curriculumElement.key());
 	}
 
 	public Reference getEntry() {
@@ -356,5 +371,9 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 
 	public void setSubjects(List<TaxonomyLevel> subjects) {
 		this.subjects = subjects;
+	}
+	
+	public boolean canEdit() {
+		return canEdit;
 	}
 }

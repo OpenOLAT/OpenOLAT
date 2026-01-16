@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
@@ -47,6 +46,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Automation;
 import org.olat.modules.curriculum.Curriculum;
@@ -122,8 +122,15 @@ public class CurriculumElementDAO {
 			element.setStatus(status.name());
 		}
 		element.setGroup(groupDao.createGroup());
-		CurriculumElement parent = parentRef == null ? null : loadByKey(parentRef.getKey());
+		
+		CurriculumElement parent = parentRef == null ? null : loadReference(parentRef.getKey());
 		element.setParent(parent);
+		if(parent != null && parent.getMaterializedPathKeysList() != null && !parent.getMaterializedPathKeysList().isEmpty()) {
+			Long implementationKey = parent.getMaterializedPathKeysList().get(0);
+			CurriculumElement implementation = parent.getKey().equals(implementationKey) ? parent : loadReference(implementationKey);
+			element.setImplementation(implementation);
+		}
+		
 		dbInstance.getCurrentEntityManager().persist(element);
 		if(parent != null) {
 			((CurriculumElementImpl)parent).getChildren().add(element);
@@ -138,6 +145,8 @@ public class CurriculumElementDAO {
 		dbInstance.getCurrentEntityManager().merge(element);
 		return element;
 	}
+	
+
 	
 	public CurriculumElement copyCurriculumElement(CurriculumElement elementToCopy,
 			String identifier, String displayName, Date beginDate, Date endDate,
@@ -197,6 +206,11 @@ public class CurriculumElementDAO {
 		groupDao.removeGroup(group);
 	}
 	
+	public CurriculumElement loadReference(Long key) {
+		return dbInstance.getCurrentEntityManager()
+				.getReference(CurriculumElementImpl.class, key);
+	}
+	
 	public CurriculumElement loadByKey(Long key) {
 		String sb = """
 			select el from curriculumelement el
@@ -251,8 +265,26 @@ public class CurriculumElementDAO {
 	
 	public CurriculumElement update(CurriculumElement element) {
 		((CurriculumElementImpl)element).setLastModified(new Date());
-		((CurriculumElementImpl)element).setMaterializedPathKeys(getMaterializedPathKeys(element.getParent(), element));
+		
+		String materializedPathKeys = getMaterializedPathKeys(element.getParent(), element);
+		((CurriculumElementImpl)element).setMaterializedPathKeys(materializedPathKeys);
+		updateImplementation((CurriculumElementImpl)element);
+		
 		return dbInstance.getCurrentEntityManager().merge(element);
+	}
+	
+	private void updateImplementation(CurriculumElementImpl element) {
+		if(element.getParent() != null) {
+			// Check the implementation consistency
+			List<Long> pathKeys = element.getMaterializedPathKeysList();
+			if(!pathKeys.isEmpty() && (element.getImplementation() == null
+					|| !pathKeys.get(0).equals(element.getImplementation().getKey()))) {
+				CurriculumElement implementation = loadReference(pathKeys.get(0));
+				element.setImplementation(implementation);
+			}
+		} else if(element.getImplementation() != null) {
+			element.setImplementation(null);
+		}
 	}
 	
 	public int updateNumber(CurriculumElementRef element, String number) {
@@ -372,6 +404,7 @@ public class CurriculumElementDAO {
 		element.setLastModified(new Date());
 		String newKeysPath = getMaterializedPathKeys(newParentElement, element);
 		element.setMaterializedPathKeys(newKeysPath);
+		updateImplementation(element);
 		element.setCurriculum(curriculum);
 		element = dbInstance.getCurrentEntityManager().merge(element);
 
@@ -381,6 +414,7 @@ public class CurriculumElementDAO {
 				String end = descendantKeysPath.substring(keysPath.length(), descendantKeysPath.length());
 				String updatedPath = newKeysPath + end;
 				((CurriculumElementImpl)descendant).setMaterializedPathKeys(updatedPath);
+				updateImplementation((CurriculumElementImpl)descendant);
 			}
 			((CurriculumElementImpl)descendant).setCurriculum(curriculum);
 			dbInstance.getCurrentEntityManager().merge(descendant);
@@ -430,17 +464,15 @@ public class CurriculumElementDAO {
 		return curriculums == null || curriculums.isEmpty() ? null : curriculums.get(0);
 	}
 	
-	public List<CurriculumElement> loadElements(Identity identity, CurriculumRoles role) {
+	public List<CurriculumElementRef> loadElements(Identity identity, CurriculumRoles role) {
 		String query = """
-				select el from curriculumelement el
-				inner join fetch el.curriculum curriculum
-				left join fetch el.parent parentEl
+				select new org.olat.modules.curriculum.model.CurriculumElementRefImpl(el.key) from curriculumelement el
 				inner join el.group baseGroup
 				inner join baseGroup.members membership
 				where membership.identity.key=:identityKey and membership.role=:role""";
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, CurriculumElement.class)
+				.createQuery(query, CurriculumElementRef.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("role", role.name())
 				.getResultList();
@@ -457,24 +489,6 @@ public class CurriculumElementDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("curriculumKey", curriculum.getKey())
-				.getResultList();
-	}
-	
-	public List<CurriculumElement> loadElements(CurriculumRef curriculum, Identity managerIdentity, CurriculumElementStatus[] status) {
-		QueryBuilder sb = new QueryBuilder(256);
-		sb.append("select el from curriculumelement el")
-		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" inner join fetch el.group baseGroup")
-		  .append(" left join fetch el.parent parentEl")
-		  .append(" left join curriculum.organisation organis")
-		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(status);
-		
-		appendManagerAccess(sb);
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CurriculumElement.class)
-				.setParameter("curriculumKey", curriculum.getKey())
-				.setParameter("managerKey", managerIdentity.getKey())
 				.getResultList();
 	}
 	
@@ -522,7 +536,7 @@ public class CurriculumElementDAO {
 		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
 			sb.and().append("el.curriculum.key in (:curriculumKey)");
 		}
-		if(searchParams.isRootElementsOnly()) {
+		if(searchParams.isImplementationsOnly()) {
 			sb.and().append("parentEl.key is null");
 		}
 		if(searchParams.getStatusList() != null && !searchParams.getStatusList().isEmpty()) {
@@ -545,25 +559,7 @@ public class CurriculumElementDAO {
 		}
 		
 		if(searchParams.getIdentity() != null) {
-			// curriculum administrator at level curriculum
-			sb.and()
-			  .append("(curriculum.group.key in (select cGroup.key from bgroupmember as cMembership")
-			  .append("  inner join cMembership.group as cGroup")
-			  .append("  where cMembership.identity.key=:managerKey")
-			  .append("  and cMembership.role ").in(CurriculumRoles.curriculumowner)
-			  .append(" )");
-			
-			sb.append(" or baseGroup.key in (select cGroup.key from bgroupmember as cMembership")
-			  .append("  inner join cMembership.group as cGroup")
-			  .append("  where cMembership.identity.key=:managerKey")
-			  .append("  and cMembership.role ").in(CurriculumRoles.curriculumelementowner)
-			  .append(" )");
-			// curriculum administrator from the organisation
-			sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
-			  .append("  inner join oMembership.group as oGroup")
-			  .append("  where oMembership.identity.key=:managerKey")
-			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
-			  .append(" ))");
+			appendManagerAccess(sb);
 		}
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
@@ -629,7 +625,8 @@ public class CurriculumElementDAO {
 	private void appendManagerAccess(QueryBuilder sb) {
 		// curriculum administrator at level curriculum
 		sb.and()
-		  .append("(curriculum.group.key in (select cGroup.key from bgroupmember as cMembership")
+		  .append("(")
+		  .append("curriculum.group.key in (select cGroup.key from bgroupmember as cMembership")
 		  .append("  inner join cMembership.group as cGroup")
 		  .append("  where cMembership.identity.key=:managerKey")
 		  .append("  and cMembership.role ").in(CurriculumRoles.curriculumowner)
@@ -644,8 +641,17 @@ public class CurriculumElementDAO {
 		sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
 		  .append("  inner join oMembership.group as oGroup")
 		  .append("  where oMembership.identity.key=:managerKey")
-		  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+		  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.principal)
+		  .append(" )");
+		// element owner
+		sb.append(" or (el.implementation.key is null and el.key in (select subCurEl.implementation.key from curriculumelement as subCurEl")
+		  .append("  inner join subCurEl.group as scGroup")
+		  .append("  inner join scGroup.members as scMembership")
+		  .append("  where scMembership.identity.key=:managerKey")
+		  .append("  and scMembership.role ").in(CurriculumRoles.curriculumelementowner)
 		  .append(" ))");
+		
+		sb.append(")");
 	}
 	
 	public Long countElements(RepositoryEntryRef entry) {
@@ -959,7 +965,7 @@ public class CurriculumElementDAO {
 			sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
 			  .append("  inner join oMembership.group as oGroup")
 			  .append("  where oMembership.identity.key=:managerKey")
-			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.principal)
 			  .append(" ))");
 		}
 		
@@ -981,10 +987,10 @@ public class CurriculumElementDAO {
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		if(params.getElementBeginDate() != null) {
-			query.setParameter("elementBegin", params.getElementBeginDate(), TemporalType.TIMESTAMP);
+			query.setParameter("elementBegin", DateUtils.toLocalDateTime(params.getElementBeginDate()));
 		}
 		if(params.getElementEndDate() != null) {
-			query.setParameter("elementEnd", params.getElementEndDate(), TemporalType.TIMESTAMP);
+			query.setParameter("elementEnd", DateUtils.toLocalDateTime(params.getElementEndDate()));
 		}
 		
 		if(key != null) {
