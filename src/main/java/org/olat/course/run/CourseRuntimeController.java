@@ -2392,7 +2392,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 				boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
-				boolean adminRole = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+				boolean adminRole = reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
 				boolean principalRole = reSecurity.isPrincipal() || reSecurity.isCurriculumManager();
 				boolean masterCoachRole = reSecurity.isMasterCoach();
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
@@ -2448,11 +2448,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 			boolean teacher = !reSecurity.isParticipant() && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
-			boolean admin = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+			boolean adminRole = reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
 			boolean principalRole = reSecurity.isPrincipal() || reSecurity.isCurriculumManager();
 			boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 			LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-					.getSecurityCallback(admin, principalRole, reSecurity.isMasterCoach(), teacher, List.of(), List.of(), readOnlyDetails, readOnlyManaged);
+					.getSecurityCallback(adminRole, principalRole, reSecurity.isMasterCoach(), teacher, List.of(), List.of(), readOnlyDetails, readOnlyManaged);
 			LectureListRepositoryConfig config = getLecturesConfig(secCallback, entry);
 			LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, entry, config, secCallback);
 			listenTo(ctrl);

@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 
 import org.apache.logging.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -45,6 +46,7 @@ import org.quartz.JobExecutionException;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
+@DisallowConcurrentExecution
 public class VFSTranscodingJob extends JobWithDB {
 
 	private static final Logger log = Tracing.createLoggerFor(VFSTranscodingJob.class);
@@ -76,11 +78,13 @@ public class VFSTranscodingJob extends JobWithDB {
 		}
 
 		List<VFSMetadata> metadataList = transcodingService.getMetadatasInNeedForTranscoding();
-		for (VFSMetadata metadata : metadataList) {
-			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_STARTED);
-			return metadata;
+		if (metadataList == null || metadataList.isEmpty()) {
+			return null;
 		}
-		return null;
+
+		VFSMetadata metadata = metadataList.get(0);
+		updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_STARTED);
+		return metadata;
 	}
 
 	private boolean needToCancel(VFSMetadata metadata) {

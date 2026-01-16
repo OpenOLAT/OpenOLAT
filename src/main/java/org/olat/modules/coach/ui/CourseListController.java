@@ -166,6 +166,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String CMD_REFERENCES = "refs";
 	
 	private static final String ALL_TAB_ID = "All";
+	private static final String RELEVANT_TAB_ID = "Relevant";
 	private static final String PUBLISHED_TAB_ID = "Published";
 	private static final String FINISHED_TAB_ID = "Finished";
 	private static final String BOOKMARK_TAB_ID = "Bookmarks";
@@ -467,11 +468,19 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		FlexiFiltersTab relevantTab = null;
 		if(runtimeTypesGroup.loadStatistics()) {
-			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PUBLISHED_TAB_ID, translate("filter.published"),
-					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							RepositoryEntryStatusEnum.published.name())));
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("relevant"),
+					TabSelectionBehavior.clear,
+					List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(RepositoryEntryStatusEnum.published.name(),
+									RepositoryEntryStatusEnum.coachpublished.name()))));
 			relevantTab.setFiltersExpanded(true);
 			tabs.add(relevantTab);
+		
+			FlexiFiltersTab publishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PUBLISHED_TAB_ID, translate("filter.published"),
+					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							RepositoryEntryStatusEnum.published.name())));
+			publishedTab.setFiltersExpanded(true);
+			tabs.add(publishedTab);
 			
 			FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
 					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
