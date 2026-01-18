@@ -44,3 +44,13 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 
 **/node_modules/
 package-lock.json
+
+# Local configuration and setup scripts
+configure-tomcat.sh
+fix-server-config.sh
+
+# VS Code workspace settings (if not needed in version control)
+.vscode/
+
+# Local properties files with sensitive data
+olat.local.properties
