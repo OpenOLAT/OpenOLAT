@@ -694,7 +694,7 @@ public class CourseOptionsController extends FormBasicController {
 		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 		listenTo(folderSelectCtrl);
 
-		String title = translate("createFolder");
+		String title = translate("choose.from.coursefolder");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSelectCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
