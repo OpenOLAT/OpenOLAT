@@ -1127,12 +1127,18 @@ table.o_qti_item_kprim {
 }
 
 /* Match interaction drag & drop */
-.source-left, .target-left, .source-right, .target-right {
-	width: 50%;
-	float: left;
-	position: relative;
-	padding: 0;
-	margin-top: 5px;
+.o_match_dnd {
+	display: grid;
+	gap: 10px;
+	clear: left;
+}
+
+.o_match_dnd_top_bottom {
+	grid-template-rows: auto 1fr;
+}
+
+.o_match_dnd_left_right {
+	grid-template-columns: 1fr 1fr;
 }
 
 .o_match_dnd_sources {
@@ -1167,8 +1173,6 @@ table.o_qti_item_kprim {
 	
 	cursor: move; /* fallback if grab cursor is unsupported */
     cursor: grab;
-    cursor: -moz-grab;
-    cursor: -webkit-grab;	
 }
 
 .source-bottom .o_match_dnd_source, .source-top .o_match_dnd_source {
@@ -1182,7 +1186,7 @@ table.o_qti_item_kprim {
 
 .o_match_dnd_target {
 	padding: 10px 10px 0 10px;
-	margin: 0 0 10px 10px;
+	margin: 0 0 10px 0;
 	border: 2px solid $o-qti-match-target-border-color;
 	border-radius: $o-qti-match-border-radius;
 	background: $o-qti-match-target-bg;
