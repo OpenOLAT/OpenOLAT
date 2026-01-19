@@ -1104,7 +1104,7 @@ public class BusinessGroupTest extends Deployments {
 			.selectGroup(groupName)
 			.openAdministration()
 			.openAdminMembers()
-			.setVisibility(false, true, false)
+			.setVisibility(true, true, false)
 			.openMembers()
 			.assertParticipantList();
 		
