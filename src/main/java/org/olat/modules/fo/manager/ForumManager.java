@@ -68,6 +68,7 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageLight;
 import org.olat.modules.fo.MessageRef;
 import org.olat.modules.fo.Pseudonym;
+import org.olat.modules.fo.AbuseReport;
 import org.olat.modules.fo.QuoteAndTagFilter;
 import org.olat.modules.fo.Status;
 import org.olat.modules.fo.model.ForumImpl;
@@ -79,6 +80,7 @@ import org.olat.modules.fo.model.MessageStatistics;
 import org.olat.modules.fo.model.PseudonymImpl;
 import org.olat.modules.fo.model.PseudonymStatistics;
 import org.olat.modules.fo.model.ReadMessageImpl;
+import org.olat.modules.fo.model.AbuseReportImpl;
 import org.olat.modules.fo.ui.MessagePeekview;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1021,6 +1023,63 @@ public class ForumManager {
 		}
 		return dbInstance.getCurrentEntityManager().merge(message);
 	}
+	
+	/**
+	 * Marks a message as the best answer in a Q&A thread.
+	 * Only one message per thread can be marked as best answer.
+	 * 
+	 * @param message the message to mark as best answer
+	 * @return the updated message
+	 */
+	public Message markAsBestAnswer(Message message) {
+		if (message == null) {
+			return null;
+		}
+		
+		// Unmark any existing best answer in the same thread
+		Message threadTop = message.getThreadtop();
+		if (threadTop != null) {
+			String unmarkQuery = "update fomessage msg set msg.bestAnswer = false " +
+					"where msg.threadtop.key = :threadTopKey and msg.bestAnswer = true";
+			dbInstance.getCurrentEntityManager().createQuery(unmarkQuery)
+				.setParameter("threadTopKey", threadTop.getKey())
+				.executeUpdate();
+		}
+		
+		// Mark the current message as best answer
+		message.setBestAnswer(true);
+		return updateMessage(message, false);
+	}
+	
+	/**
+	 * Unmarks a message as the best answer
+	 * 
+	 * @param message the message to unmark
+	 * @return the updated message
+	 */
+	public Message unmarkBestAnswer(Message message) {
+		if (message == null) {
+			return null;
+		}
+		message.setBestAnswer(false);
+		return updateMessage(message, false);
+	}
+	
+	/**
+	 * Gets the best answer for a given thread
+	 * 
+	 * @param threadTopKey the key of the thread top message
+	 * @return the best answer message or null if none marked
+	 */
+	public Message getBestAnswer(Long threadTopKey) {
+		String query = "select msg from fomessage msg where msg.threadtop.key = :threadTopKey and msg.bestAnswer = true";
+		List<Message> results = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Message.class)
+				.setParameter("threadTopKey", threadTopKey)
+				.setMaxResults(1)
+				.getResultList();
+		return results.isEmpty() ? null : results.get(0);
+	}
 
 	/**
 	 * @param forumKey
@@ -1478,6 +1537,95 @@ public class ForumManager {
 			readMessage.setForum(forum);
 			dbInstance.getCurrentEntityManager().persist(readMessage);
 		}		
+	}
+	
+	/**
+	 * Creates a new abuse report for a forum message
+	 * 
+	 * @param message the message being reported
+	 * @param reporter the user reporting the abuse
+	 * @param reason the reason for reporting
+	 * @return the created abuse report
+	 */
+	public AbuseReport createAbuseReport(Message message, Identity reporter, String reason) {
+		AbuseReportImpl report = new AbuseReportImpl();
+		report.setCreationDate(new Date());
+		report.setMessage(message);
+		report.setReporter(reporter);
+		report.setReason(reason);
+		report.setStatus(AbuseReport.AbuseReportStatus.PENDING);
+		dbInstance.getCurrentEntityManager().persist(report);
+		return report;
+	}
+	
+	/**
+	 * Gets all pending abuse reports for a forum
+	 * 
+	 * @param forumKey the forum key
+	 * @return list of pending abuse reports
+	 */
+	public List<AbuseReport> getPendingAbuseReports(Long forumKey) {
+		String query = "select report from foabusereport report " +
+				"inner join fetch report.message msg " +
+				"inner join fetch report.reporter " +
+				"where msg.forum.key = :forumKey and report.status = :status " +
+				"order by report.creationDate asc";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, AbuseReport.class)
+				.setParameter("forumKey", forumKey)
+				.setParameter("status", AbuseReport.AbuseReportStatus.PENDING)
+				.getResultList();
+	}
+	
+	/**
+	 * Gets all abuse reports for a specific message
+	 * 
+	 * @param messageKey the message key
+	 * @return list of abuse reports for the message
+	 */
+	public List<AbuseReport> getAbuseReportsForMessage(Long messageKey) {
+		String query = "select report from foabusereport report " +
+				"inner join fetch report.reporter " +
+				"where report.message.key = :messageKey " +
+				"order by report.creationDate desc";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, AbuseReport.class)
+				.setParameter("messageKey", messageKey)
+				.getResultList();
+	}
+	
+	/**
+	 * Updates the status of an abuse report
+	 * 
+	 * @param report the abuse report to update
+	 * @param status the new status
+	 * @param resolvedBy the moderator resolving the report
+	 * @return the updated abuse report
+	 */
+	public AbuseReport updateAbuseReportStatus(AbuseReport report, 
+			AbuseReport.AbuseReportStatus status, Identity resolvedBy) {
+		report.setStatus(status);
+		report.setResolutionDate(new Date());
+		report.setResolvedBy(resolvedBy);
+		return dbInstance.getCurrentEntityManager().merge(report);
+	}
+	
+	/**
+	 * Checks if a user has already reported a specific message
+	 * 
+	 * @param messageKey the message key
+	 * @param reporterKey the reporter identity key
+	 * @return true if already reported
+	 */
+	public boolean hasUserReportedMessage(Long messageKey, Long reporterKey) {
+		String query = "select count(report) from foabusereport report " +
+				"where report.message.key = :messageKey and report.reporter.key = :reporterKey";
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Number.class)
+				.setParameter("messageKey", messageKey)
+				.setParameter("reporterKey", reporterKey)
+				.getResultList();
+		return count != null && !count.isEmpty() && count.get(0).longValue() > 0;
 	}
 	
 	/**

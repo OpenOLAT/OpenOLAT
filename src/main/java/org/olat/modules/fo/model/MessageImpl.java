@@ -108,6 +108,9 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 	@Column(name="guest", nullable=true, insertable=true, updatable=false)
 	private boolean guest;
 	
+	@Column(name="is_best_answer", nullable=false, insertable=true, updatable=true)
+	private boolean bestAnswer = false;
+	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="creator_id", nullable=true, insertable=true, updatable=false)
 	private Identity creator;
@@ -167,6 +170,16 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 
 	public void setGuest(boolean guest) {
 		this.guest = guest;
+	}
+
+	@Override
+	public boolean isBestAnswer() {
+		return bestAnswer;
+	}
+
+	@Override
+	public void setBestAnswer(boolean bestAnswer) {
+		this.bestAnswer = bestAnswer;
 	}
 
 	@Override

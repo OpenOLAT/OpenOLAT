@@ -75,6 +75,20 @@ public interface ForumCallback {
 	public boolean mayArchiveForum();
 	
 	/**
+	 * @return true if allowed to mark a reply as the best answer in Q&A threads
+	 */
+	public default boolean mayMarkBestAnswer() {
+		return mayEditMessageAsModerator();
+	}
+	
+	/**
+	 * @return true if allowed to report messages for abuse
+	 */
+	public default boolean mayReportAbuse() {
+		return mayReplyMessage();
+	}
+	
+	/**
 	 * @return true if allowed to filter the whole forum
 	 */
 	public boolean mayFilterForUser();

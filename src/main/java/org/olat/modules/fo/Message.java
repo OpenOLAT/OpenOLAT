@@ -53,6 +53,10 @@ public interface Message extends MessageLight, CreateInfo, ModifiedInfo,  Persis
 	
 	public void setPseudonym(String pseudonym);
 	
+	public boolean isBestAnswer();
+	
+	public void setBestAnswer(boolean bestAnswer);
+	
 	public Forum getForum();
 	
 	public Identity getModifier();
