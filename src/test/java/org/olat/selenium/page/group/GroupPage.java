@@ -151,13 +151,13 @@ public class GroupPage {
 	
 	public GroupPage openMembers() {
 		openMenuItem(membersTool);
-		OOGraphene.waitElement(By.className("o_cmembers"), browser);
+		OOGraphene.waitElementPresence(By.className("o_cmembers"), 5, browser);
 		return this;
 	}
 	
 	public InfoMessageCEPage openNews() {
 		openMenuItem(newsTool);
-		OOGraphene.waitElement(By.className("o_infomsg"), browser);
+		OOGraphene.waitElementPresence(By.className("o_infomsg"), 5, browser);
 		return new InfoMessageCEPage(browser);
 	}
 	
