@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.bc;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,6 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.folder.FolderTreeModel;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.filters.VFSAndFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
  * Initial Date: Dez 22, 2015
@@ -48,7 +52,10 @@ public class BCCourseNodeEditChooseFolderForm extends BasicController {
 		super(ureq, wControl);
 		VelocityContainer chooseVC = createVelocityContainer("chooseFolder");
 
-		treeModel = new FolderTreeModel(ureq.getLocale(), namedContainer,  true, false, true, true, new VFSFolderNodeFilter());
+		VFSAndFilter vfsFilter = new VFSAndFilter(List.of(
+				new VFSSystemItemFilter(),
+				new VFSFolderNodeFilter()));
+		treeModel = new FolderTreeModel(ureq.getLocale(), namedContainer,  true, false, true, true, vfsFilter);
 		selectionTree = new MenuTree("stTree", getTranslator());
 		selectionTree.setTreeModel(treeModel);
 		selectionTree.addListener(this);
