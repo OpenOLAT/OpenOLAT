@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Java: Attach to Tomcat (Port 5005)",
+      "type": "java",
+      "name": "Attach to Tomcat",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "preLaunchTask": "Java: Enable Debug in Tomcat"
+    },
+    {
+      "name": "Java: Spring Boot (Alternative)",
+      "type": "java",
+      "name": "Spring Boot Debug",
+      "request": "launch",
+      "mainClass": "",
+      "args": "",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

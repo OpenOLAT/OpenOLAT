@@ -128,6 +128,10 @@
 		<property name="order" value="181" />
 	</bean>
 
+	<bean id="peerreview" class="org.olat.course.nodes.PeerReviewCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="115" />
+	</bean>
+
 	<bean id="iqtest" class="org.olat.course.nodes.iq.IQTESTCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.test.enabled}" />
 		<property name="order" value="150" />

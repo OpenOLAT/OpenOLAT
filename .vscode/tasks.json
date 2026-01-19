@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Maven: package (no tests)",
+      "type": "shell",
+      "command": "mvn clean package -Pcompressjs,tomcat -DskipTests",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Maven: run template tests",
+      "type": "shell",
+      "command": "mvn -Dtest=org.olat.modules.assessment.service.AssessmentTemplateServiceTest test",
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Maven: full tests",
+      "type": "shell",
+      "command": "mvn test",
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}
