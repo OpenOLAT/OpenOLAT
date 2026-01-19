@@ -41,12 +41,18 @@ public class EvaluationFormPage {
 	
 	public static EvaluationFormPage loadPage(WebDriver browser) {
 		return new EvaluationFormPage(browser)
-				.assertOnExecution();
+				.assertOnEmptyExecution();
+	}
+	
+	public EvaluationFormPage assertOnEmptyExecution() {
+		By pageBy = By.cssSelector("div.o_evaluation_execution.o_page_content");
+		OOGraphene.waitElementPresence(pageBy, 5, browser);
+		return this;
 	}
 	
 	public EvaluationFormPage assertOnExecution() {
 		By pageBy = By.cssSelector("div.o_evaluation_execution.o_page_content");
-		OOGraphene.waitElement(pageBy, browser);
+		OOGraphene.waitElementPresence(pageBy, 5, browser);
 		return this;
 	}
 	
