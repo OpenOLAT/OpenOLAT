@@ -21,10 +21,11 @@ package org.olat.modules.coach.ui.dashboard;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
+import org.olat.core.gui.control.generic.dashboard.DashbordController;
 import org.olat.modules.coach.model.CoachingSecurity;
 
 /**
@@ -35,23 +36,25 @@ import org.olat.modules.coach.model.CoachingSecurity;
  */
 public class CoachDashboardController extends BasicController {
 
+	private DashbordController dashbordCtrl;
 	private CourseWidgetController courseCoachCtrl;
 	private CoachLectureBlocksWidgetController lectureBlocksCtrl;
 
 	public CoachDashboardController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("dashboard");
-		putInitialPanel(mainVC);
+		dashbordCtrl = new DashbordController(ureq, wControl);
+		listenTo(dashbordCtrl);
+		putInitialPanel(dashbordCtrl.getInitialComponent());
 		
 		if (coachingSec.coach()) {
 			courseCoachCtrl = new CourseWidgetController(ureq, wControl);
 			listenTo(courseCoachCtrl);
-			mainVC.put("courseCoach", courseCoachCtrl.getInitialComponent());
+			dashbordCtrl.addWidget("courseCoach", courseCoachCtrl, BentoBoxSize.box_4_1);
 			
 			lectureBlocksCtrl = new CoachLectureBlocksWidgetController(ureq, wControl);
 			listenTo(lectureBlocksCtrl);
-			mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
+			dashbordCtrl.addWidget("lectureBlocks", lectureBlocksCtrl, BentoBoxSize.box_4_1);
 		}
 	}
 

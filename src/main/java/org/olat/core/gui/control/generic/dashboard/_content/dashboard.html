@@ -1,0 +1,11 @@
+<div class="o_dashboard o_bento_container">
+	<div class="o_bento">
+		#foreach($widget in $widgets)
+			#if($r.visible($widget.getName()))
+				<div class="o_bento_box $widget.getCss()">
+					$r.render($widget.getName())
+				</div>
+			#end
+		#end
+	</div>
+</div>
