@@ -63,6 +63,8 @@ public class BCCourseNodeEditChooseFolderForm extends BasicController {
 
 		selectLink = LinkFactory.createButton("chooseFolder", chooseVC, this);
 		cancelLink = LinkFactory.createButton("cancel", chooseVC, this);
+		// Root is selected by default.
+		subpath = "/";
 
 		putInitialPanel(chooseVC);
 	}
