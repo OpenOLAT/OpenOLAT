@@ -56,6 +56,7 @@ import org.olat.modules.fo.ui.events.DeleteThreadEvent;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.modules.fo.ui.events.SelectUserEvent;
 import org.olat.modules.fo.ui.events.SelectUserListEvent;
+import org.olat.modules.fo.ui.events.ShowAbuseReportsEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -87,6 +88,7 @@ public class ForumController extends BasicController implements GenericEventList
 	private ThreadListController threadListCtrl;
 	private ForumUserListController userListCtrl;
 	private MessageListController viewCtrl, userViewCtrl;
+	private AbuseReportAdminController abuseReportsCtrl;
 	
 	private Forum forum;
 	private ForumCallback focallback;
@@ -206,8 +208,22 @@ public class ForumController extends BasicController implements GenericEventList
 				doProcessSelectEvent(ureq, sme);
 			} else if(event instanceof SelectUserListEvent) {
 				doUserList(ureq);
+			} else if(event instanceof ShowAbuseReportsEvent) {
+				doShowAbuseReports(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(abuseReportsCtrl == source) {
+			if(event == Event.BACK_EVENT) {
+				removeAsListenerAndDispose(abuseReportsCtrl);
+				abuseReportsCtrl = null;
+				doThreadList(ureq);
+			} else if(event instanceof SelectMessageEvent sme) {
+				// Navigate to the reported message
+				doProcessSelectEvent(ureq, sme);
+			} else if(event == Event.CHANGED_EVENT) {
+				// Abuse report was updated, reload if needed
+				reloadThreadList = true;
 			}
 		} else if(viewCtrl == source) {
 			if(event == Event.BACK_EVENT) {
@@ -362,6 +378,17 @@ public class ForumController extends BasicController implements GenericEventList
 		
 		putContent(threadListCtrl);
 		addToHistory(ureq, threadListCtrl);
+	}
+	
+	private void doShowAbuseReports(UserRequest ureq) {
+		cleanUpMessageViews();
+		removeAsListenerAndDispose(userListCtrl);
+		userListCtrl = null;
+		
+		removeAsListenerAndDispose(abuseReportsCtrl);
+		abuseReportsCtrl = new AbuseReportAdminController(ureq, getWindowControl(), forum);
+		listenTo(abuseReportsCtrl);
+		putContent(abuseReportsCtrl);
 	}
 
 	private void doUserList(UserRequest ureq) {

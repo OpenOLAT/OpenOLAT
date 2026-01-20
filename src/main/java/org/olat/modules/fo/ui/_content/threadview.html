@@ -88,6 +88,11 @@
 				#if($message.newMessage)
 					<span class="o_newindicator" title="$r.translateInAttribute("message.unread")"><i class="o_icon o_icon_new" > </i> <span class="o_label">$r.translate("new")</span></span>
 				#end
+				#if($r.isTrue($message.bestAnswer))
+					<span class="o_best_answer_badge" title="$r.translateInAttribute("msg.best.answer.marked")">
+						<i class="o_icon o_icon_check text-success" > </i> <span class="o_label label-success">$r.translate("msg.best.answer")</span>
+					</span>
+				#end
 			</h4>
 			#set($inactiveUser = (103 == $r.getComponent("vc_${message.key}").getUserObject().getStatus()))
 			<div class="o_author #if($r.isTrue($inactiveUser)) o_forum_author_inactive #end">
@@ -145,6 +150,25 @@
 			
 			#if ($r.available("rp_${message.key}"))
 			<div class="btn-group">$r.render("qt_${message.key}") $r.render("rp_${message.key}")</div>
+			#end
+			
+			## Best Answer buttons
+			#if($r.available("mark_best_${message.key}"))
+			<div class="btn-group">
+				$r.render("mark_best_${message.key}")
+			</div>
+			#end
+			#if($r.available("unmark_best_${message.key}"))
+			<div class="btn-group">
+				$r.render("unmark_best_${message.key}")
+			</div>
+			#end
+			
+			## Report Abuse button - available to all users who can report
+			#if($r.available("report_abuse_${message.key}"))
+			<div class="btn-group">
+				$r.render("report_abuse_${message.key}")
+			</div>
 			#end
 			
 			#if($r.available("exile_${message.key}"))

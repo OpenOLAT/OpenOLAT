@@ -744,7 +744,7 @@ public class MessageListController extends BasicController implements GenericEve
 						messageView.setBestAnswer(true);
 					}
 					// Show buttons only if user is thread author OR has moderator permission
-					if (parentMessage != null && parentMessage.getCreator() != null && 
+					if (parentMessage != null && 
 						(getIdentity().getKey().equals(parentMessage.getCreator().getKey()) || foCallback.mayMarkBestAnswer())) {
 						// Show the appropriate button based on best answer status
 						if (fullMessage.isBestAnswer()) {

@@ -81,27 +81,31 @@ public class AbuseReportImpl implements AbuseReport, CreateInfo, Persistable {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
+	
 	@ManyToOne(targetEntity=MessageImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="message_id", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="f_message_id", nullable=false, insertable=true, updatable=false)
 	private Message message;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="reporter_id", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="f_reporter_id", nullable=false, insertable=true, updatable=false)
 	private Identity reporter;
 	
-	@Column(name="reason", nullable=false, insertable=true, updatable=false)
+	@Column(name="f_reason", nullable=false, insertable=true, updatable=false)
 	private String reason;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(name="status", nullable=false, insertable=true, updatable=true)
+	@Column(name="f_status", nullable=false, insertable=true, updatable=true)
 	private AbuseReportStatus status = AbuseReportStatus.PENDING;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="resolution_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="f_resolution_date", nullable=true, insertable=true, updatable=true)
 	private Date resolutionDate;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
-	@JoinColumn(name="resolved_by_id", nullable=true, insertable=true, updatable=true)
+	@JoinColumn(name="f_resolved_by_id", nullable=true, insertable=true, updatable=true)
 	private Identity resolvedBy;
 	
 	@Override
@@ -120,6 +124,17 @@ public class AbuseReportImpl implements AbuseReport, CreateInfo, Persistable {
 	
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+		if (lastModified == null) {
+			lastModified = creationDate;
+		}
+	}
+	
+	public Date getLastModified() {
+		return lastModified;
+	}
+	
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 	
 	@Override

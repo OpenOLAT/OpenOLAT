@@ -314,6 +314,10 @@ public class ThreadListController extends FormBasicController {
 	private void doOpenUserList(UserRequest ureq) {
 		fireEvent(ureq, new SelectUserListEvent());
 	}
+	
+	private void doShowAbuseReports(UserRequest ureq) {
+		fireEvent(ureq, new org.olat.modules.fo.ui.events.ShowAbuseReportsEvent());
+	}
 
 	private void doStartExportReport(UserRequest ureq) {
 		// activate cmc for export options
@@ -351,6 +355,7 @@ public class ThreadListController extends FormBasicController {
 		private final Link personFilterLink;
 		private final Link exportWordLink;
 		private final Link exportReportLink;
+		private final Link abuseReportsLink;
 
 		public ToolsController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);
@@ -367,6 +372,16 @@ public class ThreadListController extends FormBasicController {
 			exportWordLink.setElementCssClass("o_sel_forum_archive");
 			exportReportLink = addLink("fo.report", "o_icon_archive_tool", links);
 			exportReportLink.setElementCssClass("o_sel_forum_archive");
+			
+			// Only show abuse reports to moderators
+			if (foCallback.mayEditMessageAsModerator()) {
+				links.add("-");
+				abuseReportsLink = addLink("abuse.reports", "o_icon_warn", links);
+				abuseReportsLink.setElementCssClass("o_sel_forum_abuse_reports");
+			} else {
+				abuseReportsLink = null;
+			}
+			
 			mainVC.contextPut("links", links);
 
 			putInitialPanel(mainVC);
@@ -391,6 +406,9 @@ public class ThreadListController extends FormBasicController {
 			} else if (exportReportLink == source) {
 				close();
 				doStartExportReport(ureq);
+			} else if (abuseReportsLink != null && abuseReportsLink == source) {
+				close();
+				doShowAbuseReports(ureq);
 			}
 		}
 

@@ -54,6 +54,7 @@ public class MessageView extends MessageLightView {
 	private boolean threadTop;
 	private boolean closed;
 	private boolean moved;
+	private boolean bestAnswer;
 	
 	private List<VFSLeaf> attachments;
 	private VFSContainer messageContainer;
@@ -200,6 +201,14 @@ public class MessageView extends MessageLightView {
 
 	public void setPortrait(DisplayPortraitController portrait) {
 		this.portrait = portrait;
+	}
+
+	public boolean isBestAnswer() {
+		return bestAnswer;
+	}
+
+	public void setBestAnswer(boolean bestAnswer) {
+		this.bestAnswer = bestAnswer;
 	}
 
 }

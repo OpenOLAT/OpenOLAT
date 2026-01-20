@@ -1,0 +1,65 @@
+	/**
+	 * Mark a reply message as the best answer
+	 */
+	private void doMarkBestAnswer(UserRequest ureq, MessageView messageView) {
+		if (!foCallback.mayMarkBestAnswer()) {
+			showWarning("may.not.mark.best.answer");
+			return;
+		}
+		
+		try {
+			Message message = forumManager.getMessageById(messageView.getKey());
+			forumManager.markAsBestAnswer(message, getIdentity());
+			showInfo("msg.best.answer.success");
+			reloadModel(ureq, message);
+		} catch (Exception e) {
+			logError("Error marking message as best answer", e);
+			showError("msg.best.answer.error");
+		}
+	}
+	
+	/**
+	 * Unmark the best answer
+	 */
+	private void doUnmarkBestAnswer(UserRequest ureq, MessageView messageView) {
+		if (!foCallback.mayMarkBestAnswer()) {
+			showWarning("may.not.mark.best.answer");
+			return;
+		}
+		
+		try {
+			Message message = forumManager.getMessageById(messageView.getKey());
+			forumManager.unmarkBestAnswer(message, getIdentity());
+			showInfo("msg.best.answer.unmark.success");
+			reloadModel(ureq, message);
+		} catch (Exception e) {
+			logError("Error unmarking best answer", e);
+			showError("msg.best.answer.error");
+		}
+	}
+	
+	/**
+	 * Open dialog to report a message for abuse
+	 */
+	private void doReportAbuse(UserRequest ureq, MessageView messageView) {
+		if (!foCallback.mayReportAbuse()) {
+			showWarning("may.not.report.abuse");
+			return;
+		}
+		
+		Message message = forumManager.getMessageById(messageView.getKey());
+		
+		// Check if already reported
+		if (forumManager.hasUserReportedMessage(message, getIdentity())) {
+			showWarning("msg.report.abuse.already.reported");
+			return;
+		}
+		
+		abuseReportCtrl = new AbuseReportController(ureq, getWindowControl(), message);
+		listenTo(abuseReportCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				abuseReportCtrl.getInitialComponent(), true, translate("msg.report.abuse.title"));
+		listenTo(cmc);
+		cmc.activate();
+	}
