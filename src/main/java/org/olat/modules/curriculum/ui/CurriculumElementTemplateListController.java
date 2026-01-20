@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -53,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -110,13 +112,15 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public CurriculumElementTemplateListController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
+			Curriculum curriculum, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_templates");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		this.secCallback = secCallback;
-		curriculum = curriculumElement.getCurriculum();
+		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
 		curriculumElementType = curriculumElement.getType();
 		
@@ -325,9 +329,13 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		if (roles.isCurriculumManager()) {
-			searchParams.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
-		}
+		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
+				? List.of(OrganisationRoles.curriculummanager)
+				: List.of();
+		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
+				? getOrganisationWithDescendants()
+				: List.of();
+		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
@@ -338,6 +346,11 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 				true, translate("add.template"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private List<OrganisationRef> getOrganisationWithDescendants() {
+		if(curriculum == null) return List.of();
+		return List.copyOf(organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true));
 	}
 	
 	private void doAddTemplate(RepositoryEntryRef entryRef) {

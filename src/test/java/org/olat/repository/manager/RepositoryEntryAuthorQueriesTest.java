@@ -24,6 +24,8 @@ import static org.olat.test.JunitTestHelper.random;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -49,8 +51,6 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.junit.Assert;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -685,15 +685,19 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 
 		dbInstance.commitAndCloseSession();
 
-		// Act
+		// Curriculum specific parameters
+		Organisation org_3 = organisationService.createOrganisation("Org 3", "org-3",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+				
 		Roles roles_1 = securityManager.getRoles(i_1);
 		SearchAuthorRepositoryEntryViewParams params_1 = new SearchAuthorRepositoryEntryViewParams(i_1, roles_1);
-		params_1.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		params_1.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager), List.of(org_3));
 		RepositoryEntryAuthorViewResults results_1 = repositoryEntryAuthorViewQueries.searchViews(params_1, 0, 10);
 
 		Roles roles_2 = securityManager.getRoles(i_2);
 		SearchAuthorRepositoryEntryViewParams params_2 = new SearchAuthorRepositoryEntryViewParams(i_2, roles_2);
-		params_2.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		params_2.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager), List.of(org_3));
 		RepositoryEntryAuthorViewResults results_2 = repositoryEntryAuthorViewQueries.searchViews(params_2, 0, 10);
 		
 		// Assert

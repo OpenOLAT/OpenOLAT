@@ -179,6 +179,18 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	public List<Organisation> findOrganisations(SearchOrganisationParameters searchparams) {
 		return organisationDao.findOrganisations(searchparams);
 	}
+	
+	@Override
+	public List<Organisation> getOrganisationDescendants(OrganisationRef organisationRef, boolean itselfIncluded) {
+		if(organisationRef == null || organisationRef.getKey() == null) return List.of();
+		
+		Organisation organisation = organisationDao.loadByKey(organisationRef);
+		List<Organisation> organisations = organisationDao.getDescendants(organisation);
+		if(itselfIncluded) {
+			organisations.add(organisation);
+		}
+		return organisations;
+	}
 
 	@Override
 	public List<Organisation> getOrganisationParentLine(Organisation organisation) {

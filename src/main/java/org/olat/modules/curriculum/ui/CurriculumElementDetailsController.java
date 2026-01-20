@@ -484,7 +484,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		resourcesTab = tabPane.addTab(ureq, translate("tab.resources"), "o_sel_curriculum_resources", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_RESOURCES), null);
-			resourcesCtrl = new CurriculumElementResourcesController(uureq, subControl, curriculumElement, secCallback);
+			resourcesCtrl = new CurriculumElementResourcesController(uureq, subControl, curriculum, curriculumElement, secCallback);
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
 		}, true);
@@ -600,7 +600,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}
 
-		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
+		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculum, curriculumElement, secCallback);
 		listenTo(coursesWidgetCtrl);
 		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);

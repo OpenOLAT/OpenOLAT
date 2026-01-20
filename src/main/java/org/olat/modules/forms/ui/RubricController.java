@@ -54,6 +54,7 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
+import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
@@ -200,6 +201,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		
 		SelectionValues stepsSV = new SelectionValues();
 		
+		ScaleType scaleType = rubric.getScaleType();
 		double[] theSteps = new double[steps];
 		double step = (end - start + 1) / (double)steps;
 		for(int i=0; i<steps; i++) {
@@ -221,7 +223,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 						description = label;
 					}
 				}
-				RubricRating rating = evaluationFormManager.getRubricRating(element, Double.valueOf(i + 1));
+				RubricRating rating = evaluationFormManager.getRubricRating(element, scaleType.getStepValue(rubric.getSteps(), (i + 1)));
 				cssClass = RubricAvgRenderer.getRatingCssClass(rating);
 			} else {
 				value = "";
@@ -286,7 +288,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		boolean placeholder = false;
 		BigDecimal value = getValue(sliderWrapper);
 		if (value != null) {
-			RubricRating rating = evaluationFormManager.getRubricRating(rubric, value.doubleValue());
+			RubricRating rating = evaluationFormManager.getRubricRating(rubric, rubric.getScaleType().getStepValue(rubric.getSteps(), value.doubleValue()));
 			if (RubricRating.INSUFFICIENT == rating) {
 				placeholder = true;
 			}

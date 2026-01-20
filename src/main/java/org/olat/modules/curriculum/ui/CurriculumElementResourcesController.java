@@ -35,6 +35,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.modules.curriculum.Automation;
 import org.olat.modules.curriculum.AutomationUnit;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -67,20 +68,20 @@ public class CurriculumElementResourcesController extends BasicController {
 	private CurriculumAutomationService automationService;
 	
 	public CurriculumElementResourcesController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
+			Curriculum curriculum, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.curriculumElement = curriculumElement;
 		this.implementationElement = curriculumService.getImplementationOf(curriculumElement);
 
 		mainVC = createVelocityContainer("resources");
 		
-		resourcesCtrl = new CurriculumElementResourceListController(ureq, wControl, curriculumElement, secCallback);
+		resourcesCtrl = new CurriculumElementResourceListController(ureq, wControl, curriculum, curriculumElement, secCallback);
 		listenTo(resourcesCtrl);
 		mainVC.put("resources", resourcesCtrl.getInitialComponent());
 		
 		CurriculumElementType type = curriculumElement.getType();
 		if(type != null && type.getMaxRepositoryEntryRelations() == 1) {
-			templatesCtrl = new CurriculumElementTemplateListController(ureq, wControl, curriculumElement, secCallback);
+			templatesCtrl = new CurriculumElementTemplateListController(ureq, wControl, curriculum, curriculumElement, secCallback);
 			listenTo(templatesCtrl);
 			mainVC.put("templates", templatesCtrl.getInitialComponent());
 		}

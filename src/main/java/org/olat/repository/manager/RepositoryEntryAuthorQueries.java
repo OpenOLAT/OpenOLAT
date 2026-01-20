@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -428,10 +427,19 @@ public class RepositoryEntryAuthorQueries {
 		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
 			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
+		
 		if (!params.isOwned() && !params.isShared() && 
 				params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
 			dbQuery.setParameter("additionalOrgRoles", params.getAdditionalCurricularOrgRoles().stream().map(OrganisationRoles::name).toList());
 		}
+		if (!params.isOwned() && !params.isShared() &&
+				params.getAdditionalCurricularOrganisations() != null && !params.getAdditionalCurricularOrganisations().isEmpty()) {
+			List<Long> orgKeys = params.getAdditionalCurricularOrganisations().stream()
+					.map(OrganisationRef::getKey)
+					.toList();
+			dbQuery.setParameter("additionalCurOrgKeys", orgKeys);
+		}
+		
 		return dbQuery;
 	}
 	
@@ -479,13 +487,24 @@ public class RepositoryEntryAuthorQueries {
 
 			sb.append(" )");
 
+			// Course planner specific access
 			if (params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
-				sb.append(" or ( ");
-				sb.append(" membership.role in (:additionalOrgRoles) ");
-				sb.append(" and membership.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
-				sb.append(" and ");
-				sb.append(" v.runtimeTypeString ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
-				sb.append(" and v.status ");
+				sb.append(" or (membership.role in (:additionalOrgRoles) ");
+				sb.append("  and v.runtimeTypeString ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
+				sb.append("  and v.status ");
+				if (params.hasStatus()) {
+					sb.in(params.getStatus());
+				} else {
+					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+				}
+				sb.append(" )");
+			}
+			
+			if (params.getAdditionalCurricularOrganisations() != null && !params.getAdditionalCurricularOrganisations().isEmpty()) {
+				sb.append(" or exists (select reToCurOrg.key from repoentrytoorganisation as reToCurOrg");
+				sb.append("  where reToCurOrg.entry.key=v.key and reToCurOrg.organisation.key in (:additionalCurOrgKeys)");
+				sb.append("  and v.runtimeTypeString ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
+				sb.append("  and v.status ");
 				if (params.hasStatus()) {
 					sb.in(params.getStatus());
 				} else {
@@ -493,6 +512,7 @@ public class RepositoryEntryAuthorQueries {
 				}
 				sb.append(" ) ");
 			}
+			// End course planner specific access
 
 			if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))
 					&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
