@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -54,11 +55,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -115,6 +118,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 	private int counter = 0;
 	private boolean instantiateTemplate;
 	private final boolean resourcesManaged;
+	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final CurriculumElementType curriculumElementType;
@@ -126,14 +130,17 @@ class CurriculumElementResourceListController extends FormBasicController implem
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private LifecycleModule lifecycleModule;
 	
 	public CurriculumElementResourceListController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
+			Curriculum curriculum, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_resources");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
+		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
 		this.curriculumElementType = curriculumElement.getType();
 		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);
@@ -377,9 +384,13 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		}
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		if (roles.isCurriculumManager()) {
-			searchParams.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
-		}
+		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
+				? List.of(OrganisationRoles.curriculummanager)
+				: List.of();
+		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
+				? getOrganisationWithDescendants()
+				: List.of();
+		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
@@ -390,6 +401,11 @@ class CurriculumElementResourceListController extends FormBasicController implem
 				true, translate("add.resource"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private List<OrganisationRef> getOrganisationWithDescendants() {
+		if(curriculum == null) return List.of();
+		return List.copyOf(organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true));
 	}
 	
 	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {

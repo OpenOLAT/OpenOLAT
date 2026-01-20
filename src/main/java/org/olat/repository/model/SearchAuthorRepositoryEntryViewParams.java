@@ -71,7 +71,9 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private List<TaxonomyLevelRef> taxonomyLevels;
 	private List<Long> excludeEntryKeys;
 	private List<RepositoryEntryRuntimeType> runtimeTypes;
+	
 	private List<OrganisationRoles> additionalCurricularOrgRoles;
+	private List<OrganisationRef> additionalCurricularOrganisations;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
@@ -351,9 +353,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 	public List<OrganisationRoles> getAdditionalCurricularOrgRoles() {
 		return additionalCurricularOrgRoles;
 	}
+	
+	public List<OrganisationRef> getAdditionalCurricularOrganisations() {
+		return additionalCurricularOrganisations;
+	}
 
-	public void setAdditionalCurricularOrgRoles(List<OrganisationRoles> additionalCurricularOrgRoles) {
+	public void setAdditionalCurricularOrgRoles(List<OrganisationRoles> additionalCurricularOrgRoles, List<OrganisationRef> additionalCurricularOrganisations) {
 		this.additionalCurricularOrgRoles = additionalCurricularOrgRoles;
+		this.additionalCurricularOrganisations = additionalCurricularOrganisations;
 	}
 
 	public enum OrderBy {

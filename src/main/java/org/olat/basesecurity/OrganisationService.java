@@ -83,6 +83,8 @@ public interface OrganisationService {
 	
 	public List<Organisation> findOrganisations(SearchOrganisationParameters searchparams);
 	
+	public List<Organisation> getOrganisationDescendants(OrganisationRef organisation, boolean itselfIncluded);
+	
 	public List<Organisation> getOrganisationParentLine(Organisation organisation);
 	
 	public List<OrganisationRef> getParentLineRefs(List<Organisation> organisations);
