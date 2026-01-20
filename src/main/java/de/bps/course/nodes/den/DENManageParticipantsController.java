@@ -19,8 +19,6 @@
  */
 package de.bps.course.nodes.den;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -47,6 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailBundle;
@@ -143,9 +142,8 @@ public class DENManageParticipantsController extends BasicController {
 					listenTo(tableManageParticipants);
 					
 					participantsVC = createVelocityContainer("participants");
-					DateFormat df = new SimpleDateFormat();
 					participantsVC.contextPut("dateTitle", selectedEvent.getSubject());
-					participantsVC.contextPut("dateTimeframe", df.format(selectedEvent.getBegin()) + " - " + df.format(selectedEvent.getEnd()));
+					participantsVC.contextPut("dateTimeframe", format(selectedEvent));
 					participantsVC.put("participantsTable", tableManageParticipants.getInitialComponent());
 					
 					addParticipantButton = LinkFactory.createButton("participants.add", participantsVC, this);
@@ -180,8 +178,7 @@ public class DENManageParticipantsController extends BasicController {
 			} else {
 				List<Identity> toAdd = null;
 				selectedIds = new ArrayList<>();
-				if (event instanceof SingleIdentityChosenEvent) {
-					SingleIdentityChosenEvent singleEvent = (SingleIdentityChosenEvent) event;
+				if (event instanceof SingleIdentityChosenEvent singleEvent) {
 					Identity choosenIdentity = singleEvent.getChosenIdentity();
 					toAdd = new ArrayList<>();
 					toAdd.add(choosenIdentity);
@@ -268,6 +265,21 @@ public class DENManageParticipantsController extends BasicController {
 			
 			userSearchCMC.activate();
 		}
+	}
+	
+	private String format(KalendarEvent event) {
+		Formatter format = Formatter.getInstance(getLocale());
+		StringBuilder sb = new StringBuilder();
+		if(event.getBegin() != null) {
+			sb.append(format.formatDateAndTime(event.getBegin()));
+		}
+		if(event.getEnd() != null) {
+			if(!sb.isEmpty()) {
+				sb.append(" - ");
+			}
+			sb.append(format.formatDateAndTime(event.getEnd()));
+		}
+		return sb.toString();
 	}
 	
 	private void showError() {
