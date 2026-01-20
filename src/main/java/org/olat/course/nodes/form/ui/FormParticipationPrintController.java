@@ -25,11 +25,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.learningpath.ui.CoachedIdentityLargeInfosController;
+import org.olat.course.assessment.ui.tool.AssessmentRepositoryEntryInfoCardController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.user.UserPropertiesInfoController;
 
 /**
  * 
@@ -40,15 +42,20 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 public class FormParticipationPrintController extends BasicController {
 
 	public FormParticipationPrintController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachedCourseEnv, EvaluationFormSession session) {
+			UserCourseEnvironment coachedCourseEnv, CourseNode courseNode, EvaluationFormSession session) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("participation_print");
 		putInitialPanel(mainVC);
 		
-		var userCtrl = new CoachedIdentityLargeInfosController(ureq, wControl, coachedCourseEnv);
+		var userCtrl = new UserPropertiesInfoController(ureq, wControl, coachedCourseEnv.getIdentityEnvironment().getIdentity());
 		listenTo(userCtrl);
 		mainVC.put("user", userCtrl.getInitialComponent());
+		
+		AssessmentRepositoryEntryInfoCardController entryCtrl = new AssessmentRepositoryEntryInfoCardController(ureq, wControl,
+				coachedCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode);
+		listenTo(entryCtrl);
+		mainVC.put("repo", entryCtrl.getInitialComponent());
 		
 		var executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null, true, false,
 				false, FormCourseNode.EMPTY_STATE);

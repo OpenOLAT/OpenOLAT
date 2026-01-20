@@ -36,11 +36,13 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentitiesList;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
+import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -139,6 +141,11 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				row.setEvaluationFormStatus(status);
 			}
 		}
+	}
+	
+	@Override
+	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+		return new MSToolsController(ureq, getWindowControl(), courseNode, assessedIdentity, coachCourseEnv);
 	}
 
 	@Override

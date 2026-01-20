@@ -534,7 +534,7 @@ public class FormParticipationListController extends FormBasicController impleme
 			EvaluationFormSession reloadedSession = formManager.loadOrCreateSession(participation);
 			UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
 					identity, coachCourseEnv.getCourseEnvironment());
-			return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, reloadedSession);
+			return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, courseNode,  reloadedSession);
 		};
 		String filename = generateExportPdfName(identity);
 		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator,

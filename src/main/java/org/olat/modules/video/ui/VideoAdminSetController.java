@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -53,6 +54,7 @@ public class VideoAdminSetController extends FormBasicController  {
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement enableCourseNodeEl;
 	private MultipleSelectionElement enableTranscodingEl;
+	private TextElement transcodingServiceUrlEl;
 	private MultipleSelectionElement enable2160SelectionEl;
 	private MultipleSelectionElement enable1080SelectionEl;
 	private MultipleSelectionElement enable720SelectionEl;
@@ -118,6 +120,10 @@ public class VideoAdminSetController extends FormBasicController  {
 		enableTranscodingEl.setVisible(enableEl.isSelected(0));
 		enableTranscodingEl.addActionListener(FormEvent.ONCHANGE);
 
+		transcodingServiceUrlEl = uifactory.addTextElement("admin.config.transcoding.service.url", 255, 
+				videoModule.getTranscodingServiceUrl(), transcodingCont);
+		transcodingServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+		
 		handBrakeCliEl = uifactory.addStaticTextElement("admin.config.handBrakeCli", "", transcodingCont);
 
 		masterVideoFileEl = uifactory.addCardSingleSelectHorizontal("admin.config.master.video.file", transcodingCont,
@@ -159,6 +165,8 @@ public class VideoAdminSetController extends FormBasicController  {
 	private void updateTranscodingAndResolutionOptions(){
 		boolean transcodingEnabled = enableTranscodingEl.isSelected(0);
 		boolean localTranscodingEnabled = videoModule.isTranscodingLocal();
+
+		transcodingServiceUrlEl.setVisible(transcodingEnabled);
 
 		handBrakeCliEl.setVisible(transcodingEnabled && localTranscodingEnabled);
 
@@ -248,6 +256,8 @@ public class VideoAdminSetController extends FormBasicController  {
 		if(source == enableTranscodingEl){
 			videoModule.setTranscodingEnabled(enableTranscodingEl.isSelected(0));
 			updateTranscodingAndResolutionOptions();
+		} else if (source == transcodingServiceUrlEl) {
+			videoModule.setTranscodingServiceUrl(transcodingServiceUrlEl.getValue());
 		}
 
 		if(source == enable2160SelectionEl || source == enable1080SelectionEl || source == enable720SelectionEl || source == enable480SelectionEl) {

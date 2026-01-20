@@ -1,8 +1,13 @@
-#if($r.available("user"))
-	<div class="o_block_large_bottom">
-		$r.render("user")
+<div class="o_block_large_bottom o_repo_user_header_container">
+	<div class="o_repo_user_header">
+		#if($r.available("repo"))
+			$r.render("repo")
+		#end
+		#if($r.available("user"))
+			$r.render("user")
+		#end
 	</div>
-#end
+</div>
 #if($r.available("evaluationForm"))
 	$r.render("evaluationForm")
 #end

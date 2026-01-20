@@ -545,7 +545,7 @@ public class FormManagerImpl implements FormManager {
 		if (fileUploads.isEmpty() && !pdfModule.isEnabled()) {
 			return excelExport.createMediaResource();
 		}
-		return new FormExportResource(wControl, locale, doer, courseEnv, nodeName, filter, excelExport, lastRun == null, fileUploads);
+		return new FormExportResource(wControl, locale, doer, courseEnv, courseNode, filter, excelExport, lastRun == null, fileUploads);
 	}
 
 	@Override

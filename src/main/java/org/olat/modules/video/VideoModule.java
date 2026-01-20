@@ -58,6 +58,7 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
 	private static final String VIDEOTRANSCODING_ENABLED = "video.transcoding.enabled";
 	private static final String VIDEOTRANSCODING_LOCAL = "video.transcoding.local";
+	private static final String VIDEO_TRANSCODING_SERVICE_URL = "video.transcoding.service.url";
 	private static final String TRANSCODING_RESOLUTIONS = "video.transcoding.resolutions";
 	private static final String PREFERRED_RESOLUTION = "video.transcoding.resolution.preferred";
 	private static final String MARKER_STYLE_PREFIX = "o_video_marker_";
@@ -73,6 +74,8 @@ public class VideoModule extends AbstractSpringModule {
 	private boolean transcodingEnabled;
 	@Value("${video.transcoding.local:true}")
 	private boolean transcodingLocal;
+	@Value("${video.transcoding.service.url}")
+	private String transcodingServiceUrl;
 	@Value("${video.transcoding.resolutions}")
 	private String transcodingResolutions;
 	@Value("${video.transcoding.taskset.cpuconfig}")
@@ -143,6 +146,11 @@ public class VideoModule extends AbstractSpringModule {
 			transcodingLocal = "true".equals(localTranscodingObj);
 		}
 		
+		String transcodingServiceUrlObj = getStringPropertyValue(VIDEO_TRANSCODING_SERVICE_URL, true);
+		if(StringHelper.containsNonWhitespace(transcodingServiceUrlObj)) {
+			transcodingServiceUrl = transcodingServiceUrlObj;
+		}
+		
 		String localPreferredResolutionObj = getStringPropertyValue(PREFERRED_RESOLUTION, true);
 		if(StringHelper.containsNonWhitespace(localPreferredResolutionObj)) {
 			preferredDefaultResolution =  getIntPropertyValue(PREFERRED_RESOLUTION);
@@ -159,6 +167,7 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.transcoding.resolution.preferred={}", getPreferredDefaultResolution());
 		log.info("video.transcoding.taskset.cpuconfig={}", getTranscodingTasksetConfig());
 		log.info("video.transcoding.local={}", isTranscodingLocal());
+		log.info("video.transcoding.service.url={}", getTranscodingServiceUrl());
 		log.info("video.transcoding.profile={}", getVideoTranscodingProfile());
 
 		// Register video site for activation in top navigation
@@ -309,6 +318,15 @@ public class VideoModule extends AbstractSpringModule {
 
 	public boolean isTranscodingLocal() {		
 		return isTranscodingEnabled() && transcodingLocal;
+	}
+
+	public String getTranscodingServiceUrl() {
+		return transcodingServiceUrl;
+	}
+
+	public void setTranscodingServiceUrl(String transcodingServiceUrl) {
+		this.transcodingServiceUrl = transcodingServiceUrl;
+		setStringProperty(VIDEO_TRANSCODING_SERVICE_URL, transcodingServiceUrl, true);
 	}
 
 	public void setTranscoding(boolean transcodingLocal) {

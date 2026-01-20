@@ -45,14 +45,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeExport;
+import org.olat.course.assessment.ui.tool.AssessmentEvaluationFormExecutionController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.form.ui.FormParticipationPrintController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MSStatisticController;
 import org.olat.course.nodes.ms.MSStatisticsExport;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -77,8 +76,6 @@ public class MSAssessmentExport extends AssessmentCourseNodeExport {
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
-	@Autowired
-	private EvaluationFormManager evaluationFormManager;
 
 	public MSAssessmentExport(Identity doer, CourseEnvironment courseEnv, CourseNode courseNode,
 			List<Identity> identities, boolean withNonParticipants, boolean withPdfs, Locale locale, WindowControl windowControl,
@@ -150,11 +147,11 @@ public class MSAssessmentExport extends AssessmentCourseNodeExport {
 				progressCallback.setProgress(progress, assessedIdentity.getKey().toString());
 			}
 			
-			exportFormPdf(zout, assessedIdentity, session);
+			exportFormPdf(zout, assessedIdentity);
 		}
 	}
 	
-	private void exportFormPdf(ZipOutputStream zout, Identity assessedIdentity, EvaluationFormSession session) {
+	private void exportFormPdf(ZipOutputStream zout, Identity assessedIdentity) {
 		try {
 			String filesPath = "files/";
 			User user = assessedIdentity.getUser();
@@ -164,20 +161,20 @@ public class MSAssessmentExport extends AssessmentCourseNodeExport {
 			
 			filesPath += StringHelper.transformDisplayNameToFileSystemName(name);
 			
-			createFormPdf(zout, filesPath, assessedIdentity, session);
+			createFormPdf(zout, filesPath, assessedIdentity);
 		} catch (Exception e) {
 			log.error("", e);
 		}
 		
 	}
 	
-	private void createFormPdf(ZipOutputStream zout, String path, Identity assessedIdentity, EvaluationFormSession session) {
+	private void createFormPdf(ZipOutputStream zout, String path, Identity assessedIdentity) {
 		try {
 			ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 				UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
 						assessedIdentity, courseEnv);
-				EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(session);
-				return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, reloadedSession);
+				return new AssessmentEvaluationFormExecutionController(lureq, lwControl, coachedCourseEnv, false, false,
+						courseNode, evaluationFormProvider);
 			};
 			
 			zout.putNextEntry(new ZipEntry(path + "/form.pdf"));

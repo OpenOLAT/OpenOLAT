@@ -54,6 +54,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.ui.FormParticipationPrintController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -78,7 +79,7 @@ public class FormExportResource implements MediaResource {
 	private final WindowControl windowControl;
 	private final Identity doer;
 	private final CourseEnvironment courseEnv;
-	private final String nodeName;
+	private final FormCourseNode courseNode;
 	private final SessionFilter filter;
 	private final EvaluationFormExcelExport excelExport;
 	private final boolean multiParticipation;
@@ -93,12 +94,12 @@ public class FormExportResource implements MediaResource {
 	private PdfService pdfService;
 
 	public FormExportResource(WindowControl windowControl, Locale locale, Identity doer, CourseEnvironment courseEnv,
-			String nodeName, SessionFilter filter, EvaluationFormExcelExport excelExport, boolean multiParticipation,
+			FormCourseNode courseNode, SessionFilter filter, EvaluationFormExcelExport excelExport, boolean multiParticipation,
 			List<FileUpload> fileUploads) {
 		this.windowControl = windowControl;
 		this.doer = doer;
 		this.courseEnv = courseEnv;
-		this.nodeName = nodeName;
+		this.courseNode = courseNode;
 		this.filter = filter;
 		this.excelExport = excelExport;
 		this.multiParticipation = multiParticipation;
@@ -143,7 +144,7 @@ public class FormExportResource implements MediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		String urlEncodedLabel = new StringBuilder()
-			.append(StringHelper.transformDisplayNameToFileSystemName(nodeName))
+			.append(StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName()))
 			.append("_")
 			.append(Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())))
 			.append(".zip")
@@ -208,7 +209,7 @@ public class FormExportResource implements MediaResource {
 								FileUtils.copy(inputStream, zout);
 								zout.closeEntry();
 							} catch(Exception e) {
-								log.error("Error during export of file {} of form course node {}", vfsLeaf.getName(), nodeName, e);
+								log.error("Error during export of file {} of form course node {}", vfsLeaf.getName(), courseNode.getShortName(), e);
 							} finally {
 								FileUtils.closeSafely(inputStream);
 							}
@@ -217,7 +218,7 @@ public class FormExportResource implements MediaResource {
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error during export of form course node {}", nodeName, e);
+			log.error("Error during export of form course node {}", courseNode.getShortName(), e);
 		}
 	}
 
@@ -226,7 +227,7 @@ public class FormExportResource implements MediaResource {
 			ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 				UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
 						executor, courseEnv);
-				return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, session);
+				return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, courseNode, session);
 			};
 			
 			zout.putNextEntry(new ZipEntry(path + "/form.pdf"));
