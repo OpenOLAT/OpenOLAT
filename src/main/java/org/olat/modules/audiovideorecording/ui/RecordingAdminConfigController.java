@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -39,6 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RecordingAdminConfigController extends FormBasicController {
 	private MultipleSelectionElement enableVideoRecordingEl;
 	private MultipleSelectionElement enableAudioRecordingEl;
+	private TextElement videoConversionServiceUrlEl;
+	private TextElement audioConversionServiceUrlEl;
 	private MultipleSelectionElement enableLocalVideoConversionEl;
 	private MultipleSelectionElement enableLocalAudioConversionEl;
 
@@ -68,6 +71,14 @@ public class RecordingAdminConfigController extends FormBasicController {
 		enableAudioRecordingEl.select("on", avModule.isAudioRecordingEnabled());
 		enableAudioRecordingEl.addActionListener(FormEvent.ONCHANGE);
 
+		videoConversionServiceUrlEl = uifactory.addTextElement("admin.recording.video.conversion.service.url", 
+				255, avModule.getVideoConversionServiceUrl(), formLayout);
+		videoConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+		
+		audioConversionServiceUrlEl = uifactory.addTextElement("admin.recording.audio.conversion.service.url", 
+				255, avModule.getAudioConversionServiceUrl(), formLayout);
+		audioConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+		
 		if (avModule.externalTranscodingProbablySetUp() && !avModule.isLocalVideoConversionPossible() && !avModule.isLocalAudioConversionPossible()) {
 			setFormInfo("admin.recording.external.conversion.active");
 		} else {
@@ -117,6 +128,10 @@ public class RecordingAdminConfigController extends FormBasicController {
 			if (!avModule.isLocalAudioConversionPossible() && !avModule.isLocalAudioConversionEnabled()) {
 				enableLocalAudioConversionEl.setEnabled(false);
 			}
+		} else if (source == videoConversionServiceUrlEl) {
+			avModule.setVideoConversionServiceUrl(videoConversionServiceUrlEl.getValue());
+		} else if (source == audioConversionServiceUrlEl) {
+			avModule.setAudioConversionServiceUrl(audioConversionServiceUrlEl.getValue());
 		}
 	}
 

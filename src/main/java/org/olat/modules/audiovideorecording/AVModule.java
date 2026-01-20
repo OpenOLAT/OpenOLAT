@@ -58,6 +58,8 @@ public class AVModule extends AbstractSpringModule {
 	private static final String AUDIO_RECORDING_ENABLED = "av.audio.recording.enabled";
 	private static final String LOCAL_TRANSCODING_ENABLED = "av.local.transcoding.enabled";
 	private static final String LOCAL_AUDIO_CONVERSION_ENABLED = "av.local.audio.conversion.enabled";
+	private static final String VIDEO_CONVERSION_SERVICE_URL = "av.video.conversion.service.url";
+	private static final String AUDIO_CONVERSION_SERVICE_URL = "av.audio.conversion.service.url";
 	private static final String HANDBRAKE_CLI_PATH = "av.handbrakecli.path";
 	private static final String FFMPEG_PATH = "av.ffmpeg.path";
 	private static final String VIDEO_TRANSCODING_DIR = "video.transcoding.dir";
@@ -76,8 +78,12 @@ public class AVModule extends AbstractSpringModule {
 	private boolean audioRecordingEnabled;
 	@Value("${av.local.transcoding.enabled:false}")
 	private boolean localTranscodingEnabled;
+	@Value("${av.video.conversion.service.url}")
+	private String videoConversionServiceUrl;
 	@Value("${av.local.audio.conversion.enabled:false}")
 	private boolean localAudioConversionEnabled;
+	@Value("${av.audio.conversion.service.url}")
+	private String audioConversionServiceUrl;
 	@Value("${av.handbrakecli.path}")
 	private String handbrakeCliPath;
 	@Value("${av.ffmpeg.path}")
@@ -132,6 +138,16 @@ public class AVModule extends AbstractSpringModule {
 		if (StringHelper.containsNonWhitespace(localAudioConversionEnabledObj)) {
 			localAudioConversionEnabled = "true".equals(localAudioConversionEnabledObj);
 		}
+		
+		String videoConversionServiceUrlObj = getStringPropertyValue(VIDEO_CONVERSION_SERVICE_URL, true);
+		if (StringHelper.containsNonWhitespace(videoConversionServiceUrlObj)) {
+			videoConversionServiceUrl = videoConversionServiceUrlObj;
+		}
+		
+		String audioConversionServiceUrlObj = getStringPropertyValue(AUDIO_CONVERSION_SERVICE_URL, true);
+		if (StringHelper.containsNonWhitespace(audioConversionServiceUrlObj)) {
+			audioConversionServiceUrl = audioConversionServiceUrlObj;
+		}
 
 		String handbrakeCliPathObj = getStringPropertyValue(HANDBRAKE_CLI_PATH, true);
 		if (StringHelper.containsNonWhitespace(handbrakeCliPathObj)) {
@@ -157,6 +173,8 @@ public class AVModule extends AbstractSpringModule {
 		log.info("av.audio.recording.enabled={}", audioRecordingEnabled);
 		log.info("av.local.transcoding.enabled={}", localTranscodingEnabled);
 		log.info("av.local.audio.conversion.enabled={}", localAudioConversionEnabled);
+		log.info("av.local.video.conversion.service.url={}", videoConversionServiceUrl);
+		log.info("av.local.audio.conversion.service.url={}", audioConversionServiceUrl);
 		log.info("av.handbrakecli.path={}", handbrakeCliPath);
 		log.info("av.ffmpeg.path={}", ffmpegPath);
 		log.info("folder.root={}", folderRoot);
@@ -206,6 +224,24 @@ public class AVModule extends AbstractSpringModule {
 	public void setLocalAudioConversionEnabled(boolean localAudioConversionEnabled) {
 		this.localAudioConversionEnabled = localAudioConversionEnabled;
 		setStringProperty(LOCAL_AUDIO_CONVERSION_ENABLED, Boolean.toString(localAudioConversionEnabled), true);
+	}
+
+	public String getVideoConversionServiceUrl() {
+		return videoConversionServiceUrl;
+	}
+
+	public void setVideoConversionServiceUrl(String videoConversionServiceUrl) {
+		this.videoConversionServiceUrl = videoConversionServiceUrl;
+		setStringProperty(VIDEO_CONVERSION_SERVICE_URL, videoConversionServiceUrl, true);
+	}
+
+	public String getAudioConversionServiceUrl() {
+		return audioConversionServiceUrl;
+	}
+
+	public void setAudioConversionServiceUrl(String audioConversionServiceUrl) {
+		this.audioConversionServiceUrl = audioConversionServiceUrl;
+		setStringProperty(AUDIO_CONVERSION_SERVICE_URL, audioConversionServiceUrl, true);
 	}
 
 	public boolean isOptimizeMemoryForVideos() {
