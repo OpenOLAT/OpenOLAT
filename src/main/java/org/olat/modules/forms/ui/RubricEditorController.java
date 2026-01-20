@@ -297,13 +297,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 		cont.setRootForm(mainForm);
 		flc.add(cont);
 		
+		ScaleType scaleType = rubric.getScaleType();
 		List<StepLabel> sliderStepLabels = row.getSlider().getStepLabels();
 		List<String> elementNames = new ArrayList<>(rubric.getSteps());
 		for(int i=0; i<rubric.getSteps(); i++) {
 			String sliderStepLabel = sliderStepLabels.size() > i? sliderStepLabels.get(i).getLabel(): null;
 			String name = "step_label_" + CodeHelper.getRAMUniqueID();
 			StaticTextElement labelEl = uifactory.addStaticTextElement(name, sliderStepLabel, cont);
-			RubricRating rating = evaluationFormManager.getRubricRating(rubric, Double.valueOf(i + 1));
+			RubricRating rating = evaluationFormManager.getRubricRating(rubric, scaleType.getStepValue(rubric.getSteps(), (i + 1)));
 			String cssClass = RubricAvgRenderer.getRatingCssClass(rating);
 			labelEl.setElementCssClass(cssClass);
 			elementNames.add(name);
