@@ -35,6 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.modules.video.model.TranscoderJobType;
 
 import org.apache.logging.log4j.Logger;
 import org.quartz.DisallowConcurrentExecution;
@@ -58,16 +59,43 @@ public class VFSTranscodingJob extends JobWithDB {
 
 	private void doExecute() {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
-		if (transcodingService == null || !transcodingService.isLocalConversionEnabled()) {
-			log.debug("Skipping execution of VFS file conversion job. Local VFS file conversion disabled");
+		if (transcodingService == null) {
+			log.error("VFSTranscodingService is null");
+			return;
+		}
+
+		if (!transcodingService.isConversionJobEnabled()) {
+			log.debug("Skipping execution of VFS file conversion job.");
 			return;
 		}
 
 		for (VFSMetadata metadata = getNextMetadata(); metadata != null; metadata = getNextMetadata()) {
-			if (needToCancel(metadata)) {
-				break;
+			execute(metadata, transcodingService);
+		}
+	}
+
+	private void execute(VFSMetadata metadata, VFSTranscodingService transcodingService) {
+		if (!transcodingService.isConversionJobEnabled()) {
+			log.info("Skipping execution of VFS file conversion job because conversion was disabled while running.");
+			return;
+		}
+
+		if ("mp4".equals(FileUtils.getFileSuffix(metadata.getFilename()))) {
+			if (transcodingService.isVideoConversionServiceConfigured()) {
+				transcodingService.postConversionJob(metadata, TranscoderJobType.videoConversion);
+			} else if (transcodingService.isLocalVideoConversionEnabled()) {
+				forkTranscodingProcess(metadata);
+			} else {
+				log.info("Skipping execution of VFS file conversion job because video conversion was disabled while running.");
 			}
-			forkTranscodingProcess(metadata);
+		} else if ("m4a".equals(FileUtils.getFileSuffix(metadata.getFilename()))) {
+			if (transcodingService.isAudioConversionServiceConfigured()) {
+				transcodingService.postConversionJob(metadata, TranscoderJobType.audioConversion);
+			} else if  (transcodingService.isLocalAudioConversionEnabled()) {
+				forkTranscodingProcess(metadata);
+			} else {
+				log.info("Skipping execution of VFS file conversion job because audio conversion was disabled while running.");
+			}
 		}
 	}
 
@@ -85,24 +113,6 @@ public class VFSTranscodingJob extends JobWithDB {
 		VFSMetadata metadata = metadataList.get(0);
 		updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_STARTED);
 		return metadata;
-	}
-
-	private boolean needToCancel(VFSMetadata metadata) {
-		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
-		if (transcodingService == null) {
-			return true;
-		}
-		if (!transcodingService.isLocalConversionEnabled()) {
-			return true;
-		}
-		if ("mp4".equals(FileUtils.getFileSuffix(metadata.getFilename())) && !transcodingService.isLocalVideoConversionEnabled()) {
-			return true;
-		}
-		if ("m4a".equals(FileUtils.getFileSuffix(metadata.getFilename())) && !transcodingService.isLocalAudioConversionEnabled()) {
-			return true;
-		}
-
-		return false;
 	}
 
 	private void forkTranscodingProcess(VFSMetadata metadata) {
