@@ -145,13 +145,13 @@ public class AssessmentTemplateListController extends BasicController {
     }
     
     private void doDeleteTemplate(AssessmentTemplateImpl template) {
-        templateService.deleteTemplate(template.getKey());
+        templateService.deleteTemplate(template.getTemplateKey());
         showInfo("template.deleted");
         loadTemplates();
     }
     
     private void doExportTemplate(AssessmentTemplateImpl template) {
-        String exported = templateService.exportTemplate(template.getKey());
+        String exported = templateService.exportTemplate(template.getTemplateKey());
         if (exported != null) {
             showInfo("template.exported");
         }
@@ -170,8 +170,8 @@ public class AssessmentTemplateListController extends BasicController {
             this.template = template;
         }
         
-        public Long getKey() {
-            return template.getKey();
+        public Long getTemplateKey() {
+            return template.getTemplateKey();
         }
         
         public String getName() {

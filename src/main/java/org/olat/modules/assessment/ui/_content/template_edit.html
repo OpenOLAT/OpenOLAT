@@ -1,20 +1,53 @@
 <div class="o_form">
     <fieldset>
-        <legend>$r.translate("template.form.title")</legend>
-        <p class="o_form_description">$r.translate("template.form.description")</p>
-        
+
+        <legend>Assessment Template</legend>
+        <p class="o_form_description">Enter the template details below.</p>
+
+        <style>
+            .o_form_element { margin-bottom: 1.5em; }
+            .o_input, .o_textarea {
+                width: 100%;
+                max-width: 99%;
+                padding: 0.7em 1em;
+                border: 1px solid #bbb;
+                border-radius: 5px;
+                font-size: 1.08em;
+                box-sizing: border-box;
+                background: #fafbfc;
+                transition: border-color 0.2s;
+            }
+            .o_input:focus, .o_textarea:focus {
+                border-color: #007cba;
+                background: #fff;
+                outline: none;
+            }
+            .o_form_help {
+                color: #666;
+                font-size: 0.97em;
+                margin-top: 0.2em;
+            }
+            label { display: block; margin-bottom: 0.3em; }
+        </style>
+
         <div class="o_form_element">
-            $r.render("template.name")
+            <label for="templateName"><b>Template Name</b></label>
+            <input id="templateName" name="templateName" type="text" placeholder="Enter a unique template name" class="o_input" style="height:2.5em; font-weight:500;" />
+            <div class="o_form_help">This name will help you identify the template.</div>
         </div>
-        
+
         <div class="o_form_element">
-            $r.render("template.description")
+            <label for="templateDescription"><b>Short Description</b></label>
+            <textarea id="templateDescription" name="templateDescription" placeholder="Briefly describe this template" class="o_textarea" rows="2" style="resize:vertical;"></textarea>
+            <div class="o_form_help">Optional: A short summary for quick reference.</div>
         </div>
-        
+
         <div class="o_form_element">
-            $r.render("template.content")
+            <label for="templateContent"><b>Detailed Instructions</b></label>
+            <textarea id="templateContent" name="templateContent" placeholder="Provide detailed instructions for assessors or learners" class="o_textarea" rows="4" style="resize:vertical;"></textarea>
+            <div class="o_form_help">Optional: Add any specific instructions or guidelines.</div>
         </div>
-        
+
         <div class="o_form_buttons">
             $r.render("buttons")
         </div>

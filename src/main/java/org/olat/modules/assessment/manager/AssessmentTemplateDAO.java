@@ -27,8 +27,8 @@ public class AssessmentTemplateDAO {
         return dbInstance.getCurrentEntityManager().merge(tmpl);
     }
 
-    public AssessmentTemplateImpl getTemplateById(Long key) {
-        return dbInstance.getCurrentEntityManager().find(AssessmentTemplateImpl.class, key);
+    public AssessmentTemplateImpl getTemplateById(Long templateKey) {
+        return dbInstance.getCurrentEntityManager().find(AssessmentTemplateImpl.class, templateKey);
     }
 
     public List<AssessmentTemplateImpl> listTemplates() {
@@ -37,8 +37,8 @@ public class AssessmentTemplateDAO {
                 .getResultList();
     }
 
-    public void deleteTemplate(Long key) {
-        AssessmentTemplateImpl tmpl = getTemplateById(key);
+    public void deleteTemplate(Long templateKey) {
+        AssessmentTemplateImpl tmpl = getTemplateById(templateKey);
         if (tmpl != null) {
             dbInstance.getCurrentEntityManager().remove(tmpl);
         }

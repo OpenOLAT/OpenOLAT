@@ -16,12 +16,17 @@ import org.olat.core.id.Persistable;
 @Entity(name="assessmenttemplate")
 @Table(name="o_as_template")
 public class AssessmentTemplateImpl implements Persistable, CreateInfo {
+    @Override
+    public Long getKey() {
+        return templateKey;
+    }
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long key;
+    @Column(name="template_key")
+    private Long templateKey;
 
     @Column(name="creationdate", nullable=false)
     private Date creationDate = new Date();
@@ -43,8 +48,12 @@ public class AssessmentTemplateImpl implements Persistable, CreateInfo {
         // default
     }
 
-    public Long getKey() {
-        return key;
+    public Long getTemplateKey() {
+        return templateKey;
+    }
+
+    public void setTemplateKey(Long templateKey) {
+        this.templateKey = templateKey;
     }
 
     public Date getCreationDate() {
@@ -85,14 +94,14 @@ public class AssessmentTemplateImpl implements Persistable, CreateInfo {
 
     @Override
     public int hashCode() {
-        return getKey() == null ? 1237 : getKey().hashCode();
+        return getTemplateKey() == null ? 1237 : getTemplateKey().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj instanceof AssessmentTemplateImpl other) {
-            return getKey() != null && getKey().equals(other.getKey());
+            return getTemplateKey() != null && getTemplateKey().equals(other.getTemplateKey());
         }
         return false;
     }

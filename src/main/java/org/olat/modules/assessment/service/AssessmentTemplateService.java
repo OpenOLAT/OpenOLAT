@@ -8,15 +8,15 @@ public interface AssessmentTemplateService {
 
     AssessmentTemplateImpl createTemplate(String name, String description, String content, Long creatorKey);
 
-    AssessmentTemplateImpl getTemplate(Long key);
+    AssessmentTemplateImpl getTemplate(Long templateKey);
 
     List<AssessmentTemplateImpl> listTemplates();
 
     AssessmentTemplateImpl updateTemplate(AssessmentTemplateImpl template);
 
-    void deleteTemplate(Long key);
+    void deleteTemplate(Long templateKey);
 
-    String exportTemplate(Long key);
+    String exportTemplate(Long templateKey);
 
     AssessmentTemplateImpl importTemplate(String name, String description, String content, Long creatorKey);
 

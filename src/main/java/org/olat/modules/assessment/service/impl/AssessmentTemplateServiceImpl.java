@@ -23,8 +23,8 @@ public class AssessmentTemplateServiceImpl implements AssessmentTemplateService 
     }
 
     @Override
-    public AssessmentTemplateImpl getTemplate(Long key) {
-        return templateDao.getTemplateById(key);
+    public AssessmentTemplateImpl getTemplate(Long templateKey) {
+        return templateDao.getTemplateById(templateKey);
     }
 
     @Override
@@ -40,13 +40,13 @@ public class AssessmentTemplateServiceImpl implements AssessmentTemplateService 
 
     @Override
     @Transactional
-    public void deleteTemplate(Long key) {
-        templateDao.deleteTemplate(key);
+    public void deleteTemplate(Long templateKey) {
+        templateDao.deleteTemplate(templateKey);
     }
 
     @Override
-    public String exportTemplate(Long key) {
-        AssessmentTemplateImpl tmpl = templateDao.getTemplateById(key);
+    public String exportTemplate(Long templateKey) {
+        AssessmentTemplateImpl tmpl = templateDao.getTemplateById(templateKey);
         if (tmpl == null) return null;
         // For now export the raw content as-is. Could wrap metadata in future.
         return tmpl.getContent();
