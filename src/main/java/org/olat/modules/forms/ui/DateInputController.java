@@ -91,7 +91,7 @@ public class DateInputController extends FormBasicController implements Evaluati
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer dateLayout = FormLayoutContainer.createInlineFormLayout("dateinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
+		FormLayoutContainer dateLayout = FormLayoutContainer.createVerticalFormLayout("dateinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
 		dateLayout.setElementCssClass("o_inline_cont");
 		dateLayout.setRootForm(mainForm);
 		formLayout.add(dateLayout);
