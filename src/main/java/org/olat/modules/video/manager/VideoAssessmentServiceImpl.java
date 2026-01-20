@@ -165,89 +165,106 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService, UserD
 		return taskSegmentSelectionDao.getSegmentSelection(taskSessions);
 	}
 
-	@Override
-	public StatisticAssessment getAssessmentStatistics(List<VideoTaskSession> taskSessions,
-			Float maxScoreDef, Float cutValueDef, int rounding) {
-		// Sort per user and finish time
-		Collections.sort(taskSessions, new VideoTaskSessionComparator(true));
 
+	private static class StatsAccumulator {
 		int numOfPassed = 0;
 		int numOfFailed = 0;
 		double totalDuration = 0.0;
 		double maxScore = 0.0;
 		double minScore = Double.MAX_VALUE;
-		double[] scores = new double[taskSessions.size()];
-		double[] durationSeconds = new double[taskSessions.size()];
-		
 		double minDuration = Double.MAX_VALUE;
-		double maxDuration = 0.0d;
-		
-		BigDecimal cutBigValue = cutValueDef == null ? null : BigDecimal.valueOf(cutValueDef.doubleValue());
-		
-		int dataPos = 0;
+		double maxDuration = 0.0;
 		boolean hasScore = false;
-		for(VideoTaskSession taskSession : taskSessions) {
-			VideoTaskScore vtScore = calculateScore(taskSession, maxScoreDef, cutValueDef, rounding);
-			BigDecimal score = vtScore.score();
-			if(score != null) {
-				double scored = score.doubleValue();
-				scores[dataPos] = scored;
-				maxScore = Math.max(maxScore, scored);
-				minScore = Math.min(minScore, scored);
-				hasScore = true;
-			}
-			
-			Boolean passed = taskSession.getPassed();
-			if(cutBigValue != null && score != null) {
-				passed = score.compareTo(cutBigValue) >= 0;
-			}
-			if(passed != null) {
-				if(passed.booleanValue()) {
-					numOfPassed++;
-				} else {
-					numOfFailed++;
-				}
-			}
+		List<Double> scores = new ArrayList<>();
+		List<Double> durations = new ArrayList<>();
+	}
 
-			// Duration is in milliseconds
-			Long duration = taskSession.getDuration();
-			if(duration != null) {
-				double durationd = duration.doubleValue();
-				double durationSecond = Math.round(durationd / 1000d);
-				durationSeconds[dataPos] = durationSecond;
-				totalDuration += durationd;
-				minDuration = Math.min(minDuration, durationSecond);
-				maxDuration = Math.max(maxDuration, durationSecond);
-			}
-			dataPos++;
+	@Override
+	public StatisticAssessment getAssessmentStatistics(List<VideoTaskSession> taskSessions,
+			Float maxScoreDef, Float cutValueDef, int rounding) {
+		// Sort per user and finish time
+		Collections.sort(taskSessions, new VideoTaskSessionComparator(true));
+		StatsAccumulator acc = new StatsAccumulator();
+		BigDecimal cutBigValue = cutValueDef == null ? null : BigDecimal.valueOf(cutValueDef.doubleValue());
+
+		for (VideoTaskSession taskSession : taskSessions) {
+			VideoTaskScore vtScore = calculateScore(taskSession, maxScoreDef, cutValueDef, rounding);
+			updateScoreStats(vtScore, acc);
+			updatePassFail(taskSession, vtScore, cutBigValue, acc);
+			updateDuration(taskSession, acc);
 		}
-		if (taskSessions.isEmpty()) {
-			minScore = 0;
-		}
-		
-		Statistics statisticsHelper = new Statistics(scores);		
 
 		int numOfParticipants = taskSessions.size();
 		StatisticAssessment stats = new StatisticAssessment();
 		stats.setNumOfParticipants(numOfParticipants);
-		stats.setNumOfPassed(numOfPassed);
-		stats.setNumOfFailed(numOfFailed);
-		long averageDuration = Math.round(totalDuration / numOfParticipants);
+		stats.setNumOfPassed(acc.numOfPassed);
+		stats.setNumOfFailed(acc.numOfFailed);
+
+		// Average duration
+		long averageDuration = numOfParticipants == 0 ? 0
+				: Math.round(acc.totalDuration / numOfParticipants);
 		stats.setAverageDuration(averageDuration);
+
+		// Convert lists to arrays for statistics
+		double[] scoresArr = acc.scores.stream().mapToDouble(Double::doubleValue).toArray();
+		double[] durationsArr = acc.durations.stream().mapToDouble(Double::doubleValue).toArray();
+
+		Statistics statisticsHelper = new Statistics(scoresArr);
+
 		stats.setAverage(statisticsHelper.getMean());
-		if(hasScore) {
-			double range = maxScore - minScore;
+		if (acc.hasScore && !acc.scores.isEmpty()) {
+			double range = acc.maxScore - acc.minScore;
 			stats.setRange(range);
-			stats.setMaxScore(maxScore);
-			stats.setMinScore(minScore);
+			stats.setMaxScore(acc.maxScore);
+			stats.setMinScore(acc.minScore);
+		} else {
+			stats.setRange(0);
+			stats.setMaxScore(0);
+			stats.setMinScore(0);
 		}
 		stats.setStandardDeviation(statisticsHelper.getStdDev());
 		stats.setMedian(statisticsHelper.median());
 		stats.setMode(statisticsHelper.mode());
-		stats.setScores(scores);
-		stats.setDurations(durationSeconds);
+		stats.setScores(scoresArr);
+		stats.setDurations(durationsArr);
+
+		// Completion rate
+		double completionRate = numOfParticipants == 0 ? 0
+				: (double) (acc.numOfPassed + acc.numOfFailed) / numOfParticipants;
+		stats.setCompletionRate(completionRate);
+
 		return stats;
 	}
+
+	private void updatePassFail(VideoTaskSession session, VideoTaskScore vtScore, BigDecimal cutValue, StatsAccumulator acc) {
+		if (vtScore.passed() != null) {
+			if (vtScore.passed()) {
+				acc.numOfPassed++;
+			} else {
+				acc.numOfFailed++;
+			}
+		}
+	}
+
+	private void updateDuration(VideoTaskSession session, StatsAccumulator acc) {
+		Long durationValue = session.getDuration();
+		if (durationValue != null) {
+			double duration = durationValue.doubleValue();
+			acc.durations.add(duration);
+			acc.totalDuration += duration;
+			acc.minDuration = Math.min(acc.minDuration, duration);
+			acc.maxDuration = Math.max(acc.maxDuration, duration);
+		}
+	}
+
+	private void updateScoreStats(VideoTaskScore vtScore, StatsAccumulator acc) {
+    if (vtScore.score() != null) {
+        double scored = vtScore.score().doubleValue();
+        acc.scores.add(scored);
+        acc.maxScore = Math.max(acc.maxScore, scored);
+        acc.minScore = Math.min(acc.minScore, scored);
+    }
+}
 	
 	@Override
 	public VideoTaskCategoryScore[] calculateScorePerCategory(List<VideoSegmentCategory> categories, 

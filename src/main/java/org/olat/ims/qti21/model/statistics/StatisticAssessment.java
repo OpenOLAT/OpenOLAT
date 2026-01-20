@@ -150,4 +150,9 @@ public class StatisticAssessment {
 	public void setScores(double[] scores) {
 		this.scores = scores;
 	}
+
+    public void setCompletionRate(double completionRate) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCompletionRate'");
+    }
 }
