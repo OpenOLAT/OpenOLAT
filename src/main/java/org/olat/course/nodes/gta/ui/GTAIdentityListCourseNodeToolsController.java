@@ -43,6 +43,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,11 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		if(assessmentConfig.hasCoachAssignment() && assessmentCallback.canAssignCoaches()) {
 			coachAssignmentLink = addLink("assign.coach", "assign.coach", "o_icon o_icon-fw o_icon_coach");
 		}
+	}
+
+	@Override
+	protected EvaluationFormProvider getEvaluationFormProvider() {
+		return GTACourseNode.getEvaluationFormProvider();
 	}
 	
 	@Override

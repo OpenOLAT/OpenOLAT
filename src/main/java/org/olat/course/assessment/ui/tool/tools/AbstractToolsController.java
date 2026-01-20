@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
 
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,16 +36,21 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentEvaluationFormExecutionController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.CourseNode;
@@ -53,6 +61,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -78,6 +87,7 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	private Link detailsLink, applyGradeLink, setDoneLink, reopenLink, visibleLink, notVisibleLink;
 	private Link resetAttemptsButton;
+	private Link exportFormPdfLink;
 	private final VelocityContainer mainVC;
 	private final List<String> links = new ArrayList<>();
 
@@ -100,6 +110,10 @@ public abstract class AbstractToolsController extends BasicController {
 	private GradeModule gradeModule;
 	@Autowired
 	private GradeService gradeService;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	
 	public AbstractToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -143,6 +157,7 @@ public abstract class AbstractToolsController extends BasicController {
 			addSeparator();
 		}
 		initResetAttempts();
+		initExportFormPdf();
 		
 		//clean up separators
 		String lastLink = null;
@@ -214,6 +229,13 @@ public abstract class AbstractToolsController extends BasicController {
 		}
 	}
 	
+	protected void initExportFormPdf() {
+		if (pdfModule.isEnabled() && assessmentConfig.hasFormEvaluation()) {
+			addSeparator();
+			exportFormPdfLink = addLink("tool.export.form.pdf", "export.pdf", "o_icon o_icon-fw o_icon_export");
+		}
+	}
+	
 	protected Link addLink(String name, String cmd, String iconCSS) {
 		Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 		if(iconCSS != null) {
@@ -246,6 +268,9 @@ public abstract class AbstractToolsController extends BasicController {
 			doConfirmApplyGrade(ureq);
 		} else if(detailsLink == source) {
 			fireEvent(ureq, new ShowDetailsEvent(courseNode, assessedIdentity));
+		} else if (exportFormPdfLink == source) {
+			doExportFormPdf(ureq);
+			fireEvent(ureq, Event.CLOSE_EVENT);
 		}
 	}
 
@@ -381,5 +406,59 @@ public abstract class AbstractToolsController extends BasicController {
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
+
+	private void doExportFormPdf(UserRequest ureq) {
+		EvaluationFormProvider evaluationFormProvider = getEvaluationFormProvider();
+		if (evaluationFormProvider == null) {
+			showError("error.export.pdf");
+			return;
+		}
+		
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			UserCourseEnvironment coachedCourseEnv = AssessmentHelper
+					.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
+			return new AssessmentEvaluationFormExecutionController(lureq, lwControl, coachedCourseEnv, false, false,
+					courseNode, evaluationFormProvider);
+		};
+		String filename = generateExportPdfName(assessedIdentity);
+		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+		
+	}
+
+	protected EvaluationFormProvider getEvaluationFormProvider() {
+		return null;
+	}
+	
+	private String generateExportPdfName(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+	
+		sb.append("form_");
+		sb.append(StringHelper.transformDisplayNameToFileSystemName(courseEntry.getDisplayname()));
+		sb.append("_");
+		if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortTitle()));
+		} else {
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(courseNode.getLongTitle()));
+		}
+		
+		User user = identity.getUser();
+		if (StringHelper.containsNonWhitespace(user.getLastName())) {
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(user.getLastName()));
+		}
+		if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(user.getFirstName()));
+		}
+		if (StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME))) {
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(user.getProperty(UserConstants.NICKNAME)));
+		}
+		
+		return sb.toString();
+	}
+	
 	
 }
