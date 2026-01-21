@@ -140,32 +140,35 @@ public abstract class AssessmentItemBuilder {
 			ModalFeedbackBuilder feedbackBuilder = new ModalFeedbackBuilder(assessmentItem, feedback);
 			ModalFeedbackType feedbackType = feedbackBuilder.getType();
 			if(feedbackType != null && feedbackType != ModalFeedbackType.unkown) {
-				switch(feedbackType) {
-					case correct: 
-						correctFeedback = feedbackBuilder;
-						break;
-					case incorrect:
-						incorrectFeedback = feedbackBuilder;
-						break;
-					case correctSolution:
-						correctSolutionFeedback = feedbackBuilder;
-						break;
-					case empty:
-						emptyFeedback = feedbackBuilder;
-						break;
-					case answered:
-						answeredFeedback = feedbackBuilder;
-						break;
-					case hint:
-						hint = feedbackBuilder;
-						break;
-					case additional:
-						additionalFeedbacks.add(feedbackBuilder);
-						break;
-					case unkown:
-						log.error("Unkown feedback:");
-						break;
-				}
+				   switch(feedbackType) {
+					   case correct: 
+						   correctFeedback = feedbackBuilder;
+						   break;
+					   case incorrect:
+						   incorrectFeedback = feedbackBuilder;
+						   break;
+					   case correctSolution:
+						   correctSolutionFeedback = feedbackBuilder;
+						   break;
+					   case empty:
+						   emptyFeedback = feedbackBuilder;
+						   break;
+					   case answered:
+						   answeredFeedback = feedbackBuilder;
+						   break;
+					   case hint:
+						   hint = feedbackBuilder;
+						   break;
+					   case source:
+						   sourceFeedback = feedbackBuilder;
+						   break;
+					   case additional:
+						   additionalFeedbacks.add(feedbackBuilder);
+						   break;
+					   case unkown:
+						   log.error("Unkown feedback:");
+						   break;
+				   }
 			}
 		}
 	}
@@ -267,43 +270,61 @@ public abstract class AssessmentItemBuilder {
 	}
 	
 	
-	public ModalFeedbackBuilder getFeedbackBuilder(ModalFeedbackType type) {
-		switch(type) {
-			case hint: return getHint();
-			case correctSolution: return getCorrectSolutionFeedback();
-			case correct: return getCorrectFeedback();
-			case incorrect: return getIncorrectFeedback();
-			case empty: return getEmptyFeedback();
-			case answered: return getAnsweredFeedback();
-			default: return null;
-		}
-	}
+	   public ModalFeedbackBuilder getFeedbackBuilder(ModalFeedbackType type) {
+		   switch(type) {
+			   case hint: return getHint();
+			   case correctSolution: return getCorrectSolutionFeedback();
+			   case correct: return getCorrectFeedback();
+			   case incorrect: return getIncorrectFeedback();
+			   case empty: return getEmptyFeedback();
+			   case answered: return getAnsweredFeedback();
+			   case source: return getSourceFeedback();
+			   default: return null;
+		   }
+	   }
 	
-	public ModalFeedbackBuilder createFeedbackBuilder(ModalFeedbackType type) {
-		switch(type) {
-			case hint: return createHint();
-			case correctSolution: return createCorrectSolutionFeedback();
-			case correct: return createCorrectFeedback();
-			case incorrect: return createIncorrectFeedback();
-			case empty: return createEmptyFeedback();
-			case answered: return createAnsweredFeedback();
-			default: return null;
-		}
-	}
+	   public ModalFeedbackBuilder createFeedbackBuilder(ModalFeedbackType type) {
+		   switch(type) {
+			   case hint: return createHint();
+			   case correctSolution: return createCorrectSolutionFeedback();
+			   case correct: return createCorrectFeedback();
+			   case incorrect: return createIncorrectFeedback();
+			   case empty: return createEmptyFeedback();
+			   case answered: return createAnsweredFeedback();
+			   case source: return createSourceFeedback();
+			   default: return null;
+		   }
+	   }
 
-	public void removeFeedbackBuilder(ModalFeedbackType type) {
-		switch(type) {
-			case hint: removeHint(); break;
-			case correctSolution: removeCorrectSolutionFeedback(); break;
-			case correct: removeCorrectFeedback(); break;
-			case incorrect: removeIncorrectFeedback(); break;
-			case empty: removeEmptyFeedback(); break;
-			case answered: removeAnsweredFeedback(); break;
-			default: {
-				//do nothing
-			}
-		}
-	}
+	   public void removeFeedbackBuilder(ModalFeedbackType type) {
+		   switch(type) {
+			   case hint: removeHint(); break;
+			   case correctSolution: removeCorrectSolutionFeedback(); break;
+			   case correct: removeCorrectFeedback(); break;
+			   case incorrect: removeIncorrectFeedback(); break;
+			   case empty: removeEmptyFeedback(); break;
+			   case answered: removeAnsweredFeedback(); break;
+			   case source: removeSourceFeedback(); break;
+			   default: {
+				   //do nothing
+			   }
+		   }
+	   }
+	   // --- Source Feedback ---
+	   private ModalFeedbackBuilder sourceFeedback;
+
+	   public ModalFeedbackBuilder getSourceFeedback() {
+		   return sourceFeedback;
+	   }
+
+	   public ModalFeedbackBuilder createSourceFeedback() {
+		   sourceFeedback = new ModalFeedbackBuilder(assessmentItem, ModalFeedbackType.source);
+		   return sourceFeedback;
+	   }
+
+	   public void removeSourceFeedback() {
+		   sourceFeedback = null;
+	   }
 	
 	public ModalFeedbackBuilder getIncorrectFeedback() {
 		return incorrectFeedback;

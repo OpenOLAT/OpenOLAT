@@ -378,6 +378,7 @@ public class ModalFeedbackBuilder {
 		incorrect,
 		empty,
 		answered,
+		source, // new feedback type for source
 		additional,
 		unkown
 	}

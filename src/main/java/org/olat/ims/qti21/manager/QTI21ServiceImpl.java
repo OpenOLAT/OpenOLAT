@@ -1245,7 +1245,14 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
         /* Finally schedule LTI result return (if appropriate and sane) */
         //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
-        return candidateSession;
+		// push scoring into the assessment entry (auto-grading for objective items)
+		try {
+			updateAssessmentEntry(candidateSession, true);
+		} catch (Exception e) {
+			log.error("Error while updating assessment entry after finishing test session: {}", e.getMessage(), e);
+		}
+
+		return candidateSession;
 	}
 
 	/**

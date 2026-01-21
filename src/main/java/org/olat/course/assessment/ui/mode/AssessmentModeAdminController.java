@@ -33,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.assessment.ui.AssessmentTemplateListController;
 
 /**
  * 
@@ -46,11 +47,13 @@ public class AssessmentModeAdminController extends BasicController {
 	private final Link settingsLink;
 	private final Link assessmentModesLink;
 	private final Link safeExamBrowserLink;
+	private final Link templatesLink;
 	private final SegmentViewComponent segmentView;
 	
 	private AssessmentModeAdminListController modeListCtrl;
 	private AssessmentModeAdminSettingsController settingsCtrl;
 	private SafeExamBrowserAdminController safeExamBrowserCtrl;
+	private AssessmentTemplateListController templatesCtrl;
 	
 	public AssessmentModeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -67,6 +70,8 @@ public class AssessmentModeAdminController extends BasicController {
 		segmentView.addSegment(assessmentModesLink, false);
 		safeExamBrowserLink = LinkFactory.createLink("admin.assessment.mode.seb", mainVC, this);
 		segmentView.addSegment(safeExamBrowserLink, false);
+		templatesLink = LinkFactory.createLink("admin.assessment.templates", mainVC, this);
+		segmentView.addSegment(templatesLink, false);
 
 		putInitialPanel(mainVC);
 	}
@@ -83,6 +88,8 @@ public class AssessmentModeAdminController extends BasicController {
 					doOpenAssessmentModes(ureq);
 				} else if(clickedLink == safeExamBrowserLink) {
 					doOpenSafeExamBrowserConfiguration(ureq);
+				} else if(clickedLink == templatesLink) {
+					doOpenTemplates(ureq);
 				}
 			}
 		}
@@ -116,5 +123,15 @@ public class AssessmentModeAdminController extends BasicController {
 		safeExamBrowserCtrl = new SafeExamBrowserAdminController(ureq, bwControl);
 		listenTo(safeExamBrowserCtrl);
 		mainVC.put("segmentCmp", safeExamBrowserCtrl.getInitialComponent());
+	}
+	
+	private void doOpenTemplates(UserRequest ureq) {
+		removeControllerListener(templatesCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Templates", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		templatesCtrl = new AssessmentTemplateListController(ureq, bwControl);
+		listenTo(templatesCtrl);
+		mainVC.put("segmentCmp", templatesCtrl.getInitialComponent());
 	}
 }

@@ -66,12 +66,13 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
  */
 public class FeedbacksEditorController extends FormBasicController implements SyncAssessmentItem {
 	
-	private FormLink addHintButton, addCorrectSolutionButton, addCorrectButton,
-		addIncorrectButton, addAdditionalButton, addAnsweredButton, addEmptyButton;
+	   private FormLink addHintButton, addCorrectSolutionButton, addCorrectButton,
+		   addIncorrectButton, addAdditionalButton, addAnsweredButton, addEmptyButton, addSourceButton;
 	
 	private SimpleFeedbackForm hintForm, correctSolutionForm;
 	private SimpleFeedbackForm correctForm, incorrectForm;
 	private SimpleFeedbackForm answeredForm, emptyForm;
+	private SourceFeedbackForm sourceForm;
 	private List<RuledFeedbackForm> additionalForms = new ArrayList<>();
 	
 	private final File itemFile;
@@ -138,6 +139,21 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		addEmptyButton.setElementCssClass("o_sel_add_empty");
 		addEmptyButton.setVisible(enable.isEnabled(ModalFeedbackType.empty));
 		dropdownEl.addElement(addEmptyButton);
+		// Add source feedback button
+		addSourceButton = uifactory.addFormLink("add.source.feedback", formLayout, Link.LINK);
+		addSourceButton.setElementCssClass("o_sel_add_source");
+		addSourceButton.setVisible(enable.isEnabled(ModalFeedbackType.source));
+		dropdownEl.addElement(addSourceButton);
+			// Source feedback form
+			  // Add a dedicated container for source feedback
+			  FormLayoutContainer sourceContainer = FormLayoutContainer.createDefaultFormLayout_2_10("sourcefeedbackcontainer", getTranslator());
+			  formLayout.add(sourceContainer);
+			  ModalFeedbackBuilder source = itemBuilder.getSourceFeedback();
+			  sourceForm = new SourceFeedbackForm(source);
+			  sourceForm.initForm(ureq, formLayout);
+			  // Always hide by default and enable button
+			  sourceForm.setVisible(false);
+			  addSourceButton.setEnabled(true);
 		
 		addAdditionalButton = uifactory.addFormLink("add.additional.feedback", formLayout, Link.LINK);
 		addAdditionalButton.setElementCssClass("o_sel_add_conditional");
@@ -223,8 +239,16 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		} else if(addEmptyButton == source) {
 			emptyForm.setVisible(true);
 			updateAddButtons();
-		} else if(addAdditionalButton == source) {
-			doAddAdditionalFeedback(ureq);
+		   } else if(addSourceButton == source) {
+			   sourceForm.setVisible(true);
+			   addSourceButton.setEnabled(false);
+			   updateAddButtons();
+			   flc.setDirty(true);
+			   if (sourceForm.formLayout != null) {
+				   sourceForm.formLayout.setDirty(true);
+			   }
+		   } else if(addAdditionalButton == source) {
+			   doAddAdditionalFeedback(ureq);
 		} else {
 			if(additionalForms != null && additionalForms.size() > 0) {
 				for(RuledFeedbackForm conditionForm:additionalForms) {
@@ -242,6 +266,96 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		addIncorrectButton.setEnabled(!incorrectForm.isVisible());
 		addAnsweredButton.setEnabled(!answeredForm.isVisible());
 		addEmptyButton.setEnabled(!emptyForm.isVisible());
+		addSourceButton.setEnabled(!sourceForm.isVisible());
+	}
+
+	// --- Source Feedback Form ---
+	public class SourceFeedbackForm {
+		private TextElement titleEl;
+		private TextElement urlEl;
+		private FormLayoutContainer formLayout;
+		private ModalFeedbackBuilder feedbackBuilder;
+		private final ModalFeedbackType feedbackType = ModalFeedbackType.source;
+
+		public SourceFeedbackForm(ModalFeedbackBuilder feedbackBuilder) {
+			this.feedbackBuilder = feedbackBuilder;
+		}
+
+		public void initForm(UserRequest ureq, FormItemContainer parentFormLayout) {
+			String id = Integer.toString(++counter);
+			formLayout = FormLayoutContainer.createDefaultFormLayout_2_10("sourcefeedback".concat(id), getTranslator());
+			formLayout.setElementCssClass("o_sel_assessment_item_" + feedbackType.name());
+			parentFormLayout.add(formLayout);
+			formLayout.setRootForm(mainForm);
+			formLayout.setFormTitle(translate("form.imd.source.text"));
+
+			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
+			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
+			titleEl.setUserObject(feedbackBuilder);
+			titleEl.setEnabled(!readOnly);
+			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_title");
+
+			String url = feedbackBuilder == null ? "" : feedbackBuilder.getText();
+			urlEl = uifactory.addTextElement("url_".concat(id), "form.imd.feedback.url", -1, url, formLayout);
+			urlEl.setUserObject(feedbackBuilder);
+			urlEl.setEnabled(!readOnly);
+			urlEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_url");
+
+			if(readOnly) {
+				formLayout.setEnabled(false);
+			}
+		}
+
+		public boolean isEmpty() {
+			return (titleEl == null || titleEl.getValue() == null || titleEl.getValue().trim().isEmpty()) &&
+					 (urlEl == null || urlEl.getValue() == null || urlEl.getValue().trim().isEmpty());
+		}
+
+		public boolean isVisible() {
+			return formLayout.isVisible();
+		}
+
+		public void setVisible(boolean visible) {
+			formLayout.setVisible(visible);
+		}
+
+		public boolean validateFormLogic() {
+			boolean allOk = true;
+			titleEl.clearError();
+			urlEl.clearError();
+			if(titleEl.getValue() == null || titleEl.getValue().trim().isEmpty()) {
+				titleEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+			if(urlEl.getValue() == null || urlEl.getValue().trim().isEmpty()) {
+				urlEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+			if(urlEl.getValue() != null && !urlEl.getValue().isBlank()) {
+			String u = urlEl.getValue().trim();
+			if(!(u.startsWith("http://") || u.startsWith("https://"))) {
+				urlEl.setErrorKey("error.url.format");
+				allOk = false;
+			}
+		}
+
+		return allOk;
+		}
+
+		public void commit() {
+			String title = titleEl.getValue();
+			String url = urlEl.getValue();
+			if(!isEmpty()) {
+				feedbackBuilder = itemBuilder.getFeedbackBuilder(feedbackType);
+				if(feedbackBuilder == null) {
+					feedbackBuilder = itemBuilder.createFeedbackBuilder(feedbackType);
+				}
+				feedbackBuilder.setTitle(title);
+				feedbackBuilder.setText(url);
+			} else {
+				itemBuilder.removeFeedbackBuilder(feedbackType);
+			}
+		}
 	}
 	
 	private void doAddAdditionalFeedback(UserRequest ureq) {
@@ -268,6 +382,12 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		emptyForm.commit();
 		emptyForm.setVisible(!emptyForm.isEmpty());
 
+		if (sourceForm != null && sourceForm.isVisible()) {
+        if (sourceForm.validateFormLogic()) {
+            sourceForm.commit();
+            sourceForm.setVisible(!sourceForm.isEmpty());
+        }
+    }
 		List<RuledFeedbackForm> validAdditionalForms = new ArrayList<>();
 		List<ModalFeedbackBuilder> additionalBuilders = new ArrayList<>();
 		for(RuledFeedbackForm additionalForm:additionalForms) {
@@ -297,6 +417,10 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			allOk &= answeredForm.validateFormLogic();
 			allOk &= emptyForm.validateFormLogic();
 		}
+
+		if (sourceForm != null && sourceForm.isVisible()) {
+        	allOk &= sourceForm.validateFormLogic();
+    	}
 		
 		for(RuledFeedbackForm additionalForm:additionalForms) {
 			allOk &= additionalForm.validateFormLogic();

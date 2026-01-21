@@ -1,0 +1,44 @@
+<h2><i class="o_icon o_icon_assessment_tool"> </i> $r.translate("template.list.title")</h2>
+
+<p class="o_info">$r.translate("template.list.description")</p>
+
+<div class="o_button_group">
+    $r.render("template.create")
+</div>
+
+#if($hasTemplates)
+<div class="o_table_wrapper">
+    <table class="o_table table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>$r.translate("template.name")</th>
+                <th>$r.translate("template.description")</th>
+                <th class="o_col_sticky_right">$r.translate("template.actions")</th>
+            </tr>
+        </thead>
+        <tbody>
+            #foreach($row in $templates)
+            <tr>
+                <td><strong>$!row.name</strong></td>
+                <td>$!row.description</td>
+                <td class="o_col_sticky_right">
+                    <div class="o_button_group o_button_group_right">
+                        $r.render($row.editLink)
+                        $r.render($row.exportLink)
+                        $r.render($row.deleteLink)
+                    </div>
+                </td>
+            </tr>
+            #end
+        </tbody>
+    </table>
+</div>
+#else
+<div class="o_empty_state">
+    <div class="o_empty_visual">
+        <i class="o_icon o_icon_empty_indicator"></i>
+    </div>
+    <h3 class="o_empty_msg">$r.translate("template.list.empty")</h3>
+    <p class="o_empty_hint">$r.translate("template.list.empty.hint")</p>
+</div>
+#end

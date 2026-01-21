@@ -46,13 +46,13 @@ public class FeedbacksEnabler {
 	}
 	
 	public static FeedbacksEnabler standardFeedbacks() {
-		return new FeedbacksEnabler(ModalFeedbackType.hint, ModalFeedbackType.correctSolution,
-				ModalFeedbackType.correct, ModalFeedbackType.incorrect, ModalFeedbackType.additional);
+		       return new FeedbacksEnabler(ModalFeedbackType.hint, ModalFeedbackType.correctSolution,
+			       ModalFeedbackType.correct, ModalFeedbackType.incorrect, ModalFeedbackType.source, ModalFeedbackType.additional);
 	}
 	
 	public static FeedbacksEnabler lobFeedbacks() {
-		return new FeedbacksEnabler(ModalFeedbackType.hint, ModalFeedbackType.correctSolution,
-				ModalFeedbackType.answered, ModalFeedbackType.empty, ModalFeedbackType.additional);
+		       return new FeedbacksEnabler(ModalFeedbackType.hint, ModalFeedbackType.correctSolution,
+			       ModalFeedbackType.answered, ModalFeedbackType.empty, ModalFeedbackType.source, ModalFeedbackType.additional);
 	}
 
 }
