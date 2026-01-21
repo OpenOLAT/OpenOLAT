@@ -32,35 +32,23 @@ public class TableWidgetConfigPrefs implements Serializable {
 	
 	private static final long serialVersionUID = 6498267090046033407L;
 	
-	public enum FilterType {relevant, custom}
-	
-	private Set<String> keyFigureKeys;
-	private FilterType filterType;
-	private Set<String> filterFigureKeys;
+	private String keyFigureKey;
+	private Set<String> visibleFigureKeys;
 	private int numRows;
-	
-	public Set<String> getKeyFigureKeys() {
-		return keyFigureKeys;
+	public String getKeyFigureKey() {
+		return keyFigureKey;
 	}
 
-	public void setKeyFigureKeys(Set<String> keyFigureKeys) {
-		this.keyFigureKeys = keyFigureKeys;
-	}
-	
-	public FilterType getFilterType() {
-		return filterType;
+	public void setKeyFigureKey(String keyFigureKey) {
+		this.keyFigureKey = keyFigureKey;
 	}
 
-	public void setFilterType(FilterType filterType) {
-		this.filterType = filterType;
+	public Set<String> getVisibleFigureKeys() {
+		return visibleFigureKeys;
 	}
 
-	public Set<String> getFilterFigureKeys() {
-		return filterFigureKeys;
-	}
-
-	public void setFilterFigureKeys(Set<String> filterFigureKeys) {
-		this.filterFigureKeys = filterFigureKeys;
+	public void setVisibleFigureKeys(Set<String> visibleFigureKeys) {
+		this.visibleFigureKeys = visibleFigureKeys;
 	}
 
 	public int getNumRows() {

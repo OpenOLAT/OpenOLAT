@@ -46,7 +46,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
-import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs.FilterType;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.util.StringHelper;
@@ -92,6 +91,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		figureValues = new SelectionValues();
 		figureValues.add(SelectionValues.entry("1", translate("select.1")));
 		figureValues.add(SelectionValues.entry("2", translate("select.2")));
+		figureValues.add(SelectionValues.entry("3", translate("select.3")));
 		figureValues.add(SelectionValues.entry("4", translate("select.4")));
 		figureValues.add(SelectionValues.entry("5", ""));
 		
@@ -204,10 +204,8 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	@Override
 	public TableWidgetConfigPrefs getDefault() {
 		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
-		Set<String> allFigureKeys = Set.of(figureValues.keys());
-		prefs.setKeyFigureKeys(allFigureKeys);
-		prefs.setFilterType(FilterType.relevant);
-		prefs.setFilterFigureKeys(allFigureKeys);
+		prefs.setKeyFigureKey("3");
+		prefs.setVisibleFigureKeys(Set.of(figureValues.keys()));
 		prefs.setNumRows(5);
 		return prefs;
 	}

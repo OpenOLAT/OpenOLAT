@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.control.generic.dashboard;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.IntStream;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs.FilterType;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -46,9 +47,8 @@ import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs.Filter
  */
 public class TableWidgetPreferenceController extends FormBasicController {
 
-	private MultipleSelectionElement keyFiguresEl;
-	private SingleSelection filterTypeEl;
-	private MultipleSelectionElement filterFiguresEl;
+	private SingleSelection keyFigureEl;
+	private MultipleSelectionElement figuresEl;
 	private SingleSelection numRowsEl;
 	private FormLink resetLink;
 	
@@ -76,20 +76,15 @@ public class TableWidgetPreferenceController extends FormBasicController {
 		formLayout.add(headerCont);
 		
 		SelectionValues figureValues = configProvider.getFigureValues();
-		keyFiguresEl = uifactory.addCheckboxesVertical("key.figures", "settings.key.figures", headerCont, figureValues.keys(), figureValues.values(), 1);
+		keyFigureEl = uifactory.addDropdownSingleselect("settings.main.figure", headerCont, figureValues.keys(), figureValues.values());
+		keyFigureEl.addActionListener(FormEvent.ONCHANGE);
+		
+		figuresEl = uifactory.addCheckboxesVertical("figures", "settings.figures", headerCont, figureValues.keys(), figureValues.values(), 1);
 		
 		FormLayoutContainer tableCont = FormLayoutContainer.createVerticalFormLayout("tableCont", getTranslator());
 		tableCont.setFormTitle(translate("settings.table"));
 		tableCont.setRootForm(mainForm);
 		formLayout.add(tableCont);
-		
-		SelectionValues filterSV = new SelectionValues();
-		filterSV.add(SelectionValues.entry(FilterType.relevant.name(), translate("settings.filter.type.relevant")));
-		filterSV.add(SelectionValues.entry(FilterType.custom.name(), translate("settings.filter.type.custom")));
-		filterTypeEl = uifactory.addRadiosVertical("settings.filter", tableCont, filterSV.keys(), filterSV.values());
-		filterTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		filterFiguresEl = uifactory.addCheckboxesVertical("filter.figures", "settings.key.figures", tableCont, figureValues.keys(), figureValues.values(), 1);
 		
 		SelectionValues numRowsSV = new SelectionValues();
 		IntStream.rangeClosed(5, 15)
@@ -104,18 +99,16 @@ public class TableWidgetPreferenceController extends FormBasicController {
 	}
 	
 	private void updateUI(TableWidgetConfigPrefs prefs) {
-		if (prefs.getKeyFigureKeys() != null) {
-			prefs.getKeyFigureKeys().forEach(key -> keyFiguresEl.select(key, true));
-		} else {
-			keyFiguresEl.getKeys().forEach(key -> keyFiguresEl.select(key, false));
+		String keyFigureKey = prefs.getKeyFigureKey();
+		if (!StringHelper.containsNonWhitespace(keyFigureKey) || !Arrays.asList(keyFigureEl.getKeys()).contains(keyFigureKey)) {
+			keyFigureKey = keyFigureEl.getKey(1);
 		}
+		keyFigureEl.select(keyFigureKey, true);
 		
-		filterTypeEl.select(prefs.getFilterType().name(), true);
-		
-		if (prefs.getFilterFigureKeys() != null) {
-			prefs.getFilterFigureKeys().forEach(key -> filterFiguresEl.select(key, true));
+		if (prefs.getVisibleFigureKeys() != null) {
+			prefs.getVisibleFigureKeys().forEach(key -> figuresEl.select(key, true));
 		} else {
-			filterFiguresEl.getKeys().forEach(key -> filterFiguresEl.select(key, false));
+			figuresEl.getKeys().forEach(key -> figuresEl.select(key, false));
 		}
 		
 		numRowsEl.select(String.valueOf(prefs.getNumRows()), true);
@@ -124,12 +117,14 @@ public class TableWidgetPreferenceController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		filterFiguresEl.setVisible(filterTypeEl.isKeySelected(FilterType.custom.name()));
+		figuresEl.setEnabled(figuresEl.getKeys(), true);
+		figuresEl.setEnabled(keyFigureEl.getSelectedKey(), false);
+		figuresEl.select(keyFigureEl.getSelectedKey(), true);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == filterTypeEl) {
+		if (source == keyFigureEl) {
 			updateUI();
 		} else if (source == resetLink) {
 			updateUI(configProvider.getDefault());
@@ -140,17 +135,12 @@ public class TableWidgetPreferenceController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		prefs = new TableWidgetConfigPrefs();
-		prefs.setKeyFigureKeys(new HashSet<>(keyFiguresEl.getSelectedKeys()));
-		prefs.setFilterType(FilterType.valueOf(filterTypeEl.getSelectedKey()));
-		if (prefs.getFilterType() == FilterType.relevant) {
-			prefs.setFilterFigureKeys(null);
-		} else {
-			HashSet<String> filterFigureKeys = new HashSet<>(filterFiguresEl.getSelectedKeys());
-			prefs.setFilterFigureKeys(filterFigureKeys);
-			if (filterFigureKeys.isEmpty()) {
-				prefs.setFilterType(FilterType.relevant);
-			}
-		}
+		prefs.setKeyFigureKey(keyFigureEl.getSelectedKey());
+		
+		HashSet<String> visibleFigureKeys = new HashSet<>(figuresEl.getSelectedKeys());
+		visibleFigureKeys.remove(keyFigureEl.getSelectedKey());
+		prefs.setVisibleFigureKeys(visibleFigureKeys);
+		
 		prefs.setNumRows(Integer.valueOf(numRowsEl.getSelectedKey()));
 		
 		fireEvent(ureq, Event.DONE_EVENT);
