@@ -86,11 +86,6 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 
 	@Override
-	protected String getTableTitle() {
-		return null;
-	}
-
-	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
 		dayNavEl = DayNavFactory.createElement("day.nav", widgetCont);
 		return dayNavEl.getComponent().getComponentName();

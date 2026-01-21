@@ -69,7 +69,6 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	private FormLink showAllLink;
 
 	private final String title;
-	private final String tableTitle;
 	private final boolean showHeader;
 	private final boolean linkCells;
 	private final boolean listView;
@@ -82,7 +81,6 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
 		this.title = title;
-		this.tableTitle = tableTitle;
 		this.showHeader = showHeader;
 		this.linkCells = linkCells;
 		this.listView = listView;
@@ -96,16 +94,12 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		figureValues.add(SelectionValues.entry("5", ""));
 		
 		initForm(ureq);
+		setTableTitle(tableTitle);
 	}
 
 	@Override
 	protected String getTitle() {
 		return title;
-	}
-
-	@Override
-	protected String getTableTitle() {
-		return tableTitle;
 	}
 
 	@Override
@@ -205,7 +199,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	public TableWidgetConfigPrefs getDefault() {
 		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
 		prefs.setKeyFigureKey("3");
-		prefs.setVisibleFigureKeys(Set.of(figureValues.keys()));
+		prefs.setFocusFigureKeys(Set.of(figureValues.keys()));
 		prefs.setNumRows(5);
 		return prefs;
 	}

@@ -95,16 +95,12 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 		membersAreaBusinessPath = "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Members:0]";
 
 		initForm(ureq);
+		setTableTitle(translate("certified"));
 	}
 
 	@Override
 	protected String getTitle() {
 		return "<i class=\"o_icon o_icon_activate\"> </i> " + translate("active.members");
-	}
-
-	@Override
-	protected String getTableTitle() {
-		return translate("certified");
 	}
 
 	@Override

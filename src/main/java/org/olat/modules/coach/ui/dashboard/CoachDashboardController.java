@@ -54,6 +54,7 @@ public class CoachDashboardController extends BasicController {
 			
 			lectureBlocksCtrl = new CoachLectureBlocksWidgetController(ureq, wControl);
 			listenTo(lectureBlocksCtrl);
+			lectureBlocksCtrl.reload();
 			dashbordCtrl.addWidget("lectureBlocks", lectureBlocksCtrl, BentoBoxSize.box_4_1);
 		}
 	}

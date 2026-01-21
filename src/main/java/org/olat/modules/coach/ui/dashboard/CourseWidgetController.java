@@ -21,9 +21,13 @@ package org.olat.modules.coach.ui.dashboard;
 
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -41,13 +45,17 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.indicators.IndicatorsFactory;
 import org.olat.core.gui.components.indicators.IndicatorsItem;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.OLATResourceable;
@@ -75,7 +83,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CourseWidgetController extends TableWidgetController implements FlexiTableComponentDelegate {
+public class CourseWidgetController extends TableWidgetController
+		implements TableWidgetConfigProvider, FlexiTableComponentDelegate {
 
 	private static final String CMD_OPEN = "open";
 	
@@ -84,14 +93,13 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	private FlexiTableElement tableEl;
 	private CompletionCellRenderer completionCellRenderer;
 	private SuccessStatusCellRenderer successStatusCellRenderer;
-	private FormLink indicatorAllLink;
-	private FormLink indicatorMarkedLink;
-	private FormLink indicatorPublishedLink;
-	private FormLink indicatorCoachPublishedLink;
+	private Map<String, FormLink> keyToIndicatorLink;
 	private FormLink showAllLink;
 
 	private final MapperKey mapperThumbnailKey;
 	private final RepositoryEntryImageMapper mapperThumbnail;
+	private SelectionValues figureValues;
+	private String keyFigureKey;
 	
 	@Autowired
 	private MarkManager markManager;
@@ -120,31 +128,71 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	}
 
 	@Override
-	protected String getTableTitle() {
-		return translate("search.mark");
-	}
-
-	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
 		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
 		
-		indicatorAllLink = IndicatorsFactory.createIndicatorFormLink("courses", CMD_OPEN, "", "", widgetCont);
-		setUrl(indicatorAllLink, "[CoachSite:0][Courses:0][coach:0][All:0]");
-		indicatorsEl.setKeyIndicator(indicatorAllLink);
-		
-		indicatorMarkedLink = IndicatorsFactory.createIndicatorFormLink("marked", CMD_OPEN, "", "", widgetCont);
-		setUrl(indicatorMarkedLink, "[CoachSite:0][Courses:0][coach:0][Bookmarks:0]");
-		
-		indicatorPublishedLink = IndicatorsFactory.createIndicatorFormLink("relevant", CMD_OPEN, "", "", widgetCont);
-		setUrl(indicatorPublishedLink, "[CoachSite:0][Courses:0][coach:0][Published:0]");
-		
-		indicatorCoachPublishedLink = IndicatorsFactory.createIndicatorFormLink("access", CMD_OPEN, "", "", widgetCont);
-		setUrl(indicatorCoachPublishedLink, "[CoachSite:0][Courses:0][coach:0][AccessForCoach:0]");
-		
-		List<FormItem> focusIndicators = List.of(indicatorMarkedLink, indicatorPublishedLink, indicatorCoachPublishedLink);
-		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
+		keyToIndicatorLink = new LinkedHashMap<>();
+		figureValues = new SelectionValues();
+		createIndicator(widgetCont, "courses", "course.courses", "[CoachSite:0][Courses:0][coach:0][All:0]");
+		createIndicator(widgetCont, "marked", "search.mark", "[CoachSite:0][Courses:0][coach:0][Bookmarks:0]");
+		createIndicator(widgetCont, "published", "filter.published", "[CoachSite:0][Courses:0][coach:0][Published:0]");
+		createIndicator(widgetCont, "access", "filter.access.for.coach", "[CoachSite:0][Courses:0][coach:0][AccessForCoach:0]");
 		
 		return indicatorsEl.getComponent().getComponentName();
+	}
+
+	private void createIndicator(FormLayoutContainer widgetCont, String name, String figureValueI18n, String url) {
+		FormLink link = IndicatorsFactory.createIndicatorFormLink(name, CMD_OPEN, "", "", widgetCont);
+		setUrl(link, url);
+		keyToIndicatorLink.put(name, link);
+		figureValues.add(SelectionValues.entry(name, translate(figureValueI18n)));
+	}
+	
+	@Override
+	protected TableWidgetConfigProvider getConfigProvider() {
+		return this;
+	}
+
+	@Override
+	public String getId() {
+		return "coaching-course-widget-v1";
+	}
+
+	@Override
+	public SelectionValues getFigureValues() {
+		return figureValues;
+	}
+
+	@Override
+	public TableWidgetConfigPrefs getDefault() {
+		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
+		prefs.setKeyFigureKey("courses");
+		Set<String> figureKeys = new HashSet<>(keyToIndicatorLink.keySet());
+		figureKeys.remove(prefs.getKeyFigureKey());
+		prefs.setFocusFigureKeys(figureKeys);
+		prefs.setNumRows(5);
+		return prefs;
+	}
+
+	@Override
+	public void update(TableWidgetConfigPrefs prefs) {
+		keyFigureKey = prefs.getKeyFigureKey();
+		
+		FormLink keyIndicator = keyToIndicatorLink.get(keyFigureKey);
+		indicatorsEl.setKeyIndicator(keyIndicator);
+		
+		List<FormItem> focusIndicators = keyToIndicatorLink.entrySet().stream()
+				.filter(keyToLink -> prefs.getFocusFigureKeys().contains(keyToLink.getKey()))
+				.map(Entry::getValue)
+				.map(FormItem.class::cast)
+				.toList();
+		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
+		
+		setTableTitle(figureValues.getValue(keyFigureKey));
+		
+		tableEl.setPageSize(prefs.getNumRows());
+		
+		reload();
 	}
 
 	@Override
@@ -153,14 +201,16 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		dataModel = new CourseTableModel(tableColumnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 5, true, getTranslator(), widgetCont);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 15, true, getTranslator(), widgetCont);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setShowSmallPageSize(false);
 		
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		VelocityContainer rowVC = createVelocityContainer("course_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
+		tableEl.setCssDelegate(TableCssDelegate.DELEGATE);
 		
 		return tableEl.getComponent().getComponentName();
 	}
@@ -192,7 +242,7 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	}
 
 	private void updateIndicators(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
-		indicatorAllLink.setI18nKey(IndicatorsFactory.createLinkText(
+		keyToIndicatorLink.get("courses").setI18nKey(IndicatorsFactory.createLinkText(
 				translate("course.courses"),
 				String.valueOf(courseStatistics.size())));
 		
@@ -211,13 +261,13 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 			}
 		}
 		
-		indicatorMarkedLink.setI18nKey(IndicatorsFactory.createLinkText(
+		keyToIndicatorLink.get("marked").setI18nKey(IndicatorsFactory.createLinkText(
 				"<i class=\"o_icon o_course_widget_icon o_icon_bookmark\"></i> " + translate("search.mark"),
 				String.valueOf(numMarked)));
-		indicatorPublishedLink.setI18nKey(IndicatorsFactory.createLinkText(
+		keyToIndicatorLink.get("published").setI18nKey(IndicatorsFactory.createLinkText(
 				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_published\"></i> " + translate("filter.published"),
 				String.valueOf(numPublished)));
-		indicatorCoachPublishedLink.setI18nKey(IndicatorsFactory.createLinkText(
+		keyToIndicatorLink.get("access").setI18nKey(IndicatorsFactory.createLinkText(
 				"<i class=\"o_icon o_course_widget_icon o_icon_coach\"></i> " + translate("filter.access.for.coach"),
 				String.valueOf(numCoachPublished)));
 	}
@@ -229,10 +279,11 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	}
 
 	private void updateTable(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
+		Predicate<? super CourseStatEntry> filterPredicate = getFilterPredicate(markedKeys);
 		List<CourseRow> rows = courseStatistics.stream()
-				.filter(statsEntry -> markedKeys.contains(statsEntry.getRepoKey()))
+				.filter(filterPredicate)
 				.sorted(Comparator.comparing(CourseStatEntry::getLastVisit, Comparator.nullsFirst(Date::compareTo).reversed()))
-				.limit(5)
+				.limit(tableEl.getPageSize())
 				.map(this::toRow)
 				.toList();
 		
@@ -241,6 +292,18 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private Predicate<CourseStatEntry> getFilterPredicate(Set<Long> markedKeys) {
+		if (keyFigureKey != null) {
+			return switch (keyFigureKey) {
+			case "marked" -> entry -> markedKeys.contains(entry.getRepoKey());
+			case "published" -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus();
+			case "access" -> entry -> RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
+			default -> entry -> true;
+			};
+		}
+		return entry -> true;
 	}
 	
 	private CourseRow toRow(CourseStatEntry entry) {
@@ -310,6 +373,27 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	
 	private void doOpen(UserRequest ureq, String businessPath) {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private final static class TableCssDelegate implements FlexiTableCssDelegate {
+		
+		private static final FlexiTableCssDelegate DELEGATE = new TableCssDelegate();
+
+		@Override
+		public String getWrapperCssClass(FlexiTableRendererType type) {
+			return null;
+		}
+
+		@Override
+		public String getTableCssClass(FlexiTableRendererType type) {
+			return "o_table_body container-fluid o_dashboard_table_max_height";
+		}
+
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			return null;
+		}
+		
 	}
 
 }

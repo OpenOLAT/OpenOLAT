@@ -48,6 +48,7 @@ public abstract class TableWidgetController extends FormBasicController {
 	
 	public static final String CMD_ROW_CLICKED = "row.clicked";
 	
+	private FormLayoutContainer widgetCont;
 	private FormLink prefsLink;
 	
 	private TableWidgetPreferenceController prefsCtrl;
@@ -61,7 +62,7 @@ public abstract class TableWidgetController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String page = Util.getPackageVelocityRoot(TableWidgetController.class) + "/widget_table.html";
-		FormLayoutContainer widgetCont = FormLayoutContainer.createCustomFormLayout("widgetCont", getTranslator(), page);
+		widgetCont = FormLayoutContainer.createCustomFormLayout("widgetCont", getTranslator(), page);
 		widgetCont.setRootForm(mainForm);
 		formLayout.add(widgetCont);
 		
@@ -70,7 +71,6 @@ public abstract class TableWidgetController extends FormBasicController {
 		prefsLink.setLinkTitle(translate("settings.change"));
 		
 		widgetCont.contextPut("title", getTitle());
-		widgetCont.contextPut("tableTitle", getTableTitle());
 		widgetCont.contextPut("indicatorsComponentName", createIndicators(widgetCont));
 		widgetCont.contextPut("tableComponentName", createTable(widgetCont));
 		widgetCont.contextPut("emptyComponentName", createEmptyState(widgetCont));
@@ -80,10 +80,13 @@ public abstract class TableWidgetController extends FormBasicController {
 	}
 	
 	protected abstract String getTitle();
-	protected abstract String getTableTitle();
 	protected abstract String createIndicators(FormLayoutContainer widgetCont);
 	protected abstract String createTable(FormLayoutContainer widgetCont);
 	protected abstract String createShowAll(FormLayoutContainer widgetCont);
+	
+	protected void setTableTitle(String tableTitle) {
+		widgetCont.contextPut("tableTitle", tableTitle);
+	}
 	
 	/**
 	 * @param widgetCont 
@@ -144,10 +147,13 @@ public abstract class TableWidgetController extends FormBasicController {
 	}
 
 	private TableWidgetConfigPrefs getPrefs(UserRequest ureq, TableWidgetConfigProvider configProvider) {
-		TableWidgetConfigPrefs prefs = (TableWidgetConfigPrefs)ureq.getUserSession()
+		Object object = ureq.getUserSession()
 				.getGuiPreferences()
 				.get(TableWidgetController.class, configProvider.getId(), configProvider.getDefault());
-		return prefs;
+		if (object instanceof TableWidgetConfigPrefs prefs) {
+			return prefs;
+		}
+		return configProvider.getDefault();
 	}
 	
 	private void initPrefs(UserRequest ureq) {

@@ -33,8 +33,9 @@ public class TableWidgetConfigPrefs implements Serializable {
 	private static final long serialVersionUID = 6498267090046033407L;
 	
 	private String keyFigureKey;
-	private Set<String> visibleFigureKeys;
+	private Set<String> focusFigureKeys;
 	private int numRows;
+	
 	public String getKeyFigureKey() {
 		return keyFigureKey;
 	}
@@ -43,12 +44,12 @@ public class TableWidgetConfigPrefs implements Serializable {
 		this.keyFigureKey = keyFigureKey;
 	}
 
-	public Set<String> getVisibleFigureKeys() {
-		return visibleFigureKeys;
+	public Set<String> getFocusFigureKeys() {
+		return focusFigureKeys;
 	}
 
-	public void setVisibleFigureKeys(Set<String> visibleFigureKeys) {
-		this.visibleFigureKeys = visibleFigureKeys;
+	public void setFocusFigureKeys(Set<String> focusFigureKeys) {
+		this.focusFigureKeys = focusFigureKeys;
 	}
 
 	public int getNumRows() {

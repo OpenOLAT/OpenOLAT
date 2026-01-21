@@ -136,7 +136,6 @@ public class CoachMainRootController extends BasicController implements Activate
 		initButtons();
 		
 		dashboardCtrl = new CoachDashboardController(ureq, wControl, coachingSec);
-		dashboardCtrl.reload();
 		listenTo(dashboardCtrl);
 		mainVC.put("dashboard", dashboardCtrl.getInitialComponent());
 	}

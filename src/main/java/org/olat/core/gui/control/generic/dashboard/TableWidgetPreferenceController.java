@@ -105,8 +105,8 @@ public class TableWidgetPreferenceController extends FormBasicController {
 		}
 		keyFigureEl.select(keyFigureKey, true);
 		
-		if (prefs.getVisibleFigureKeys() != null) {
-			prefs.getVisibleFigureKeys().forEach(key -> figuresEl.select(key, true));
+		if (prefs.getFocusFigureKeys() != null) {
+			prefs.getFocusFigureKeys().forEach(key -> figuresEl.select(key, true));
 		} else {
 			figuresEl.getKeys().forEach(key -> figuresEl.select(key, false));
 		}
@@ -139,7 +139,7 @@ public class TableWidgetPreferenceController extends FormBasicController {
 		
 		HashSet<String> visibleFigureKeys = new HashSet<>(figuresEl.getSelectedKeys());
 		visibleFigureKeys.remove(keyFigureEl.getSelectedKey());
-		prefs.setVisibleFigureKeys(visibleFigureKeys);
+		prefs.setFocusFigureKeys(visibleFigureKeys);
 		
 		prefs.setNumRows(Integer.valueOf(numRowsEl.getSelectedKey()));
 		
