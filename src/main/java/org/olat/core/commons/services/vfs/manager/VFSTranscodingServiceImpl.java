@@ -153,6 +153,14 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 		Path directoryPath = Paths.get(folderModule.getCanonicalRoot(), relativePath);
 		return directoryPath.toString();
 	}
+	
+	@Override
+	public String getTargetFilePath(VFSMetadata vfsMetadata) {
+		String relativePath = vfsMetadata.getRelativePath();
+		String fileName = vfsMetadata.getFilename();
+		Path targetPath = Paths.get(folderModule.getCanonicalRoot(), relativePath, fileName);
+		return targetPath.toString();
+	}
 
 	@Override
 	public void setStatus(VFSMetadata vfsMetadata, int status) {
