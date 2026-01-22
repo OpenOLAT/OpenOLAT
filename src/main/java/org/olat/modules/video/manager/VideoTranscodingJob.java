@@ -80,18 +80,19 @@ public class VideoTranscodingJob extends JobWithDB {
 			return;
 		}
 		
+		if (videoModule.isVideoTranscodingServiceConfigured()) {
+			videoManager.postVideoTranscodingJobs();
+			return;
+		}
+
 		for(VideoTranscoding videoTranscoding = getNextVideo(); videoTranscoding != null;  videoTranscoding = getNextVideo()) {
 			if (!videoModule.isVideoTranscodingJobEnabled()) {
 				log.info("Skipping execution of video transcoding job because transcoding job was disabled while running.");
 				break;
 			}
 
-			if (videoModule.isVideoTranscodingServiceConfigured()) {
-				videoManager.postVideoTranscodingJob(videoTranscoding);
-			} else {
-				forkTranscodingProcess(videoTranscoding);
-				optimize(videoTranscoding.getVideoResource());
-			}
+			forkTranscodingProcess(videoTranscoding);
+			optimize(videoTranscoding.getVideoResource());
 		}
 	}
 	

@@ -256,7 +256,18 @@ public class VideoTranscodingDAO {
 				.createQuery(sb.toString(), VideoTranscoding.class)
 				.getResultList();
 	}
-	
+
+	public List<VideoTranscoding> getVideoTranscodingsPending() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trans from videotranscoding as trans")
+				.append(" inner join fetch trans.videoResource as res")
+				.append(" where trans.status > -2")
+				.append(" order by res.key desc, trans.creationDate asc, trans.id asc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VideoTranscoding.class)
+				.getResultList();
+	}
+
 	/**
 	 * Gets the failed video transcodings.
 	 * currently error codes start at -2 until -4.

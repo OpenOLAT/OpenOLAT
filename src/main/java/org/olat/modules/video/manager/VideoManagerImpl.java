@@ -825,7 +825,14 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public void postVideoTranscodingJob(VideoTranscoding videoTranscoding) {
+	public void postVideoTranscodingJobs() {
+		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodingsPending();
+		for (VideoTranscoding videoTranscoding : videoTranscodings) {
+			postVideoTranscodingJob(videoTranscoding);
+		}
+	}
+
+	private void postVideoTranscodingJob(VideoTranscoding videoTranscoding) {
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		Long originalSize = getOriginalSize(videoTranscoding);
 		Integer resolution = videoTranscoding.getResolution();
@@ -834,10 +841,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 
 		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.POST_JOB_COMMAND;
 		TranscoderHelper.postTranscoderJob(transcoderJob, url, videoTranscoding.getKey(), 
-				(s) -> updateStatus(videoTranscoding, s));
+				(s) -> updateVideoTranscoding(videoTranscoding, s));
 	}
 	
-	private void updateStatus(VideoTranscoding videoTranscoding, int status) {
+	private void updateVideoTranscoding(VideoTranscoding videoTranscoding, int status) {
+		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_SERVICE);
 		videoTranscoding.setStatus(status);
 		videoTranscodingDao.updateTranscoding(videoTranscoding);
 		dbInstance.commitAndCloseSession();
