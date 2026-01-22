@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.model;
+package org.olat.core.commons.services.video.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,41 +29,32 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranscoderJobResult {
-	private String uuid;
-	private TranscoderJobType type;
-	private Long referenceId;
-	private TranscoderGenerated generated;
+public class TranscoderOriginal {
+	private String url;
+	private Long size;
+	private Integer resolution;
 
-	public String getUuid() {
-		return uuid;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
-	public TranscoderJobType getType() {
-		return type;
+	public Long getSize() {
+		return size;
 	}
 
-	public void setType(TranscoderJobType type) {
-		this.type = type;
+	public void setSize(Long size) {
+		this.size = size;
 	}
 
-	public Long getReferenceId() {
-		return referenceId;
+	public Integer getResolution() {
+		return resolution;
 	}
 
-	public void setReferenceId(Long referenceId) {
-		this.referenceId = referenceId;
-	}
-
-	public TranscoderGenerated getGenerated() {
-		return generated;
-	}
-
-	public void setGenerated(TranscoderGenerated generated) {
-		this.generated = generated;
+	public void setResolution(Integer resolution) {
+		this.resolution = resolution;
 	}
 }

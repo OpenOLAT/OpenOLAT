@@ -46,7 +46,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
-import org.olat.modules.video.model.TranscoderJobResult;
+import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.resource.OLATResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

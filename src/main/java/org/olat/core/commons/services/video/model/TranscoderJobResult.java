@@ -17,8 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.model;
+package org.olat.core.commons.services.video.model;
 
+import org.olat.modules.video.model.TranscoderGenerated;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -29,23 +30,41 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranscoderOriginal {
-	private String url;
-	private Long size;
+public class TranscoderJobResult {
+	private String uuid;
+	private TranscoderJobType type;
+	private Long referenceId;
+	private TranscoderGenerated generated;
 
-	public String getUrl() {
-		return url;
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
-	public Long getSize() {
-		return size;
+	public TranscoderJobType getType() {
+		return type;
 	}
 
-	public void setSize(Long size) {
-		this.size = size;
+	public void setType(TranscoderJobType type) {
+		this.type = type;
+	}
+
+	public Long getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(Long referenceId) {
+		this.referenceId = referenceId;
+	}
+
+	public TranscoderGenerated getGenerated() {
+		return generated;
+	}
+
+	public void setGenerated(TranscoderGenerated generated) {
+		this.generated = generated;
 	}
 }

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.model;
+package org.olat.core.commons.services.video.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -30,6 +30,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TranscoderJob {
+	public static final String TRANSCODING_NAMESPACE = "transcoding";
+	public static final String POST_JOB_COMMAND = "postJob";
+	public static final String NOTIFY_RESULT_COMMAND = "notifyResult";
 	
 	private String uuid;
 	private TranscoderJobType type;

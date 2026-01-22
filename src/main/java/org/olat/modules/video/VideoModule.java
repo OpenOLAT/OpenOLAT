@@ -329,6 +329,17 @@ public class VideoModule extends AbstractSpringModule {
 		setStringProperty(VIDEO_TRANSCODING_SERVICE_URL, transcodingServiceUrl, true);
 	}
 
+	public boolean isVideoTranscodingServiceConfigured() {
+		return StringHelper.containsNonWhitespace(transcodingServiceUrl) && transcodingEnabled;		
+	}
+	
+	public boolean isVideoTranscodingJobEnabled() {
+		if (isVideoTranscodingServiceConfigured()) {
+			return true;
+		}
+		return isTranscodingLocal();
+	}
+
 	public void setTranscoding(boolean transcodingLocal) {
 		this.transcodingLocal = transcodingLocal;
 		setStringProperty(VIDEOTRANSCODING_LOCAL, Boolean.toString(transcodingLocal), true);

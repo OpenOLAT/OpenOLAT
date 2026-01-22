@@ -24,24 +24,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.video.TranscoderHelper;
+import org.olat.core.commons.services.video.model.TranscoderJob;
+import org.olat.core.commons.services.video.model.TranscoderJobType;
+import org.olat.core.commons.services.video.model.TranscoderOriginal;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -56,10 +48,9 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.modules.audiovideorecording.AVModule;
-import org.olat.modules.video.model.TranscoderJob;
-import org.olat.modules.video.model.TranscoderJobPostReply;
-import org.olat.modules.video.model.TranscoderJobType;
-import org.olat.modules.video.model.TranscoderOriginal;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -75,8 +66,6 @@ import org.springframework.stereotype.Service;
 public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	private static final Logger log = Tracing.createLoggerFor(VFSTranscodingServiceImpl.class);
-	
-	private static final String POST_JOB_COMMAND = "postJob";
 
 	private final JobKey vfsJobKey = new JobKey("vfsTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
 
@@ -264,70 +253,18 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	
 	@Override
 	public void postConversionJob(VFSMetadata metadata, TranscoderJobType type) {
-		TranscoderJob transcodingJob = createTranscoderJob(metadata, type);
+		String uuid = metadata.getUuid().replace("-", "");
+		Long originalSize = getOriginalSize(metadata);
+		TranscoderJob transcoderJob = TranscoderHelper.createTranscoderJob(uuid, type, metadata.getKey(), originalSize, null);
 
-		try {
-			String url = getConversionServiceUrl(type) + "/" + POST_JOB_COMMAND;
-			HttpPost post = new HttpPost(url);
-			StringEntity stringEntity = new StringEntity(objectMapper.writeValueAsString(transcodingJob), ContentType.APPLICATION_JSON);
-			post.setHeader("Accept", "application/json");
-			post.setEntity(stringEntity);
-
-			try (CloseableHttpClient client = httpClientService.createHttpClient();
-				 CloseableHttpResponse response = client.execute(post)) {
-				int statusCode = response.getStatusLine().getStatusCode();
-				log.debug("Post job {} status code: {}", transcodingJob.getUuid(), statusCode);
-
-				if (statusCode == HttpStatus.SC_OK) {
-					String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-					log.debug("Post job {} reply JSON: {}", transcodingJob.getUuid(), json);
-					TranscoderJobPostReply conversionReply = objectMapper.readValue(json, TranscoderJobPostReply.class);
-					if ("received".equalsIgnoreCase(conversionReply.getStatus())) {
-						log.debug("Post job {} reply: {}", transcodingJob.getUuid(), conversionReply.getStatus());
-						updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_STARTED);
-					} else {
-						log.error("Post job {} reply: {}", transcodingJob.getUuid(), conversionReply.getStatus());
-						updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_ERROR);
-					}
-				} else {
-					log.error("Post job {} failed with status code {}", transcodingJob.getUuid(), statusCode);
-					updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_ERROR);
-				}
-			} catch (Exception e) {
-				log.error("Failed to post job to URL {} for metadata item {}: {}", url, metadata.getKey(), e);
-			}
-		} catch (JsonProcessingException e) {
-			log.error("Failed to create conversion job for metadata item {}: {}", metadata.getKey(), e);
-		}
+		String url = getConversionServiceUrl(type) + "/" + TranscoderJob.POST_JOB_COMMAND;
+		TranscoderHelper.postTranscoderJob(transcoderJob, url, metadata.getKey(), 
+				(s) -> updateStatus(metadata, s));
 	}
 
 	private void updateStatus(VFSMetadata metadata, int status) {
 		setStatus(metadata, status);
 		dbInstance.commitAndCloseSession();
-	}
-
-
-	private TranscoderJob createTranscoderJob(VFSMetadata metadata, TranscoderJobType type) {
-		TranscoderJob transcodingJob = new TranscoderJob();
-		String uuid = UUID.randomUUID().toString().replace("-", "");
-		transcodingJob.setUuid(uuid);
-		transcodingJob.setType(type);
-		String instanceId = WebappHelper.getInstanceId();
-		transcodingJob.setInstance(instanceId);
-		transcodingJob.setReferenceId(metadata.getKey());
-
-		String apiUrl = Settings.getServerContextPathURI() + "/" + TRANSCODING_URL_PART;
-
-		transcodingJob.setNotifyResultUrl(apiUrl + "/" + NOTIFY_RESULT_URL_PART);
-
-		String originalUrl = apiUrl + "/" + type.name() + "/" + metadata.getKey();
-
-		TranscoderOriginal original = new TranscoderOriginal();
-		original.setUrl(originalUrl);
-		original.setSize(getOriginalSize(metadata));
-		transcodingJob.setOriginal(original);
-
-		return transcodingJob;
 	}
 
 	private Long getOriginalSize(VFSMetadata metadata) {

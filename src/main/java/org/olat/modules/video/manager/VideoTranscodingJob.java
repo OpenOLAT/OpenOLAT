@@ -66,52 +66,40 @@ public class VideoTranscodingJob extends JobWithDB {
 		doExecute();
 	}
 
-	/**
-	 * Implementation of job execution
-	 * @param context
-	 * @return
-	 * @throws JobExecutionException
-	 */
-	private boolean doExecute() {
+	private void doExecute() {
 		VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
+		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 
 		if (!videoModule.isTranscodingEnabled()) {
 			log.debug("Skipping execution of video transcoding job, transcoding disabled");
-			return false;
+			return;
 		}
 
-		if (!videoModule.isTranscodingLocal()) {
-			log.debug("Skipping execution of video transcoding job, local transcoding disabled");
-			return false;
+		if (!videoModule.isVideoTranscodingJobEnabled()) {
+			log.debug("Skipping execution of video transcoding job");
+			return;
 		}
 		
-		// Find first one to work with
-		boolean allOk = true;
 		for(VideoTranscoding videoTranscoding = getNextVideo(); videoTranscoding != null;  videoTranscoding = getNextVideo()) {
-			if(cancelTranscoding()) {
+			if (!videoModule.isVideoTranscodingJobEnabled()) {
+				log.info("Skipping execution of video transcoding job because transcoding job was disabled while running.");
 				break;
 			}
-			allOk &= forkTranscodingProcess(videoTranscoding);
-			optimize(videoTranscoding.getVideoResource());
-		}
-		return allOk;
-	}
 
+			if (videoModule.isVideoTranscodingServiceConfigured()) {
+				videoManager.postVideoTranscodingJob(videoTranscoding);
+			} else {
+				forkTranscodingProcess(videoTranscoding);
+				optimize(videoTranscoding.getVideoResource());
+			}
+		}
+	}
+	
 	private void optimize(OLATResource videoResource) {
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		videoManager.optimizeMemoryForVideo(videoResource);
 	}
 
-	private boolean cancelTranscoding() {
-		try {
-			VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
-			return (!videoModule.isTranscodingLocal() || !videoModule.isTranscodingEnabled());
-		} catch (Exception e) {
-			log.error("", e);
-			return true;
-		}
-	}
-	
 	private VideoTranscoding getNextVideo() {
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodingsPendingAndInProgress();
@@ -122,7 +110,7 @@ public class VideoTranscodingJob extends JobWithDB {
 				log.info("Start transcoding video with resolution: {} for video resource: {}",
 						videoTrans.getResolution(), videoTrans.getVideoResource().getResourceableId());
 				videoTrans.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
-				videoTranscoding = videoManager.updateVideoTranscoding(videoTrans);				
+				videoTranscoding = videoManager.updateVideoTranscoding(videoTrans);			
 				break;
 			} else if (transcoder.equals(VideoTranscoding.TRANSCODER_LOCAL)) {
 				log.info("Continue with transcoding video with resolution: {} for video resource: {}",
