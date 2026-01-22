@@ -261,7 +261,7 @@ public class VideoTranscodingDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select trans from videotranscoding as trans")
 				.append(" inner join fetch trans.videoResource as res")
-				.append(" where trans.status > -2")
+				.append(" where trans.status = -1")
 				.append(" order by res.key desc, trans.creationDate asc, trans.id asc");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VideoTranscoding.class)
