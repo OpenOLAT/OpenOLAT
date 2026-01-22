@@ -269,6 +269,8 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 
 		try {
 			download(result, targetFile);
+			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_DONE);
+			vfsTranscodingService.fileDoneEvent(metadata);
 		} catch (Exception e) {
 			log.warn("Failed to download conversion job result [uuid={}, targetPath='{}']: {}", 
 					result.getUuid(), targetPath, e);
