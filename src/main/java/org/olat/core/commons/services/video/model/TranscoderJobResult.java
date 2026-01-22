@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.video.model;
 
-import org.olat.modules.video.model.TranscoderGenerated;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
