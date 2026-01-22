@@ -44,7 +44,7 @@ import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
-import org.olat.modules.curriculum.ui.CurriculumDashboardController;
+import org.olat.modules.curriculum.ui.CurriculumElementDetailsController;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
@@ -86,7 +86,7 @@ public class MembersWidgetController extends FormBasicController {
 	
 	public MembersWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "members_widget", Util
-				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale()));
+				.createPackageTranslator(CurriculumElementDetailsController.class, ureq.getLocale()));
 		curriculumElementInfos = loadInformations(curriculumElement);
 		initForm(ureq);
 	}

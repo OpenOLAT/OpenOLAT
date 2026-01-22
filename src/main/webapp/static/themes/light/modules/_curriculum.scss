@@ -138,32 +138,6 @@
 
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
-	.o_curriculum_widget {
-		border: $o-curriculum-widget-border;
-		border-radius: $o-curriculum-widget-border-radius;
-		padding: 0;
-		background-color: $o-curriculum-widget-bg-color;
-	}
-		
-	.o_curriculum_widget_title>h3 {
-		padding: 5px 15px;
-		margin: 5px 0;
-		font-size: 18px;
-	}
-	
-	.o_header_with_buttons {
-		margin-bottom: 0;
-	}
-	
-	.o_curriculum_widget_cmds {
-		font-size: 18px;
-		margin-right: 15px;
-	}
-	
-	.o_header_with_buttons h3+.o_button_group.o_curriculum_widget_cmds {
-		margin-top: 8px;
-	}
-	
 	.o_curriculum_widget_cards {
 		padding: 0 15px 15px 15px;
 	
@@ -224,100 +198,7 @@
 	.o_curriculum_widget ~ .o_button_group .o_button_details {
 		margin-top: -2px;
 	}
-	
-	.o_curriculum_widget_table {
-		margin-top: 10px;
-	
-		legend {
-			padding: 5px 15px;
-			margin: 0;
-			border: none;
-			font-weight: bold;
-		}
-		
-		.o_empty_state {
-			border: none;
-			border-top: $o-curriculum-widget-border;
-			border-bottom: $o-curriculum-widget-border;
-			border-radius: 0;
-			
-			margin: 0;
-			padding: 0 15px;
-			text-align: left;
-			font-style: italic;
-			background-color: #fff;
-			
-			.o_empty_msg {
-				font-size: 1.2em;
-				color: $o-curriculum-widget-empty-color;
-			}
-		}
-		
-		.o_empty_visual, thead {
-			display: none;
-		}
-		
-		.table {
-			margin-top: 0;
-			
-			td {
-				background-color: #fff;
-				vertical-align: middle;
-			}
-			
-			td:first-child {
-				width: 40%;
-			}
-			td:last-child {
-				width: 150px;
-			}
-			td:has(.o_labeled_light) {
-				text-align: right;
-			}
-			
-			.o_curriculum_date > td:first-child,
-			.o_curriculum_today > td:first-child {
-				border-left: 3px solid #fff;
-			}
-			.o_curriculum_today.o_next > td:first-child {
-				border-left: 3px solid $o-labeled-blue-light-border-color;
-			}
-			.o_curriculum_today.o_running > td:first-child {
-				border-left: 3px solid $o-labeled-orange-light-border-color;
-			}
-		}
-		
-		.o_lecture_title_ref {
-			display: flex;
-			flex-direction: column-reverse;
-		}
-		.o_lecture_title {
-			font-weight: bold;
-		}
-		.o_lecture_ref {
-			display: block;
-			height: 16px;
-		}
-		
-		.o_lecture_date {
-			display: grid;
-			grid-template-columns: 26px 1fr;
-			margin-left: -26px;
-			
-			.o_icon_calendar {
-				align-self: center;
-			}
-		
-			.o_lecture_day {
-				display: block;
-			}
-		}
-	}
-	
-	.o_curriculum_widget_upcoming_events {
-		margin-top: 20px;
-	}
-	
+
 	.o_curriculum_course_card {
 		display: grid;
 		grid-template-columns: 120px 1fr auto;
@@ -497,12 +378,6 @@
 	.o_curriculum_widget_members_status_fullybooked .o_icon:before,
 	.o_curriculum_widget_members_status_fewleft .o_icon:before {
 		color: $brand-warning;
-	}
-}
-
-@media (max-width: $screen-xs-max) {
-	.o_curriculum_overview {
-		grid-template-columns: 1fr;
 	}
 }
 

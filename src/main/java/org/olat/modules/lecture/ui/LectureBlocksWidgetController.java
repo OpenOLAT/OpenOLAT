@@ -49,7 +49,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.modules.curriculum.ui.widgets.LectureBlockTodayDateCellRenderer;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
@@ -67,7 +66,6 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	protected DayNavElement dayNavEl;
 	protected LectureBlocksWidgetTableModel dataModel;
 	protected FlexiTableElement tableEl;
-	private final LectureBlockTodayDateCellRenderer timeRenderer;
 	private FormLayoutContainer emptyCont;
 	protected FormLink backButton;
 	protected FormLink forwardButton;
@@ -77,7 +75,6 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(LectureBlocksWidgetController.class, ureq.getLocale(), getTranslator()));
 		formatter = Formatter.getInstance(getLocale());
-		timeRenderer = new LectureBlockTodayDateCellRenderer(getLocale());
 	}
 
 	@Override
@@ -191,7 +188,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			row.setTitle(lectureBlock.getTitle());
 			row.setLocation(lectureBlock.getLocation());
 			row.setOnlineMeeting(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null);
-			row.setTime(timeRenderer.render(lectureBlock));
+			row.setTime(formatTime(lectureBlock));
 			
 			if (!DateUtils.isSameDay(currentDay, lectureBlock.getStartDate())) {
 				currentDay = lectureBlock.getStartDate();
@@ -242,7 +239,23 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			emptyCont.setVisible(false);
 		}
 	}
-		
+	
+	public String formatTime(LectureBlock lectureBlock) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<span>");
+		// Hour
+		sb.append("<span class='o_lecture_time'>")
+		      .append(formatter.formatTimeShort(lectureBlock.getStartDate()))
+		      .append("</span>");
+		// Duration
+		if(lectureBlock.getEndDate() != null) {
+			String duration = Formatter.formatDurationCompact(lectureBlock.getEndDate().getTime() - lectureBlock.getStartDate().getTime());
+			sb.append(", <span class='o_lecture_duration'>").append(duration).append("</span>");
+		}
+		sb.append("</span>");
+		return sb.toString();
+	}
+	
 	private void updateEmptyButtonUI() {
 		Date prevLectureBlock = getPrevLectureBlock(dayNavEl.getStartDate());
 		backButton.setUserObject(prevLectureBlock);
