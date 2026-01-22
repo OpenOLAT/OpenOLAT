@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -43,46 +41,25 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OrganisationRef;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementManagedFlag;
-import org.olat.modules.curriculum.CurriculumElementType;
-import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.ConfirmInstantiateTemplateController;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
-import org.olat.modules.curriculum.ui.CurriculumHelper;
-import org.olat.modules.curriculum.ui.CurriculumListManagerController;
-import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetDataModel.EntriesCols;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryRuntimeType;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.AccessRenderer;
-import org.olat.repository.ui.author.AuthorListConfiguration;
-import org.olat.repository.ui.author.AuthorListController;
-import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -96,49 +73,28 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_INSTANTIATE = "instantiate";
 	
-	private FormLink coursesLink;
-	private FormLink addMenuButton;
-	private FormLink addTemplateButton;
-	private FormLink addResourceButton;
 	private EmptyPanelItem emptyList;
 	private FlexiTableElement entriesTableEl;
 	private CoursesWidgetDataModel entriesTableModel;
 
-	private final Curriculum curriculum;
-	private final boolean resourcesManaged;
 	private final MapperKey mapperThumbnailKey;
 	private final CurriculumElement curriculumElement;
-	private final CurriculumSecurityCallback secCallback;
 	private final RepositoryEntryImageMapper mapperThumbnail;
-	private final CurriculumElementType curriculumElementType;
 	
 	private CloseableModalController cmc;
-	private AddMenuController addMenuCtrl;
-	private AuthorListController repoSearchCtr;
-	private AuthorListController templateSearchCtr;
-	private CloseableCalloutWindowController menuCalloutCtrl;
 	private ConfirmInstantiateTemplateController confirmInstantiateCtrl;
 
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private OrganisationService organisationService;
 	
-	public CoursesWidgetController(UserRequest ureq, WindowControl wControl, Curriculum curriculum,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
+	public CoursesWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "courses_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		
-		this.secCallback = secCallback;
-		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
-		this.curriculumElementType = curriculumElement.getType();
-		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);
 		
 		initForm(ureq);
 		loadModel();
@@ -161,27 +117,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		coursesLink = uifactory.addFormLink("curriculum.courses", "tab.resources", null, formLayout, Link.LINK);
-		coursesLink.setIconRightCSS("o_icon o_icon-fw o_icon_course_next");
-		
-		if(!resourcesManaged && secCallback.canManageCurriculumElementResources(curriculumElement)) {
-			if(curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0) {
-				addResourceButton = uifactory.addFormLink("add.resource", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
-				addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-				addResourceButton.setTitle(translate("add.resource"));
-			}
-
-			if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == 1) {
-				addMenuButton = uifactory.addFormLink("add.menu", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
-				addMenuButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-				addMenuButton.setTitle("add.menu");
-				
-				addTemplateButton = uifactory.addFormLink("add.template", "add.template", null, formLayout, Link.LINK | Link.NONTRANSLATED);
-				addTemplateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-				addTemplateButton.setTitle(translate("add.template"));
-			}
-		}
-
 		emptyList = uifactory.addEmptyPanel("course.empty", null, formLayout);
 		emptyList.setTitle(translate("curriculum.no.course.assigned.title"));
 		emptyList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
@@ -233,21 +168,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		boolean empty = rows.isEmpty();
 		entriesTableEl.setVisible(!empty);
 		emptyList.setVisible(empty);
-		
-		int maxRelations = curriculumElementType == null ? -1 : curriculumElementType.getMaxRepositoryEntryRelations();
-		if(addResourceButton != null) {
-			addResourceButton.setVisible(maxRelations == -1 || maxRelations > repositoryEntries.size());
-		}
-		
-		if(addTemplateButton != null) {
-			addTemplateButton.setVisible(maxRelations == 1
-					&& repositoryEntries.isEmpty() && repositoryTemplates.isEmpty());
-		}
-		
-		if(addMenuButton != null) {
-			addMenuButton.setVisible(addResourceButton != null && addResourceButton.isVisible()
-					&& addTemplateButton != null && addTemplateButton.isVisible());
-		}
 	}
 	
 	private CourseWidgetRow forgeRow(RepositoryEntry entry, boolean template, int numOfEntries, Map<Long,VFSThumbnailInfos> thumbnails, AccessRenderer renderer) {
@@ -272,65 +192,27 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(repoSearchCtr == source) {
-			if(event instanceof AuthoringEntryRowSelectionEvent se) {
-				doAddRepositoryEntry(se.getRow());
-				loadModel();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(templateSearchCtr == source) {
-			if(event instanceof AuthoringEntryRowSelectionEvent se) {
-				doAddTemplate(se.getRow());
-				loadModel();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(confirmInstantiateCtrl == source) {
+		if(confirmInstantiateCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
-			
-		} else if(addMenuCtrl == source) {
-			if(event == Event.CLOSE_EVENT) {
-				menuCalloutCtrl.deactivate();
-			}
-			cleanUp();
-		} else if(cmc == source || menuCalloutCtrl == source) {
+		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(menuCalloutCtrl);
-		removeAsListenerAndDispose(repoSearchCtr);
-		removeAsListenerAndDispose(addMenuCtrl);
 		removeAsListenerAndDispose(cmc);
-		menuCalloutCtrl = null;
-		repoSearchCtr = null;
-		addMenuCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(coursesLink == source) {
-			List<ContextEntry> entries = BusinessControlFactory.getInstance()
-					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_RESOURCES);
-			fireEvent(ureq, new ActivateEvent(entries));
-		} else if(addResourceButton == source) {
-			doChooseResources(ureq);
-		} else if(addTemplateButton == source) {
-			doChooseTemplate(ureq);
-		} else if(addMenuButton == source) {
-			doOpenMenu(ureq, addMenuButton);
-		} else if(source instanceof FormLink link) {
+		if(source instanceof FormLink link) {
 			if(CMD_OPEN.equals(link.getCmd())
 					&& link.getUserObject() instanceof CourseWidgetRow row) {
 				doOpen(ureq, row);
@@ -361,95 +243,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doChooseResources(UserRequest ureq) {
-		if(guardModalController(repoSearchCtr)) return;
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("curriculum-course-v1", "CourseModule");
-		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
-		tableConfig.setBatchSelect(true);
-		tableConfig.setImportRessources(false);
-		tableConfig.setCreateRessources(false);
-		if (roles.isCurriculumManager() && !CurriculumHelper.isMoreThanCurriculumManager(roles)) {
-			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.curricular));
-		} else {
-			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
-		}
-		
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
-				? List.of(OrganisationRoles.curriculummanager)
-				: List.of();
-		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
-				? getOrganisationWithDescendants()
-				: List.of();
-		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
-		searchParams.addResourceTypes("CourseModule");
-		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
-		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
-		listenTo(repoSearchCtr);
-		repoSearchCtr.selectFilterTab(ureq, repoSearchCtr.getMyCoursesTab());
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(),
-				true, translate("add.resource"));
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {
-		RepositoryEntry entry = repositoryService.loadBy(entryRef);
-		if(entry != null) {
-			boolean hasRepositoryEntries = curriculumService.hasRepositoryEntries(curriculumElement);
-			boolean moveLectureBlocks = !hasRepositoryEntries;
-			curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
-			showInfo("info.repositoryentry.added");
-		}
-	}
-	
-	private void doChooseTemplate(UserRequest ureq) {
-		if(guardModalController(templateSearchCtr)) return;
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("curriculum-template-v1", "CourseModule");
-		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
-		tableConfig.setBatchSelect(true);
-		tableConfig.setImportRessources(false);
-		tableConfig.setCreateRessources(false);
-		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
-		
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
-				? List.of(OrganisationRoles.curriculummanager)
-				: List.of();
-		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
-				? getOrganisationWithDescendants()
-				: List.of();
-		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
-		searchParams.addResourceTypes("CourseModule");
-		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
-		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
-		listenTo(templateSearchCtr);
-		templateSearchCtr.selectFilterTab(ureq, templateSearchCtr.getMyCoursesTab());
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), templateSearchCtr.getInitialComponent(),
-				true, translate("add.template"));
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private List<OrganisationRef> getOrganisationWithDescendants() {
-		if(curriculum == null) return List.of();
-		return List.copyOf(organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true));
-	}
-	
-	private void doAddTemplate(RepositoryEntryRef entryRef) {
-		RepositoryEntry entry = repositoryService.loadBy(entryRef);
-		if(entry != null && entry.getRuntimeType() == RepositoryEntryRuntimeType.template) {
-			curriculumService.addRepositoryTemplate(curriculumElement, entry);
-			showInfo("info.repositorytemplate.added");
-		}
-	}
-	
 	private void doInstantiateTemplate(UserRequest ureq, RepositoryEntry template) {
 		confirmInstantiateCtrl = new ConfirmInstantiateTemplateController(ureq, getWindowControl(),
 				curriculumElement, template);
@@ -459,19 +252,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 				true, translate("instantiate.template.title"));
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private void doOpenMenu(UserRequest ureq, FormLink link) {
-		removeAsListenerAndDispose(addMenuCtrl);
-		removeAsListenerAndDispose(menuCalloutCtrl);
-
-		addMenuCtrl = new AddMenuController(ureq, getWindowControl());
-		listenTo(addMenuCtrl);
-
-		menuCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(menuCalloutCtrl);
-		menuCalloutCtrl.activate();
 	}
 	
 	private static class EntriesDelegate implements FlexiTableCssDelegate {
@@ -489,43 +269,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			return null;
-		}
-	}
-	
-	private class AddMenuController extends BasicController {
-		
-		private Link addResourceLink;
-		private Link addTemplateLink;
-
-		private final VelocityContainer mainVC;
-		
-		public AddMenuController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl, Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
-			
-			mainVC = createVelocityContainer("tools");
-			
-			addResourceLink = LinkFactory.createLink("add.resource", "add.resource", getTranslator(), mainVC, this, Link.LINK);
-			addResourceLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			mainVC.put("add.resource", addResourceLink);
-			
-			addTemplateLink = LinkFactory.createLink("add.template", "add.template", getTranslator(), mainVC, this, Link.LINK);
-			addTemplateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			mainVC.put("add.template", addTemplateLink);
-			
-			mainVC.contextPut("links", List.of("add.resource", "add.template"));
-
-			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			if(addResourceLink == source) {
-				fireEvent(ureq, Event.CLOSE_EVENT);
-				doChooseResources(ureq);
-			} else if(addTemplateLink == source) {
-				fireEvent(ureq, Event.CLOSE_EVENT);
-				doChooseTemplate(ureq);
-			}
 		}
 	}
 }

@@ -1,4 +1,4 @@
-<div class="o_dashboard o_bento_container">
+<div class="o_dashboard o_bento_container #if($r.isNotEmpty($dashboardCss))$dashboardCss#end">
 	<div class="o_bento">
 		#foreach($widget in $widgets)
 			#if($r.visible($widget.getName()))

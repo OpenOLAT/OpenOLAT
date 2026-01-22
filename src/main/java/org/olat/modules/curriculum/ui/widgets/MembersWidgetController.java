@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.ui.widgets;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.chart.SpeedometerElement;
@@ -67,8 +66,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersWidgetController extends FormBasicController {
 	
-	private FormLink membersLink;
-	private FormLink minimizeButton;
 	private FormLink ownersLink;
 	private FormLink coachesLink;
 	private FormLink masterCoachesLink;
@@ -77,8 +74,6 @@ public class MembersWidgetController extends FormBasicController {
 	private SpeedometerElement speedometerEl;
 
 	private int counter = 0;
-	private String preferencesId;
-	private AtomicBoolean minimized;
 	private boolean otherRolesInitialized = false;
 	private CurriculumElementInfos curriculumElementInfos;
 	
@@ -92,7 +87,6 @@ public class MembersWidgetController extends FormBasicController {
 	public MembersWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "members_widget", Util
 				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale()));
-		preferencesId = "widget-members-cur-el-" + curriculumElement.getKey();
 		curriculumElementInfos = loadInformations(curriculumElement);
 		initForm(ureq);
 	}
@@ -108,23 +102,6 @@ public class MembersWidgetController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		membersLink = uifactory.addFormLink("curriculum.members", formLayout);
-		membersLink.setIconRightCSS("o_icon o_icon_course_next");
-		membersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar_day");
-		
-		Boolean minimizedObj = (Boolean)ureq.getUserSession()
-				.getGuiPreferences()
-				.get(LectureBlocksWidgetController.class, preferencesId, Boolean.FALSE);
-		minimized = new AtomicBoolean(minimizedObj != null && minimizedObj.booleanValue());
-		if(!minimized.get()) {
-			initOtherRoles(ureq);
-		}
-		
-		minimizeButton = uifactory.addFormLink("curriculum.minimize", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		minimizeButton.setTitle(translate("curriculum.minimize"));
-		minimizeButton.setElementCssClass("o_button_details");
-		updateMinimizeButton();
-		
 		String activeText = getText(translate("num.of.active.participants"), Long.toString(curriculumElementInfos.numOfParticipants()));
 		activeParticipantsLink = uifactory.addFormLink("num.of.active.participants", activeText, null, formLayout, Link.LINK | Link.NONTRANSLATED);
 		String pendingText = getText(translate("num.of.pending.participants"), Long.toString(curriculumElementInfos.numOfPending()));
@@ -134,9 +111,10 @@ public class MembersWidgetController extends FormBasicController {
 		speedometerEl.setValueCssClass("o_speedometer_infos");
 		formLayout.add("participantsMeter", speedometerEl);
 		
+		initOtherRoles(ureq);
+		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			initAvailability(layoutCont);
-			layoutCont.contextPut("minimized", minimized);
 		}
 	}
 	
@@ -259,14 +237,6 @@ public class MembersWidgetController extends FormBasicController {
 		return usersPortraitCmp;
 	}
 	
-	private void updateMinimizeButton() {
-		if(minimized.get()) {
-			minimizeButton.setIconLeftCSS("o_icon o_icon_details_expand");
-		} else {
-			minimizeButton.setIconLeftCSS("o_icon o_icon_details_collaps");
-		}
-	}
-	
 	public void loadModel(UserRequest ureq) {
 		curriculumElementInfos = loadInformations(curriculumElementInfos.curriculumElement());
 		this.otherRolesInitialized = false;
@@ -281,11 +251,7 @@ public class MembersWidgetController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(membersLink == source) {
-			List<ContextEntry> entries = BusinessControlFactory.getInstance()
-					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_MEMBERS);
-			fireEvent(ureq, new ActivateEvent(entries));
-		} else if(coachesLink == source) {
+		if(coachesLink == source) {
 			fireActivateActiveEvent(ureq, "Coach");	
 		} else if(masterCoachesLink == source) {
 			fireActivateActiveEvent(ureq, "MasterCoach");	
@@ -295,8 +261,6 @@ public class MembersWidgetController extends FormBasicController {
 			fireActivateActiveEvent(ureq, "Participant");
 		} else if(pendingParticipantsLink == source) {
 			fireActivatePendingEvent(ureq, "All");
-		} else if(minimizeButton == source) {
-			toogle(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -320,13 +284,4 @@ public class MembersWidgetController extends FormBasicController {
 		//
 	}
 	
-	private void toogle(UserRequest ureq) {
-		minimized.set(!minimized.get());
-		updateMinimizeButton();
-		ureq.getUserSession().getGuiPreferences()
-			.putAndSave(LectureBlocksWidgetController.class, preferencesId, Boolean.valueOf(minimized.get()));
-		if(!minimized.get()) {
-			initOtherRoles(ureq);
-		}
-	}
 }

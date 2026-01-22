@@ -36,17 +36,21 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class DashbordController extends BasicController {
+public class DashboardController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	
 	private final List<Widget> widgets = new ArrayList<>();
 
-	public DashbordController(UserRequest ureq, WindowControl wControl) {
+	public DashboardController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("dashboard");
 		mainVC.contextPut("widgets", widgets);
 		putInitialPanel(mainVC);
+	}
+	
+	public void setDashboardCss(String dashboardCss) {
+		mainVC.contextPut("dashboardCss", dashboardCss);
 	}
 	
 	public void addWidget(String name, Controller ctrl, BentoBoxSize size) {

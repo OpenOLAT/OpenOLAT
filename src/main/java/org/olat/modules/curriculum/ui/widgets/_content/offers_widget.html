@@ -1,9 +1,10 @@
-<div class="o_expand_ctrl">
-
-<div class="o_curriculum_widget">
-	<div class="o_curriculum_widget_title">
-		<h3>$r.render("curriculum.offers")</h3>
+<div class="o_dashboard_widget o_bento_content">
+	<div class="o_dashboard_widget_header o_flex_first_grow_base">
+		<div class="o_dashboard_widget_title">
+			<h3>$r.translate("curriculum.offers")</h3>
+		</div>
 	</div>
+	
 	<div class="o_curriculum_widget_cards o_curriculum_widget_catalog_cards">
 		#if($externalCatalogCss)
 			<div class="o_curriculum_widget_catalog_card o_labeled_light $externalCatalogCss">
@@ -16,7 +17,6 @@
 			<div><i class="o_icon o_icon-fw $internalCatalogIconCss"> </i> $internalCatalogLabelName</div>
 		</div>
 	</div>
-	#if($r.isFalse($minimized))
 	<div class="o_curriculum_widget_cards o_curriculum_offer_cards">
 		<div class="o_curriculum_offer_card">
 			<h4 class="o_flex_first_grow">
@@ -46,7 +46,4 @@
 			</div>
 		#end
 	</div>
-	#end
-</div>
-<div class="o_button_group">$r.render("curriculum.minimize")</div>
 </div>

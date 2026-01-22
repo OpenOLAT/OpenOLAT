@@ -1,20 +1,8 @@
-<div class="o_curriculum_widget">
-	<div class="o_curriculum_widget_title o_header_with_buttons">
-		<h3 class="o_widget_title">$r.render("curriculum.courses")</h3>
-		#if($r.available("add.resource") || $r.available("add.template") || $r.available("add.menu"))
-		<div class="o_curriculum_widget_cmds o_button_group o_button_group_right">
-			#if($r.visible("add.menu"))
-				$r.render("add.menu")
-			#else
-				#if($r.visible("add.resource"))
-					$r.render("add.resource")
-				#end
-				#if($r.visible("add.template"))
-					$r.render("add.template")
-				#end
-			#end
+<div class="o_dashboard_widget o_bento_content">
+	<div class="o_dashboard_widget_header o_flex_first_grow_base">
+		<div class="o_dashboard_widget_title">
+			<h3>$r.translate("tab.resources")</h3>
 		</div>
-		#end
 	</div>
 	<div class="o_curriculum_widget_cards">
 		$r.render("course.empty")

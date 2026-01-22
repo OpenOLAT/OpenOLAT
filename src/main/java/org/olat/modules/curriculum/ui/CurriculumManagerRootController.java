@@ -32,6 +32,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
+import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -48,7 +50,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
-import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -78,13 +80,13 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private  final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	private CurriculumReportsController reportsCtrl;
-	private CurriculumDashboardController overviewCtrl;
+	private DashboardController overviewCtrl;
 	private LectureListRepositoryController lecturesCtrl;
 	private CurriculumSearchManagerController searchCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
-	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CertificationProgramListController certificationProgramListCtrl;
 
 	@Autowired
@@ -139,13 +141,15 @@ public class CurriculumManagerRootController extends BasicController implements 
 	}
 	
 	private void initDashboard(UserRequest ureq) {
-		overviewCtrl = new CurriculumDashboardController(ureq, getWindowControl());
+		overviewCtrl = new DashboardController(ureq, getWindowControl());
+		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		
 		if(lectureModule.isEnabled()) {
-			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), lecturesSecCallback, secCallback);
+			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl());
+			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
-			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
+			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 		
 		mainVC.put("dashboard", overviewCtrl.getInitialComponent());

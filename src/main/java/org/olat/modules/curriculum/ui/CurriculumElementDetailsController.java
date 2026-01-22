@@ -57,6 +57,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
+import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -81,7 +83,7 @@ import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesControll
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
-import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.MembersWidgetController;
 import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
 import org.olat.modules.lecture.LectureModule;
@@ -128,14 +130,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CoursesWidgetController coursesWidgetCtrl;
 	private MembersWidgetController membersWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
-	private CurriculumDashboardController overviewCtrl;
+	private DashboardController overviewCtrl;
 	private CurriculumElementOffersController offersCtrl;
 	private EditCurriculumElementController editMetadataCtrl;
 	private CurriculumElementLecturesController absencesCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CurriculumElementResourcesController resourcesCtrl;
-	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumElementStatusChangeController statusChangeCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
@@ -577,7 +579,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 	}
 	
-	private CurriculumDashboardController createDashBoard(UserRequest ureq) {
+	private DashboardController createDashBoard(UserRequest ureq) {
 		removeAsListenerAndDispose(overviewCtrl);
 		removeAsListenerAndDispose(offersWidgetCtrl);
 		removeAsListenerAndDispose(coursesWidgetCtrl);
@@ -585,31 +587,32 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
-		overviewCtrl = new CurriculumDashboardController(ureq, subControl);
+		overviewCtrl = new DashboardController(ureq, subControl);
+		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		
 		membersWidgetCtrl = new MembersWidgetController(ureq, getWindowControl(), curriculumElement);
 		listenTo(membersWidgetCtrl);
-		overviewCtrl.addWidget("members", membersWidgetCtrl);
+		overviewCtrl.addWidget("members", membersWidgetCtrl, BentoBoxSize.box_4_1);
 
 		if(lectureModule.isEnabled()) {
-			LecturesSecurityCallback elementLecturesSecCallback = evaluateLecturesSecurityCallback();
-			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
-					curriculumElement, elementLecturesSecCallback, secCallback);
+			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl(),
+					curriculumElement);
+			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
-			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
+			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 
-		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculum, curriculumElement, secCallback);
+		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement);
 		listenTo(coursesWidgetCtrl);
-		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
+		overviewCtrl.addWidget("courses", coursesWidgetCtrl, BentoBoxSize.box_4_1);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
 		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
 				&& secCallback.canViewCatalogSettings(curriculumElement)) {
 			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(offersWidgetCtrl);
-			overviewCtrl.addWidget("offers", offersWidgetCtrl);
+			overviewCtrl.addWidget("offers", offersWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 		
 		return overviewCtrl;
@@ -726,7 +729,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			coursesWidgetCtrl.loadModel();
 		}
 		if(lectureBlocksWidgetCtrl != null) {
-			lectureBlocksWidgetCtrl.loadModel(ureq.getRequestTimestamp());
+			lectureBlocksWidgetCtrl.reload();
 		}
 		if(offersWidgetCtrl != null) {
 			offersWidgetCtrl.loadModel();

@@ -46,6 +46,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
+import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -62,7 +64,7 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
-import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -95,12 +97,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CloseableModalController cmc;
 	private CurriculumReportsController reportsCtrl;
 	private EditCurriculumController editMetadataCtrl;
-	private CurriculumDashboardController overviewCtrl;
+	private DashboardController overviewCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumUserManagementController userManagementCtrl;
 	private ConfirmDeleteCurriculumController deleteCurriculumCtrl;
-	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
@@ -164,9 +166,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 
 	private void initTabPane(UserRequest ureq) {
 		// Overview
-		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
-			return createDashboard(uureq).getInitialComponent();
-		});
+		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> createDashboard(uureq).getInitialComponent());
 
 		// Implementations
 		implementationsTab = tabPane.addTab(ureq, translate("curriculum.implementations"), "o_sel_curriculum_composer", uureq -> {
@@ -248,18 +248,19 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		}
 	}
 	
-	private CurriculumDashboardController createDashboard(UserRequest ureq) {
+	private DashboardController createDashboard(UserRequest ureq) {
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		
-		overviewCtrl = new CurriculumDashboardController(ureq, getWindowControl());
+		overviewCtrl = new DashboardController(ureq, getWindowControl());
+		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		if(lectureModule.isEnabled()) {
-			LecturesSecurityCallback curriculumLecturesSecCallback = evaluateLecturesSecurityCallback();
-			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
-					curriculum, curriculumLecturesSecCallback, secCallback);
+			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl(),
+					curriculum);
+			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
-			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
+			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 		return overviewCtrl;
 	}

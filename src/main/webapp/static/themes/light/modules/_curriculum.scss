@@ -138,11 +138,6 @@
 
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: $o-widgets-gap;
-	align-items: start;
-	
 	.o_curriculum_widget {
 		border: $o-curriculum-widget-border;
 		border-radius: $o-curriculum-widget-border-radius;
@@ -203,23 +198,23 @@
 		}
 	}
 	
-	.o_curriculum_widget_two_col {
-		display: grid;
-		grid-template-columns: 50% 50%;
-		column-gap: 10px;
-		
-		@media (max-width: $screen-xs-max) {
-			grid-template-columns: 100%;
-		}
+	.o_curriculum_widget_participants {
+		display: flex;
+		flex-wrap: wrap;
+		row-gap: 10px;
+	}
+	.o_curriculum_widget_numbers_wrapper {
+		margin-right: auto;
 	}
 	
-	.o_curriculum_widget_two_col h4,
+	.o_curriculum_widget_participants h4,
 	.o_curriculum_widget_other_roles h4 {
 			padding: 5px 15px;
 			margin: 5px 0;
 	}
 	
 	.o_curriculum_widget_chart_wrapper {
+		margin: 0px 15px;
 		display: grid;
 		grid-template-columns: 1fr;
 		grid-template-rows: 1fr auto auto;
@@ -333,6 +328,7 @@
 		background-color: #fff;
 		
 		h4 {
+			font-size: $font-size-h4;
 			margin: 3px 0;
 			flex-grow: 2;
 		}
@@ -491,7 +487,7 @@
 		}
 	}
 	
-	.o_curriculum_members_widget .o_curriculum_widget_two_col {
+	.o_curriculum_members_widget .o_curriculum_widget_participants {
 		padding-bottom: 15px;
 	}
 	

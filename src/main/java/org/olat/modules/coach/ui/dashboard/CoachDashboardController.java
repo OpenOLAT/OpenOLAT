@@ -25,7 +25,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
-import org.olat.core.gui.control.generic.dashboard.DashbordController;
+import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.modules.coach.model.CoachingSecurity;
 
 /**
@@ -36,14 +36,14 @@ import org.olat.modules.coach.model.CoachingSecurity;
  */
 public class CoachDashboardController extends BasicController {
 
-	private DashbordController dashbordCtrl;
+	private DashboardController dashbordCtrl;
 	private CourseWidgetController courseCoachCtrl;
 	private CoachLectureBlocksWidgetController lectureBlocksCtrl;
 
 	public CoachDashboardController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
 		
-		dashbordCtrl = new DashbordController(ureq, wControl);
+		dashbordCtrl = new DashboardController(ureq, wControl);
 		listenTo(dashbordCtrl);
 		putInitialPanel(dashbordCtrl.getInitialComponent());
 		

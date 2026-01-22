@@ -1,12 +1,12 @@
-<div class="o_expand_ctrl">
-
-<div class="o_curriculum_widget o_curriculum_members_widget">
-	<div class="o_curriculum_widget_title o_header_with_buttons">
-		<h3>$r.render("curriculum.members")</h3>
+<div class="o_dashboard_widget o_bento_content">
+	<div class="o_dashboard_widget_header o_flex_first_grow_base">
+		<div class="o_dashboard_widget_title">
+			<h3>$r.translate("curriculum.members")</h3>
+		</div>
 	</div>
 	
-	<div class="o_curriculum_widget_two_col">
-		<div>
+	<div class="o_curriculum_widget_participants">
+		<div class="o_curriculum_widget_numbers_wrapper">
 			<h4>$r.translate("curriculum.element.participants")</h4>
 			<div class="o_curriculum_widget_numbers">
 				$r.render("num.of.active.participants", "nolayout")
@@ -25,7 +25,6 @@
 			#end</div>
 		</div>
 	</div>
-	#if($r.isFalse($minimized))
 	<div class="o_curriculum_widget_other_roles">
 		<h4>$r.translate("curriculum.element.other.roles")</h4>
 		<div class="o_curriculum_widget_roles_portrait">
@@ -49,7 +48,4 @@
 			#end
 		</div>	
 	</div>
-	#end
-</div>
-<div class="o_button_group">$r.render("curriculum.minimize")</div>
 </div>

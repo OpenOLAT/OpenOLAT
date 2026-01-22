@@ -22,22 +22,14 @@ package org.olat.modules.curriculum.ui.widgets;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -45,8 +37,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumElementCatalogStatusEvaluator;
-import org.olat.modules.curriculum.ui.CurriculumListManagerController;
-import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
@@ -64,11 +54,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OffersWidgetController extends FormBasicController {
 	
-	private FormLink offersLink;
-	private FormLink minimizeButton;
-	
-	private AtomicBoolean minimized;
-	private final String preferencesId;
 	private CurriculumElement curriculumElement;
 	
 	@Autowired
@@ -85,28 +70,13 @@ public class OffersWidgetController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(OfferCatalogInfo.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.curriculumElement = curriculumElement;
-		preferencesId = "widget-lectures-cur-el-" + curriculumElement.getKey();
 		initForm(ureq);
 		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		offersLink = uifactory.addFormLink("curriculum.offers", formLayout);
-		offersLink.setIconRightCSS("o_icon o_icon-fw o_icon_course_next");
-		
-		Boolean minimizedObj = (Boolean)ureq.getUserSession()
-				.getGuiPreferences()
-				.get(OffersWidgetController.class, preferencesId, Boolean.FALSE);
-		minimized = new AtomicBoolean(minimizedObj != null && minimizedObj.booleanValue());
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("minimized", minimized);
-		}
-		
-		minimizeButton = uifactory.addFormLink("curriculum.minimize", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		minimizeButton.setTitle(translate("curriculum.minimize"));
-		minimizeButton.setElementCssClass("o_button_details");
-		updateMinimizeButton();
+		//
 	}
 
 	public void loadModel() {
@@ -226,37 +196,10 @@ public class OffersWidgetController extends FormBasicController {
 				? translate("curriculum.offers.offers.num.single")
 				: translate("curriculum.offers.offers.num.multi", String.valueOf(numOffers));
 	}
-	
-	private void updateMinimizeButton() {
-		if(minimized.get()) {
-			minimizeButton.setIconLeftCSS("o_icon o_icon_details_expand");
-		} else {
-			minimizeButton.setIconLeftCSS("o_icon o_icon_details_collaps");
-		}
-	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(offersLink == source) {
-			List<ContextEntry> entries = BusinessControlFactory.getInstance()
-					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_OFFERS);
-			fireEvent(ureq, new ActivateEvent(entries));
-		} else if(minimizeButton == source) {
-			toogle(ureq);
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-	
-	private void toogle(UserRequest ureq) {
-		minimized.set(!minimized.get());
-		updateMinimizeButton();
-		ureq.getUserSession().getGuiPreferences()
-			.putAndSave(OffersWidgetController.class, preferencesId, Boolean.valueOf(minimized.get()));
 	}
 	
 }
