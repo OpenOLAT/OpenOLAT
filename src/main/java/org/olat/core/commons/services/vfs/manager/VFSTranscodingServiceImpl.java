@@ -341,12 +341,17 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	}
 
 	private String getConversionServiceUrl(TranscoderJobType type) {
-		if (TranscoderJobType.videoTranscoding.equals(type)) {
-			return avModule.getVideoConversionServiceUrl();
+		String url = switch (type) {
+			case videoConversion -> avModule.getVideoConversionServiceUrl();
+			case audioConversion -> avModule.getAudioConversionServiceUrl();
+			default -> null;
+		};
+		if (!StringHelper.containsNonWhitespace(url)) {
+			return null;
 		}
-		if (TranscoderJobType.audioConversion.equals(type)) {
-			return avModule.getAudioConversionServiceUrl();
+		if (url.endsWith("/")) {
+			url = url.substring(0, url.length() - 1);
 		}
-		return null;
+		return url;
 	}
 }
