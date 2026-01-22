@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -36,6 +37,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
@@ -46,7 +48,6 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
-import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -210,7 +211,11 @@ public class RepositoryEntryAuthorQueries {
 
 		sb.append(" where");
 		
-		needIdentity |= appendAccessSubSelect(sb, params);
+		if (params.isOwned() || params.isShared()) {
+			needIdentity |= appendOwnerAccessSubSelect(sb, params);
+		} else {
+			needIdentity |= appendAccessSubSelect(sb, params);
+		}
 
 		if (params.getOerRelease() != null && params.getOerRelease() != SearchAuthorRepositoryEntryViewParams.OERRelease.all) {
 			if (params.getOerRelease() == SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased) {
@@ -425,39 +430,38 @@ public class RepositoryEntryAuthorQueries {
 			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
 		
-		if (!params.isOwned() && !params.isShared() && 
-				params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
-			dbQuery.setParameter("additionalOrgRoles", params.getAdditionalCurricularOrgRoles().stream().map(OrganisationRoles::name).toList());
-		}
-		if (!params.isOwned() && !params.isShared() &&
-				params.getAdditionalCurricularOrganisations() != null && !params.getAdditionalCurricularOrganisations().isEmpty()) {
-			List<Long> orgKeys = params.getAdditionalCurricularOrganisations().stream()
-					.map(OrganisationRef::getKey)
+		if (!params.isOwned() && !params.isShared() && params.isAdditionalOrganisationsAccessDefined()) {
+			List<Long> orgKeys = params.getAdditionalOrganisationsAccess().stream()
+					.map(Organisation::getGroup)
+					.map(Group::getKey)
 					.toList();
-			dbQuery.setParameter("additionalCurOrgKeys", orgKeys);
+			dbQuery.setParameter("additionalGroupKeys", orgKeys);
 		}
 		
 		return dbQuery;
 	}
 	
 	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
-		if (params.isOwned() || params.isShared()) {
-			return appendOwnerAccessSubSelect(sb, params);
-		}
+		sb.append(" (");
 
+		if (params.isAdditionalOrganisationsAccessDefined()) {
+			sb.append(" exists (select reToGroupOrg.entry.key from repoentrytogroup as reToGroupOrg");
+			sb.append("  where reToGroupOrg.entry.key=v.key and reToGroupOrg.group.key in (:additionalGroupKeys)");
+			sb.append("  and v.status ");
+			if (params.hasStatus()) {
+				sb.in(params.getStatus());
+			} else {
+				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+			}
+			sb.append(") or ");
+		}
+		
 		if(dbInstance.isMySQL()) {
-			sb.append(" v.key");
-			if (params.isShared()) {
-				sb.append(" not");
-			}
-			sb.append(" in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		} else {
-			if (params.isShared()) {
-				sb.append(" not");
-			}
 			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+			  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		}
 		
 		Roles roles = params.getRoles();
@@ -472,44 +476,16 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" )");
 
 		} else {
-			sb.append(" and (")
-					// owner, principal, learn resource manager and administrator which can see all
-					.append("     ( membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
-					.append("       and v.status ");
+			Enum<?>[] mRoles = collectManagementRoles(roles, params);
+			// owner, principal, learn resource manager and administrator which can see all
+			sb.append(" and ((membership.role ").in(mRoles)
+			  .append("  and v.status ");
 			if(params.hasStatus()) {
 				sb.in(params.getStatus());
 			} else {
 				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
 			}
-
-			sb.append(" )");
-
-			// Course planner specific access
-			if (params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
-				sb.append(" or (membership.role in (:additionalOrgRoles) ");
-				sb.append("  and v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
-				sb.append("  and v.status ");
-				if (params.hasStatus()) {
-					sb.in(params.getStatus());
-				} else {
-					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-				}
-				sb.append(" )");
-			}
-			
-			if (params.getAdditionalCurricularOrganisations() != null && !params.getAdditionalCurricularOrganisations().isEmpty()) {
-				sb.append(" or exists (select reToCurOrg.key from repoentrytoorganisation as reToCurOrg");
-				sb.append("  where reToCurOrg.entry.key=v.key and reToCurOrg.organisation.key in (:additionalCurOrgKeys)");
-				sb.append("  and v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
-				sb.append("  and v.status ");
-				if (params.hasStatus()) {
-					sb.in(params.getStatus());
-				} else {
-					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-				}
-				sb.append(" ) ");
-			}
-			// End course planner specific access
+			sb.append(")");
 
 			if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))
 					&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
@@ -540,7 +516,28 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(" ))");
 		}
+		
+		sb.append(")");
 		return true;
+	}
+	
+	private Enum<?>[] collectManagementRoles(Roles roles, SearchAuthorRepositoryEntryViewParams params) {
+		List<Enum<?>> list = new ArrayList<>(6);
+		if(roles.isAdministrator()) {
+			list.add(OrganisationRoles.administrator);
+		}
+		if(roles.isPrincipal()) {
+			list.add(OrganisationRoles.principal);
+		}
+		if(roles.isLearnResourceManager()) {
+			list.add(OrganisationRoles.learnresourcemanager);
+		}
+		list.add(GroupRoles.owner);
+		
+		if (params.getAdditionalManagerRoles() != null && !params.getAdditionalManagerRoles().isEmpty()) {
+			list.addAll(params.getAdditionalManagerRoles());
+		}
+		return list.toArray(new Enum<?>[list.size()]);
 	}
 	
 	private boolean appendOwnerAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {

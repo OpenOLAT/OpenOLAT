@@ -55,7 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -380,10 +380,11 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
 				? List.of(OrganisationRoles.curriculummanager)
 				: List.of();
-		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
-				? getOrganisationWithDescendants()
+		searchParams.setAdditionalManagerRoles(additionalRoles);
+		List<Organisation> additionalOrgs = curriculum != null && secCallback.canEditCurriculumElement(curriculumElement)
+				? organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true)
 				: List.of();
-		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
+		searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
@@ -421,10 +422,11 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
 				? List.of(OrganisationRoles.curriculummanager)
 				: List.of();
-		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
-				? getOrganisationWithDescendants()
+		searchParams.setAdditionalManagerRoles(additionalRoles);
+		List<Organisation> additionalOrgs = curriculum != null && secCallback.canEditCurriculumElement(curriculumElement)
+				? organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true)
 				: List.of();
-		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
+		searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
@@ -435,11 +437,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 				true, translate("add.template"));
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private List<OrganisationRef> getOrganisationWithDescendants() {
-		if(curriculum == null) return List.of();
-		return List.copyOf(organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true));
 	}
 	
 	private void doAddTemplate(RepositoryEntryRef entryRef) {
