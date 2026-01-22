@@ -33,12 +33,9 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.commons.services.video.model.TranscoderJob;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
-import org.olat.core.commons.services.video.model.TranscoderOriginal;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.httpclient.HttpClientService;
@@ -91,6 +88,9 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	
 	@Autowired
 	private DB dbInstance;
+	
+	@Autowired
+	private TranscoderHelper transcoderHelper;
 	
 	@Override
 	public boolean isLocalVideoConversionEnabled() {
@@ -255,10 +255,10 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	public void postConversionJob(VFSMetadata metadata, TranscoderJobType type) {
 		String uuid = metadata.getUuid().replace("-", "");
 		Long originalSize = getOriginalSize(metadata);
-		TranscoderJob transcoderJob = TranscoderHelper.createTranscoderJob(uuid, type, metadata.getKey(), originalSize, null);
+		TranscoderJob transcoderJob = transcoderHelper.createTranscoderJob(uuid, type, metadata.getKey(), originalSize, null);
 
 		String url = getConversionServiceUrl(type) + "/" + TranscoderJob.POST_JOB_COMMAND;
-		TranscoderHelper.postTranscoderJob(transcoderJob, url, metadata.getKey(), 
+		transcoderHelper.postTranscoderJob(transcoderJob, url, metadata.getKey(), 
 				(s) -> updateStatus(metadata, s));
 	}
 

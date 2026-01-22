@@ -227,6 +227,8 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	private AVModule avModule;
 	@Autowired
 	private MediaServerModule mediaServerModule;
+	@Autowired
+	private TranscoderHelper transcoderHelper;
 
 	/**
 	 * get the configured posterframe
@@ -836,11 +838,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		Long originalSize = getOriginalSize(videoTranscoding);
 		Integer resolution = videoTranscoding.getResolution();
-		TranscoderJob transcoderJob = TranscoderHelper.createTranscoderJob(uuid, TranscoderJobType.videoTranscoding, 
+		TranscoderJob transcoderJob = transcoderHelper.createTranscoderJob(uuid, TranscoderJobType.videoTranscoding, 
 				videoTranscoding.getKey(), originalSize, resolution);
 
 		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.POST_JOB_COMMAND;
-		TranscoderHelper.postTranscoderJob(transcoderJob, url, videoTranscoding.getKey(), 
+		transcoderHelper.postTranscoderJob(transcoderJob, url, videoTranscoding.getKey(), 
 				(s) -> updateVideoTranscoding(videoTranscoding, s));
 	}
 	
@@ -849,6 +851,10 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		videoTranscoding.setStatus(status);
 		videoTranscodingDao.updateTranscoding(videoTranscoding);
 		dbInstance.commitAndCloseSession();
+
+		if (status == VideoTranscoding.TRANSCODING_STATUS_DONE) {
+			optimizeMemoryForVideo(videoTranscoding.getVideoResource());
+		}
 	}
 
 	private long getOriginalSize(VideoTranscoding videoTranscoding) {
