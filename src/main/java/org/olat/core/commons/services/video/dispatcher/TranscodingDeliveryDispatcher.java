@@ -38,6 +38,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -46,7 +47,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
-import org.olat.modules.video.model.TranscoderJobResult;
+import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.resource.OLATResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -236,7 +237,13 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
-
+		
+		if (result.getGenerated().getStatus() == null) {
+			log.warn("Conversion job result: 'generated.status' missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+		
 		switch (result.getType()) {
 			case videoConversion, audioConversion:
 				handleConversionResult(result);
@@ -284,7 +291,74 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	}
 
 	private void handleVideoTranscodingResult(HttpServletRequest request, HttpServletResponse response, TranscoderJobResult result) {
-		log.warn("Transcoding result type not supported yet: {}", result.getType());
+		VideoTranscoding videoTranscoding = videoManager.getVideoTranscoding(result.getReferenceId());
+		if (videoTranscoding == null) {
+			log.warn("Video transcoding not found for job result [uuid={}]", result.getUuid());
+			return;
+		}
+
+		OLATResource videoResource = videoTranscoding.getVideoResource();
+		if (videoResource == null) {
+			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());
+			updateError(videoTranscoding);
+			return;
+		}
+
+		int status = result.getGenerated().getStatus();
+		if (status > VideoTranscoding.TRANSCODING_STATUS_WAITING && status < VideoTranscoding.TRANSCODING_STATUS_DONE) {
+			log.info("Ignoring transcoding progress results for now: [uuid={}, status={}]", result.getUuid(), status);
+			return;
+		}
+		
+		if (status < VideoTranscoding.TRANSCODING_STATUS_WAITING) {
+			log.warn("Video transcoding job resulted in error status: [uuid={}, status={}]", result.getUuid(), status);
+			updateStatus(videoTranscoding, status);
+			return;
+		}
+		
+		File masterFile = videoManager.getVideoFile(videoResource);
+		if (masterFile == null) {
+			log.warn("Video master file not found for job result [uuid={}]", result.getUuid());
+			updateError(videoTranscoding);
+			return;
+		}
+
+		File transcodingFolder = ((LocalFolderImpl) videoManager.getTranscodingContainer(videoResource)).getBasefile();
+		File targetFile = new File(transcodingFolder, videoTranscoding.getResolution() + masterFile.getName());
+
+		try {
+			download(result, targetFile);
+			videoTranscoding.setStatus(status);
+			videoTranscoding.setSize(targetFile.length());
+			if (result.getGenerated().getWidth() != null && result.getGenerated().getHeight() != null) {
+				videoTranscoding.setWidth(result.getGenerated().getWidth());
+				videoTranscoding.setHeight(result.getGenerated().getHeight());
+			} else {
+				log.warn("Transcoding result missing width and height for video [uuid={}]", result.getUuid());
+				videoTranscoding.setWidth(0);
+				videoTranscoding.setHeight(0);
+			}
+			update(videoTranscoding);
+		} catch (Exception e) {
+			log.warn("Failed to download transcoding job result [uuid={}, targetPath='{}']: {}",
+					result.getUuid(), targetFile.getAbsolutePath(), e);
+			updateError(videoTranscoding);
+		}
+	}
+
+	private void updateError(VideoTranscoding videoTranscoding) {
+		updateStatus(videoTranscoding, VFSMetadata.TRANSCODING_STATUS_ERROR);
+	}
+
+	private void updateStatus(VideoTranscoding videoTranscoding, int status) {
+		videoTranscoding.setStatus(status);
+		update(videoTranscoding);
+	}
+
+	private void update(VideoTranscoding videoTranscoding) {
+		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_SERVICE);
+		videoManager.updateVideoTranscoding(videoTranscoding);
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 
 	private void download(TranscoderJobResult result, File targetFile) throws IOException {

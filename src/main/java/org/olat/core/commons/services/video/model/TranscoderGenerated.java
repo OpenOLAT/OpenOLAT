@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.model;
+package org.olat.core.commons.services.video.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,41 +29,59 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranscoderJobResult {
-	private String uuid;
-	private TranscoderJobType type;
-	private Long referenceId;
-	private TranscoderGenerated generated;
+public class TranscoderGenerated {
+	private Integer status;
+	private String url;
+	private Long size;
+	private Integer width;
+	private Integer height;
+	private Integer resolution;
 
-	public String getUuid() {
-		return uuid;
+	public Integer getStatus() {
+		return status;
 	}
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
+	public void setStatus(Integer status) {
+		this.status = status;
 	}
 
-	public TranscoderJobType getType() {
-		return type;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setType(TranscoderJobType type) {
-		this.type = type;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
-	public Long getReferenceId() {
-		return referenceId;
+	public Long getSize() {
+		return size;
 	}
 
-	public void setReferenceId(Long referenceId) {
-		this.referenceId = referenceId;
+	public Integer getWidth() {
+		return width;
 	}
 
-	public TranscoderGenerated getGenerated() {
-		return generated;
+	public void setWidth(Integer width) {
+		this.width = width;
 	}
 
-	public void setGenerated(TranscoderGenerated generated) {
-		this.generated = generated;
+	public Integer getHeight() {
+		return height;
+	}
+
+	public void setHeight(Integer height) {
+		this.height = height;
+	}
+
+	public Integer getResolution() {
+		return resolution;
+	}
+
+	public void setResolution(Integer resolution) {
+		this.resolution = resolution;
+	}
+
+	public void setSize(Long size) {
+		this.size = size;
 	}
 }

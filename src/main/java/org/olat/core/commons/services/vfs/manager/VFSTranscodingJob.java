@@ -35,7 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.modules.video.model.TranscoderJobType;
+import org.olat.core.commons.services.video.model.TranscoderJobType;
 
 import org.apache.logging.log4j.Logger;
 import org.quartz.DisallowConcurrentExecution;

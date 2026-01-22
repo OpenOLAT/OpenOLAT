@@ -25,7 +25,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.video.model.TranscoderJobType;
+import org.olat.core.commons.services.video.model.TranscoderJobType;
 
 import java.io.File;
 import java.util.List;
@@ -37,9 +37,6 @@ import java.util.List;
  */
 public interface VFSTranscodingService {
 
-	String TRANSCODING_URL_PART = "transcoding";
-	String NOTIFY_RESULT_URL_PART = "notifyResult";
-	
 	OLATResourceable ores = OresHelper.lookupType(VFSTranscodingService.class);
 
 	String masterFilePrefix = "._oo_master_";

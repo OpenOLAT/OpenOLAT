@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.model;
+package org.olat.core.commons.services.video.model;
 
 /**
  * Initial date: 2026-01-20<br>

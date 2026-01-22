@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -76,6 +77,7 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.video.JCodecHelper;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -119,6 +121,8 @@ import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoToOrganisation;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.SearchVideoInCollectionParams;
+import org.olat.core.commons.services.video.model.TranscoderJob;
+import org.olat.core.commons.services.video.model.TranscoderJobType;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoCommentsImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
@@ -818,6 +822,39 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	@Override
 	public List<VideoTranscoding> getOneVideoResolution(int resolution) {
 		return videoTranscodingDao.getOneVideoResolution(resolution);
+	}
+
+	@Override
+	public void postVideoTranscodingJobs() {
+		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodingsPending();
+		for (VideoTranscoding videoTranscoding : videoTranscodings) {
+			postVideoTranscodingJob(videoTranscoding);
+		}
+	}
+
+	private void postVideoTranscodingJob(VideoTranscoding videoTranscoding) {
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		Long originalSize = getOriginalSize(videoTranscoding);
+		Integer resolution = videoTranscoding.getResolution();
+		TranscoderJob transcoderJob = TranscoderHelper.createTranscoderJob(uuid, TranscoderJobType.videoTranscoding, 
+				videoTranscoding.getKey(), originalSize, resolution);
+
+		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.POST_JOB_COMMAND;
+		TranscoderHelper.postTranscoderJob(transcoderJob, url, videoTranscoding.getKey(), 
+				(s) -> updateVideoTranscoding(videoTranscoding, s));
+	}
+	
+	private void updateVideoTranscoding(VideoTranscoding videoTranscoding, int status) {
+		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_SERVICE);
+		videoTranscoding.setStatus(status);
+		videoTranscodingDao.updateTranscoding(videoTranscoding);
+		dbInstance.commitAndCloseSession();
+	}
+
+	private long getOriginalSize(VideoTranscoding videoTranscoding) {
+		OLATResource video = videoTranscoding.getVideoResource();
+		File masterFile = getVideoFile(video);
+		return masterFile != null ? masterFile.length() : 0;
 	}
 
 	@Override

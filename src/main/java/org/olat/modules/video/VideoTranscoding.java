@@ -39,6 +39,7 @@ public interface VideoTranscoding extends CreateInfo {
 	public static final int TRANSCODING_STATUS_TIMEOUT = -4;
 	public static final String FORMAT_MP4 = "mp4";
 	public static final String TRANSCODER_LOCAL = "Local HandBrakeCLI";
+	public static final String TRANSCODER_SERVICE = "Transcoder service";
 	
 	/**
 	 * @return key, the database identifier

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.model;
+package org.olat.core.commons.services.video.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,21 +29,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranscoderGenerated {
-	private Long status;
+public class TranscoderOriginal {
 	private String url;
 	private Long size;
-	private Long width;
-	private Long height;
-	private Long resolution;
-
-	public Long getStatus() {
-		return status;
-	}
-
-	public void setStatus(Long status) {
-		this.status = status;
-	}
+	private Integer resolution;
 
 	public String getUrl() {
 		return url;
@@ -57,31 +46,15 @@ public class TranscoderGenerated {
 		return size;
 	}
 
-	public Long getWidth() {
-		return width;
+	public void setSize(Long size) {
+		this.size = size;
 	}
 
-	public void setWidth(Long width) {
-		this.width = width;
-	}
-
-	public Long getHeight() {
-		return height;
-	}
-
-	public void setHeight(Long height) {
-		this.height = height;
-	}
-
-	public Long getResolution() {
+	public Integer getResolution() {
 		return resolution;
 	}
 
-	public void setResolution(Long resolution) {
+	public void setResolution(Integer resolution) {
 		this.resolution = resolution;
-	}
-
-	public void setSize(Long size) {
-		this.size = size;
 	}
 }

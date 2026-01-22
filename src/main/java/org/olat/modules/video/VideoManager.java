@@ -572,6 +572,11 @@ public interface VideoManager {
 	public VideoTranscoding retranscodeFailedVideoTranscoding(VideoTranscoding videoTranscoding);
 
 	/**
+	 * Post video transcoding jobs to the configured transcoder.
+	 */
+	public void postVideoTranscodingJobs();
+	
+	/**
 	 * Checks for master container.
 	 *
 	 * @param videoResource
