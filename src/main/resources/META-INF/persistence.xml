@@ -194,6 +194,7 @@
 		<class>org.olat.modules.appointments.model.TopicImpl</class>
 		<class>org.olat.modules.appointments.model.TopicToGroupImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
+		<class>org.olat.modules.assessment.model.AssessmentTemplateImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingTemplateImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonServerImpl</class>

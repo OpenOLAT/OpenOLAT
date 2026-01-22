@@ -37,6 +37,8 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.course.nodes.peerreview.ui.PeerReviewEditController;
+import org.olat.course.nodes.PeerReviewCourseNode;
 
 /**
  * 
@@ -65,6 +67,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private int gradingPos;
 	private int solutionsPos;
 	private int highScoreTabPosition;
+	// private int peerReviewCustomPos; // Not needed, handled by addTabs()
 	
 	private TabbedPane myTabbedPane;
 	private final BreadcrumbPanel stackPanel;
@@ -77,6 +80,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private GTAEditAssessmentConfigController assessmentCtrl;
 	private GTASampleSolutionsEditController solutionsCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
+	private PeerReviewEditController peerReviewCustomCtrl;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -84,8 +88,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private final CourseEnvironment courseEnv;
 	private final RepositoryEntry courseEntry;
 	
-	public GTAEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, GTACourseNode gtaNode,
-			ICourse course, UserCourseEnvironment euce) {
+	    public GTAEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, GTACourseNode gtaNode,
+		    ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		this.euce = euce;
@@ -118,6 +122,11 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		//highscore
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
 		listenTo(highScoreNodeConfigController);
+
+		// Peer Review (Custom) tab - always visible
+		PeerReviewCourseNode dummyPeerReviewNode = new PeerReviewCourseNode();
+		peerReviewCustomCtrl = new PeerReviewEditController(ureq, wControl, euce, course, dummyPeerReviewNode);
+		listenTo(peerReviewCustomCtrl);
 		if ("group".equals(config.get(GTACourseNode.GTASK_TYPE))) {
 			highScoreNodeConfigController.setFormInfoMessage("highscore.forminfo", getTranslator());			
 		}
@@ -134,6 +143,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", assessmentCtrl.getInitialComponent());
 		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), "o_sel_gta_solution", solutionsCtrl.getInitialComponent());
 		highScoreTabPosition = myTabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
+		// Add Peer Review (Custom) tab(s) - always visible
+		peerReviewCustomCtrl.addTabs(myTabbedPane);
 		updateEnabledDisabledTabs();
 	}
 	
@@ -244,8 +255,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (peerReviewCustomCtrl == source) {
+			if (event == org.olat.course.editor.NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, org.olat.course.editor.NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
-		
+        
 		super.event(ureq, source, event);
 	}
 
