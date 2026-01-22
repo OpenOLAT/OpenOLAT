@@ -24,7 +24,13 @@ Each enhancement improves an existing OpenOLAT module by addressing limitations 
 ## 🧠 Module Enhancements
 
 ### 1. Course Management Module
-*Details to be added...*
+| Enhancement                                                  | Description                                                                                                                                                                                    |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Course Template Library with Selective Element Chooser**   | Enables course creators to preview available course templates and selectively include, exclude, or configure individual sections, elements, and learning resources *before* creating a course. |
+| **Smart Course Element Duplication with Dependency Mapping** | Allows duplication of complex or hierarchical course elements while preserving parent–child relationships, configurations, resource references, and assessment logic.                          |
+| **Bulk Staff Assignment**                                    | Allows administrators to assign multiple staff members to a course simultaneously, significantly reducing manual setup time and administrative overhead.                                       |
+| **Course Readiness Checker**                                 | Automatically validates critical course configurations and dependencies to identify issues and ensure courses are fully prepared prior to publication.                                         |
+
 
 ### 2. Assessment Management Module
 
