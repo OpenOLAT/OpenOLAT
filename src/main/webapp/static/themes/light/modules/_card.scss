@@ -386,6 +386,13 @@
 			}
 		}
 	}
+	
+	.o_empty_state {
+		background-color: $o-dashboard-widget-table-bg-color;
+		margin: 0;
+		border: 0;
+		border-radius: 0;
+	}
 }
 .o_dashboard_widget_empty {
 	background-color: $o-dashboard-widget-table-bg-color;

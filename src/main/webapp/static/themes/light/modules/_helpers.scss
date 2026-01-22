@@ -557,7 +557,10 @@
 	text-overflow: ellipsis;
 }	
 .o_wrap_anywhere, %o_wrap_anywhere {
-	word-wrap: anywhere
+	word-wrap: anywhere;
+}
+.o_wrap_break_word, %o_wrap_break_word {
+	overflow-wrap: break-word;
 }
 
 /* titles with subtitles */

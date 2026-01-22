@@ -122,7 +122,6 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		EmptyState emptyState = EmptyStateFactory.create("empty", emptyCont.getFormItemComponent(), this);
 		emptyState.setMessageTranslated(translate("dashboard.widget.empty.message"));
 		emptyState.setIconCss("o_icon_calendar_day");
-		emptyState.setElementCssClass("o_no_border o_no_margin");
 		
 		backButton = uifactory.addFormLink("back", emptyCont, Link.BUTTON);
 		backButton.setIconLeftCSS( ("o_icon o_icon-lg o_icon_course_previous"));

@@ -160,13 +160,9 @@ ul.o_dropdown {
 .o_empty_state {
 	text-align: center;
 	padding: 1.5em 2em 1em 2em;
-	&:not(.o_no_margin) {
-		margin: 1em 0;
-	}
-	&:not(.o_no_border) {
-		border: $o-empty-border-color;
-		border-radius: $o-empty-border-radius;
-	}
+	margin: 1em 0;
+	border: $o-empty-border-color;
+	border-radius: $o-empty-border-radius;
 	
 	.o_empty_visual {
 		display: inline-block;
@@ -205,9 +201,7 @@ ul.o_dropdown {
 	}
 	
 	@media (max-width: $screen-xs-max) { 
-		&:not(.o_no_margin) {
-			margin: 2em auto 1.5em auto;
-		}
+		margin: 2em auto 1.5em auto;
 		
 		.o_empty_visual {
 			i:first-child {

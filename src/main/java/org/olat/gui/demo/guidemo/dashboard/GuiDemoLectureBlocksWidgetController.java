@@ -82,7 +82,7 @@ public class GuiDemoLectureBlocksWidgetController extends LectureBlocksWidgetCon
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 8, 0, 0), null, "Introduction to Computer Programming", "Room G2.18", false, 45));
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 9, 0, 0), "POL-120", "The Role of Government in Society", "S2.09", false, 50));
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 10, 0, 0), "BIO-210", "Photosynthesis Explained", "B1.19", false, 10));
-		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 10, 15, 0), "GEO-220", "Understanding Climate and Weather", "", false, 90));
+		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 10, 15, 0), "GEO-220", "Understanding Climate and Weather", "This IsAVeryLongLocationWhichShouldHaveA Break", false, 90));
 		currentDate = DateUtils.addDays(currentDate, 3);
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 10, 0, 0), "BIO-205", "Human Digestive System", "Room L1.05", false, 120));
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 13, 0, 0), "LING-101", "Basic Grammar", null, true, 60));

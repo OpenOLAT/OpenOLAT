@@ -24,7 +24,7 @@
 		#end
 		<h4 class="o_title o_nowrap">$r.escapeHtml($row.title)</h4>
 	</div>
-	<div class="o_row_location o_cell_top_border">
+	<div class="o_row_location o_cell_top_border o_wrap_break_word">
 		#if($r.isNotEmpty($row.location))
 			<span><i class="o_icon o_icon_location"></i> $r.escapeHtml($row.location)</span>
 		#elseif($row.isOnlineMeeting())
