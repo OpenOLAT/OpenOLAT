@@ -350,13 +350,17 @@
 					position: sticky;
 					min-height: 10px;
 					pointer-events: none;
+					opacity: 0;
+					transition: .3s opacity;
 				}
-				&::before {
+				&.o_scrollable_top::before {
 					top: 0;
+					opacity: 1;
 					background: linear-gradient(rgba(99, 99, 99, 0.1), transparent);
 				}
-				&::after {
+				&.o_scrollable_bottom::after {
 					bottom: 0;
+					opacity: 1;
 					background: linear-gradient(transparent, rgba(99, 99, 99, 0.1));
 				}
 			}

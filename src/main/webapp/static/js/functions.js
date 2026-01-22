@@ -3203,6 +3203,48 @@ function o_initScrollableOverflowIndicator(domId) {
 		}	
 	});
 }
+function o_initScrollableVerticalOverflowIndicator(domId) {
+	var scrollableEl = jQuery('#' + domId + ' .o_scrollable_vertical');
+	if (!scrollableEl.length) {
+		return;
+	}
+	var topVisible = true;
+	var bottomVisible = false;
+	
+	function onScroll() {
+		var topVisibleNew = true;
+		var bottomVisibleNew = true;
+		
+		if (scrollableEl.scrollTop() == 0) {
+			topVisibleNew = false;
+		}
+		if (scrollableEl.height() + scrollableEl.scrollTop() >= (scrollableEl.prop('scrollHeight')-1)) {
+			bottomVisibleNew = false;
+		}
+		
+		if (topVisible !== topVisibleNew) {
+			topVisible = topVisibleNew;
+			if (topVisible) {
+				scrollableEl.addClass('o_scrollable_top');
+			} else {
+				scrollableEl.removeClass('o_scrollable_top');
+			}
+		}
+		if (bottomVisible !== bottomVisibleNew) {
+			bottomVisible = bottomVisibleNew;
+			if (bottomVisible) {
+				scrollableEl.addClass('o_scrollable_bottom');
+			} else {
+				scrollableEl.removeClass('o_scrollable_bottom');
+			}
+		}
+	};
+	
+	// Initial execution
+	onScroll();
+	// Execute on every scroll event
+	scrollableEl.scroll(onScroll);
+}
 
 
 /*

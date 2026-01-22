@@ -287,7 +287,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
-			return "o_table_body container-fluid o_dashboard_table_max_height";
+			return "o_table_body container-fluid o_dashboard_table_max_height o_scrollable_vertical";
 		}
 
 		@Override

@@ -21,6 +21,7 @@
 		<div class="o_dashboard_widget_table">
 			$r.render($tableComponentName)
 		</div>
+		<script>o_initScrollableVerticalOverflowIndicator('o_c$r.getComponent($tableComponentName).getDispatchID()');</script>
 	#end
 	#if($r.available($emptyComponentName) && $r.visible($emptyComponentName))
 		<div class="o_dashboard_widget_empty">
