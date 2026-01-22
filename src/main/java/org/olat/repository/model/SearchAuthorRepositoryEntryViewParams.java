@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -72,8 +73,8 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private List<Long> excludeEntryKeys;
 	private List<RepositoryEntryRuntimeType> runtimeTypes;
 	
-	private List<OrganisationRoles> additionalCurricularOrgRoles;
-	private List<OrganisationRef> additionalCurricularOrganisations;
+	private List<OrganisationRoles> additionalManagerRoles;
+	private List<Organisation> additionalOrganisationsAccess;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
@@ -350,17 +351,24 @@ public class SearchAuthorRepositoryEntryViewParams {
 		}
 	}
 
-	public List<OrganisationRoles> getAdditionalCurricularOrgRoles() {
-		return additionalCurricularOrgRoles;
-	}
-	
-	public List<OrganisationRef> getAdditionalCurricularOrganisations() {
-		return additionalCurricularOrganisations;
+	public List<OrganisationRoles> getAdditionalManagerRoles() {
+		return additionalManagerRoles;
 	}
 
-	public void setAdditionalCurricularOrgRoles(List<OrganisationRoles> additionalCurricularOrgRoles, List<OrganisationRef> additionalCurricularOrganisations) {
-		this.additionalCurricularOrgRoles = additionalCurricularOrgRoles;
-		this.additionalCurricularOrganisations = additionalCurricularOrganisations;
+	public void setAdditionalManagerRoles(List<OrganisationRoles> additionalManagerRoles) {
+		this.additionalManagerRoles = additionalManagerRoles;
+	}
+	
+	public boolean isAdditionalOrganisationsAccessDefined() {
+		return additionalOrganisationsAccess != null && !additionalOrganisationsAccess.isEmpty();
+	}
+
+	public List<Organisation> getAdditionalOrganisationsAccess() {
+		return additionalOrganisationsAccess;
+	}
+
+	public void setAdditionalOrganisationsAccess(List<Organisation> additionalOrganisationsAccess) {
+		this.additionalOrganisationsAccess = additionalOrganisationsAccess;
 	}
 
 	public enum OrderBy {

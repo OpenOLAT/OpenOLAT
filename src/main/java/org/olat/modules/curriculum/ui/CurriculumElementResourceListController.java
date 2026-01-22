@@ -55,7 +55,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -387,10 +387,11 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
 				? List.of(OrganisationRoles.curriculummanager)
 				: List.of();
-		List<OrganisationRef> additionalOrgs = secCallback.canEditCurriculumElement(curriculumElement)
-				? getOrganisationWithDescendants()
+		searchParams.setAdditionalManagerRoles(additionalRoles);
+		List<Organisation> additionalOrgs = curriculum != null && secCallback.canEditCurriculumElement(curriculumElement)
+				? organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true)
 				: List.of();
-		searchParams.setAdditionalCurricularOrgRoles(additionalRoles, additionalOrgs);
+		searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
@@ -401,11 +402,6 @@ class CurriculumElementResourceListController extends FormBasicController implem
 				true, translate("add.resource"));
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private List<OrganisationRef> getOrganisationWithDescendants() {
-		if(curriculum == null) return List.of();
-		return List.copyOf(organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true));
 	}
 	
 	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {

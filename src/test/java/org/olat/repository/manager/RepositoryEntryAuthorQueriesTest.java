@@ -448,7 +448,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		
-		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.learnResourceManagerRoles());
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertTrue(contains(rePreparation, results));
@@ -689,24 +689,60 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		Organisation org_3 = organisationService.createOrganisation("Org 3", "org-3",
 				null, null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
-				
+		
+		// User and curriculum manager of organisation 1
 		Roles roles_1 = securityManager.getRoles(i_1);
 		SearchAuthorRepositoryEntryViewParams params_1 = new SearchAuthorRepositoryEntryViewParams(i_1, roles_1);
-		params_1.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager), List.of(org_3));
+		params_1.setAdditionalManagerRoles(List.of(OrganisationRoles.curriculummanager));
+		params_1.setAdditionalOrganisationsAccess(List.of(org_3));
 		RepositoryEntryAuthorViewResults results_1 = repositoryEntryAuthorViewQueries.searchViews(params_1, 0, 10);
 
-		Roles roles_2 = securityManager.getRoles(i_2);
-		SearchAuthorRepositoryEntryViewParams params_2 = new SearchAuthorRepositoryEntryViewParams(i_2, roles_2);
-		params_2.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager), List.of(org_3));
-		RepositoryEntryAuthorViewResults results_2 = repositoryEntryAuthorViewQueries.searchViews(params_2, 0, 10);
-		
 		// Assert
 		Assert.assertTrue(contains(re_1, results_1));
 		Assert.assertFalse(contains(re_2, results_1));
 		Assert.assertFalse(contains(re_3, results_1));
-
+		
+		// Curriculum manager of organisation 2
+		Roles roles_2 = securityManager.getRoles(i_2);
+		SearchAuthorRepositoryEntryViewParams params_2 = new SearchAuthorRepositoryEntryViewParams(i_2, roles_2);
+		params_2.setAdditionalManagerRoles(List.of(OrganisationRoles.curriculummanager));
+		params_2.setAdditionalOrganisationsAccess(List.of(org_3));
+		RepositoryEntryAuthorViewResults results_2 = repositoryEntryAuthorViewQueries.searchViews(params_2, 0, 10);
+		
 		Assert.assertFalse(contains(re_1, results_2));
 		Assert.assertTrue(contains(re_2, results_2));
 		Assert.assertTrue(contains(re_3, results_2));
+	}
+	
+	@Test
+	public void searchViews_additionalOrganisationsAccess() {
+		// Org. 1
+		Organisation org1 = organisationService.createOrganisation("Org author 10", "org-author-10", 
+				null, null, null, JunitTestHelper.getDefaultActor());
+		// Org. 1.1
+		Organisation org11 = organisationService.createOrganisation("Org author 10.1", "org-101",
+				null, org1, null, JunitTestHelper.getDefaultActor());
+		// Org. 2
+		Organisation org2 = organisationService.createOrganisation("Org author 20", "org-author-20", 
+				null, null, null, JunitTestHelper.getDefaultActor());
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.createRelation(org11.getGroup(), re, false);
+		
+		RepositoryEntry notRe = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.createRelation(org2.getGroup(), notRe, false);
+
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-author-");
+		dbInstance.commitAndCloseSession();
+
+		// User and curriculum manager of organisation
+		Roles roles = securityManager.getRoles(identity);
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, roles);
+		params.setAdditionalOrganisationsAccess(List.of(org1, org11));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+
+		// Assert
+		Assert.assertTrue(contains(re, results));
+		Assert.assertFalse(contains(notRe, results));
 	}
 }
