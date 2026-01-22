@@ -21,10 +21,11 @@ package org.olat.modules.certificationprogram.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
+import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.modules.certificationprogram.CertificationProgram;
 
 /**
@@ -35,18 +36,20 @@ import org.olat.modules.certificationprogram.CertificationProgram;
  */
 public class CertificationProgramDashboardController extends BasicController {
 
+	private final DashboardController dashboardCtrl;
 	private final ActiveMembersWidgetController activeMembersCtrl;
 	
 	public CertificationProgramDashboardController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("program_dashboard");
+		dashboardCtrl = new DashboardController(ureq, wControl);
+		listenTo(dashboardCtrl);
 		
 		activeMembersCtrl = new ActiveMembersWidgetController(ureq, getWindowControl(), certificationProgram);
 		listenTo(activeMembersCtrl);
-		mainVC.put("courseCoach", activeMembersCtrl.getInitialComponent());
+		dashboardCtrl.addWidget("courseCoach", activeMembersCtrl, BentoBoxSize.box_4_1);
 		
-		putInitialPanel(mainVC);
+		putInitialPanel(dashboardCtrl.getInitialComponent());
 	}
 
 	@Override
