@@ -70,6 +70,8 @@ public interface VFSTranscodingService {
 
 	String getDirectoryString(VFSItem vfsItem);
 
+	String getTargetFilePath(VFSMetadata vfsMetadata);
+
 	void setStatus(VFSMetadata vfsMetadata, int status);
 
 	void itemSavedWithTranscoding(VFSLeaf leaf, Identity savedBy);

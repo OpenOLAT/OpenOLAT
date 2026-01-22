@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
@@ -33,32 +34,30 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.audiovideorecording.AVModule;
-import org.olat.modules.video.model.TranscoderJobResult;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
+import org.olat.modules.video.model.TranscoderJobResult;
 import org.olat.resource.OLATResource;
-import org.apache.commons.io.IOUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -96,6 +95,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	@Autowired
 	private VideoModule videoModule;
 	
+	@Autowired
+	private HttpClientService httpClientService;
+	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -118,25 +120,25 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			}
 		} catch (Exception e) {
-			log.error("", e);
+			log.warn("", e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	private void handleAudioConversion(HttpServletRequest request, HttpServletResponse response, String keyString) throws IOException {
+	private void handleAudioConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
 		if (!avModule.isAudioRecordingEnabled()) {
 			log.info("Blocking request for audio conversion masterfile. Audio recording disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		handleConversion(request, response, keyString);
+		handleConversion(request, response, referenceIdString);
 	}
 
-	private void handleConversion(HttpServletRequest request, HttpServletResponse response, String keyString) throws IOException {
-		Long key = Long.parseLong(keyString);
-		VFSMetadata metadata = vfsMetadataDao.loadMetadata(key);
+	private void handleConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
+		Long metadataKey = Long.parseLong(referenceIdString);
+		VFSMetadata metadata = vfsMetadataDao.loadMetadata(metadataKey);
 		if (metadata == null) {
-			log.info("Requested media VFS master file for key {} not found. No metadata.", key);
+			log.warn("Get original [referenceID={}]: No metadata found", referenceIdString);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
@@ -150,29 +152,30 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			return;
 		}
 
-		log.info("Requested media VFS master file for key {} not found.", key);
+		log.warn("Get original [referenceID={}]: No file found", referenceIdString);
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
 	}
 
-	private void handleVideoConversion(HttpServletRequest request, HttpServletResponse response, String keyString) throws IOException {
+	private void handleVideoConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
 		if (!avModule.isVideoRecordingEnabled()) {
 			log.info("Blocking request for video conversion masterfile. Video recording disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		handleConversion(request, response, keyString);
+		handleConversion(request, response, referenceIdString);
 	}
 
-	private void handleVideoTranscoding(HttpServletRequest request, HttpServletResponse response, String keyString) throws IOException {
+	private void handleVideoTranscoding(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
 		if (!videoModule.isTranscodingEnabled()) {
 			log.info("Blocking request for video transcoding masterfile. Transcoding disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
-		Long key = Long.parseLong(keyString);
+		Long key = Long.parseLong(referenceIdString);
 		VideoTranscoding videoTranscoding = videoTranscodingDao.getVideoTranscoding(key);
 		if (videoTranscoding == null) {
+			log.warn("Get original [referenceID={}]: No video transcoding found", referenceIdString);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
@@ -180,6 +183,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		OLATResource videoResource = videoTranscoding.getVideoResource();
 		File masterFile = videoManager.getVideoFile(videoResource);
 		if (!masterFile.exists()) {
+			log.warn("Get original [referenceID={}]: No master video file found", referenceIdString);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
@@ -192,43 +196,113 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	private void handleNotifyResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String method = request.getMethod();
 		if (!"POST".equalsIgnoreCase(method)) {
-			log.info("Received method not allowed: {}", method);
+			log.warn("Conversion job result: Method not allowed: {}", method);
 			DispatcherModule.sendForbidden(response);
 			return;
 		}
 		
 		TranscoderJobResult result = readResult(request.getInputStream());
 		if (!StringHelper.containsNonWhitespace(result.getUuid())) {
-			log.info("Missing uuid in transcoding result");
+			log.warn("Conversion job result: uuid missing");
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 		
-		if (!StringHelper.containsNonWhitespace(result.getUrl())) {
-			log.info("Missing url in transcoding result: {}", result.getUuid());
+		if (result.getType() == null) {
+			log.warn("Conversion job result: type missing");
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
-		HttpGet get = new HttpGet(result.getUrl());
-		try (CloseableHttpClient httpClient = HttpClients.createDefault(); 
-			 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
-			File targetFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
-			download(httpResponse, targetFile);
-		}
+
+		handleNotifyResult(request, response, result);
 	}
 
 	private TranscoderJobResult readResult(ServletInputStream inputStream) throws IOException {
 		String jsonString =  IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-		JSONObject jsonObject = new JSONObject(jsonString);
-		return new TranscoderJobResult(jsonObject);
+		log.debug("Conversion job result: [json='{}']", jsonString);
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(jsonString, TranscoderJobResult.class);
 	}
 
-	private void download(CloseableHttpResponse httpResponse, File targetFile) {
-		try (InputStream inputStream = httpResponse.getEntity().getContent(); 
-			 OutputStream outputStream = new FileOutputStream(targetFile)) {
+	private void handleNotifyResult(HttpServletRequest request, HttpServletResponse response, TranscoderJobResult result) throws IOException {
+		if (result.getGenerated() == null || !StringHelper.containsNonWhitespace(result.getGenerated().getUrl())) {
+			log.warn("Conversion job result: 'generated.url' missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+		
+		if (result.getReferenceId() == null) {
+			log.warn("Conversion job result: 'referenceId' missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+
+		switch (result.getType()) {
+			case videoConversion, audioConversion:
+				handleConversionResult(result);
+				break;
+			case videoTranscoding:
+				handleVideoTranscodingResult(request, response, result);
+				break;
+		}
+	}
+
+	private void handleConversionResult(TranscoderJobResult result) {
+		VFSMetadata metadata = vfsMetadataDao.loadMetadata(result.getReferenceId());
+		if (metadata == null) {
+			log.warn("Missing metadata for conversion job result [uuid={}]", result.getUuid());
+			return;
+		}
+
+		VFSItem destinationItem = vfsTranscodingService.getDestinationItem(metadata);
+		if (destinationItem == null) {
+			log.warn("Missing destination item for conversion job result [uuid={}]", result.getUuid());
+			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_ERROR);
+			return;
+		}
+
+		String targetPath = vfsTranscodingService.getTargetFilePath(metadata);
+		log.debug("Writing conversion job result to target path [uuid={}, targetPath='{}']", result.getUuid(), 
+				targetPath);
+
+		File targetFile = new File(targetPath);
+
+		try {
+			download(result, targetFile);
+			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_DONE);
+			vfsTranscodingService.fileDoneEvent(metadata);
+		} catch (Exception e) {
+			log.warn("Failed to download conversion job result [uuid={}, targetPath='{}']: {}", 
+					result.getUuid(), targetPath, e);
+			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_ERROR);
+		}
+	}
+
+	private void updateStatus(VFSMetadata metadata, int status) {
+		vfsTranscodingService.setStatus(metadata, status);	
+		DBFactory.getInstance().commitAndCloseSession();
+	}
+
+	private void handleVideoTranscodingResult(HttpServletRequest request, HttpServletResponse response, TranscoderJobResult result) {
+		log.warn("Transcoding result type not supported yet: {}", result.getType());
+	}
+
+	private void download(TranscoderJobResult result, File targetFile) throws IOException {
+		String url = result.getGenerated().getUrl();
+		HttpGet get = new HttpGet(url);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			if (statusCode != HttpServletResponse.SC_OK) {
+				log.warn("File download: [uuid={}, statusCode={}]", result.getUuid(), statusCode);
+				throw new IOException("Failed to download");
+			} else {
+				log.debug("File download: [uuid={}, statusCode={}]", result.getUuid(), statusCode);
+			}
+
+			InputStream inputStream = httpResponse.getEntity().getContent();
+			OutputStream outputStream = new FileOutputStream(targetFile);
 			FileUtils.copy(inputStream, outputStream);
-		} catch (IOException e) {
-			log.error("Error downloading transcoding result", e);
 		}
 	}
 }
