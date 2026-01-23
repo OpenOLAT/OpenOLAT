@@ -829,42 +829,7 @@ public class RepositoryManager {
 			acService.deleteOffers(reloadedRe.getOlatResource());
 		}
 		
-		if(organisations != null) {
-			// sync the relation re_to_group
-			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(reloadedRe));
-			for(Organisation currentOrganisation:currentOrganisationsByGroups) {
-				if(!organisations.contains(currentOrganisation)) {
-					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);
-				}
-			}
-			for(Organisation organisation:organisations) {
-				if(!currentOrganisationsByGroups.contains(organisation)) {
-					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe, false);
-					reloadedRe.getGroups().add(relToGroup);
-				}
-			}
-			
-			// sync the relation repository entry to organisation	
-			Set<RepositoryEntryToOrganisation> currentRelations = reloadedRe.getOrganisations();
-			List<RepositoryEntryToOrganisation> copyRelations = new ArrayList<>(currentRelations);
-			List<Organisation> currentOrganisationsByRelations = new ArrayList<>();
-			for(RepositoryEntryToOrganisation relation:copyRelations) {
-				if(!organisations.contains(relation.getOrganisation())) {
-					repositoryEntryToOrganisationDao.delete(relation);
-					currentRelations.remove(relation);
-				} else {
-					currentOrganisationsByRelations.add(relation.getOrganisation());
-				}
-			}
-			
-			for(Organisation organisation:organisations) {
-				if(!currentOrganisationsByRelations.contains(organisation)) {
-					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao.createRelation(organisation, reloadedRe, false);
-					currentRelations.add(newRelation);
-				}
-			}
-			reloadedRe.setOrganisations(currentRelations);
-		}
+		updateOrganisations(reloadedRe, organisations);
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		//fetch the values
@@ -1153,42 +1118,7 @@ public class RepositoryManager {
 			}
 		}
 
-		if(organisations != null) {
-			// sync the relation re_to_group
-			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(reloadedRe));
-			for(Organisation currentOrganisation:currentOrganisationsByGroups) {
-				if(!organisations.contains(currentOrganisation)) {
-					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);
-				}
-			}
-			for(Organisation organisation:organisations) {
-				if(!currentOrganisationsByGroups.contains(organisation)) {
-					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe, false);
-					reloadedRe.getGroups().add(relToGroup);
-				}
-			}
-			
-			// sync the relation repository entry to organisation	
-			Set<RepositoryEntryToOrganisation> currentRelations = reloadedRe.getOrganisations();
-			List<RepositoryEntryToOrganisation> copyRelations = new ArrayList<>(currentRelations);
-			List<Organisation> currentOrganisationsByRelations = new ArrayList<>();
-			for(RepositoryEntryToOrganisation relation:copyRelations) {
-				if(!organisations.contains(relation.getOrganisation())) {
-					repositoryEntryToOrganisationDao.delete(relation);
-					currentRelations.remove(relation);
-				} else {
-					currentOrganisationsByRelations.add(relation.getOrganisation());
-				}
-			}
-			
-			for(Organisation organisation:organisations) {
-				if(!currentOrganisationsByRelations.contains(organisation)) {
-					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao.createRelation(organisation, reloadedRe, false);
-					currentRelations.add(newRelation);
-				}
-			}
-			reloadedRe.setOrganisations(currentRelations);
-		}
+		updateOrganisations(reloadedRe, organisations);
 		reloadedRe.setLifecycle(cycle);
 		reloadedRe.setLastModified(new Date());
 		
@@ -1209,6 +1139,46 @@ public class RepositoryManager {
 		dbInstance.commit();
 		autoAccessManager.grantAccess(updatedRe);
 		return updatedRe;
+	}
+
+	private void updateOrganisations(RepositoryEntry reloadedRe, List<Organisation> organisations) {
+		if (organisations != null) {
+			// sync the relation re_to_group
+			List<Organisation> currentOrganisations = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(reloadedRe));
+			for(Organisation currentOrganisation:currentOrganisations) {
+				if(!organisations.contains(currentOrganisation)) {
+					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);
+				}
+			}
+			currentOrganisations = repositoryEntryRelationDao.getOrganisations(Collections.singletonList(reloadedRe));
+			for(Organisation organisation:organisations) {
+				if(!currentOrganisations.contains(organisation)) {
+					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe, false);
+					reloadedRe.getGroups().add(relToGroup);
+				}
+			}
+			
+			// sync the relation repository entry to organisation
+			Set<RepositoryEntryToOrganisation> currentRelations = reloadedRe.getOrganisations();
+			List<RepositoryEntryToOrganisation> copyRelations = new ArrayList<>(currentRelations);
+			List<Organisation> currentOrganisationsByRelations = new ArrayList<>();
+			for(RepositoryEntryToOrganisation relation:copyRelations) {
+				if(!organisations.contains(relation.getOrganisation())) {
+					repositoryEntryToOrganisationDao.delete(relation);
+					currentRelations.remove(relation);
+				} else {
+					currentOrganisationsByRelations.add(relation.getOrganisation());
+				}
+			}
+			
+			for(Organisation organisation:organisations) {
+				if(!currentOrganisationsByRelations.contains(organisation)) {
+					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao.createRelation(organisation, reloadedRe, false);
+					currentRelations.add(newRelation);
+				}
+			}
+			reloadedRe.setOrganisations(currentRelations);
+		}
 	}
 
 	/**
