@@ -575,6 +575,13 @@ public interface VideoManager {
 	 * Post video transcoding jobs to the configured transcoder.
 	 */
 	public void postVideoTranscodingJobs();
+
+	/**
+	 * Delete generated files in service.
+	 *
+	 * @param uuid Of the job that generated the files.
+	 */
+	public void deleteGeneratedInService(String uuid);
 	
 	/**
 	 * Checks for master container.

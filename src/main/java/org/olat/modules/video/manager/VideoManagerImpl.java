@@ -829,44 +829,44 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	@Override
 	public void postVideoTranscodingJobs() {
 		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodingsPending();
+		Map<Long, List<VideoTranscoding>> resToTranscodings = new HashMap<>();
 		for (VideoTranscoding videoTranscoding : videoTranscodings) {
-			postVideoTranscodingJob(videoTranscoding);
+			Long resKey = videoTranscoding.getVideoResource().getKey();
+			resToTranscodings.computeIfAbsent(resKey, k -> new ArrayList<>()).add(videoTranscoding);
+		}
+
+		for (Long resKey : resToTranscodings.keySet()) {
+			List<VideoTranscoding> videoTranscodingsForRes = resToTranscodings.get(resKey);
+			postVideoTranscodingJob(videoTranscodingsForRes);
 		}
 	}
 
-	private void postVideoTranscodingJob(VideoTranscoding videoTranscoding) {
+	private void postVideoTranscodingJob(List<VideoTranscoding> videoTranscodings) {
 		String uuid = UUID.randomUUID().toString().replace("-", "");
-		videoTranscoding.setTranscoder(uuid);
-		Long originalSize = getOriginalSize(videoTranscoding);
-		Integer resolution = videoTranscoding.getResolution();
+		OLATResource videoResource = videoTranscodings.get(0).getVideoResource();
+		List<Integer> resolutions = videoTranscodings.stream().map(VideoTranscoding::getResolution).collect(Collectors.toList());
+		Long originalSize = getOriginalSize(videoResource);
 		TranscoderJob transcoderJob = transcoderHelper.createTranscoderJob(uuid, TranscoderJobType.videoTranscoding, 
-				videoTranscoding.getKey(), originalSize, resolution);
+				videoResource.getKey(), originalSize, resolutions);
 
 		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.POST_JOB_COMMAND;
-		transcoderHelper.postTranscoderJob(transcoderJob, url, videoTranscoding.getKey(), 
-				(s) -> updateVideoTranscoding(videoTranscoding, s));
+		transcoderHelper.postTranscoderJob(transcoderJob, url, (s) -> updateVideoTranscodings(videoTranscodings, s));
 	}
 	
-	private void updateVideoTranscoding(VideoTranscoding videoTranscoding, int status) {
-		videoTranscoding.setStatus(status);
-		videoTranscodingDao.updateTranscoding(videoTranscoding);
-		dbInstance.commitAndCloseSession();
-
-		if (status == VideoTranscoding.TRANSCODING_STATUS_DONE) {
-			optimizeMemoryForVideo(videoTranscoding.getVideoResource());
-			if (videoModule.isVideoTranscodingServiceConfigured()) {
-				deleteGeneratedInService(videoTranscoding.getTranscoder());
-			}
+	private void updateVideoTranscodings(List<VideoTranscoding> videoTranscodings, int status) {
+		for (VideoTranscoding videoTranscoding : videoTranscodings) {
+			videoTranscoding.setStatus(status);
+			videoTranscodingDao.updateTranscoding(videoTranscoding);
 		}
+		dbInstance.commitAndCloseSession();
 	}
 
-	private long getOriginalSize(VideoTranscoding videoTranscoding) {
-		OLATResource video = videoTranscoding.getVideoResource();
-		File masterFile = getVideoFile(video);
+	private long getOriginalSize(OLATResource videoResource) {
+		File masterFile = getVideoFile(videoResource);
 		return masterFile != null ? masterFile.length() : 0;
 	}
 	
-	private void deleteGeneratedInService(String uuid) {
+	public void deleteGeneratedInService(String uuid) {
 		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + uuid;
 		transcoderHelper.deleteGenerated(url);
 	}
