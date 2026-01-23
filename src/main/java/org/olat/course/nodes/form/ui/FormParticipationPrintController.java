@@ -52,7 +52,7 @@ public class FormParticipationPrintController extends BasicController {
 		listenTo(userCtrl);
 		mainVC.put("user", userCtrl.getInitialComponent());
 		
-		AssessmentRepositoryEntryInfoCardController entryCtrl = new AssessmentRepositoryEntryInfoCardController(ureq, wControl,
+		var entryCtrl = new AssessmentRepositoryEntryInfoCardController(ureq, wControl,
 				coachedCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode);
 		listenTo(entryCtrl);
 		mainVC.put("repo", entryCtrl.getInitialComponent());
