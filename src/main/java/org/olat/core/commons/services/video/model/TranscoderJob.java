@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.video.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -41,7 +43,8 @@ public class TranscoderJob {
 	private Long referenceId;
 	private String notifyResultUrl;
 	private TranscoderOriginal original;
-
+	private List<Integer> resolutions;
+	
 	public String getUuid() {
 		return uuid;
 	}
@@ -88,5 +91,13 @@ public class TranscoderJob {
 
 	public void setOriginal(TranscoderOriginal original) {
 		this.original = original;
+	}
+
+	public List<Integer> getResolutions() {
+		return resolutions;
+	}
+
+	public void setResolutions(List<Integer> resolutions) {
+		this.resolutions = resolutions;
 	}
 }

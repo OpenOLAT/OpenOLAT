@@ -258,8 +258,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 		TranscoderJob transcoderJob = transcoderHelper.createTranscoderJob(uuid, type, metadata.getKey(), originalSize, null);
 
 		String url = getConversionServiceUrl(type) + "/" + TranscoderJob.POST_JOB_COMMAND;
-		transcoderHelper.postTranscoderJob(transcoderJob, url, metadata.getKey(), 
-				(s) -> updateStatus(metadata, s));
+		transcoderHelper.postTranscoderJob(transcoderJob, url, (s) -> updateStatus(metadata, s));
 	}
 
 	private void updateStatus(VFSMetadata metadata, int status) {

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -48,6 +49,8 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
 import org.olat.core.commons.services.video.model.TranscoderJobResult;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.OLATResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -98,6 +101,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	
 	@Autowired
 	private HttpClientService httpClientService;
+	
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDAO;
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -175,14 +181,14 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 
 		Long key = Long.parseLong(referenceIdString);
-		VideoTranscoding videoTranscoding = videoTranscodingDao.getVideoTranscoding(key);
-		if (videoTranscoding == null) {
-			log.warn("Get original [referenceID={}]: No video transcoding found", referenceIdString);
+		RepositoryEntry entry = repositoryEntryDAO.loadByResourceKey(key);
+		if (entry == null) {
+			log.warn("Get original [referenceID={}]: No repository entry found", referenceIdString);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
-		OLATResource videoResource = videoTranscoding.getVideoResource();
+		OLATResource videoResource = entry.getOlatResource();
 		File masterFile = videoManager.getVideoFile(videoResource);
 		if (!masterFile.exists()) {
 			log.warn("Get original [referenceID={}]: No master video file found", referenceIdString);
@@ -251,7 +257,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 				handleConversionResult(result);
 				break;
 			case videoTranscoding:
-				handleVideoTranscodingResult(request, response, result);
+				handleVideoTranscodingResult(result);
 				break;
 		}
 	}
@@ -293,23 +299,39 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 
-	private void handleVideoTranscodingResult(HttpServletRequest request, HttpServletResponse response, TranscoderJobResult result) {
-		VideoTranscoding videoTranscoding = videoManager.getVideoTranscoding(result.getReferenceId());
-		if (videoTranscoding == null) {
-			log.warn("Video transcoding not found for job result [uuid={}]", result.getUuid());
-			return;
-		}
-
-		OLATResource videoResource = videoTranscoding.getVideoResource();
-		if (videoResource == null) {
-			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());
-			updateError(videoTranscoding, result.getUuid());
-			return;
-		}
-
+	private void handleVideoTranscodingResult(TranscoderJobResult result) {
 		int status = result.getGenerated().getStatus();
 		if (status > VideoTranscoding.TRANSCODING_STATUS_WAITING && status < VideoTranscoding.TRANSCODING_STATUS_DONE) {
 			log.info("Ignoring transcoding progress results for now: [uuid={}, status={}]", result.getUuid(), status);
+			return;
+		}
+
+		RepositoryEntry entry = repositoryEntryDAO.loadByResourceKey(result.getReferenceId());
+		OLATResource videoResource = entry.getOlatResource();
+		if (videoResource == null) {
+			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());
+			return;
+		}
+
+		File masterFile = videoManager.getVideoFile(videoResource);
+		if (masterFile == null) {
+			log.warn("Video master file not found for job result [uuid={}]", result.getUuid());
+			return;
+		}
+
+		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoResource);
+		if (videoTranscodings == null || videoTranscodings.isEmpty()) {
+			log.warn("No video transcodings found [uuid={}, resKey={}]", result.getUuid(), videoResource.getKey());
+			return;
+		}
+		
+		int resolution = result.getGenerated().getResolution();
+		VideoTranscoding videoTranscoding = videoTranscodings.stream()
+				.filter(t -> t.getResolution() == resolution)
+				.findFirst()
+				.orElse(null);
+		if (videoTranscoding == null) {
+			log.warn("Video transcoding not found for job result [uuid={}, resolution={}]", result.getUuid(), resolution);
 			return;
 		}
 		
@@ -318,16 +340,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			updateStatus(videoTranscoding, status, result.getUuid());
 			return;
 		}
-		
-		File masterFile = videoManager.getVideoFile(videoResource);
-		if (masterFile == null) {
-			log.warn("Video master file not found for job result [uuid={}]", result.getUuid());
-			updateError(videoTranscoding, result.getUuid());
-			return;
-		}
 
 		File transcodingFolder = ((LocalFolderImpl) videoManager.getTranscodingContainer(videoResource)).getBasefile();
-		File targetFile = new File(transcodingFolder, videoTranscoding.getResolution() + masterFile.getName());
+		File targetFile = new File(transcodingFolder, resolution + masterFile.getName());
 
 		try {
 			download(result, targetFile);
@@ -347,6 +362,24 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 					result.getUuid(), targetFile.getAbsolutePath(), e);
 			updateError(videoTranscoding, result.getUuid());
 		}
+		
+		videoManager.optimizeMemoryForVideo(videoResource);
+		if (allDone(videoTranscodings)) {
+			videoManager.deleteGeneratedInService(result.getUuid());
+		}
+	}
+
+	private boolean allDone(List<VideoTranscoding> videoTranscodings) {
+		if (videoTranscodings == null || videoTranscodings.isEmpty()) {
+			return false;
+		}
+		
+		for  (VideoTranscoding videoTranscoding : videoTranscodings) {
+			if (videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void updateError(VideoTranscoding videoTranscoding, String uuid) {

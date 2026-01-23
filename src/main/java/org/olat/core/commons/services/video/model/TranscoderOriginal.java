@@ -32,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class TranscoderOriginal {
 	private String url;
 	private Long size;
-	private Integer resolution;
 
 	public String getUrl() {
 		return url;
@@ -48,13 +47,5 @@ public class TranscoderOriginal {
 
 	public void setSize(Long size) {
 		this.size = size;
-	}
-
-	public Integer getResolution() {
-		return resolution;
-	}
-
-	public void setResolution(Integer resolution) {
-		this.resolution = resolution;
 	}
 }

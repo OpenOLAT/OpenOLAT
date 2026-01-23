@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.video;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -67,7 +68,7 @@ public class TranscoderHelper {
 	 *                       the transcoder type and may be used for tracking or identification purposes.
 	 * @param statusUpdater The consumer to receive the status update of the transcoder job.
 	 */
-	public void postTranscoderJob(TranscoderJob transcoderJob, String url, Long referenceId, Consumer<Integer> statusUpdater) {
+	public void postTranscoderJob(TranscoderJob transcoderJob, String url, Consumer<Integer> statusUpdater) {
 		try {
 			HttpPost post = new HttpPost(url);
 			StringEntity stringEntity = new StringEntity(objectMapper.writeValueAsString(transcoderJob), ContentType.APPLICATION_JSON);
@@ -95,10 +96,10 @@ public class TranscoderHelper {
 					statusUpdater.accept( VFSMetadata.TRANSCODING_STATUS_ERROR);
 				}
 			} catch (Exception e) {
-				log.warn("Failed to post job to URL {} for item {}: {}", url, referenceId, e);
+				log.warn("Failed to post job: [url='{}', referenceId={}]: {}", url, transcoderJob.getReferenceId(), e);
 			}
 		} catch (JsonProcessingException e) {
-			log.warn("Failed to create conversion job for item {}: {}", referenceId, e);
+			log.warn("Failed to create conversion job: [referenceId={}]: {}", transcoderJob.getReferenceId(), e);
 		}
 	}
 	
@@ -129,13 +130,14 @@ public class TranscoderHelper {
 	}
 	
 	public TranscoderJob createTranscoderJob(String uuid, TranscoderJobType type, Long referenceId, 
-											 Long originalSize, Integer resolution) {
+											 Long originalSize, List<Integer> resolutions) {
 		TranscoderJob transcoderJob = new TranscoderJob();
 		transcoderJob.setUuid(uuid);
 		transcoderJob.setType(type);
 		String instanceId = WebappHelper.getInstanceId();
 		transcoderJob.setInstance(instanceId);
 		transcoderJob.setReferenceId(referenceId);
+		transcoderJob.setResolutions(resolutions);
 
 		String apiUrl = Settings.getServerContextPathURI() + "/" + TranscoderJob.TRANSCODING_NAMESPACE;
 		transcoderJob.setNotifyResultUrl(apiUrl + "/" + TranscoderJob.NOTIFY_RESULT_COMMAND);
@@ -146,7 +148,6 @@ public class TranscoderHelper {
 		original.setUrl(originalUrl);
 		original.setSize(originalSize);
 		transcoderJob.setOriginal(original);
-		original.setResolution(resolution);
 
 		return transcoderJob;
 	}
