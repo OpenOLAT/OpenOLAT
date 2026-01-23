@@ -90,4 +90,6 @@ public interface VFSTranscodingService {
 	void deregisterForJobDoneEvent(GenericEventListener listener);
 
 	void postConversionJob(VFSMetadata metadata, TranscoderJobType type);
+
+	void deleteGeneratedInService(TranscoderJobType type, String uuid);
 }

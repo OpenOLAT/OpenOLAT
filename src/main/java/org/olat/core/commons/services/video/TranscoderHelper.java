@@ -22,6 +22,7 @@ package org.olat.core.commons.services.video;
 import java.util.function.Consumer;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.video.model.TranscoderDeleteGeneratedReply;
 import org.olat.core.commons.services.video.model.TranscoderJob;
 import org.olat.core.commons.services.video.model.TranscoderJobPostReply;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -57,6 +59,14 @@ public class TranscoderHelper {
 	@Autowired
 	private HttpClientService httpClientService;
 	
+	/**
+	 * 
+	 * @param transcoderJob The transcoder job to post.
+	 * @param url The URL to post the transcoder job to.
+	 * @param referenceId The reference ID for the transcoder job. The semantics of this reference ID are specific to 
+	 *                       the transcoder type and may be used for tracking or identification purposes.
+	 * @param statusUpdater The consumer to receive the status update of the transcoder job.
+	 */
 	public void postTranscoderJob(TranscoderJob transcoderJob, String url, Long referenceId, Consumer<Integer> statusUpdater) {
 		try {
 			HttpPost post = new HttpPost(url);
@@ -89,6 +99,32 @@ public class TranscoderHelper {
 			}
 		} catch (JsonProcessingException e) {
 			log.warn("Failed to create conversion job for item {}: {}", referenceId, e);
+		}
+	}
+	
+	public void deleteGenerated(String url) {
+		HttpDelete delete = new HttpDelete(url);
+		delete.setHeader("Accept", "application/json");
+
+		try (CloseableHttpClient client = httpClientService.createHttpClient();
+			 CloseableHttpResponse response = client.execute(delete)) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			log.debug("Delete generated: [url={},  statusCode={}]", url, statusCode);
+
+			if (statusCode == HttpStatus.SC_OK) {
+				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
+				log.debug("Delete generated reply: [json='{}']", json);
+				TranscoderDeleteGeneratedReply reply = objectMapper.readValue(json, TranscoderDeleteGeneratedReply.class);
+				if ("deleted".equalsIgnoreCase(reply.getStatus())) {
+					log.debug("Delete generated reply: [status={}]", reply.getStatus());
+				} else {
+					log.warn("Delete generated reply: [url={}, status={}]", url, reply.getStatus());
+				}
+			} else {
+				log.warn("Delete generated error: [url={}, statusCode={}]", url, statusCode);
+			}
+		} catch (Exception e) {
+			log.warn("Delete generated exception: [url={}]: {}", url, e);
 		}
 	}
 	

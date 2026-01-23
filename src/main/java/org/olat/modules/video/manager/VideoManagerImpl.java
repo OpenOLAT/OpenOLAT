@@ -836,6 +836,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 
 	private void postVideoTranscodingJob(VideoTranscoding videoTranscoding) {
 		String uuid = UUID.randomUUID().toString().replace("-", "");
+		videoTranscoding.setTranscoder(uuid);
 		Long originalSize = getOriginalSize(videoTranscoding);
 		Integer resolution = videoTranscoding.getResolution();
 		TranscoderJob transcoderJob = transcoderHelper.createTranscoderJob(uuid, TranscoderJobType.videoTranscoding, 
@@ -847,13 +848,15 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	}
 	
 	private void updateVideoTranscoding(VideoTranscoding videoTranscoding, int status) {
-		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_SERVICE);
 		videoTranscoding.setStatus(status);
 		videoTranscodingDao.updateTranscoding(videoTranscoding);
 		dbInstance.commitAndCloseSession();
 
 		if (status == VideoTranscoding.TRANSCODING_STATUS_DONE) {
 			optimizeMemoryForVideo(videoTranscoding.getVideoResource());
+			if (videoModule.isVideoTranscodingServiceConfigured()) {
+				deleteGeneratedInService(videoTranscoding.getTranscoder());
+			}
 		}
 	}
 
@@ -861,6 +864,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		OLATResource video = videoTranscoding.getVideoResource();
 		File masterFile = getVideoFile(video);
 		return masterFile != null ? masterFile.length() : 0;
+	}
+	
+	private void deleteGeneratedInService(String uuid) {
+		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + uuid;
+		transcoderHelper.deleteGenerated(url);
 	}
 
 	@Override

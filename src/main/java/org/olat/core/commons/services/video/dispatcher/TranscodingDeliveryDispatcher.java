@@ -149,6 +149,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			File masterFile = vfsTranscodingService.getMasterFile(localFile.getBasefile());
 			VFSLeaf masterVfsLeaf = new LocalFileImpl(masterFile);
 			VFSMediaResource masterMediaResource = new VFSMediaResource(masterVfsLeaf);
+			log.debug("Get original [referenceId={}, masterFie={}]", referenceIdString, masterFile.getAbsolutePath());
 			ServletUtil.serveResource(request, response, masterMediaResource);
 			return;
 		}
@@ -191,6 +192,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 
 		VFSLeaf masterVfsLeaf = new LocalFileImpl(masterFile);
 		VFSMediaResource masterMediaResource = new VFSMediaResource(masterVfsLeaf);
+		log.debug("Get transcoding original [referenceId={}, masterFie={}]", referenceIdString, masterFile.getAbsolutePath());
 		ServletUtil.serveResource(request, response, masterMediaResource);
 	}
 
@@ -278,6 +280,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			download(result, targetFile);
 			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_DONE);
 			vfsTranscodingService.fileDoneEvent(metadata);
+			vfsTranscodingService.deleteGeneratedInService(result.getType(), result.getUuid());
 		} catch (Exception e) {
 			log.warn("Failed to download conversion job result [uuid={}, targetPath='{}']: {}", 
 					result.getUuid(), targetPath, e);
@@ -300,7 +303,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		OLATResource videoResource = videoTranscoding.getVideoResource();
 		if (videoResource == null) {
 			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());
-			updateError(videoTranscoding);
+			updateError(videoTranscoding, result.getUuid());
 			return;
 		}
 
@@ -312,14 +315,14 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		
 		if (status < VideoTranscoding.TRANSCODING_STATUS_WAITING) {
 			log.warn("Video transcoding job resulted in error status: [uuid={}, status={}]", result.getUuid(), status);
-			updateStatus(videoTranscoding, status);
+			updateStatus(videoTranscoding, status, result.getUuid());
 			return;
 		}
 		
 		File masterFile = videoManager.getVideoFile(videoResource);
 		if (masterFile == null) {
 			log.warn("Video master file not found for job result [uuid={}]", result.getUuid());
-			updateError(videoTranscoding);
+			updateError(videoTranscoding, result.getUuid());
 			return;
 		}
 
@@ -338,25 +341,25 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 				videoTranscoding.setWidth(0);
 				videoTranscoding.setHeight(0);
 			}
-			update(videoTranscoding);
+			update(videoTranscoding, result.getUuid());
 		} catch (Exception e) {
 			log.warn("Failed to download transcoding job result [uuid={}, targetPath='{}']: {}",
 					result.getUuid(), targetFile.getAbsolutePath(), e);
-			updateError(videoTranscoding);
+			updateError(videoTranscoding, result.getUuid());
 		}
 	}
 
-	private void updateError(VideoTranscoding videoTranscoding) {
-		updateStatus(videoTranscoding, VFSMetadata.TRANSCODING_STATUS_ERROR);
+	private void updateError(VideoTranscoding videoTranscoding, String uuid) {
+		updateStatus(videoTranscoding, VFSMetadata.TRANSCODING_STATUS_ERROR, uuid);
 	}
 
-	private void updateStatus(VideoTranscoding videoTranscoding, int status) {
+	private void updateStatus(VideoTranscoding videoTranscoding, int status, String uuid) {
 		videoTranscoding.setStatus(status);
-		update(videoTranscoding);
+		update(videoTranscoding, uuid);
 	}
 
-	private void update(VideoTranscoding videoTranscoding) {
-		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_SERVICE);
+	private void update(VideoTranscoding videoTranscoding, String uuid) {
+		videoTranscoding.setTranscoder(uuid);
 		videoManager.updateVideoTranscoding(videoTranscoding);
 		DBFactory.getInstance().commitAndCloseSession();
 	}

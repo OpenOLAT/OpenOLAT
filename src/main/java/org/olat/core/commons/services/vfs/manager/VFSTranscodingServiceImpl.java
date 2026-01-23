@@ -267,6 +267,11 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 		dbInstance.commitAndCloseSession();
 	}
 
+	public void deleteGeneratedInService(TranscoderJobType type, String uuid) {
+		String url = getConversionServiceUrl(type) + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + uuid;
+		transcoderHelper.deleteGenerated(url);
+	}
+
 	private Long getOriginalSize(VFSMetadata metadata) {
 		String masterFileName = masterFilePrefix + metadata.getFilename();
 		Path directoryPath = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), masterFileName);
