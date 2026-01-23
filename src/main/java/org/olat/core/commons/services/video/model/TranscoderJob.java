@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class TranscoderJob {
 	public static final String TRANSCODING_NAMESPACE = "transcoding";
 	public static final String POST_JOB_COMMAND = "postJob";
+	public static final String DELETE_GENERATED_COMMAND = "deleteGenerated";
 	public static final String NOTIFY_RESULT_COMMAND = "notifyResult";
 	
 	private String uuid;

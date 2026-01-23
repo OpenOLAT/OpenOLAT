@@ -1,0 +1,1 @@
+alter table o_cur_curriculum_element alter column c_external_id type varchar(128);

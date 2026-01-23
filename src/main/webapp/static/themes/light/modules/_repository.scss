@@ -865,8 +865,8 @@ form { .o_form { .o_radio_cards_wrapper {
 	
 	$o-repo-user-header-gap: 10px;
 	.o_repo_user_header {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: 1fr;
 		gap: $o-repo-user-header-gap;
 		
 		.o_user_info {
@@ -884,10 +884,7 @@ form { .o_form { .o_radio_cards_wrapper {
 	$o-repo-user-header-breakpoint: 2*$o-user-info-profile-breakpoint + 2*$o-repo-user-header-gap;
 	@container o-repo-user-header (min-width: #{$o-repo-user-header-breakpoint}) {
 		.o_repo_user_header {
-			flex-direction: row;
-			>div {
-				flex: 1;
-			}
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 			// same height of the two panels
 			:is(div, form):has(:is(.o_repo_info, .o_user_info)) {
 				display: grid;

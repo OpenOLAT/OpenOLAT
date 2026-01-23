@@ -338,7 +338,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 				: List.of();
 		searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
 		searchParams.addResourceTypes("CourseModule");
-		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
+		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
 		listenTo(templateSearchCtr);
 		templateSearchCtr.selectFilterTab(ureq, templateSearchCtr.getMyCoursesTab());

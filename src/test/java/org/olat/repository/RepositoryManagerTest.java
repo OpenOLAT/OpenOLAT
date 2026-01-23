@@ -27,14 +27,18 @@
 package org.olat.repository;
 
 import static org.junit.Assert.fail;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
@@ -1023,6 +1027,92 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertEquals(publicCycle, reloaded.getLifecycle());
 		Assert.assertEquals(1, reloaded.getOrganisations().size());// check repository entry to organization relations
 		Assert.assertEquals(2, reloaded.getGroups().size());// check repository entry to group relations
+	}
+	
+	@Test
+	public void setAccess_organisations() {
+		Identity doer = JunitTestHelper.getDefaultActor();
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null, null, doer);
+		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null, null, doer);
+		dbInstance.commitAndCloseSession();
+		
+		
+		// Set organisation
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, List.of(organisation1));
+		dbInstance.commitAndCloseSession();
+		// Check
+		List<Organisation> organisations = re.getOrganisations().stream().map(RepositoryEntryToOrganisation::getOrganisation).toList();
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		// Check after reload
+		Map<Long, List<Organisation>> entryKeyToOrganisation = repositoryService
+				.getRepositoryEntryOrganisations(List.of(re)).entrySet().stream()
+				.collect(Collectors.toMap(es -> es.getKey().getKey(), Entry::getValue, (u, v) -> v));
+		organisations = entryKeyToOrganisation.get(re.getKey());
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		organisations = repositoryService.getOrganisations(List.of(re));
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		
+		
+		// Add organisation
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, List.of(organisation1, organisation2));
+		dbInstance.commitAndCloseSession();
+		// Check
+		organisations = re.getOrganisations().stream().map(RepositoryEntryToOrganisation::getOrganisation).toList();
+		Assert.assertEquals(2, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		Assert.assertTrue(organisations.contains(organisation2));
+		// Check after reload
+		entryKeyToOrganisation = repositoryService
+				.getRepositoryEntryOrganisations(List.of(re)).entrySet().stream()
+				.collect(Collectors.toMap(es -> es.getKey().getKey(), Entry::getValue, (u, v) -> v));
+		organisations = entryKeyToOrganisation.get(re.getKey());
+		Assert.assertEquals(2, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		Assert.assertTrue(organisations.contains(organisation2));
+		organisations = repositoryService.getOrganisations(List.of(re));
+		Assert.assertEquals(2, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		Assert.assertTrue(organisations.contains(organisation2));
+		
+		
+		// Remove organisation
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, List.of(organisation1));
+		dbInstance.commitAndCloseSession();
+		// Check
+		organisations = re.getOrganisations().stream().map(RepositoryEntryToOrganisation::getOrganisation).toList();
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		// Check after reload
+		entryKeyToOrganisation = repositoryService
+				.getRepositoryEntryOrganisations(List.of(re)).entrySet().stream()
+				.collect(Collectors.toMap(es -> es.getKey().getKey(), Entry::getValue, (u, v) -> v));
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		organisations = repositoryService.getOrganisations(List.of(re));
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation1));
+		
+		
+		// Replace organisation
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, List.of(organisation2));
+		dbInstance.commitAndCloseSession();
+		// Check
+		organisations = re.getOrganisations().stream().map(RepositoryEntryToOrganisation::getOrganisation).toList();
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation2));
+		// Check after reload
+		entryKeyToOrganisation = repositoryService
+				.getRepositoryEntryOrganisations(List.of(re)).entrySet().stream()
+				.collect(Collectors.toMap(es -> es.getKey().getKey(), Entry::getValue, (u, v) -> v));
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation2));
+		organisations = repositoryService.getOrganisations(List.of(re));
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertTrue(organisations.contains(organisation2));
 	}
 	
 	@Test

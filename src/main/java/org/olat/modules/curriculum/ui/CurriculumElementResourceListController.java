@@ -377,12 +377,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
-		if (roles.isCurriculumManager() && !CurriculumHelper.isMoreThanCurriculumManager(roles)) {
-			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.curricular));
-		} else {
-			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
-		}
-		
+		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.curricular));
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
 				? List.of(OrganisationRoles.curriculummanager)
