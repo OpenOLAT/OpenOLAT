@@ -4289,7 +4289,7 @@ create table o_cur_curriculum_element (
   c_max_participants number(20),
   c_taught_by varchar(128),
   c_catalog_sort_priority number(20),
-  c_external_id varchar(64),
+  c_external_id varchar(128),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
   c_calendars varchar(16),
