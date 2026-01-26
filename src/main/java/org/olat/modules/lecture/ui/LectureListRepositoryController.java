@@ -1335,6 +1335,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	 */
 	private void activateLecture(UserRequest ureq, Long lectureBlockKey, List<ContextEntry> subEntries) {
 		int index = tableModel.getIndexByKey(lectureBlockKey);
+		
+		if (index < 0) {
+			index = activatePastScope(ureq, lectureBlockKey);
+		}
+		
 		if(index >= 0) {
 			int page = index / tableEl.getPageSize();
 			tableEl.setPage(page);
@@ -1356,6 +1361,23 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId(elemId));
 			}
 		}
+	}
+
+	private int activatePastScope(UserRequest ureq, Long lectureBlockKey) {
+		LecturesBlockSearchParameters searchParams = getSearchParams();
+		searchParams.setLectureBlocks(List.of(() -> lectureBlockKey));
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, 1, null);
+		if (lectureBlocks.size() == 1) {
+			Date startDate = DateUtils.getStartOfDay(lectureBlocks.get(0).getStartDate());
+			Date endDate = DateUtils.getEndOfDay(ureq.getRequestTimestamp());
+			if (startDate.before(endDate)) {
+				DateRange range = new DateRange(startDate, endDate);
+				scopeEl.setCustomScope(range);
+				activateFilterTab(ureq, allTab);
+				return tableModel.getIndexByKey(lectureBlockKey);
+			}
+		}
+		return -1;
 	}
 
 	@Override
