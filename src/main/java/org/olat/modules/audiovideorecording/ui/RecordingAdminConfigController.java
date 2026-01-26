@@ -74,10 +74,12 @@ public class RecordingAdminConfigController extends FormBasicController {
 		videoConversionServiceUrlEl = uifactory.addTextElement("admin.recording.video.conversion.service.url", 
 				255, avModule.getVideoConversionServiceUrl(), formLayout);
 		videoConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+		videoConversionServiceUrlEl.setHelpTextKey("admin.recording.video.conversion.service.url.help", null);
 		
 		audioConversionServiceUrlEl = uifactory.addTextElement("admin.recording.audio.conversion.service.url", 
 				255, avModule.getAudioConversionServiceUrl(), formLayout);
 		audioConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+		audioConversionServiceUrlEl.setHelpTextKey("admin.recording.video.conversion.service.url.help", null);
 		
 		if (avModule.externalTranscodingProbablySetUp() && !avModule.isLocalVideoConversionPossible() && !avModule.isLocalAudioConversionPossible()) {
 			setFormInfo("admin.recording.external.conversion.active");
