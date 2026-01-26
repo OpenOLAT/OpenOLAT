@@ -57,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DateInputController extends FormBasicController implements EvaluationFormResponseController {
 	
+	private FormLayoutContainer dateCont;
 	private DateChooser dateEl;
 	private FormLink nowButton;
 	
@@ -91,16 +92,16 @@ public class DateInputController extends FormBasicController implements Evaluati
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer dateLayout = FormLayoutContainer.createVerticalFormLayout("dateinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
-		dateLayout.setElementCssClass("o_inline_cont");
-		dateLayout.setRootForm(mainForm);
-		formLayout.add(dateLayout);
+		dateCont = FormLayoutContainer.createInlineFormLayout("dateinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
+		dateCont.setElementCssClass("o_inline_cont");
+		dateCont.setRootForm(mainForm);
+		formLayout.add(dateCont);
 		
-		dateEl = uifactory.addDateChooser("dateinput_" + CodeHelper.getRAMUniqueID(), null, null, dateLayout);
+		dateEl = uifactory.addDateChooser("dateinput_" + CodeHelper.getRAMUniqueID(), null, null, dateCont);
 		dateEl.setElementCssClass("o_no_padding");
 		dateEl.setButtonsEnabled(!editor);
 		
-		nowButton = uifactory.addFormLink("dateinput_" + CodeHelper.getRAMUniqueID(), null, null, dateLayout, Link.BUTTON + Link.NONTRANSLATED);
+		nowButton = uifactory.addFormLink("dateinput_" + CodeHelper.getRAMUniqueID(), null, null, dateCont, Link.BUTTON + Link.NONTRANSLATED);
 		nowButton.setGhost(true);
 		nowButton.addActionListener(FormEvent.ONCHANGE);
 		
@@ -148,14 +149,14 @@ public class DateInputController extends FormBasicController implements Evaluati
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		dateEl.clearError();
+		dateCont.clearError();
 		if (!validationEnabled) return true;
 		
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (dateInput.isMandatory()) {
 			if (dateEl.getDate() == null) {
-				dateEl.setErrorKey("form.legende.mandatory");
+				dateCont.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}
