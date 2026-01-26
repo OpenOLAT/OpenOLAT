@@ -55,6 +55,7 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 	private TextElement displayNameEl;
 	private ObjectSelectionElement organisationsEl;
 	
+	private final boolean editable;
 	private CertificationProgram certificationProgram;
 	private List<Organisation> certificationProgramOrganisations;
 	
@@ -67,8 +68,10 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 	@Autowired
 	private CertificationProgramService certificationProgramService;
 	
-	public EditCertificationProgramMetadataController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
+	public EditCertificationProgramMetadataController(UserRequest ureq, WindowControl wControl,
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
+		editable = secCallback.canEditCertificationProgram();
 		this.certificationProgram = certificationProgram;
 		initForm(ureq);
 	}
@@ -82,16 +85,20 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 		String displayName = certificationProgram.getDisplayName();
 		displayNameEl = uifactory.addTextElement("certification.program.name", "certification.program.name", 255, displayName, formLayout);
 		displayNameEl.setMandatory(true);
+		displayNameEl.setEnabled(editable);
 		
 		String identifier = certificationProgram.getIdentifier();
 		identifierEl = uifactory.addTextElement("certification.program.identifier", "certification.program.identifier", 128, identifier, formLayout);
+		identifierEl.setEnabled(editable);
 		
 		if(organisationModule.isEnabled()) {
 			initFormOrganisations(formLayout, ureq.getUserSession());
 		}
 		
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(editable) {
+			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 	
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
@@ -104,6 +111,7 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 				getWindowControl(), true, organisationSource);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setMandatory(true);
+		organisationsEl.setEnabled(editable);
 	}
 
 	@Override

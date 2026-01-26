@@ -75,6 +75,7 @@ public class CertificationProgramOwnersController extends FormBasicController {
 	private CertificationProgramOwnersTableModel tableModel;
 	
 	private CertificationProgram certificationProgram;
+	private final CertificationProgramSecurityCallback secCallback;
 	protected final List<UserPropertyHandler> userPropertyHandlers;
 
 	private ToolsController toolsCtrl;
@@ -93,10 +94,12 @@ public class CertificationProgramOwnersController extends FormBasicController {
 	private CertificationProgramService certificationProgramService;
 	
 	
-	public CertificationProgramOwnersController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
+	public CertificationProgramOwnersController(UserRequest ureq, WindowControl wControl,
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl, "owners_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.certificationProgram = certificationProgram;
+		this.secCallback = secCallback;
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -107,10 +110,10 @@ public class CertificationProgramOwnersController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addOwnerButton = uifactory.addFormLink("add.owner", formLayout, Link.BUTTON);
-		addOwnerButton.setIconLeftCSS("o_icon o_icon_add_member");
-		
-		removeOwnersButton = uifactory.addFormLink("remove", formLayout, Link.BUTTON);
+		if(secCallback.canEditCertificationProgram()) {
+			addOwnerButton = uifactory.addFormLink("add.owner", formLayout, Link.BUTTON);
+			addOwnerButton.setIconLeftCSS("o_icon o_icon_add_member");
+		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CertificationProgramOwnersCols.id));
@@ -124,18 +127,24 @@ public class CertificationProgramOwnersController extends FormBasicController {
 			colIndex++;
 		}
 		
-        ActionsColumnModel actionsCol = new ActionsColumnModel(CertificationProgramOwnersCols.tools);
-        actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
-		columnsModel.addFlexiColumnModel(actionsCol);
+		if(secCallback.canEditCertificationProgram()) {
+	        ActionsColumnModel actionsCol = new ActionsColumnModel(CertificationProgramOwnersCols.tools);
+	        actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
+			columnsModel.addFlexiColumnModel(actionsCol);
+		}
 		
 		tableModel = new CertificationProgramOwnersTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setSelectAllEnable(false);
-		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "certification-programs-element-owners");
-		
-		tableEl.addBatchButton(removeOwnersButton);
+
+		if(secCallback.canEditCertificationProgram()) {
+			tableEl.setMultiSelect(true);
+			
+			removeOwnersButton = uifactory.addFormLink("remove", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(removeOwnersButton);
+		}
 	}
 	
 	private void loadModel() {

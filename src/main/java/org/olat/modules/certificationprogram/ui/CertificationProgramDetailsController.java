@@ -134,7 +134,8 @@ public class CertificationProgramDetailsController extends BasicController imple
 		membersTab = tabPane.addTab(ureq, translate("certification.program.members"), "o_sel_certification_program_members", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_MEMBERS), null);
-			membersCtrl = new CertificationProgramMembersOverviewController(uureq, subControl, toolbarPanel, certificationProgram, secCallback);
+			membersCtrl = new CertificationProgramMembersOverviewController(uureq, subControl, toolbarPanel,
+					certificationProgram, secCallback);
 			listenTo(membersCtrl);
 
 			return membersCtrl.getInitialComponent();
@@ -143,7 +144,8 @@ public class CertificationProgramDetailsController extends BasicController imple
 		messagesTab = tabPane.addTab(ureq, translate("certification.program.messages"), "o_sel_certification_program_messages", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_MESSAGES), null);
-			messagesCtrl = new CertificationProgramMessagesController(uureq, subControl, certificationProgram);
+			messagesCtrl = new CertificationProgramMessagesController(uureq, subControl,
+					certificationProgram, secCallback);
 			listenTo(messagesCtrl);
 
 			return messagesCtrl.getInitialComponent();
@@ -152,7 +154,8 @@ public class CertificationProgramDetailsController extends BasicController imple
 		implementationTab = tabPane.addTab(ureq, translate("certification.program.implementations"), "o_sel_certification_program_implementations", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_ELEMENTS), null);
-			curriculumElementsListCtrl = new CertificationProgramCurriculumElementListController(uureq, subControl, certificationProgram);
+			curriculumElementsListCtrl = new CertificationProgramCurriculumElementListController(uureq, subControl,
+					certificationProgram, secCallback);
 			listenTo(curriculumElementsListCtrl);
 
 			return curriculumElementsListCtrl.getInitialComponent();
@@ -161,7 +164,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 		ownersTab = tabPane.addTab(ureq, translate("certification.program.owners"), "o_sel_certification_program_owners", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_OWNERS), null);
-			ownersCtrl = new CertificationProgramOwnersController(uureq, subControl, certificationProgram);
+			ownersCtrl = new CertificationProgramOwnersController(uureq, subControl, certificationProgram, secCallback);
 			listenTo(ownersCtrl);
 
 			return ownersCtrl.getInitialComponent();
@@ -170,7 +173,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 		settingsTab = tabPane.addTab(ureq, translate("certification.program.settings"), "o_sel_certification_program_settings", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_SETTINGS), null);
-			settingsCtrl = new EditCertificationProgramController(uureq, subControl, certificationProgram);
+			settingsCtrl = new EditCertificationProgramController(uureq, subControl, certificationProgram, secCallback);
 			listenTo(settingsCtrl);
 
 			return settingsCtrl.getInitialComponent();

@@ -101,12 +101,12 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewCurriculums() {
-			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
 		}
 
 		@Override
 		public boolean canViewImplementations() {
-			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
 		}
 
 		@Override

@@ -62,6 +62,7 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 	private FormLink editCustomizationButton;
 	
 	private final CertificationProgram certificationProgram;
+	private final CertificationProgramSecurityCallback secCallback;
 	private final CertificationProgramNotificationRow notificationRow;
 	
 	private CloseableModalController cmc;
@@ -73,8 +74,10 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 	private CertificationProgramService certificationProgramService;
 	
 	public CertificationProgramNotificationDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			CertificationProgram certificationProgram, CertificationProgramNotificationRow notificationRow) {
+			CertificationProgram certificationProgram, CertificationProgramNotificationRow notificationRow,
+			CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "program_notification_details_view", rootForm);
+		this.secCallback = secCallback;
 		this.notificationRow = notificationRow;
 		this.certificationProgram = certificationProgram;
 		initForm(ureq);
@@ -86,12 +89,14 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(notificationRow.isCustomized()) {
-			editCustomizationButton = uifactory.addFormLink("notification.edit.customization", formLayout, Link.BUTTON);
-			editCustomizationButton.setIconLeftCSS("o_icon o_icon_edit");
-		} else {
-			customizeButton = uifactory.addFormLink("notification.customize", formLayout, Link.BUTTON);
-			customizeButton.setIconLeftCSS("o_icon o_icon_mail");
+		if(secCallback.canEditCertificationProgram()) {
+			if(notificationRow.isCustomized()) {
+				editCustomizationButton = uifactory.addFormLink("notification.edit.customization", formLayout, Link.BUTTON);
+				editCustomizationButton.setIconLeftCSS("o_icon o_icon_edit");
+			} else {
+				customizeButton = uifactory.addFormLink("notification.customize", formLayout, Link.BUTTON);
+				customizeButton.setIconLeftCSS("o_icon o_icon_mail");
+			}
 		}
 		
 		FormLayoutContainer templateForm = uifactory.addDefaultFormLayout("templateCont", null, formLayout);

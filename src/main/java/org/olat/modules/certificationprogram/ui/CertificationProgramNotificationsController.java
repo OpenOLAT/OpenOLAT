@@ -78,8 +78,8 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	public CertificationProgramNotificationsController(UserRequest ureq, WindowControl wControl,
-			CertificationProgram certificationProgram) {
-		super(ureq, wControl, "notifications", certificationProgram);
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
+		super(ureq, wControl, "notifications", certificationProgram, secCallback);
 
 		initForm(ureq);
 		loadModel();
@@ -92,12 +92,12 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.content,
 				new CustomizedCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.status));
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(NotificationsCols.tools));
+		if(secCallback.canEditCertificationProgram()) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(NotificationsCols.tools));
+		}
 		
 		tableModel = new CertificationProgramNotificationsTableModel(columnsModel);
-		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
-		
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-notifications-v1");
@@ -129,6 +129,7 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 	private CertificationProgramNotificationRow forgeRow(String label, CertificationProgramMailConfiguration configuration) {
 		FormToggle statusEl = uifactory.addToggleButton("status_" + (++count), null, translate("on"), translate("off"), flc);
 		statusEl.setLabel("Test", null, true);
+		statusEl.setEnabled(secCallback.canEditCertificationProgram());
 		statusEl.toggle(configuration.getStatus() == CertificationProgramMailConfigurationStatus.active);
 		
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());

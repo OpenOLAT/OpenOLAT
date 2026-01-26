@@ -88,8 +88,8 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 	private CertificationProgramEditReminderController editReminderCtrl;
 	
 	public CertificationProgramRemindersController(UserRequest ureq, WindowControl wControl,
-			CertificationProgram certificationProgram) {
-		super(ureq, wControl, "reminders", certificationProgram);
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
+		super(ureq, wControl, "reminders", certificationProgram, secCallback);
 
 		initForm(ureq);
 		loadModel();
@@ -97,8 +97,10 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addReminderButton = uifactory.addFormLink("gadd.reminder", "add.reminder", "add.reminder", null, formLayout, Link.BUTTON);
-		addReminderButton.setIconLeftCSS("o_icon o_icon_add");
+		if(secCallback.canEditCertificationProgram()) {
+			addReminderButton = uifactory.addFormLink("gadd.reminder", "add.reminder", "add.reminder", null, formLayout, Link.BUTTON);
+			addReminderButton.setIconLeftCSS("o_icon o_icon_add");
+		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.reminder));
@@ -122,10 +124,11 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.content,
 				new CustomizedCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationsCols.status));
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(NotificationsCols.tools));
+		if(secCallback.canEditCertificationProgram()) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(NotificationsCols.tools));
+		}
 		
 		tableModel = new CertificationProgramNotificationsTableModel(columnsModel);
-		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		
 		tableEl.setDetailsRenderer(detailsVC, this);

@@ -34,30 +34,38 @@ public class CertificationProgramSecurityCallbackFactory {
 	
 	public static CertificationProgramSecurityCallback getSecurityCallback(Identity identity, Roles roles) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
+		boolean principal = roles.isPrincipal();
 		boolean owner = admin
 				? false
 				: CoreSpringFactory.getImpl(CertificationProgramService.class).isCertificationProgramOwner(identity);
-		return new CertificationProgramSecurityCallbackImpl(admin, owner);
+		return new CertificationProgramSecurityCallbackImpl(admin, principal, owner);
 	}
 
 	private static class CertificationProgramSecurityCallbackImpl implements CertificationProgramSecurityCallback {
 		
 		private final boolean admin;
 		private final boolean owner;
+		private final boolean principal;
 		
-		public CertificationProgramSecurityCallbackImpl(boolean admin, boolean owner) {
+		public CertificationProgramSecurityCallbackImpl(boolean admin, boolean principal, boolean owner) {
 			this.admin = admin;
 			this.owner = owner;
+			this.principal = principal;
 		}
 
 		@Override
 		public boolean canViewCertificationPrograms() {
-			return admin || owner;
+			return admin || principal || owner;
 		}
 
 		@Override
 		public boolean canNewCertificationProgram() {
 			return admin;
+		}
+		
+		@Override
+		public boolean canEditCertificationProgram() {
+			return admin || owner;
 		}
 
 		@Override

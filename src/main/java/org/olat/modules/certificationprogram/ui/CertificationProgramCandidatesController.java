@@ -115,8 +115,6 @@ public class CertificationProgramCandidatesController extends FormBasicControlle
 		tableModel = new CertificationProgramCandidatesTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setSelectAllEnable(true);
-		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
 	}
 	

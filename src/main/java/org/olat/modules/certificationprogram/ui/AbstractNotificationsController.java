@@ -57,6 +57,7 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 	protected CertificationProgramNotificationsTableModel tableModel;
 	
 	protected final CertificationProgram certificationProgram;
+	protected final CertificationProgramSecurityCallback secCallback;
 	
 	protected CloseableModalController cmc;
 	private ConfirmationController confirmResetCtrl;
@@ -67,8 +68,9 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 	protected CertificationProgramService certificationProgramService;
 	
 	public AbstractNotificationsController(UserRequest ureq, WindowControl wControl, String page,
-			CertificationProgram certificationProgram) {
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl, page);
+		this.secCallback = secCallback;
 		this.certificationProgram = certificationProgram;
 
 		detailsVC = createVelocityContainer("program_notification_details");
@@ -178,7 +180,7 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 		}
 		
 		CertificationProgramNotificationDetailsController detailsCtrl = new CertificationProgramNotificationDetailsController(ureq, getWindowControl(), mainForm,
-				certificationProgram, row);
+				certificationProgram, row, secCallback);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

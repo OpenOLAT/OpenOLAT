@@ -71,6 +71,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 	private TextElement creditPointEl;
 	private FormLayoutContainer creditPointCont;
 	
+	private final boolean editable;
 	private final List<CreditPointSystem> systems;
 	private CertificationProgram certificationProgram;
 	
@@ -83,8 +84,10 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 	@Autowired
 	private CertificationProgramService certificationProgramService;
 	
-	public EditCertificationProgramConfigurationController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
+	public EditCertificationProgramConfigurationController(UserRequest ureq, WindowControl wControl,
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
+		editable = secCallback.canEditCertificationProgram();
 		this.certificationProgram = certificationProgram;
 		if(organisationModule.isEnabled()) {
 			Roles roles = ureq.getUserSession().getRoles();
@@ -116,25 +119,30 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		recertificationCont.setFormTitle(translate("recertification.title"));
 		initRecertificationForm(recertificationCont);
 		
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(editable) {
+			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 	
 	protected void initValidityForm(FormItemContainer formLayout) {
 		validityToggleEl = uifactory.addToggleButton("validity.enable", "validity.enable", translate("on"), translate("off"), formLayout);
 		validityToggleEl.toggle(certificationProgram.isValidityEnabled());
+		validityToggleEl.setEnabled(editable);
 		
 		String validityDurationVal = Integer.toString(certificationProgram.getValidityTimelapse());
 		DurationType validityDurationType = certificationProgram.getValidityTimelapseUnit();
 		validityEl = new DurationFormItem("validity.duration", getTranslator(), false);
 		validityEl.setLabel("validity.duration", null);
 		validityEl.setValue(validityDurationVal, validityDurationType);
+		validityEl.setEnabled(editable);
 		formLayout.add(validityEl);
 	}
 	
 	protected void initRecertificationForm(FormItemContainer formLayout) {
 		recertificationToggleEl = uifactory.addToggleButton("recertification.enable", "recertification.enable", translate("on"), translate("off"), formLayout);
 		recertificationToggleEl.toggle(certificationProgram.isRecertificationEnabled());
+		recertificationToggleEl.setEnabled(editable);
 		
 		String recertificationWindowVal = Integer.toString(certificationProgram.getRecertificationWindow());
 		DurationType recertificationWindowType = certificationProgram.getRecertificationWindowUnit();
@@ -142,6 +150,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		recertificationWindowEl.setLabel("recertification.window", null);
 		recertificationWindowEl.setHelpText(translate("recertification.window.hint"));
 		recertificationWindowEl.setValue(recertificationWindowVal, recertificationWindowType);
+		recertificationWindowEl.setEnabled(editable);
 		formLayout.add(recertificationWindowEl);
 		
 		SelectionValues modePK = new SelectionValues();
@@ -151,6 +160,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 				translate("recertification.mode.manual.descr"), null, null, true));
 		recertificationModeEl = uifactory.addCardSingleSelectHorizontal("recertification.mode", "recertification.mode", formLayout, modePK);
 		recertificationModeEl.addActionListener(FormEvent.ONCHANGE);
+		recertificationModeEl.setEnabled(editable);
 		if(certificationProgram.getRecertificationMode() != null && modePK.containsKey(certificationProgram.getRecertificationMode().name())) {
 			recertificationModeEl.select(certificationProgram.getRecertificationMode().name(), true);
 		}
@@ -163,6 +173,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		
 		creditPointToggleEl = uifactory.addToggleButton("credit.point.enable", "credit.point.enable", translate("on"), translate("off"), formLayout);
 		creditPointToggleEl.toggle(selectedSystem != null && StringHelper.containsNonWhitespace(points));
+		creditPointToggleEl.setEnabled(editable);
 
 		// System
 		SelectionValues systemPK = new SelectionValues();
@@ -177,6 +188,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		
 		systemEl = uifactory.addDropdownSingleselect("credit.point.system", formLayout, systemPK.keys(), systemPK.values());
 		systemEl.addActionListener(FormEvent.ONCHANGE);
+		systemEl.setEnabled(editable);
 		if(selectedSystem != null && systemPK.containsKey(selectedSystem.getKey().toString())) {
 			systemEl.select(selectedSystem.getKey().toString(), true);
 		} else if(!systemPK.isEmpty()) {
@@ -193,6 +205,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		creditPointEl.setMaxLength(8);
 		creditPointEl.setDisplaySize(8);
 		creditPointEl.setMandatory(true);
+		creditPointEl.setEnabled(editable);
 		updateCreditPointUI();
 	}
 	
@@ -222,7 +235,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			creditPointToggleEl.setEnabled(false);
 			creditPointToggleEl.setMandatory(true);
 		} else {
-			creditPointToggleEl.setEnabled(true);
+			creditPointToggleEl.setEnabled(editable);
 			creditPointToggleEl.setMandatory(false);
 		}
 		

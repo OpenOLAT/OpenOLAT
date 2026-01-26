@@ -56,13 +56,16 @@ public class EditCertificationProgramController extends BasicController implemen
 
 	private final boolean administrator;
 	private CertificationProgram certificationProgram;
+	private final CertificationProgramSecurityCallback secCallback;
 	
 	private EditCertificationProgramMetadataController metadataCtrl;
 	private EditCertificationProgramCertificateController certificateCtrl;
 	private EditCertificationProgramConfigurationController configurationCtrl;
 	
-	public EditCertificationProgramController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
+	public EditCertificationProgramController(UserRequest ureq, WindowControl wControl,
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
+		this.secCallback = secCallback;
 		this.certificationProgram = certificationProgram;
 		administrator = ureq.getUserSession().getRoles().isAdministrator();
 		
@@ -153,7 +156,7 @@ public class EditCertificationProgramController extends BasicController implemen
 	private void doOpenMetadata(UserRequest ureq) {
 		removeAsListenerAndDispose(metadataCtrl);
 		
-		metadataCtrl = new EditCertificationProgramMetadataController(ureq, getWindowControl(), certificationProgram);
+		metadataCtrl = new EditCertificationProgramMetadataController(ureq, getWindowControl(), certificationProgram, secCallback);
 		listenTo(metadataCtrl);
 		mainVC.put("content", metadataCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(metadataLink);
@@ -162,7 +165,7 @@ public class EditCertificationProgramController extends BasicController implemen
 	private void doOpenConfiguration(UserRequest ureq) {
 		removeAsListenerAndDispose(configurationCtrl);
 		
-		configurationCtrl = new EditCertificationProgramConfigurationController(ureq, getWindowControl(), certificationProgram);
+		configurationCtrl = new EditCertificationProgramConfigurationController(ureq, getWindowControl(), certificationProgram, secCallback);
 		listenTo(configurationCtrl);
 		mainVC.put("content", configurationCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(configurationLink);
@@ -171,7 +174,7 @@ public class EditCertificationProgramController extends BasicController implemen
 	private void doOpenCertificate(UserRequest ureq) {
 		removeAsListenerAndDispose(certificateCtrl);
 		
-		certificateCtrl = new EditCertificationProgramCertificateController(ureq, getWindowControl(), certificationProgram);
+		certificateCtrl = new EditCertificationProgramCertificateController(ureq, getWindowControl(), certificationProgram, secCallback);
 		listenTo(certificateCtrl);
 		mainVC.put("content", certificateCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(certificateLink);

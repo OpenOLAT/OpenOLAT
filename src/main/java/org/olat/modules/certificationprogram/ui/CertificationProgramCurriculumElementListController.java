@@ -110,6 +110,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 	
 	private int counter = 0;
 	private CertificationProgram certificationProgram;
+	private final CertificationProgramSecurityCallback secCallback;
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -123,9 +124,11 @@ implements Activateable2, FlexiTableComponentDelegate {
 	@Autowired
 	private CertificationProgramService certificationProgramService;
 	
-	public CertificationProgramCurriculumElementListController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
+	public CertificationProgramCurriculumElementListController(UserRequest ureq, WindowControl wControl,
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl, "program_implementations_list",
 				Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
+		this.secCallback = secCallback;
 		this.certificationProgram = certificationProgram;
 		detailsVC = createVelocityContainer("program_implementation_details");
 		
@@ -140,8 +143,10 @@ implements Activateable2, FlexiTableComponentDelegate {
 	}
 	
 	private void initButtonsForm(FormItemContainer formLayout) {
-		addCurriculumElementButton = uifactory.addFormLink("add.curriculum.element", formLayout, Link.BUTTON);
-		addCurriculumElementButton.setIconLeftCSS("o_icon o_icon_add");
+		if(secCallback.canEditCertificationProgram()) {
+			addCurriculumElementButton = uifactory.addFormLink("add.curriculum.element", formLayout, Link.BUTTON);
+			addCurriculumElementButton.setIconLeftCSS("o_icon o_icon_add");
+		}
 	}
 	
 	private void initTableForm(FormItemContainer formLayout, UserRequest ureq) {

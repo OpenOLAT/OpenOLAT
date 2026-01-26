@@ -223,7 +223,7 @@ public class CertificationProgramDAO {
 				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("ownerRole", CertificationRoles.programowner.name())
-				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.curriculummanager.name()))
+				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
 				.getResultList();
 	}
 	

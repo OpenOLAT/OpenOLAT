@@ -31,6 +31,8 @@ public interface CertificationProgramSecurityCallback {
 	
 	boolean canNewCertificationProgram();
 	
+	boolean canEditCertificationProgram();
+	
 	boolean canAddMember();
 
 }

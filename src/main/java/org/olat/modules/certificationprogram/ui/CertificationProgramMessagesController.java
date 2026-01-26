@@ -47,17 +47,19 @@ public class CertificationProgramMessagesController extends BasicController impl
 	private final CertificationProgramNotificationsController notificationsCtrl;
 	
 	public CertificationProgramMessagesController(UserRequest ureq, WindowControl wControl,
-			CertificationProgram certificationProgram) {
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("messages");
 		initInfosPanel(ureq, certificationProgram);
 		
-		notificationsCtrl = new CertificationProgramNotificationsController(ureq, wControl, certificationProgram);
+		notificationsCtrl = new CertificationProgramNotificationsController(ureq, wControl,
+				certificationProgram, secCallback);
 		listenTo(notificationsCtrl);
 		mainVC.put("notifications", notificationsCtrl.getInitialComponent());
 		
-		remindersCtrl = new CertificationProgramRemindersController(ureq, wControl, certificationProgram);
+		remindersCtrl = new CertificationProgramRemindersController(ureq, wControl,
+				certificationProgram, secCallback);
 		listenTo(remindersCtrl);
 		mainVC.put("reminders", remindersCtrl.getInitialComponent());
 		

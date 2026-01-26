@@ -104,6 +104,15 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		//
 	}
 	
+	
+	
+	@Override
+	public void setEnabled(boolean enable) {
+		typeEl.setEnabled(enable);
+		valueEl.setEnabled(enable);
+		super.setEnabled(enable);
+	}
+
 	public boolean isOneSelected() {
 		return typeEl.isOneSelected();
 	}

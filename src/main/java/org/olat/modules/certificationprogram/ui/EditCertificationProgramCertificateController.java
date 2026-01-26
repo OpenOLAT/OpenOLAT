@@ -73,6 +73,7 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 	private Link previewTemplateLink;
 
 	private final String mapperUrl;
+	private final boolean editable;
 	private CertificateTemplate selectedTemplate;
 	private CertificationProgram certificationProgram;
 	
@@ -86,8 +87,10 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 	@Autowired
 	private CertificationProgramService certificationProgramService;
 	
-	public EditCertificationProgramCertificateController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
+	public EditCertificationProgramCertificateController(UserRequest ureq, WindowControl wControl,
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
+		editable = secCallback.canEditCertificationProgram();
 		this.certificationProgram = certificationProgram;
 		mapperUrl = registerMapper(ureq, new TemplateMapper());
 		
@@ -102,15 +105,20 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		certificationCustom1El = uifactory.addTextElement("certificate.custom1", 1000, certificationProgram.getCertificateCustom1(), formLayout);
+		certificationCustom1El.setEnabled(editable);
 		certificationCustom2El = uifactory.addTextElement("certificate.custom2", 2000, certificationProgram.getCertificateCustom2(), formLayout);
+		certificationCustom2El.setEnabled(editable);
 		certificationCustom3El = uifactory.addTextElement("certificate.custom3", 3000, certificationProgram.getCertificateCustom3(), formLayout);
+		certificationCustom3El.setEnabled(editable);
 		
 		String templatePage = velocity_root + "/select_certificate.html";
 		templateCont = uifactory.addCustomFormLayout("template.cont", null, templatePage, formLayout);
 		templateCont.contextPut("mapperUrl", mapperUrl);
 		templateCont.setLabel("certificate.pdf.template", null);
 		
-		selectTemplateLink = uifactory.addFormLink("select", templateCont, Link.BUTTON);
+		if(editable) {
+			selectTemplateLink = uifactory.addFormLink("select", templateCont, Link.BUTTON);
+		}
 		selectedTemplate = certificationProgram.getTemplate();
 		if(selectedTemplate != null) {
 			templateCont.contextPut("templateName", selectedTemplate.getName());
@@ -121,8 +129,10 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		previewTemplateLink = LinkFactory.createButton("preview", templateCont.getFormItemComponent(), this);
 		previewTemplateLink.setTarget("preview");
 		
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(editable) {
+			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 	
 	private void updateUI() {
