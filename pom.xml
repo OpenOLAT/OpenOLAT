@@ -2196,7 +2196,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.18.1</version>
+			<version>1.18.2</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
@@ -2367,7 +2367,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.27.6</version>
+			<version>3.27.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2416,7 +2416,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-tomcat-managed-10</artifactId>
-			<version>1.2.3.Final</version>
+			<version>1.2.4.Final</version>
 		<scope>test</scope>
       	</dependency>
 		<dependency>

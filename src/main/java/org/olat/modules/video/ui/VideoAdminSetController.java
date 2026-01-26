@@ -123,7 +123,8 @@ public class VideoAdminSetController extends FormBasicController  {
 		transcodingServiceUrlEl = uifactory.addTextElement("admin.config.transcoding.service.url", 255, 
 				videoModule.getTranscodingServiceUrl(), transcodingCont);
 		transcodingServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
-		
+		transcodingServiceUrlEl.setHelpTextKey("admin.config.transcoding.service.url.help", null);
+
 		handBrakeCliEl = uifactory.addStaticTextElement("admin.config.handBrakeCli", "", transcodingCont);
 
 		masterVideoFileEl = uifactory.addCardSingleSelectHorizontal("admin.config.master.video.file", transcodingCont,
@@ -136,6 +137,7 @@ public class VideoAdminSetController extends FormBasicController  {
 		masterVideoFileEl.addActionListener(FormEvent.ONCHANGE);
 
 		transcodingResolutionsEl = uifactory.addStaticTextElement("admin.config.transcoding.resolutions", null, transcodingCont);
+		transcodingResolutionsEl.setHelpTextKey("admin.config.transcoding.resolutions.help", null);
 
 		enable2160SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.2160", transcodingCont, enableKeys, enableValues);
 		enable2160SelectionEl.addActionListener(FormEvent.ONCHANGE);

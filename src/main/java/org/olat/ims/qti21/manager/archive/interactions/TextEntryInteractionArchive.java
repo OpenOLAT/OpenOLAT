@@ -54,7 +54,7 @@ public class TextEntryInteractionArchive extends DefaultInteractionArchive {
 		if(StringHelper.containsNonWhitespace(stringuifiedResponses)) {
 			TextEntryInteraction textEntryInteraction = (TextEntryInteraction)interaction;
 			AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(item, textEntryInteraction);
-			stringuifiedResponses = CorrectResponsesUtil.stripResponse(stringuifiedResponses);
+			stringuifiedResponses = stripResponse(stringuifiedResponses);
 
 			boolean correct = correctAnswers.match(stringuifiedResponses);
 			if(correct) {
@@ -66,5 +66,18 @@ public class TextEntryInteractionArchive extends DefaultInteractionArchive {
 			col++;
 		}
 		return col;
+	}
+	
+	public static final String stripResponse(String stringuifiedResponses) {
+		if(stringuifiedResponses != null) {
+			if(stringuifiedResponses.startsWith("[") && stringuifiedResponses.endsWith("]")) {
+				stringuifiedResponses = stringuifiedResponses.substring(1, stringuifiedResponses.length() - 1);
+			}
+			stringuifiedResponses = stringuifiedResponses
+					.replace("\\[", "[")
+					.replace("\\]", "]")
+					.replace("\\\\", "\\");
+		}
+		return stringuifiedResponses;
 	}
 }
