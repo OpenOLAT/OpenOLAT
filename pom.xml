@@ -86,7 +86,7 @@
 		<org.infinispan.version>16.0.5</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.40.0</version.selenium>
-		<activemq.artemis.version>2.44.0</activemq.artemis.version>
+		<activemq.artemis.version>2.50.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.4</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
@@ -453,12 +453,12 @@
 					<version>${jakarta.jms.api}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.activemq</groupId>
+					<groupId>org.apache.artemis</groupId>
 					<artifactId>artemis-jakarta-client</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.activemq</groupId>
+					<groupId>org.apache.artemis</groupId>
 					<artifactId>artemis-jakarta-server</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
@@ -611,12 +611,12 @@
 					<version>${jakarta.jms.api}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.activemq</groupId>
+					<groupId>org.apache.artemis</groupId>
 					<artifactId>artemis-jakarta-client</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.activemq</groupId>
+					<groupId>org.apache.artemis</groupId>
 					<artifactId>artemis-jakarta-server</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
@@ -1582,13 +1582,13 @@
 	<!-- check with mvn dependency:tree to see what other dep. get downloaded -->
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
+			<groupId>org.apache.artemis</groupId>
 			<artifactId>artemis-jakarta-client</artifactId>
 			<version>${activemq.artemis.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
+			<groupId>org.apache.artemis</groupId>
 			<artifactId>artemis-jakarta-server</artifactId>
 			<version>${activemq.artemis.version}</version>
 			<scope>test</scope>
