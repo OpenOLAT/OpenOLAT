@@ -113,8 +113,11 @@ class StickyMessageComponent extends AbstractComponent {
 			StickyMessageComponent cmp = (StickyMessageComponent)source;
 			if(cmp.isMessages()) {
 				sb.append("<div id='o_msg_sticky' class='o_scrollblock clearfix")
-				  .append(" o_msg_sticky_fullscreen", cmp.getScreenMode().isFullScreen())
-				  .append("'><i class='o_icon o_icon_info_msg'> </i> ");
+				  .append(" o_msg_sticky_fullscreen", cmp.getScreenMode().isFullScreen());
+				if (cmp.getDelegateComponent() == null) {
+					sb.append(" o_noprint");
+				}
+				sb.append("'><i class='o_icon o_icon_info_msg'> </i> ");
 				
 				Component delegate = cmp.getDelegateComponent();
 				if(delegate != null && delegate.isVisible()) {
