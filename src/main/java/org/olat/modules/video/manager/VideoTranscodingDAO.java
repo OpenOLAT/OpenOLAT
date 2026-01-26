@@ -123,7 +123,20 @@ public class VideoTranscodingDAO {
 				.setParameter("resourceKey", videoResource.getKey())
 				.getResultList();
 	}
-	
+
+	public List<VideoTranscoding> getVideoTranscodings(Long resourceKey, String transcoder) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trans from videotranscoding as trans")
+				.append(" inner join fetch trans.videoResource as res")
+				.append(" where res.key=:resourceKey")
+				.append(" and trans.transcoder=:transcoder");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VideoTranscoding.class)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("transcoder", transcoder)
+				.getResultList();
+	}
+
 	/**
 	 * Gets all video transcodings.
 	 *

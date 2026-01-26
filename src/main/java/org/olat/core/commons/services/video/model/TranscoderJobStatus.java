@@ -19,8 +19,6 @@
  */
 package org.olat.core.commons.services.video.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -31,22 +29,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranscoderJob {
-	public static final String TRANSCODING_NAMESPACE = "transcoding";
-	public static final String POST_JOB_COMMAND = "postJob";
-	public static final String DELETE_GENERATED_COMMAND = "deleteGenerated";
-	public static final String NOTIFY_RESULT_COMMAND = "notifyResult";
-	public static final String NOTIFY_STATUS_COMMAND = "notifyStatus";
-	
+public class TranscoderJobStatus {
 	private String uuid;
 	private TranscoderJobType type;
-	private String instance;
 	private Long referenceId;
-	private String notifyResultUrl;
-	private String notifyStatusUrl;
-	private TranscoderOriginal original;
-	private List<Integer> resolutions;
-	
+	private Float status;
+
 	public String getUuid() {
 		return uuid;
 	}
@@ -63,14 +51,6 @@ public class TranscoderJob {
 		this.type = type;
 	}
 
-	public String getInstance() {
-		return instance;
-	}
-
-	public void setInstance(String instance) {
-		this.instance = instance;
-	}
-
 	public Long getReferenceId() {
 		return referenceId;
 	}
@@ -79,35 +59,11 @@ public class TranscoderJob {
 		this.referenceId = referenceId;
 	}
 
-	public String getNotifyResultUrl() {
-		return notifyResultUrl;
+	public Float getStatus() {
+		return status;
 	}
 
-	public void setNotifyResultUrl(String notifyResultUrl) {
-		this.notifyResultUrl = notifyResultUrl;
-	}
-
-	public String getNotifyStatusUrl() {
-		return notifyStatusUrl;
-	}
-
-	public void setNotifyStatusUrl(String notifyStatusUrl) {
-		this.notifyStatusUrl = notifyStatusUrl;
-	}
-
-	public TranscoderOriginal getOriginal() {
-		return original;
-	}
-
-	public void setOriginal(TranscoderOriginal original) {
-		this.original = original;
-	}
-
-	public List<Integer> getResolutions() {
-		return resolutions;
-	}
-
-	public void setResolutions(List<Integer> resolutions) {
-		this.resolutions = resolutions;
+	public void setStatus(Float status) {
+		this.status = status;
 	}
 }

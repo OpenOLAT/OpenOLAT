@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.vfs;
 
+import org.olat.core.commons.services.video.model.TranscoderJobStatus;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.GenericEventListener;
@@ -90,6 +91,8 @@ public interface VFSTranscodingService {
 	void deregisterForJobDoneEvent(GenericEventListener listener);
 
 	void postConversionJob(VFSMetadata metadata, TranscoderJobType type);
+
+	void handleConversionJobStatus(TranscoderJobStatus status);
 
 	void deleteGeneratedInService(TranscoderJobType type, String uuid);
 }
