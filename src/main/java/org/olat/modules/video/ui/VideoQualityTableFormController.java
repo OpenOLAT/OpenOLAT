@@ -43,12 +43,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
+import org.olat.modules.video.manager.VideoTranscodingStatusEvent;
 import org.olat.modules.video.ui.VideoQualityTableModel.QualityTableCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -59,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoQualityTableFormController extends FormBasicController {
+public class VideoQualityTableFormController extends FormBasicController implements GenericEventListener {
 	
 	private FlexiTableElement tableEl;
 	private VideoQualityTableModel tableModel;
@@ -81,6 +83,14 @@ public class VideoQualityTableFormController extends FormBasicController {
 		super(ureq, wControl, "video_quality");
 		this.videoResource = videoEntry.getOlatResource();
 		initForm(ureq);
+
+		videoManager.registerForStatusEvent(this);
+	}
+
+	@Override
+	protected void doDispose() {
+		videoManager.deregisterForStatusEvent(this);
+		super.doDispose();
 	}
 
 	@Override
@@ -171,7 +181,19 @@ public class VideoQualityTableFormController extends FormBasicController {
 		refreshbtn = uifactory.addFormLink("button.refresh", flc, Link.BUTTON);
 		refreshbtn.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 	}
-	
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VideoTranscodingStatusEvent videoTranscodingStatusEvent) {
+			if (videoResource == null || videoResource.getKey() == null) {
+				return;
+			}
+			if (videoTranscodingStatusEvent.getResourceKey().equals(videoResource.getKey())) {
+				initTable();
+			}
+		}
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		super.event(ureq, source, event);

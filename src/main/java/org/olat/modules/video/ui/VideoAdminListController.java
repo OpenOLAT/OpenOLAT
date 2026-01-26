@@ -93,6 +93,14 @@ public class VideoAdminListController extends FormBasicController implements Gen
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		initForm(ureq);
 		loadModel();
+
+		videoManager.registerForStatusEvent(this);
+	}
+
+	@Override
+	protected void doDispose() {
+		videoManager.deregisterForStatusEvent(this);
+		super.doDispose();
 	}
 
 	@Override
@@ -157,14 +165,6 @@ public class VideoAdminListController extends FormBasicController implements Gen
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		
-		videoManager.registerForStatusEvent(this);
-	}
-
-	@Override
-	protected void doDispose() {
-		videoManager.deregisterForStatusEvent(this);
-		super.doDispose();
 	}
 
 	@Override
