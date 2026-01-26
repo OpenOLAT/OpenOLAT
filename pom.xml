@@ -2416,7 +2416,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-tomcat-managed-10</artifactId>
-			<version>1.2.3.Final</version>
+			<version>1.2.4.Final</version>
 		<scope>test</scope>
       	</dependency>
 		<dependency>
