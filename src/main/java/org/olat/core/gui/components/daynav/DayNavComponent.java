@@ -66,8 +66,10 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	private void init() {
 		setDomReplacementWrapperRequired(false);
 		
-		this.startDate = new Date();
-		this.selectedDateIndex = -1;
+		Date today = new Date();
+		// Monday of the current week
+		startDate =  DateUtils.getPreviousDay(DateUtils.addDays(today, 1), DayOfWeek.MONDAY);
+		setSelectedDate(today);
 	}
 	
 	@Override

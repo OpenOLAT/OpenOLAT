@@ -123,11 +123,14 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		emptyState.setMessageTranslated(translate("dashboard.widget.empty.message"));
 		emptyState.setIconCss("o_icon_calendar_day");
 		
-		backButton = uifactory.addFormLink("back", emptyCont, Link.BUTTON);
-		backButton.setIconLeftCSS( ("o_icon o_icon-lg o_icon_course_previous"));
+		backButton = uifactory.addFormLink("back", "dashboard.widget.previous.event", null, emptyCont, Link.BUTTON);
+		backButton.setIconLeftCSS("o_icon o_icon-lg o_icon_course_previous");
+		backButton.setGhost(true);
 		
-		forwardButton = uifactory.addFormLink("forward", emptyCont, Link.BUTTON);
-		forwardButton.setIconRightCSS( ("o_icon o_icon-lg o_icon_course_next"));
+		forwardButton = uifactory.addFormLink("forward", "dashboard.widget.next.event", null,emptyCont, Link.BUTTON);
+		forwardButton.setIconRightCSS("o_icon o_icon-lg o_icon_course_next");
+		forwardButton.setGhost(true);
+
 		
 		return emptyCont.getName();
 	}
@@ -162,7 +165,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 
 	protected void loadModel() {
-		Date fromDate = DateUtils.getStartOfDay(dayNavEl.getStartDate());
+		Date fromDate = DateUtils.getStartOfDay(dayNavEl.getSelectedDate());
 		Date toDate= DateUtils.getEndOfDay(dayNavEl.getEndDate());
 		List<LectureBlock> lectureBlocks = loadLectureBlocks(fromDate, toDate);
 		LectureBlockRef nextScheduledBlock = loadNextScheduledBlock();
@@ -256,10 +259,10 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 	
 	private void updateEmptyButtonUI() {
-		Date prevLectureBlock = getPrevLectureBlock(dayNavEl.getStartDate());
+		Date prevLectureBlock = getPrevLectureBlock(dayNavEl.getSelectedDate());
 		backButton.setUserObject(prevLectureBlock);
 		backButton.setEnabled(backButton.getUserObject() != null);
-		Date nextLectureBlock = getNextLectureBlock(dayNavEl.getStartDate());
+		Date nextLectureBlock = getNextLectureBlock(dayNavEl.getSelectedDate());
 		forwardButton.setUserObject(nextLectureBlock);
 		forwardButton.setEnabled(forwardButton.getUserObject() != null);
 	}
