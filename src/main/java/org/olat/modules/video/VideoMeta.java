@@ -123,5 +123,13 @@ public interface VideoMeta extends CreateInfo {
 	public boolean isDownloadEnabled();
 	
 	public void setDownloadEnabled(boolean downloadEnabled);
-	
+
+	/**
+	 * True if the master file of this video has been replaced by a transcoded file of the same
+	 * dimension and format, but with a smaller file size.
+	 * @return True if the master file has been replaced, false otherwise.
+	 */
+	public boolean isMasterReplaced();
+
+	public void setMasterReplaced(boolean masterReplaced);
 }

@@ -82,6 +82,8 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	private String length;	
 	@Column(name="vid_download_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean downloadEnabled;	
+	@Column(name="vid_master_replaced", nullable=false, insertable=true, updatable=true)
+	private boolean masterReplaced;	
 	
 	
 	public VideoMetaImpl(int width, int height, long size) {
@@ -234,5 +236,15 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	@Override
 	public void setDownloadEnabled(boolean downloadEnabled) {
 		this.downloadEnabled = downloadEnabled;
+	}
+
+	@Override
+	public boolean isMasterReplaced() {
+		return masterReplaced;
+	}
+
+	@Override
+	public void setMasterReplaced(boolean masterReplaced) {
+		this.masterReplaced = masterReplaced;
 	}
 }
