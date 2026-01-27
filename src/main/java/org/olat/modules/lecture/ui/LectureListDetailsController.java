@@ -129,6 +129,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private final boolean taxonomyEnabled;
 	private final LectureListRepositoryConfig config;
 	private RepositoryEntryImageMapper mapperThumbnail;
+	private final LecturesSecurityCallback secCallback;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -153,10 +154,12 @@ public class LectureListDetailsController extends FormBasicController {
 	private RepositoryModule repositoryModule;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
-			LectureListRepositoryConfig config, boolean lectureManagementManaged, boolean inRepoEntry, boolean taxonomyEnabled) {
+			LectureListRepositoryConfig config, boolean lectureManagementManaged, boolean inRepoEntry, boolean taxonomyEnabled,
+			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
 		this.config = config;
+		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
 		this.taxonomyEnabled = taxonomyEnabled;
 		profileConfig = userPortraitService.createProfileConfig();
@@ -582,13 +585,14 @@ public class LectureListDetailsController extends FormBasicController {
 				openLink.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
 				openLink.setNewWindow(true, false);
 			}
-
-			if(groupRow.isExcluded()) {
-				includeLink = LinkFactory.createLink("include.participants", "include.participants", getTranslator(), mainVC, this, Link.LINK);
-				includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			} else {
-				excludeLink = LinkFactory.createLink("exclude.participants", "exclude.participants", getTranslator(), mainVC, this, Link.LINK);
-				excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
+			if(secCallback.canEditLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
+				if(groupRow.isExcluded()) {
+					includeLink = LinkFactory.createLink("include.participants", "include.participants", getTranslator(), mainVC, this, Link.LINK);
+					includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+				} else {
+					excludeLink = LinkFactory.createLink("exclude.participants", "exclude.participants", getTranslator(), mainVC, this, Link.LINK);
+					excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
+				}
 			}
 			putInitialPanel(mainVC);
 		}

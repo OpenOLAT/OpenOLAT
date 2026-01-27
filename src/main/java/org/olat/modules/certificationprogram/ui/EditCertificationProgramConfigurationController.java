@@ -216,7 +216,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			validityEl.setValue("1", DurationType.year);
 		}
 		
-		recertificationToggleEl.setEnabled(validityEnabled);
+		recertificationToggleEl.setEnabled(validityEnabled && editable);
 		boolean recertificationEnabled = validityEnabled && validityToggleEl.isVisible() && recertificationToggleEl.isOn();
 		recertificationWindowEl.setVisible(recertificationEnabled);
 		recertificationModeEl.setVisible(recertificationEnabled);

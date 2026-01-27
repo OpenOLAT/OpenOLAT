@@ -722,7 +722,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			
 			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
 			openLink.setNewWindow(true, true);
-			exportLink = addLink("export", "o_icon_export", links);
+			if(secCallback.canNewCurriculum()) {
+				exportLink = addLink("export", "o_icon_export", links);
+			}
 			
 			if(secCallback.canDeleteCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
 				links.add("-");

@@ -133,7 +133,12 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
-		tableEl.setEmptyTableSettings("table.reminder.empty", "table.reminder.empty.hint", "o_icon_reminder", "add.reminder", "o_icon_add", true);
+		if(secCallback.canEditCertificationProgram()) {
+			tableEl.setEmptyTableSettings("table.reminder.empty", "table.reminder.empty.hint", "o_icon_reminder", "add.reminder", "o_icon_add", true);
+		} else {
+			tableEl.setEmptyTableSettings("table.reminder.empty", null, "o_icon_reminder");
+		}
+		
 		tableEl.setAndLoadPersistedPreferences(ureq, prefsId.toString());
 	}
 	

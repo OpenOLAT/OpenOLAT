@@ -246,12 +246,12 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canCurriculumsReports() {
-			return admin || !ownedCurriculumKeys.isEmpty();
+			return admin || principal || !ownedCurriculumKeys.isEmpty();
 		}
 
 		@Override
 		public boolean canCurriculumReports(Curriculum curriculum) {
-			return admin
+			return admin || principal
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 	}

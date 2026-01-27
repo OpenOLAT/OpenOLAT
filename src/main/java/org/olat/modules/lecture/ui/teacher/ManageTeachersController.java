@@ -78,6 +78,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListDetailsController;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LocationCellRenderer;
@@ -124,6 +125,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private final RepositoryEntry entry;
 	private final List<LectureBlockRow> lectureBlocksRows;
 	private final LectureListRepositoryConfig config;
+	private final LecturesSecurityCallback secCallback;
 	
 	private TeachersController assignTeachersCtrl;
 	private TeachersController removeTeachersCtrl;
@@ -143,11 +145,12 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private RepositoryService repositoryService;
 	
 	public ManageTeachersController(UserRequest ureq, WindowControl wControl, List<LectureBlockRow> lectureBlocksRows,
-			LectureListRepositoryConfig config, RepositoryEntry entry, boolean taxonomyEnabled) {
+			LectureListRepositoryConfig config, RepositoryEntry entry, boolean taxonomyEnabled, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "manage_teachers", Util
 				.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale()));
 		this.entry = entry;
 		this.config = config;
+		this.secCallback = secCallback;
 		this.lectureBlocksRows = new ArrayList<>(lectureBlocksRows);
 		teachers = loadTeacherList(lectureBlocksRows);
 		this.taxonomyEnabled = taxonomyEnabled;
@@ -277,8 +280,8 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		Set<Long> teachersAndCoachesKeys = new HashSet<>();
 		List<Identity> teachersAndCoaches = new ArrayList<>();
 		for(LectureBlockRow block:blocks) {
-			List<Identity> teachers = block.getTeachersList();
-			for(Identity teacher:teachers) {
+			List<Identity> teachersList = block.getTeachersList();
+			for(Identity teacher:teachersList) {
 				if(!teachersAndCoachesKeys.contains(teacher.getKey())) {
 					teachersAndCoaches.add(teacher);
 					teachersAndCoachesKeys.add(teacher.getKey());
@@ -572,7 +575,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		}
 
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row.getLectureBlockRow(),
-				mainForm, config, true, entry != null, taxonomyEnabled);
+				mainForm, config, true, entry != null, taxonomyEnabled, secCallback);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -605,7 +608,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 			mainVC = createVelocityContainer("teachers_dropdown");
 			List<String> teachersNames = new ArrayList<>(teachersInfos.size());
 			for(Teacher teacherInfos:teachersInfos) {
-				teachersNames.add(addLink(teacherInfos, mainVC));
+				teachersNames.add(addLink(teacherInfos));
 			}
 			mainVC.contextPut("teachersNames", teachersNames);
 			putInitialPanel(mainVC);
@@ -615,7 +618,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 			return selectedTeacher == null ? null : selectedTeacher.identity();
 		}
 		
-		private String addLink(Teacher teacher, VelocityContainer mainVC) {
+		private String addLink(Teacher teacher) {
 			String name = "teacher_" + teacher.identity().getKey();
 			StringBuilder sb = new StringBuilder();
 			sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(teacher.identity())));

@@ -1864,7 +1864,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			showWarning("error.atleastone.lecture");
 		} else {
 			manageTeachersCtrl = new ManageTeachersController(ureq, getWindowControl(), blocks,
-					config, entry, taxonomyEnabled);
+					config, entry, taxonomyEnabled, secCallback);
 			listenTo(manageTeachersCtrl);
 			
 			String title = translate("manage.teachers");
@@ -1932,7 +1932,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				mainForm, config, lectureManagementManaged, entry != null, taxonomyEnabled);
+				mainForm, config, lectureManagementManaged, entry != null, taxonomyEnabled, secCallback);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

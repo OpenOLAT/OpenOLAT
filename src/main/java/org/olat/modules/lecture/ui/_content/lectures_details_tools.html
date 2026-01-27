@@ -1,9 +1,10 @@
 <ul class="o_dropdown list-unstyled">
 	<li>$r.render("open")</li>
-	<li class="divider"></li>
 	#if($r.available("exclude.participants"))
+		<li class="divider"></li>
 		<li>$r.render("exclude.participants")</li>
 	#elseif($r.available("include.participants"))
+		<li class="divider"></li>
 		<li>$r.render("include.participants")</li>
 	#end
 </ul>

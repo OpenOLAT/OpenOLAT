@@ -72,5 +72,10 @@ public class CertificationProgramSecurityCallbackFactory {
 		public boolean canAddMember() {
 			return admin || owner;
 		}
+
+		@Override
+		public boolean canChangeCertificateStatus() {
+			return canAddMember();
+		}
 	}
 }

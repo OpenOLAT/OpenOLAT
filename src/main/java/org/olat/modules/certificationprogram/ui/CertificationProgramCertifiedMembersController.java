@@ -371,14 +371,16 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			contactLink = LinkFactory.createLink("contact", "contact", getTranslator(), mainVC, this, Link.LINK);
 			contactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			
-			if(certificationProgram.isRecertificationEnabled()) {
-				renewLink = LinkFactory.createLink("renew.certificate", "renew", getTranslator(), mainVC, this, Link.LINK);
-				renewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_recertifying");
-			}
-			
-			if(status != CertificationStatus.REVOKED && status != CertificationStatus.ARCHIVED) {
-				revokeLink = LinkFactory.createLink("revoke.certificate", "revoke", getTranslator(), mainVC, this, Link.LINK);
-				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_revoked");
+			if(secCallback.canChangeCertificateStatus()) {
+				if(certificationProgram.isRecertificationEnabled()) {
+					renewLink = LinkFactory.createLink("renew.certificate", "renew", getTranslator(), mainVC, this, Link.LINK);
+					renewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_recertifying");
+				}
+				
+				if(status != CertificationStatus.REVOKED && status != CertificationStatus.ARCHIVED) {
+					revokeLink = LinkFactory.createLink("revoke.certificate", "revoke", getTranslator(), mainVC, this, Link.LINK);
+					revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_revoked");
+				}
 			}
 
 			putInitialPanel(mainVC);
