@@ -15,7 +15,7 @@
 
 	<div id="qti_container_${responseIdentifier}" class='o_match_dnd #if($r.hasCssClass($interaction,"source-top") || $r.hasCssClass($interaction,"source-bottom")) o_match_dnd_top_bottom #else o_match_dnd_left_right #end'>
 		#if($r.hasCssClass($interaction, "source-top"))
-			Top
+		
 			<ul class="list-unstyled o_match_dnd_sources source-top clearfix">
 			#foreach($choice in $orderedSet1)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
