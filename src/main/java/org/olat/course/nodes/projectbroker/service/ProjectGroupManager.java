@@ -113,13 +113,13 @@ public interface ProjectGroupManager {
 	 * @param courseId
 	 * @return
 	 */
-	public abstract BusinessGroup createProjectGroupFor(Long projectBrokerId, Identity identity, String groupName, String groupDescription, Long courseId);
+	public BusinessGroup createProjectGroupFor(Long projectBrokerId, Identity identity, String groupName, String groupDescription, Long courseId);
 
 	/**
 	 * Delete project-group for certain project.
 	 * @param project
 	 */
-	public abstract void deleteProjectGroupFor(Project project, Identity deletedBy);
+	public void deleteProjectGroupFor(Project project, Identity deletedBy);
 
 
 	/**

@@ -1073,7 +1073,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doConfirmCloseResource(UserRequest ureq) {
-		if (!reSecurity.isEntryAdmin()) {
+		if (!reSecurity.isEntryAdmin() && !reSecurity.isCurriculumManager()) {
 			throw new OLATSecurityException("Trying to close, but not allowed: user = " + ureq.getIdentity());
 		}
 

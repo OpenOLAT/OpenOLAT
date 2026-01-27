@@ -470,7 +470,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 							doer, null);
 				}
 			}
-		} else {
+		} else if(identity != null) {
 			businessGroupRelationDAO.addRole(identity, newGroup, GroupRoles.coach.name());
 			groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), identity,
 					GroupRoles.coach.name(), GroupMembershipStatus.active, false, null, null,

@@ -42,6 +42,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -107,8 +108,9 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.resource.OLATResource;
@@ -834,6 +836,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		CoursePropertyManager targetCpm = targetCourse.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		RepositoryEntryRelationDAO repositoryEntryRelationDao = CoreSpringFactory.getImpl(RepositoryEntryRelationDAO.class);
 
 		// get the pbID from the source pb
 		Long oldProjectBrokerId = projectBrokerManager.getProjectBrokerId(sourceCpm, sourceCourseNode);
@@ -845,11 +848,16 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		// configure the new Project like the old one
 		// copy the old accountManagergroup to preserve the
 		// "persons in charge"
+		RepositoryEntry courseRe = targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		Identity groupOwner = repositoryEntryRelationDao.hasRole(author, courseRe, false, GroupRoles.owner.name(), GroupRoles.coach.name())
+				? author
+				: null; 
+
 		Long originalAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(sourceCpm, sourceCourseNode);
 		if (originalAccountGroupKey != null) {
 			BusinessGroup originalAccountGroup = projectGroupManager.getAccountManagerGroupFor(sourceCpm, sourceCourseNode, sourceCourse,
 					sourceCourseNode.getShortTitle(), sourceCourseNode.getShortTitle(), null);
-			BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(author, originalAccountGroup,
+			BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(groupOwner, originalAccountGroup,
 					originalAccountGroup.getName(), originalAccountGroup.getDescription(),
 					originalAccountGroup.getMinParticipants(), originalAccountGroup.getMaxParticipants(), false, false,
 					true, false, false, true, false, false, null, null, Boolean.FALSE, author);
@@ -862,7 +870,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			List<Project> projects = projectBrokerManager.getProjectListBy(oldProjectBrokerId);
 			for (Project project : projects) {
 				// create projectGroup
-				BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author,
+				BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, groupOwner,
 						project.getTitle(), project.getDescription(), targetCourse.getResourceableId());
 				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(),
 						project.getDescription(), projectBrokerId, projectGroup);
