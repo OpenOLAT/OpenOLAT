@@ -203,7 +203,7 @@ public class FolderUIFactory {
 			}
 			return vfsLeaf.getSize();
 		}
-		return null;
+		return 0l;
 	}
 
 	public static String getTranslatedSize(Translator translator, VFSItem vfsItem, Long size) {
