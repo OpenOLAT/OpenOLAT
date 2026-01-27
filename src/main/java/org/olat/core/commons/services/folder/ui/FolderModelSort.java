@@ -70,6 +70,7 @@ public class FolderModelSort extends SortableFlexiTableModelDelegate<FolderRow> 
 		return switch(column) {
 			case title -> (r1, r2) -> compareString(r1.getTitle(), r2.getTitle());
 			case status -> (r1, r2) -> compareString(r1.getTranslatedStatus(), r2.getTranslatedStatus());
+			case size -> (r1, r2) -> compareLongs(r1.getSize(), r2.getSize());
 			case path -> (r1, r2) -> compareString(r1.getFilePath(), r2.getFilePath());
 			case license -> (r1, r2) -> compareString(r1.getTranslatedLicense(), r2.getTranslatedLicense());
 			default -> new DefaultComparator();

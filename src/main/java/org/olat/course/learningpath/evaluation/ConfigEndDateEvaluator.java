@@ -63,6 +63,10 @@ public class ConfigEndDateEvaluator implements EndDateEvaluator {
 	}
 
 	void evaluateBlocker(Boolean fullyAssessed, Date configEndDate, AssessmentObligation obligation, Blocker blocker) {
+		if (AssessmentObligation.excluded == obligation) {
+			return;
+		}
+		
 		Date now = new Date();
 		if (configEndDate != null && configEndDate.before(now) && isNotFullyAssessed(fullyAssessed)) {
 			if (AssessmentObligation.mandatory == obligation) {
