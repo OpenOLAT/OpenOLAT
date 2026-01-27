@@ -80,7 +80,7 @@ public class VideoTranscodingJob extends JobWithDB {
 			return;
 		}
 		
-		if (videoModule.isVideoTranscodingServiceConfigured()) {
+		if (videoModule.isVideoTranscodingServiceActive()) {
 			videoManager.postVideoTranscodingJobs();
 			return;
 		}

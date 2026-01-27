@@ -27,10 +27,23 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
+import org.olat.core.commons.services.video.model.TranscoderJob;
+import org.olat.core.commons.services.video.model.TranscoderJobResult;
+import org.olat.core.commons.services.video.model.TranscoderJobStatus;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
@@ -47,24 +60,14 @@ import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
-import org.olat.modules.video.manager.VideoTranscodingDAO;
-import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.OLATResource;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Initial date: 2026-01-16<br>
@@ -79,7 +82,6 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	private static final String AUDIO_CONVERSION_TYPE = "audioConversion/";
 	private static final String VIDEO_CONVERSION_TYPE = "videoConversion/";
 	private static final String VIDEO_TRANSCODING_TYPE = "videoTranscoding/";
-	private static final String NOTIFY_RESULT = "notifyResult";
 
 	@Autowired
 	private AVModule avModule;
@@ -89,9 +91,6 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	
 	@Autowired
 	private VFSTranscodingService vfsTranscodingService;
-	
-	@Autowired
-	private VideoTranscodingDAO videoTranscodingDao;
 	
 	@Autowired
 	private VideoManager videoManager;
@@ -121,8 +120,10 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 				handleVideoConversion(request, response, typeUri.substring(VIDEO_CONVERSION_TYPE.length()));
 			} else if (typeUri.startsWith(VIDEO_TRANSCODING_TYPE)) {
 				handleVideoTranscoding(request, response, typeUri.substring(VIDEO_TRANSCODING_TYPE.length()));
-			} else if (typeUri.startsWith(NOTIFY_RESULT)) {
+			} else if (typeUri.startsWith(TranscoderJob.NOTIFY_RESULT_COMMAND)) {
 				handleNotifyResult(request, response);
+			} else if (typeUri.startsWith(TranscoderJob.NOTIFY_STATUS_COMMAND)) {
+				handleNotifyStatus(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			}
@@ -202,6 +203,61 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		ServletUtil.serveResource(request, response, masterMediaResource);
 	}
 
+	private void handleNotifyStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String method = request.getMethod();
+		if (!"POST".equalsIgnoreCase(method)) {
+			log.warn("Job status: Method not allowed: {}", method);
+			DispatcherModule.sendForbidden(response);
+			return;
+		}
+
+		TranscoderJobStatus status = readStatus(request.getInputStream());
+		if (!StringHelper.containsNonWhitespace(status.getUuid())) {
+			log.warn("Job status: Invalid UUID: {}", status.getUuid());
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+
+		if (status.getType() == null) {
+			log.warn("Job status: type missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+		
+		handleNotifyStatus(response, status);
+	}
+
+	private TranscoderJobStatus readStatus(ServletInputStream inputStream) throws IOException {
+		String jsonString =  IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+		log.debug("Job status: [json='{}']", jsonString);
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(jsonString, TranscoderJobStatus.class);
+	}
+
+	private void handleNotifyStatus(HttpServletResponse response, TranscoderJobStatus status) throws IOException {
+		if (status.getReferenceId() == null) {
+			log.warn("Job status: 'referenceId' missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+
+		Float percentage = status.getStatus();
+		if (percentage == null) {
+			log.warn("Job status: 'status' missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+
+		switch (status.getType()) {
+			case videoConversion, audioConversion:
+				vfsTranscodingService.handleConversionJobStatus(status);
+				break;
+			case videoTranscoding:
+				videoManager.handleVideoTranscodingJobStatus(status);
+				break;
+		}
+	}
+	
 	private void handleNotifyResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String method = request.getMethod();
 		if (!"POST".equalsIgnoreCase(method)) {
@@ -223,7 +279,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			return;
 		}
 
-		handleNotifyResult(request, response, result);
+		handleNotifyResult(response, result);
 	}
 
 	private TranscoderJobResult readResult(ServletInputStream inputStream) throws IOException {
@@ -233,7 +289,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		return mapper.readValue(jsonString, TranscoderJobResult.class);
 	}
 
-	private void handleNotifyResult(HttpServletRequest request, HttpServletResponse response, TranscoderJobResult result) throws IOException {
+	private void handleNotifyResult(HttpServletResponse response, TranscoderJobResult result) throws IOException {
 		if (result.getGenerated() == null || !StringHelper.containsNonWhitespace(result.getGenerated().getUrl())) {
 			log.warn("Conversion job result: 'generated.url' missing");
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -302,7 +358,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	private void handleVideoTranscodingResult(TranscoderJobResult result) {
 		int status = result.getGenerated().getStatus();
 		if (status > VideoTranscoding.TRANSCODING_STATUS_WAITING && status < VideoTranscoding.TRANSCODING_STATUS_DONE) {
-			log.info("Ignoring transcoding progress results for now: [uuid={}, status={}]", result.getUuid(), status);
+			log.info("Ignoring transcoding progress results: [uuid={}, status={}]", result.getUuid(), status);
 			return;
 		}
 

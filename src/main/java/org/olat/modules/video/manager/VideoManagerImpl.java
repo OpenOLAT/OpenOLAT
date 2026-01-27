@@ -78,6 +78,7 @@ import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.video.JCodecHelper;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.commons.services.video.TranscoderHelper;
+import org.olat.core.commons.services.video.model.TranscoderJobStatus;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -87,6 +88,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -355,6 +358,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 				videoToOrganisationDao.deleteVideoToOrganisation(relation);
 			}
 		}
+		deleteVideoTranscodingsPendingAndInProgress(re.getOlatResource());
 		return true;
 	}
 
@@ -841,6 +845,22 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		}
 	}
 
+	@Override
+	public void handleVideoTranscodingJobStatus(TranscoderJobStatus status) {
+		String uuid = status.getUuid();
+		Long resourceKey = status.getReferenceId();
+		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(resourceKey, uuid);
+		int statusInt = Math.round(status.getStatus());
+		statusInt = Math.max(1, statusInt);
+		statusInt = Math.min(99, statusInt);
+		updateVideoTranscodings(videoTranscodings, statusInt, null);
+		fireVideoTranscodingStatusEvent(resourceKey);		
+	}
+
+	private void fireVideoTranscodingStatusEvent(Long resourceKey) {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new VideoTranscodingStatusEvent(resourceKey), ores);
+	}
+
 	private void postVideoTranscodingJob(List<VideoTranscoding> videoTranscodings) {
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		OLATResource videoResource = videoTranscodings.get(0).getVideoResource();
@@ -850,12 +870,17 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 				videoResource.getKey(), originalSize, resolutions);
 
 		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.POST_JOB_COMMAND;
-		transcoderHelper.postTranscoderJob(transcoderJob, url, (s) -> updateVideoTranscodings(videoTranscodings, s));
+		transcoderHelper.postTranscoderJob(transcoderJob, url, (s) -> updateVideoTranscodings(videoTranscodings, s, uuid));
 	}
 	
-	private void updateVideoTranscodings(List<VideoTranscoding> videoTranscodings, int status) {
+	private void updateVideoTranscodings(List<VideoTranscoding> videoTranscodings, int status, String uuid) {
 		for (VideoTranscoding videoTranscoding : videoTranscodings) {
 			videoTranscoding.setStatus(status);
+			if (uuid != null) {
+				videoTranscoding.setTranscoder(uuid);
+			}
+			log.debug("Updating status of video transcoding: [uuid={}, id={}, status={}]", 
+					videoTranscoding.getTranscoder(), videoTranscoding.getKey(), status);
 			videoTranscodingDao.updateTranscoding(videoTranscoding);
 		}
 		dbInstance.commitAndCloseSession();
@@ -869,6 +894,16 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	public void deleteGeneratedInService(String uuid) {
 		String url = videoModule.getTranscodingServiceUrl() + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + uuid;
 		transcoderHelper.deleteGenerated(url);
+	}
+
+	@Override
+	public void registerForStatusEvent(GenericEventListener listener) {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(listener, null, ores);
+	}
+
+	@Override
+	public void deregisterForStatusEvent(GenericEventListener listener) {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(listener, ores);
 	}
 
 	@Override
@@ -1369,6 +1404,27 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			deleteStatus = container.deleteSilently();
 		}
 		return deleteStatus == VFSSuccess.SUCCESS;
+	}
+	
+	private void deleteVideoTranscodingsPendingAndInProgress(OLATResource olatResource) {
+		if (!videoModule.isVideoTranscodingServiceActive()) {
+			return;
+		}
+
+		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(olatResource).stream()
+				.filter(vt ->
+						(vt.getStatus() >= VideoTranscoding.TRANSCODING_STATUS_WAITING) &&
+								(vt.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE)).toList();
+		Set<String> uuids = videoTranscodings.stream().map(VideoTranscoding::getTranscoder).filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		
+		for (String uuid : uuids) {
+			deleteGeneratedInService(uuid);
+		}
+		
+		for (VideoTranscoding videoTranscoding : videoTranscodings) {
+			deleteVideoTranscodings(videoTranscoding.getVideoResource());
+		}
 	}
 	
 	@Override

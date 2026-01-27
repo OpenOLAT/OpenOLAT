@@ -44,9 +44,11 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.manager.VideoTranscodingStatusEvent;
 import org.olat.modules.video.ui.TranscodingQueueTableModel.TranscodingQueueTableCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -65,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * shows a list of all transcoding orders in waiting queue
  */
-public class VideoAdminListController extends FormBasicController {
+public class VideoAdminListController extends FormBasicController implements GenericEventListener {
 	
 	private TranscodingQueueTableModel tableModel;
 	private FlexiTableElement tableEl;
@@ -91,6 +93,14 @@ public class VideoAdminListController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		initForm(ureq);
 		loadModel();
+
+		videoManager.registerForStatusEvent(this);
+	}
+
+	@Override
+	protected void doDispose() {
+		videoManager.deregisterForStatusEvent(this);
+		super.doDispose();
 	}
 
 	@Override
@@ -156,7 +166,14 @@ public class VideoAdminListController extends FormBasicController {
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-	
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VideoTranscodingStatusEvent) {
+			loadModel();
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == homePageDisplayController) {

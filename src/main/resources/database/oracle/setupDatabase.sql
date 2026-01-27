@@ -2192,6 +2192,7 @@ create table o_vid_metadata (
   vid_length varchar2(32 char) default null,
   vid_url varchar2(512 char) default null,
   vid_download_enabled number default 0 not null,
+  vid_master_replaced number default 0 not null,
   fk_resource_id number(20) not null,
   primary key (id)
 );

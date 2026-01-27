@@ -32,9 +32,11 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.commons.services.video.model.TranscoderJob;
+import org.olat.core.commons.services.video.model.TranscoderJobStatus;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -46,7 +48,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.modules.audiovideorecording.AVModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -215,7 +216,10 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	public void deleteMasterFile(VFSItem item) {
 		if (item != null && item.canMeta() == VFSStatus.YES) {
 			VFSMetadata metaInfo = item.getMetaInfo();
-			if (metaInfo != null && metaInfo.isTranscoded()) {
+			if (metaInfo == null) {
+				return;
+			}
+			if (metaInfo.isTranscoded()) {
 				VFSContainer parentContainer = item.getParentContainer();
 				String name = item.getName();
 				String metaName = masterFilePrefix + name;
@@ -223,8 +227,33 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 				if (masterItem != null) {
 					masterItem.deleteSilently();
 				}
+			} else if (metaInfo.isInTranscoding()) {
+				String serviceUrl = null;
+				if (handleAsAudio(metaInfo.getFilename())) {
+					serviceUrl = getConversionServiceUrl(TranscoderJobType.audioConversion);
+				} else if (handleAsVideo(metaInfo.getFilename())) {
+					serviceUrl = getConversionServiceUrl(TranscoderJobType.videoConversion);
+				}
+				if (serviceUrl != null) {
+					String url = serviceUrl + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + metaInfo.getUuid();
+					transcoderHelper.deleteGenerated(url);
+				}
 			}
 		}
+	}
+
+	private boolean handleAsAudio(String fileName) {
+		if (!isAudioConversionServiceConfigured()) {
+			return false;
+		}
+		return "m4a".equalsIgnoreCase(FileUtils.getFileSuffix(fileName));
+	}
+
+	private boolean handleAsVideo(String fileName) {
+		if (!isVideoConversionServiceConfigured()) {
+			return false;
+		}
+		return "mp4".equalsIgnoreCase(FileUtils.getFileSuffix(fileName));
 	}
 
 	@Override
@@ -261,6 +290,20 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 		transcoderHelper.postTranscoderJob(transcoderJob, url, (s) -> updateStatus(metadata, s));
 	}
 
+	public void handleConversionJobStatus(TranscoderJobStatus status) {
+		VFSMetadata metadata = vfsMetadataDAO.loadMetadata(status.getReferenceId());
+		if (metadata == null) {
+			log.warn("Cannot find metadata for job: [uuid={}, referenceId={}] ", status.getUuid(), status.getReferenceId());
+			return;
+		}
+		
+		int statusInt = Math.round(status.getStatus());
+		statusInt = Math.max(1, statusInt);
+		statusInt = Math.min(99, statusInt);
+		log.debug("Updating status for job: [uuid={}, referenceId={}, status={}] ", status.getUuid(), status.getReferenceId(), statusInt);
+		updateStatus(metadata, statusInt);
+	}
+	
 	private void updateStatus(VFSMetadata metadata, int status) {
 		setStatus(metadata, status);
 		dbInstance.commitAndCloseSession();
@@ -278,7 +321,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 			return null;
 		}
 		File file = directoryPath.toFile();
-		return FileUtils.sizeOf(file);
+		return file.length();
 	}
 
 	private String getConversionServiceUrl(TranscoderJobType type) {

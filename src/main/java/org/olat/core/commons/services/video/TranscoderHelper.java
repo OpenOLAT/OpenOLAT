@@ -99,7 +99,7 @@ public class TranscoderHelper {
 				log.warn("Failed to post job: [url='{}', referenceId={}]: {}", url, transcoderJob.getReferenceId(), e);
 			}
 		} catch (JsonProcessingException e) {
-			log.warn("Failed to create conversion job: [referenceId={}]: {}", transcoderJob.getReferenceId(), e);
+			log.warn("Failed to serialize transcoder job: [referenceId={}]: {}", transcoderJob.getReferenceId(), e);
 		}
 	}
 	
@@ -141,6 +141,7 @@ public class TranscoderHelper {
 
 		String apiUrl = Settings.getServerContextPathURI() + "/" + TranscoderJob.TRANSCODING_NAMESPACE;
 		transcoderJob.setNotifyResultUrl(apiUrl + "/" + TranscoderJob.NOTIFY_RESULT_COMMAND);
+		transcoderJob.setNotifyStatusUrl(apiUrl + "/" + TranscoderJob.NOTIFY_STATUS_COMMAND);
 
 		String originalUrl = apiUrl + "/" + type.name() + "/" + referenceId;
 

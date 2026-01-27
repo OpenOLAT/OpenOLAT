@@ -27,9 +27,13 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.model.TranscoderJobStatus;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -49,6 +53,8 @@ import org.olat.resource.OLATResource;
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public interface VideoManager {
+	
+	OLATResourceable ores = OresHelper.lookupType(VideoManager.class);
 	
 	String FILETYPE_SRT = "srt";
 	String FILETYPE_VTT = "vtt";
@@ -577,11 +583,22 @@ public interface VideoManager {
 	public void postVideoTranscodingJobs();
 
 	/**
+	 * Handle a video transcoding job status.
+
+	 * @param status The job status object.
+	 */
+	public void handleVideoTranscodingJobStatus(TranscoderJobStatus status);
+
+	/**
 	 * Delete generated files in service.
 	 *
 	 * @param uuid Of the job that generated the files.
 	 */
 	public void deleteGeneratedInService(String uuid);
+
+	public void registerForStatusEvent(GenericEventListener listener);
+
+	public void deregisterForStatusEvent(GenericEventListener listener);
 	
 	/**
 	 * Checks for master container.
