@@ -40,7 +40,6 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.manager.VideoExportMediaResource;
 import org.olat.modules.video.model.SearchVideoInCollectionParams;
 import org.olat.modules.video.model.TranscodingCount;
-import org.olat.modules.video.ui.VideoAdminListController;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
