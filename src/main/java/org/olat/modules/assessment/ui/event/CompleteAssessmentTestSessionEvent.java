@@ -29,6 +29,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 
 /**
+ * Complete assessment test session after correction.
+ * 
  * 
  * Initial date: 18.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com

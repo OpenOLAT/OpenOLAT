@@ -89,6 +89,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.extern));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.numberTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.failedTranscodings));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.masterReplaced));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.missingTranscodings));
 		
 		DefaultFlexiColumnModel transcodeColumn = new DefaultFlexiColumnModel(TranscodingCols.transcode);
@@ -142,19 +143,22 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		for (Integer resolution: RESOLUTIONS) {
 			int sumVideos = 0;
 			int extern = 0;
+			int masterReplaced = 0;
 			for (VideoMeta videoMetadata : videoMetadatas) {
 				if (videoMetadata.getHeight() >= resolution) {
 					sumVideos++;
 					if (StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
 						extern++;
+					} else if (videoMetadata.isMasterReplaced() && videoMetadata.getHeight() == resolution) {
+						masterReplaced++;
 					}
 				}
 			}
 			
 			int success = successCount.get(resolution) != null ? successCount.get(resolution) : 0;
 			int fails = failCount.get(resolution) != null ? failCount.get(resolution) : 0;
-			TranscodingRow transcodingRow = new TranscodingRow(resolution.intValue(), success, fails, extern, sumVideos,
-					mayTranscode(resolution.intValue()));
+			TranscodingRow transcodingRow = new TranscodingRow(resolution.intValue(), success, fails, masterReplaced, 
+					extern, sumVideos, mayTranscode(resolution.intValue()));
 			resolutions.add(transcodingRow);
 		}
 		tableModel.setObjects(resolutions);

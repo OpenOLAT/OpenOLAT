@@ -47,6 +47,7 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 			case extern: return resolution.getExtern();
 			case numberTranscodings: return resolution.getNumberTranscodings();
 			case failedTranscodings: return resolution.getFailedTranscodings();
+			case masterReplaced: return resolution.getMasterReplaced();
 			case missingTranscodings: return resolution.getMissingTranscodings();
 			case transcode: return resolution.isStartTranscodingAvailable();
 			case delete: return resolution.getNumberTranscodings() > 0;
@@ -60,6 +61,7 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 		extern("extern.videos"),
 		numberTranscodings("number.transcodings"),
 		failedTranscodings("number.transcodings.failed"),
+		masterReplaced("number.transcodings.optimized"),
 		missingTranscodings("missing.transcodings"),
 		transcode("quality.transcode"),
 		delete("quality.delete");

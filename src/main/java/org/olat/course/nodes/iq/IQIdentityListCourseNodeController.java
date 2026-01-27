@@ -734,7 +734,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
 			Boolean userVisible = scoreEval.getUserVisible();
-			if(userVisible == null && finalStatus == AssessmentEntryStatus.done) {
+			if(finalStatus == AssessmentEntryStatus.done && (userVisible == null
+					// User visibility is set to false if test is pulled -> set to visible if allowed
+					|| (canChangeUserVisibility && userVisibleAfter && !userVisible.booleanValue()))) {
 				userVisible = Boolean.valueOf(userVisibleAfter);
 			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale,
