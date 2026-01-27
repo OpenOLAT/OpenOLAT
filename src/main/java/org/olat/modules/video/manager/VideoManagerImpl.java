@@ -687,7 +687,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			masterFile.getBasefile().delete();
 			try {
 				Files.move(transcodingFile.getBasefile().toPath(), masterFile.getBasefile().toPath());
-				updateVideoMetadata(videoResource, transcodingForOptimization);
+				updateVideoMetadataWithOptimization(videoResource, transcodingForOptimization);
 				updateMetadata(masterLeaf, transcodingForOptimization);
 				videoTranscodingDao.deleteVideoTranscoding(transcodingForOptimization);
 				if (log.isDebugEnabled()) {
@@ -729,11 +729,12 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		}
 	}
 
-	private void updateVideoMetadata(OLATResource videoResource, VideoTranscoding videoTranscoding) {
+	private void updateVideoMetadataWithOptimization(OLATResource videoResource, VideoTranscoding transcodingForOptimization) {
 		VideoMeta videoMeta = getVideoMetadata(videoResource);
-		videoMeta.setSize(videoTranscoding.getSize());
-		videoMeta.setWidth(videoTranscoding.getWidth());
-		videoMeta.setHeight(videoTranscoding.getHeight());
+		videoMeta.setSize(transcodingForOptimization.getSize());
+		videoMeta.setWidth(transcodingForOptimization.getWidth());
+		videoMeta.setHeight(transcodingForOptimization.getHeight());
+		videoMeta.setMasterReplaced(true);
 		updateVideoMetadata(videoMeta);
 	}
 
