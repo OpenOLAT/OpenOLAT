@@ -61,7 +61,7 @@ public class ConfigStartDateEvaluator implements StartDateEvaluator {
 			later = DateUtils.getLater(configStartDate, blocker.getStartDate());
 			if (AssessmentObligation.mandatory == obligation) {
 				blocker.block(later);
-			} else {
+			} else if (AssessmentObligation.optional == obligation) {
 				blocker.blockNoPassThrough();
 			}
 		}
