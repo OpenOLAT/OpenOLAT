@@ -108,7 +108,7 @@ public class ProjFileEditController extends FormBasicController {
 		}
 		flc.contextPut("memberOpen", memberOpen);
 		
-		metadataCtrl = new ProjFileMetadataController(ureq, getWindowControl(), mainForm, file);
+		metadataCtrl = new ProjFileMetadataController(ureq, getWindowControl(), mainForm, bcFactory, file);
 		listenTo(metadataCtrl);
 		formLayout.add("metadata", metadataCtrl.getInitialFormItem());
 		flc.contextPut("metadataOpen", metadataOpen);

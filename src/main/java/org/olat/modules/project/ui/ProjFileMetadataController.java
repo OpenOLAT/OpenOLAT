@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
@@ -52,6 +53,7 @@ public class ProjFileMetadataController extends FormBasicController {
 
 	private final VFSMetadata vfsMetadata;
 	private final ProjArtefact artefact;
+	private final String fileUrl;
 	private final Formatter formatter;
 	
 	@Autowired
@@ -61,10 +63,11 @@ public class ProjFileMetadataController extends FormBasicController {
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
-	public ProjFileMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjFile file) {
+	public ProjFileMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjectBCFactory bcFactory, ProjFile file) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		vfsMetadata = file.getVfsMetadata();
 		artefact = file.getArtefact();
+		fileUrl = bcFactory.getFileUrl(file);
 		formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
@@ -102,6 +105,16 @@ public class ProjFileMetadataController extends FormBasicController {
 				? userManager.getUserDisplayName(lock.getLockedBy())
 				: translate("file.locked.not");
 		uifactory.addStaticTextElement("file.locked.by", lockedBy, formLayout);
+		
+		if (StringHelper.containsNonWhitespace(fileUrl)) {
+			String externalUrlPage = velocity_root + "/external_url.html";
+			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
+			extUrlCont.setElementCssClass("o_two_span");
+			extUrlCont.setLabel("external.link", null);
+			extUrlCont.contextPut("externalUrl", fileUrl);
+			extUrlCont.setRootForm(mainForm);
+			formLayout.add(extUrlCont);
+		}
 		
 		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);
 		listenTo(activityLogCtrl);

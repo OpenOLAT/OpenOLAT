@@ -1,0 +1,7 @@
+<div id="${r.getCId()}_container" class="o_copy_code o_nowrap form-control-static"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$externalUrl" onclick="this.select()"/></div>
+<script>
+"use strict";
+jQuery(function() {
+	o_QRCodePopup('o_extlink','$externalUrl','right','div#${r.getCId()}_container');
+});
+</script>
