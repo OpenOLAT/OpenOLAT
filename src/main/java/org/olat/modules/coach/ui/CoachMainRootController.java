@@ -254,7 +254,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		} else if (pendingConfirmationsButton == source) {
 			doPendingConfirmations(ureq);
 		} else if (content == source) {
-			if (event instanceof PopEvent pe) {
+			if (event instanceof PopEvent) {
 				if (content.getLastController() == content.getRootController()) {
 					dashboardCtrl.reload();
 				}
