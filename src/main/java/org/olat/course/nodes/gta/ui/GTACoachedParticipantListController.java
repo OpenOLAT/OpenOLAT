@@ -1034,7 +1034,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private void doSetDone(UserRequest ureq) {
-		List<CoachedIdentityRow> rows = getSelectedRows(row -> row.getAssessmentStatus() != AssessmentEntryStatus.done);
+		List<CoachedIdentityRow> rows = getSelectedRows(row -> row.getAssessmentStatus() != AssessmentEntryStatus.done || row.getTaskStatus() != TaskProcess.graded);
 		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
 		} else if(assessmentConfig.isAssessable()) {
@@ -1048,14 +1048,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			
 			for(CoachedIdentityRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-				doSetStatus(assessedIdentity, AssessmentEntryStatus.done, gtaNode, taskList, course);
+				doSetStatusAndGraded(assessedIdentity, AssessmentEntryStatus.done, gtaNode, taskList, course);
 				dbInstance.commitAndCloseSession();
 			}
 			updateModel(ureq);
 		}
 	}
 	
-	private void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, TaskList taskList, ICourse course) {
+	private void doSetStatusAndGraded(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, TaskList taskList, ICourse course) {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
@@ -1074,7 +1074,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		Task assignedTask = gtaManager.getTask(assessedIdentity, taskList);
 		if(assignedTask == null) {
-			gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
+			gtaManager.createAndPersistTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 		} else {
 			gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
 		}

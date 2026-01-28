@@ -186,7 +186,7 @@ abstract class AbstractWorkflowListController extends FormBasicController {
 		return fullNames.toString();
 	}
 	
-	protected final void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, TaskList taskList, ICourse course) {
+	protected final void doSetStatusAndGraded(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, TaskList taskList, ICourse course) {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
@@ -205,7 +205,7 @@ abstract class AbstractWorkflowListController extends FormBasicController {
 		
 		Task assignedTask = gtaManager.getTask(assessedIdentity, taskList);
 		if(assignedTask == null) {
-			gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
+			gtaManager.createAndPersistTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 		} else {
 			gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
 		}

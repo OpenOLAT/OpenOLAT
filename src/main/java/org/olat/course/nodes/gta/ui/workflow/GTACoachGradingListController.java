@@ -467,7 +467,7 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 	}
 	
 	private void doBulkSetDone() {
-		List<CoachedParticipantRow> rows = getSelectedRows(row -> row.getAssessmentStatus() != AssessmentEntryStatus.done);
+		List<CoachedParticipantRow> rows = getSelectedRows(row -> row.getAssessmentStatus() != AssessmentEntryStatus.done || row.getTaskStatus() != TaskProcess.graded);
 		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
 		} else if(assessmentConfig.isAssessable()) {
@@ -481,7 +481,7 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 			
 			for(CoachedParticipantRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-				doSetStatus(assessedIdentity, AssessmentEntryStatus.done, gtaNode, taskList, course);
+				doSetStatusAndGraded(assessedIdentity, AssessmentEntryStatus.done, gtaNode, taskList, course);
 				dbInstance.commitAndCloseSession();
 			}
 			loadModel();
