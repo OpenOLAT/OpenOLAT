@@ -237,9 +237,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		dataModel = new ProjFileDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(isFullTable());
-		if (isFullTable()) {
-			tableEl.setAndLoadPersistedPreferences(ureq, "project-files-all");
-		}
 		
 		tableEl.setCssDelegate(ProjFileListCssDelegate.DELEGATE);
 		if (isFullTable()) {
@@ -258,6 +255,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			initBulkLinks();
 			initFilters();
 			initFilterTabs(ureq);
+			tableEl.setAndLoadPersistedPreferences(ureq, "project-files-all-" + project.getKey());
 		}
 		// Sort when the filter is selected
 		sortTable();
@@ -310,7 +308,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		filters.add(new FlexiTableTextFilter(translate("file.filter.filename"), ProjFileFilter.filename.name(), true));
 		
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	protected void initFilterTabs(UserRequest ureq) {
