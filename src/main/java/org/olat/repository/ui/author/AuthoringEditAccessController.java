@@ -56,8 +56,6 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Configuration of the BARG and access control of a learn resource.
- * 
  * 
  * Initial date: 06.05.2014<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com

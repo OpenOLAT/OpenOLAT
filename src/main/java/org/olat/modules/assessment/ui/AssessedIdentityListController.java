@@ -311,7 +311,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			}
 		}
 		
-		// learn resources cannot have business groups or curriculums
+		// learning resources cannot have business groups or curriculums
 		List<Long> businessGroupKeys = null;
 		params.setBusinessGroupKeys(businessGroupKeys);
 		params.setSearchString(searchString);

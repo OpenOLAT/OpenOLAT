@@ -105,7 +105,7 @@ public class RepositoryRestClient {
 	}
 	
 	/**
-	 * Import a learn resource or a course with a specific soft key. If
+	 * Import a learning resource or a course with a specific soft key. If
 	 * the soft key is already used, returns the repository entry which uses
 	 * it and don't import again the file.
 	 * 

@@ -68,7 +68,7 @@ public interface UserCourseEnvironment {
 	public ScoreAccounting getScoreAccounting();
 	
 	/**
-	 * Is admin of a course an administrator, learn resource manager or principal
+	 * Is admin of a course an administrator, learning resource manager or principal
 	 * of an organization linked to the course or an owner of the course.
 	 * @return
 	 */

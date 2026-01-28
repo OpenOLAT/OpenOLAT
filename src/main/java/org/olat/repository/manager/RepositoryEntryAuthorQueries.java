@@ -481,7 +481,7 @@ public class RepositoryEntryAuthorQueries {
 
 		} else {
 			Enum<?>[] mRoles = collectManagementRoles(roles, params);
-			// owner, principal, learn resource manager and administrator which can see all
+			// owner, principal, learning resource manager and administrator which can see all
 			sb.append(" and ((membership.role ").in(mRoles)
 			  .append("  and v.status ");
 			if(params.hasStatus()) {

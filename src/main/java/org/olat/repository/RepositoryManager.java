@@ -1323,7 +1323,7 @@ public class RepositoryManager {
 	}
 
 	/**
-	 * This is an administrative query which need author, learn resource manager, quality manager
+	 * This is an administrative query which need author, learning resource manager, quality manager
 	 * or higher permissions.
 	 * 
 	 * @param identity The searcher
@@ -1357,7 +1357,7 @@ public class RepositoryManager {
 		  .append(" left join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey")
 		  .append(" and (");
-		//owner, learn resource manager, administrator
+		//owner, learning resource manager, administrator
 		sb.append("(membership.role ").in(GroupRoles.owner, OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager)
 		  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
 		//author

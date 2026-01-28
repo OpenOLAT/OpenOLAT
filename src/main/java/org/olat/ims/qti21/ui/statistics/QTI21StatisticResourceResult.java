@@ -235,7 +235,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 
 	/**
-	 * Return the tree model for a test learn resource.
+	 * Return the tree model for a test learning resource.
 	 * 
 	 * @return
 	 */

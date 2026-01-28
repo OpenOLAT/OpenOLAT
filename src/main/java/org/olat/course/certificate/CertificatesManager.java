@@ -151,10 +151,10 @@ public interface CertificatesManager {
 	public List<CertificateWithInfos> getCertificatesWithInfos(IdentityRef identity);
 	
 	/**
-	 * List the certificates of a user or a learn resource.
+	 * List the certificates of a user or a learning resource.
 	 * 
 	 * @param identity The certificates owner
-	 * @param resource The learn resource
+	 * @param resource The learning resource
 	 * @param externalId The external identifier
 	 * @param managedOnly if true returns only the managed ones, if false all
 	 * @param lastOnly if true returns only the last one, if false all

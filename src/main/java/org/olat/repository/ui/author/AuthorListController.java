@@ -2300,7 +2300,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	/**
 	 * Check if the user can manage the specified row. He needs
-	 * to be learn resource manager, administrator or owner of the
+	 * to be learning resource manager, administrator or owner of the
 	 * resource.
 	 * 
 	 * @param row

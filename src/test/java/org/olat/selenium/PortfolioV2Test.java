@@ -338,7 +338,7 @@ public class PortfolioV2Test extends Deployments {
 	}
 	
 	/**
-	 * Create a blog as learn resource, create a new entry and publish it.
+	 * Create a blog as learning resource, create a new entry and publish it.
 	 * Than pick the entry as a media and go to the media center to see it.
 	 * 
 	 * @param loginPage

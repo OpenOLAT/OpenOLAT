@@ -52,9 +52,9 @@ public interface VideoAssessmentService {
 			String segmentId, String categoryId, Boolean correct, long timeInMilliSeconds, String rawTime);
 	
 	/**
-	 * Retrieve all sessions of a learn resource with the specified sub-identifier.
+	 * Retrieve all sessions of a learning resource with the specified sub-identifier.
 	 * 
-	 * @param entry The learn resource like a course
+	 * @param entry The learning resource like a course
 	 * @param subIdent The sub-identifier like course element id.
 	 * @return A list of video tasks sessions
 	 */
@@ -63,7 +63,7 @@ public interface VideoAssessmentService {
 	/**
 	 * Retrieve the task sessions typically of a course element.
 	 * 
-	 * @param courseEntry The learn resource which make the assessment
+	 * @param courseEntry The learning resource which make the assessment
 	 * @param subIdent The sub-identifier (can be null)
 	 * @param identity The assessed user
 	 * @return A list of video task sessions
@@ -82,9 +82,9 @@ public interface VideoAssessmentService {
 			Float maxScore, Float cutValue, int rounding);
 	
 	/**
-	 * Count the number of video task sessions saved by this learn resource.
+	 * Count the number of video task sessions saved by this learning resource.
 	 * 
-	 * @param entry The learn resource which make the assessment
+	 * @param entry The learning resource which make the assessment
 	 * @param subIdent The sub-identifier (can be null)
 	 * @return Number of video task sessions currently saved
 	 */

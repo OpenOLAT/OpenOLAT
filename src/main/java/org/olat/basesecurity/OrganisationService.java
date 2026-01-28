@@ -270,7 +270,7 @@ public interface OrganisationService {
 	
 	/**
 	 * Add a membership on the specified organization. The inheritance mode "root"
-	 * will be automatically applied to learn resource manager, author and user manager.
+	 * will be automatically applied to learning resource manager, author and user manager.
 	 * This role will be propagated to child-organizations as "inherithed".
 	 * 
 	 * @param organisation The organization

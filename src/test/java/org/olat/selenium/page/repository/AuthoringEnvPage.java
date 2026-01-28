@@ -144,7 +144,7 @@ public class AuthoringEnvPage {
 	
 	/**
 	 * Fill the create form and submit
-	 * @param displayName The name of the learn resource
+	 * @param displayName The name of the learning resource
 	 * @return Itself
 	 */
 	public RepositorySettingsPage fillCreateForm(String displayName) {
@@ -291,7 +291,7 @@ public class AuthoringEnvPage {
 	/**
 	 * Select (for multi-selections) the resource with the specified title.
 	 * 
-	 * @param title The title of the learn resource
+	 * @param title The title of the learning resource
 	 * @return Itself
 	 */
 	public AuthoringEnvPage selectResource(String title) {

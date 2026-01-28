@@ -90,7 +90,7 @@ public interface AssessmentModeCoordinationService {
 	/**
 	 * Send events for all assessment modes for the specified course.
 	 * 
-	 * @param entry The learn resource / course
+	 * @param entry The learning resource / course
 	 */
 	public void sendEvent(RepositoryEntry entry);
 	

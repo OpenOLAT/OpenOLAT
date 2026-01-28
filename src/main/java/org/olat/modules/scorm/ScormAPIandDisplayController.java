@@ -121,7 +121,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * @param wControl The window control
 	 * @param showMenu if true, the ims cp menu is shown
 	 * @param cpRoot
-	 * @param scormResourceId The SCORM learn resource
+	 * @param scormResourceId The SCORM learning resource
 	 * @param courseIdNodeId The course ID and optional the course node ID combined with "-". Example: 77554952047098-77554952047107
 	 * @param lessonMode add null for the default value or "normal", "browse" or "review"
 	 * @param creditMode add null for the default value or "credit", "no-credit"

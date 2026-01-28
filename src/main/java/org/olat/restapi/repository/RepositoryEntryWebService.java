@@ -891,7 +891,7 @@ public class RepositoryEntryWebService {
 	}
 	
 	/**
-	 * Change the status of a learn resource by id. The possible status are:
+	 * Change the status of a learning resource by id. The possible status are:
 	 * <ul>
 	 *  <li>preparation</li>
 	 *	<li>review</li>
@@ -908,7 +908,7 @@ public class RepositoryEntryWebService {
 	 * @return 200
 	 */
 	@POST
-	@Operation(summary = "Change the status of a learn resource by id", description = "Change the status of a learn resource by id. The possible status are:\n" + 
+	@Operation(summary = "Change the status of a learning resource by id", description = "Change the status of a learning resource by id. The possible status are:\n" + 
 			" <ul>\n" + 
 			"  <li>preparation</li>\n" + 
 			"  <li>review</li>\n" + 
@@ -920,9 +920,9 @@ public class RepositoryEntryWebService {
 			"  <li>deleted</li>\n" + 
 			"  <li>restored</li>\n" + 
 			" </ul>")
-	@ApiResponse(responseCode = "200", description = "Status of the learn resource updated")
+	@ApiResponse(responseCode = "200", description = "Status of the learning resource updated")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The learn resource not found")
+	@ApiResponse(responseCode = "404", description = "The learning resource not found")
 	@Path("status")
 	public Response postStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
@@ -933,7 +933,7 @@ public class RepositoryEntryWebService {
 	}
 	
 	@PUT
-	@Operation(summary = "Change the status of a learn resource by id", description = "Change the status of a learn resource by id. The possible status are:\n" + 
+	@Operation(summary = "Change the status of a learning resource by id", description = "Change the status of a learning resource by id. The possible status are:\n" + 
 			" <ul>\n" + 
 			"  <li>preparation</li>\n" + 
 			"  <li>review</li>\n" + 
@@ -945,9 +945,9 @@ public class RepositoryEntryWebService {
 			"  <li>deleted</li>\n" + 
 			"  <li>restored</li>\n" + 
 			" </ul>")
-	@ApiResponse(responseCode = "200", description = "Status of the learn resource updated")
+	@ApiResponse(responseCode = "200", description = "Status of the learning resource updated")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The learn resource not found")
+	@ApiResponse(responseCode = "404", description = "The learning resource not found")
 	@Path("status")
 	public Response putStatus(@QueryParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
@@ -996,10 +996,10 @@ public class RepositoryEntryWebService {
 	}
 	
 	@PUT
-	@Operation(summary = "Update public access of a resource", description = "Update public access, all users and guests access, of a learn resource."
+	@Operation(summary = "Update public access of a learning resource", description = "Update public access, all users and guests access, of a learning resource."
 			+ " The public viewing flag is set to true one of the access, users or guests, is enabled.")
 	@ApiResponse(responseCode = "200", description = "Some update happens")
-	@ApiResponse(responseCode = "404", description = "The learn resource not found")
+	@ApiResponse(responseCode = "404", description = "The learning resource not found")
 	@Path("access/public")
 	public Response putAccess(@QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
 			@Context HttpServletRequest request) {
@@ -1007,7 +1007,7 @@ public class RepositoryEntryWebService {
 	}
 	
 	@POST
-	@Operation(summary = "Update public access of a resource", description = "Update public access, all users and guests access, of a learn resource."
+	@Operation(summary = "Update public access of a learning resource", description = "Update public access, all users and guests access, of a learning resource."
 			+ " The public viewing flag is set to true one of the access, users or guests, is enabled.")
 	@ApiResponse(responseCode = "200", description = "Some update happens")
 	@ApiResponse(responseCode = "404", description = "The learn resource not found")

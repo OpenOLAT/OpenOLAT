@@ -30,7 +30,7 @@ import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.ui.IdentityInvitationListController;
 
 /**
- * Overview of learn resources for invitee.
+ * Overview of learning resources for invitee.
  * 
  * Initial date: 5 sept. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com

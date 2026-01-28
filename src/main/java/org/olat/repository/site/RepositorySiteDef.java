@@ -37,7 +37,7 @@ import org.olat.core.util.UserSession;
 
 /**
  * Description:<br>
- * Site for the learn resources
+ * Site for the learning resources
  * 
  * <P>
  * Initial Date:  12.07.2005 <br>

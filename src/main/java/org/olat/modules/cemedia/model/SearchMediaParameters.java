@@ -165,11 +165,11 @@ public class SearchMediaParameters {
 
 	public enum Access {
 		/**
-		 * For administrator and learn resource managers, access media directly shared
+		 * For administrator and learning resource managers, access media directly shared
 		 */
 		DIRECT,
 		/**
-		 * For administrator and learn resource managers, access media shared with groups
+		 * For administrator and learning resource managers, access media shared with groups
 		 * courses and organizations these users manage
 		 */
 		INDIRECT,

@@ -412,7 +412,7 @@ public interface LectureService {
 	
 	/**
 	 * @param notice The notice
-	 * @return A list of relations from the absence notice to the learn resources
+	 * @return A list of relations from the absence notice to the learning resources
 	 */
 	public List<AbsenceNoticeToRepositoryEntry> getAbsenceNoticeToRepositoryEntries(AbsenceNotice notice);
 	

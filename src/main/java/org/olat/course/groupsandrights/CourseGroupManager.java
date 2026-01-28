@@ -129,7 +129,7 @@ public interface CourseGroupManager {
 	 * manager or administrator of repository entry)
 	 * 
 	 * @param identity The identity to check
-	 * @return boolean true if the specified is administrator, learn resource manager or owner
+	 * @return boolean true if the specified is administrator, learning resource manager or owner
 	 * 			of the course.
 	 */
 	public boolean isIdentityCourseAdministrator(Identity identity);

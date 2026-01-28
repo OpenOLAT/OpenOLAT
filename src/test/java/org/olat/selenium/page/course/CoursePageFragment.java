@@ -80,7 +80,7 @@ public class CoursePageFragment {
 	}
 	
 	/**
-	 * The informations page with details about the learn resource.
+	 * The informations page with details about the learning resource.
 	 * 
 	 * @return Itself
 	 */

@@ -1209,7 +1209,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// delete the user
 		userLifecycleManager.deleteIdentity(owner, null);
 		
-		// the template is a learn ressource and will not be deleted
+		// the template is a learning ressource and will not be deleted
 		Binder reloadedtemplateBinder = portfolioService.getBinderByKey(templateBinder.getKey());
 		Assert.assertNotNull(reloadedtemplateBinder);
 		// the binder 

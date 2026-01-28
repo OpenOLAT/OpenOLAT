@@ -186,14 +186,14 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public Integer getNumberOfVisits();
 	
 	/**
-	 * @return The course or learn resource where the user is assessed.
+	 * @return The course or learning resource where the user is assessed.
 	 */
 	public RepositoryEntry getRepositoryEntry();
 	
 	public String getSubIdent();
 	
 	/**
-	 * @return is it the root (course node) of the learn resource.
+	 * @return is it the root (course node) of the learning resource.
 	 */
 	public Boolean getEntryRoot();
 	

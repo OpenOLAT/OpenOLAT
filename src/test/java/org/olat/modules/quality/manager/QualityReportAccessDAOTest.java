@@ -554,12 +554,12 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		Organisation organisation11 = qualityTestHelper.createOrganisation(organisation1);
 		Organisation organisation12 = qualityTestHelper.createOrganisation(organisation1);
 		
-		// learn resource manager
+		// learning resource manager
 		Identity learnresourceManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lrm1");
 		RolesByOrganisation roles = new RolesByOrganisation(organisation11, singletonList(OrganisationRoles.learnresourcemanager));
 		baseSecurityManager.updateRoles(null, learnresourceManager, roles);
 		
-		// learn resource manager of parent organisation
+		// learning resource manager of parent organisation
 		Identity learnresourceManagerParent = JunitTestHelper.createAndPersistIdentityAsRndUser("lrm1P");
 		RolesByOrganisation rolesParent = new RolesByOrganisation(organisation1, singletonList(OrganisationRoles.learnresourcemanager));
 		baseSecurityManager.updateRoles(null, learnresourceManagerParent, rolesParent);

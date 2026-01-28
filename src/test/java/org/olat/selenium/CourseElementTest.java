@@ -1748,7 +1748,7 @@ public class CourseElementTest extends Deployments {
 	
 
 	/**
-	 * An author upload a PDF document as learn resource, after that she creates
+	 * An author upload a PDF document as learning resource, after that she creates
 	 * a course with a document course element, selects the PDF in the editor,
 	 * publish the course and go to the course element see if the document is
 	 * there.

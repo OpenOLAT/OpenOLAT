@@ -177,7 +177,7 @@ public interface GradingService {
 	
 	/**
 	 * Return a list of repository entries with grading enabled and
-	 * that the specified user can access as owner, learn resource
+	 * that the specified user can access as owner, learning resource
 	 * manager, principal or administrator.
 	 * 
 	 * @param identity The user which want to access the list
@@ -205,7 +205,7 @@ public interface GradingService {
 	
 	/**
 	 * Typically the courses which have a test the specified
-	 * user can see as owner, learn resource manager, administrator
+	 * user can see as owner, learning resource manager, administrator
 	 * or principal.
 	 * 
 	 * @param identity The user
@@ -217,7 +217,7 @@ public interface GradingService {
 	/**
 	 * Return a list of identities which are graders in a resource
 	 * with grading enabled and that the specified user can access
-	 * as owner, learn resource manager, principal or administrator.
+	 * as owner, learning resource manager, principal or administrator.
 	 * 
 	 * @param identity The user which want to access the list
 	 * @return A list of identities

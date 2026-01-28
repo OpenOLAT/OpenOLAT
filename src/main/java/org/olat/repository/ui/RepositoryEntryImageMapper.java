@@ -86,7 +86,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 	
 	/**
 	 * 
-	 * @param entry The repository entry (course or learn resource)
+	 * @param entry The repository entry
 	 * @return true if the resource has a teaser image or video
 	 */
 	public boolean hasTeaser(RepositoryEntry entry) {
