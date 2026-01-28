@@ -73,6 +73,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private PublisherDAO publisherDao;
+	@Autowired
 	private NotificationsManagerImpl notificationManager;
 
 	@Test
@@ -725,6 +727,42 @@ public class NotificationsManagerTest extends OlatTestCase {
 		assertNull("publisher marked deleted should not be found", p2);
 	}
 	
+	@Test
+	public void deleteAllPublishersWithChildPublishers() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pub-del-1-");
+		Long resId = CodeHelper.getForeverUniqueID();
+		
+		//create a first publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SubscribersDel", resId, identifier);
+		PublisherData publisherData1 = new PublisherData("testDeleteSubscriberRoot1", "e.g. forumdata=delofforum", null);
+		Publisher publisher1 = notificationManager.getOrCreatePublisherWithData(context, publisherData1, null, PublisherChannel.PULL);
+		dbInstance.commitAndCloseSession();
+		
+		PublisherData publisherData2 = new PublisherData("testDeleteSubscriberRoot2", "e.g. forumdata=delofforum", null);
+		Publisher publisher2 = notificationManager.getOrCreatePublisherWithData(context, publisherData2, publisher1, PublisherChannel.DIRECT_EMAIL);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher2);
+		
+		PublisherData publisherData3 = new PublisherData("testDeleteSubscriberRoot3", "e.g. forumdata=delofforum", null);
+		Publisher publisher3 = notificationManager.getOrCreatePublisherWithData(context, publisherData3, publisher1, PublisherChannel.DIRECT_EMAIL);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher3);
+
+		notificationManager.subscribe(id, publisher1);
+		notificationManager.subscribe(id, publisher2);
+		notificationManager.subscribe(id, publisher3);
+		dbInstance.commitAndCloseSession();
+		
+		// Delete all publishers
+		notificationManager.delete(context);
+		dbInstance.commit();
+		
+		// Check nothing left
+		List<Publisher> publishers = publisherDao.getPublishers(context);
+		Assertions.assertThat(publishers).isEmpty();
+	}
+	
 	@Test(expected=DBRuntimeException.class)
 	public void duplicateSubscribers() throws Exception {
 		try {
@@ -771,6 +809,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(2, rows);
 	}
+	
+	
 
 	@Test
 	public void createDisabledSubscriberIfAbsent() {
