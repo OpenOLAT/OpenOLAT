@@ -160,6 +160,15 @@ public class VideoTranscodingDAO {
 		return transcoding == null || transcoding.isEmpty() ? null : transcoding.get(0);
 	}
 	
+	public VideoTranscoding getOneVideoTranscoding(String transcoder) {
+		String query = "select trans from videotranscoding as trans where trans.transcoder=:transcoder";
+		List<VideoTranscoding> transcodings = dbInstance.getCurrentEntityManager()
+				.createQuery(query, VideoTranscoding.class)
+				.setParameter("transcoder", transcoder)
+				.getResultList();
+		return transcodings == null || transcodings.isEmpty() ? null : transcodings.get(0);
+	}
+	
 	/**
 	 * Gets all transcodings of one video resolution.
 	 *

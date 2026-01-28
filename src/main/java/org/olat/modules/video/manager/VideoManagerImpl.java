@@ -132,6 +132,7 @@ import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
 import org.olat.modules.video.model.VideoSegmentsImpl;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
 import org.olat.modules.video.ui.VideoChapterTableRow;
@@ -766,7 +767,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			createTranscodingIfNotCreatedAlready(video, resolution, VideoTranscoding.FORMAT_MP4, existingTranscodings);
 		}
 		// 3) Start transcoding immediately, force job execution
-		if (videoModule.isTranscodingLocal()) {
+		if (!VideoTranscodingMode.remote.equals(videoModule.getVideoTranscodingMode())) {
 			dbInstance.commitAndCloseSession();
 			try {
 				scheduler.triggerJob(videoJobKey);
@@ -1408,7 +1409,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	}
 	
 	private void deleteVideoTranscodingsPendingAndInProgress(OLATResource olatResource) {
-		if (!videoModule.isVideoTranscodingServiceActive()) {
+		if (!VideoTranscodingMode.service.equals(videoModule.getVideoTranscodingMode())) {
 			return;
 		}
 
