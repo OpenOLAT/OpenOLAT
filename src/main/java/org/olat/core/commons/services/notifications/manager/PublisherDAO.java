@@ -128,6 +128,20 @@ public class PublisherDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * @param resName
+	 * @param resId
+	 * @return a list of publishers belonging to the resource
+	 */
+	public List<Publisher> getPublishersByResNameAndId(String resName, Long resId) {
+		String q = "select pub from notipublisher pub where pub.resName=:resName and pub.resId= :resId";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, Publisher.class)
+				.setParameter("resName", resName)
+				.setParameter("resId", resId)
+				.getResultList();
+	}
+	
 	public Publisher getRootPublisher(SubscriptionContext subsContext) {
 		QueryBuilder q = new QueryBuilder();
 		q.append("select pub from notipublisher pub ")

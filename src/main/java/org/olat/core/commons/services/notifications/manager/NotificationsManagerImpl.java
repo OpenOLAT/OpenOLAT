@@ -849,19 +849,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		return null;
 	}
 
-	/**
-	 * @param resName
-	 * @param resId
-	 * @return a list of publishers belonging to the resource
-	 */
-	private List<Publisher> getPublishers(String resName, Long resId) {
-		String q = "select pub from notipublisher pub where pub.resName=:resName and pub.resId= :resId";
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Publisher.class)
-				.setParameter("resName", resName)
-				.setParameter("resId", resId)
-				.getResultList();
-	}
+
 	
 	private List<Publisher> getPublishers(String publisherType, String data) {
 		return publisherDao.getPublishers(publisherType, data);
@@ -879,7 +867,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		String type = ores.getResourceableTypeName();
 		Long id = ores.getResourceableId();
 		if (type == null || id == null) throw new AssertException("type/id cannot be null! type:" + type + " / id:" + id);
-		List<Publisher> pubs = getPublishers(type, id);
+		List<Publisher> pubs = publisherDao.getPublishersByResNameAndId(type, id);
 		if(pubs.isEmpty()) return 0;
 		
 		return publisherDao.deletePublishersAndSubscribers(pubs);
@@ -1407,25 +1395,35 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 
 	/**
-	 * delete publisher and subscribers
+	 * Delete publisher and subscribers
 	 * 
-	 * @param scontext the subscriptioncontext
+	 * @param scontext The subscription context
 	 */
 	@Override
 	public void delete(SubscriptionContext scontext) {
 		List<Publisher> pList = getInternalPublishers(scontext, null);
+		// First delete child publishers
 		for(Publisher p:pList) {
-			// if none found, no one has subscribed yet and therefore no publisher has
-			// been generated lazily.
-			// -> nothing to do
-			if (p == null) return;
-			//first delete all subscribers
-			List<Subscriber> subscribers = getSubscribers(p, false);
-			for (Subscriber subscriber : subscribers) {
-				deleteSubscriber(subscriber);
+			if (p != null && p.getRootPublisher() != null) {
+				internalDelete(p);
 			}
-			publisherDao.deletePublisher(p);
 		}
+		// Then delete all root publishers
+		for(Publisher p:pList) {
+			if (p != null && p.getRootPublisher() == null) {
+				internalDelete(p);
+			}
+		}
+	}
+	
+	private void internalDelete(Publisher publisher) {
+		if(publisher == null || publisher.getKey() == null) return; // Nothing to do
+		
+		List<Subscriber> subscribers = getSubscribers(publisher, false);
+		for (Subscriber subscriber : subscribers) {
+			deleteSubscriber(subscriber);
+		}
+		publisherDao.deletePublisher(publisher);
 	}
 
 	/**
