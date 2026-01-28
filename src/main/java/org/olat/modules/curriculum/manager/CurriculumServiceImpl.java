@@ -1832,7 +1832,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				params.setOfferValidAt(new Date());
 				params.setRuntimeTypes(runtimeTypes);
 				params.setFilters(Filter.rolesFilters(asRoles));
-				params.setRepositoryEntries(List.copyOf(entriesRefs));
+				if(entriesRefs.size() < 512) {
+					// The parameter is redundant with curriculums (but can slightly accelerate the query in some cases)
+					params.setRepositoryEntries(List.copyOf(entriesRefs));
+				}
 				
 				List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
 				for(RepositoryEntryMyView view:views) {
