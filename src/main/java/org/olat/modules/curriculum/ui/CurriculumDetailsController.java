@@ -65,6 +65,7 @@ import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.ImplementationWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -102,6 +103,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumUserManagementController userManagementCtrl;
 	private ConfirmDeleteCurriculumController deleteCurriculumCtrl;
+	private ImplementationWidgetController implementationWidgetCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	
 	private Curriculum curriculum;
@@ -250,11 +252,17 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	
 	private DashboardController createDashboard(UserRequest ureq) {
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
+		removeAsListenerAndDispose(implementationWidgetCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		
 		overviewCtrl = new DashboardController(ureq, getWindowControl());
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
+		
+		implementationWidgetCtrl = new ImplementationWidgetController(ureq, getWindowControl(), curriculum, secCallback);
+		listenTo(implementationWidgetCtrl);
+		overviewCtrl.addWidget("implementations", implementationWidgetCtrl, BentoBoxSize.box_4_1);
+		
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl(),
 					curriculum);
@@ -306,7 +314,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source) {
+		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
+				|| implementationWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}

@@ -45,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -54,6 +53,7 @@ import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.MaxHeightScrollableDelegate;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
@@ -210,7 +210,7 @@ public class CourseWidgetController extends TableWidgetController
 		VelocityContainer rowVC = createVelocityContainer("course_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
-		tableEl.setCssDelegate(TableCssDelegate.DELEGATE);
+		tableEl.setCssDelegate(MaxHeightScrollableDelegate.DELEGATE);
 		
 		return tableEl.getComponent().getComponentName();
 	}
@@ -373,27 +373,6 @@ public class CourseWidgetController extends TableWidgetController
 	
 	private void doOpen(UserRequest ureq, String businessPath) {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-
-	private final static class TableCssDelegate implements FlexiTableCssDelegate {
-		
-		private static final FlexiTableCssDelegate DELEGATE = new TableCssDelegate();
-
-		@Override
-		public String getWrapperCssClass(FlexiTableRendererType type) {
-			return null;
-		}
-
-		@Override
-		public String getTableCssClass(FlexiTableRendererType type) {
-			return "o_table_body container-fluid o_dashboard_table_max_height o_scrollable_vertical";
-		}
-
-		@Override
-		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return null;
-		}
-		
 	}
 
 }

@@ -1,0 +1,34 @@
+<div class="o_widget_implementation_row">
+	<div class="o_row_implementation">
+		<div class="o_implementation">
+			<div class="o_visual">
+				#if($row.isThumbnailAvailable())
+					<img src="${row.getThumbnailRelPath()}" alt="" />
+				#else
+					<div class="o_visual_not_available"></div>
+				#end
+			</div>
+			<div class="o_meta">
+				#if($r.isNotEmpty($row.externalRef))
+					<div class="o_ext_ref">
+						<span class="o_external_ref">$r.escapeHtml($row.externalRef)</span>
+					</div>
+				#end
+				<h4 class="o_title o_nowrap">$r.render($row.getTitleName())</h4>
+			</div>
+		</div>
+	</div>
+	<div class="o_row_structure">
+		#if($r.available($row.getStructureName()))
+			$r.render($row.getStructureName())
+	#end
+	</div>
+	<div class="o_row_status">
+			$row.status
+	</div>
+	<div class="o_row_execution_period">
+		#if($r.isNotEmpty($row.executionPeriod))
+			<span><i class="o_icon o_icon_calendar"></i> $row.executionPeriod</span>
+		#end
+	</div>
+</div>
