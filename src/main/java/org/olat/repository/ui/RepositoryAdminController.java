@@ -57,7 +57,7 @@ public class RepositoryAdminController extends BasicController {
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
-		configurationLink = LinkFactory.createLink("admin.configuration", mainVC, this);
+		configurationLink = LinkFactory.createLink("settings", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
 		doOpenSettings(ureq);
 		

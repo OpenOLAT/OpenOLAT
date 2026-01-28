@@ -114,23 +114,23 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer searchCont = FormLayoutContainer.createDefaultFormLayout("search", getTranslator());
 		searchCont.setFormContextHelp("manual_admin/administration/Modules_Repository/");
-		searchCont.setFormTitle(translate("repository.admin.title"));
+		searchCont.setFormTitle(translate("settings"));
 		formLayout.add(searchCont);
 		searchCont.setRootForm(mainForm);
 
 		boolean searchEnabled = repositoryModule.isMyCoursesSearchEnabled();
 		String[] values = new String[] { translate("on") };
-		myCourseSearchEl = uifactory.addCheckboxesHorizontal("my.course.search.enabled", searchCont, keys, values);
+		myCourseSearchEl = uifactory.addCheckboxesHorizontal("repository.admin.search.enabled", searchCont, keys, values);
 		myCourseSearchEl.addActionListener(FormEvent.ONCHANGE);
 		myCourseSearchEl.select(keys[0], searchEnabled);
 		
 		boolean commentEnabled = repositoryModule.isCommentEnabled();
-		commentEl = uifactory.addCheckboxesHorizontal("my.course.comment.enabled", searchCont, keys, values);
+		commentEl = uifactory.addCheckboxesHorizontal("repository.admin.comment.enabled", searchCont, keys, values);
 		commentEl.addActionListener(FormEvent.ONCHANGE);
 		commentEl.select(keys[0], commentEnabled);
 		
 		boolean ratingEnabled = repositoryModule.isRatingEnabled();
-		ratingEl = uifactory.addCheckboxesHorizontal("my.course.rating.enabled", searchCont, keys, values);
+		ratingEl = uifactory.addCheckboxesHorizontal("repository.admin.rating.enabled", searchCont, keys, values);
 		ratingEl.addActionListener(FormEvent.ONCHANGE);
 		ratingEl.select(keys[0], ratingEnabled);
 
@@ -159,7 +159,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 				translate("rentry.leave.afterenddate"),
 				translate("rentry.leave.never")
 		};
-		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "repository.admin.leave.label", leaveCont, leaveKeys, leaveValues, null);
+		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "repository.admin.leave.option", leaveCont, leaveKeys, leaveValues, null);
 		leaveEl.addActionListener(FormEvent.ONCHANGE);
 		RepositoryEntryAllowToLeaveOptions leaveOption = repositoryModule.getAllowToLeaveDefaultOption();
 		if(leaveOption != null) {

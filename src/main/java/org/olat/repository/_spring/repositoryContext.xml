@@ -50,8 +50,8 @@
 				<property name="className" value="org.olat.repository.ui.RepositoryAdminController"/>
 			</bean>
 		</property>
-		<property name="i18nActionKey" value="menu.repository.admin"/>
-		<property name="i18nDescriptionKey" value="menu.repository.admin.alt"/>
+		<property name="i18nActionKey" value="menu.learning.resource.admin"/>
+		<property name="i18nDescriptionKey" value="menu.learning.resource.admin.alt"/>
 		<property name="translationPackage" value="org.olat.repository"/>
 		<property name="extensionPoints">
 			<list>	
