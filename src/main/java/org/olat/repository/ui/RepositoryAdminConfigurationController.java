@@ -150,7 +150,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 		
 		// Leave
 		FormLayoutContainer leaveCont = FormLayoutContainer.createDefaultFormLayout("leave", getTranslator());
-		leaveCont.setFormTitle(translate("repository.admin.leave.title"));
+		leaveCont.setFormTitle(translate("repository.admin.default.setting"));
 		formLayout.add(leaveCont);
 		leaveCont.setRootForm(mainForm);
 		
@@ -159,7 +159,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 				translate("rentry.leave.afterenddate"),
 				translate("rentry.leave.never")
 		};
-		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "repository.admin.leave.option", leaveCont, leaveKeys, leaveValues, null);
+		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "rentry.leave.option", leaveCont, leaveKeys, leaveValues, null);
 		leaveEl.addActionListener(FormEvent.ONCHANGE);
 		RepositoryEntryAllowToLeaveOptions leaveOption = repositoryModule.getAllowToLeaveDefaultOption();
 		if(leaveOption != null) {
