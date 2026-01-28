@@ -744,6 +744,7 @@ public class CurriculumElementDAO {
 		sb.append("select el");
 		sb.append("  from curriculumelement el");
 		sb.append("       inner join fetch el.curriculum curriculum");
+		sb.append("       left join fetch el.type type");
 		sb.append("       left join el.parent parentEl");
 		sb.and().append("el.curriculum.key in :curriculumKeys");
 		

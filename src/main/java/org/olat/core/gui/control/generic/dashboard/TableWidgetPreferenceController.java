@@ -21,6 +21,8 @@ package org.olat.core.gui.control.generic.dashboard;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.olat.core.gui.UserRequest;
@@ -105,11 +107,9 @@ public class TableWidgetPreferenceController extends FormBasicController {
 		}
 		keyFigureEl.select(keyFigureKey, true);
 		
-		if (prefs.getFocusFigureKeys() != null) {
-			prefs.getFocusFigureKeys().forEach(key -> figuresEl.select(key, true));
-		} else {
-			figuresEl.getKeys().forEach(key -> figuresEl.select(key, false));
-		}
+		
+		Set<String> focusFigureKeys = Objects.requireNonNullElse(prefs.getFocusFigureKeys(), Set.of());
+		figuresEl.getKeys().forEach(key -> figuresEl.select(key, focusFigureKeys.contains(key)));
 		
 		numRowsEl.select(String.valueOf(prefs.getNumRows()), true);
 		

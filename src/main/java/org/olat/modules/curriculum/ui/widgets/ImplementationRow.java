@@ -36,6 +36,7 @@ public class ImplementationRow implements OLATResourceable {
 	private String displayName;
 	private String status;
 	private String executionPeriod;
+	private String translatedTechnicalType;
 	private Long resourceableId;
 	private String resourceableTypeName;
 	private String thumbnailRelPath;
@@ -80,6 +81,14 @@ public class ImplementationRow implements OLATResourceable {
 
 	public void setExecutionPeriod(String executionPeriod) {
 		this.executionPeriod = executionPeriod;
+	}
+
+	public String getTranslatedTechnicalType() {
+		return translatedTechnicalType;
+	}
+
+	public void setTranslatedTechnicalType(String translatedTechnicalType) {
+		this.translatedTechnicalType = translatedTechnicalType;
 	}
 
 	@Override

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,6 +145,7 @@ public class ImplementationWidgetController extends TableWidgetController
 		
 		keyToIndicatorLink = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
+		createIndicator(widgetCont, "all", "all", "[Implementations:0][All:0]");
 		createIndicator(widgetCont, "relevant", "relevant", "[Implementations:0][Relevant:0]");
 		createIndicator(widgetCont, CurriculumElementStatus.preparation);
 		createIndicator(widgetCont, CurriculumElementStatus.provisional);
@@ -188,8 +188,10 @@ public class ImplementationWidgetController extends TableWidgetController
 	public TableWidgetConfigPrefs getDefault() {
 		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
 		prefs.setKeyFigureKey("relevant");
-		Set<String> figureKeys = new HashSet<>(keyToIndicatorLink.keySet());
-		figureKeys.remove(prefs.getKeyFigureKey());
+		Set<String> figureKeys = Set.of(
+				CurriculumElementStatus.preparation.name(),
+				CurriculumElementStatus.provisional.name(),
+				CurriculumElementStatus.confirmed.name());
 		prefs.setFocusFigureKeys(figureKeys);
 		prefs.setNumRows(5);
 		return prefs;
@@ -258,7 +260,9 @@ public class ImplementationWidgetController extends TableWidgetController
 	}
 
 	private void reload() {
-		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsByCurriculums(List.of(curriculum));
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsByCurriculums(List.of(curriculum)).stream()
+				.filter(element -> element.getParent() == null)
+				.toList();
 		
 		updateIndicators(curriculumElements);
 		updateTable(curriculumElements);
@@ -274,10 +278,18 @@ public class ImplementationWidgetController extends TableWidgetController
 		updateStausIndicatorLink(CurriculumElementStatus.cancelled, statusToCount);
 		updateStausIndicatorLink(CurriculumElementStatus.finished, statusToCount);
 		
+		long allCount = 0;
 		long relevantCount = 0;
-		for (CurriculumElementStatus elementStatus : RELEVANT_STATUS) {
-			relevantCount += statusToCount.getOrDefault(elementStatus, Long.valueOf(0));
+		for (CurriculumElementStatus elementStatus : CurriculumElementStatus.values()) {
+			Long count = statusToCount.getOrDefault(elementStatus, Long.valueOf(0));
+			allCount += count;
+			if (RELEVANT_STATUS.contains(elementStatus)) {
+				relevantCount += count;
+			}
 		}
+		keyToIndicatorLink.get("all").setI18nKey(IndicatorsFactory.createLinkText(
+				translate("all"),
+				String.valueOf(allCount)));
 		keyToIndicatorLink.get("relevant").setI18nKey(IndicatorsFactory.createLinkText(
 				translate("relevant"),
 				String.valueOf(relevantCount)));
@@ -332,6 +344,7 @@ public class ImplementationWidgetController extends TableWidgetController
 		StringOutput statusTarget = new StringOutput();
 		CurriculumStatusCellRenderer.getStatus(statusTarget, "o_labeled_light", curriculumElement.getElementStatus(), getTranslator());
 		row.setStatus(statusTarget.toString());
+		row.setTranslatedTechnicalType(curriculumElement.getType().getDisplayName());
 		
 		String executionPeriod = "";
 		if (curriculumElement.getBeginDate() != null) {
