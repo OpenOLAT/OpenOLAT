@@ -60,6 +60,8 @@ import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.manager.VideoTranscodingDAO;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.OLATResource;
@@ -102,7 +104,10 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	private HttpClientService httpClientService;
 	
 	@Autowired
-	private RepositoryEntryDAO repositoryEntryDAO;
+	private RepositoryEntryDAO repositoryEntryDao;
+	
+	@Autowired
+	private VideoTranscodingDAO videoTranscodingDao;
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -133,20 +138,27 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 	}
 
-	private void handleAudioConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
-		if (!avModule.isAudioRecordingEnabled()) {
-			log.info("Blocking request for audio conversion masterfile. Audio recording disabled.");
+	private void handleAudioConversion(HttpServletRequest request, HttpServletResponse response, String uuid) throws IOException {
+		if (!avModule.isAudioRecordingEnabled() || !StringHelper.containsNonWhitespace(avModule.getAudioConversionServiceUrl())) {
+			log.info("Blocking request for audio conversion original. Feature disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		handleConversion(request, response, referenceIdString);
+		handleConversion(request, response, uuid);
 	}
 
-	private void handleConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
-		Long metadataKey = Long.parseLong(referenceIdString);
-		VFSMetadata metadata = vfsMetadataDao.loadMetadata(metadataKey);
+	private void handleConversion(HttpServletRequest request, HttpServletResponse response, String uuid) throws IOException {
+		if (!isValidDashlessUuid(uuid)) {
+			log.warn("Get original [uuid={}]: Blocking request for conversion original. Invalid UUID format.", uuid);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+
+		uuid = addDashesToUuid(uuid);
+
+		VFSMetadata metadata = vfsMetadataDao.getMetadata(uuid);
 		if (metadata == null) {
-			log.warn("Get original [referenceID={}]: No metadata found", referenceIdString);
+			log.warn("Get original [uuid={}]: No metadata found.", uuid);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
@@ -156,50 +168,62 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			File masterFile = vfsTranscodingService.getMasterFile(localFile.getBasefile());
 			VFSLeaf masterVfsLeaf = new LocalFileImpl(masterFile);
 			VFSMediaResource masterMediaResource = new VFSMediaResource(masterVfsLeaf);
-			log.debug("Get original [referenceId={}, masterFie={}]", referenceIdString, masterFile.getAbsolutePath());
+			log.debug("Get original [uuid={}, masterFie={}]", uuid, masterFile.getAbsolutePath());
 			ServletUtil.serveResource(request, response, masterMediaResource);
 			return;
 		}
 
-		log.warn("Get original [referenceID={}]: No file found", referenceIdString);
+		log.warn("Get original [uuid={}]: No file found.", uuid);
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
 	}
 
+	private static boolean isValidDashlessUuid(String dashlessUuid) {
+		return dashlessUuid != null && dashlessUuid.matches("^[0-9a-fA-F]{32}$");
+	}
+
+	private static String addDashesToUuid(String dashlessUuid) {
+		StringBuilder sb = new StringBuilder(dashlessUuid);
+		sb.insert(8, '-');
+		sb.insert(13, '-');
+		sb.insert(18, '-');
+		sb.insert(23, '-');
+		return sb.toString();
+	}
+
 	private void handleVideoConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
-		if (!avModule.isVideoRecordingEnabled()) {
-			log.info("Blocking request for video conversion masterfile. Video recording disabled.");
+		if (!avModule.isVideoRecordingEnabled() || !StringHelper.containsNonWhitespace(avModule.getVideoConversionServiceUrl())) {
+			log.info("Blocking request for video conversion original. Feature disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 		handleConversion(request, response, referenceIdString);
 	}
 
-	private void handleVideoTranscoding(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
-		if (!videoModule.isTranscodingEnabled()) {
-			log.info("Blocking request for video transcoding masterfile. Transcoding disabled.");
+	private void handleVideoTranscoding(HttpServletRequest request, HttpServletResponse response, String uuid) throws IOException {
+		if (!videoModule.isTranscodingEnabled() || !VideoTranscodingMode.service.equals(videoModule.getVideoTranscodingMode())) {
+			log.info("Blocking request for video transcoding master file. Feature disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
-		Long key = Long.parseLong(referenceIdString);
-		RepositoryEntry entry = repositoryEntryDAO.loadByResourceKey(key);
-		if (entry == null) {
-			log.warn("Get original [referenceID={}]: No repository entry found", referenceIdString);
+		VideoTranscoding videoTranscoding = videoTranscodingDao.getOneVideoTranscoding(uuid);
+		if (videoTranscoding == null) {
+			log.warn("Get original [uuid={}]: No video transcoding entry found", uuid);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
-		OLATResource videoResource = entry.getOlatResource();
+		OLATResource videoResource = videoTranscoding.getVideoResource();
 		File masterFile = videoManager.getVideoFile(videoResource);
 		if (!masterFile.exists()) {
-			log.warn("Get original [referenceID={}]: No master video file found", referenceIdString);
+			log.warn("Get original [uuid={}]: No master video file found", uuid);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
 		VFSLeaf masterVfsLeaf = new LocalFileImpl(masterFile);
 		VFSMediaResource masterMediaResource = new VFSMediaResource(masterVfsLeaf);
-		log.debug("Get transcoding original [referenceId={}, masterFie={}]", referenceIdString, masterFile.getAbsolutePath());
+		log.debug("Get transcoding original [uuid={}, masterFie={}]", uuid, masterFile.getAbsolutePath());
 		ServletUtil.serveResource(request, response, masterMediaResource);
 	}
 
@@ -362,7 +386,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			return;
 		}
 
-		RepositoryEntry entry = repositoryEntryDAO.loadByResourceKey(result.getReferenceId());
+		RepositoryEntry entry = repositoryEntryDao.loadByResourceKey(result.getReferenceId());
 		OLATResource videoResource = entry.getOlatResource();
 		if (videoResource == null) {
 			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());

@@ -143,7 +143,7 @@ public class TranscoderHelper {
 		transcoderJob.setNotifyResultUrl(apiUrl + "/" + TranscoderJob.NOTIFY_RESULT_COMMAND);
 		transcoderJob.setNotifyStatusUrl(apiUrl + "/" + TranscoderJob.NOTIFY_STATUS_COMMAND);
 
-		String originalUrl = apiUrl + "/" + type.name() + "/" + referenceId;
+		String originalUrl = apiUrl + "/" + type.name() + "/" + uuid;
 
 		TranscoderOriginal original = new TranscoderOriginal();
 		original.setUrl(originalUrl);

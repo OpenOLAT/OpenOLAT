@@ -43,6 +43,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.resource.OLATResource;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -75,18 +76,18 @@ public class VideoTranscodingJob extends JobWithDB {
 			return;
 		}
 
-		if (!videoModule.isVideoTranscodingJobEnabled()) {
+		if (VideoTranscodingMode.remote.equals(videoModule.getVideoTranscodingMode())) {
 			log.debug("Skipping execution of video transcoding job");
 			return;
 		}
 		
-		if (videoModule.isVideoTranscodingServiceActive()) {
+		if (VideoTranscodingMode.service.equals(videoModule.getVideoTranscodingMode())) {
 			videoManager.postVideoTranscodingJobs();
 			return;
 		}
 
 		for(VideoTranscoding videoTranscoding = getNextVideo(); videoTranscoding != null;  videoTranscoding = getNextVideo()) {
-			if (!videoModule.isVideoTranscodingJobEnabled()) {
+			if (!videoModule.isTranscodingEnabled() || !VideoTranscodingMode.local.equals(videoModule.getVideoTranscodingMode())) {
 				log.info("Skipping execution of video transcoding job because transcoding job was disabled while running.");
 				break;
 			}

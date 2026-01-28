@@ -33,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.modules.video.site.VideoSite;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.VideoHandler;
@@ -58,6 +59,7 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
 	private static final String VIDEOTRANSCODING_ENABLED = "video.transcoding.enabled";
 	private static final String VIDEOTRANSCODING_LOCAL = "video.transcoding.local";
+	private static final String VIDEO_TRANSCODING_MODE = "video.transcoding.mode";
 	private static final String VIDEO_TRANSCODING_SERVICE_URL = "video.transcoding.service.url";
 	private static final String TRANSCODING_RESOLUTIONS = "video.transcoding.resolutions";
 	private static final String PREFERRED_RESOLUTION = "video.transcoding.resolution.preferred";
@@ -74,6 +76,8 @@ public class VideoModule extends AbstractSpringModule {
 	private boolean transcodingEnabled;
 	@Value("${video.transcoding.local:true}")
 	private boolean transcodingLocal;
+	@Value("${video.transcoding.mode}")
+	private String videoTranscodingMode;
 	@Value("${video.transcoding.service.url}")
 	private String transcodingServiceUrl;
 	@Value("${video.transcoding.resolutions}")
@@ -146,6 +150,11 @@ public class VideoModule extends AbstractSpringModule {
 			transcodingLocal = "true".equals(localTranscodingObj);
 		}
 		
+		String videoTranscodingModeObj = getStringPropertyValue(VIDEO_TRANSCODING_MODE, true);
+		if(StringHelper.containsNonWhitespace(videoTranscodingModeObj)) {
+			videoTranscodingMode = videoTranscodingModeObj;
+		}
+		
 		String transcodingServiceUrlObj = getStringPropertyValue(VIDEO_TRANSCODING_SERVICE_URL, true);
 		if(StringHelper.containsNonWhitespace(transcodingServiceUrlObj)) {
 			transcodingServiceUrl = transcodingServiceUrlObj;
@@ -166,7 +175,8 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.transcoding.resolutions={}", Arrays.toString(getTranscodingResolutions()));
 		log.info("video.transcoding.resolution.preferred={}", getPreferredDefaultResolution());
 		log.info("video.transcoding.taskset.cpuconfig={}", getTranscodingTasksetConfig());
-		log.info("video.transcoding.local={}", isTranscodingLocal());
+		log.info("video.transcoding.local={}", transcodingLocal);
+		log.info("video.transcoding.mode={}", getVideoTranscodingMode());
 		log.info("video.transcoding.service.url={}", getTranscodingServiceUrl());
 		log.info("video.transcoding.profile={}", getVideoTranscodingProfile());
 
@@ -316,10 +326,18 @@ public class VideoModule extends AbstractSpringModule {
 		setStringProperty(VIDEOTRANSCODING_ENABLED, Boolean.toString(transcodingEnabled), true);
 	}
 
-	public boolean isTranscodingLocal() {		
-		return isTranscodingEnabled() && transcodingLocal;
+	public VideoTranscodingMode getVideoTranscodingMode() {
+		if (!transcodingLocal) {
+			return VideoTranscodingMode.remote;
+		}
+		return VideoTranscodingMode.valueOf(videoTranscodingMode);
 	}
 
+	public void setVideoTranscodingMode(VideoTranscodingMode videoTranscodingMode) {
+		this.videoTranscodingMode = videoTranscodingMode.name();
+		setStringProperty(VIDEO_TRANSCODING_MODE, this.videoTranscodingMode, true);
+	}
+	
 	public String getTranscodingServiceUrl() {
 		return transcodingServiceUrl;
 	}
@@ -329,22 +347,6 @@ public class VideoModule extends AbstractSpringModule {
 		setStringProperty(VIDEO_TRANSCODING_SERVICE_URL, transcodingServiceUrl, true);
 	}
 
-	public boolean isVideoTranscodingServiceActive() {
-		return StringHelper.containsNonWhitespace(transcodingServiceUrl) && transcodingEnabled;		
-	}
-	
-	public boolean isVideoTranscodingJobEnabled() {
-		if (isVideoTranscodingServiceActive()) {
-			return true;
-		}
-		return isTranscodingLocal();
-	}
-
-	public void setTranscoding(boolean transcodingLocal) {
-		this.transcodingLocal = transcodingLocal;
-		setStringProperty(VIDEOTRANSCODING_LOCAL, Boolean.toString(transcodingLocal), true);
-	}
-	
 	public void setVideoTranscodingProfile(String profile) {
 		if (StringHelper.containsNonWhitespace(profile)) {
 			if (profile.equals("Fast")) {

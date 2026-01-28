@@ -116,18 +116,16 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 		setUrl(indicatorCertifiedLink, membersAreaBusinessPath + "[Active:0][Certified:0]");
 		focusIndicators.add(indicatorCertifiedLink);
 		
-		if(certificationProgram.isValidityEnabled()) {
-			expiringSoonLink = IndicatorsFactory.createIndicatorFormLink("expiring.soon", CMD_OPEN, "", "", widgetCont);
-			setUrl(expiringSoonLink, membersAreaBusinessPath + "[Active:0][ExpiringSoon:0]");
-			focusIndicators.add(expiringSoonLink);
-		}
-		
-		if(certificationProgram.isRecertificationEnabled()) {
-			inRecertificationLink = IndicatorsFactory.createIndicatorFormLink("certifying", CMD_OPEN, "", "", widgetCont);
-			setUrl(inRecertificationLink, membersAreaBusinessPath + "[Active:0][InRecertification:0]");
-			focusIndicators.add(inRecertificationLink);
-		}
-		
+		expiringSoonLink = IndicatorsFactory.createIndicatorFormLink("expiring.soon", CMD_OPEN, "", "", widgetCont);
+		setUrl(expiringSoonLink, membersAreaBusinessPath + "[Active:0][ExpiringSoon:0]");
+		expiringSoonLink.setVisible(certificationProgram.isValidityEnabled());
+		focusIndicators.add(expiringSoonLink);
+
+		inRecertificationLink = IndicatorsFactory.createIndicatorFormLink("certifying", CMD_OPEN, "", "", widgetCont);
+		inRecertificationLink.setVisible(certificationProgram.isRecertificationEnabled());
+		setUrl(inRecertificationLink, membersAreaBusinessPath + "[Active:0][InRecertification:0]");
+		focusIndicators.add(inRecertificationLink);
+
 		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
 		return indicatorsEl.getComponent().getComponentName();
 	}
@@ -155,17 +153,15 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 				"<i class=\"o_icon o_course_widget_icon o_icon_certification_certified\"></i> " + translate("widget.certified"),
 				Long.toString(stats.certified())));
 
-		if(certificationProgram.isValidityEnabled()) {
-			expiringSoonLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_recertification_warning\"></i> " + translate("widget.expiring.soon"),
-				Long.toString(stats.expiringSoon())));
-		}
-
-		if(certificationProgram.isRecertificationEnabled()) {
-			inRecertificationLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_certification_certifying\"></i> " + translate("widget.in.recertification"),
-				Long.toString(stats.inRecertification())));
-		}
+		expiringSoonLink.setI18nKey(IndicatorsFactory.createLinkText(
+			"<i class=\"o_icon o_course_widget_icon o_icon_recertification_warning\"></i> " + translate("widget.expiring.soon"),
+			Long.toString(stats.expiringSoon())));
+		expiringSoonLink.setVisible(certificationProgram.isValidityEnabled());
+		
+		inRecertificationLink.setI18nKey(IndicatorsFactory.createLinkText(
+			"<i class=\"o_icon o_course_widget_icon o_icon_certification_certifying\"></i> " + translate("widget.in.recertification"),
+			Long.toString(stats.inRecertification())));
+		inRecertificationLink.setVisible(certificationProgram.isRecertificationEnabled());
 	}
 	
 	private void updateTable(UserRequest ureq) {

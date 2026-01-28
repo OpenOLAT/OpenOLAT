@@ -43,6 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,6 +55,8 @@ public class VideoAdminSetController extends FormBasicController  {
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement enableCourseNodeEl;
 	private MultipleSelectionElement enableTranscodingEl;
+	private StaticTextElement transcodingRemoteModeEl;
+	private SingleSelection transcodingModeEl;
 	private TextElement transcodingServiceUrlEl;
 	private MultipleSelectionElement enable2160SelectionEl;
 	private MultipleSelectionElement enable1080SelectionEl;
@@ -66,7 +69,6 @@ public class VideoAdminSetController extends FormBasicController  {
 	private final SelectionValues masterVideoFileKV;
 	private StaticTextElement transcodingResolutionsEl;
 	private DialogBoxController confirmOptimizeMasterVideoCtrl;
-
 
 	@Autowired
 	private VideoModule videoModule;
@@ -119,11 +121,17 @@ public class VideoAdminSetController extends FormBasicController  {
 		enableTranscodingEl.select("on", videoModule.isTranscodingEnabled());
 		enableTranscodingEl.setVisible(enableEl.isSelected(0));
 		enableTranscodingEl.addActionListener(FormEvent.ONCHANGE);
+		
+		transcodingRemoteModeEl = uifactory.addStaticTextElement("transcoding.remote.mode", 
+				"transcoding.mode", translate("transcoding.mode.remote"), transcodingCont);
+
+		transcodingModeEl = uifactory.addDropdownSingleselect("transcoding.mode", transcodingCont, new String[] {}, 
+				new String[] {}, null);
+		transcodingModeEl.addActionListener(FormEvent.ONCHANGE);
 
 		transcodingServiceUrlEl = uifactory.addTextElement("admin.config.transcoding.service.url", 255, 
 				videoModule.getTranscodingServiceUrl(), transcodingCont);
 		transcodingServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
-		transcodingServiceUrlEl.setHelpTextKey("admin.config.transcoding.service.url.help", null);
 
 		handBrakeCliEl = uifactory.addStaticTextElement("admin.config.handBrakeCli", "", transcodingCont);
 
@@ -166,13 +174,12 @@ public class VideoAdminSetController extends FormBasicController  {
 	 */
 	private void updateTranscodingAndResolutionOptions(){
 		boolean transcodingEnabled = enableTranscodingEl.isSelected(0);
-		boolean localTranscodingEnabled = videoModule.isTranscodingLocal();
 
-		transcodingServiceUrlEl.setVisible(transcodingEnabled);
+		updateTranscodingModeEl();
+		transcodingServiceUrlEl.setVisible(transcodingEnabled && videoModule.getVideoTranscodingMode() == VideoTranscodingMode.service);
+		handBrakeCliEl.setVisible(transcodingEnabled && videoModule.getVideoTranscodingMode() == VideoTranscodingMode.local);
 
-		handBrakeCliEl.setVisible(transcodingEnabled && localTranscodingEnabled);
-
-		if (transcodingEnabled && localTranscodingEnabled) {
+		if (handBrakeCliEl.isVisible()) {
 			String handBrakeCliPath = avModule.getHandBrakeCliCommandPath();
 			if (StringHelper.containsNonWhitespace(handBrakeCliPath)) {
 				handBrakeCliEl.setValue(handBrakeCliPath);
@@ -183,6 +190,8 @@ public class VideoAdminSetController extends FormBasicController  {
 				handBrakeCliEl.setHelpUrlForManualPage("manual_admin/installation/handBrakeCli/");
 			}
 		}
+		
+		updateTranscodingServiceUrl();
 
 		masterVideoFileEl.setVisible(transcodingEnabled);
 		transcodingResolutionsEl.setVisible(transcodingEnabled);
@@ -199,7 +208,40 @@ public class VideoAdminSetController extends FormBasicController  {
 		enable480SelectionEl.select("on", containsResolution(resolutions, 480));
 		updateDefaultResOptions(videoModule.getPreferredDefaultResolution());
 	}
-	
+
+	private void updateTranscodingServiceUrl() {
+		if (transcodingServiceUrlEl.isVisible()) {
+			if (StringHelper.containsNonWhitespace(videoModule.getTranscodingServiceUrl())) {
+				transcodingServiceUrlEl.clearError();
+			} else {
+				transcodingServiceUrlEl.setErrorKey("form.legende.mandatory");
+			}
+		}
+	}
+
+	private void updateTranscodingModeEl() {
+		boolean transcodingEnabled = videoModule.isTranscodingEnabled();
+		boolean remoteMode = VideoTranscodingMode.remote.equals(videoModule.getVideoTranscodingMode());
+
+		transcodingRemoteModeEl.setVisible(transcodingEnabled && remoteMode);
+		transcodingModeEl.setVisible(transcodingEnabled && !remoteMode);
+
+		if (transcodingEnabled && !remoteMode) {
+			SelectionValues transcodingModeKV = transcodingModeSelectionValues();
+			transcodingModeEl.setKeysAndValues(transcodingModeKV.keys(), transcodingModeKV.values(), null);
+			transcodingModeEl.select(videoModule.getVideoTranscodingMode().name(), true);
+		}
+	}
+
+	private SelectionValues transcodingModeSelectionValues() {
+		SelectionValues selectionValues = new SelectionValues();
+
+		selectionValues.add(SelectionValues.entry(VideoTranscodingMode.local.name(), translate(VideoTranscodingMode.local.getI18nKey())));
+		selectionValues.add(SelectionValues.entry(VideoTranscodingMode.service.name(), translate(VideoTranscodingMode.service.getI18nKey())));
+
+		return selectionValues;
+	}
+
 	private void updateDefaultResOptions(int defRes){
 		int[] resolutions = videoModule.getTranscodingResolutions();
 		if(!containsResolution(resolutions, defRes)){
@@ -260,6 +302,10 @@ public class VideoAdminSetController extends FormBasicController  {
 			updateTranscodingAndResolutionOptions();
 		} else if (source == transcodingServiceUrlEl) {
 			videoModule.setTranscodingServiceUrl(transcodingServiceUrlEl.getValue());
+			updateTranscodingServiceUrl();
+		} else if (source == transcodingModeEl) {
+			videoModule.setVideoTranscodingMode(VideoTranscodingMode.valueOf(transcodingModeEl.getSelectedKey()));
+			updateTranscodingAndResolutionOptions();
 		}
 
 		if(source == enable2160SelectionEl || source == enable1080SelectionEl || source == enable720SelectionEl || source == enable480SelectionEl) {
