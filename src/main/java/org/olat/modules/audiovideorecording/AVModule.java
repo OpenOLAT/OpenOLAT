@@ -555,7 +555,7 @@ public class AVModule extends AbstractSpringModule {
 		}
 	}
 
-	public boolean externalTranscodingProbablySetUp() {
+	private boolean externalTranscodingProbablySetUp() {
 		if (StringHelper.containsNonWhitespace(videoTranscodingDir) && StringHelper.containsNonWhitespace(folderRoot)) {
 			return !videoTranscodingDir.startsWith(folderRoot);
 		}

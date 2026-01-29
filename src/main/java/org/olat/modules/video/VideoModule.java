@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
@@ -90,6 +91,8 @@ public class VideoModule extends AbstractSpringModule {
 	private String transcodingPreferredResolutionConf;
 	@Value("${video.transcoding.profile}")
 	private String transcodingProfile;
+	@Value("${folder.root}")
+	private String folderRoot;
 	
 	private int[] transcodingResolutionsArr; //  1080, 720, 480
 	private Integer preferredDefaultResolution;// 720
@@ -104,18 +107,7 @@ public class VideoModule extends AbstractSpringModule {
 
 	@Override
 	protected void initDefaultProperties() {
-		if(StringHelper.containsNonWhitespace(transcodingResolutions)) {
-			try {
-				String[] resolutions = transcodingResolutions.split(",");
-				int[] resolutionInts = new int[resolutions.length];
-				for(int i=resolutions.length; i-->0; ) {
-					resolutionInts[i] = Integer.parseInt(resolutions[i]);
-				}
-				transcodingResolutionsArr = resolutionInts;
-			} catch (NumberFormatException e) {
-				log.error("Cannot parse transcoding resolutions", e);
-			}
-		}
+		parseTranscodingResolutions();
 		if(StringHelper.containsNonWhitespace(transcodingPreferredResolutionConf)) {
 			try {
 				preferredDefaultResolution = Integer.valueOf(transcodingPreferredResolutionConf);
@@ -124,6 +116,21 @@ public class VideoModule extends AbstractSpringModule {
 			}
 		}
 		super.initDefaultProperties();
+	}
+
+	private void parseTranscodingResolutions() {
+		if (StringHelper.containsNonWhitespace(transcodingResolutions)) {
+			try {
+				String[] resolutions = transcodingResolutions.split(",");
+				int[] resolutionInts = new int[resolutions.length];
+				for (int i = resolutions.length; i-- > 0; ) {
+					resolutionInts[i] = Integer.parseInt(resolutions[i]);
+				}
+				transcodingResolutionsArr = resolutionInts;
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse transcoding resolutions", e);
+			}
+		}
 	}
 
 	@Override
@@ -160,6 +167,12 @@ public class VideoModule extends AbstractSpringModule {
 			transcodingServiceUrl = transcodingServiceUrlObj;
 		}
 		
+		String transcodingResolutionsObj = getStringPropertyValue(TRANSCODING_RESOLUTIONS, true);
+		if(StringHelper.containsNonWhitespace(transcodingResolutionsObj)) {
+			transcodingResolutions = transcodingResolutionsObj.replaceAll("\\[|\\]| ", "");
+			parseTranscodingResolutions();
+		}
+		
 		String localPreferredResolutionObj = getStringPropertyValue(PREFERRED_RESOLUTION, true);
 		if(StringHelper.containsNonWhitespace(localPreferredResolutionObj)) {
 			preferredDefaultResolution =  getIntPropertyValue(PREFERRED_RESOLUTION);
@@ -168,6 +181,7 @@ public class VideoModule extends AbstractSpringModule {
 		// clean setting of injected config
 		setVideoTranscodingProfile(this.transcodingProfile);
 		
+		initMode();
 
 		log.info("video.enabled={}", isEnabled());
 		log.info("video.coursenode.enabled={}", isCoursenodeEnabled());
@@ -175,9 +189,8 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.transcoding.resolutions={}", Arrays.toString(getTranscodingResolutions()));
 		log.info("video.transcoding.resolution.preferred={}", getPreferredDefaultResolution());
 		log.info("video.transcoding.taskset.cpuconfig={}", getTranscodingTasksetConfig());
-		log.info("video.transcoding.local={}", transcodingLocal);
-		log.info("video.transcoding.mode={}", getVideoTranscodingMode());
-		log.info("video.transcoding.service.url={}", getTranscodingServiceUrl());
+		log.info("video.transcoding.mode={}", videoTranscodingMode);
+		log.info("video.transcoding.service.url={}", transcodingServiceUrl);
 		log.info("video.transcoding.profile={}", getVideoTranscodingProfile());
 
 		// Register video site for activation in top navigation
@@ -185,7 +198,33 @@ public class VideoModule extends AbstractSpringModule {
 				new SiteContextEntryControllerCreator(VideoSite.class));
 
 	}
-	
+
+	private void initMode() {
+		if (StringHelper.containsNonWhitespace(videoTranscodingMode)) {
+			return;
+		}
+		if (externalTranscodingProbablySetUp()) {
+			videoTranscodingMode = VideoTranscodingMode.remote.name();
+			return;
+		}
+		if (!transcodingLocal) {
+			videoTranscodingMode = VideoTranscodingMode.remote.name();
+			return;
+		}
+		if (StringHelper.containsNonWhitespace(transcodingServiceUrl)) {
+			videoTranscodingMode = VideoTranscodingMode.service.name();
+			return;
+		}
+		videoTranscodingMode = VideoTranscodingMode.local.name();
+	}
+
+	private boolean externalTranscodingProbablySetUp() {
+		if (StringHelper.containsNonWhitespace(transcodingDir) && StringHelper.containsNonWhitespace(folderRoot)) {
+			return !transcodingDir.startsWith(folderRoot);
+		}
+		return false;
+	}
+
 	public List<String> getMarkerStyles() {
 		return stylesToList(markersStyles);
 	}
@@ -236,10 +275,7 @@ public class VideoModule extends AbstractSpringModule {
 	 */
 	public void setTranscodingResolutions(int[] resolutions){
 		this.transcodingResolutionsArr = resolutions;
-		String resArr = Arrays.toString(this.transcodingResolutionsArr);
-		resArr.replace("[", "");
-		resArr.replace("]", "");
-		resArr.replace(" ", "");
+		String resArr = Arrays.stream(transcodingResolutionsArr).mapToObj(Integer::toString).collect(Collectors.joining(","));
 		setStringProperty(TRANSCODING_RESOLUTIONS, resArr, true);
 	}
 	
@@ -327,9 +363,6 @@ public class VideoModule extends AbstractSpringModule {
 	}
 
 	public VideoTranscodingMode getVideoTranscodingMode() {
-		if (!transcodingLocal) {
-			return VideoTranscodingMode.remote;
-		}
 		return VideoTranscodingMode.valueOf(videoTranscodingMode);
 	}
 
