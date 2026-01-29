@@ -38,9 +38,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.commons.services.video.model.TranscoderJob;
 import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.core.commons.services.video.model.TranscoderJobStatus;
@@ -60,6 +62,7 @@ import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.manager.VideoManagerImpl;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
 import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.repository.RepositoryEntry;
@@ -108,6 +111,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	
 	@Autowired
 	private VideoTranscodingDAO videoTranscodingDao;
+	
+	@Autowired
+	private MovieService movieService;
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -428,7 +434,11 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			download(result, targetFile);
 			videoTranscoding.setStatus(status);
 			videoTranscoding.setSize(targetFile.length());
-			if (result.getGenerated().getWidth() != null && result.getGenerated().getHeight() != null) {
+			Size displaySize = movieService.getSize(new LocalFileImpl(targetFile), VideoManagerImpl.FILETYPE_MP4);
+			if (displaySize != null) {
+				videoTranscoding.setWidth(displaySize.getWidth());
+				videoTranscoding.setHeight(displaySize.getHeight());
+			} else if (result.getGenerated().getWidth() != null && result.getGenerated().getHeight() != null) {
 				videoTranscoding.setWidth(result.getGenerated().getWidth());
 				videoTranscoding.setHeight(result.getGenerated().getHeight());
 			} else {
