@@ -47,6 +47,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.modules.audiovideorecording.AVModule;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Logger;
 import org.quartz.JobKey;
@@ -94,32 +95,26 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	private TranscoderHelper transcoderHelper;
 	
 	@Override
-	public boolean isLocalVideoConversionEnabled() {
-		return avModule.isLocalVideoConversionEnabled();
-	}
-
-	@Override
-	public boolean isVideoConversionServiceConfigured() {
-		return StringHelper.containsNonWhitespace(avModule.getVideoConversionServiceUrl());
+	public VideoTranscodingMode getVideoConversionMode() {
+		return avModule.getVideoConversionMode();
 	}
 	
 	@Override
-	public boolean isAudioConversionServiceConfigured() {
-		return StringHelper.containsNonWhitespace(avModule.getAudioConversionServiceUrl());
-	}
-
-	@Override
-	public boolean isLocalAudioConversionEnabled() {
-		return avModule.isLocalAudioConversionEnabled();
+	public VideoTranscodingMode getAudioConversionMode() {
+		return avModule.getAudioConversionMode();
 	}
 
 	@Override
 	public boolean isConversionJobEnabled() {
-		if (StringHelper.containsNonWhitespace(avModule.getVideoConversionServiceUrl()) || 
-				StringHelper.containsNonWhitespace(avModule.getAudioConversionServiceUrl())) {
-			return true;
-		}
-		return avModule.isLocalVideoConversionEnabled() || avModule.isLocalAudioConversionEnabled();
+		boolean enabledForVideo = switch(getVideoConversionMode()) {
+			case local, service -> true;
+			default -> false;
+		};
+		boolean enabledForAudio = switch(getAudioConversionMode()) {
+			case local, service -> true;
+			default -> false;
+		};
+		return enabledForVideo || enabledForAudio;
 	}
 
 	@Override
@@ -229,28 +224,28 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 				}
 			} else if (metaInfo.isInTranscoding()) {
 				String serviceUrl = null;
-				if (handleAsAudio(metaInfo.getFilename())) {
+				if (audioInServiceMode(metaInfo.getFilename())) {
 					serviceUrl = getConversionServiceUrl(TranscoderJobType.audioConversion);
-				} else if (handleAsVideo(metaInfo.getFilename())) {
+				} else if (videoInServiceMode(metaInfo.getFilename())) {
 					serviceUrl = getConversionServiceUrl(TranscoderJobType.videoConversion);
 				}
 				if (serviceUrl != null) {
-					String url = serviceUrl + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + metaInfo.getUuid();
+					String url = serviceUrl + "/" + TranscoderJob.DELETE_GENERATED_COMMAND + "/" + metaInfo.getUuid().replaceAll("-", "");
 					transcoderHelper.deleteGenerated(url);
 				}
 			}
 		}
 	}
 
-	private boolean handleAsAudio(String fileName) {
-		if (!isAudioConversionServiceConfigured()) {
+	private boolean audioInServiceMode(String fileName) {
+		if (!VideoTranscodingMode.service.equals(getAudioConversionMode())) {
 			return false;
 		}
 		return "m4a".equalsIgnoreCase(FileUtils.getFileSuffix(fileName));
 	}
 
-	private boolean handleAsVideo(String fileName) {
-		if (!isVideoConversionServiceConfigured()) {
+	private boolean videoInServiceMode(String fileName) {
+		if (!VideoTranscodingMode.service.equals(getVideoConversionMode())) {
 			return false;
 		}
 		return "mp4".equalsIgnoreCase(FileUtils.getFileSuffix(fileName));

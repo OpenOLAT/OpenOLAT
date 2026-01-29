@@ -27,6 +27,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
+import org.olat.modules.video.model.VideoTranscodingMode;
 
 import java.io.File;
 import java.util.List;
@@ -42,13 +43,9 @@ public interface VFSTranscodingService {
 
 	String masterFilePrefix = "._oo_master_";
 
-	boolean isVideoConversionServiceConfigured();
+	VideoTranscodingMode getVideoConversionMode();
 
-	boolean isAudioConversionServiceConfigured();
-
-	boolean isLocalVideoConversionEnabled();
-
-	boolean isLocalAudioConversionEnabled();
+	VideoTranscodingMode getAudioConversionMode();
 
 	boolean isConversionJobEnabled();
 

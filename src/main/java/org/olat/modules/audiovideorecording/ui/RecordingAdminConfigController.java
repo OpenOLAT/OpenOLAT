@@ -23,13 +23,19 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.audiovideorecording.AVModule;
+import org.olat.modules.video.model.VideoTranscodingMode;
+import org.olat.modules.video.ui.VideoAdminController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,16 +46,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RecordingAdminConfigController extends FormBasicController {
 	private MultipleSelectionElement enableVideoRecordingEl;
 	private MultipleSelectionElement enableAudioRecordingEl;
+	
+	private SingleSelection videoConversionModeEl;
 	private TextElement videoConversionServiceUrlEl;
+	
+	private SingleSelection audioConversionModeEl;
 	private TextElement audioConversionServiceUrlEl;
-	private MultipleSelectionElement enableLocalVideoConversionEl;
-	private MultipleSelectionElement enableLocalAudioConversionEl;
 
 	@Autowired
 	private AVModule avModule;
 
 	public RecordingAdminConfigController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(VideoAdminController.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -70,46 +79,53 @@ public class RecordingAdminConfigController extends FormBasicController {
 				enableKeys, enableValues);
 		enableAudioRecordingEl.select("on", avModule.isAudioRecordingEnabled());
 		enableAudioRecordingEl.addActionListener(FormEvent.ONCHANGE);
-
-		videoConversionServiceUrlEl = uifactory.addTextElement("admin.recording.video.conversion.service.url", 
-				255, avModule.getVideoConversionServiceUrl(), formLayout);
-		videoConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
-		videoConversionServiceUrlEl.setHelpTextKey("admin.recording.video.conversion.service.url.help", null);
 		
-		audioConversionServiceUrlEl = uifactory.addTextElement("admin.recording.audio.conversion.service.url", 
-				255, avModule.getAudioConversionServiceUrl(), formLayout);
-		audioConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
-		audioConversionServiceUrlEl.setHelpTextKey("admin.recording.video.conversion.service.url.help", null);
-		
-		if (avModule.externalTranscodingProbablySetUp() && !avModule.isLocalVideoConversionPossible() && !avModule.isLocalAudioConversionPossible()) {
+		if (VideoTranscodingMode.remote.equals(avModule.getVideoConversionMode()) && VideoTranscodingMode.remote.equals(avModule.getAudioConversionMode())) {
 			setFormInfo("admin.recording.external.conversion.active");
-		} else {
-			enableLocalVideoConversionEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.video.conversion",
-					formLayout, enableKeys, enableValues);
-			enableLocalVideoConversionEl.select("on", avModule.isLocalVideoConversionEnabled());
-			enableLocalVideoConversionEl.addActionListener(FormEvent.ONCHANGE);
-			enableLocalVideoConversionEl.setHelpTextKey("admin.recording.enable.local.video.conversion.info", null);
-			if (!avModule.isLocalVideoConversionPossible()) {
-				enableLocalVideoConversionEl.setWarningKey("admin.recording.enable.local.video.conversion.warning");
-				if (!avModule.isLocalVideoConversionEnabled()) {
-					enableLocalVideoConversionEl.setEnabled(false);
-				}
-			}
 
-			enableLocalAudioConversionEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.audio.conversion",
-					formLayout, enableKeys, enableValues);
-			enableLocalAudioConversionEl.select("on", avModule.isLocalAudioConversionEnabled());
-			enableLocalAudioConversionEl.addActionListener(FormEvent.ONCHANGE);
-			enableLocalAudioConversionEl.setHelpTextKey("admin.recording.enable.local.audio.conversion.info", null);
-			if (!avModule.isLocalAudioConversionPossible()) {
-				enableLocalAudioConversionEl.setWarningKey("admin.recording.enable.local.audio.conversion.warning");
-				if (!avModule.isLocalAudioConversionEnabled()) {
-					enableLocalAudioConversionEl.setEnabled(false);
-				}
-			}
+			uifactory.addStaticTextElement("video.conversion.remote.mode", "video.conversion.mode", translate("transcoding.mode.remote"), formLayout);
+			uifactory.addStaticTextElement("audio.conversion.remote.mode", "audio.conversion.mode", translate("transcoding.mode.remote"), formLayout);
+		} else {
+			SelectionValues modeValues = modeValues();
+			initVideoFormPart(formLayout, enableKeys, enableValues, modeValues);
+			initAudioFormPart(formLayout, enableKeys, enableValues, modeValues);
 		}
 	}
 
+	private void initVideoFormPart(FormItemContainer formLayout, String[] enableKeys, String[] enableValues, SelectionValues modeValues) {
+		videoConversionModeEl = uifactory.addDropdownSingleselect("video.conversion.mode", formLayout,
+				modeValues.keys(), modeValues.values(), null);
+		videoConversionModeEl.addActionListener(FormEvent.ONCHANGE);
+
+		videoConversionServiceUrlEl = uifactory.addTextElement("admin.recording.video.conversion.service.url",
+				255, avModule.getVideoConversionServiceUrl(), formLayout);
+		videoConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+
+		updateLocalVideoConversion();
+	}
+
+	private void initAudioFormPart(FormItemContainer formLayout, String[] enableKeys, String[] enableValues, SelectionValues modeValues) {
+		audioConversionModeEl = uifactory.addDropdownSingleselect("audio.conversion.mode", formLayout,
+				modeValues.keys(), modeValues.values(), null);
+		audioConversionModeEl.addActionListener(FormEvent.ONCHANGE);
+
+		audioConversionServiceUrlEl = uifactory.addTextElement("admin.recording.audio.conversion.service.url",
+				255, avModule.getAudioConversionServiceUrl(), formLayout);
+		audioConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+
+		updateLocalAudioConversion();
+	}
+
+	SelectionValues modeValues() {
+		SelectionValues modeValues = new SelectionValues();
+		
+		modeValues.add(SelectionValues.entry(VideoTranscodingMode.disabled.name(), translate(VideoTranscodingMode.disabled.getI18nKey())));
+		modeValues.add(SelectionValues.entry(VideoTranscodingMode.local.name(), translate(VideoTranscodingMode.local.getI18nKey())));
+		modeValues.add(SelectionValues.entry(VideoTranscodingMode.service.name(), translate(VideoTranscodingMode.service.getI18nKey())));
+		
+		return modeValues;
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 	}
@@ -120,20 +136,54 @@ public class RecordingAdminConfigController extends FormBasicController {
 			avModule.setVideoRecordingEnabled(enableVideoRecordingEl.isSelected(0));
 		} else if (source == enableAudioRecordingEl) {
 			avModule.setAudioRecordingEnabled(enableAudioRecordingEl.isSelected(0));
-		} else if (source == enableLocalVideoConversionEl) {
-			avModule.setLocalVideoConversionEnabled(enableLocalVideoConversionEl.isSelected(0));
-			if (!avModule.isLocalVideoConversionPossible() && !avModule.isLocalVideoConversionEnabled()) {
-				enableLocalVideoConversionEl.setEnabled(false);
-			}
-		} else if (source == enableLocalAudioConversionEl) {
-			avModule.setLocalAudioConversionEnabled(enableLocalAudioConversionEl.isSelected(0));
-			if (!avModule.isLocalAudioConversionPossible() && !avModule.isLocalAudioConversionEnabled()) {
-				enableLocalAudioConversionEl.setEnabled(false);
-			}
 		} else if (source == videoConversionServiceUrlEl) {
 			avModule.setVideoConversionServiceUrl(videoConversionServiceUrlEl.getValue());
+			updateLocalVideoConversion();
+		} else if (source == videoConversionModeEl) {
+			avModule.setVideoConversionMode(VideoTranscodingMode.valueOf(videoConversionModeEl.getSelectedKey()));
+			updateLocalVideoConversion();
 		} else if (source == audioConversionServiceUrlEl) {
 			avModule.setAudioConversionServiceUrl(audioConversionServiceUrlEl.getValue());
+			updateLocalAudioConversion();
+		} else if (source == audioConversionModeEl) {
+			avModule.setAudioConversionMode(VideoTranscodingMode.valueOf(audioConversionModeEl.getSelectedKey()));
+			updateLocalAudioConversion();
+		}
+	}
+
+	private void updateLocalVideoConversion() {
+		VideoTranscodingMode mode = avModule.getVideoConversionMode();
+		videoConversionModeEl.select(mode.name(), true);
+
+		videoConversionModeEl.clearWarning();
+		if (VideoTranscodingMode.local.equals(mode) && !avModule.isLocalVideoConversionPossible()) {
+			videoConversionModeEl.setWarningKey("admin.recording.enable.local.video.conversion.warning");
+		}
+		
+		videoConversionServiceUrlEl.setVisible(VideoTranscodingMode.service.equals(mode));
+		if (videoConversionServiceUrlEl.isVisible()) {
+			videoConversionServiceUrlEl.clearError();
+			if (!StringHelper.containsNonWhitespace(videoConversionServiceUrlEl.getValue())) {
+				videoConversionServiceUrlEl.setErrorKey("form.legende.mandatory");
+			}
+		}
+	}
+	
+	private void updateLocalAudioConversion() {
+		VideoTranscodingMode mode = avModule.getAudioConversionMode();
+		audioConversionModeEl.select(mode.name(), true);
+
+		audioConversionModeEl.clearWarning();
+		if (VideoTranscodingMode.local.equals(mode) && !avModule.isLocalAudioConversionPossible()) {
+			audioConversionModeEl.setWarningKey("admin.recording.enable.local.audio.conversion.warning");
+		}
+
+		audioConversionServiceUrlEl.setVisible(VideoTranscodingMode.service.equals(mode));
+		if (audioConversionServiceUrlEl.isVisible()) {
+			audioConversionServiceUrlEl.clearError();
+			if (!StringHelper.containsNonWhitespace(audioConversionServiceUrlEl.getValue())) {
+				audioConversionServiceUrlEl.setErrorKey("form.legende.mandatory");
+			}
 		}
 	}
 
