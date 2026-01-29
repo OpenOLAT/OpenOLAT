@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -49,9 +50,11 @@ public class RecordingAdminConfigController extends FormBasicController {
 	
 	private SingleSelection videoConversionModeEl;
 	private TextElement videoConversionServiceUrlEl;
-	
+	private StaticTextElement handBrakeCliEl;
+
 	private SingleSelection audioConversionModeEl;
 	private TextElement audioConversionServiceUrlEl;
+	private StaticTextElement ffmpegEl;
 
 	@Autowired
 	private AVModule avModule;
@@ -101,6 +104,8 @@ public class RecordingAdminConfigController extends FormBasicController {
 				255, avModule.getVideoConversionServiceUrl(), formLayout);
 		videoConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
 
+		handBrakeCliEl = uifactory.addStaticTextElement("video.conversion.handBrakeCli", "", formLayout);
+
 		updateLocalVideoConversion();
 	}
 
@@ -112,6 +117,8 @@ public class RecordingAdminConfigController extends FormBasicController {
 		audioConversionServiceUrlEl = uifactory.addTextElement("admin.recording.audio.conversion.service.url",
 				255, avModule.getAudioConversionServiceUrl(), formLayout);
 		audioConversionServiceUrlEl.addActionListener(FormEvent.ONCHANGE);
+
+		ffmpegEl = uifactory.addStaticTextElement("audio.conversion.ffmpeg", "", formLayout);
 
 		updateLocalAudioConversion();
 	}
@@ -167,6 +174,12 @@ public class RecordingAdminConfigController extends FormBasicController {
 				videoConversionServiceUrlEl.setErrorKey("form.legende.mandatory");
 			}
 		}
+		
+		handBrakeCliEl.setVisible(VideoTranscodingMode.local.equals(mode));
+		if (handBrakeCliEl.isVisible()) {
+			String handBrakeCliPath = avModule.getHandBrakeCliCommandPath();
+			handBrakeCliEl.setValue(handBrakeCliPath);
+		}
 	}
 	
 	private void updateLocalAudioConversion() {
@@ -184,6 +197,12 @@ public class RecordingAdminConfigController extends FormBasicController {
 			if (!StringHelper.containsNonWhitespace(audioConversionServiceUrlEl.getValue())) {
 				audioConversionServiceUrlEl.setErrorKey("form.legende.mandatory");
 			}
+		}
+		
+		ffmpegEl.setVisible(VideoTranscodingMode.local.equals(mode));
+		if (ffmpegEl.isVisible()) {
+			String ffmpegPath = avModule.getFfmpegPath();
+			ffmpegEl.setValue(ffmpegPath);
 		}
 	}
 
