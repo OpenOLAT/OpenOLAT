@@ -163,10 +163,13 @@
 	}
 }
 .o_course_widget_icon {
+	&.o_icon_coach {
+		color: $o-repo-coachpublished-color;
+	}
 	&.o_icon_repo_status_published {
 		color: $o-repo-published-color;
 	}
-	&.o_icon_coach {
-		color: $o-repo-coachpublished-color;
+	&.o_icon_repo_status_closed {
+		color: $o-repo-closed-color;
 	}
 }

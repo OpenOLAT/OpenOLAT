@@ -21,7 +21,6 @@ package org.olat.modules.coach.ui.dashboard;
 
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,10 +132,12 @@ public class CourseWidgetController extends TableWidgetController
 		
 		keyToIndicatorLink = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
-		createIndicator(widgetCont, "courses", "course.courses", "[CoachSite:0][Courses:0][coach:0][All:0]");
 		createIndicator(widgetCont, "marked", "search.mark", "[CoachSite:0][Courses:0][coach:0][Bookmarks:0]");
+		createIndicator(widgetCont, "all", "all", "[CoachSite:0][Courses:0][coach:0][All:0]");
+		createIndicator(widgetCont, "relevant", "relevant", "[CoachSite:0][Courses:0][coach:0][Relevant:0]");
 		createIndicator(widgetCont, "published", "filter.published", "[CoachSite:0][Courses:0][coach:0][Published:0]");
 		createIndicator(widgetCont, "access", "filter.access.for.coach", "[CoachSite:0][Courses:0][coach:0][AccessForCoach:0]");
+		createIndicator(widgetCont, "finished", "filter.finished", "[CoachSite:0][Courses:0][coach:0][Finished:0]");
 		
 		return indicatorsEl.getComponent().getComponentName();
 	}
@@ -155,7 +156,7 @@ public class CourseWidgetController extends TableWidgetController
 
 	@Override
 	public String getId() {
-		return "coaching-course-widget-v1";
+		return "coaching-course-widget-v2";
 	}
 
 	@Override
@@ -166,9 +167,8 @@ public class CourseWidgetController extends TableWidgetController
 	@Override
 	public TableWidgetConfigPrefs getDefault() {
 		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
-		prefs.setKeyFigureKey("courses");
-		Set<String> figureKeys = new HashSet<>(keyToIndicatorLink.keySet());
-		figureKeys.remove(prefs.getKeyFigureKey());
+		prefs.setKeyFigureKey("relevant");
+		Set<String> figureKeys = Set.of("marked", "published", "access");
 		prefs.setFocusFigureKeys(figureKeys);
 		prefs.setNumRows(5);
 		return prefs;
@@ -242,34 +242,43 @@ public class CourseWidgetController extends TableWidgetController
 	}
 
 	private void updateIndicators(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
-		keyToIndicatorLink.get("courses").setI18nKey(IndicatorsFactory.createLinkText(
-				translate("course.courses"),
+		keyToIndicatorLink.get("all").setI18nKey(IndicatorsFactory.createLinkText(
+				translate("all"),
 				String.valueOf(courseStatistics.size())));
 		
 		int numMarked = 0;
-		int numPublished = 0;
 		int numCoachPublished = 0;
+		int numPublished = 0;
+		int numFinished = 0;
 		for (CourseStatEntry entry : courseStatistics) {
 			if (markedKeys.contains(entry.getRepoKey())) {
 				numMarked++;
 			}
-			if (RepositoryEntryStatusEnum.published == entry.getRepoStatus()) {
-				numPublished++;
-			}
+			
 			if (RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus()) {
 				numCoachPublished++;
+			} else if (RepositoryEntryStatusEnum.published == entry.getRepoStatus()) {
+				numPublished++;
+			} else if (RepositoryEntryStatusEnum.closed == entry.getRepoStatus()) {
+				numFinished++;
 			}
 		}
 		
+		keyToIndicatorLink.get("relevant").setI18nKey(IndicatorsFactory.createLinkText(
+				translate("relevant"),
+				String.valueOf(numCoachPublished + numPublished)));
 		keyToIndicatorLink.get("marked").setI18nKey(IndicatorsFactory.createLinkText(
 				"<i class=\"o_icon o_course_widget_icon o_icon_bookmark\"></i> " + translate("search.mark"),
 				String.valueOf(numMarked)));
-		keyToIndicatorLink.get("published").setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_published\"></i> " + translate("filter.published"),
-				String.valueOf(numPublished)));
 		keyToIndicatorLink.get("access").setI18nKey(IndicatorsFactory.createLinkText(
 				"<i class=\"o_icon o_course_widget_icon o_icon_coach\"></i> " + translate("filter.access.for.coach"),
 				String.valueOf(numCoachPublished)));
+		keyToIndicatorLink.get("published").setI18nKey(IndicatorsFactory.createLinkText(
+				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_published\"></i> " + translate("filter.published"),
+				String.valueOf(numPublished)));
+		keyToIndicatorLink.get("finished").setI18nKey(IndicatorsFactory.createLinkText(
+				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_closed\"></i> " + translate("filter.finished"),
+				String.valueOf(numFinished)));
 	}
 
 	private void setUrl(FormLink link, String businessPath) {
@@ -298,8 +307,11 @@ public class CourseWidgetController extends TableWidgetController
 		if (keyFigureKey != null) {
 			return switch (keyFigureKey) {
 			case "marked" -> entry -> markedKeys.contains(entry.getRepoKey());
+			case "relevant" -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus()
+										|| RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
 			case "published" -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus();
 			case "access" -> entry -> RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
+			case "finished" -> entry -> RepositoryEntryStatusEnum.closed == entry.getRepoStatus();
 			default -> entry -> true;
 			};
 		}
