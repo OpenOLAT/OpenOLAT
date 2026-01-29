@@ -139,7 +139,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	}
 
 	private void handleAudioConversion(HttpServletRequest request, HttpServletResponse response, String uuid) throws IOException {
-		if (!avModule.isAudioRecordingEnabled() || !StringHelper.containsNonWhitespace(avModule.getAudioConversionServiceUrl())) {
+		if (!avModule.isAudioRecordingEnabled() || !VideoTranscodingMode.service.equals(avModule.getAudioConversionMode())) {
 			log.info("Blocking request for audio conversion original. Feature disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
@@ -191,7 +191,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	}
 
 	private void handleVideoConversion(HttpServletRequest request, HttpServletResponse response, String referenceIdString) throws IOException {
-		if (!avModule.isVideoRecordingEnabled() || !StringHelper.containsNonWhitespace(avModule.getVideoConversionServiceUrl())) {
+		if (!avModule.isVideoRecordingEnabled() || !VideoTranscodingMode.service.equals(avModule.getVideoConversionMode())) {
 			log.info("Blocking request for video conversion original. Feature disabled.");
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;

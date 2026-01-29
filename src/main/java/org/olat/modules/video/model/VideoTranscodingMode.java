@@ -25,6 +25,7 @@ package org.olat.modules.video.model;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public enum VideoTranscodingMode {
+	disabled("disabled"),
 	remote("transcoding.mode.remote"),
 	local("transcoding.mode.local"),
 	service("transcoding.mode.service");

@@ -36,6 +36,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
+import org.olat.modules.video.model.VideoTranscodingMode;
 
 import org.apache.logging.log4j.Logger;
 import org.quartz.DisallowConcurrentExecution;
@@ -81,20 +82,18 @@ public class VFSTranscodingJob extends JobWithDB {
 		}
 
 		if ("mp4".equals(FileUtils.getFileSuffix(metadata.getFilename()))) {
-			if (transcodingService.isVideoConversionServiceConfigured()) {
-				transcodingService.postConversionJob(metadata, TranscoderJobType.videoConversion);
-			} else if (transcodingService.isLocalVideoConversionEnabled()) {
-				forkTranscodingProcess(metadata);
-			} else {
-				log.info("Skipping execution of VFS file conversion job because video conversion was disabled while running.");
+			switch (transcodingService.getVideoConversionMode()) {
+				case service -> transcodingService.postConversionJob(metadata, TranscoderJobType.videoConversion);
+				case local -> forkTranscodingProcess(metadata);
+				case disabled -> log.info("Skipping execution of VFS file conversion job because video conversion was disabled while running.");
+				case remote -> log.info("Skipping execution of VFS conversion job because video conversion runs as remote process");
 			}
 		} else if ("m4a".equals(FileUtils.getFileSuffix(metadata.getFilename()))) {
-			if (transcodingService.isAudioConversionServiceConfigured()) {
-				transcodingService.postConversionJob(metadata, TranscoderJobType.audioConversion);
-			} else if  (transcodingService.isLocalAudioConversionEnabled()) {
-				forkTranscodingProcess(metadata);
-			} else {
-				log.info("Skipping execution of VFS file conversion job because audio conversion was disabled while running.");
+			switch (transcodingService.getAudioConversionMode()) {
+				case service -> transcodingService.postConversionJob(metadata, TranscoderJobType.audioConversion);
+				case local -> forkTranscodingProcess(metadata);
+				case disabled -> log.info("Skipping execution of VFS file conversion job because audio conversion was disabled while running.");
+				case remote -> log.info("Skipping execution of VFS conversion job because audio conversion runs as remote process");
 			}
 		}
 	}
@@ -158,7 +157,7 @@ public class VFSTranscodingJob extends JobWithDB {
 
 	private List<String> createHandbrakeCommand(String directoryPath, String inputFileName, String outputFileName,
 												VFSTranscodingService transcodingService) {
-		if (!transcodingService.isLocalVideoConversionEnabled()) {
+		if (!VideoTranscodingMode.local.equals(transcodingService.getVideoConversionMode())) {
 			log.info("Local video conversion is disabled.");
 			return null;
 		}
@@ -185,7 +184,7 @@ public class VFSTranscodingJob extends JobWithDB {
 
 	private List<String> createFfmpegCommand(String directoryPath, String inputFileName, String outputFileName,
 											 VFSTranscodingService transcodingService) {
-		if (!transcodingService.isLocalAudioConversionEnabled()) {
+		if (!VideoTranscodingMode.local.equals(transcodingService.getAudioConversionMode())) {
 			log.debug("Local audio conversion is disabled.");
 			return null;
 		}
