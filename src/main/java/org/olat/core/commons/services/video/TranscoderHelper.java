@@ -116,11 +116,7 @@ public class TranscoderHelper {
 				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
 				log.debug("Delete generated reply: [json='{}']", json);
 				TranscoderDeleteGeneratedReply reply = objectMapper.readValue(json, TranscoderDeleteGeneratedReply.class);
-				if ("deleted".equalsIgnoreCase(reply.getStatus())) {
-					log.debug("Delete generated reply: [status={}]", reply.getStatus());
-				} else {
-					log.warn("Delete generated reply: [url={}, status={}]", url, reply.getStatus());
-				}
+				log.debug("Delete generated reply: [deleted='{}']", String.join(", ", reply.getDeleted()));
 			} else {
 				log.warn("Delete generated error: [url={}, statusCode={}]", url, statusCode);
 			}
