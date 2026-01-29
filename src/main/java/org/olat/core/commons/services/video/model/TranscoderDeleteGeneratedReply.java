@@ -23,7 +23,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Initial date: 2026-01-20<br>
@@ -33,24 +32,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TranscoderDeleteGeneratedReply {
-	private String status;
 
-	@JsonProperty("deleted_files")
-	private List<String> deletedFiles;
+	private String uuid;
 
-	public String getStatus() {
-		return status;
+	private List<String> deleted;
+
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
-	public List<String> getDeletedFiles() {
-		return deletedFiles;
+	public List<String> getDeleted() {
+		return deleted;
 	}
 
-	public void setDeletedFiles(List<String> deletedFiles) {
-		this.deletedFiles = deletedFiles;
+	public void setDeleted(List<String> deleted) {
+		this.deleted = deleted;
 	}
 }
