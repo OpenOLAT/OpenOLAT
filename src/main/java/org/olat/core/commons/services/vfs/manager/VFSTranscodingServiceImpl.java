@@ -185,9 +185,14 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	}
 
 	@Override
-	public void fileDoneEvent(VFSMetadata vfsMetadata) {
+	public void fireDoneEvent(VFSMetadata vfsMetadata) {
 		VFSTranscodingDoneEvent doneEvent = new VFSTranscodingDoneEvent(vfsMetadata.getFilename());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(doneEvent, ores);
+	}
+	
+	private void fireUpdateEvent(VFSMetadata vfsMetadata, int progressInPercent) {
+		VFSConversionStatusEvent event = new VFSConversionStatusEvent(vfsMetadata.getKey(), progressInPercent);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
 	}
 
 	@Override
@@ -262,7 +267,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	}
 
 	@Override
-	public void registerForJobDoneEvent(GenericEventListener listener) {
+	public void registerForJobEvents(GenericEventListener listener) {
 		if (isConversionJobEnabled()) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(listener, null,
 					VFSTranscodingService.ores);
@@ -270,7 +275,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	}
 
 	@Override
-	public void deregisterForJobDoneEvent(GenericEventListener listener) {
+	public void deregisterForJobEvents(GenericEventListener listener) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(listener,
 				VFSTranscodingService.ores);
 	}
@@ -297,6 +302,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 		statusInt = Math.min(99, statusInt);
 		log.debug("Updating status for job: [uuid={}, referenceId={}, status={}] ", status.getUuid(), status.getReferenceId(), statusInt);
 		updateStatus(metadata, statusInt);
+		fireUpdateEvent(metadata, statusInt);
 	}
 	
 	private void updateStatus(VFSMetadata metadata, int status) {

@@ -98,7 +98,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 		}
 		putInitialPanel(mainVC);
 
-		vfsTranscodingService.registerForJobDoneEvent(this);
+		vfsTranscodingService.registerForJobEvents(this);
 	}
 
 	private void setBlockLayoutClass(PageElement pageElement) {
@@ -139,7 +139,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 
 	@Override
 	protected void doDispose() {
-		vfsTranscodingService.deregisterForJobDoneEvent(this);
+		vfsTranscodingService.deregisterForJobEvents(this);
 		videoCmp.dispose();
         super.doDispose();
 	}

@@ -21,6 +21,8 @@ package org.olat.modules.audiovideorecording.ui;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.manager.VFSConversionStatusEvent;
+import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.event.GenericEventListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RecordingAdminTranscodingsController extends FormBasicController {
+public class RecordingAdminTranscodingsController extends FormBasicController implements GenericEventListener {
 	private TranscodingTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink refreshButton;
@@ -57,6 +60,14 @@ public class RecordingAdminTranscodingsController extends FormBasicController {
 		super(ureq, wControl, "transcodings");
 		initForm(ureq);
 		loadModel();
+		
+		vfsTranscodingService.registerForJobEvents(this);
+	}
+
+	@Override
+	protected void doDispose() {
+		vfsTranscodingService.deregisterForJobEvents(this);
+		super.doDispose();
 	}
 
 	@Override
@@ -100,6 +111,13 @@ public class RecordingAdminTranscodingsController extends FormBasicController {
 		}
 
 		return row;
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VFSConversionStatusEvent || event instanceof VFSTranscodingDoneEvent) {
+			loadModel();
+		}
 	}
 
 	@Override

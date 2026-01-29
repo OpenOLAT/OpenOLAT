@@ -292,7 +292,7 @@ public class MediaCenterController extends FormBasicController
 		loadModel(true);
 
 		if (config.withAddMedias()) {
-			vfsTranscodingService.registerForJobDoneEvent(this);
+			vfsTranscodingService.registerForJobEvents(this);
 		}
 	}
 	
@@ -1353,7 +1353,7 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	protected void doDispose() {
 		if (config.withAddMedias()) {
-			vfsTranscodingService.deregisterForJobDoneEvent(this);
+			vfsTranscodingService.deregisterForJobEvents(this);
 		}
 		super.doDispose();
 	}

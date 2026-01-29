@@ -222,7 +222,7 @@ public class VFSTranscodingJob extends JobWithDB {
 			updateStatus(vfsMetadata, VFSMetadata.TRANSCODING_STATUS_DONE);
 			VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 			if (transcodingService != null) {
-				transcodingService.fileDoneEvent(vfsMetadata);
+				transcodingService.fireDoneEvent(vfsMetadata);
 			}
 		} catch (IOException e) {
 			log.error("Cannot start conversion process", e);

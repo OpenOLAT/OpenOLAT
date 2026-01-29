@@ -365,7 +365,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		try {
 			download(result, targetFile);
 			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_DONE);
-			vfsTranscodingService.fileDoneEvent(metadata);
+			vfsTranscodingService.fireDoneEvent(metadata);
 			vfsTranscodingService.deleteGeneratedInService(result.getType(), result.getUuid());
 		} catch (Exception e) {
 			log.warn("Failed to download conversion job result [uuid={}, targetPath='{}']: {}", 
@@ -446,6 +446,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		videoManager.optimizeMemoryForVideo(videoResource);
 		if (allDone(videoTranscodings)) {
 			videoManager.deleteGeneratedInService(result.getUuid());
+			videoManager.fireVideoTranscodingStatusEvent(videoResource.getKey());
 		}
 	}
 
