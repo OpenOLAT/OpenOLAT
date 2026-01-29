@@ -19,48 +19,54 @@
  */
 package org.olat.modules.certificationprogram;
 
-import java.time.LocalDateTime;
-
-import org.olat.core.id.Identity;
-import org.olat.course.certificate.Certificate;
-import org.olat.modules.curriculum.CurriculumElement;
-
 /**
  * 
- * Initial date: 14 nov. 2025<br>
+ * Initial date: 22 déc. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public interface CertificationProgramLog {
+public enum CertificationProgramLogAction {
 	
-	Long getKey();
+	// 
+	add_membership,
+	add_membership_manually,
+	change_membership,
+	remove_membership,
 	
-	LocalDateTime getCreationDate();
+	//
+	revoke_certificate,
+	issue_certificate,
 	
-	CertificationProgramLogAction getAction();
+	//
+	add_owner,
+	remove_owner,
+	add_implementation,
+	remove_implementation,
+	edit_certification_program,
+	edit_certification_program_organisations,
 	
-	String getBefore();
-	
-	String getBeforeStatus();
-	
-	String getAfter();
-	
-	String getAfterStatus();
-	
-	Certificate getCertificate();
+	// Notifications
+	send_notification_certificate_issued,
+	send_notification_certificate_renewed,
+	send_notification_certificate_expired,
+	send_notification_certificate_revoked,
+	send_notification_program_removed,
+	send_reminder_upcoming,
+	send_reminder_overdue,
 
-	CertificationProgramMailConfiguration getMailConfiguration();
+	reminder_change_status,
+	reminder_create,
+	reminder_delete,
+	reminder_edit,
+	reminder_change_content,
+	reminder_customize_content,
+	reminder_reset_content,
+	notification_change_status,
+	notification_change_content,
+	notification_customize_content,
+	notification_reset_content,
+	;
 	
-	Identity getDoer();
 	
-	/**
-	 * @return If an owner was added or removed to a certification program
-	 */
-	Identity getIdentity();
-	
-	/**
-	 * @return If an implementation was added or removed to a certification program
-	 */
-	CurriculumElement getCurriculumElement();
 
 }

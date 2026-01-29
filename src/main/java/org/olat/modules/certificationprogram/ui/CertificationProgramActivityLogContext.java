@@ -17,30 +17,18 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.certificationprogram.ui.component;
-
+package org.olat.modules.certificationprogram.ui;
 
 /**
  * 
- * Initial date: 4 sept. 2025<br>
+ * Initial date: 26 janv. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record Duration(int value, DurationType unit) {
-	
-	@Override
-	public int hashCode() {
-		return value + (unit == null ? -38754 : unit.ordinal());
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) {
-			return true;
-		}
-		if(obj instanceof Duration duration) {
-			return value == duration.value && unit.equals(duration.unit);
-		}
-		return false;
-	}
+public enum CertificationProgramActivityLogContext {
+	message,
+	owner,
+	implementation,
+	member,
+	setting
 }

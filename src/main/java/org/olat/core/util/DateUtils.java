@@ -158,6 +158,17 @@ public class DateUtils {
 		return calendar.getTime();
 	}
 	
+	public static LocalDateTime setTime(LocalDateTime date, int hour, int minutes, int seconds) {
+		if (date == null) {
+			return null;
+		}
+		
+		return date.withHour(hour)
+				.withMinute(minutes)
+				.withSecond(seconds)
+				.withNano(0);
+	}
+	
 	public static ZonedDateTime getZonedDateTime(int year, int month, int days) {
 		return ZonedDateTime.of(year, month, days, 0, 0, 0, 0, ZoneId.systemDefault());
 	}

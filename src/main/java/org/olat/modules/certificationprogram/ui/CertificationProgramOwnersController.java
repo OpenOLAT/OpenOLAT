@@ -233,7 +233,7 @@ public class CertificationProgramOwnersController extends FormBasicController {
 	
 	private void doAddOwner(List<Identity> identities) {
 		for(Identity identity:identities) {
-			certificationProgramService.addCertificationProgramOwner(certificationProgram, identity);
+			certificationProgramService.addCertificationProgramOwner(certificationProgram, identity, getIdentity());
 			getLogger().info("Add owner {} to certification program {}", identity.getKey(), certificationProgram.getKey());
 		}
 	}

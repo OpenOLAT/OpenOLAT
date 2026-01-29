@@ -54,7 +54,7 @@ public class ConfirmationRemoveOwnersController extends ConfirmationController {
 	@Override
 	protected void doAction(UserRequest ureq) {
 		for(Identity identity: identities) {
-			certificationProgramService.removeCertificationProgramOwner(certificationProgram, identity);
+			certificationProgramService.removeCertificationProgramOwner(certificationProgram, identity, getIdentity());
 			getLogger().info("Remove owner {} from certification program {}", identity.getKey(), certificationProgram.getKey());
 		}
 		fireEvent(ureq, Event.DONE_EVENT);

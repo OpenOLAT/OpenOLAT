@@ -2026,7 +2026,16 @@ create table o_cer_program_mail_config (
 create table o_cer_program_log (
    id bigserial,
    creationdate timestamp not null,
-   fk_certificate int8 not null,
+   c_action varchar(64),
+   c_before text,
+   c_before_status varchar(64),
+   c_after text,
+   c_after_status varchar(64),
+   fk_doer int8,
+   fk_program int8,
+   fk_certificate int8,
+   fk_identity int8,
+   fk_element int8,
    fk_mail_configuration int8,
    primary key (id)
 );
@@ -6324,6 +6333,14 @@ alter table o_cer_program_log add constraint cer_plog_to_cert_idx foreign key (f
 create index idx_cer_plog_to_cert_idx on o_cer_program_log (fk_certificate);
 alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key (fk_mail_configuration) references o_cer_program_mail_config (id);
 create index idx_cer_plog_to_config_idx on o_cer_program_log (fk_mail_configuration);
+alter table o_cer_program_log add constraint cer_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_cer_log_to_doer_idx on o_cer_program_log (fk_doer);
+alter table o_cer_program_log add constraint cer_log_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cer_log_to_ident_idx on o_cer_program_log (fk_identity);
+alter table o_cer_program_log add constraint cer_log_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+create index idx_cer_log_to_prog_idx on o_cer_program_log (fk_program);
+alter table o_cer_program_log add constraint cer_log_to_cur_elem_idx foreign key (fk_element) references o_cur_curriculum_element (id);
+create index idx_cer_log_to_cur_elem_idx on o_cer_program_log (fk_element);
 
 -- sms
 alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

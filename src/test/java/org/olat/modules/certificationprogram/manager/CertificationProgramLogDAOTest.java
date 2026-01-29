@@ -86,7 +86,7 @@ public class CertificationProgramLogDAOTest extends OlatTestCase {
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
-		CertificationProgramLog mailLog = certificationProgramLogDao.createMailLog(certificate, configuration);
+		CertificationProgramLog mailLog = certificationProgramLogDao.createMailLog(certificate, program, configuration, identity);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mailLog);
 		Assert.assertNotNull(mailLog.getKey());

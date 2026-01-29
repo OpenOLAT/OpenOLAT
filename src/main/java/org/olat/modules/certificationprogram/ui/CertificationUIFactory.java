@@ -31,6 +31,33 @@ import org.olat.modules.certificationprogram.ui.component.Duration;
  *
  */
 public class CertificationUIFactory {
+	
+	public static String getLogContextIconCss(CertificationProgramActivityLogContext context) {
+		if (context != null) {
+			return switch (context) {
+				case message -> "o_icon_mail";
+				case owner, member -> "o_icon_user";
+				case implementation -> "o_icon_curriculum_element";
+				case setting -> "o_icon_settings";
+				default -> null;
+			};
+		}
+		return null;
+	}
+	
+	public static String getTranslatedLogContext(Translator translator, CertificationProgramActivityLogContext context) {
+		if (context != null) {
+			return switch (context) {
+				case message -> translator.translate("activity.log.context.message");
+				case owner -> translator.translate("activity.log.context.owner");
+				case implementation -> translator.translate("activity.log.context.implementation");
+				case member -> translator.translate("activity.log.context.member");
+				case setting -> translator.translate("activity.log.context.setting");
+				default -> null;
+			};
+		}
+		return null;
+	}
 
 	public static final String getConfiguration(Translator translator, CertificationProgram program) {
 		StringBuilder sb = new StringBuilder(256);

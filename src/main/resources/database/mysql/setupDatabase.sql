@@ -2005,7 +2005,16 @@ create table o_cer_program_mail_config (
 create table o_cer_program_log (
    id bigint not null auto_increment,
    creationdate datetime not null,
-   fk_certificate bigint not null,
+   c_action varchar(64),
+   c_before mediumtext,
+   c_before_status varchar(64),
+   c_after mediumtext,
+   c_after_status varchar(64),
+   fk_doer bigint,
+   fk_program bigint,
+   fk_certificate bigint,
+   fk_identity bigint,
+   fk_element bigint,
    fk_mail_configuration bigint,
    primary key (id)
 );
@@ -6239,6 +6248,10 @@ alter table o_cer_program_mail_config add constraint cer_mconfig_to_prog_idx for
 
 alter table o_cer_program_log add constraint cer_plog_to_cert_idx foreign key (fk_certificate) references o_cer_certificate (id);
 alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key (fk_mail_configuration) references o_cer_program_mail_config (id);
+alter table o_cer_program_log add constraint cer_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+alter table o_cer_program_log add constraint cer_log_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_cer_program_log add constraint cer_log_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+alter table o_cer_program_log add constraint cer_log_to_cur_elem_idx foreign key (fk_element) references o_cur_curriculum_element (id);
 
 -- certification program
 alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);

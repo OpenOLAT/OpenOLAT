@@ -1,5 +1,5 @@
 /**
- * <a href="https://www.openolat.org">
+ * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,33 +14,28 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, https://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.certificationprogram.ui.component;
+package org.olat.core.util;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 4 sept. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Initial date: 19 Jan 2023<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public record Duration(int value, DurationType unit) {
+public record LocalDateRange(LocalDateTime from, LocalDateTime to) implements Serializable {
 	
-	@Override
-	public int hashCode() {
-		return value + (unit == null ? -38754 : unit.ordinal());
+	public boolean isEmpty() {
+		return from == null && to == null;
 	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) {
-			return true;
-		}
-		if(obj instanceof Duration duration) {
-			return value == duration.value && unit.equals(duration.unit);
-		}
-		return false;
+	
+	public static LocalDateRange valueOf(Date from, Date to) {
+		return new LocalDateRange(DateUtils.toLocalDateTime(from), DateUtils.toLocalDateTime(to));
 	}
 }

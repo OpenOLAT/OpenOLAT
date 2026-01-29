@@ -20,6 +20,8 @@
 package org.olat.modules.certificationprogram.ui;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -39,14 +41,17 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.CertificationProgramToOrganisation;
+import org.olat.modules.certificationprogram.manager.CertificationProgramXStream;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 29 août 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EditCertificationProgramMetadataController extends FormBasicController {
@@ -148,11 +153,35 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 	protected void formOK(UserRequest ureq) {
 		certificationProgram = certificationProgramService.getCertificationProgram(certificationProgram);
 		
+		String beforeXml = CertificationProgramXStream.toXml(certificationProgram);
+		List<Long> beforeOrganisationsKeys = certificationProgram.getOrganisations().stream()
+				.map(CertificationProgramToOrganisation::getOrganisation)
+				.map(Organisation::getKey)
+				.sorted()
+				.collect(Collectors.toList());
+		
 		certificationProgram.setDisplayName(displayNameEl.getValue());
 		certificationProgram.setIdentifier(identifierEl.getValue());
 		List<Organisation> organisations = getSelectedOrganisations();
 		certificationProgram = certificationProgramService.updateCertificationProgram(certificationProgram, organisations);
 		dbInstance.commitAndCloseSession();
+		
+		String afterXml = CertificationProgramXStream.toXml(certificationProgram);
+		List<Long> afterOrganisationsKeys = organisations.stream()
+				.map(Organisation::getKey)
+				.sorted()
+				.collect(Collectors.toList());
+		
+		if(!Objects.equals(beforeXml, afterXml)) {
+			certificationProgramService.log(null, certificationProgram, CertificationProgramLogAction.edit_certification_program,
+					null, beforeXml, null, afterXml, null, null, getIdentity());
+		}
+		if(!beforeOrganisationsKeys.equals(afterOrganisationsKeys)) {
+			String beforeListXml = CertificationProgramXStream.toXml(beforeOrganisationsKeys);
+			String afterListXml = CertificationProgramXStream.toXml(afterOrganisationsKeys);
+			certificationProgramService.log(null, certificationProgram, CertificationProgramLogAction.edit_certification_program_organisations,
+					null, beforeListXml, null, afterListXml, null, null, getIdentity());
+		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

@@ -31,10 +31,13 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,6 +54,8 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 	private DB dbInstance;
 	@Autowired
 	private CertificationCoordinator certificationCoordinator;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 	
 	public AddProgramMemberFinishStepCallback(AddProgramMembersContext membersContext) {
 		CoreSpringFactory.autowireObject(this);
@@ -63,8 +68,11 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 		List<Identity> userToCertifyList = membersContext.getIdentitiesToCertify();
 		CertificationProgram certificationProgram = membersContext.getProgram();
 		for(Identity userToCertify:userToCertifyList) {
-			certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate,
+			Certificate certificate = certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate,
 					RequestMode.COACH, CertificationProgramMailType.certificate_issued, ureq.getIdentity());
+			//TODO certificate add issued as data
+			certificationProgramService.log(certificate, certificationProgram, CertificationProgramLogAction.add_membership_manually,
+					null, null, "certified", null, null, null, ureq.getIdentity());
 		}
 		dbInstance.commit();
 		return StepsMainRunController.DONE_MODIFIED;

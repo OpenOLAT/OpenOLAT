@@ -30,6 +30,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
 import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
+import org.olat.modules.certificationprogram.model.CertificationProgramLogSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
@@ -74,9 +75,9 @@ public interface CertificationProgramService {
 	 */
 	boolean isCertificationProgramOwner(IdentityRef identity);
 	
-	void addCertificationProgramOwner(CertificationProgram program, Identity identity);
+	void addCertificationProgramOwner(CertificationProgram program, Identity identity, Identity doer);
 	
-	void removeCertificationProgramOwner(CertificationProgram program, Identity identity);
+	void removeCertificationProgramOwner(CertificationProgram program, Identity identity, Identity doer);
 	
 	
 	List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program);
@@ -85,9 +86,9 @@ public interface CertificationProgramService {
 	
 	boolean isInCertificationProgram(CurriculumElementRef element);
 	
-	void addCurriculumElementToCertificationProgram(CertificationProgram program, CurriculumElement element);
+	void addCurriculumElementToCertificationProgram(CertificationProgram program, CurriculumElement element, Identity doer);
 	
-	void removeCurriculumElementToCertificationProgram(CurriculumElement element);
+	void removeCurriculumElementToCertificationProgram(CurriculumElement element, Identity doer);
 	
 	boolean isInCertificationProgram(RepositoryEntryRef entry);
 	
@@ -119,6 +120,13 @@ public interface CertificationProgramService {
 	
 	CertificationProgramMailConfiguration getMailConfiguration(Long key);
 	
-	CertificationProgramMailConfiguration updateMailConfiguration(CertificationProgramMailConfiguration configuration);	
+	CertificationProgramMailConfiguration updateMailConfiguration(CertificationProgramMailConfiguration configuration);
+	
+	
+	void log(Certificate certificate, CertificationProgram program, CertificationProgramLogAction action,
+			String statusBefore, String valueBefore, String statusAfter, String valueAfter,
+			CertificationProgramMailConfiguration mailConfiguration, CurriculumElement curriculumElement, Identity doer);
+	
+	List<CertificationProgramLog> searchLogs(CertificationProgramLogSearchParameters searchParams);
  
 }

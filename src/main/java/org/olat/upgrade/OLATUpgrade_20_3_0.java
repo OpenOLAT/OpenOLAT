@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.model.CertificationProgramLogImpl;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
@@ -43,7 +45,9 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 	private static final int BATCH_SIZE = 20;
 	private static final String VERSION = "OLAT_20.3.0";
 	private static final String MIGRATE_RELATION_TO_IMPLEMENTATION = "RELATION TO IMPLEMENTATION";
-
+	private static final String MIGRATE_CERTIFICATION_LOG_ACTION = "MIGRATE CERTIFICATION LOG ACTION";
+	private static final String MIGRATE_CERTIFICATION_LOG_PROGRAM = "MIGRATE CERTIFICATION LOG PROGRAM";
+	private static final String MIGRATE_CERTIFICATION_LOG_IDENTITY = "MIGRATE CERTIFICATION LOG IDENTITY";
 
 	@Autowired
 	private DB dbInstance;
@@ -68,6 +72,9 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= migrateCatalogCardView(upgradeManager, uhd);
+		allOk &= migrateCertificationLogAction(upgradeManager, uhd);
+		allOk &= migrateCertificationLogProgram(upgradeManager, uhd);
+		allOk &= migrateCertificationLogIdentity(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -78,6 +85,111 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_20_3_0 not finished, try to restart OpenOlat!");
 		}
 		return allOk;
+	}
+	
+	private boolean migrateCertificationLogIdentity(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CERTIFICATION_LOG_IDENTITY)) {
+			try {
+				log.info("Migration certification mail log identity");
+				int count = updateCertificationLogIdentity();
+				dbInstance.commitAndCloseSession();
+				log.info("End migration certification mail log identity: {}", count);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_CERTIFICATION_LOG_IDENTITY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private int updateCertificationLogIdentity() {
+		String query = """
+				update certificationprogramlog as mailLog set mailLog.identity.key=(select cert.identity.key from certificate as cert
+				 where cert.key=mailLog.certificate.key)
+				where mailLog.identity.key is null and mailLog.certificate.key is not null
+				""";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.executeUpdate();
+	}
+	
+	private boolean migrateCertificationLogProgram(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CERTIFICATION_LOG_PROGRAM)) {
+			try {
+				log.info("Migration certification mail log program");
+				int count = updateCertificationLogProgram();
+				dbInstance.commitAndCloseSession();
+				log.info("End migration certification mail log program: {}", count);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_CERTIFICATION_LOG_PROGRAM, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private int updateCertificationLogProgram() {
+		String query = """
+				update certificationprogramlog as mailLog set mailLog.certificationProgram.key=(select mailConfig.certificationProgram.key from certificationprogrammailconfiguration as mailConfig
+				 where mailLog.mailConfiguration.key=mailConfig.key)
+				where mailLog.certificationProgram.key is null and mailLog.mailConfiguration.key is not null
+				""";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.executeUpdate();
+	}
+	
+	private boolean migrateCertificationLogAction(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CERTIFICATION_LOG_ACTION)) {
+			try {
+				log.info("Migration certification mail log");
+				
+				int count = 0;
+				List<CertificationProgramLogImpl> programLogList = getCertificationMailLogs(BATCH_SIZE);
+				do {
+					for(CertificationProgramLogImpl mailLog:programLogList) {
+						CertificationProgramMailType type = mailLog.getMailConfiguration().getType();
+						if(type != null) {
+							mailLog.setAction(type.logAction());
+							dbInstance.getCurrentEntityManager().merge(mailLog);
+						}
+						if(count++ % 25 == 0) {
+							dbInstance.commitAndCloseSession();
+						}
+					}
+					dbInstance.commitAndCloseSession();
+					programLogList = getCertificationMailLogs(BATCH_SIZE);
+					
+				} while(!programLogList.isEmpty());
+				
+				log.info("End migration certification mail log: {}", count);
+				
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_CERTIFICATION_LOG_ACTION, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<CertificationProgramLogImpl> getCertificationMailLogs(int maxResults) {
+		String query = """
+				select cerLog from certificationprogramlog as cerLog
+				inner join fetch cerLog.mailConfiguration as mailConfig
+				where cerLog.action is null 
+				order by cerLog.key""";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgramLogImpl.class)
+				.setFirstResult(0)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 	
 	private boolean migrateCatalogCardView(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

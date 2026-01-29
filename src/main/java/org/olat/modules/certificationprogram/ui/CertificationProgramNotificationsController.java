@@ -51,6 +51,7 @@ import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.InputType;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.SingleKey;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
@@ -242,9 +243,16 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 	
 	private void doSaveCustomisedTemplate(CertificationProgramNotificationRow notificationRow) {
 		CertificationProgramMailConfiguration config = certificationProgramService.getMailConfiguration(notificationRow.getKey());
+		boolean currentCustomized = config.isCustomized();
 		config.setCustomized(true);
 		certificationProgramService.updateMailConfiguration(config);
 		dbInstance.commit();
+		
+		CertificationProgramLogAction action = currentCustomized
+				? CertificationProgramLogAction.notification_change_content
+				: CertificationProgramLogAction.notification_customize_content;
+		certificationProgramService.log(null, certificationProgram, action, null, null, null, null, config, null, getIdentity());
+		
 		loadModel();
 	}
 	

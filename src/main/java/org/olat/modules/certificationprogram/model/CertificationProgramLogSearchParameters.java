@@ -17,30 +17,35 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.certificationprogram.ui.component;
+package org.olat.modules.certificationprogram.model;
 
+import org.olat.core.util.LocalDateRange;
+import org.olat.modules.certificationprogram.CertificationProgram;
 
 /**
  * 
- * Initial date: 4 sept. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Initial date: 23 janv. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record Duration(int value, DurationType unit) {
+public class CertificationProgramLogSearchParameters {
 	
-	@Override
-	public int hashCode() {
-		return value + (unit == null ? -38754 : unit.ordinal());
+	private LocalDateRange dateRange;
+	private CertificationProgram certificationProgram;
+	
+	public LocalDateRange getDateRange() {
+		return dateRange;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) {
-			return true;
-		}
-		if(obj instanceof Duration duration) {
-			return value == duration.value && unit.equals(duration.unit);
-		}
-		return false;
+	public void setDateRange(LocalDateRange dateRange) {
+		this.dateRange = dateRange;
+	}
+
+	public CertificationProgram getCertificationProgram() {
+		return certificationProgram;
+	}
+
+	public void setCertificationProgram(CertificationProgram certificationProgram) {
+		this.certificationProgram = certificationProgram;
 	}
 }

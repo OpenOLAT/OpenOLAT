@@ -39,8 +39,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -152,7 +154,7 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 	
 	protected final void doConfirmReset(UserRequest ureq, CertificationProgramNotificationRow notificationRow) {
 		confirmResetCtrl = new ConfirmationController(ureq, getWindowControl(),
-				translate("confirm.reset.template.message"),
+				translate("confirm.reset.template.message", notificationRow.getNotificationLabel()),
 				null, translate("reset.template"), ButtonType.regular);
 		listenTo(confirmResetCtrl);
 		confirmResetCtrl.setUserObject(notificationRow);
@@ -168,6 +170,11 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 		config.setCustomized(false);
 		certificationProgramService.updateMailConfiguration(config);
 		dbInstance.commit();
+
+		CertificationProgramLogAction action = CertificationProgramMailType.notificationsSet().contains(config.getType())
+				? CertificationProgramLogAction.notification_reset_content
+				: CertificationProgramLogAction.reminder_reset_content;
+		certificationProgramService.log(null, certificationProgram, action, null, null, null, null, config, null, getIdentity());
 		loadModel();
 	}
 	
@@ -195,13 +202,17 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 	
 	private final void doToggleStatus(CertificationProgramNotificationRow row, FormToggle toggle) {
 		CertificationProgramMailConfiguration configuration = certificationProgramService.getMailConfiguration(row.getKey());
+		CertificationProgramMailConfigurationStatus currentStatus = configuration.getStatus();
 		CertificationProgramMailConfigurationStatus status = toggle.isOn()
 				? CertificationProgramMailConfigurationStatus.active
 				: CertificationProgramMailConfigurationStatus.inactive;
 		configuration.setStatus(status);
 		certificationProgramService.updateMailConfiguration(configuration);
+		CertificationProgramLogAction action = CertificationProgramMailType.notificationsSet().contains(configuration.getType())
+				? CertificationProgramLogAction.notification_change_status
+				: CertificationProgramLogAction.reminder_change_status;
+		certificationProgramService.log(null, certificationProgram, action, currentStatus.name(), null, status.name(), null, configuration, null, getIdentity());
 		dbInstance.commit();
 		loadModel();
 	}
-
 }

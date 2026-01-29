@@ -35,6 +35,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
@@ -307,6 +308,11 @@ public class Formatter {
 	}
 	
 	public String formatDateAndTime(ZonedDateTime date) {
+		if (date == null) return null;
+		return shortDateTimeFormatter.format(date);
+	}
+	
+	public String formatDateAndTime(LocalDateTime date) {
 		if (date == null) return null;
 		return shortDateTimeFormatter.format(date);
 	}

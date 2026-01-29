@@ -312,6 +312,14 @@ public class CertificationProgramImpl implements CertificationProgram, Persistab
 		this.recertificationWindowUnit = unit;
 	}
 
+	@Override
+	public Duration getRecertificationWindowDuration() {
+		if(isRecertificationWindowEnabled() && getRecertificationWindow() > 0) {
+			return new Duration(getRecertificationWindow(), getRecertificationWindowUnit());
+		}
+		return null;
+	}
+
 	public boolean isPrematureRecertificationByUserEnabled() {
 		return prematureRecertificationByUserEnabled;
 	}

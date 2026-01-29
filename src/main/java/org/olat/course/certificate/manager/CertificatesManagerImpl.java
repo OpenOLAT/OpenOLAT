@@ -1456,7 +1456,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				MailContext context = new MailContextImpl(null, null, "[HomeSite:" + to.getKey() + "][Certificates:0][All:0]");
 				MailBundle bundle = mailManager.makeMailBundle(context, to, template, null, null, mailerResult);
 				if(bundle != null) {
-					certificationProgramLogDao.createMailLog(certificate, configuration);
+					certificationProgramLogDao.createMailLog(certificate, certificationProgram, configuration, actor);
 					mailManager.sendMessage(bundle);
 				}
 			}

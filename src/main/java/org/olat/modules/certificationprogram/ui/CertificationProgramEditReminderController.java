@@ -20,6 +20,7 @@
 package org.olat.modules.certificationprogram.ui;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -37,9 +38,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.manager.CertificationProgramXStream;
 import org.olat.modules.certificationprogram.ui.component.DurationFormItem;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,11 +204,17 @@ public class CertificationProgramEditReminderController extends FormBasicControl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String beforeXml = null;
+		CertificationProgramLogAction action;
 		if(configuration == null) {
 			CertificationProgramMailType type = recertificationEl.isOneSelected() && KEY_OVERDUE.equals(recertificationEl.getSelectedKey())
 					? CertificationProgramMailType.reminder_overdue
 					: CertificationProgramMailType.reminder_upcoming;
 			configuration = certificationProgramService.createMailConfiguration(certificationProgram, type);
+			action = CertificationProgramLogAction.reminder_create;
+		} else {
+			action = CertificationProgramLogAction.reminder_edit;
+			beforeXml = CertificationProgramXStream.toXml(configuration);
 		}
 		
 		configuration.setTitle(titleEl.getValue());
@@ -215,6 +224,11 @@ public class CertificationProgramEditReminderController extends FormBasicControl
 		configuration.setTimeUnit(timeEl.getType());
 		configuration = certificationProgramService.updateMailConfiguration(configuration);
 		dbInstance.commit();
+		
+		String afterXml = CertificationProgramXStream.toXml(configuration);
+		if(!Objects.equals(beforeXml, afterXml)) {
+			certificationProgramService.log(null, certificationProgram, action, null, beforeXml, null, afterXml, configuration, null, getIdentity());
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

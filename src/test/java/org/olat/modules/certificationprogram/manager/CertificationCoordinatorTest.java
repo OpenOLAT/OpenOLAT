@@ -631,7 +631,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
-		certificationProgramService.addCurriculumElementToCertificationProgram(program, element);
+		certificationProgramService.addCurriculumElementToCertificationProgram(program, element, actor);
 		dbInstance.commit();
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
@@ -809,7 +809,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
-		certificationProgramService.addCurriculumElementToCertificationProgram(program, element);
+		certificationProgramService.addCurriculumElementToCertificationProgram(program, element, actor);
 		dbInstance.commit();
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);

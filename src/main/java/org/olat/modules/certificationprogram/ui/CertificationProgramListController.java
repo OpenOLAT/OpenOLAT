@@ -81,7 +81,8 @@ public class CertificationProgramListController extends FormBasicController impl
 	private static final String ALL_TAB_ID = "All";
 	private static final String ACTIVE_TAB_ID = "Active";
 	private static final String INACTIVE_TAB_ID = "Inactive";
-	
+
+	public static final String CONTEXT_LOG = "Log";
 	public static final String CONTEXT_DETAILS = "Details";
 	public static final String CONTEXT_OVERVIEW = "Overview";
 	public static final String CONTEXT_MEMBERS = "Members";

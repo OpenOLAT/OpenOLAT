@@ -48,11 +48,13 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationLoggingAction;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.RecertificationMode;
+import org.olat.modules.certificationprogram.ui.CertificationStatus;
 import org.olat.modules.certificationprogram.ui.component.Duration;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -109,6 +111,9 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				//First certificate is free (paid by the course fee)
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
 				generateCertificate(identity, certificationProgram, null, requestMode, CertificationProgramMailType.certificate_issued, doer);
+				certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.add_membership,
+						null, null, "certified", null, null, null, doer);
+				
 				accepted = true;
 			} else {
 				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
@@ -153,7 +158,15 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		CertificationProgramMailType mailType = requestMode == RequestMode.COURSE
 				? CertificationProgramMailType.certificate_issued
 				: CertificationProgramMailType.certificate_renewed;
-		generateCertificate(identity, certificationProgram, null, requestMode, mailType, doer);
+		CertificationStatus currentStatus = certificate == null ? null : CertificationStatus.evaluate(certificate, referenceDate);
+		Certificate newCertificate = generateCertificate(identity, certificationProgram, null, requestMode, mailType, doer);
+
+		CertificationProgramLogAction action = CertificationProgramLogAction.add_membership;
+		String beforeStatus = currentStatus == null ? null : currentStatus.name();
+		certificationProgramLogDao.createLog(newCertificate, certificationProgram, action,
+				beforeStatus, null, "certified", null, null, null, doer);
+		dbInstance.commit();// Prevent deadlock with MySQL
+
 		return true;
 	}
 	
@@ -264,7 +277,12 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withCertificationProgramMailType(notificationType)
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
+		
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);
+		certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.issue_certificate,
+				null, null, CertificationStatus.VALID.name(), null, null, null, actor);
+		dbInstance.commit();// Prevent deadlock with MySQL
+		
 		return certificate;
 	}
 	
@@ -272,11 +290,15 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	public Certificate revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity actor) {
 		Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram);
 		if(certificate != null) {
+			CertificationStatus currentStatus = CertificationStatus.evaluate(certificate, new Date());
 			certificatesManager.revokeCertificate(certificate);
 
 			log.info("Certificate revoked {} for {} and program {} by {}", certificate, identity, certificationProgram, actor);
 			activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
 			sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
+			
+			certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.revoke_certificate,
+					currentStatus.name(), null, CertificationStatus.REVOKED.name(), null, null, null, actor);
 		}
 		return certificate;
 	}
@@ -320,6 +342,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 					if(certificate.isLast()) {
 						log.info("User {} removed of program {} automatically", recipient, program);
 						activityLog(recipient, program, CertificationLoggingAction.CERTIFICATE_REMOVED, RequestMode.AUTOMATIC, null);
+						certificationProgramLogDao.createMailLog(certificate, program, configuration, null);
 					}
 				}
 				
@@ -371,7 +394,17 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				: null;
 	}
 	
-	private void activityLog(Identity identity, CertificationProgram program, ILoggingAction action, RequestMode requestMode, Identity actor) {
+	/**
+	 * Write an entry in the generic logging table.
+	 * 
+	 * @param identity The identity
+	 * @param program The certification program
+	 * @param action The action
+	 * @param requestMode The request mode
+	 * @param actor The actor
+	 */
+	private void activityLog(Identity identity, CertificationProgram program, ILoggingAction action,
+			RequestMode requestMode, Identity actor) {
 		Long identityKey = actor == null ? null : actor.getKey();
 		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
 		loggingResourceableList.add(CoreLoggingResourceable.wrap(program, OlatResourceableType.certificationProgram, program.getDisplayName()));
@@ -398,7 +431,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		MailContext context = new MailContextImpl(null, null, "[HomeSite:" + recipient.getKey() + "][Certificates:0][All:0]");
 		MailBundle bundle = mailService.makeMailBundle(context, recipient, template, actor, null, result);
 		if(bundle != null) {
-			certificationProgramLogDao.createMailLog(certificate, configuration);
+			certificationProgramLogDao.createMailLog(certificate, program, configuration, actor);
 			dbInstance.commit();
 			mailService.sendMessage(bundle);
 		}

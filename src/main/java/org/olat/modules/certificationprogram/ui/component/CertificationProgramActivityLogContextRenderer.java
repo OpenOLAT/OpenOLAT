@@ -19,28 +19,38 @@
  */
 package org.olat.modules.certificationprogram.ui.component;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractCSSIconFlexiCellRenderer;
+import org.olat.core.gui.translator.Translator;
+import org.olat.modules.certificationprogram.ui.CertificationProgramActivityLogContext;
+import org.olat.modules.certificationprogram.ui.CertificationUIFactory;
 
 /**
  * 
- * Initial date: 4 sept. 2025<br>
+ * Initial date: 26 janv. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record Duration(int value, DurationType unit) {
+public class CertificationProgramActivityLogContextRenderer extends AbstractCSSIconFlexiCellRenderer {
 	
 	@Override
-	public int hashCode() {
-		return value + (unit == null ? -38754 : unit.ordinal());
+	protected String getCssClass(Object val) {
+		if (val instanceof CertificationProgramActivityLogContext context) {
+			return "o_icon-fw " + CertificationUIFactory.getLogContextIconCss(context);
+		}
+		return null;
+	}
+	
+	@Override
+	protected String getCellValue(Object val, Translator translator) {
+		if (val instanceof CertificationProgramActivityLogContext context) {
+			return CertificationUIFactory.getTranslatedLogContext(translator, context);
+		}
+		return null;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) {
-			return true;
-		}
-		if(obj instanceof Duration duration) {
-			return value == duration.value && unit.equals(duration.unit);
-		}
-		return false;
+	protected String getHoverText(Object val, Translator translator) {
+		return null;
 	}
+
 }

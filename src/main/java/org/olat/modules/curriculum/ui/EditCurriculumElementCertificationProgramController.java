@@ -146,11 +146,11 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 	}
 	
 	private void doUpdateCertificationProgram() {
-		certificationProgramService.removeCurriculumElementToCertificationProgram(element);
+		certificationProgramService.removeCurriculumElementToCertificationProgram(element, getIdentity());
 		if(enableEl.isOn()) {
 			CertificationProgram program = getSelectedProgram();
 			if(program != null) {
-				certificationProgramService.addCurriculumElementToCertificationProgram(program, element);
+				certificationProgramService.addCurriculumElementToCertificationProgram(program, element, getIdentity());
 			}
 		}
 	}

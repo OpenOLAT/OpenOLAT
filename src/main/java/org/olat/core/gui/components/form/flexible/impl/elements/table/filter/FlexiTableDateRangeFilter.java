@@ -35,7 +35,9 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.LocalDateRange;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -65,6 +67,12 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 	
 	public DateRange getDateRange() {
 		return filterDateRange;
+	}
+	
+	public LocalDateRange getLocalDateRange() {
+		return filterDateRange == null
+			? null
+			: LocalDateRange.valueOf(filterDateRange.getStart(), filterDateRange.getEnd());
 	}
 
 	@Override
@@ -163,6 +171,9 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 
 	private DateRange toDateRange(Object object) {
 		DateRange dateRange = null;
+		if (object instanceof LocalDateRange localRange) {
+			dateRange = new DateRange(DateUtils.toDate(localRange.from()), DateUtils.toDate(localRange.to()));
+		}
 		if (object instanceof DateRange) {
 			dateRange = (DateRange)object;
 		}
@@ -224,6 +235,15 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 		
 		private Date start;
 		private Date end;
+		
+		public DateRange() {
+			//
+		}
+		
+		public DateRange(Date start, Date end) {
+			this.start = start;
+			this.end = end;
+		}
 		
 		public Date getStart() {
 			return start;

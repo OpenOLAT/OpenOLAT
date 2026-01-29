@@ -21,6 +21,7 @@ package org.olat.modules.certificationprogram.ui;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -53,7 +54,9 @@ import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateChooserController;
 import org.olat.course.certificate.ui.PreviewMediaResource;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.manager.CertificationProgramXStream;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -186,6 +189,8 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 	@Override
 	protected void formOK(UserRequest ureq) {
 		certificationProgram = certificationProgramService.getCertificationProgram(certificationProgram);
+
+		String beforeXml = CertificationProgramXStream.toXml(certificationProgram);
 		
 		certificationProgram.setCertificateCustom1(certificationCustom1El.getValue());
 		certificationProgram.setCertificateCustom2(certificationCustom2El.getValue());
@@ -194,6 +199,12 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		
 		certificationProgram = certificationProgramService.updateCertificationProgram(certificationProgram);
 		dbInstance.commitAndCloseSession();
+		
+		String afterXml = CertificationProgramXStream.toXml(certificationProgram);
+		if(!Objects.equals(beforeXml, afterXml)) {
+			certificationProgramService.log(null, certificationProgram, CertificationProgramLogAction.edit_certification_program,
+					null, beforeXml, null, afterXml, null, null, getIdentity());
+		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

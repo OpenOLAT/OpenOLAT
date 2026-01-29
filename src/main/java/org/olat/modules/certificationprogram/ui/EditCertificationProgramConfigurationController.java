@@ -22,6 +22,7 @@ package org.olat.modules.certificationprogram.ui;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DB;
@@ -42,8 +43,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.RecertificationMode;
+import org.olat.modules.certificationprogram.manager.CertificationProgramXStream;
 import org.olat.modules.certificationprogram.ui.component.CreditPointSystemNameComparator;
 import org.olat.modules.certificationprogram.ui.component.DurationFormItem;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
@@ -350,6 +353,9 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		certificationProgram = certificationProgramService.getCertificationProgram(certificationProgram);
+		String beforeXml = CertificationProgramXStream.toXml(certificationProgram);
+		
 		boolean validityEnabled = validityToggleEl.isVisible() && validityToggleEl.isOn();
 		certificationProgram.setValidityEnabled(validityEnabled);
 		if(validityEnabled) {
@@ -396,6 +402,12 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		
 		certificationProgram = certificationProgramService.updateCertificationProgram(certificationProgram);
 		dbInstance.commit();
+		
+		String afterXml = CertificationProgramXStream.toXml(certificationProgram);
+		if(!Objects.equals(beforeXml, afterXml)) {
+			certificationProgramService.log(null, certificationProgram, CertificationProgramLogAction.edit_certification_program,
+					null, beforeXml, null, afterXml, null, null, getIdentity());
+		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

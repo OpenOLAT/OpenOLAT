@@ -35,6 +35,8 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLog;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramRef;
@@ -44,6 +46,7 @@ import org.olat.modules.certificationprogram.CertificationRoles;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
 import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
+import org.olat.modules.certificationprogram.model.CertificationProgramLogSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
@@ -77,6 +80,8 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	private CreditPointWalletDAO creditPointWalletDao;
 	@Autowired
 	private CertificationProgramDAO certificationProgramDao;
+	@Autowired
+	private CertificationProgramLogDAO certificationProgramLogDao;
 	@Autowired
 	private CertificationProgramToOrganisationDAO certificationProgramToOrganisationDao;
 	@Autowired
@@ -177,15 +182,19 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public void addCertificationProgramOwner(CertificationProgram program, Identity identity) {
+	public void addCertificationProgramOwner(CertificationProgram program, Identity identity, Identity doer) {
 		if(!groupDao.hasRole(program.getGroup(), identity, CertificationRoles.programowner.name())) {
 			groupDao.addMembershipOneWay(program.getGroup(), identity, CertificationRoles.programowner.name());
+			certificationProgramLogDao.createOwnerLog(identity, program, CertificationProgramLogAction.add_owner, doer);
 		}
 	}
 
 	@Override
-	public void removeCertificationProgramOwner(CertificationProgram program, Identity identity) {
-		groupDao.removeMembership(program.getGroup(), identity, CertificationRoles.programowner.name());
+	public void removeCertificationProgramOwner(CertificationProgram program, Identity identity, Identity doer) {
+		int count = groupDao.removeMembership(program.getGroup(), identity, CertificationRoles.programowner.name());
+		if(count > 0) {
+			certificationProgramLogDao.createOwnerLog(identity, program, CertificationProgramLogAction.remove_owner, doer);
+		}
 	}
 
 	@Override
@@ -217,18 +226,22 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public void addCurriculumElementToCertificationProgram(CertificationProgram program, CurriculumElement element) {
+	public void addCurriculumElementToCertificationProgram(CertificationProgram program, CurriculumElement element, Identity doer) {
 		if(!certificationProgramToCurriculumElementDao.hasCurriculumElement(program, element)) {
 			certificationProgramToCurriculumElementDao.createRelation(program, element);
 			dbInstance.commit();
+			certificationProgramLogDao.createLog(null, program, CertificationProgramLogAction.add_implementation,
+					null, null, null, null, null, element, doer);
 		}
 	}
 	
 	@Override
-	public void removeCurriculumElementToCertificationProgram(CurriculumElement element) {
+	public void removeCurriculumElementToCertificationProgram(CurriculumElement element, Identity doer) {
 		List<CertificationProgramToCurriculumElement> rels = certificationProgramToCurriculumElementDao.getRelations(element);
 		for(CertificationProgramToCurriculumElement rel:rels) {
 			certificationProgramToCurriculumElementDao.deleteRelation(rel);
+			certificationProgramLogDao.createLog(null, rel.getCertificationProgram(), CertificationProgramLogAction.remove_implementation,
+					null, null, null, null, null, rel.getCurriculumElement(), doer);
 		}
 		dbInstance.commit();
 	}
@@ -302,5 +315,18 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 			return certificationProgramDao.getEligibleForRecertificationsWithCreditPoints(program, referenceDate);
 		}
 		return certificationProgramDao.getEligibleForRecertifications(program, referenceDate);
+	}
+	
+	@Override
+	public void log(Certificate certificate, CertificationProgram program, CertificationProgramLogAction action,
+			String statusBefore, String valueBefore, String statusAfter, String valueAfter,
+			CertificationProgramMailConfiguration mailConfiguration, CurriculumElement curriculumElement, Identity doer) {
+		certificationProgramLogDao.createLog(certificate, program, action,
+				statusBefore, valueBefore, statusAfter, valueAfter, mailConfiguration, curriculumElement, doer);
+	}
+
+	@Override
+	public List<CertificationProgramLog> searchLogs(CertificationProgramLogSearchParameters searchParams) {
+		return certificationProgramLogDao.loadLogs(searchParams);
 	}
 }

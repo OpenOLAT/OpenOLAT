@@ -142,7 +142,7 @@ public class CurriculumElementListController extends FormBasicController {
 	
 	private void doSelectCurriculumElement(UserRequest ureq, CurriculumElementRow elementRow) {
 		CurriculumElement element = curriculumService.getCurriculumElement(elementRow);
-		certificationProgramService.addCurriculumElementToCertificationProgram(certificationProgram, element);
+		certificationProgramService.addCurriculumElementToCertificationProgram(certificationProgram, element, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

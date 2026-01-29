@@ -57,6 +57,8 @@ public class CertificatesDAO {
 				select cer from certificate cer
 				inner join fetch cer.identity ident
 				inner join fetch ident.user identUser
+				left join fetch cer.certificationProgram program
+				left join fetch cer.olatResource resource
 				where cer.key=:certificateKey""";
 		List<CertificateImpl> certificates = dbInstance.getCurrentEntityManager()
 				.createQuery(query, CertificateImpl.class)
@@ -219,7 +221,7 @@ public class CertificatesDAO {
 	public void removeLastFlag(IdentityRef identity, Long resourceKey) {
 		String query = """
 				update certificate cer set cer.last=false
-				where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey""";
+				where cer.identity.key=:identityKey and cer.olatResource.key=:resourceKey and cer.last=true""";
 		
 		dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("resourceKey", resourceKey)

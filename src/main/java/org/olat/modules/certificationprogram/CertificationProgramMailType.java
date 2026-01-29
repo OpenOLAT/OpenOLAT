@@ -30,13 +30,23 @@ import java.util.Set;
  */
 public enum CertificationProgramMailType {
 	
-	certificate_issued,
-	certificate_renewed,
-	certificate_expired,
-	certificate_revoked,
-	program_removed,
-	reminder_upcoming,
-	reminder_overdue;
+	certificate_issued(CertificationProgramLogAction.send_notification_certificate_issued),
+	certificate_renewed(CertificationProgramLogAction.send_notification_certificate_renewed),
+	certificate_expired(CertificationProgramLogAction.send_notification_certificate_expired),
+	certificate_revoked(CertificationProgramLogAction.send_notification_certificate_revoked),
+	program_removed(CertificationProgramLogAction.send_notification_program_removed),
+	reminder_upcoming(CertificationProgramLogAction.send_reminder_upcoming),
+	reminder_overdue(CertificationProgramLogAction.send_reminder_overdue);
+	
+	private final CertificationProgramLogAction logAction;
+	
+	private CertificationProgramMailType(CertificationProgramLogAction logAction) {
+		this.logAction = logAction;
+	}
+	
+	public CertificationProgramLogAction logAction() {
+		return logAction;
+	}
 	
 	public static final CertificationProgramMailType[] notifications() {
 		return new CertificationProgramMailType[]{ certificate_issued, certificate_renewed, certificate_expired, certificate_revoked, program_removed };

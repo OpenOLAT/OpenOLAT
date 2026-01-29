@@ -59,7 +59,7 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 			target.append("\" title=\"");
 			target.append(StringHelper.escapeHtml(hoverText));
 		}
-		target.append("\"> </i>");
+		target.append("\"> </i> ");
 		if(delegate == null) {
 			target.append(getCellValue(cellValue, translator));
 		} else {

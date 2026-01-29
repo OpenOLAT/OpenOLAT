@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Locale;
 
@@ -47,6 +48,8 @@ public class DateTimeFlexiCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof Date date) {
+			target.append(format.formatDateAndTime(date));
+		} else if(cellValue instanceof LocalDateTime date) {
 			target.append(format.formatDateAndTime(date));
 		}
 	}

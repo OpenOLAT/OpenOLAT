@@ -44,6 +44,15 @@ public enum CertificationStatus {
 	REVOKED,
 	/** Only flag last=false and/or status archived */
 	ARCHIVED;
+	
+	public static final boolean isValid(String val) {
+		for(CertificationStatus status:values()) {
+			if(status.name().equals(val)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public static CertificationStatus evaluate(Certificate certificate, Date referenceDate) {
 		if(certificate.getStatus() == CertificateStatus.archived) {

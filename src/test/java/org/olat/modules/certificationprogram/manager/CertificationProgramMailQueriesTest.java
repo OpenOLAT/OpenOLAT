@@ -159,7 +159,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.hasSizeGreaterThanOrEqualTo(1)
 			.containsAnyOf(expiredCertificate);
 		
-		certificationProgramLogDao.createMailLog(expiredCertificate, configuration);
+		certificationProgramLogDao.createMailLog(expiredCertificate, program, configuration, null);
 		dbInstance.commit();
 		
 		List<Certificate> certificatesAfter = certificationProgramMailQueries.getExpiredCertificates(configuration, now);
@@ -280,7 +280,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.containsAnyOf(certificate);
 		
 		// Log sending an email
-		certificationProgramLogDao.createMailLog(certificate, configuration);
+		certificationProgramLogDao.createMailLog(certificate, program, configuration, null);
 		dbInstance.commit();
 		
 		List<Certificate> certificatesAfterMail = certificationProgramMailQueries.getUpcomingCertificates(configuration, now);
@@ -434,7 +434,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.containsExactly(certificate);
 		
 		// Log sending an email
-		certificationProgramLogDao.createMailLog(certificate, configuration);
+		certificationProgramLogDao.createMailLog(certificate, program, configuration, null);
 		dbInstance.commit();
 		
 		List<Certificate> certificatesAfterMail = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
@@ -485,7 +485,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.containsExactly(certificate);
 		
 		// Log sending an email
-		certificationProgramLogDao.createMailLog(certificate, configuration);
+		certificationProgramLogDao.createMailLog(certificate, program, configuration, null);
 		dbInstance.commit();
 		
 		List<Certificate> certificatesAfterMail = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
@@ -737,7 +737,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.containsExactly(certificate);
 		
 		// Log sending an email
-		certificationProgramLogDao.createMailLog(certificate, configuration);
+		certificationProgramLogDao.createMailLog(certificate, program, configuration, null);
 		dbInstance.commit();
 		
 		List<Certificate> certificatesAfterMail = certificationProgramMailQueries.getOverdueCertificates(configuration, now);

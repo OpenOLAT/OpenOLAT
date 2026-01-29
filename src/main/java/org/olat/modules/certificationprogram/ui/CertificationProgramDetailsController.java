@@ -50,7 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CertificationProgramDetailsController extends BasicController implements Activateable2 {
-	
+
+	private int logTab;
 	private int membersTab;
 	private int overviewTab;
 	private int settingsTab;
@@ -67,6 +68,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 	private CertificationProgram certificationProgram;
 	private final CertificationProgramSecurityCallback secCallback;
 	
+	private CertificationProgramLogController logCtrl;
 	private CertificationProgramOwnersController ownersCtrl;
 	private EditCertificationProgramController settingsCtrl;
 	private CertificationProgramMessagesController messagesCtrl;
@@ -178,6 +180,15 @@ public class CertificationProgramDetailsController extends BasicController imple
 
 			return settingsCtrl.getInitialComponent();
 		}, false);
+		
+		logTab = tabPane.addTab(ureq, translate("certification.program.log"), "o_sel_certification_program_log", uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CertificationProgramListController.CONTEXT_LOG), null);
+			logCtrl = new CertificationProgramLogController(uureq, subControl, certificationProgram);
+			listenTo(logCtrl);
+
+			return logCtrl.getInitialComponent();
+		}, true);
 	}
 
 	@Override
@@ -213,6 +224,8 @@ public class CertificationProgramDetailsController extends BasicController imple
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CertificationProgramListController.CONTEXT_OWNERS.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, ownersTab);
+		} else if(CertificationProgramListController.CONTEXT_LOG.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, logTab);
 		}
 	}
 
