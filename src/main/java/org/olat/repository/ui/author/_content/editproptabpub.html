@@ -1,8 +1,8 @@
 #if($r.isNotEmpty($warningOffersMsg))
 	<div class="o_warning_with_icon">$r.xssScan($warningOffersMsg)</div>
 #end
-#if($r.isNotEmpty($warningMixedSetup))
-	<div class="o_warning_with_icon">$warningMixedSetup</div>
+#if($r.isNotEmpty($warningStandaloneNotRecommended))
+	<div class="o_warning_with_icon">$warningStandaloneNotRecommended</div>
 #end
 #if($r.visible("runtimeType"))
 	$r.render("runtimeType")
