@@ -96,7 +96,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
-				Double.valueOf(0.2), "");
+				Double.valueOf(0.2), "", null);
 		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
@@ -232,7 +232,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
-				Double.valueOf(0.2), "");
+				Double.valueOf(0.2), "", null);
 		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
@@ -426,7 +426,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(participant, 2.0f, Float.valueOf(10), true,
-				Double.valueOf(0.2), "");
+				Double.valueOf(0.2), "", null);
 		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		dbInstance.commitAndCloseSession();

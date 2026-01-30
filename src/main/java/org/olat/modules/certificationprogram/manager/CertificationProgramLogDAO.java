@@ -67,8 +67,14 @@ public class CertificationProgramLogDAO {
 	public CertificationProgramLog createLog(Certificate certificate, CertificationProgram program, CertificationProgramLogAction action,
 			String beforeStatus, String beforeValue, String afterStatus, String afterValue,
 			CertificationProgramMailConfiguration mailConfiguration, CurriculumElement curriculumElement, Identity doer) {
+		return createLog(LocalDateTime.now(), certificate, program, action, beforeStatus, beforeValue, afterStatus, afterValue, mailConfiguration, curriculumElement, doer);
+	}
+		
+	protected CertificationProgramLog createLog(LocalDateTime creationDate, Certificate certificate, CertificationProgram program, CertificationProgramLogAction action,
+				String beforeStatus, String beforeValue, String afterStatus, String afterValue,
+				CertificationProgramMailConfiguration mailConfiguration, CurriculumElement curriculumElement, Identity doer) {
 		CertificationProgramLogImpl programLog = new CertificationProgramLogImpl();
-		programLog.setCreationDate(LocalDateTime.now());
+		programLog.setCreationDate(creationDate);
 		programLog.setAction(action);
 		if(certificate != null) {
 			programLog.setIdentity(certificate.getIdentity());
@@ -99,6 +105,28 @@ public class CertificationProgramLogDAO {
 	
 	public static CertificationProgramLogAction actionFrom(CertificationProgramMailConfiguration mailConfiguration) {
 		return mailConfiguration.getType().logAction();
+	}
+	
+	public List<Identity> loadLogsIdentities(CertificationProgram program) {
+		String query = """
+				select distinct ident from certificationprogramlog as log
+				inner join log.identity as ident
+				inner join fetch ident.user as identUser
+				where log.certificationProgram.key=:programKey""";
+		return dbInstance.getCurrentEntityManager().createQuery(query, Identity.class)
+				.setParameter("programKey", program.getKey())
+				.getResultList();
+	}
+	
+	public List<Identity> loadLogsDoers(CertificationProgram program) {
+		String query = """
+				select distinct doerIdent from certificationprogramlog as log
+				inner join log.doer as doerIdent
+				inner join fetch doerIdent.user as doerUser
+				where log.certificationProgram.key=:programKey""";
+		return dbInstance.getCurrentEntityManager().createQuery(query, Identity.class)
+				.setParameter("programKey", program.getKey())
+				.getResultList();
 	}
 	
 	public List<CertificationProgramLog> loadLogs(CertificationProgramLogSearchParameters searchParams) {

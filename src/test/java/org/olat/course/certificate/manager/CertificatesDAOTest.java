@@ -75,7 +75,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-1", "Program");
 		dbInstance.commitAndCloseSession();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
@@ -93,7 +93,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-2", "Program");
 		dbInstance.commitAndCloseSession();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
@@ -110,7 +110,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-8", "Program");
 		dbInstance.commitAndCloseSession();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
@@ -126,7 +126,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-3", "Program");
 		dbInstance.commitAndCloseSession();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
@@ -157,7 +157,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-4", "Program");
 		dbInstance.commitAndCloseSession();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);

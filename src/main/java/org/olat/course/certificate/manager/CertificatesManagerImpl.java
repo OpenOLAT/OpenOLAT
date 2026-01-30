@@ -1273,7 +1273,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		//send message
 		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getMaxScore(),
-				certificateInfos.getPassed(), certificateInfos.getProgress(), certificateInfos.getGrade(), config);
+				certificateInfos.getPassed(), certificateInfos.getProgress(), certificateInfos.getGrade(), config,
+				certificateInfos.getDoerKey());
 
 		return certificate;
 	}
@@ -1283,7 +1284,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score,
-			Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config) {
+			Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config, Long doerKey) {
 		
 		JmsCertificateWork workUnit = new JmsCertificateWork();
 		workUnit.setCertificateKey(certificate.getKey());
@@ -1296,6 +1297,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		workUnit.setCompletion(completion);
 		workUnit.setConfig(config);
 		workUnit.setGrade(grade);
+		workUnit.setDoerKey(doerKey);
 
 		try(QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 				QueueSender sender = session.createSender(getJmsQueue())) {
@@ -1392,39 +1394,32 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
 					custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
-			if(certificateFile == null) {
-				certificate.setStatus(CertificateStatus.error);
-			} else {
-				certificate.setStatus(CertificateStatus.ok);
-			}
+		} else if(pdfModule.isEnabled()) {
+			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, score, maxScore,
+					passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
+					custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
+			certificateFile = worker.fill(template, dirFile, filename);
 		} else {
-			if(pdfModule.isEnabled()) {
-				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, score, maxScore,
-						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
-						custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
-				certificateFile = worker.fill(template, dirFile, filename);
-			} else {
-				log.error("Cannot produce a certificate from an HTML template without a PDF generator");
-				certificateFile = null;
-			}
-			if(certificateFile == null) {
-				certificate.setStatus(CertificateStatus.error);
-			} else {
-				certificate.setStatus(CertificateStatus.ok);
-			}
+			log.error("Cannot produce a certificate from an HTML template without a PDF generator");
+			certificateFile = null;
 		}
 
 		if(certificateFile != null) {
 			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(certificateFile);
 			certificate.setMetadata(metadata);
 			certificate.setPath(dir + certificateFile.getName());
+			certificate.setStatus(CertificateStatus.ok);
+		} else {
+			certificate.setStatus(CertificateStatus.error);
 		}
+		
 		if(dateFirstCertification != null) {
 			//not the first certification, reset the last of the others certificates
 			certificatesDao.removeLastFlag(identity, resource.getKey());
 		}
-		//TODO certification actor
-		MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, null, certificateFile, workUnit.getConfig());
+		
+		Identity doer = workUnit.getDoerKey() == null ? null : securityManager.loadIdentityByKey(workUnit.getDoerKey());
+		MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, doer, certificateFile, workUnit.getConfig());
 		if(result.isSuccessful()) {
 			certificate.setEmailStatus(EmailStatus.ok);
 		} else {

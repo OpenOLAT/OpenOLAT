@@ -390,7 +390,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		scoreAccounting.evaluateAll();
 		
 		AssessmentEvaluation assessmentEval = scoreAccounting.evalCourseNode(rootNode);
-		CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, assessmentEval, course.getCourseEnvironment());
+		CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, assessmentEval, course.getCourseEnvironment(), getIdentity());
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(certificateConfig.getCertificateCustom1())
 				.withCustom2(certificateConfig.getCertificateCustom2())

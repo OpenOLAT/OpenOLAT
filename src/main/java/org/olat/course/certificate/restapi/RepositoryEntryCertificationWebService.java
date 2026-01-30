@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
@@ -244,7 +245,8 @@ public class RepositoryEntryCertificationWebService {
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
 		CertificateTemplate template = certificateConfig.getTemplate();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion, grade);
+		Identity doer = getIdentity(request);
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion, grade, doer);
 		if(StringHelper.containsNonWhitespace(creationDate)) {
 			Date date = ObjectFactory.parseDate(creationDate);
 			certificateInfos.setCreationDate(date);

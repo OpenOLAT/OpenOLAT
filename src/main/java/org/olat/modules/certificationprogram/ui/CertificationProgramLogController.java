@@ -95,9 +95,12 @@ public class CertificationProgramLogController extends FormBasicController {
 	private static final String TAB_ID_LAST_12_MONTH = "Last12Month";
 	private static final String TAB_ID_ALL = "All";
 	
-	private static final String FILTER_ACTIVITY = "activity";
-	private static final String FILTER_DATE = "date";
-	
+	protected static final String FILTER_ACTIVITY = "activity";
+	protected static final String FILTER_DATE = "date";
+	protected static final String FILTER_CONTEXT = "context";
+	protected static final String FILTER_MEMBER = "member";
+	protected static final String FILTER_USER = "user";
+
 	private FlexiFiltersTab tabLast7Days;
 	private FlexiFiltersTab tabLast4Weeks;
 	private FlexiFiltersTab tabLast12Month;
@@ -173,11 +176,33 @@ public class CertificationProgramLogController extends FormBasicController {
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		
+		filters.add(new FlexiTableDateRangeFilter(translate("activity.log.filter.date"), FILTER_DATE, true, true,
+				getLocale()));
+
+		SelectionValues contextPK = new SelectionValues();
+		for(CertificationProgramActivityLogContext ctxt: CertificationProgramActivityLogContext.values()) {
+			contextPK.add(SelectionValues.entry(ctxt.name(), CertificationUIFactory.getTranslatedLogContext(getTranslator(), ctxt), null,
+					"o_icon o_icon-fw " + CertificationUIFactory.getLogContextIconCss(ctxt), null, true));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.context"), FILTER_CONTEXT,
+				contextPK, true));
+		
 		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.activity"), FILTER_ACTIVITY,
 				getActivityFilterValues(), true));
 		
-		filters.add(new FlexiTableDateRangeFilter(translate("activity.log.filter.date"), FILTER_DATE, true, true,
-				getLocale()));
+		List<Identity> members = certificationProgramService.searchLogIdentity(certificationProgram);
+		SelectionValues membersPK = new SelectionValues();
+		for(Identity member:members) {
+			membersPK.add(SelectionValues.entry(member.getKey().toString(), userManager.getUserDisplayName(member)));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.member"), FILTER_MEMBER, membersPK, true));
+		
+		List<Identity> users = certificationProgramService.searchLogDoer(certificationProgram);
+		SelectionValues usersPK = new SelectionValues();
+		for(Identity user:users) {
+			usersPK.add(SelectionValues.entry(user.getKey().toString(), userManager.getUserDisplayName(user)));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.user"), FILTER_USER, usersPK, true));
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -185,17 +210,50 @@ public class CertificationProgramLogController extends FormBasicController {
 	private SelectionValuesSupplier getActivityFilterValues() {
 		SelectionValues filter = new SelectionValues();
 		
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.add_membership.name(), translate("activity.message." + CertificationProgramLogAction.add_membership)));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.add_membership_manually.name(), translate("activity.message." + CertificationProgramLogAction.add_membership_manually)));
+		// Certificates
+		appendActivityFilterValues(filter, CertificationProgramLogAction.revoke_certificate, CertificationProgramLogAction.issue_certificate,
+				CertificationProgramLogAction.expire_certificate);
 		
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.send_notification_certificate_issued.name(), translate("activity.message." + CertificationProgramLogAction.send_notification_certificate_issued)));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.send_notification_certificate_expired.name(), translate("activity.message." + CertificationProgramLogAction.send_notification_certificate_expired)));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.send_notification_certificate_revoked.name(), translate("activity.message." + CertificationProgramLogAction.send_notification_certificate_revoked)));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.send_notification_program_removed.name(), translate("activity.message." + CertificationProgramLogAction.send_notification_program_removed)));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.send_reminder_upcoming.name(), translate("activity.message." + CertificationProgramLogAction.send_reminder_upcoming)));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.send_reminder_overdue.name(), translate("activity.message." + CertificationProgramLogAction.send_reminder_overdue)));
+		// Notifications sent
+		appendActivityFilterValues(filter, CertificationProgramLogAction.send_notification_certificate_issued, CertificationProgramLogAction.send_notification_certificate_expired,
+				CertificationProgramLogAction.send_notification_certificate_revoked, CertificationProgramLogAction.send_notification_program_removed,
+				CertificationProgramLogAction.send_reminder_upcoming, CertificationProgramLogAction.send_reminder_overdue);
+
+		// Add memberships
+		appendActivityFilterValues(filter, CertificationProgramLogAction.add_membership, CertificationProgramLogAction.add_membership_manually,
+				CertificationProgramLogAction.change_membership, CertificationProgramLogAction.remove_membership);
 		
+		// Reminder
+		appendActivityFilterValues(filter, CertificationProgramLogAction.reminder_change_status, CertificationProgramLogAction.reminder_create,
+				CertificationProgramLogAction.reminder_delete);
+		filter.add(SelectionValues.entry(CertificationProgramLogAction.reminder_edit.name(),
+				translate("activity.message.reminder_edit.filter")));
+		appendActivityFilterValues(filter, CertificationProgramLogAction.reminder_change_content, CertificationProgramLogAction.reminder_customize_content,
+				CertificationProgramLogAction.reminder_reset_content, CertificationProgramLogAction.notification_change_status,
+				CertificationProgramLogAction.notification_change_content, CertificationProgramLogAction.notification_customize_content,
+				CertificationProgramLogAction.notification_reset_content);
+		// Owner
+		appendActivityFilterValues(filter, CertificationProgramLogAction.add_owner, CertificationProgramLogAction.remove_owner);
+		// Implementation
+		appendActivityFilterValues(filter, CertificationProgramLogAction.add_implementation, CertificationProgramLogAction.remove_implementation);
+		// Certification program configuration
+		filter.add(SelectionValues.entry(CertificationProgramLogAction.edit_certification_program.name(),
+				translate("activity.message.edit_certification_program.filter")));
+		filter.add(SelectionValues.entry(CertificationProgramLogAction.edit_certification_program_organisations.name(),
+				translate("activity.message.edit_certification_program_organisations.filter")));
+	
 		return filter;
+	}
+	
+	private void appendActivityFilterValues(SelectionValues filter, CertificationProgramLogAction... actions) {
+		if(actions == null || actions.length == 0 || actions[0] == null) return;
+		
+		for(int i=0; i<actions.length; i++) {
+			CertificationProgramLogAction action = actions[i];
+			if(action != null) {
+				filter.add(SelectionValues.entry(action.name(), translate("activity.message.".concat(action.name()))));
+			}
+		}
 	}
 	
 	private void loadModel() {
@@ -212,7 +270,9 @@ public class CertificationProgramLogController extends FormBasicController {
 				rows.addAll(rs);
 			}
 		}
+		
 		tableModel.setObjects(rows);
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
 	}
 	
@@ -249,7 +309,7 @@ public class CertificationProgramLogController extends FormBasicController {
 			case reminder_reset_content, notification_reset_content -> List.of(createMessageContentRow(auditLog, translate("content.customized"), translate("default.template")));
 			case reminder_change_content, notification_change_content -> List.of(createMessageContentRow(auditLog, null, null));
 			// Certificates
-			case revoke_certificate, issue_certificate -> List.of(createCertificateStatusRow(auditLog));
+			case revoke_certificate, issue_certificate, expire_certificate, remove_membership -> List.of(createCertificateStatusRow(auditLog));
 			case add_membership, add_membership_manually -> List.of(createCertificateStatusRow(auditLog));
 			
 			default -> List.of();
@@ -395,12 +455,18 @@ public class CertificationProgramLogController extends FormBasicController {
 		return rows;
 	}
 	
-	private CertificationProgramLogRow createCertificationProgramConfigurationRow(CertificationProgramLog auditLog, String object, String attribute, String before, String after) {
-		String doer = auditLog.getDoer() == null
+	private CertificationProgramLogRow createCertificationProgramConfigurationRow(CertificationProgramLog auditLog,
+			String object, String attribute, String before, String after) {
+		
+		String actor = auditLog.getDoer() == null
 				? null
 				: userManager.getUserDisplayName(auditLog.getDoer());
+		Long actorKey = auditLog.getDoer() == null
+				? null
+				: auditLog.getDoer().getKey();
 
-		CertificationProgramLogRow row = new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.setting, object, getActivity(auditLog, attribute), doer);
+		CertificationProgramLogRow row = new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.setting,
+				object, null, getActivity(auditLog, attribute), actor, actorKey);
 		row.setOriginalValue(before);
 		row.setNewValue(after);
 		return row;
@@ -455,26 +521,37 @@ public class CertificationProgramLogController extends FormBasicController {
 	}
 	
 	private CertificationProgramLogRow createReminderConfigurationRow(CertificationProgramLog auditLog, String attribute, String before, String after) {
-		String doer = auditLog.getDoer() == null
+		String actor = auditLog.getDoer() == null
 				? null
 				: userManager.getUserDisplayName(auditLog.getDoer());
+		Long actorKey = auditLog.getDoer() == null
+				? null
+				: auditLog.getDoer().getKey();
+		
 		CertificationProgramMailConfiguration configuration = auditLog.getMailConfiguration();
 		String object = configuration.getTitle();
 		if(!StringHelper.containsNonWhitespace(object)) {
 			object = translate("notifications.".concat(configuration.getType().name()));
 		}
 		
-		CertificationProgramLogRow row = new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.message, object, getActivity(auditLog, attribute), doer);
+		CertificationProgramLogRow row = new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.message,
+				object, null, getActivity(auditLog, attribute), actor, actorKey);
 		row.setOriginalValue(before);
 		row.setNewValue(after);
 		return row;
 	}
 	
 	private CertificationProgramLogRow createRow(CertificationProgramLog auditLog, CertificationProgramActivityLogContext context, String object, String activity) {
-		String doer = auditLog.getDoer() == null
-			? null
-			: userManager.getUserDisplayName(auditLog.getDoer());
-		return new CertificationProgramLogRow(auditLog, context, object, activity, doer);
+		String actor = auditLog.getDoer() == null
+				? null
+				: userManager.getUserDisplayName(auditLog.getDoer());
+		Long actorKey = auditLog.getDoer() == null
+				? null
+				: auditLog.getDoer().getKey();
+		Long memberKey = auditLog.getIdentity() == null
+				? null
+				: auditLog.getIdentity().getKey();
+		return new CertificationProgramLogRow(auditLog, context, object, memberKey, activity, actor, actorKey);
 	}
 	
 	private CertificationProgramLogRow createMessageContentRow(CertificationProgramLog auditLog, String before, String after) {
@@ -492,16 +569,12 @@ public class CertificationProgramLogController extends FormBasicController {
 	}
 	
 	private CertificationProgramLogRow createMessageRow(CertificationProgramLog auditLog) {
-		String doer = auditLog.getDoer() == null
-			? null
-			: userManager.getUserDisplayName(auditLog.getDoer());
-		
 		CertificationProgramMailConfiguration configuration = auditLog.getMailConfiguration();
 		String object = configuration.getTitle();
 		if(!StringHelper.containsNonWhitespace(object)) {
 			object = translate("notifications.".concat(configuration.getType().name()));
 		}
-		return new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.message, object, getActivity(auditLog), doer);
+		return createRow(auditLog, CertificationProgramActivityLogContext.message, object, getActivity(auditLog));
 	}
 	
 	private CertificationProgramLogRow createCertificateStatusRow(CertificationProgramLog auditLog) {
@@ -512,20 +585,17 @@ public class CertificationProgramLogController extends FormBasicController {
 	}
 	
 	private String getCertificationStatus(String value) {
-		if(CertificationStatus.isValid(value) || "certified".equals(value)) {
+		if(CertificationStatus.isValid(value) || "certified".equals(value) || "removed".equals(value)) {
 			return translate("certification.status.".concat(value.toLowerCase()));
 		}
 		return null;
 	}
 	
 	private CertificationProgramLogRow createCertificateRow(CertificationProgramLog auditLog) {
-		String doer = auditLog.getDoer() == null
-				? null
-				: userManager.getUserDisplayName(auditLog.getDoer());
 		String object = auditLog.getIdentity() == null
 				? null
 				: userManager.getUserDisplayName(auditLog.getIdentity());
-		return new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.member, object, getActivity(auditLog), doer);
+		return createRow(auditLog, CertificationProgramActivityLogContext.member, object, getActivity(auditLog));
 	}
 	
 	private String getActivity(CertificationProgramLog auditLog, String... args) {

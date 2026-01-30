@@ -815,11 +815,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				requestCertificateOfCertificationProgram(userCourseEnvironment, courseEntry, doer);
 			}
 		} else if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
-			generateCertificateOfCourse(userCourseEnvironment, courseEntry);
+			generateCertificateOfCourse(userCourseEnvironment, courseEntry, doer);
 		}
 	}
 
-	private void generateCertificateOfCourse(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry) {
+	private void generateCertificateOfCourse(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry, Identity doer) {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
@@ -829,7 +829,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
 			CertificateTemplate template = certificateConfig.getTemplate();
 			CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, rootEval,
-					userCourseEnvironment.getCourseEnvironment());
+					userCourseEnvironment.getCourseEnvironment(), doer);
 			CertificateConfig config = CertificateConfig.builder()
 					.withCustom1(certificateConfig.getCertificateCustom1())
 					.withCustom2(certificateConfig.getCertificateCustom2())

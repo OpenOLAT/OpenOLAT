@@ -38,6 +38,7 @@ public class CertificateInfos {
 	private final Float maxScore;
 	private final Boolean passed;
 	private final Double progress;
+	private final Long doerKey;
 	private final Identity assessedIdentity;
 	
 	private Date creationDate;
@@ -45,16 +46,17 @@ public class CertificateInfos {
 	private final String grade;
 	
 	public CertificateInfos(Identity assessedIdentity, Float score, Float maxScore, Boolean passed, Double progress,
-							String grade) {
+							String grade, Identity doer) {
 		this.score = score;
 		this.maxScore = maxScore;
 		this.passed = passed;
 		this.progress = progress;
 		this.assessedIdentity = assessedIdentity;
 		this.grade = grade;
+		this.doerKey = doer == null ? null : doer.getKey();
 	}
 	
-	public static final CertificateInfos valueOf(Identity assessedIdentity,  AssessmentEvaluation scoreEval, CourseEnvironment courseEnvironment) {
+	public static final CertificateInfos valueOf(Identity assessedIdentity,  AssessmentEvaluation scoreEval, CourseEnvironment courseEnvironment, Identity doer) {
 		Float score = null;
 		Float maxScore = null;
 		Boolean passed = null;
@@ -72,7 +74,7 @@ public class CertificateInfos {
 				maxScore = scoreEval.getMaxScore();
 			}
 		}
-		return new CertificateInfos(assessedIdentity, score, maxScore, passed, completion, grade);
+		return new CertificateInfos(assessedIdentity, score, maxScore, passed, completion, grade, doer);
 	}
 	
 	public Float getScore() {
@@ -114,6 +116,10 @@ public class CertificateInfos {
 	public String getGrade() {
 		// if grade is not available, don't return null, return empty string
 		return grade != null ? grade : "";
+	}
+	
+	public Long getDoerKey() {
+		return doerKey;
 	}
 
 	@Override

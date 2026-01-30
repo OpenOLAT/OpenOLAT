@@ -57,5 +57,12 @@ public class RecertificationRemindersJob extends JobWithDB {
 		dbInstance.commitAndCloseSession();
 		certificationCoordinator.sendOverdueReminders(now);
 		dbInstance.commitAndCloseSession();
+		
+		log.info(Tracing.M_AUDIT, "Set activity log for expired certificates and removed memberships for certification programs");
+		
+		certificationCoordinator.logExpiredMemberships(now);
+		dbInstance.commitAndCloseSession();
+		certificationCoordinator.logRemovedMemberships(now);
+		dbInstance.commitAndCloseSession();
 	}
 }

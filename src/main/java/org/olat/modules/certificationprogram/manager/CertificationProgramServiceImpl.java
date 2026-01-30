@@ -329,4 +329,14 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	public List<CertificationProgramLog> searchLogs(CertificationProgramLogSearchParameters searchParams) {
 		return certificationProgramLogDao.loadLogs(searchParams);
 	}
+
+	@Override
+	public List<Identity> searchLogIdentity(CertificationProgram certificationProgram) {
+		return certificationProgramLogDao.loadLogsIdentities(certificationProgram);
+	}
+
+	@Override
+	public List<Identity> searchLogDoer(CertificationProgram certificationProgram) {
+		return certificationProgramLogDao.loadLogsDoers(certificationProgram);
+	}
 }

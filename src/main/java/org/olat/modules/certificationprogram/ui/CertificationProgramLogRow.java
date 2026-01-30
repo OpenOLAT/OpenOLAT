@@ -22,6 +22,7 @@ package org.olat.modules.certificationprogram.ui;
 import java.time.LocalDateTime;
 
 import org.olat.modules.certificationprogram.CertificationProgramLog;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 
 /**
  * 
@@ -36,21 +37,29 @@ public class CertificationProgramLogRow {
 	private String originalValue;
 	private String newValue;
 	private String actor;
+	private Long actorKey;
+	private Long memberKey;
 	
-	private CertificationProgramActivityLogContext context;
+	private final CertificationProgramActivityLogContext context;
 	private final CertificationProgramLog certificationProgramLog;
 
 	public CertificationProgramLogRow(CertificationProgramLog certificationProgramLog, CertificationProgramActivityLogContext context,
-			String object, String message, String actor) {
+			String object, Long memberKey, String message, String actor, Long actorKey) {
 		this.actor = actor;
 		this.object = object;
 		this.message = message;
 		this.context = context;
+		this.actorKey = actorKey;
+		this.memberKey = memberKey;
 		this.certificationProgramLog = certificationProgramLog;
 	}
 	
 	public LocalDateTime getCreationDate() {
 		return certificationProgramLog.getCreationDate();
+	}
+	
+	public CertificationProgramLogAction getAction() {
+		return certificationProgramLog.getAction();
 	}
 
 	public String getObject() {
@@ -83,5 +92,13 @@ public class CertificationProgramLogRow {
 
 	public CertificationProgramActivityLogContext getContext() {
 		return context;
+	}
+
+	public Long getActorKey() {
+		return actorKey;
+	}
+
+	public Long getMemberKey() {
+		return memberKey;
 	}
 }

@@ -128,5 +128,9 @@ public interface CertificationProgramService {
 			CertificationProgramMailConfiguration mailConfiguration, CurriculumElement curriculumElement, Identity doer);
 	
 	List<CertificationProgramLog> searchLogs(CertificationProgramLogSearchParameters searchParams);
+	
+	List<Identity> searchLogIdentity(CertificationProgram certificationProgram);
+	
+	List<Identity> searchLogDoer(CertificationProgram certificationProgram);
  
 }

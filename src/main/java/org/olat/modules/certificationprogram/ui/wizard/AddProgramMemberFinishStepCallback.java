@@ -31,6 +31,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
@@ -70,9 +71,9 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 		for(Identity userToCertify:userToCertifyList) {
 			Certificate certificate = certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate,
 					RequestMode.COACH, CertificationProgramMailType.certificate_issued, ureq.getIdentity());
-			//TODO certificate add issued as data
+			String val = issuedDate == null ? null : Formatter.formatDatetime(issuedDate);
 			certificationProgramService.log(certificate, certificationProgram, CertificationProgramLogAction.add_membership_manually,
-					null, null, "certified", null, null, null, ureq.getIdentity());
+					null, null, "certified", val, null, null, ureq.getIdentity());
 		}
 		dbInstance.commit();
 		return StepsMainRunController.DONE_MODIFIED;

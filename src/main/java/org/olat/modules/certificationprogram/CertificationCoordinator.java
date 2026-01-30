@@ -60,6 +60,8 @@ public interface CertificationCoordinator {
 	 */
 	void sendExpiredNotifications(Date referenceDate);
 	
+	void logExpiredMemberships(Date referenceDate);
+	
 	/**
 	 * Send the notifications for certificates which the next recertification date are in the past
 	 * and there certification window is null or in the past too. The participant is effectively
@@ -68,6 +70,8 @@ public interface CertificationCoordinator {
 	 * @param referenceDate The date
 	 */
 	void sendRemovedNotifications(Date referenceDate);
+	
+	void logRemovedMemberships(Date referenceDate);
 
 	void sendUpcomingReminders(Date referenceDate);
 	

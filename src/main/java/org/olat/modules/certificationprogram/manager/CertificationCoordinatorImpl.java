@@ -20,6 +20,7 @@
 package org.olat.modules.certificationprogram.manager;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ILoggingResourceable;
 import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -93,6 +95,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	private CertificationProgramDAO certificationProgramDao;
 	@Autowired
 	private CertificationProgramLogDAO certificationProgramLogDao;
+	@Autowired
+	private CertificationProgramLogQueries certificationProgramLogQueries;
 	@Autowired
 	private CertificationProgramMailQueries certificationProgramMailQueries;
 	@Autowired
@@ -172,6 +176,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	
 	private void removeFromCertificationProgram(Identity identity, CertificationProgram certificationProgram, Certificate certificate,
 			Date referenceDate, RequestMode requestMode, Identity doer) {
+		CertificationStatus currentStatus = CertificationStatus.evaluate(certificate, referenceDate); 
 		((CertificateImpl)certificate).setLast(false);
 		((CertificateImpl)certificate).setRemovalDate(referenceDate);
 		certificate = certificatesDao.updateCertificate(certificate);
@@ -179,6 +184,9 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		
 		log.info("User {} removed of program {} by {0}", identity, certificationProgram, doer);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REMOVED, requestMode, doer);
+		String beforeStatus = currentStatus == null ? null : currentStatus.name();
+		certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.remove_membership,
+				beforeStatus, null, "removed", null, null, null, doer);
 		
 		CreditPointWallet wallet = loadWallet(identity, certificationProgram);
 		sendMail(identity, certificationProgram, certificate, wallet, CertificationProgramMailType.program_removed, doer);
@@ -263,7 +271,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		
 		// Generate a new certificate
 		// No course informations, only certification program informations
-		CertificateInfos certificateInfos = CertificateInfos.valueOf(identity, null, null);
+		CertificateInfos certificateInfos = CertificateInfos.valueOf(identity, null, null, actor);
 		if(issuedDate != null) {
 			certificateInfos.setCreationDate(issuedDate);
 		}
@@ -323,6 +331,35 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 	
 	@Override
+	public void logExpiredMemberships(Date referenceDate) {
+		Date beforeDate = DateUtils.addDays(referenceDate, -1);
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms();
+		for(CertificationProgram program:programs) {
+			if(program.getStatus() == CertificationProgramStatusEnum.inactive || !program.isValidityEnabled()) continue;
+			
+			List<Certificate> expiredCertificates = certificationProgramLogQueries.getExpiredCertificates(program, referenceDate);
+			for(Certificate expiredCertificate:expiredCertificates) {
+				LocalDateTime date;
+				CertificationStatus status;
+				if(expiredCertificate.getNextRecertificationDate() != null) {
+					// Set the date the next day at 00:00:00
+					date = getStartNextDay(expiredCertificate.getNextRecertificationDate());
+					status = CertificationStatus.evaluate(expiredCertificate, DateUtils.addHours(expiredCertificate.getNextRecertificationDate(), -1));
+				} else {
+					date = DateUtils.toLocalDateTime(referenceDate);
+					status = CertificationStatus.evaluate(expiredCertificate, beforeDate);
+				}
+				String beforeStatus = status == null ? null : status.name();
+				certificationProgramLogDao.createLog(date, expiredCertificate, program, CertificationProgramLogAction.expire_certificate,
+						beforeStatus, null, CertificationStatus.EXPIRED.name(), null, null, null, null);
+				dbInstance.commit();
+			}
+			dbInstance.commitAndCloseSession();
+		}
+		dbInstance.commitAndCloseSession();
+	}
+
+	@Override
 	public void sendRemovedNotifications(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
 				.getConfigurations(CertificationProgramMailType.program_removed,
@@ -352,6 +389,48 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		}
 	}
 	
+	@Override
+	public void logRemovedMemberships(Date referenceDate) {
+		Date beforeDate = DateUtils.addDays(referenceDate, -1);
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms();
+		for(CertificationProgram program:programs) {
+			if(program.getStatus() == CertificationProgramStatusEnum.inactive || !program.isValidityEnabled()) continue;
+			
+			List<Certificate> removedCertificates = certificationProgramLogQueries.getRemovedCertificates(program, referenceDate);
+			for(Certificate removedCertificate:removedCertificates) {
+
+				LocalDateTime date;
+				CertificationStatus status; 
+				if(removedCertificate.getRemovalDate() != null) {
+					date = DateUtils.toLocalDateTime(removedCertificate.getRemovalDate());
+					status = CertificationStatus.evaluate(removedCertificate, DateUtils.addDays(removedCertificate.getRemovalDate(), -1));
+				} else if(removedCertificate.getRecertificationWindowDate() != null) {
+					// Set the date the next day at 00:00:00
+					date = getStartNextDay(removedCertificate.getRecertificationWindowDate());
+					status = CertificationStatus.evaluate(removedCertificate, DateUtils.addDays(removedCertificate.getRecertificationWindowDate(), -1));
+				} else if(removedCertificate.getNextRecertificationDate() != null) {
+					// Set the date the next day at 00:00:00
+					date = getStartNextDay(removedCertificate.getNextRecertificationDate());
+					status = CertificationStatus.evaluate(removedCertificate, DateUtils.addDays(removedCertificate.getNextRecertificationDate(), -1));
+				} else {
+					date = DateUtils.toLocalDateTime(referenceDate);
+					status = CertificationStatus.evaluate(removedCertificate, beforeDate);
+				}
+				String beforeStatus = status == null ? null : status.name();
+				certificationProgramLogDao.createLog(date, removedCertificate, program, CertificationProgramLogAction.remove_membership,
+						beforeStatus, null, "removed", null, null, null, null);
+				dbInstance.commit();
+			}
+			dbInstance.commitAndCloseSession();
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private LocalDateTime getStartNextDay(Date date) {
+		if(date == null) return null;
+		return DateUtils.getStartOfDay(DateUtils.toLocalDateTime(date).plusDays(1));
+	}
+
 	@Override
 	public void sendUpcomingReminders(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao

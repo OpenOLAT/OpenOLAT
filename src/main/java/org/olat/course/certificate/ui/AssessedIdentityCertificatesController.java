@@ -206,7 +206,8 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		CertificateTemplate template = certificateConfig.getTemplate();
-		CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, scoreEval, course.getCourseEnvironment());
+		CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, scoreEval,
+				course.getCourseEnvironment(), getIdentity());
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(certificateConfig.getCertificateCustom1())
 				.withCustom2(certificateConfig.getCertificateCustom2())

@@ -428,7 +428,7 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	
 	private Certificate generateCertificate(Identity participant, CertificationProgram program, Date now, int nextRecertification, int window) {
 		CertificateConfig config = CertificateConfig.builder().build();
-		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		waitCertificate(certificate.getKey());
 		certificate.setNextRecertificationDate(CalendarUtils.endOfDay(DateUtils.addDays(now, nextRecertification)));

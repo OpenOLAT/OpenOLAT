@@ -316,6 +316,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.certificationprogram.manager.CertificationProgramServiceTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationCoordinatorTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramLogDAOTest.class,
+	org.olat.modules.certificationprogram.manager.CertificationProgramLogQueriesTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramMailQueriesTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramMailConfigurationDAOTest.class,
 	org.olat.modules.certificationprogram.ui.component.NextRecertificationInDaysTest.class,

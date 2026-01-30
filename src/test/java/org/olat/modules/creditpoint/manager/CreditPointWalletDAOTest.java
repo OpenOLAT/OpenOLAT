@@ -146,7 +146,7 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 		
 		
 		CertificateConfig config = CertificateConfig.builder().build();
-		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		waitMessageAreConsumed();
 		Assert.assertNotNull(certificate);

@@ -255,6 +255,20 @@ public class DateUtils {
 		return calendar.getTime();
 	}
 	
+	public static LocalDateTime getStartOfDay(LocalDateTime cal) {
+		return cal.withHour(0)
+				  .withMinute(0)
+				  .withSecond(0)
+				  .withNano(0);
+	}
+	
+	public static ZonedDateTime getStartOfDay(ZonedDateTime cal) {
+		return cal.withHour(0)
+				  .withMinute(0)
+				  .withSecond(0)
+				  .withNano(0);
+	}
+	
 	public static Date getEndOfDay(Date date) {
 		if (date == null) {
 			return null;

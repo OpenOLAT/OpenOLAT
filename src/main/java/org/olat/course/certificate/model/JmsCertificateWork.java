@@ -37,6 +37,7 @@ public class JmsCertificateWork implements Serializable {
 	private Double completion;
 	private Long templateKey;
 	private Long certificateKey;
+	private Long doerKey;
 	private String grade;
 	private CertificateConfig config;
 	
@@ -45,7 +46,7 @@ public class JmsCertificateWork implements Serializable {
 	}
 	
 	public JmsCertificateWork(Long certificateKey, Long templateKey, Float score, Float maxScore, Boolean passed,
-			Double completion, CertificateConfig config) {
+			Double completion, CertificateConfig config, Long doerKey) {
 		this.score = score;
 		this.maxScore = maxScore;
 		this.passed = passed;
@@ -53,6 +54,7 @@ public class JmsCertificateWork implements Serializable {
 		this.config = config;
 		this.templateKey = templateKey;
 		this.certificateKey = certificateKey;
+		this.doerKey = doerKey;
 	}
 
 	public Float getScore() {
@@ -119,6 +121,14 @@ public class JmsCertificateWork implements Serializable {
 		this.grade = grade;
 	}
 	
+	public Long getDoerKey() {
+		return doerKey;
+	}
+
+	public void setDoerKey(Long doerKey) {
+		this.doerKey = doerKey;
+	}
+
 	@Override
 	public int hashCode() {
 		return certificateKey == null ? 87580 : certificateKey.hashCode();

@@ -177,7 +177,7 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		certificationProgramDao.updateCertificationProgram(program);
 		
 		CertificateConfig config = CertificateConfig.builder().build();
-		CertificateInfos certificateInfos = new CertificateInfos(id, null, null, null, null, "");
+		CertificateInfos certificateInfos = new CertificateInfos(id, null, null, null, null, "", null);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);

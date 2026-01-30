@@ -19,6 +19,9 @@
  */
 package org.olat.modules.certificationprogram.manager;
 
+import java.util.List;
+
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +34,11 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
-import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramLog;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.model.CertificationProgramLogSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -71,7 +76,7 @@ public class CertificationProgramLogDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void createLog() {
+	public void createMailLog() {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
 		CertificationProgramMailType type = CertificationProgramMailType.certificate_issued;
 		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
@@ -80,7 +85,7 @@ public class CertificationProgramLogDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commit();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
@@ -92,5 +97,69 @@ public class CertificationProgramLogDAOTest extends OlatTestCase {
 		Assert.assertNotNull(mailLog.getKey());
 		Assert.assertEquals(certificate, mailLog.getCertificate());
 		Assert.assertEquals(configuration, mailLog.getMailConfiguration());
+	}
+
+	@Test
+	public void createAndLoadLog() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-2", "Program mailing 2");
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_issued;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		CertificationProgramLog logEntry = certificationProgramLogDao.createLog(certificate, program, CertificationProgramLogAction.revoke_certificate, "valid", "before", "revoked", "after", configuration, null, actor);
+		dbInstance.commitAndCloseSession();
+		
+		CertificationProgramLogSearchParameters searchParams = new CertificationProgramLogSearchParameters();
+		searchParams.setCertificationProgram(program);
+		List<CertificationProgramLog> programLogs = certificationProgramLogDao.loadLogs(searchParams);
+		Assertions.assertThat(programLogs)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(logEntry);
+	}
+	
+	@Test
+	public void loadLogsDoers() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-3", "Program mailing 3");
+
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-3", defaultUnitTestOrganisation, null);
+		CertificationProgramLog logEntry = certificationProgramLogDao.createOwnerLog(owner, program, CertificationProgramLogAction.add_owner, actor);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(logEntry);
+		
+		CertificationProgramLogSearchParameters searchParams = new CertificationProgramLogSearchParameters();
+		searchParams.setCertificationProgram(program);
+		List<Identity> doers = certificationProgramLogDao.loadLogsDoers(program);
+		Assertions.assertThat(doers)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(actor);
+	}
+	
+	@Test
+	public void loadLogsIdentities() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-4", "Program mailing 4");
+
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-4", defaultUnitTestOrganisation, null);
+		CertificationProgramLog logEntry = certificationProgramLogDao.createOwnerLog(owner, program, CertificationProgramLogAction.remove_owner, actor);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(logEntry);
+		
+		CertificationProgramLogSearchParameters searchParams = new CertificationProgramLogSearchParameters();
+		searchParams.setCertificationProgram(program);
+		List<Identity> identities = certificationProgramLogDao.loadLogsIdentities(program);
+		Assertions.assertThat(identities)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(owner);
 	}
 }

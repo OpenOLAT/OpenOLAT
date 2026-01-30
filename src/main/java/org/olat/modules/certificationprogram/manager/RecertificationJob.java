@@ -64,6 +64,8 @@ public class RecertificationJob extends JobWithDB {
 			for(Identity identity:eligiblesIdentities) {
 				certificationCoordinator.processCertificationRequest(identity, program, RequestMode.AUTOMATIC, now, null);
 			}
+			
+			//TODO certificate Calculate expired certificates
 		}
 	}
 }
