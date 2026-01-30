@@ -23,7 +23,7 @@
 	.o_visual_not_available {
 		width: 100%;
 		height: 100%;
-		background: $o-not-available-bg;
+		background: $o-not-available-bg !important; // Display in print
 		background-repeat:no-repeat;
 		background-position:50% 50%;		
 		background-size: contain;
