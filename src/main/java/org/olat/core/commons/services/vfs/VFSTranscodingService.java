@@ -73,7 +73,7 @@ public interface VFSTranscodingService {
 
 	void startTranscodingProcess();
 
-	void fileDoneEvent(VFSMetadata vfsMetadata);
+	void fireDoneEvent(VFSMetadata vfsMetadata);
 
 	File getMasterFile(File mediaFile);
 
@@ -83,9 +83,9 @@ public interface VFSTranscodingService {
 
 	String getFfmpegExecutable();
 
-	void registerForJobDoneEvent(GenericEventListener listener);
+	void registerForJobEvents(GenericEventListener listener);
 
-	void deregisterForJobDoneEvent(GenericEventListener listener);
+	void deregisterForJobEvents(GenericEventListener listener);
 
 	void postConversionJob(VFSMetadata metadata, TranscoderJobType type);
 

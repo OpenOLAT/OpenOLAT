@@ -590,6 +590,13 @@ public interface VideoManager {
 	public void handleVideoTranscodingJobStatus(TranscoderJobStatus status);
 
 	/**
+	 * Trigger a status event for a video resource.
+
+	 * @param resourceKey The key of a video resource.
+	 */
+	public void fireVideoTranscodingStatusEvent(Long resourceKey);
+
+	/**
 	 * Delete generated files in service.
 	 *
 	 * @param uuid Of the job that generated the files.

@@ -198,9 +198,9 @@ public class AuthoringEditAccessController extends BasicController {
 			mainVC.contextRemove("warningOffersMsg");
 		}
 		if (repositoryService.isMixedSetup(entry)) {
-			mainVC.contextPut("warningMixedSetup", translate("error.mixed.setup"));
+			mainVC.contextPut("warningStandaloneNotRecommended", translate("warning.runtime.type.standalone.not.recommended"));
 		} else {
-			mainVC.contextRemove("warningMixedSetup");
+			mainVC.contextRemove("warningStandaloneNotRecommended");
 		}
 	}
 	

@@ -859,7 +859,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		fireVideoTranscodingStatusEvent(resourceKey);		
 	}
 
-	private void fireVideoTranscodingStatusEvent(Long resourceKey) {
+	public void fireVideoTranscodingStatusEvent(Long resourceKey) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new VideoTranscodingStatusEvent(resourceKey), ores);
 	}
 
