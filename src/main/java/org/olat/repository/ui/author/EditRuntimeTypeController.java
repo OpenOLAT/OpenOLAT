@@ -81,7 +81,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_edit_runtime_type_form");
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("r_info", translate("change.runtime.type.info"));
+			layoutCont.contextPut("r_info", translate("change.runtime.type.info.select"));
 			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Course_Settings_Share/#section_usage");
 		}
 		
