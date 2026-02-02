@@ -144,6 +144,10 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	public String getCurriculumExternalRef() {
 		return curriculum == null ? null : curriculum.getIdentifier();
 	}
+	
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
 
 	@Override
 	public String getIdentifier() {

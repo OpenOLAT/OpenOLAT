@@ -115,11 +115,21 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canExportCurriculums() {
+			return admin || principal || !ownedCurriculumKeys.isEmpty();
+		}
+
+		@Override
 		public boolean canEditCurriculum(Curriculum curriculum) {
 			return admin
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 		
+		@Override
+		public boolean canExportCurriculum(Curriculum curriculum) {
+			return principal || canEditCurriculum(curriculum);
+		}
+
 		@Override
 		public boolean canDeleteCurriculum() {
 			return admin;
@@ -148,7 +158,7 @@ public class CurriculumSecurityCallbackFactory {
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()))
 					|| !ownedElementsKeys.isEmpty();
 		}
-		
+
 		@Override
 		public boolean canEditCurriculumElement(CurriculumElement element) {
 			if(element == null || element.getCurriculum() == null) {
@@ -157,6 +167,11 @@ public class CurriculumSecurityCallbackFactory {
 			return admin
 					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
 					|| ownedElementsKeys.contains(element.getKey());
+		}
+		
+		@Override
+		public boolean canExportCurriculumElement(CurriculumElement element) {
+			return principal || canEditCurriculumElement(element);
 		}
 		
 		@Override

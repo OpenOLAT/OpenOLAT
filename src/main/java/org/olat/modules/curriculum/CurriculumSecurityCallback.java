@@ -35,8 +35,12 @@ public interface CurriculumSecurityCallback {
 	
 	boolean canEditCurriculum(Curriculum curriculum);
 	
+	boolean canExportCurriculum(Curriculum curriculum);
+	
 	
 	boolean canDeleteCurriculum();
+	
+	boolean canExportCurriculums();
 	
 	boolean canManagerCurriculumUsers();
 	
@@ -51,6 +55,8 @@ public interface CurriculumSecurityCallback {
 	 * @return true if the user can edit the specified curriculum element
 	 */
 	boolean canEditCurriculumElement(CurriculumElement element);
+	
+	boolean canExportCurriculumElement(CurriculumElement element);
 	
 	boolean canMoveCurriculumElement(CurriculumElement element);
 	

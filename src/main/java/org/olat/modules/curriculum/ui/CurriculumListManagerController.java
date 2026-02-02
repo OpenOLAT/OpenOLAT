@@ -68,7 +68,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -84,7 +83,6 @@ import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
-import org.olat.modules.curriculum.manager.ExportCurriculumMediaResource;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
@@ -145,6 +143,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private FlexiTableElement tableEl;
 	private FormLink bulkDeleteButton;
+	private FormLink bulkExportButton;
 	private FormLink newCurriculumButton;
 	private CurriculumManagerDataModel tableModel;
 	private final TooledStackedPanel toolbarPanel;
@@ -249,6 +248,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			
 			bulkDeleteButton = uifactory.addFormLink("bulk.delete", "delete", "delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
+		}
+		
+		if(secCallback.canExportCurriculums()) {
+			tableEl.setMultiSelect(true);
+			
+			bulkExportButton = uifactory.addFormLink("export", "export", "export", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkExportButton);
 		}
 	}
 	
@@ -508,6 +514,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(bulkDeleteButton == source) {
 			doBulkDeleteCurriculums(ureq);
+		} else if(bulkExportButton == source) {
+			doExport(ureq);
 		} else if(newCurriculumButton == source) {
 			doNewCurriculum(ureq);
 		} else if(tableEl == source) {
@@ -618,10 +626,25 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		}
 	}
 	
-	private void doExportCurriculum(UserRequest ureq, CurriculumRow row) {
-		Curriculum curriculum = curriculumService.getCurriculum(row);
-		MediaResource mr = new ExportCurriculumMediaResource(curriculum);
-		ureq.getDispatchResult().setResultingMediaResource(mr);
+	private void doExport(UserRequest ureq) {
+		List<Curriculum> curriculums =  tableEl.getMultiSelectedIndex().stream()
+				.map(index  -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(CurriculumRow::getCurriculum)
+				.toList();
+		doExport(ureq, curriculums);
+	}
+	
+	private void doExport(UserRequest ureq, CurriculumRow row) {
+		doExport(ureq, List.of(row.getCurriculum()));
+	}
+
+	private void doExport(UserRequest ureq, List<Curriculum> curriculums) {
+		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
+		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+		
+		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), url, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	
 	private void doOpenCurriculumDetails(UserRequest ureq, CurriculumRow row) {
@@ -722,7 +745,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			
 			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
 			openLink.setNewWindow(true, true);
-			if(secCallback.canNewCurriculum()) {
+			if(secCallback.canExportCurriculum(curriculum)) {
 				exportLink = addLink("export", "o_icon_export", links);
 			}
 			
@@ -753,7 +776,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				doConfirmDeleteCurriculum(ureq, row);
 			} else if(exportLink == source) {
 				close();
-				doExportCurriculum(ureq, row);
+				doExport(ureq, row);
 			}
 		}
 		

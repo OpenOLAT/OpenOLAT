@@ -215,6 +215,10 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	public int size() {
 		return components.size();
 	}
+	
+	public boolean isEmpty() {
+		return components.isEmpty();
+	}
 
 	/**
 	 * Mark the active link from this dropdown as active. This is only a GUI issue, see active method on link

@@ -33,6 +33,7 @@ import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
@@ -91,6 +92,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private int implementationsTab;
 	
 	private Link deleteButton;
+	private Link exportButton;
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
@@ -147,18 +149,26 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	}
 	
 	private void initMetadata() {
+		Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
+		commandsDropdown.setDomReplaceable(false);
+		commandsDropdown.setButton(true);
+		commandsDropdown.setOrientation(DropdownOrientation.right);
+		
+		if(secCallback.canExportCurriculum(curriculum)) {
+			exportButton = LinkFactory.createCustomLink("export", "export", "export", Link.LINK, mainVC, this);
+			exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			commandsDropdown.addComponent(exportButton);
+		}
 		if(secCallback.canDeleteCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
-			Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
-			commandsDropdown.setDomReplaceable(false);
-			commandsDropdown.setButton(true);
-			commandsDropdown.setOrientation(DropdownOrientation.right);
-			
+			if(!commandsDropdown.isEmpty()) {
+				commandsDropdown.addComponent(new Spacer("delete-space"));
+			}
 			deleteButton = LinkFactory.createCustomLink("delete", "delete", "delete", Link.LINK, mainVC, this);
 			deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			commandsDropdown.addComponent(deleteButton);
-
-			mainVC.put(commandsDropdown.getComponentName(), commandsDropdown);
 		}
+		commandsDropdown.setVisible(!commandsDropdown.isEmpty());
+		mainVC.put(commandsDropdown.getComponentName(), commandsDropdown);
 
 		mainVC.contextPut("curriculumDisplayName", curriculum.getDisplayName());
 		if(StringHelper.containsNonWhitespace(curriculum.getIdentifier())) {
@@ -342,6 +352,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(deleteButton == source) {
 			doConfirmDeleteCurriculum(ureq);
+		} else if(exportButton == source) {
+			doExport(ureq);
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent pe) {
 				doProcessPopEvent(ureq, pe);
@@ -401,5 +413,14 @@ public class CurriculumDetailsController extends BasicController implements Acti
 				showWarning("warning.curriculum.implementations", StringHelper.escapeHtml(curriculumToDelete.curriculum().getDisplayName()));
 			}
 		}
+	}
+	
+	private void doExport(UserRequest ureq) {
+		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
+		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+		
+		List<Curriculum> curriculums = List.of(curriculum);
+		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), url, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 }

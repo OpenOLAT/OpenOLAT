@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -106,6 +105,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
@@ -169,6 +169,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private FormLink overrideLink;
 	private FormLink unOverrideLink;
+	private FormLink bulkExportButton;
 	private FormLink bulkDeleteButton;
 	private DropdownItem newElementMenu;
 	private FormLink newGenericElementButton;
@@ -401,6 +402,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
 			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
+			tableEl.setMultiSelect(true);
+		}
+		
+		if(rootElement == null) {
+			bulkExportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkExportButton);
 			tableEl.setMultiSelect(true);
 		}
 	}
@@ -944,6 +951,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			doNewCurriculumElement(ureq, null);
 		} else if(bulkDeleteButton == source) {
 			doConfirmBulkDelete(ureq);
+		} else if(bulkExportButton == source) {
+			doBulkExport(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -1295,6 +1304,52 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 	}
 	
+	private void doExport(UserRequest ureq, CurriculumElementRow row) {
+		List<Curriculum> curriculums;
+		if(curriculum != null) {
+			curriculums = List.of(curriculum);
+		} else {
+			Curriculum cur = curriculumService
+					.getCurriculum(new CurriculumRefImpl(row.getCurriculumKey()));
+			curriculums = List.of(cur);
+		}
+
+		CurriculumElement element = curriculumService.getCurriculumElement(row.getCurriculumElement());
+		List<CurriculumElement> elements = List.of(element);
+		doExport(ureq, curriculums, elements);
+	}
+	
+	private void doBulkExport(UserRequest ureq) {
+		List<CurriculumElement> curriculumElements =  tableEl.getMultiSelectedIndex().stream()
+				.map(index  -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(CurriculumElementRow::getCurriculumElement)
+				.filter(element -> secCallback.canExportCurriculumElement(element))
+				.toList();
+		List<Curriculum> curriculums;
+		if(curriculum != null) {
+			curriculums = List.of(curriculum);
+		} else {
+			curriculums = curriculumElements.stream().map(CurriculumElement::getCurriculum)
+					.distinct()
+					.toList();
+		}
+		
+		if(curriculumElements.isEmpty()) {
+			showWarning("curriculums.elements.bulk.delete.empty.selection");
+		} else {
+			doExport(ureq, curriculums, curriculumElements);
+		}
+	}
+
+	private void doExport(UserRequest ureq, List<Curriculum> curriculums, List<CurriculumElement> implementations) {
+		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
+		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+		
+		CurriculumExport export = new CurriculumExport(curriculums, implementations, getIdentity(), url, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+	}
+	
 	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
 		String coursePath = "[RepositoryEntry:" + ref.getKey() + "]";
 		if(!NewControllerFactory.getInstance().launch(coursePath, ureq, getWindowControl())) {
@@ -1331,9 +1386,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		private Link openLink;
 		private Link moveLink;
 		private Link deleteLink;
+		private Link exportLink;
 		private Link duplicateLink;
 		private Link manageMembersLink;
 		private Link openSettingsLink;
+		
 		
 		private CurriculumElementRow row;
 		
@@ -1372,6 +1429,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(secCallback.canManageCurriculumElementUsers(element)) {
 				links.add("-");
 				manageMembersLink = addLink("manage.members", "o_icon_group", links);
+			}
+			
+			if(element.getParent() == null && secCallback.canExportCurriculumElement(element)) {
+				links.add("-");
+				exportLink = addLink("export.curriculum", "o_icon_export", links);
 			}
 			
 			if(secCallback.canDeleteCurriculumElement(element)
@@ -1436,6 +1498,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(duplicateLink == source) {
 				close();
 				doCopyElement(ureq, row);
+			} else if(exportLink == source) {
+				close();
+				doExport(ureq, row);
 			} else if(source instanceof Link link
 					&& NEW_ELEMENT.equals(link.getCommand())
 					&& link.getUserObject() instanceof CurriculumElementType type) {
