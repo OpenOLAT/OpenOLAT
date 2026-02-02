@@ -71,6 +71,7 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
@@ -1376,6 +1377,39 @@ public class LectureBlockDAOTest extends OlatTestCase {
 			}
 		}
 		Assert.assertFalse(foundClosed);
+	}
+	
+	@Test
+	public void loadOpenBlocksBefore() {
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		lectureBlock.setStartDate(DateUtils.addDays(lectureBlock.getStartDate(), -15));
+		lectureBlock.setEndDate(DateUtils.addDays(lectureBlock.getEndDate(), -15));
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		Date endDate = DateUtils.addDays(new Date(), -14);
+		List<LectureBlockImpl> lectureBlocks = lectureBlockDao.loadOpenBlocksBefore(endDate);
+		Assertions.assertThat(lectureBlocks)
+			.contains((LectureBlockImpl)lectureBlock);
+	}
+	
+	@Test
+	public void loadOpenBlocksBeforeDeletedCourse() {
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		lectureBlock.setStartDate(DateUtils.addDays(lectureBlock.getStartDate(), -15));
+		lectureBlock.setEndDate(DateUtils.addDays(lectureBlock.getEndDate(), -15));
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+	
+		entry.setStatus(RepositoryEntryStatusEnum.deleted.name());
+		dbInstance.getCurrentEntityManager().merge(entry);
+		dbInstance.commitAndCloseSession();
+		
+		Date endDate = DateUtils.addDays(new Date(), -14);
+		List<LectureBlockImpl> lectureBlocks = lectureBlockDao.loadOpenBlocksBefore(endDate);
+		Assertions.assertThat(lectureBlocks)
+			.doesNotContain((LectureBlockImpl)lectureBlock);
 	}
 	
 	@Test

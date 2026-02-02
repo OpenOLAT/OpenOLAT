@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -112,7 +113,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 
 		Set<RepositoryEntryRuntimeType> possibleRuntimeTypes = repositoryService.getPossibleRuntimeTypes(entry);
 		if(entry.getRuntimeType() != null) {
-			possibleRuntimeTypes.add(entry.getRuntimeType());
+			possibleRuntimeTypes.remove(entry.getRuntimeType());
 		}
 
 		SelectionValues runtimeTypeKV = new SelectionValues();
@@ -148,16 +149,19 @@ public class EditRuntimeTypeController extends FormBasicController {
 		
 
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
+		boolean enabledRuntimeTypeExists = false;
 		for (int i = 0; i < runtimeTypeKV.size(); i++) {
 			runtimeTypeEl.setEnabled(i, runtimeTypeKV.enabledStates()[i]);
+			enabledRuntimeTypeExists |= runtimeTypeKV.enabledStates()[i];
 		}
 
-		if(entry.getRuntimeType() != null) {
-			runtimeTypeEl.select(entry.getRuntimeType().name(), true);
+		if (!runtimeTypeKV.isEmpty()) {
+			runtimeTypeEl.select(runtimeTypeKV.keys()[0], true);
 		}
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("save", buttonsCont);
+		submit.setEnabled(enabledRuntimeTypeExists);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
