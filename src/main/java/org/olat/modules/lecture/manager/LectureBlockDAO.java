@@ -1556,15 +1556,22 @@ public class LectureBlockDAO {
 	}
 	
 	public List<LectureBlockImpl> loadOpenBlocksBefore(Date endDate) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select block from lectureblock block")
-		  .append(" left join fetch block.reasonEffectiveEnd reason")
-		  .append(" inner join fetch block.entry entry")
-		  .append(" where block.endDate<=:endDate and block.rollCallStatusString in ('").append(LectureRollCallStatus.open.name()).append("')");
+		String query = """
+				select block from lectureblock block
+				left join fetch block.reasonEffectiveEnd reason
+				inner join fetch block.entry entry
+				where block.endDate<=:endDate and block.rollCallStatusString=:rollCallStatus
+				and entry.status in (:entryStatus)""";
+		
+		List<String> entryStatus = List.of(RepositoryEntryStatusEnum.preparationToClosed()).stream()
+				.map(RepositoryEntryStatusEnum::name)
+				.toList();
 
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), LectureBlockImpl.class)
+				.createQuery(query, LectureBlockImpl.class)
 				.setParameter("endDate", endDate, TemporalType.TIMESTAMP)
+				.setParameter("rollCallStatus", LectureRollCallStatus.open.name())
+				.setParameter("entryStatus", entryStatus)
 				.getResultList();
 	}
 }
