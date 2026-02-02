@@ -75,7 +75,16 @@ public class CatalogV2Page {
 	
 	public CatalogV2Page openCourse(String title) {
 		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h3[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_open')]");
-		OOGraphene.waitElement(courseBy, browser).click();
+		OOGraphene.waitElement(courseBy, browser);
+		OOGraphene.click(courseBy, browser);
+		return this;
+	}
+	
+	public CatalogV2Page assertOnLogin() {
+		By lightBoxBy = By.xpath("//div[contains(@class,'basicLightbox--visible')]");
+		OOGraphene.waitElementFullOpacity(lightBoxBy, browser);
+		By loginBy = By.cssSelector(".basicLightbox .o_login_box .o_login_button_group button.o_sel_auth_password");
+		OOGraphene.waitElement(loginBy, browser);	
 		return this;
 	}
 	

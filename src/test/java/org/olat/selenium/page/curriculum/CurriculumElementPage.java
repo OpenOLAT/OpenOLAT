@@ -88,7 +88,7 @@ public class CurriculumElementPage {
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		By statusUpdatedBy = By.xpath("//div[contains(@class,'o_curriculum_dashboard_title')]//a[contains(@class,'o_curriculum_status_" + status.name() + "')][contains(@class,'o_labeled')]");
-		OOGraphene.waitElement(statusUpdatedBy, browser).click();
+		OOGraphene.waitElement(statusUpdatedBy, browser);
 
 		return this;
 	}

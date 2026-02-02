@@ -453,6 +453,7 @@ public class CoursePlannerTest extends Deployments {
 			.asCatalog()
 			.exploreOffers()
 			.openCourse(elementName)
+			.assertOnLogin()
 			.login(participant)
 			.bookCourse(elementName)
 			.startCourse(elementName);
