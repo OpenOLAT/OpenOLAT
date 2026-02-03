@@ -2447,7 +2447,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
 			CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
-			boolean teacher = !reSecurity.isParticipant() && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
+			boolean teacher = !reSecurity.isParticipant() && (lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity()) || reSecurity.isCoach());
 			boolean adminRole = reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
 			boolean principalRole = reSecurity.isPrincipal() || reSecurity.isCurriculumManager();
 			boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
