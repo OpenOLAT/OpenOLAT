@@ -659,6 +659,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 	
 	public String getSelectedCourseNode() {
+		if(menuTree == null) return null;
+		
 		TreeNode node = menuTree.getSelectedNode();
 		if(node != null) {
 			return node.getIdent();
