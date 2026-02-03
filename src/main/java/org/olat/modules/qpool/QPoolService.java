@@ -146,6 +146,8 @@ public interface QPoolService {
 	
 	public boolean isOwner(Identity owner, Pool pool);
 	
+	public List<Identity> getOwners(Pool pool);
+	
 	public void addOwners(List<Identity> owners, List<Pool> pools);
 	
 	public void removeOwners(List<Identity> owners, List<Pool> pools);
