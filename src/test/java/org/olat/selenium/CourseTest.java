@@ -356,7 +356,7 @@ public class CourseTest extends Deployments {
 		for(int i=0; i<5; i++) {
 			try {
 				By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
-				OOGraphene.waitElement(linkBy, browser).click();
+				OOGraphene.click(linkBy, browser);
 				By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "][contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
 				OOGraphene.waitElement(activeLinkBy, browser);
 			} catch (Exception e) {
