@@ -468,6 +468,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		SecurityGroup secGroup = ((PoolImpl)pool).getOwnerGroup();
 		return securityGroupDao.isIdentityInSecurityGroup(owner, secGroup);
 	}
+	
+	@Override
+	public List<Identity> getOwners(Pool pool) {
+		SecurityGroup secGroup = ((PoolImpl)pool).getOwnerGroup();
+		return securityGroupDao.getIdentitiesOfSecurityGroup(secGroup);
+	}
 
 	@Override
 	public void addOwners(List<Identity> owners, List<Pool> pools) {
