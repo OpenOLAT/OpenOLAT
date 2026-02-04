@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -172,8 +173,10 @@ public class IQConfigurationController extends BasicController implements Refere
 		String selectionTitle = translate("select.test");
 		RepositoryEntry iqEntry = getIQReference();
 		newReference = iqEntry == null;
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		IQCourseNodeReferenceProvider referenceProvider = new IQCourseNodeReferenceProvider(repositoryService,
-				RESOURCE_TYPES, emptyStateConfig, selectionTitle, this);
+				RESOURCE_TYPES, defaultOrganisations, emptyStateConfig, selectionTitle, this);
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, iqEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		myContent.put("reference", referenceCtrl.getInitialComponent());
@@ -184,9 +187,9 @@ public class IQConfigurationController extends BasicController implements Refere
 	
 	public class IQCourseNodeReferenceProvider extends CourseNodeReferenceProvider {
 		
-		public IQCourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+		public IQCourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes, List<Organisation> defaultOrganisations,
 			EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider) {
-			super(repositoryService, resourceTypes, emptyStateConfig, selectionTitle, referenceContentProvider);
+			super(repositoryService, resourceTypes, defaultOrganisations, emptyStateConfig, selectionTitle, referenceContentProvider);
 		}
 		
 		@Override

@@ -24,6 +24,7 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
@@ -49,6 +50,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -75,6 +77,7 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -128,7 +131,7 @@ public class MSConfigController extends FormBasicController {
 	private GradeScaleEditController gradeScaleCtrl;
 	
 	private final ModuleConfiguration config;
-	private final RepositoryEntry ores;
+	private final RepositoryEntry courseEntry;
 	private final String nodeIdent;
 	private boolean showInfoTexts;
 	private final boolean showInitialStatus;
@@ -146,6 +149,8 @@ public class MSConfigController extends FormBasicController {
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private GradeModule gradeModule;
 	@Autowired
 	private GradeService gradeService;
@@ -155,7 +160,7 @@ public class MSConfigController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.config = courseNode.getModuleConfiguration();
-		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		courseEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.nodeIdent = courseNode.getIdent();
 		this.showInitialStatus = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
@@ -271,7 +276,7 @@ public class MSConfigController extends FormBasicController {
 			gradeAutoEl.setElementCssClass("o_sel_course_ms_grade_mode");
 			gradeAutoEl.select(Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)), true);
 			
-			gradeScale = gradeService.getGradeScale(ores, nodeIdent);
+			gradeScale = gradeService.getGradeScale(courseEntry, nodeIdent);
 			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
 			
 			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
@@ -354,7 +359,7 @@ public class MSConfigController extends FormBasicController {
 	private void updateUI() {
 		boolean scoreEnabled = scoreEnableEl.isOn();
 		boolean formEnabled = evaluationFormEnabledEl.isOn();
-		boolean replacePossible = !msService.hasSessions(ores, nodeIdent, evaluationFormProvider);
+		boolean replacePossible = !msService.hasSessions(courseEntry, nodeIdent, evaluationFormProvider);
 
 		if (formEntry != null) {
 			String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());
@@ -494,7 +499,7 @@ public class MSConfigController extends FormBasicController {
 			cleanUp();
 		} if (gradeScaleCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				gradeScale = gradeService.getGradeScale(ores, nodeIdent);
+				gradeScale = gradeService.getGradeScale(courseEntry, nodeIdent);
 				updateUI();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -723,8 +728,9 @@ public class MSConfigController extends FormBasicController {
 	}
 
 	private void doChooseEvaluationForm(UserRequest ureq) {
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("form.evaluation.choose"));
+				EvaluationFormResource.TYPE_NAME, defaultOrganisations, translate("form.evaluation.choose"));
 		this.listenTo(searchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				searchCtrl.getInitialComponent(), true, translate("form.evaluation.choose"));
@@ -785,7 +791,7 @@ public class MSConfigController extends FormBasicController {
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage,
-				new RepositoryCoachCandidates(ores), null);
+				new RepositoryCoachCandidates(courseEntry), null);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);
@@ -804,7 +810,7 @@ public class MSConfigController extends FormBasicController {
 			return;
 		}
 		
-		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent, minScore, maxScore, false, true);
+		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, nodeIdent, minScore, maxScore, false, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

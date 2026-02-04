@@ -445,7 +445,7 @@ public class CourseOverviewController extends FormBasicController  {
 		
 		RepositoryEntryFilter filter = new ManagedEntryfilter();
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, filter, null,
+				new String[]{ CourseModule.getCourseTypeName() }, List.of(), filter, null,
 				translate("choose"), false, false, true, false, true, false, Can.all);
 		repoSearchCtr.setUserObject(type);
 		listenTo(repoSearchCtr);

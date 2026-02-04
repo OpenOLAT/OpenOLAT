@@ -27,11 +27,14 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
 
 public interface RepositoryEntryReferenceProvider {
 	
 	public List<String> getResourceTypes();
+	
+	public List<Organisation> getDefaultOrganisations();
 	
 	public String getIconCssClass(RepositoryEntry repositoryEntry);
 	

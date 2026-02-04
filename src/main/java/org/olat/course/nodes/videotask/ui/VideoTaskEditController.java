@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.course.ICourse;
 import org.olat.course.editor.CourseNodeReferenceProvider;
@@ -137,8 +138,9 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 				.build();
 		String selectionTitle = translate("select.video");
 		RepositoryEntry videoEntry = getVideoReference(config, false);
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
-				RESOURCE_TYPES, emptyStateConfig, selectionTitle, this);
+				RESOURCE_TYPES, defaultOrganisations, emptyStateConfig, selectionTitle, this);
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, videoEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		configurationVC.put("reference", referenceCtrl.getInitialComponent());

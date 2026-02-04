@@ -503,7 +503,7 @@ public class DataCollectionListController extends FormBasicController
 
 	private void doSelectEvaluationForm(UserRequest ureq) {
 		formSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("data.collection.form.select"));
+				EvaluationFormResource.TYPE_NAME, List.of(), translate("data.collection.form.select"));
 		this.listenTo(formSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				formSearchCtrl.getInitialComponent(), true, translate("data.collection.form.select"));

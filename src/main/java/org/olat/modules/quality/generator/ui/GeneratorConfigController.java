@@ -211,7 +211,7 @@ public class GeneratorConfigController extends FormBasicController {
 	
 	private void doSelectFormEntry(UserRequest ureq) {
 		formSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("generator.form.select"));
+				EvaluationFormResource.TYPE_NAME, List.of(), translate("generator.form.select"));
 		this.listenTo(formSearchCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

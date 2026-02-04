@@ -47,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.CourseNodeReferenceProvider;
@@ -156,8 +157,9 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 				.withIconCss("o_icon o_FileResource-FORM_icon")
 				.build();
 		String selectionTitle = translate("select.form");
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		CourseNodeReferenceProvider referenceProvider = new GTAPeerReviewReferenceProvider(repositoryService,
-				RESOURCE_TYPES, emptyStateConfig, selectionTitle, this, this);
+				RESOURCE_TYPES, defaultOrganisations, emptyStateConfig, selectionTitle, this, this);
 		RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(config);
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, getWindowControl(), formEntry, referenceProvider);
 		listenTo(referenceCtrl);
@@ -481,10 +483,10 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		
 		private final SettingsContentProvider settingsProvider;
 		
-		public GTAPeerReviewReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+		public GTAPeerReviewReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes, List<Organisation> defaultOrganisations,
 				EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider,
 				SettingsContentProvider settingsProvider) {
-			super(repositoryService, resourceTypes,  emptyStateConfig, selectionTitle, referenceContentProvider);
+			super(repositoryService, resourceTypes, defaultOrganisations, emptyStateConfig, selectionTitle, referenceContentProvider);
 			this.settingsProvider = settingsProvider;
 		}
 		

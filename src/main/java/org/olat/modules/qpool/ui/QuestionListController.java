@@ -927,7 +927,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doOpenRepositoryImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importTestCtrl);
 		String[] allowed = new String[]{ ImsQTI21Resource.TYPE_NAME };
-		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
+		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed, List.of(),
 				null, null, translate("import.repository"), false, false, false, false, true, false, Can.copyable);
 		listenTo(importTestCtrl);
 		

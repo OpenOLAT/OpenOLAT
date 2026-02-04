@@ -522,7 +522,7 @@ public class AssignmentEditController extends FormBasicController {
 		if(guardModalController(searchFormCtrl)) return;
 
 		searchFormCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					EvaluationFormResource.TYPE_NAME, translate("select.form"));
+					EvaluationFormResource.TYPE_NAME, List.of(), translate("select.form"));
 		listenTo(searchFormCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchFormCtrl.getInitialComponent(),
 				true, translate("select.form"));

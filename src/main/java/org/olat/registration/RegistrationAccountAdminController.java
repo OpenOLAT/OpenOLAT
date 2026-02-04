@@ -351,7 +351,8 @@ public class RegistrationAccountAdminController extends FormBasicController {
 	private void openCourseBrowser(UserRequest ureq) {
 		cleanUp();
 
-		selectCoursesController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()}, new AutoEnrolmentCourseFilter(), null, translate("auto.enrolment.add"), false, false, true, false, true, false, RepositorySearchController.Can.all);
+		selectCoursesController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()}, List.of(),
+				new AutoEnrolmentCourseFilter(), null, translate("auto.enrolment.add"), false, false, true, false, true, false, RepositorySearchController.Can.all);
 		listenTo(selectCoursesController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectCoursesController.getInitialComponent(), true);

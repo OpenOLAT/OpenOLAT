@@ -74,7 +74,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	
 	private String[] limitTypes;
 	private RepositoryEntry importedEntry;
-	private final List<Organisation> manageableOrganisations;
+	private final List<Organisation> organisations;
+	private final List<Organisation> defaultOrganisations;
 	private List<ResourceHandler> handlerForUploadedResources;
 	
 	private FormSubmit importButton;
@@ -97,18 +98,26 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+		organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		defaultOrganisations = List.of();
 		
 		initForm(ureq);
 	}
 	
-	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl, String[] limitTypes) {
+	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl, String[] limitTypes, List<Organisation> defaultOrganisations) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.limitTypes = limitTypes;
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+		List<Organisation> manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		organisations = new ArrayList<>(manageableOrganisations);
+		this.defaultOrganisations = defaultOrganisations;
+		for(Organisation defaultOrganisation:defaultOrganisations) {
+			if(!organisations.contains(defaultOrganisation)) {
+				organisations.add(defaultOrganisation);
+			}
+		}
 		
 		initForm(ureq);
 	}
@@ -139,8 +148,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setElementCssClass("o_sel_author_imported_name");
 		
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
-				organisationModule, manageableOrganisations);
-		
+				organisationModule, organisations, defaultOrganisations);
 		String[] refValues = new String[]{ translate("references.expl") };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
 		referencesEl.setVisible(false);
@@ -251,7 +259,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		}
 		
 		if(handler != null) {
-			Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
+			Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, organisations);
 			
 			String displayname = displaynameEl.getValue();
 			File uploadedFile = uploadFileEl.getUploadFile();
@@ -345,7 +353,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		if(references) {
 			referencesEl.select(refKeys[0], true);
 		}
-		importButton.setEnabled(!handlers.isEmpty());
+		importButton.setEnabled(handlers != null && !handlers.isEmpty());
 	}
 	
 	private class ResourceHandler {

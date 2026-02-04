@@ -52,6 +52,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -89,6 +90,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
@@ -141,7 +143,9 @@ public class CourseOptionsController extends FormBasicController {
 	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
-	private RepositoryManager repositoryService;
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private NotificationsManager notificationManager;
 
@@ -164,7 +168,7 @@ public class CourseOptionsController extends FormBasicController {
 		//glossary setup
 		boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
 		if (courseConfig.hasGlossary()) {
-			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
+			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
 			if (repoEntry == null) {
 				// Something is wrong here, maybe the glossary has been deleted. Try to
 				// remove glossary from configuration
@@ -184,7 +188,7 @@ public class CourseOptionsController extends FormBasicController {
 		//shared folder
 		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
 		if (courseConfig.hasCustomSharedFolder()) {
-			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getSharedFolderSoftkey(), false);
+			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntryBySoftkey(courseConfig.getSharedFolderSoftkey(), false);
 			if (repoEntry == null) {
 				// Something is wrong here, maybe the glossary has been deleted.
 				// Try to remove shared folder from configuration
@@ -194,7 +198,7 @@ public class CourseOptionsController extends FormBasicController {
 				folderNameEl.setUserObject(repoEntry);
 				removeFolderCommand.setVisible(editable && !managedFolder);
 				
-				RepositoryEntrySecurity reSecurity = repositoryService.isAllowed(ureq, repoEntry);
+				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repoEntry);
 				folderReadOnlyEl.setVisible(true);
 				folderReadOnlyEl.setEnabled(editable && reSecurity.isEntryAdmin());
 			}
@@ -316,7 +320,9 @@ public class CourseOptionsController extends FormBasicController {
 			}
 		} else if(source == folderRefAddWarnBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));
+				List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
+				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+						SharedFolderFileResource.TYPE_NAME, defaultOrganisations, translate("select"));
 				listenTo(folderSearchCtr);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
 				listenTo(cmc);
@@ -355,7 +361,9 @@ public class CourseOptionsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addGlossaryCommand) {
-			glossarySearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, GlossaryResource.TYPE_NAME, translate("select"));			
+			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
+			glossarySearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+					GlossaryResource.TYPE_NAME, defaultOrganisations, translate("select"));			
 			listenTo(glossarySearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), glossarySearchCtr.getInitialComponent());
 			listenTo(cmc);
@@ -364,8 +372,10 @@ public class CourseOptionsController extends FormBasicController {
 			doRemoveGlossary();
 			markDirty();
 		} else if (source == addFolderCommand) {
-			if(checkForFolderNodesAdd(ureq)  ){
-				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));
+			if(checkForFolderNodesAdd(ureq)) {
+				List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
+				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+						SharedFolderFileResource.TYPE_NAME, defaultOrganisations, translate("select"));
 				listenTo(folderSearchCtr);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
 				listenTo(cmc);
@@ -595,7 +605,7 @@ public class CourseOptionsController extends FormBasicController {
 		folderNameEl.setUserObject(repoEntry);
 		removeFolderCommand.setVisible(true);
 		
-		RepositoryEntrySecurity reSecurity = repositoryService.isAllowed(ureq, repoEntry);
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repoEntry);
 		folderReadOnlyEl.setVisible(true);
 		folderReadOnlyEl.setEnabled(reSecurity.isEntryAdmin());
 		folderReadOnlyEl.select(onKeys[0], true);

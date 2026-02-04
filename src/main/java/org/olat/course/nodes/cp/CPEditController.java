@@ -26,6 +26,7 @@
 package org.olat.course.nodes.cp;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
@@ -47,9 +48,11 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CPCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -95,6 +98,7 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	
 	private CPCourseNode cpNode;
+	private final RepositoryEntry courseEntry;
 	private CompMenuForm cpMenuForm;
 
 	private TabbedPane myTabbedPane;
@@ -115,11 +119,12 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 	@Autowired
 	private RepositoryService repositoryService;
 
-	public CPEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, CPCourseNode cpNode) {
+	public CPEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, CPCourseNode cpNode, ICourse course) {
 		super(ureq, wControl);
 		this.cpNode = cpNode;
 		this.config = cpNode.getModuleConfiguration();
 		this.stackPanel = stackPanel;
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		main = new Panel("cpmain");
 		
@@ -175,8 +180,9 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == chooseCPButton || source == changeCPButton) {
 			removeAsListenerAndDispose(searchController);
+			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					ImsCPFileResource.TYPE_NAME, translate(NLS_COMMAND_CHOOSECP));			
+					ImsCPFileResource.TYPE_NAME, defaultOrganisations, translate(NLS_COMMAND_CHOOSECP));			
 			listenTo(searchController);
 			
 			removeAsListenerAndDispose(cmc);

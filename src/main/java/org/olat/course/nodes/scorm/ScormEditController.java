@@ -26,6 +26,7 @@
 package org.olat.course.nodes.scorm;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
@@ -74,6 +76,7 @@ import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,6 +150,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	private ScormMainManager scormMainManager;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public ScormEditController(ScormCourseNode scormNode, UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
@@ -236,8 +241,10 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == chooseCPButton || source == changeCPButton) { // those must be links
 			removeAsListenerAndDispose(searchController);
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					ScormCPFileResource.TYPE_NAME, translate("command.choosecp"));			
+					ScormCPFileResource.TYPE_NAME, defaultOrganisations, translate("command.choosecp"));			
 			listenTo(searchController);
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.importcp"));

@@ -122,7 +122,7 @@ public class CopyToRepositoryController extends FormBasicController {
 		displayNameEl.setMandatory(true);
 		
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
-				organisationModule, manageableOrganisations);
+				organisationModule, manageableOrganisations, List.of());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
