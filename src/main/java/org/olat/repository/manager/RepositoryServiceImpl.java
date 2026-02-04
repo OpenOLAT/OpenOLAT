@@ -1219,50 +1219,74 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RuntimeTypesAndCheckDetails allowedRuntimeTypes(RepositoryEntry entry) {
-		Set<RepositoryEntryRuntimeType> runtimeTypes = new HashSet<>();
-		RuntimeTypeCheckDetails checkDetails = RuntimeTypeCheckDetails.ok;
+	public RuntimeTypeTransitions checkPossibleRuntimeTypes(RepositoryEntry entry) {
+		RuntimeTypeTransitions results = new RuntimeTypeTransitions();
 		
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
-			if(entry.getRuntimeType() == RepositoryEntryRuntimeType.template) {
-				if(templateToGroupDao.hasRelations(entry)) {
-					checkDetails = RuntimeTypeCheckDetails.isTemplate;
-				} else {
-					runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
-					if (curriculumModule.isEnabled()) {
-						runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+			RepositoryEntryRuntimeType sourceType = entry.getRuntimeType();
+			switch (sourceType) {
+				case template -> {
+					if (templateToGroupDao.hasRelations(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.standalone, RuntimeTypeCheckResult.isTemplate);
+						results.forbidTransition(RepositoryEntryRuntimeType.curricular, RuntimeTypeCheckResult.isTemplate);
 					}
 				}
-			} else {
-				if (curriculumElementDAO.countElements(entry) == 0) {
-					runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
-				} else {
-					if (curriculumModule.isEnabled() && RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType())) {
-						checkDetails = RuntimeTypeCheckDetails.curriculumElementExists;
+				case curricular -> {
+					if (usedByCoursePlanner(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.standalone, RuntimeTypeCheckResult.usedByCoursePlanner);
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.usedByCoursePlanner);
+					}
+					if (hasMembersOtherThanOwner(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.hasMembersOtherThanOwner);
+					}
+					if (hasGroupReferencingOtherCourse(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.groupReferencingOtherCourseExists);
+					}
+					if (hasNonPrivateAccess(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.nonPrivateAccess);
 					}
 				}
-				if (curriculumModule.isEnabled()) {
-					checkDetails = canSwitchToCurricular(entry);
-					if (checkDetails.equals(RuntimeTypeCheckDetails.ok)) {
-						runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+				case standalone -> {
+					if (usedByCoursePlanner(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.usedByCoursePlanner);
+					}
+					if (hasMembersOtherThanOwner(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.curricular, RuntimeTypeCheckResult.hasMembersOtherThanOwner);
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.hasMembersOtherThanOwner);
+					}
+					if (hasGroupReferencingOtherCourse(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.curricular, RuntimeTypeCheckResult.groupReferencingOtherCourseExists);
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.groupReferencingOtherCourseExists);
+					}
+					if (hasNonPrivateAccess(entry)) {
+						results.forbidTransition(RepositoryEntryRuntimeType.curricular, RuntimeTypeCheckResult.nonPrivateAccess);
+						results.forbidTransition(RepositoryEntryRuntimeType.template, RuntimeTypeCheckResult.nonPrivateAccess);
 					}
 				}
-				
-				if(entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone) {
-					RuntimeTypeCheckDetails templateCheckDetails = canSwitchStandaloneToTemplate(entry);
-					if(templateCheckDetails.equals(RuntimeTypeCheckDetails.ok) ) {
-						runtimeTypes.add(RepositoryEntryRuntimeType.template);
-					} else if(checkDetails.equals(RuntimeTypeCheckDetails.ok)) {
-						checkDetails = templateCheckDetails;
-					}
-				}
+				default -> {}
 			}
-		} else {
-			runtimeTypes.add(RepositoryEntryRuntimeType.embedded);
-			runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
 		}
 
-		return new RuntimeTypesAndCheckDetails(runtimeTypes, checkDetails);
+		return results;
+	}
+	
+	private boolean usedByCoursePlanner(RepositoryEntry entry) {
+		return curriculumElementDAO.countElements(entry) > 0;
+	}
+	
+	private boolean hasMembersOtherThanOwner(RepositoryEntry entry) {
+		Map<String, Long> roleToCount = reToGroupDao.getRoleToCountMembers(entry, true, true);
+		
+		return (roleToCount.containsKey(GroupRoles.participant.name()) && roleToCount.get(GroupRoles.participant.name()) > 0)
+				|| (roleToCount.containsKey(GroupRoles.coach.name()) && roleToCount.get(GroupRoles.coach.name()) > 0);
+	}
+	
+	private boolean hasGroupReferencingOtherCourse(RepositoryEntry entry) {
+		return businessGroupRelationDao.hasGroupWithCourses(entry);
+	}
+	
+	private boolean hasNonPrivateAccess(RepositoryEntry entry) {
+		return entry.isPublicVisible();
 	}
 	
 	private RuntimeTypeCheckDetails canSwitchStandaloneToTemplate(RepositoryEntry entry) {

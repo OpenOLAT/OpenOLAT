@@ -21,6 +21,8 @@ package org.olat.repository;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -518,10 +520,8 @@ public interface RepositoryService {
 	 * @param entry The repositoryEntry to perform the check for.
 	 * @return A set of runtime types that the 'entry' can be set to, plus result details of the check.
 	 */
-	RuntimeTypesAndCheckDetails allowedRuntimeTypes(RepositoryEntry entry);
+	RuntimeTypeTransitions checkPossibleRuntimeTypes(RepositoryEntry entry);
 
-	record RuntimeTypesAndCheckDetails(Set<RepositoryEntryRuntimeType> runtimeTypes, RuntimeTypeCheckDetails checkDetails) {}
-	
 	enum RuntimeTypeCheckDetails {
 		ltiDeploymentExists,
 		participantExists,
@@ -577,4 +577,37 @@ public interface RepositoryService {
 	 * @return True if a mixed setup is detected.
 	 */
 	boolean isMixedSetup(RepositoryEntry entry);
+
+	class RuntimeTypeTransitions {
+		private final Map<RepositoryEntryRuntimeType, Set<RuntimeTypeCheckResult>> reasons =  new HashMap<>();
+
+		public void forbidTransition(RepositoryEntryRuntimeType targetType, RuntimeTypeCheckResult reason) {
+			if (reason == null) {
+				return;
+			}
+			Set<RuntimeTypeCheckResult> set = reasons.getOrDefault(targetType, new HashSet<>());
+			set.add(reason);
+			reasons.put(targetType, set);
+		}
+
+		public Map<RepositoryEntryRuntimeType, Set<RuntimeTypeCheckResult>> getReasons() {
+			return reasons;
+		}
+
+		public Set<RuntimeTypeCheckResult> getReasons(RepositoryEntryRuntimeType targetType) {
+			return reasons.getOrDefault(targetType, new HashSet<>());
+		}
+
+		public boolean canTransitionTo(RepositoryEntryRuntimeType targetType) {
+			return getReasons(targetType).isEmpty();
+		}
+	}
+
+	enum RuntimeTypeCheckResult {
+		usedByCoursePlanner,
+		hasMembersOtherThanOwner,
+		groupReferencingOtherCourseExists,
+		nonPrivateAccess,
+		isTemplate,
+	}
 }
