@@ -166,7 +166,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 		}
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		FormSubmit submit = uifactory.addFormSubmitButton("save", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("change", buttonsCont);
 		submit.setEnabled(enabledRuntimeTypeExists);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
