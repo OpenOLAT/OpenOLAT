@@ -232,7 +232,9 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("</span>"); // END o_radio_text_wrapper
 			String iconCssClass = ssec.getIconCssClass();
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
-				sb.append(" <span class='o_radio_icon ").append(iconCssClass).append("'> </span>");
+				sb.append(" <span class='o_radio_icon ").append(iconCssClass)
+						.append(" o_disabled", !source.isEnabled() || !ssec.isEnabled())
+						.append("'> </span>");
 			}
 			Image image = ssec.getImage();
 			if(image != null) {
