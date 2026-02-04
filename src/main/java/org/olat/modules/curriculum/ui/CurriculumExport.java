@@ -65,6 +65,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumExport {
 	
 	private static final Logger log = Tracing.createLoggerFor(CurriculumExport.class);
+	
+	private static final String MANDATORY = " *";
 
 	private final String url;
 	private final Translator translator;
@@ -140,11 +142,10 @@ public class CurriculumExport {
 		int col = 0;
 		Row headerRow = exportSheet.newRow();
 		headerRow.addCell(col++, translator.translate("table.header.id"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.title"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.external.ref"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.external.id"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("export.organisation.external.ref"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.lectures"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.title") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.organisation.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.lectures") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("curriculum.description"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.creation.date"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.last.modified"), workbook.getStyles().getHeaderStyle());
@@ -163,16 +164,14 @@ public class CurriculumExport {
 		row.addCell(col++, curriculum.getKey(), null, null);
 		row.addCell(col++, curriculum.getDisplayName());
 		row.addCell(col++, curriculum.getIdentifier());
-		row.addCell(col++, curriculum.getExternalId());
 		
-		String organisation = curriculum.getOrganisation().getDisplayName();
-		if(StringHelper.containsNonWhitespace(curriculum.getOrganisation().getIdentifier())) {
-			organisation += " - " + curriculum.getOrganisation().getIdentifier();
-		}
+		String organisation = curriculum.getOrganisation() != null
+				? curriculum.getOrganisation().getIdentifier()
+				: null;
 		row.addCell(col++, organisation);
 		
 		String lectures = curriculum.isLecturesEnabled() ? translator.translate("on") : translator.translate("off");
-		row.addCell(col++, lectures);
+		row.addCell(col++, lectures.toUpperCase());
 		row.addCell(col++, curriculum.getDescription());
 		row.addCell(col++, curriculum.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(col++, curriculum.getLastModified(), workbook.getStyles().getDateTimeStyle());
@@ -183,12 +182,12 @@ public class CurriculumExport {
 		
 		int col = 0;
 		Row headerRow = exportSheet.newRow();
-		headerRow.addCell(col++, translator.translate("export.implementation.prod.external.ref"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("export.implementation.impl.external.ref"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.implementation.prod.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.implementation.impl.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.id"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("export.implementation.object.type"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.implementation.object.type") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.number"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.title"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.title") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.external.ref"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.status"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.start.date"), workbook.getStyles().getHeaderStyle());
@@ -296,13 +295,9 @@ public class CurriculumExport {
 		row.addCell(col++, null);// No ref. id.
 		row.addCell(col++, null);// No location
 		
-		String elementType = null;
-		if(element.getType() != null) {
-			elementType = element.getType().getDisplayName();
-			if(StringHelper.containsNonWhitespace(element.getType().getIdentifier())) {
-				elementType += " - " + element.getType().getIdentifier();
-			}
-		}
+		String elementType = element.getType() != null
+				? element.getType().getIdentifier()
+				: null;
 		row.addCell(col++, elementType);
 		row.addCell(col++, getValue(element.getCalendars()));
 		row.addCell(col++, getValue(element.getLectures()));
