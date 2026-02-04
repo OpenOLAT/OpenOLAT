@@ -1227,8 +1227,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			switch (sourceType) {
 				case template -> {
 					if (templateToGroupDao.hasRelations(entry)) {
-						results.forbidTransition(RepositoryEntryRuntimeType.standalone, RuntimeTypeCheckResult.isTemplate);
-						results.forbidTransition(RepositoryEntryRuntimeType.curricular, RuntimeTypeCheckResult.isTemplate);
+						results.forbidTransition(RepositoryEntryRuntimeType.standalone, RuntimeTypeCheckResult.usedByCoursePlanner);
+						results.forbidTransition(RepositoryEntryRuntimeType.curricular, RuntimeTypeCheckResult.usedByCoursePlanner);
 					}
 				}
 				case curricular -> {

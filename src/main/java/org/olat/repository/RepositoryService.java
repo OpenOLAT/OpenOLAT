@@ -608,6 +608,5 @@ public interface RepositoryService {
 		hasMembersOtherThanOwner,
 		groupReferencingOtherCourseExists,
 		nonPrivateAccess,
-		isTemplate,
 	}
 }
