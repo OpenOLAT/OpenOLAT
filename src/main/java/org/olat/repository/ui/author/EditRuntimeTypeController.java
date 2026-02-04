@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -55,7 +57,6 @@ public class EditRuntimeTypeController extends FormBasicController {
 	private RepositoryEntry entry;
 	private final int numOfOffers;
 	private final boolean hasUserManager;
-	private final RepositoryService.RuntimeTypesAndCheckDetails allowedRuntimeTypesAndDetails;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -70,7 +71,6 @@ public class EditRuntimeTypeController extends FormBasicController {
 		this.entry = entry;
 		hasUserManager = repositoryService.hasUserManaged(entry);
 		numOfOffers = acService.findOfferByResource(entry.getOlatResource(), true, null, null).size();
-		allowedRuntimeTypesAndDetails = repositoryService.allowedRuntimeTypes(entry);
 		initForm(ureq);
 	}
 	
@@ -86,34 +86,42 @@ public class EditRuntimeTypeController extends FormBasicController {
 			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Course_Settings_Share/#section_usage");
 		}
 		
-		StringBuilder warnings = new StringBuilder();
-		switch (allowedRuntimeTypesAndDetails.checkDetails()) {
-			case ltiDeploymentExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.ltiDeploymentExists")).append("</p>");
-			case participantExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.participantExists")).append("</p>");
-			case coachExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.coachExists")).append("</p>");
-			case offerExists -> warnings.append("<p>").append(translate("change.runtine.type.warning.offerExists")).append("</p>");
-			case curriculumElementExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.curriculumElementExists")).append("</p>");
-			case groupWithOffersOrLtiExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOffersOrLtiExists")).append("</p>");
-			case groupWithOtherCoursesExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOtherCoursesExists")).append("</p>");
-			case isTemplate -> warnings.append("<p>").append(translate("change.runtime.type.warning.isTemplate")).append("</p>");
-			case lectureEnabled -> warnings.append("<p>").append(translate("change.runtime.type.warning.lectureEnabled")).append("</p>");
-			case wrongState, ok -> { /* Do nothing */}
-		}
-		if (warnings.isEmpty()) {
-			if(hasUserManager) {
-				warnings.append("<p>").append(translate("change.runtime.type.warning")).append("</p>");
-			}
-			if(numOfOffers > 0) {
-				warnings.append("<p>").append(translate("change.runtime.type.warning.offers", Integer.toString(numOfOffers))).append("</p>");
-			}
-		}
-		if(!warnings.isEmpty()) {
-			setFormTranslatedWarning(warnings.toString());
+		Set<RepositoryEntryRuntimeType> possibleRuntimeTypes = repositoryService.getPossibleRuntimeTypes(entry);
+		if (entry.getRuntimeType() != null) {
+			possibleRuntimeTypes.remove(entry.getRuntimeType());
 		}
 
-		Set<RepositoryEntryRuntimeType> possibleRuntimeTypes = repositoryService.getPossibleRuntimeTypes(entry);
-		if(entry.getRuntimeType() != null) {
-			possibleRuntimeTypes.remove(entry.getRuntimeType());
+		RepositoryService.RuntimeTypeTransitions transitions = repositoryService.checkPossibleRuntimeTypes(entry);
+
+		Set<RepositoryService.RuntimeTypeCheckResult> reasons = new HashSet<>();
+		for (RepositoryEntryRuntimeType runtimeType : possibleRuntimeTypes) {
+			reasons.addAll(transitions.getReasons(runtimeType));
+		}
+
+		List<String> warnings = new ArrayList<>();
+		for (RepositoryService.RuntimeTypeCheckResult reason : reasons) {
+			warnings.add(translate("change.runtime.type.transition.fail.reason." + reason.name()));
+		}
+
+		StringBuilder sb = new StringBuilder();
+		if (!warnings.isEmpty()) {
+			sb.append("<p>").append(translate("change.runtime.type.warning.preconditions")).append("</p>");
+			sb.append("<ul>");
+			for (String warning : warnings) {
+				sb.append("<li>").append(warning).append("</li>");
+			}
+			sb.append("</ul>");
+		} else {
+			if (hasUserManager) {
+				sb.append("<p>").append(translate("change.runtime.type.warning")).append("</p>");
+			}
+			if (numOfOffers > 0) {
+				sb.append("<p>").append(translate("change.runtime.type.warning.offers", Integer.toString(numOfOffers))).append("</p>");
+			}
+		}
+
+		if (!sb.isEmpty()) {
+			setFormTranslatedWarning(sb.toString());
 		}
 
 		SelectionValues runtimeTypeKV = new SelectionValues();
@@ -128,23 +136,21 @@ public class EditRuntimeTypeController extends FormBasicController {
 					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
 					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"),
 					"o_icon o_icon_people", null,
-					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.standalone)));
+					transitions.canTransitionTo(RepositoryEntryRuntimeType.standalone)));
 		}
 		if (possibleRuntimeTypes.contains(RepositoryEntryRuntimeType.curricular)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title"),
 					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"),
 					"o_icon o_icon_curriculum", null,
-					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.curricular)));
+					transitions.canTransitionTo(RepositoryEntryRuntimeType.curricular)));
 		}
 		if (possibleRuntimeTypes.contains(RepositoryEntryRuntimeType.template)) {
-			
-			
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.template.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".title"),
 					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".desc"),
 					"o_icon o_icon_template", null,
-					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.template)));
+					transitions.canTransitionTo(RepositoryEntryRuntimeType.template)));
 		}
 		
 
@@ -160,7 +166,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 		}
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		FormSubmit submit = uifactory.addFormSubmitButton("save", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("change", buttonsCont);
 		submit.setEnabled(enabledRuntimeTypeExists);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
