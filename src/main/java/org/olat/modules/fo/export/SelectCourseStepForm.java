@@ -19,6 +19,8 @@
  */
 package org.olat.modules.fo.export;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -119,7 +121,7 @@ public class SelectCourseStepForm extends StepFormBasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchCtrl);
 		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[] { CourseModule.ORES_TYPE_COURSE }, translate("step.select.course"));
+				new String[] { CourseModule.ORES_TYPE_COURSE }, List.of(), translate("step.select.course"));
 		listenTo(searchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
 				searchCtrl.getInitialComponent(), true, translate("step.select.course"));

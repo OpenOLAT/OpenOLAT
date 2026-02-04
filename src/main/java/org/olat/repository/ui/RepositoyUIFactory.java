@@ -167,7 +167,7 @@ public class RepositoyUIFactory {
 	
 	public static ObjectSelectionElement createOrganisationsEl(UserRequest ureq, WindowControl windowControl,
 			FormItemContainer formLayout, FormUIFactory uifactory, OrganisationModule organisationModule,
-			List<Organisation> manageableOrganisations) {
+			List<Organisation> manageableOrganisations, List<Organisation> defaultOrganisations) {
 		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
 				List.of(),
 				() -> manageableOrganisations);
@@ -177,7 +177,10 @@ public class RepositoyUIFactory {
 		organisationEl.setVisible(manageableOrganisations.size() > 1 && organisationModule.isEnabled());
 		
 		if (organisationEl.isVisible()) {
-			RepositoyUIFactory.getDefaultOrganisationKeys(ureq).forEach(key -> organisationEl.select(key));
+			List<String> preselectedOrganisations = defaultOrganisations == null || defaultOrganisations.isEmpty()
+					? RepositoyUIFactory.getDefaultOrganisationKeys(ureq)
+					: defaultOrganisations.stream().map(OrganisationRef::getKey).map(key -> key.toString()).toList();
+			preselectedOrganisations.forEach(key -> organisationEl.select(key));
 			if (organisationEl.getSelectedKeys().isEmpty() && !manageableOrganisations.isEmpty()) {
 				organisationEl.select(manageableOrganisations.get(0).getKey().toString());
 			}

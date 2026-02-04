@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -452,9 +453,10 @@ public class RepositoryEntryReferenceController extends BasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(searchCtrl);
 			
+			List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
 			// The commandLabel is used to get the stored prefs, but it is never displayed in the gui?!
 			searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					referenceProvider.getResourceTypes().stream().toArray(String[]::new), "keep.prefs");
+					referenceProvider.getResourceTypes().stream().toArray(String[]::new), defaultOrganisations, "keep.prefs");
 			listenTo(searchCtrl);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(),
 					true, referenceProvider.getSelectionTitle());
@@ -486,7 +488,9 @@ public class RepositoryEntryReferenceController extends BasicController {
 		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(importCtrl);
-			importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl(), referenceProvider.getResourceTypes().stream().toArray(String[]::new));
+			String[] resourceTypes = referenceProvider.getResourceTypes().stream().toArray(String[]::new);
+			List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
+			importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl(), resourceTypes, defaultOrganisations);
 			listenTo(importCtrl);
 			
 			removeAsListenerAndDispose(cmc);
@@ -508,7 +512,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 			if(resourceTypesList != null && !resourceTypesList.isEmpty()) {
 				resourceTypes = resourceTypesList.toArray(new String[resourceTypesList.size()]);
 			}
-			importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl(), resourceTypes);
+			List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
+			importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl(), resourceTypes, defaultOrganisations);
 			listenTo(importUrlCtrl);
 			
 			removeAsListenerAndDispose(cmc);

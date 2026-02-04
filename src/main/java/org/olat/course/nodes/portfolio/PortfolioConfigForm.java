@@ -20,6 +20,8 @@
 
 package org.olat.course.nodes.portfolio;
 
+import java.util.List;
+
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,6 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -49,6 +52,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -78,11 +82,14 @@ public class PortfolioConfigForm extends FormBasicController {
 	private Controller previewCtr;
 	private Controller columnLayoutCtr;
 	private boolean isDirty;
+	private final RepositoryEntry courseEntry;
 	private final PortfolioCourseNode courseNode;
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, PortfolioCourseNode courseNode) {
@@ -90,12 +97,12 @@ public class PortfolioConfigForm extends FormBasicController {
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.stackPanel = stackPanel;
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
 			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
 				binder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
-				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				if (binder != null) {
 					inUse = portfolioService.isTemplateInUse(binder, courseEntry, courseNode.getIdent());
 				}
@@ -209,7 +216,8 @@ public class PortfolioConfigForm extends FormBasicController {
 		removeAsListenerAndDispose(searchController);
 		removeAsListenerAndDispose(cmc);
 		
-		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, BINDER_RESOURCE,
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, BINDER_RESOURCE, defaultOrganisations,
 				translate("select.map2"), false, true, false, false, false, false);
 		listenTo(searchController);
 		

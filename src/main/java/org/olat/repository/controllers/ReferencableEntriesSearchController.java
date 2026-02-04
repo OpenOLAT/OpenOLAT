@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupModule;
@@ -101,6 +102,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	private RepositoryEntry selectedRepositoryEntry;
 	private List<RepositoryEntry> selectedRepositoryEntries;
+	private final List<Organisation> defaultOrganisations;
 	
 	private final Can canBe;
 	private final boolean canImport;
@@ -112,21 +114,21 @@ public class ReferencableEntriesSearchController extends BasicController {
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
-	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{ limitType }, null, null, commandLabel, true, true, false, false, false,false,  Can.referenceable);
+	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, List<Organisation> defaultOrganisations, String commandLabel) {
+		this(wControl, ureq, new String[]{ limitType }, defaultOrganisations, null, null, commandLabel, true, true, false, false, false,false,  Can.referenceable);
 	}
 	
-	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes, null, null, commandLabel, true, true, false, false, false, false, Can.referenceable);
+	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, List<Organisation> defaultOrganisations, String commandLabel) {
+		this(wControl, ureq, limitTypes, defaultOrganisations, null, null, commandLabel, true, true, false, false, false, false, Can.referenceable);
 	}
 	
-	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
+	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, List<Organisation> defaultOrganisations, String commandLabel,
 			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, boolean showCancel) {
-		this(wControl, ureq, limitTypes, null, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, showCancel, Can.referenceable);
+		this(wControl, ureq, limitTypes, defaultOrganisations, null, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, showCancel, Can.referenceable);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq,
-			String[] limitTypes, RepositoryEntryFilter filter, IdentityRef asParticipant, String commandLabel,
+			String[] limitTypes, List<Organisation> defaultOrganisations, RepositoryEntryFilter filter, IdentityRef asParticipant, String commandLabel,
 			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, boolean showCancel,
 			Can canBe) {
 
@@ -134,6 +136,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		this.canBe = canBe;
 		this.canImport = canImport;
 		this.limitTypes = limitTypes;
+		this.defaultOrganisations = defaultOrganisations;
 		setBasePackage(RepositoryService.class);
 		mainVC = createVelocityContainer("referencableSearch");
 		
@@ -407,7 +410,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	private void doImportResource(UserRequest ureq) {
 		removeAsListenerAndDispose(importController);
-		importController = new ImportRepositoryEntryController(ureq, getWindowControl(), limitTypes);
+		importController = new ImportRepositoryEntryController(ureq, getWindowControl(), limitTypes, defaultOrganisations);
 		listenTo(importController);
 		
 		removeAsListenerAndDispose(cmc);
@@ -419,7 +422,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	private void doImportResourceUrl(UserRequest ureq) {
 		removeAsListenerAndDispose(importController);
-		importUrlController = new ImportURLRepositoryEntryController(ureq, getWindowControl(), limitTypes);
+		importUrlController = new ImportURLRepositoryEntryController(ureq, getWindowControl(), limitTypes, defaultOrganisations);
 		listenTo(importUrlController);
 		
 		removeAsListenerAndDispose(cmc);

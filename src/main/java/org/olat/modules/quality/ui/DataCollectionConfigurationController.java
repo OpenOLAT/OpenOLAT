@@ -600,7 +600,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	
 	private void doSelectFormEntry(UserRequest ureq) {
 		formSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("data.collection.form.select"));
+				EvaluationFormResource.TYPE_NAME, List.of(), translate("data.collection.form.select"));
 		listenTo(formSearchCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -626,9 +626,9 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	}
 
 	private void doSelectTopicRepository(UserRequest ureq) {
-		topicRepositorySearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, "CourseModule",
+		topicRepositorySearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, "CourseModule", List.of(),
 				translate("data.collection.topic.repository.select"));
-		this.listenTo(topicRepositorySearchCtrl);
+		listenTo(topicRepositorySearchCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				topicRepositorySearchCtrl.getInitialComponent(), true, translate("data.collection.topic.repository.select"));

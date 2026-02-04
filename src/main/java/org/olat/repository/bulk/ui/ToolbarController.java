@@ -442,7 +442,7 @@ public class ToolbarController extends StepFormBasicController {
 	}
 
 	private void doSelectBlog(UserRequest ureq) {
-		blogSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, BlogFileResource.TYPE_NAME,
+		blogSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, BlogFileResource.TYPE_NAME, List.of(),
 				translate("settings.bulk.toolbar.blog.select.title"));
 		listenTo(blogSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -451,7 +451,7 @@ public class ToolbarController extends StepFormBasicController {
 	}
 
 	private void doSelectWiki(UserRequest ureq) {
-		wikiSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME,
+		wikiSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME, List.of(),
 				translate("settings.bulk.toolbar.wiki.select.title"));
 		listenTo(wikiSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

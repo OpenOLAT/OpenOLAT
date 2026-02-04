@@ -80,7 +80,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 	private String[] limitTypes;
 	private RepositoryEntry importedEntry;
-	private final List<Organisation> manageableOrganisations;
+	private final List<Organisation> organisations;
+	private final List<Organisation> defaultOrganisations;
 	
 	private String handlerForUrl;
 	private List<ResourceHandler> handlerForUploadedResources;
@@ -109,16 +110,24 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private VideoManager videoManager;
 
 	public ImportURLRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
+		this(ureq, wControl, null, List.of());
 	}
 	
-	public ImportURLRepositoryEntryController(UserRequest ureq, WindowControl wControl, String[] limitTypes) {
+	public ImportURLRepositoryEntryController(UserRequest ureq, WindowControl wControl, String[] limitTypes, List<Organisation> defaultOrganisations) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.limitTypes = limitTypes;
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+		List<Organisation> manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		
+		organisations = new ArrayList<>(manageableOrganisations);
+		this.defaultOrganisations = defaultOrganisations;
+		if(defaultOrganisations != null && !defaultOrganisations.isEmpty()) {
+			for(Organisation defaultOrganisation:defaultOrganisations) {
+				if(!organisations.contains(defaultOrganisation)) {
+					organisations.add(defaultOrganisation);
+				}
+			}
+		}
 		initForm(ureq);
 	}
 
@@ -165,7 +174,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		externalRef.setInlineValidationOn(true);
 		
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
-				organisationModule, manageableOrganisations);
+				organisationModule, organisations, defaultOrganisations);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -407,7 +416,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		}
 		
 		if(handler != null) {
-			Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
+			Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, organisations);
 
 			String displayname = displaynameEl.getValue();
 			if(!StringHelper.containsNonWhitespace(displayname) && evaluation != null

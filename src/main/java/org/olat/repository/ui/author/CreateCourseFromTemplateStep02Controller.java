@@ -275,7 +275,7 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 
 	private void initAdministrativeAccess(UserRequest ureq, FormItemContainer formLayout) {
 		administrativeAccessEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
-				organisationModule, manageableOrganisations);
+				organisationModule, manageableOrganisations, List.of());
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.editor.CourseNodeReferenceProvider;
@@ -121,8 +122,10 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		// CourseNodeReferenceProvider for handling references
 		RepositoryEntry refRepoEntry = feedCourseNode.getReferencedRepositoryEntry();
 		String selectionTitle = translate("button.create.feed");
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
-				List.of(resourceTypeName), emptyStateConfig, selectionTitle, this);
+				List.of(resourceTypeName), defaultOrganisations, emptyStateConfig, selectionTitle, this);
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, getWindowControl(), refRepoEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		mainVC.put("reference", referenceCtrl.getInitialComponent());

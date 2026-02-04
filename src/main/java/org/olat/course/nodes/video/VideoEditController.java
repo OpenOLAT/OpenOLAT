@@ -46,12 +46,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
+import org.olat.course.ICourse;
 import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.VideoCourseNode;
@@ -125,7 +127,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	@Autowired
 	private RepositoryService repositoryService;
 
-	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl) {
+	public VideoEditController(UserRequest ureq, WindowControl wControl, VideoCourseNode videoNode, ICourse course) {
 		super(ureq, wControl);
 		
 		this.videoNode = videoNode;
@@ -139,14 +141,16 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.video.resource.selected"))
 				.withIconCss("o_icon o_FileResource-MOVIE_icon").build();
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
-				RESOURCE_TYPES, emptyStateConfig, selectionTitle, this);
+				RESOURCE_TYPES, defaultOrganisations, emptyStateConfig, selectionTitle, this);
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, videoEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		configurationVC.put("reference", referenceCtrl.getInitialComponent());
 
 		putInitialPanel(configurationVC);
-		updateEditController(ureq, videoEntry, false);
+		updateEditController(ureq, videoEntry);
 	}
 
 	@Override
@@ -229,10 +233,10 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 
 	private void doChangeResource(UserRequest ureq, RepositoryEntry newEntry) {
 		doVideoReference(ureq, newEntry);
-		updateEditController(ureq, newEntry, true);
+		updateEditController(ureq, newEntry);
 	}
 
-	private void updateEditController(UserRequest ureq, RepositoryEntry videoEntry, boolean replacedVideo) {
+	private void updateEditController(UserRequest ureq, RepositoryEntry videoEntry) {
 		removeAsListenerAndDispose(videoOptionsCtrl);
 		videoOptionsCtrl = null;
 

@@ -20,6 +20,7 @@
 package org.olat.course.nodes.document.ui;
 
 import java.io.File;
+import java.util.List;
 import java.util.function.Function;
 
 import org.olat.core.commons.controllers.filechooser.FileChoosenEvent;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -74,6 +76,7 @@ import org.olat.fileresource.types.PowerpointFileResource;
 import org.olat.fileresource.types.SoundFileResource;
 import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.VideoHandler;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
@@ -114,6 +117,7 @@ public class DocumentConfigController extends BasicController {
 	private MetaInfoFormController metadataCtrl;
 	private Controller previewCtrl;
 	
+	private final RepositoryEntry courseEntry;
 	private final DocumentCourseNode courseNode;
 	private final VFSContainer courseFolderCont;
 	private DocumentSource documentSource;
@@ -126,6 +130,8 @@ public class DocumentConfigController extends BasicController {
 	private LicenseModule licenseModule;
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private FolderLicenseHandler folderLicenseHandler;
 	@Autowired
@@ -151,6 +157,7 @@ public class DocumentConfigController extends BasicController {
 		mainVC.put("layout", documentLayoutCtrl.getInitialComponent());
 		
 		CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
+		courseEntry = courseGroupManager.getCourseEntry();
 		documentRightsCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
 				DocumentCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), null);
 		listenTo(documentRightsCtrl);
@@ -366,7 +373,9 @@ public class DocumentConfigController extends BasicController {
 	}
 
 	private void doSelectRepositoryEntry(UserRequest ureq) {
-		repoSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, FILE_TYPES, translate("select"));
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
+		repoSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				FILE_TYPES, defaultOrganisations, translate("select"));
 		listenTo(repoSearchCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtrl.getInitialComponent(),

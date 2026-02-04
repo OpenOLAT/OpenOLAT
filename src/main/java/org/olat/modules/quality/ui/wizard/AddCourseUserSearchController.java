@@ -52,7 +52,7 @@ public class AddCourseUserSearchController extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(ParticipationListController.class, getLocale(), getTranslator()));
 
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[] { "CourseModule" }, translate("participation.user.course.add.choose"),
+				new String[] { "CourseModule" }, List.of(), translate("participation.user.course.add.choose"),
 				false, false, true, false, true, false);
 		listenTo(searchController);
 		initForm (ureq);

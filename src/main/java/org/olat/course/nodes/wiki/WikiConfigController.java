@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.wiki;
 
+import java.util.List;
+
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -36,6 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
@@ -169,8 +172,10 @@ public class WikiConfigController extends FormBasicController {
 	}
 	
 	private void doSelectFeed(UserRequest ureq) {
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		repositorySearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME,
-				translate("command.choose"));
+				defaultOrganisations, translate("command.choose"));
 		listenTo(repositorySearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				repositorySearchCtrl.getInitialComponent(), true, translate("command.create"));

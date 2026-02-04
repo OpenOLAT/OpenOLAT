@@ -259,7 +259,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), generalCont, uifactory,
-				organisationModule, manageableOrganisations);
+				organisationModule, manageableOrganisations, List.of());
 		
 		initAdditionalFormElements(formLayout, listener, ureq);
 		

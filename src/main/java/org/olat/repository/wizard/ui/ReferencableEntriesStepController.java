@@ -19,6 +19,7 @@
  */
 package org.olat.repository.wizard.ui;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.olat.core.gui.UserRequest;
@@ -92,7 +93,7 @@ public class ReferencableEntriesStepController extends StepFormBasicController {
 		if (search) {
 			removeAsListenerAndDispose(searchCtrl);
 			boolean showCancel = entryContext.getReferencedEntry() != null;
-			searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[] {limitTypes}, "select", false, false, false, false, false, showCancel);
+			searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[] {limitTypes}, List.of(), "select", false, false, false, false, false, showCancel);
 			listenTo(searchCtrl);
 			flc.put("search", searchCtrl.getInitialComponent());
 			

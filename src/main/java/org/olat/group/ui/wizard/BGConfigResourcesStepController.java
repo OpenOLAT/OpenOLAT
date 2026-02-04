@@ -160,7 +160,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		removeAsListenerAndDispose(repoSearchCtr);
 		removeAsListenerAndDispose(cmc);
 		
-		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()},
+		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()}, List.of(),
 				translate("resources.add"), true, true, true, false, true, false);
 		listenTo(repoSearchCtr);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), this.repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));

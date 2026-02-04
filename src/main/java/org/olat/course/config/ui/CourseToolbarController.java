@@ -20,6 +20,7 @@
 package org.olat.course.config.ui;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -51,6 +52,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -157,6 +159,8 @@ public class CourseToolbarController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private ReferenceManager referenceManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private TeamsModule teamsModule;
 	@Autowired
@@ -939,8 +943,9 @@ public class CourseToolbarController extends FormBasicController {
 	}	
 
 	private void doSelectBlog(UserRequest ureq) {
+		List<Organisation> defaultOrgnisations = repositoryService.getOrganisations(entry);
 		blogSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, BlogFileResource.TYPE_NAME,
-				translate("blog.select.title"));
+				defaultOrgnisations, translate("blog.select.title"));
 		listenTo(blogSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				blogSearchCtrl.getInitialComponent(), true, translate("blog.select.title"));
@@ -967,8 +972,9 @@ public class CourseToolbarController extends FormBasicController {
 	}
 
 	private void doSelectWiki(UserRequest ureq) {
+		List<Organisation> defaultOrgnisations = repositoryService.getOrganisations(entry);
 		wikiSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME,
-				translate("wiki.select.title"));
+				defaultOrgnisations, translate("wiki.select.title"));
 		listenTo(wikiSearchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				wikiSearchCtrl.getInitialComponent(), true, translate("wiki.select.title"));

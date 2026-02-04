@@ -20,6 +20,7 @@
 package org.olat.course.nodes.survey.ui;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
@@ -48,6 +50,7 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,6 +79,8 @@ public class SurveyConfigController extends FormBasicController {
 	
 	@Autowired
 	private SurveyManager surveyManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public SurveyConfigController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
 			RepositoryEntry courseEntry) {
@@ -170,8 +175,9 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void doChooseQuestionnaire(UserRequest ureq) {
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("edit.choose.evaluation.form"));
+				EvaluationFormResource.TYPE_NAME, defaultOrganisations, translate("edit.choose.evaluation.form"));
 		this.listenTo(searchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				searchCtrl.getInitialComponent(), true, translate("edit.choose.evaluation.form"));

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.library.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -235,7 +237,7 @@ public class LibraryAdminController extends FormBasicController {
 		if(guardModalController(chooseFolderCtr)) return;
 		
 		String choose = translate("library.catalog.choose.folder.link");
-		chooseFolderCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, choose);
+		chooseFolderCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, List.of(), choose);
 		listenTo(chooseFolderCtr);
 		
 		String title = translate("add.shared.folder");

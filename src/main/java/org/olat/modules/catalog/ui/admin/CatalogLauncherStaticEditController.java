@@ -202,7 +202,7 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 	private void doSelectResource(UserRequest ureq) {
 		guardModalController(selectResouceCtrl);
 		
-		selectResouceCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, null, new StandaloneResourceFilter(), null,
+		selectResouceCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, null, List.of(), new StandaloneResourceFilter(), null,
 				translate("launcher.static.resources.add"), false, false, true, false, true, false, Can.all);
 		listenTo(selectResouceCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectResouceCtrl.getInitialComponent(), true);

@@ -50,7 +50,7 @@ public class CourseSelectionController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(OpenBadgesUIFactory.class, ureq.getLocale()));
 		
 		courseBrowserCtrl = new ReferencableEntriesSearchController(wControl, ureq,
-				new String[] {CourseModule.ORES_TYPE_COURSE},
+				new String[] {CourseModule.ORES_TYPE_COURSE}, List.of(),
 				re -> RepositoryEntryStatusEnum.published.equals(re.getEntryStatus()), null,
 				translate("course.selection.option"), false, false,
 				true, false, true, false,

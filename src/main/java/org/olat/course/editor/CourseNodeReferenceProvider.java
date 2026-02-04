@@ -28,6 +28,7 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider;
@@ -43,14 +44,16 @@ public class CourseNodeReferenceProvider implements RepositoryEntryReferenceProv
 	
 	private final RepositoryService repositoryService;
 	private final List<String> resourceTypes;
+	private final List<Organisation> defaultOrganisations;
 	private final EmptyStateConfig emptyStateConfig;
 	private final String selectionTitle;
 	private final ReferenceContentProvider referenceContentProvider;
 	
-	public CourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+	public CourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes, List<Organisation> defaultOrganisations,
 			EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider) {
 		this.repositoryService = repositoryService;
 		this.resourceTypes = resourceTypes;
+		this.defaultOrganisations = defaultOrganisations;
 		this.emptyStateConfig = emptyStateConfig;
 		this.selectionTitle = selectionTitle;
 		this.referenceContentProvider = referenceContentProvider;
@@ -59,6 +62,11 @@ public class CourseNodeReferenceProvider implements RepositoryEntryReferenceProv
 	@Override
 	public List<String> getResourceTypes() {
 		return resourceTypes;
+	}
+
+	@Override
+	public List<Organisation> getDefaultOrganisations() {
+		return defaultOrganisations;
 	}
 
 	@Override

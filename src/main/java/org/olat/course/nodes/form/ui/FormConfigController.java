@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
@@ -62,6 +63,7 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -102,6 +104,8 @@ public class FormConfigController extends FormBasicController {
 	
 	@Autowired
 	private FormManager formManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public FormConfigController(UserRequest ureq, WindowControl wControl, FormCourseNode formCourseNode,
 			RepositoryEntry courseEntry) {
@@ -274,8 +278,9 @@ public class FormConfigController extends FormBasicController {
 	}
 
 	private void doChooseEvaluationForm(UserRequest ureq) {
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("edit.choose.evaluation.form"));
+				EvaluationFormResource.TYPE_NAME, defaultOrganisations, translate("edit.choose.evaluation.form"));
 		this.listenTo(searchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				searchCtrl.getInitialComponent(), true, translate("edit.choose.evaluation.form"));
