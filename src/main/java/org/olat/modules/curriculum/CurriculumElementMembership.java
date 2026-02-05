@@ -32,6 +32,8 @@ public interface CurriculumElementMembership {
 	public Long getIdentityKey();
 	
 	public Long getCurriculumElementKey();
+	
+	public List<Long> getMaterializedPathKeysList();
 
 	public boolean isRepositoryEntryOwner();
 

@@ -1366,9 +1366,9 @@ public class CurriculumElementDAO {
 			Identity identity = membershipHistory.getIdentity();
 			if(CurriculumRoles.isValueOf(membershipHistory.getRole())) {
 				CurriculumRoles cRole = CurriculumRoles.valueOf(membershipHistory.getRole());
-				IdentityToElementKey key = new IdentityToElementKey(identity.getKey(), elementKey);
+				IdentityToElementKey key = new IdentityToElementKey(identity.getKey(), elementKey, null);
 				CurriculumElementMembershipHistory membership = history
-						.computeIfAbsent(key, k -> new CurriculumElementMembershipHistory(identity, k.getCurriculumElementKey()));
+						.computeIfAbsent(key, k -> new CurriculumElementMembershipHistory(identity, k.curriculumElementKey()));
 				membership.addHistoiryPoint(cRole, membershipHistory);
 			}
 		}
@@ -1377,7 +1377,7 @@ public class CurriculumElementDAO {
 	
 	public List<CurriculumElementMembership> getMembershipInfos(List<? extends CurriculumRef> curriculums, Collection<? extends CurriculumElementRef> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select el.key, membership from curriculumelement el")
+		sb.append("select el.key, el.materializedPathKeys, membership from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join fetch membership.identity ident")
@@ -1420,13 +1420,14 @@ public class CurriculumElementDAO {
 		Map<IdentityToElementKey, CurriculumElementMembershipImpl> memberships = new HashMap<>();
 		for(Object[] object:rawObjects) {
 			Long elementKey = (Long)object[0];
-			GroupMembership groupMembership = (GroupMembership)object[1];
+			String materializedPathKeys = (String)object[1];
+			GroupMembership groupMembership = (GroupMembership)object[2];
 			Long identityKey = groupMembership.getIdentity().getKey();
 			String role = groupMembership.getRole();
 			
-			IdentityToElementKey key = new IdentityToElementKey(identityKey, elementKey);
+			IdentityToElementKey key = new IdentityToElementKey(identityKey, elementKey, materializedPathKeys);
 			CurriculumElementMembershipImpl membership = memberships
-					.computeIfAbsent(key, k -> new CurriculumElementMembershipImpl(k.getIdentityKey(), k.getCurriculumElementKey()));
+					.computeIfAbsent(key, k -> new CurriculumElementMembershipImpl(k.identityKey(), k.curriculumElementKey(), k.materializedPathKeys()));
 			
 			if(CurriculumRoles.curriculumelementowner.name().equals(role)) {
 				membership.setCurriculumElementOwner(true);
@@ -1463,23 +1464,7 @@ public class CurriculumElementDAO {
 		return true;
 	}
 	
-	private static class IdentityToElementKey {
-		
-		private final Long identityKey;
-		private final Long curriculumElementKey;
-		
-		public IdentityToElementKey(Long identityKey, Long curriculumElementKey) {
-			this.identityKey = identityKey;
-			this.curriculumElementKey = curriculumElementKey;
-		}
-
-		public Long getIdentityKey() {
-			return identityKey;
-		}
-
-		public Long getCurriculumElementKey() {
-			return curriculumElementKey;
-		}
+	private static record IdentityToElementKey(Long identityKey,  Long curriculumElementKey, String materializedPathKeys) {
 
 		@Override
 		public int hashCode() {

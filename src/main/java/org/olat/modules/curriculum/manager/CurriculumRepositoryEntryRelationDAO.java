@@ -310,35 +310,40 @@ public class CurriculumRepositoryEntryRelationDAO {
 	 * @param curriculums A list of curriculum objects
 	 * @return A map of curriculum element to their repository entries
 	 */
-	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<? extends CurriculumRef> curriculums,
+	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<Long> curriculumElementsKeys,
 			CurriculumElementStatus[] status) {
-		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyMap();
+		if(curriculumElementsKeys == null || curriculumElementsKeys.isEmpty()) return Collections.emptyMap();
 		
-		QueryBuilder sb = new QueryBuilder(256);
-		sb.append("select el, rel.entry.key from curriculumelement el")
-		  .append(" left join fetch el.type elementType")
-		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" left join fetch el.parent parentEl")
-		  .append(" left join fetch parentEl.parent parentParentEl")
-		  .append(" left join fetch parentParentEl.parent parentParentParentEl")
-		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")
-		  .append(" where curriculum.key in (:curriculumKeys) and el.status ").in(status);
+		String sb = """
+				select el, rel.entry.key from curriculumelement el
+				inner join fetch el.curriculum curriculum
+				left join fetch el.type elementType
+				left join fetch el.parent parentEl
+				left join repoentrytogroup as rel on (el.group.key=rel.group.key)
+				where el.key in (:curriculumElementKeys) and el.status in (:status)""";
+		
+		List<String> statusList = List.of(status).stream()
+				.map(CurriculumElementStatus::name)
+				.toList();
 
-		List<Long> curriculumKeys = curriculums.stream()
-				.map(CurriculumRef::getKey).collect(Collectors.toList());
-		
-		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Object[].class)
-			.setParameter("curriculumKeys", curriculumKeys)
-			.getResultList();
-		
 		Map<CurriculumElement, List<Long>> map = new HashMap<>();
-		for(Object[] rawObject:rawObjects) {
-			CurriculumElement element = (CurriculumElement)rawObject[0];
-			Long repoKey = (Long)rawObject[1];
-			List<Long> entries = map.computeIfAbsent(element, el -> new ArrayList<>());
-			if(repoKey != null) {
-				entries.add(repoKey);
+		Collection<List<Long>> chunkedOfElementsKeys = PersistenceHelper.collectionOfChunks(new ArrayList<>(curriculumElementsKeys), 2);
+		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Object[].class);
+		for (List<Long> chunkOfKeys : chunkedOfElementsKeys) {
+			if(chunkOfKeys.isEmpty()) continue;
+			
+			List<Object[]> rawObjects = rawQuery
+				.setParameter("curriculumElementKeys", chunkOfKeys)
+				.setParameter("status", statusList)
+				.getResultList();
+			for(Object[] rawObject:rawObjects) {
+				CurriculumElement element = (CurriculumElement)rawObject[0];
+				Long repoKey = (Long)rawObject[1];
+				List<Long> entries = map.computeIfAbsent(element, el -> new ArrayList<>());
+				if(repoKey != null) {
+					entries.add(repoKey);
+				}
 			}
 		}
 		return map;

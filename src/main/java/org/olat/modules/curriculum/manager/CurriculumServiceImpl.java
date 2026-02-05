@@ -48,7 +48,6 @@ import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
-import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
@@ -56,6 +55,7 @@ import org.olat.commons.info.InfoMessageManager;
 import org.olat.commons.info.InfoMessageToCurriculumElement;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -203,8 +203,6 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
-	@Autowired
-	private OrganisationDAO organisationDao;
 	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
@@ -1811,63 +1809,67 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculums, CurriculumElementStatus[] status, 
 			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles) {
-		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyList();
+		if(curriculums == null || curriculums.isEmpty()) return List.of();
+		
 		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculums, null, identity);
 		Map<Long,CurriculumElementMembership> membershipMap = new HashMap<>();
+		
+		List<Long> elementsKeys = new ArrayList<>(memberships.size());
+		Set<Long> elementsWithParentsKeys = new HashSet<>();
 		for(CurriculumElementMembership membership:memberships) {
 			membershipMap.put(membership.getCurriculumElementKey(), membership);
+			elementsKeys.add(membership.getCurriculumElementKey());
+			elementsWithParentsKeys.add(membership.getCurriculumElementKey());
+			List<Long> parentLine = membership.getMaterializedPathKeysList();
+			if(parentLine != null && !parentLine.isEmpty()) {
+				elementsWithParentsKeys.addAll(parentLine);
+			}
 		}
 		
-		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao
-				.getCurriculumElementsWithRepositoryEntryKeys(curriculums, status);
+		Map<CurriculumElement, List<Long>> elementsToEntriesMap = curriculumRepositoryEntryRelationDao
+				.getCurriculumElementsWithRepositoryEntryKeys(List.copyOf(elementsWithParentsKeys), status);
 		
-		List<CurriculumElementRepositoryEntryViews> elements = new ArrayList<>(elementsMap.size());
-		if(!elementsMap.isEmpty()) {
+		List<CurriculumElementRepositoryEntryViews> elementsViews = new ArrayList<>(elementsToEntriesMap.size());
+		if(!elementsKeys.isEmpty()) {
 
-			Map<Long, RepositoryEntryMyView> viewMap = new HashMap<>();
 			Set<RepositoryEntryRef> entriesRefs = new HashSet<>();
-			for(List<Long> keys:elementsMap.values()) {
+			for(List<Long> keys:elementsToEntriesMap.values()) {
 				for(Long key:keys) {
 					entriesRefs.add(new RepositoryEntryRefImpl(key));
 				}
 			}
+
+			Map<Long, RepositoryEntryMyView> entryKeyToViewMap = new HashMap<>();
 			if(!entriesRefs.isEmpty()) {
-				SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
-				params.setCurriculums(curriculums);
-				params.setOfferOrganisations(organisationDao.getOrganisationsWithParentLine(identity, List.of(OrganisationRoles.user.name())));
-				params.setOfferValidAt(new Date());
-				params.setRuntimeTypes(runtimeTypes);
-				params.setFilters(Filter.rolesFilters(asRoles));
-				if(entriesRefs.size() < 512) {
-					// The parameter is redundant with curriculums (but can slightly accelerate the query in some cases)
-					params.setRepositoryEntries(List.copyOf(entriesRefs));
-				}
-				
-				List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
+				List<RepositoryEntryMyView> views = internal(identity, roles, curriculums, runtimeTypes, asRoles, new ArrayList<>(entriesRefs));
 				for(RepositoryEntryMyView view:views) {
-					viewMap.put(view.getKey(), view);
+					entryKeyToViewMap.put(view.getKey(), view);
 				}
 			}
 			
 			Map<Long,CurriculumElementRepositoryEntryViews> elementKeyMap = new HashMap<>();
-			for(Map.Entry<CurriculumElement, List<Long>> elementEntry:elementsMap.entrySet()) {
+			for(Map.Entry<CurriculumElement, List<Long>> elementEntry:elementsToEntriesMap.entrySet()) {
 				CurriculumElement element = elementEntry.getKey();
-				List<RepositoryEntryMyView> elementViews = new ArrayList<>(elementEntry.getValue().size());
-				Set<Long> deduplicatedEntryKeys = new HashSet<>(elementEntry.getValue());
+				Long elementKey = element.getKey();
+				
+				List<Long> entriesKeys = elementEntry.getValue();
+				List<RepositoryEntryMyView> elementViews = new ArrayList<>(entriesKeys.size());
+				Set<Long> deduplicatedEntryKeys = Set.copyOf(entriesKeys);
 				for(Long entryKey:deduplicatedEntryKeys) {
-					RepositoryEntryMyView elementView = viewMap.get(entryKey);
+					RepositoryEntryMyView elementView = entryKeyToViewMap.get(entryKey);
 					if(elementView != null) {
 						elementViews.add(elementView);
 					}
 				}
-				CurriculumElementMembership membership = membershipMap.get(element.getKey());
+				
+				CurriculumElementMembership membership = membershipMap.get(elementKey);
 				CurriculumElementRepositoryEntryViews view = new CurriculumElementRepositoryEntryViews(element, elementViews, membership);
-				elements.add(view);
-				elementKeyMap.put(element.getKey(), view);
+				elementsViews.add(view);
+				elementKeyMap.put(elementKey, view);
 			}
 
 			// calculate parents
-			for(CurriculumElementRepositoryEntryViews element:elements) {
+			for(CurriculumElementRepositoryEntryViews element:elementsViews) {
 				CurriculumElement parent = element.getCurriculumElement().getParent();
 				if(parent != null) {
 					element.setParent(elementKeyMap.get(parent.getKey()));
@@ -1875,7 +1877,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 			
 			// propagate to the parents
-			for(CurriculumElementRepositoryEntryViews element:elements) {
+			for(CurriculumElementRepositoryEntryViews element:elementsViews) {
 				if(element.isCurriculumMember()) {
 					for(CurriculumElementRepositoryEntryViews parentRow=element.getParent(); parentRow != null; parentRow=parentRow.getParent()) {
 						parentRow.setCurriculumMember(true);
@@ -1884,14 +1886,37 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 			
 			// trim part of the tree without member flag
-			for(Iterator<CurriculumElementRepositoryEntryViews> it=elements.iterator(); it.hasNext(); ) {
+			for(Iterator<CurriculumElementRepositoryEntryViews> it=elementsViews.iterator(); it.hasNext(); ) {
 				if(!it.next().isCurriculumMember()) {
 					it.remove();
 				}
 			}
 		}
 		
-		return elements;
+		return elementsViews;
+	}
+	
+	private List<RepositoryEntryMyView> internal(Identity identity, Roles roles, List<? extends CurriculumRef> curriculums,
+			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, List<RepositoryEntryRef> entriesRefs) {
+		Collection<List<RepositoryEntryRef>> chunkedOfEntriesRefs = PersistenceHelper.collectionOfChunks(new ArrayList<>(entriesRefs), 5);
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
+		params.setCurriculums(curriculums);
+		params.setRuntimeTypes(runtimeTypes);
+		params.setFilters(Filter.rolesFilters(asRoles));
+		
+		List<RepositoryEntryMyView> views = new ArrayList<>(entriesRefs.size());
+		for (List<RepositoryEntryRef> chunkedORefs : chunkedOfEntriesRefs) {
+			if(chunkedORefs.isEmpty()) continue;
+
+			params.setRepositoryEntries(chunkedORefs);
+			List<RepositoryEntryMyView> chunkOfViews = myCourseQueries.searchViews(params, 0, -1);
+			if(!chunkOfViews.isEmpty()) {
+				views.addAll(chunkOfViews);
+			}
+		}
+		
+		return views;
 	}
 
 	@Override
