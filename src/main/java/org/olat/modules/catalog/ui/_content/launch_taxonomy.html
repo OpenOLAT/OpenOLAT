@@ -9,7 +9,11 @@
 		#foreach($row in $items)
 			<div class="o_taxonomy_launcher o_card" onClick="$r.javaScriptCommand("select", false, true, "key","$row.key", "", "");" role="link">
 				<div class="o_visual">
-					<span class="o_visual_not_available #if($row.thumbnailRelPath)o_visual_available#end" #if($row.thumbnailRelPath) style="background-image:url('$row.thumbnailRelPath');" #end></span>
+				#if($r.isNotEmpty($row.thumbnailRelPath))
+					<img class="o_visual_available" src="$row.thumbnailRelPath" />
+				#else
+					<span class="o_visual_not_available"></span>
+				#end
 				</div>
 				<div class="o_meta">
 					<h4 class="o_title o_card_title" title="$r.escapeForHtmlAttribute($row.displayName)">$r.render($row.selectLinkName)</h4>
