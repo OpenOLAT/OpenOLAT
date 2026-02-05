@@ -115,7 +115,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	protected RepositoryEntry repositoryEntry;
 	private final RepositoryHandler handler;
 	private final boolean wizardsEnabled;
-	private final List<Organisation> manageableOrganisations;
+	private final List<Organisation> organisations;
+	private final List<Organisation> defaultOrganisations;
 	private RepositoryWizardProvider wizardProvider;
 	
 	private Object createObject;
@@ -154,14 +155,23 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	@Autowired
 	private LifecycleModule lifecycleModule;
 	
-	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler, boolean wizardsEnabled) {
+	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler, boolean wizardsEnabled,
+			List<Organisation> defaultOrganisations) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.wizardsEnabled = wizardsEnabled;
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.handler = handler;
 		
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+		List<Organisation> manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		organisations = new ArrayList<>(manageableOrganisations);
+		this.defaultOrganisations = defaultOrganisations;
+		for(Organisation defaultOrganisation:defaultOrganisations) {
+			if(!organisations.contains(defaultOrganisation)) {
+				organisations.add(defaultOrganisation);
+			}
+		}
+		
 		initForm(ureq);
 	}
 	
@@ -259,7 +269,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), generalCont, uifactory,
-				organisationModule, manageableOrganisations, List.of());
+				organisationModule, organisations, defaultOrganisations);
 		
 		initAdditionalFormElements(formLayout, listener, ureq);
 		
@@ -503,7 +513,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private void doCreate(UserRequest ureq) {
 		String displayname = displaynameEl.getValue();
 		
-		Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
+		Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, organisations);
 		
 		repositoryEntry = handler.createResource(getIdentity(), displayname, "", createObject, organisation, getLocale());
 		

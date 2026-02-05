@@ -218,19 +218,27 @@ public interface RepositoryHandler {
 	 * Called if a user wants to open the create repository entry dialog for a
 	 * Resourceable
 	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param wizardsEnabled 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param wizardsEnabled If wiazrd is enabled
 	 * @return Controller able to create resourceable.
 	 */
-	default CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, boolean wizardsEnabled) {
-		return new CreateRepositoryEntryController(ureq, wControl, this, wizardsEnabled);
+	default CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, boolean wizardsEnabled, List<Organisation> defaultOrganisations) {
+		return new CreateRepositoryEntryController(ureq, wControl, this, wizardsEnabled, defaultOrganisations);
 	}
 	
 	default boolean hasCreateWizard() {
 		return false;
 	}
 	
+	/**
+	 * Create the wizard
+	 * 
+	 * @param ureq The user request
+	 * @param windowControl The window control
+	 * @param translator The translator
+	 * @return A wizard
+	 */
 	default StepsMainRunController startCreateWizard(UserRequest ureq, WindowControl windowControl, Translator translator) {
 		return null;
 	}

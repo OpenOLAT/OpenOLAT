@@ -159,7 +159,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, boolean wizardsEnabled) {
+	public CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl,
+			boolean wizardsEnabled, List<Organisation> defaultOrganisations) {
 		return new CreateCourseRepositoryEntryController(ureq, wControl, this, wizardsEnabled);
 	}
 
