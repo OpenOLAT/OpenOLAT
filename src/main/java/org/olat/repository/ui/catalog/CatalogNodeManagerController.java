@@ -573,7 +573,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	protected void loadNodesChildren() {
 		catalogEntry = catalogManager.loadCatalogEntry(catalogEntry);
 		List<CatalogEntry> catalogChildren = catalogManager.getChildrenOf(catalogEntry);
-		List<String> subCategories = new ArrayList<>();
 		List<NodeEntryRow> nodeEntries = new ArrayList<>();
 		int count = 0;
 		boolean tiles = catalogEntry.getStyle() == Style.tiles;
@@ -592,6 +591,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 		}
 		
+		List<CatalogNode> subCategories = new ArrayList<>(catalogChildren.size());
 		for (CatalogEntry entry : catalogChildren) {
 			if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
 				NodeEntryRow row = new NodeEntryRow(entry);
@@ -599,26 +599,20 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionNodes", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
 				positionLink.setUserObject(row);
 				row.setPositionLink(positionLink);
-				
 				nodeEntries.add(row);
 
 				String cmpId = "cat_" + (++count);
 
 				VFSLeaf img = catalogManager.getImage(entry);
-				if(img != null) {
-					String imgId = "image_" + count;
-					flc.contextPut(imgId, img.getName());
-				}
-				flc.contextPut("k" + cmpId, entry.getKey());
+				String imageName = img != null ? img.getName() : null;
 
 				String title = StringHelper.escapeHtml(tiles ? entry.getShortTitle() : entry.getName());
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, flc.getFormItemComponent(), this);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 				link.setCustomDisplayText(title);
 				link.setUserObject(entry.getKey());
-				subCategories.add(Integer.toString(count));
-				String titleId = "title_" + count;
-				flc.contextPut(titleId, title);
+
+				subCategories.add(new CatalogNode(entry.getKey(), cmpId, title, imageName, link));
 			}
 		}
 		flc.contextPut("subCategories", subCategories);
@@ -798,9 +792,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					} else if("opened-delete".equals(cmd)) {
 						doConfirmDelete(ureq, row);
 					}
-				} else if (cmd.equals(CMD_DOWN)) {
+				} else if (CMD_DOWN.equals(cmd)) {
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
-				} else if (cmd.equals(CMD_UP)) {
+				} else if (CMD_UP.equals(cmd)) {
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
 				} 
 			}
@@ -817,9 +811,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					} else if("closed-delete".equals(cmd)) {
 						doConfirmDelete(ureq, row);
 					} 
-				} else if (cmd.equals(CMD_DOWN)) {
+				} else if (CMD_DOWN.equals(cmd)) {
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
-				} else if (cmd.equals(CMD_UP)) {
+				} else if (CMD_UP.equals(cmd)) {
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
 				} 
 			}

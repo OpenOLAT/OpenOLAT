@@ -128,7 +128,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		
 		List<CatalogEntry> childCe = catalogManager.getChildrenOf(catalogEntry);
 		List<CatalogEntry> nodeEntries = childCe.stream().filter(entry -> entry != null && entry.getType() == CatalogEntry.TYPE_NODE).collect(Collectors.toList());
-		List<String> subCategories = new ArrayList<>();
+		
 		int count = 0;
 		boolean tiles = catalogEntry.getStyle() == Style.tiles;
 
@@ -144,26 +144,18 @@ public class CatalogNodeController extends BasicController implements Activateab
 			nodeEntries.sort(Comparator.comparing(tiles ? CatalogEntry::getShortTitle : CatalogEntry::getName, collator));
 		}
 		
+		List<CatalogNode> subCategories = new ArrayList<>(nodeEntries.size());
 		for (CatalogEntry entry : nodeEntries) {
 			String cmpId = "cat_" + (++count);
-
 			VFSLeaf img = catalogManager.getImage(entry);
-			if(img != null) {
-				String imgId = "image_" + count;
-				mainVC.contextPut(imgId, img.getName());
-			}
-			mainVC.contextPut("k" + cmpId, entry.getKey());
-
+			String imageName = img != null ? img.getName() : null;
 			String title = StringHelper.escapeHtml(tiles ? entry.getShortTitle() : entry.getName());
 			Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 			link.setCustomDisplayText(title);
 			link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 			link.setUserObject(entry.getKey());
-			subCategories.add(Integer.toString(count));
-			String titleId = "title_" + count;
-			mainVC.contextPut(titleId, title);
+			subCategories.add(new CatalogNode(entry.getKey(), cmpId, title, imageName, link));
 		}
-
 		mainVC.contextPut("subCategories", subCategories);
 
 		//catalog resources
