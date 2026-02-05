@@ -141,7 +141,6 @@ public class CurriculumExport {
 		
 		int col = 0;
 		Row headerRow = exportSheet.newRow();
-		headerRow.addCell(col++, translator.translate("table.header.id"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.title") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.organisation.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
@@ -161,7 +160,6 @@ public class CurriculumExport {
 	private void addCurriculumContent(Curriculum curriculum, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
 		int col = 0;
 		Row row = exportSheet.newRow();
-		row.addCell(col++, curriculum.getKey(), null, null);
 		row.addCell(col++, curriculum.getDisplayName());
 		row.addCell(col++, curriculum.getIdentifier());
 		
@@ -184,18 +182,17 @@ public class CurriculumExport {
 		Row headerRow = exportSheet.newRow();
 		headerRow.addCell(col++, translator.translate("export.implementation.prod.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.implementation.impl.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.id"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.implementation.object.type") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.number"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.title") + MANDATORY, workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.external.ref"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.status"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.start.date"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.start.time"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.end.date"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.end.time"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.lectures"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("export.reference.id"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.reference.external.ref"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.location"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.element.type"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.calendars"), workbook.getStyles().getHeaderStyle());
@@ -275,7 +272,6 @@ public class CurriculumExport {
 					: element.getImplementation().getDisplayName();
 		}
 		row.addCell(col++, implementationExternalRef);
-		row.addCell(col++, element.getKey(), null, null);
 		
 		if(element.getParent() == null) {
 			row.addCell(col++, CurriculumExportType.IMPL.name());
@@ -367,7 +363,6 @@ public class CurriculumExport {
 					: element.getImplementation().getDisplayName();
 		}
 		row.addCell(col++, implementationExternalRef);
-		row.addCell(col++, entry.getKey(), null, null);
 		row.addCell(col++, type.name());
 
 		row.addCell(col++, element.getNumberImpl());// No number impl
@@ -432,7 +427,6 @@ public class CurriculumExport {
 					: element.getImplementation().getDisplayName();
 		}
 		row.addCell(col++, implementationExternalRef);
-		row.addCell(col++, lectureBlock.getKey(), null, null);
 		row.addCell(col++, CurriculumExportType.EVENT.name());
 
 		row.addCell(col++, element.getNumberImpl());// Numbering
@@ -452,10 +446,10 @@ public class CurriculumExport {
 		row.addCell(col++, endTime);
 		
 		row.addCell(col++, lectureBlock.getPlannedLecturesNumber(), workbook.getStyles().getIntegerStyle());
-		Long entryKey = lectureBlock.getEntry() != null
-				? lectureBlock.getEntry().getKey()
+		String entryExternalRef = lectureBlock.getEntry() != null
+				? lectureBlock.getEntry().getExternalRef()
 				: null;
-		row.addCell(col++, entryKey, null);// Ref. to course
+		row.addCell(col++, entryExternalRef);// Ref. to course
 		row.addCell(col++, lectureBlock.getLocation());// Location
 		
 		row.addCell(col++, null); // No element type
