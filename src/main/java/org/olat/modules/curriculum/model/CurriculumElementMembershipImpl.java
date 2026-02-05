@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 
@@ -35,6 +36,7 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	
 	private final Long identityKey;
 	private final Long curriculumElementKey;
+	private final String materializedPathKeys;
 	
 	private boolean curriculumElementOwner;
 	private boolean repositoryEntryOwner;
@@ -42,8 +44,9 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	private boolean participant;
 	private boolean masterCoach;
 
-	public CurriculumElementMembershipImpl(Long identityKey, Long curriculumElementKey) {
+	public CurriculumElementMembershipImpl(Long identityKey, Long curriculumElementKey, String materializedPathKeys) {
 		this.identityKey = identityKey;
+		this.materializedPathKeys = materializedPathKeys;
 		this.curriculumElementKey = curriculumElementKey;
 	}
 
@@ -55,6 +58,20 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	@Override
 	public Long getCurriculumElementKey() {
 		return curriculumElementKey;
+	}
+	
+	@Override
+	public List<Long> getMaterializedPathKeysList() {
+		List<Long> keys = new ArrayList<>();
+		if(materializedPathKeys != null) {
+			String[] segments = materializedPathKeys.split("/");
+			for(int i=0; i<segments.length; i++) {
+				if(StringHelper.isLong(segments[i])) {
+					keys.add(Long.valueOf(segments[i]));
+				}
+			}
+		}
+		return keys;
 	}
 	
 	@Override
