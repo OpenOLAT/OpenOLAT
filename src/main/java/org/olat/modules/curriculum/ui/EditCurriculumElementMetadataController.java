@@ -193,7 +193,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		
 		String identifier = element == null ? "" : element.getIdentifier();
-		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
 		identifierEl.setElementCssClass("o_sel_curriculum_element_identifier");
 		identifierEl.setInlineValidationOn(true);
@@ -310,7 +310,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= CurriculumHelper.validateTextElement(displayNameEl, true, 110);
-		allOk &= CurriculumHelper.validateTextElement(identifierEl, true, 64);
+		allOk &= CurriculumHelper.validateTextElement(identifierEl, true, 255);
 		
 		curriculumElementTypeEl.clearError();
 		if(!curriculumElementTypeEl.isOneSelected()) {

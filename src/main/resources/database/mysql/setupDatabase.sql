@@ -4210,7 +4210,7 @@ create table o_cur_curriculum_element (
   pos bigint,
   pos_cur bigint,
   pos_impl varchar(64),
-  c_identifier varchar(64),
+  c_identifier varchar(255),
   c_displayname varchar(255) not null,
   c_description mediumtext,
   c_teaser varchar(256),
