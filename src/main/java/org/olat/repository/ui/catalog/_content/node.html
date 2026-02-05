@@ -27,15 +27,17 @@
 		#if($subCategories.size() != 0)	
 			#if($listStyle == "list")
 				<div class="o_sublevels_list row clearfix">
-					#foreach($id in $subCategories)
-						#set($imgId = "image_${id}")
-						#set($catId = "kcat_${id}")
+					#foreach($subCategory in $subCategories)
 						<div class="o_sublevel" >
-							<div class="o_visual" ><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
-								<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
+							<div class="o_visual" ><a $r.hrefAndOnclick("img_select",false,false,"node","$subCategory.key()")>
+								#if($r.isNotEmpty(${subCategory.imageName()}))
+									<img src='$mapperThumbnailUrl/$subCategory.imageName()' alt="$subCategory.title()" />
+								#else
+									<span class="o_visual_not_available"></span>
+								#end
 							</a></div>
 							<div class="o_meta">
-								<h4 class="o_title">$r.render("cat_${id}")</h4>
+								<h4 class="o_title">$r.render($subCategory.cmpId())</h4>
 							</div>
 						</div>
 					#end
@@ -48,22 +50,23 @@
 				</div>
 			#elseif($listStyle == "compact")
 				<ul class="o_sublevels_compact list-unstyled">
-					#foreach($id in $subCategories)
-						<li class="o_sublevel">$r.render("cat_${id}")</li>
+					#foreach($subCategory in $subCategories)
+						<li class="o_sublevel">$r.render($subCategory.cmpId())</li>
 					#end
 				</ul>
 			#else
 				<div class="o_sublevels row clearfix">
-					#foreach($id in $subCategories)
-						#set($imgId = "image_${id}")
-						#set($catId = "kcat_${id}")
-						#set($shortTitleId = "short_title_${id}")
-						<div class="o_sublevel"  title="$catalogEntryTitle">
-							<div class="o_visual"><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
-								<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
+					#foreach($subCategory in $subCategories)
+						<div class="o_sublevel"  title="$subCategory.title()">
+							<div class="o_visual"><a $r.hrefAndOnclick("img_select",false,false,"node","$subCategory.key()")>
+							#if($r.isNotEmpty($subCategory.imageName()))
+								<img src="$mapperThumbnailUrl/$subCategory.imageName()" alt="$subCategory.title()" />
+							#else
+								<span class="o_visual_not_available"></span>
+							#end
 							</a></div>
 							<div class="o_meta">
-								<h4 class="o_title">$r.render("cat_${id}")</h4>
+								<h4 class="o_title">$r.render($subCategory.cmpId())</h4>
 							</div>
 						</div>
 					#end
@@ -99,22 +102,18 @@
 			#if($extLink)
 				<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$extLink" onclick="this.select()">
 					<script>
-					/* <![CDATA[ */
-						jQuery(function() {
-							o_QRCodePopup('o_extlink', '$extLink', 'right');
-						});
-					/* ]]> */
+					jQuery(function() {
+						o_QRCodePopup('o_extlink', '$extLink', 'right');
+					});
 					</script>
 				</div>
 			#end
 			#if($guestExtLink)
 				<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_guestextlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$guestExtLink" onclick="this.select()">
 					<script>
-					/* <![CDATA[ */
-						jQuery(function() {
-							o_QRCodePopup('o_guestextlink', '$guestExtLink', 'right');
-						});
-					/* ]]> */
+					jQuery(function() {
+						o_QRCodePopup('o_guestextlink', '$guestExtLink', 'right');
+					});
 					</script>
 				</div>
 			#end
