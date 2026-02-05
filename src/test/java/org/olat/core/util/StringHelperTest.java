@@ -177,6 +177,10 @@ public class StringHelperTest {
 		Assert.assertFalse(StringHelper.isLong(":"));
 		Assert.assertFalse(StringHelper.isLong("."));
 		Assert.assertFalse(StringHelper.isLong(";"));
+		Assert.assertFalse(StringHelper.isLong(","));
+		
+		//Special case
+		Assert.assertFalse(StringHelper.isLong("-"));
 	}
 	
 	@Test

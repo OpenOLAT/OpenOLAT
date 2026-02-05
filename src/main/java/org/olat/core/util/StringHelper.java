@@ -591,7 +591,7 @@ public class StringHelper {
 	 * return True if the string can be a digit (there is not boundaries check)
 	 */
 	public static boolean isLong(String string) {
-		if(string == null || string.length() == 0) {
+		if(string == null || string.length() == 0 || "-".equals(string)) {
 			return false;
 		}
 		int stop = string.startsWith("-") ? 1 : 0;
