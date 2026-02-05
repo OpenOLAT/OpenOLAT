@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.gui.UserRequest;
@@ -71,7 +73,7 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 
 	public CreateCourseRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler,
 			boolean wizardsEnabled) {
-		super(ureq, wControl, handler, wizardsEnabled);
+		super(ureq, wControl, handler, wizardsEnabled, List.of());
 	}
 	
 	@Override

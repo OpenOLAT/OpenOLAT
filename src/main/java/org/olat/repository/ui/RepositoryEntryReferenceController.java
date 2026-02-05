@@ -471,7 +471,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(createCtrl);
-			createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false);
+			List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
+			createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false, defaultOrganisations);
 			listenTo(createCtrl);
 			
 			String title = translate(handler.getCreateLabelI18nKey());

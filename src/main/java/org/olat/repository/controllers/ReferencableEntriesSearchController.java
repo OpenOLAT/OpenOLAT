@@ -332,7 +332,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(createController);
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
-			createController = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false);
+			createController = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false, defaultOrganisations);
 			listenTo(createController);
 			
 			String title = translate(handler.getCreateLabelI18nKey());

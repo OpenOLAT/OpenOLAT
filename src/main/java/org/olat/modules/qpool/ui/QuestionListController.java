@@ -1065,7 +1065,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(addController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler, false);
+		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler, false, List.of());
 		addController.setCreateObject(new QItemList(items, groupBy));
 		addController.setLicenseType(licenseType);
 		listenTo(addController);

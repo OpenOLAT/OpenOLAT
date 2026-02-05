@@ -1544,7 +1544,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(guardModalController(createCtrl)) return;
 
 		removeAsListenerAndDispose(createCtrl);
-		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), true);
+		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), true, List.of());
 		listenTo(createCtrl);
 		removeAsListenerAndDispose(cmc);
 		
