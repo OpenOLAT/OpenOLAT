@@ -116,7 +116,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canExportCurriculums() {
-			return admin || principal || !ownedCurriculumKeys.isEmpty();
+			return admin || !ownedCurriculumKeys.isEmpty();
 		}
 
 		@Override
@@ -127,7 +127,7 @@ public class CurriculumSecurityCallbackFactory {
 		
 		@Override
 		public boolean canExportCurriculum(Curriculum curriculum) {
-			return principal || canEditCurriculum(curriculum);
+			return canEditCurriculum(curriculum);
 		}
 
 		@Override
@@ -171,7 +171,7 @@ public class CurriculumSecurityCallbackFactory {
 		
 		@Override
 		public boolean canExportCurriculumElement(CurriculumElement element) {
-			return principal || canEditCurriculumElement(element);
+			return canEditCurriculumElement(element);
 		}
 		
 		@Override

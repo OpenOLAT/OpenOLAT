@@ -405,7 +405,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.setMultiSelect(true);
 		}
 		
-		if(rootElement == null) {
+		if(rootElement == null && secCallback.canExportCurriculums()) {
 			bulkExportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkExportButton);
 			tableEl.setMultiSelect(true);
