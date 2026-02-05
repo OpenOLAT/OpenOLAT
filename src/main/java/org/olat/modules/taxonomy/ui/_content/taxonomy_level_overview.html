@@ -1,32 +1,32 @@
 <div class="o_taxonomy_overview_header o_block_large">
-	#if($imageUrl)
-		<div class="o_catalog2">
+	<div class="o_catalog2">
 		<div class="o_taxonomy_launchers #if($square)o_launchers_square#end">
-		<div class="o_taxonomy_launcher o_tax_teaser_preview">
-			<div class="o_visual">
-				<span class="o_visual_not_available o_visual_available" style="background-image:url('$imageUrl');" ></span>
+			#if($imageUrl)
+			<div class="o_taxonomy_launcher o_tax_teaser_preview">
+				<div class="o_visual">
+					<img class="o_visual_available" src="${imageUrl}/thumbnail.jpg" />
+				</div>
 			</div>
-		</div>
-		</div>
-		</div>
-	#end
-	<div class="o_taxonomy_avatar_title_ref">
-		<div class="o_taxonomy_title_ref">
-			#if($r.isNotEmpty($identifier))
-				<div class="o_taxonomy_ref">
-					$r.escapeHtml($identifier)
-				</div>
 			#end
-			#if($title)
-				<div class="o_taxonomy_title">
-					<h2>$r.escapeHtml($title)</h2>
+			<div class="o_taxonomy_avatar_title_ref">
+				<div class="o_taxonomy_title_ref">
+					#if($r.isNotEmpty($identifier))
+						<div class="o_taxonomy_ref">
+							$r.escapeHtml($identifier)
+						</div>
+					#end
+					#if($title)
+						<div class="o_taxonomy_title">
+							<h2>$r.escapeHtml($title)</h2>
+						</div>
+					#end
+					#if($r.isNotEmpty($typeName))
+						<div class="o_taxonomy_type">
+							<span><i class="o_icon o_icon_taxonomy_level_type" title="$r.translate("level.type")"> </i> $r.escapeHtml($typeName)</span>
+						</div>
+					#end
 				</div>
-			#end
-			#if($r.isNotEmpty($typeName))
-				<div class="o_taxonomy_type">
-					<span><i class="o_icon o_icon_taxonomy_level_type" title="$r.translate("level.type")"> </i> $r.escapeHtml($typeName)</span>
-				</div>
-			#end
+			</div>
 		</div>
 	</div>
 	#if($r.available("actions") && $r.visible("actions"))
