@@ -107,7 +107,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		if (!secCallback.isCurriculumContext()) {
 			return false;
 		}
-		if (secCallback.isCurriculumOwner() || secCallback.isCurriculumManager()) {
+		if (secCallback.isCurriculumOwner() || secCallback.isCurriculumManager()
+				|| secCallback.isAdministrator() || secCallback.isPrincipal()) {
 			return true;
 		}
 		return false;

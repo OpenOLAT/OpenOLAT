@@ -50,6 +50,9 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	private final boolean curriculumElementMasterCoach;
 
 	private final boolean courseCoach;
+	
+	private final boolean principal;
+	private final boolean administrator;
 
 	private boolean showAbsencesReports;
 	private boolean showInvoicesReports;
@@ -70,6 +73,9 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 		
 		RepositoryEntryRelationDAO repositoryEntryRelationDao = CoreSpringFactory.getImpl(RepositoryEntryRelationDAO.class);
 		courseCoach = repositoryEntryRelationDao.hasRoleExpanded(identity, GroupRoles.coach.name());
+		
+		administrator = roles.isAdministrator();
+		principal = roles.isPrincipal();
 		
 		setOrgRights(identity, organisationService);
 	}
@@ -140,6 +146,16 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	@Override
 	public boolean isCourseCoach() {
 		return courseCoach;
+	}
+	
+	@Override
+	public boolean isPrincipal() {
+		return principal;
+	}
+
+	@Override
+	public boolean isAdministrator() {
+		return administrator;
 	}
 
 	@Override

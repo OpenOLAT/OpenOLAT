@@ -38,6 +38,10 @@ public interface ReportConfigurationAccessSecurityCallback {
 	boolean isCurriculumCoach();
 	
 	boolean isCourseCoach();
+	
+	boolean isPrincipal();
+	
+	boolean isAdministrator();
 
 	boolean isShowAbsencesReports();
 
