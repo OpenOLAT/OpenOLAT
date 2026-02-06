@@ -65,12 +65,12 @@ implements SortableFlexiTableDataModel<PracticeIdentityRow> {
 	@Override
 	public Object getValueAt(PracticeIdentityRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
-			switch(COLS[col]) {
-				case challenges: return row.getChallenges();
-				case status: return row.getAssessmentEntryStatus();
-				case score: return row.getScore();
-				default: return "ERROR";
-			}
+			return switch(COLS[col]) {
+				case challenges -> row.getChallenges();
+				case status -> row.getAssessmentEntryStatus();
+				case score -> row.getScore();
+				default -> "ERROR";
+			};
 		}
 		
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;

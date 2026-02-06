@@ -870,14 +870,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		auditLogChangeStatus(currentStatus, newStatus, element, doer);
 		
 		if (updateChildren) {
+			// Confirmed is only allowed for implementations. Sub-element equivalent is active
+			CurriculumElementStatus newChildStatus = newStatus == CurriculumElementStatus.confirmed
+					? CurriculumElementStatus.active
+					: newStatus;
+			
 			getCurriculumElementsDescendants(element).stream()
 				.filter(childElement -> !childElement.getElementStatus().isCancelledOrClosed())
-				.filter(childElement -> childElement.getElementStatus() != newStatus)
+				.filter(childElement -> childElement.getElementStatus() != newChildStatus)
 				.forEach(childElement -> {
 					CurriculumElementStatus currentChildStatus = childElement.getElementStatus();
-					((CurriculumElementImpl)childElement).setElementStatus(newStatus);
+					((CurriculumElementImpl)childElement).setElementStatus(newChildStatus);
 					childElement = updateCurriculumElement(childElement);
-					auditLogChangeStatus(currentChildStatus, newStatus, childElement, doer);
+					auditLogChangeStatus(currentChildStatus, newChildStatus, childElement, doer);
 				});
 		}
 		
