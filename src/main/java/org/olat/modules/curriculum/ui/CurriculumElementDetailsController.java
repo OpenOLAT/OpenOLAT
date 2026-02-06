@@ -356,7 +356,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		commandsDropdown.setButton(true);
 		commandsDropdown.setOrientation(DropdownOrientation.right);
 		
-		if(curriculumElement.getParent() == null) {
+		if(curriculumElement.getParent() == null && secCallback.canExportCurriculumElement(curriculumElement)) {
 			exportButton = LinkFactory.createCustomLink("export", "export", "export", Link.LINK, mainVC, this);
 			exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 			commandsDropdown.addComponent(exportButton);
