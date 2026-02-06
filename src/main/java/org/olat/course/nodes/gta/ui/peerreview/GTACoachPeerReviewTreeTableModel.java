@@ -258,7 +258,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 
 		@Override
 		public boolean sortable() {
-			return this != plot && this != tools && this != editReview;
+			return false;
 		}
 
 		@Override
