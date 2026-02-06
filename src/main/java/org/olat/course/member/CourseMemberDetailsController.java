@@ -53,6 +53,7 @@ import org.olat.course.member.model.OriginCourseRow;
 import org.olat.course.member.model.OriginGroupRow;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
+import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserInfoProfileConfig;
@@ -77,6 +78,7 @@ public class CourseMemberDetailsController extends FormBasicController {
 	private final Identity identity;
 	private final RepositoryEntry repoEntry;
 	private final UserCourseInformations courseInfos;
+	private final MemberListSecurityCallback secCallback;
 	private FormLink editMembershipButton;
 	private OriginCourseTableModel originCourseTableModel;
 	private FlexiTableElement originCourseTable;
@@ -99,13 +101,14 @@ public class CourseMemberDetailsController extends FormBasicController {
 	private OriginQueries originQueries;
 
 	public CourseMemberDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-										 Identity identity, Long repoEntryKey) {
+										 Identity identity, Long repoEntryKey, MemberListSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(AbstractMemberListController.class, getLocale(), getTranslator()));
-		
+
 		this.identity = identity;
 		this.repoEntry = repositoryService.loadByKey(repoEntryKey);
 		this.courseInfos = userCourseInfosMgr.getUserCourseInformations(repoEntry.getOlatResource(), identity);
+		this.secCallback = secCallback;
 		initForm(ureq);
 		reloadModel();
 	}
@@ -171,8 +174,10 @@ public class CourseMemberDetailsController extends FormBasicController {
 	}
 
 	private void initEditMembership(FormItemContainer formLayout) {
-		editMembershipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
-		editMembershipButton.setIconLeftCSS("o_icon o_icon_edit");
+		if (!secCallback.isReadonly()) {
+			editMembershipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
+			editMembershipButton.setIconLeftCSS("o_icon o_icon_edit");
+		}
 	}
 	
 	private void initOriginCourseTable(FormItemContainer formLayout) {

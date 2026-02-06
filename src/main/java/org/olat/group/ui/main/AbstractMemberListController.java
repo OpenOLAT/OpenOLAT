@@ -186,7 +186,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	private boolean overrideManaged = false;
 	private final boolean globallyManaged;
-	private final MemberListSecurityCallback secCallback;
+	protected final MemberListSecurityCallback secCallback;
 	
 	@Autowired
 	protected MemberViewQueries memberQueries;

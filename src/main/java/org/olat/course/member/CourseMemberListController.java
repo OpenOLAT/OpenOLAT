@@ -231,7 +231,7 @@ public class CourseMemberListController extends AbstractMemberListController imp
 
 		Identity memberIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		CourseMemberDetailsController detailsCtrl = new CourseMemberDetailsController(ureq, getWindowControl(), mainForm,
-				memberIdentity, repoEntry.getKey());
+				memberIdentity, repoEntry.getKey(), secCallback);
 		detailsCtrl.setUserObject(row);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);

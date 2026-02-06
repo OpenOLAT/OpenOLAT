@@ -1,5 +1,6 @@
 $r.render("portrait")
 
+#if($r.available("edit.member") && $r.visible("edit.member"))
 <div class="o_header_with_buttons">
 	<div class="o_button_group">
 		<div class="btn-group">
@@ -7,6 +8,7 @@ $r.render("portrait")
 		</div>
 	</div>
 </div>
+#end
 
 #if($r.visible("originCourseTable"))
 <fieldset class="o_block">
