@@ -218,7 +218,7 @@ public class CourseMembership {
 		} else if(CurriculumRoles.coach.name().equals(role)) {
 			setCurriculumElementCoach(true);
 		} else if(CurriculumRoles.owner.name().equals(role)) {
-			setRepositoryEntryOwner(true);
+			setCurriculumElementOwner(true);
 		} else if(CurriculumRoles.curriculumelementowner.name().equals(role)) {
 			setCurriculumElementOwner(true);
 		} else if(CurriculumRoles.mastercoach.name().equals(role)) {
