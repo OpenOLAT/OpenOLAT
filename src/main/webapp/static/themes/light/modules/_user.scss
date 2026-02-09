@@ -621,6 +621,18 @@ div.o_skype_button {
 	}
 }
 
+.o_authentication_info.o_info_with_icon {
+	&.o_info_with_icon {
+		display: flex;
+		flex-direction: row;
+
+		.o_button_wrapper {
+			display: flex;
+			align-items: center;
+			padding-left: 10px;
+		}
+	}
+}
 
 .o_roles_dropdown_row {
 	margin-top: 5px;

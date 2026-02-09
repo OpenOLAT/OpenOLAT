@@ -13,6 +13,13 @@
 	#end
 </div>
 
+#if($info && $r.available("deactivate.invitation.link"))
+	<div class="o_authentication_info o_info_with_icon">
+		<div>$info</div>
+		<div class="o_button_wrapper">$r.render("deactivate.invitation.link")</div>
+	</div>
+#end
+
 <fieldset class="o_form o_authentication_olat o_block_large">
 #if($r.visible("olatauthentication"))
 	<legend>$r.translate("olat.authentication.title") <span class="o_labeled"><i class="o_icon o_icon-fw o_icon_select"> </i> <span>$r.translate("in.use")</span></span></legend>

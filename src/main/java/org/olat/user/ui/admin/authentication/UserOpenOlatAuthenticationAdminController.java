@@ -20,6 +20,7 @@
 package org.olat.user.ui.admin.authentication;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -56,6 +57,8 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.ui.PasskeyListController;
 import org.olat.login.webauthn.ui.SendRecoveryKeyToUserForm;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	
+	private Link deactivateInvitationLink;
 	private Link sendPasswordLink;
 	private Link resetPasswordLink;
 	private final VelocityContainer mainVC;
@@ -96,6 +100,8 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
+	@Autowired
+	private RegistrationManager registrationManager;
 	
 	public UserOpenOlatAuthenticationAdminController(UserRequest ureq, WindowControl wControl, Identity identityToModify,
 			boolean canResetPassword, boolean canSendPasswordLink) {
@@ -119,6 +125,10 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		
 		// Levels
 		initLevels();
+
+		// Invitation links for PW change and registration
+		initTemporaryKeys();
+
 		// OpenOlat authentication
 		initAuthentications();
 		
@@ -155,6 +165,28 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		mainVC.contextPut("title", translate("security.level.title.admin", levelString));
 	}
 
+	private void initTemporaryKeys() {
+		List<TemporaryKey> tmpKeys = registrationManager.loadTemporaryKeyByIdentity(identityToModify,
+				List.of(RegistrationManager.PW_CHANGE, RegistrationManager.REGISTRATION));
+
+		// Assume there is at most one match
+		if (tmpKeys != null && !tmpKeys.isEmpty()) {
+			TemporaryKey tmpKey = tmpKeys.get(0);
+			Date validUntil = tmpKey.getValidUntil();
+			Formatter formatter = Formatter.getInstance(getLocale());
+			String date = formatter.formatDate(validUntil);
+			String time = formatter.formatTime(validUntil);
+			mainVC.contextPut("info", translate("info.invitation.link", date, time));
+			
+			deactivateInvitationLink = LinkFactory.createButton("deactivate.invitation.link", mainVC, this);
+			deactivateInvitationLink.setIconLeftCSS("o_icon o_icon_ban");
+			deactivateInvitationLink.setUserObject(tmpKey);
+		} else {
+			mainVC.contextRemove("info");
+			mainVC.remove("deactivate.invitation.link");
+		}
+	}
+	
 	private void initAuthentications() {
 		Authentication olatAuthentication = getAuthenticationbyProvider(authentications, "OLAT");
 		mainVC.contextPut("olatAuthenticationInUse", Boolean.valueOf(olatAuthentication != null));
@@ -219,6 +251,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		currentLevel = PasskeyLevels.currentLevel(authentications);
 		
 		initLevels();
+		initTemporaryKeys();
 		initAuthentications();
 	}
 
@@ -236,6 +269,8 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			}
 		} else if(sendRecoveryKeysLink == source) {
 			doSendRecoveryKey(ureq);
+		} else if (deactivateInvitationLink == source) {
+			doDeactivateInvitation();
 		}
 	}
 	
@@ -321,5 +356,13 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), sendRecoveryKeyCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doDeactivateInvitation() {
+		if (deactivateInvitationLink.getUserObject() instanceof TemporaryKey tmpKey) {
+			registrationManager.deleteTemporaryKey(tmpKey);
+			showInfo("invitation.link.deactivated");
+			updateUI();
+		}
 	}
 }
