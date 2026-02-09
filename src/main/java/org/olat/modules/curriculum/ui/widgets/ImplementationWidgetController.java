@@ -347,11 +347,14 @@ public class ImplementationWidgetController extends TableWidgetController
 		row.setTranslatedTechnicalType(curriculumElement.getType().getDisplayName());
 		
 		String executionPeriod = "";
-		if (curriculumElement.getBeginDate() != null) {
-			executionPeriod = formatter.formatDate(curriculumElement.getBeginDate());
-			if (curriculumElement.getEndDate() != null) {
-				executionPeriod += " - " + formatter.formatDate(curriculumElement.getEndDate());
-			}
+		if (curriculumElement.getBeginDate() != null && curriculumElement.getEndDate() != null) {
+			executionPeriod = formatter.formatDate(curriculumElement.getBeginDate())
+					+ " - "
+					+ formatter.formatDate(curriculumElement.getEndDate());
+		} else if (curriculumElement.getBeginDate() != null) {
+			executionPeriod = translate("curriculum.element.from", formatter.formatDate(curriculumElement.getBeginDate()));
+		} else if (curriculumElement.getEndDate() != null) {
+			executionPeriod = translate("curriculum.element.to", formatter.formatDate(curriculumElement.getEndDate()));
 		}
 		row.setExecutionPeriod(executionPeriod);
 		
