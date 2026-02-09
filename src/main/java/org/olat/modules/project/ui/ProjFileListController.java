@@ -75,6 +75,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -283,7 +284,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		SelectionValues myValues = new SelectionValues();
 		myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("file.filter.my.value")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("file.filter.my"), ProjFileFilter.my.name(), myValues, true));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("file.filter.my"), ProjFileFilter.my.name(), myValues, true));
 		
 		List<TagInfo> tagInfos = projectService.getTagInfos(project, null);
 		if (!tagInfos.isEmpty()) {
@@ -517,8 +518,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		for (FlexiTableFilter filter : filters) {
 			if (ProjFileFilter.my.name() == filter.getFilter()) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
+				String value = ((FlexiTableOneClickSelectionFilter)filter).getValue();
+				if (FILTER_KEY_MY.equals(value)) {
 					Long identityKey = getIdentity().getKey();
 					rows.removeIf(row -> !row.getMemberKeys().contains(identityKey));
 				}
