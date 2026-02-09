@@ -56,6 +56,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogLauncher;
+import org.olat.modules.catalog.CatalogLauncherHandler;
+import org.olat.modules.catalog.CatalogLauncherSearchParams;
+import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Config;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
@@ -93,6 +100,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 	private FlexiTableElement tableEl;
 	private RoleDataModel dataModel;
 	
+	private final List<CatalogLauncher> launchers;
 	private int counter = 0;
 
 	@Autowired
@@ -103,10 +111,16 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private CatalogV2Service catalogV2Service;
 	
 	public RepositoryAdminConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		
+		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
+		launchers = catalogV2Service.getCatalogLaunchers(searchParams);
+		
 		initForm(ureq);
 	}
 
@@ -275,12 +289,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 			repositoryModule.setRepoStatusChangedNotificationEnabledDefault(notificationEl.isKeySelected(NOTIFICATION_REPOSITORY_STATUS_CHANGED));
 			getWindowControl().setInfo("saved");
 		} else if (taxonomyEl == source) {
-			List<TaxonomyRef> taxonomyRefs = taxonomyEl.getSelectedKeys().stream()
-					.map(Long::valueOf)
-					.map(TaxonomyRefImpl::new).
-					collect(Collectors.toList());
-			repositoryModule.setTaxonomyRefs(taxonomyRefs);
-			getWindowControl().setInfo("saved");
+			doSaveTaxonomies();
 		} else if(leaveEl == source) {
 			String selectedOption = leaveEl.getSelectedKey();
 			RepositoryEntryAllowToLeaveOptions option = RepositoryEntryAllowToLeaveOptions.valueOf(selectedOption);
@@ -298,16 +307,62 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 	
 	private void doMoveRole(RoleRow row, Direction direction) {
 		List<RoleRow> rows = new ArrayList<>(dataModel.getObjects());
-		
+
 		int swapIndex = Direction.UP == direction? row.getPriority() - 2: row.getPriority();
 		Collections.swap(rows, row.getPriority() - 1, swapIndex);
-		
+
 		List<Role> defaultRoles = rows.stream().map(RoleRow::getRole).toList();
 		repositoryModule.setDefaultRoles(defaultRoles);
-		
+
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 		updateRolesUI();
+	}
+
+	private void doSaveTaxonomies() {
+		List<TaxonomyRef> previousTaxonomyRefs = repositoryModule.getTaxonomyRefs();
+		
+		List<TaxonomyRef> newTaxonomyRefs = taxonomyEl.getSelectedKeys().stream()
+				.map(Long::valueOf)
+				.map(TaxonomyRefImpl::new)
+				.collect(Collectors.toList());
+		
+		for (TaxonomyRef previousRef : previousTaxonomyRefs) {
+			boolean deselected = newTaxonomyRefs.stream()
+					.anyMatch(ref -> ref.getKey().equals(previousRef.getKey()));
+			if (deselected && isTaxonomyUsedInCatalogLauncher(previousRef)) {
+				showError("warning.taxonomy.used.in.catalog.launcher");
+				taxonomyEl.select(previousRef.getKey().toString(), true);
+				return;
+			}
+		}
+		
+		repositoryModule.setTaxonomyRefs(newTaxonomyRefs);
+		getWindowControl().setInfo("saved");
+	}
+
+	private boolean isTaxonomyUsedInCatalogLauncher(TaxonomyRef taxonomyRef) {
+		for (CatalogLauncher launcher : launchers) {
+			if (TaxonomyLevelLauncherHandler.TYPE.equals(launcher.getType())) {
+				CatalogLauncherHandler handler = catalogV2Service.getCatalogLauncherHandler(TaxonomyLevelLauncherHandler.TYPE);
+				if (handler instanceof TaxonomyLevelLauncherHandler taxonomyLevelHandler) {
+					Config config = taxonomyLevelHandler.fromXML(launcher.getConfig());
+					if (config != null) {
+						if (config.getTaxonomyKey() != null && config.getTaxonomyKey().equals(taxonomyRef.getKey())) {
+							return true;
+						}
+						if (config.getTaxonomyLevelKey() != null) {
+							TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> config.getTaxonomyLevelKey());
+							if (taxonomyLevel != null && taxonomyLevel.getTaxonomy().getKey().equals(taxonomyRef.getKey())) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
