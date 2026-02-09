@@ -226,12 +226,12 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			}
 		} else {
 			EmptyStateConfigBuilder config = EmptyStateConfig.builder()
-					.withButtonI18nKey("new.password")
+					.withSecondaryButtonI18nKey("create.login.credentials")
 					.withIconCss("o_icon_provider_olat")
 					.withIndicatorIconCss("o-empty")
 					.withMessageI18nKey("olat.authentication.no.password");
 			if(!withPasskey || (currentLevel != PasskeyLevels.level2 && minimalLevel != PasskeyLevels.level2)) {
-				config = config.withSecondaryButtonI18nKey("send.password.link");
+				config = config.withButtonI18nKey("send.invitation.link");
 			}
 			noAuthenticationState = EmptyStateFactory.create("noolatauthentication", mainVC, this, config.build());
 			mainVC.put("noolatauthentication", noAuthenticationState);
@@ -263,9 +263,9 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			doResetPassword(ureq);
 		} else if(noAuthenticationState == source) {
 			if(EmptyState.EVENT == event) {
-				doResetPassword(ureq);
-			} else if(EmptyState.SECONDARY_EVENT == event) {
 				doSendPassword(ureq);
+			} else if(EmptyState.SECONDARY_EVENT == event) {
+				doResetPassword(ureq);
 			}
 		} else if(sendRecoveryKeysLink == source) {
 			doSendRecoveryKey(ureq);
