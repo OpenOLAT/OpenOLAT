@@ -329,7 +329,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 		
 		for (TaxonomyRef previousRef : previousTaxonomyRefs) {
 			boolean deselected = newTaxonomyRefs.stream()
-					.anyMatch(ref -> ref.getKey().equals(previousRef.getKey()));
+					.noneMatch(ref -> ref.getKey().equals(previousRef.getKey()));
 			if (deselected && isTaxonomyUsedInCatalogLauncher(previousRef)) {
 				showError("warning.taxonomy.used.in.catalog.launcher");
 				taxonomyEl.select(previousRef.getKey().toString(), true);
