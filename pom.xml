@@ -88,7 +88,7 @@
 		<version.selenium>4.40.0</version.selenium>
 		<activemq.artemis.version>2.44.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
-		<jakarta.xml.bind-api>4.0.4</jakarta.xml.bind-api>
+		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.31</qtiworks.version>
 		
@@ -2174,7 +2174,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.60.0</version>
+			<version>6.61.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2185,7 +2185,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.23.1</version>
+			<version>1.24.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
