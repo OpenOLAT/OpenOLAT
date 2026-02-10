@@ -59,6 +59,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	private final boolean withTitle;
 	private final boolean withCancel;
 	private final String authenticationUsername;
+	private final String submitTextKey;
 
 	private final SyntaxValidator syntaxValidator;
 	private final Identity userIdentity;
@@ -66,20 +67,19 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	@Autowired
 	private OLATAuthManager olatAuthManager;
 
-	/**
-	 * Constructor for user pwd forms.
-	 * 
-	 * @param UserRequest
-	 * @param WindowControl
-	 * @param Identity of which password is to be changed
-	 */
 	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity,
-			String authenticationUsername, boolean withTitle, boolean withCancel) {
+								  String authenticationUsername, boolean withTitle, boolean withCancel) {
+		this(ureq, wControl, treatedIdentity, authenticationUsername, withTitle, withCancel, "set.password");
+	}
+
+	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity,
+			String authenticationUsername, boolean withTitle, boolean withCancel, String submitTextKey) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.withTitle = withTitle;
 		this.withCancel = withCancel;
 		userIdentity = treatedIdentity;
 		this.authenticationUsername = authenticationUsername;
+		this.submitTextKey = submitTextKey;
 		syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		initForm(ureq);
 	}
@@ -141,7 +141,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		pass2.setAutocomplete("new-password");
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("set.password", buttonsCont);
+		uifactory.addFormSubmitButton(submitTextKey, buttonsCont);
 		if(withCancel) {
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}

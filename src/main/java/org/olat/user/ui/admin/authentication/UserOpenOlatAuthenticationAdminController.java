@@ -292,7 +292,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			if(EmptyState.EVENT == event) {
 				doSendPassword(ureq);
 			} else if(EmptyState.SECONDARY_EVENT == event) {
-				doResetPassword(ureq);
+				doCreateLoginCredentials(ureq);
 			}
 		} else if(sendRecoveryKeysLink == source) {
 			doSendRecoveryKey(ureq);
@@ -369,7 +369,25 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		cmc.activate();
 		listenTo(cmc);
 	}
-	
+
+	private void doCreateLoginCredentials(UserRequest ureq) {
+		String authenticationUsername = olatAuthenticationSpi.getAuthenticationUsername(identityToModify);
+		if (authenticationUsername == null) { // create new authentication for provider OLAT
+			authenticationUsername = olatAuthenticationSpi.getOlatAuthusernameFromIdentity(identityToModify);
+		}
+
+		resetPasswordCtrl = new ChangeUserPasswordForm(ureq, getWindowControl(),
+				identityToModify, authenticationUsername, false, true, 
+				"create.login.credentials");
+		resetPasswordCtrl.getAndRemoveFormTitle();
+		listenTo(resetPasswordCtrl);
+
+		String title = translate("create.login.credentials");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), resetPasswordCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+
 	private void doFinishResetPassword(String newPwd) {
 		if (olatAuthenticationSpi.changePassword(getIdentity(), identityToModify, newPwd)) {
 			showInfo("changeuserpwd.successful");
