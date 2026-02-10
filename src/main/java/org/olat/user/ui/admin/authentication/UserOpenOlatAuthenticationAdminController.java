@@ -44,6 +44,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.Roles;
@@ -93,6 +95,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	private ChangeUserPasswordForm resetPasswordCtrl;
 	private PasskeyListController passkeyListCtrl;
 	private SendRecoveryKeyToUserForm sendRecoveryKeyCtrl;
+	private DialogBoxController dialogCtrl;
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -294,7 +297,11 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		} else if(sendRecoveryKeysLink == source) {
 			doSendRecoveryKey(ureq);
 		} else if (deactivateInvitationLink == source) {
-			doDeactivateInvitation(ureq);
+			doConfirmDeactivateInvitation(ureq);
+		} else if (dialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doDeactivateInvitation(ureq);
+			}
 		}
 	}
 	
@@ -382,9 +389,17 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		listenTo(cmc);
 	}
 	
+	private void doConfirmDeactivateInvitation(UserRequest ureq) {
+		if (deactivateInvitationLink.getUserObject() instanceof TemporaryKey temporaryKey) {
+			dialogCtrl = activateYesNoDialog(ureq, translate("deactivate.invitation.link"), 
+					translate("deactivate.invitation.link.confirm"), dialogCtrl);
+			dialogCtrl.setUserObject(temporaryKey);
+		}				
+	}
+
 	private void doDeactivateInvitation(UserRequest ureq) {
-		if (deactivateInvitationLink.getUserObject() instanceof TemporaryKey tmpKey) {
-			registrationManager.deleteTemporaryKey(tmpKey);
+		if (dialogCtrl.getUserObject() instanceof TemporaryKey temporaryKey) {
+			registrationManager.deleteTemporaryKey(temporaryKey);
 			showInfo("invitation.link.deactivated");
 			updateUI(ureq);
 		}
