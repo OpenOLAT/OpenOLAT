@@ -563,6 +563,15 @@ public class LoginModule extends AbstractSpringModule {
 		return authenticationProvider;
 	}
 	
+	public boolean isAuthenticationProviderEnabled(String provider) {
+		for(AuthenticationProvider authProvider:authenticationProviders) {
+			if(authProvider.getName().equalsIgnoreCase(provider) || authProvider.accept(provider)) {
+				return authProvider.isEnabled();
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * This method will always return something and will try to find some
 	 * matching provider. It will find LDAP'A0 -> LDAP or return the
