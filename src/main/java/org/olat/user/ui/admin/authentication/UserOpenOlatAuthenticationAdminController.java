@@ -298,10 +298,6 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			doSendRecoveryKey(ureq);
 		} else if (deactivateInvitationLink == source) {
 			doConfirmDeactivateInvitation(ureq);
-		} else if (dialogCtrl == source) {
-			if (DialogBoxUIFactory.isYesEvent(event)) {
-				doDeactivateInvitation(ureq);
-			}
 		}
 	}
 	
@@ -323,6 +319,10 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (dialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doDeactivateInvitation(ureq);
+			}
 		}
 	}
 	
@@ -344,7 +344,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			sendPasswordLinkCtrl = new SendTokenToUserForm(ureq, getWindowControl(), identityToModify, false, false, true);
 			listenTo(sendPasswordLinkCtrl);
 
-			String title = translate("send.password.title");
+			String title = translate("send.invitation.link");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), sendPasswordLinkCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);

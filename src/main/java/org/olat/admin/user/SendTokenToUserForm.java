@@ -47,6 +47,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,6 +79,8 @@ public class SendTokenToUserForm extends FormBasicController {
 	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private UserManager userManager;
 
 	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity identityToModify,
 			boolean withTitle, boolean withDescription, boolean withCancel) {
@@ -173,12 +176,13 @@ public class SendTokenToUserForm extends FormBasicController {
 				}
 			}
 			// Plus need to be URL encoded (+ is for space)
+			String userDisplayName = userManager.getUserDisplayName(identityToModify);
+
 			emailAddress = emailAddress.replace("+", "%2B");
 			String resetUrlString = serverpath + "/url/changepw/0/" + emailAddress + "/0";
-			String body = "<p>" + userTrans.translate("pwchange.intro.before") + "</p>"
-					+ userTrans.translate("pwchange.intro", userName)
-					+ userTrans.translate("pwchange.body.send", resetUrlString, serverLoginPath);
-			String subject = userTrans.translate("pwchange.subject.send");
+			String body = userTrans.translate("set.login.credentials.body", userDisplayName, userName, 
+					resetUrlString, serverLoginPath);
+			String subject = userTrans.translate("set.login.credentials.subject");
 			return new MailContent(subject, body);
 		}
 		return null;
