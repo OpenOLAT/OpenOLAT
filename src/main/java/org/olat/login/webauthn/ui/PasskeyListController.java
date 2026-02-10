@@ -120,7 +120,7 @@ public class PasskeyListController extends FormBasicController {
 			newPasskeyButton = uifactory.addFormLink("new.passkey", formLayout, Link.BUTTON);
 			newPasskeyButton.setIconLeftCSS("o_icon o_ac_token_icon");
 		} else {
-			String actionKey = canSendPasswordLink ? "send.password.link" : null;
+			String actionKey = canSendPasswordLink ? "send.invitation.link" : null;
 			tableEl.setEmptyTableSettings("table.empty.passkeys.admin", null, "o_icon_password", actionKey, null, false);
 		}
 	}
@@ -209,7 +209,7 @@ public class PasskeyListController extends FormBasicController {
 			listenTo(sendTokenToUserCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), sendTokenToUserCtrl.getInitialComponent(),
-					true, translate("send.password.link"));
+					true, translate("send.invitation.link"));
 			cmc.activate();
 			listenTo(cmc);
 		} else {
