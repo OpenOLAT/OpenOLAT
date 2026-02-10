@@ -92,7 +92,7 @@ public class SendTokenToUserForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(withTitle) {
-			setFormTitle("form.token.new.title");
+			setFormTitle("send.invitation.link");
 		}
 		if(withDescription) {
 			setFormDescription("form.token.new.description");
@@ -110,7 +110,7 @@ public class SendTokenToUserForm extends FormBasicController {
 			bodyText.setMandatory(true);
 
 			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-			uifactory.addFormSubmitButton("submit", "form.token.new.title", buttonsCont);
+			uifactory.addFormSubmitButton("submit", "send.invitation.link", buttonsCont);
 			if(withCancel) {
 				uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			}
