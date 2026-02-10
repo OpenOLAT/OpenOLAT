@@ -1807,13 +1807,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status) {
 		return getCurriculumElements(identity, roles, curriculum, status,
 				new RepositoryEntryRuntimeType[]{ RepositoryEntryRuntimeType.standalone },
-				List.of(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant));
+				List.of(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant), false);
 	}
 
 	@Override
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculums, CurriculumElementStatus[] status, 
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles) {
+			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles,
+			boolean entriesWithLecturesEnabled) {
 		if(curriculums == null || curriculums.isEmpty()) return List.of();
 		
 		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculums, null, identity);
@@ -1846,7 +1847,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 			Map<Long, RepositoryEntryMyView> entryKeyToViewMap = new HashMap<>();
 			if(!entriesRefs.isEmpty()) {
-				List<RepositoryEntryMyView> views = internal(identity, roles, curriculums, runtimeTypes, asRoles, new ArrayList<>(entriesRefs));
+				List<RepositoryEntryMyView> views = internal(identity, roles, curriculums, runtimeTypes, asRoles,
+						new ArrayList<>(entriesRefs), entriesWithLecturesEnabled);
 				for(RepositoryEntryMyView view:views) {
 					entryKeyToViewMap.put(view.getKey(), view);
 				}
@@ -1902,13 +1904,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	private List<RepositoryEntryMyView> internal(Identity identity, Roles roles, List<? extends CurriculumRef> curriculums,
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, List<RepositoryEntryRef> entriesRefs) {
+			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, List<RepositoryEntryRef> entriesRefs,
+			boolean entriesWithLecturesEnabled) {
 		Collection<List<RepositoryEntryRef>> chunkedOfEntriesRefs = PersistenceHelper.collectionOfChunks(new ArrayList<>(entriesRefs), 5);
 		
 		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
 		params.setCurriculums(curriculums);
 		params.setRuntimeTypes(runtimeTypes);
 		params.setFilters(Filter.rolesFilters(asRoles));
+		params.setWithLecturesEnabled(entriesWithLecturesEnabled);
 		
 		List<RepositoryEntryMyView> views = new ArrayList<>(entriesRefs.size());
 		for (List<RepositoryEntryRef> chunkedORefs : chunkedOfEntriesRefs) {

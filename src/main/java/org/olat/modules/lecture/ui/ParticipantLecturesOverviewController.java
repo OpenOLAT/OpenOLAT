@@ -308,11 +308,12 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
 				.getCurriculumElements(assessedIdentity, roles, new ArrayList<>(curriculums), CurriculumElementStatus.notDeleted(),
 						new RepositoryEntryRuntimeType[]{ RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone },
-						List.of(GroupRoles.participant));
+						List.of(GroupRoles.participant), true);
 
 		List<CurriculumElementRepositoryEntryViews> elementsToAggregate = new ArrayList<>();
 		for(CurriculumElementRepositoryEntryViews view:elementsWithViews) {
-			boolean aggregate = CurriculumLectures.isEnabled(view.getCurriculumElement(), view.getCurriculumElementType());
+			boolean aggregate = CurriculumLectures.isEnabled(view.getCurriculumElement(), view.getCurriculumElementType())
+					|| !view.getEntries().isEmpty();
 			if(aggregate) {
 				elementsToAggregate.add(view);
 			}
