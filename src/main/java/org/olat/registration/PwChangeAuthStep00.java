@@ -40,7 +40,7 @@ public class PwChangeAuthStep00 extends BasicStep {
 		super(ureq);
 		this.initialEmail = initialEmail;
 
-		setI18nTitleAndDescr("step1.pw.title", "step1.pw.text");
+		setI18nTitleAndDescr("step1.pw.title", "step1.login.credentials.text");
 		updateNextStep(ureq, false);
 	}
 

@@ -1,5 +1,5 @@
 <fieldset #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
-	<legend>$r.translate("form.password.enter.new")</legend>
+	<legend>$r.translate("set.login.credentials")</legend>
 	<div class="clearfix"><div class="col-sm-offset-3 col-sm-9">
 		#if ($off_info) <div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div> #end
 		#if ($off_desc) <div class="o_info_with_icon">$off_desc</div> #end

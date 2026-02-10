@@ -38,7 +38,7 @@ public class PwChangeSetNewStep02 extends BasicStep {
 	public PwChangeSetNewStep02(UserRequest ureq) {
 		super(ureq);
 
-		setI18nTitleAndDescr("step3.pw.title", "step3.pw.text");
+		setI18nTitleAndDescr("set.login.credentials", "step3.pw.text");
 		setNextStep(Step.NOSTEP);
 	}
 

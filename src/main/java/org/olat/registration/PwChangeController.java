@@ -108,7 +108,7 @@ public class PwChangeController extends BasicController {
 					return StepsMainRunController.DONE_MODIFIED;
 				};
 		pwChangeWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startPwChangeStep, finishCallback,
-				new CancelCallback(), translate("pwchange.wizard.title"), "o_sel_pw_change_start_wizard");
+				new CancelCallback(), translate("set.login.credentials"), "o_sel_pw_change_start_wizard");
 		listenTo(pwChangeWizardCtrl);
 
 		return pwChangeWizardCtrl;

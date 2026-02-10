@@ -68,7 +68,7 @@ class EmailOrUsernameFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormInfo("step1.pw.text");
+		setFormInfo("step1.login.credentials.text");
 
 		emailOrUsernameEl = uifactory.addTextElement("emailOrUsername", "email.or.username", 255, initialEmail, formLayout);
 		emailOrUsernameEl.setEnabled(!StringHelper.containsNonWhitespace(initialEmail));

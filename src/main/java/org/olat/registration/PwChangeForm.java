@@ -66,7 +66,7 @@ public class PwChangeForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.password.enter.new");
+		setFormTitle("set.login.credentials");
 		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
 		setFormDescription("form.password.rules", new String[] { descriptions });
 
