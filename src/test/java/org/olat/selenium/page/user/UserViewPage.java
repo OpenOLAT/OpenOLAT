@@ -94,7 +94,7 @@ public class UserViewPage {
 	}
 	
 	public String sendPasswordLink() {
-		By sendPasswordLinkBy = By.xpath("//fieldset[contains(@class,'o_authentication_olat')]//div[@class='o_empty_action']/a[contains(@onclick,'secondary.empty.state')]");
+		By sendPasswordLinkBy = By.xpath("//fieldset[contains(@class,'o_authentication_olat')]//div[@class='o_empty_action']/a[contains(@class,'btn-primary') and contains(@onclick,'empty.state')]");
 		OOGraphene.waitElement(sendPasswordLinkBy, browser);
 		browser.findElement(sendPasswordLinkBy).click();
 		OOGraphene.waitModalDialog(browser);
