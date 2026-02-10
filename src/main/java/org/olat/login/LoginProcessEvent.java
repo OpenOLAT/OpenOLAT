@@ -28,6 +28,8 @@ import org.olat.core.gui.control.Event;
  */
 public class LoginProcessEvent extends Event {
 
+	private static final long serialVersionUID = -3259537002325625511L;
+	
 	public static final LoginProcessEvent REGISTER_EVENT = new LoginProcessEvent("register");
 	public static final LoginProcessEvent PWCHANGE_EVENT = new LoginProcessEvent("pwchange");
 

@@ -237,7 +237,7 @@ public class RepositoryEntryMyCourseQueries {
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
 			sb.append(" inner join ").append(MarkImpl.class.getName()).append(" as mark2 on (mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry')");
 		}
-
+		
 		sb.append(" where ");
 		
 		boolean membershipMandatory = params.isMembershipMandatory() || params.isMembershipOnly();
@@ -282,6 +282,12 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" lifecycle.validTo<=:now");
 			}
 			sb.append(")");
+		}
+
+		if(params.isWithLecturesEnabled()) {
+			sb.append(" and exists (select lectureConfig.key from lectureentryconfig as lectureConfig")
+			  .append("  where lectureConfig.entry.key=v.key and lectureConfig.lectureEnabled is true")
+			  .append(" )");
 		}
 		
 		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {

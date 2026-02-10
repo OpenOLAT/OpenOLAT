@@ -688,7 +688,7 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status,
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles);
+			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, boolean entriesWithLecturesEnabled);
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 

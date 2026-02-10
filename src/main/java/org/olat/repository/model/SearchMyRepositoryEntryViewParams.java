@@ -48,6 +48,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private boolean membershipOnly = false;
 	private boolean participantsOnly = false;
 	private boolean membershipMandatory = false;
+	private boolean withLecturesEnabled = false;
 	private RepositoryEntryStatusEnum[] entryStatus;
 	private RepositoryEntryRuntimeType[] runtimeTypes;
 	
@@ -108,6 +109,14 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setParticipantsOnly(boolean participantsOnly) {
 		this.participantsOnly = participantsOnly;
+	}
+
+	public boolean isWithLecturesEnabled() {
+		return withLecturesEnabled;
+	}
+
+	public void setWithLecturesEnabled(boolean withLecturesEnabled) {
+		this.withLecturesEnabled = withLecturesEnabled;
 	}
 
 	public List<? extends OrganisationRef> getOfferOrganisations() {

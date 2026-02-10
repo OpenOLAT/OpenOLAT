@@ -81,6 +81,7 @@ import org.olat.course.member.wizard.InvitationFinishCallback;
 import org.olat.course.member.wizard.Invitation_1_MailStep;
 import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.project.ProjMemberInfo;
 import org.olat.modules.project.ProjMemberInfoSearchParameters;
 import org.olat.modules.project.ProjProject;
@@ -113,7 +114,6 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private FlexiTableElement tableEl;
 	private ProjMemberListTableModel tableModel;
 	
-	private int counter = 0;
 	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
@@ -141,6 +141,8 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private InvitationModule invitationModule;
 
 	public ProjMemberListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback) {
@@ -165,12 +167,14 @@ public class ProjMemberListController extends FormBasicController implements Act
 			addMemberLink = uifactory.addFormLink("member.add", formLayout, Link.BUTTON);
 			addMemberLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add_member");
 			
-			addMemberDropdown = uifactory.addDropdownMenu("member.dropdown", null, formLayout, getTranslator());
-			addMemberDropdown.setOrientation(DropdownOrientation.right);
-			
-			invitationLink = uifactory.addFormLink("member.invitation.add", formLayout, Link.LINK);
-			invitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
-			addMemberDropdown.addElement(invitationLink);
+			if (invitationModule.isProjectInvitationEnabled()) {
+				addMemberDropdown = uifactory.addDropdownMenu("member.dropdown", null, formLayout, getTranslator());
+				addMemberDropdown.setOrientation(DropdownOrientation.right);
+
+				invitationLink = uifactory.addFormLink("member.invitation.add", formLayout, Link.LINK);
+				invitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+				addMemberDropdown.addElement(invitationLink);
+			}
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

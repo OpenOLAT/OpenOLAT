@@ -411,7 +411,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				container.put("menu.pw", link);
 				changePasswordLink = link;
 			}
-		} else if(userModule.isAnyPasswordChangeAllowed()) {
+		} else if(userModule.isAnyPasswordChangeAllowed() && loginModule.isAuthenticationProviderEnabled("OLAT")) {
 			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", container, this);
 			link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
 			link.setElementCssClass("o_login_pwd");

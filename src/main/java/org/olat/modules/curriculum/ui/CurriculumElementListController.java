@@ -331,7 +331,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		CurriculumElementStatus[] visibleStatus = RepositoryEntryMyImplementationsQueries.VISIBLE_STATUS.toArray(new CurriculumElementStatus[0]);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
 				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
-						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles());
+						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles(), false);
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);

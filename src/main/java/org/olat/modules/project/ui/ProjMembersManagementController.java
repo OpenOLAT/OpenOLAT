@@ -161,7 +161,7 @@ public class ProjMembersManagementController extends MainLayoutBasicController i
 		Controller selectedCtrl = null;
 		if (CMD_MEMBERS.equals(cmd)) {
 			selectedCtrl = doOpenMembers(ureq, bwControl);
-		} else if (CMD_INVITATIONS.equals(cmd)) {
+		} else if (CMD_INVITATIONS.equals(cmd) && invitationsEnabled) {
 			selectedCtrl = doOpenInvitations(ureq, bwControl);
 		}
 		
