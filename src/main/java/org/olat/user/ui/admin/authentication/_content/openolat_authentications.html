@@ -31,7 +31,7 @@
 #end
 </fieldset>
 
-#if($r.isNotEmpty($withPasskey))
+#if($r.visible("passkeys"))
 	$r.render("passkeys")
 #end
 

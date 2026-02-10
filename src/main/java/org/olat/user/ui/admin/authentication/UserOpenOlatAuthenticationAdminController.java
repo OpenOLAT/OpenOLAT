@@ -91,7 +91,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	private CloseableModalController cmc;
 	private SendTokenToUserForm sendPasswordLinkCtrl;
 	private ChangeUserPasswordForm resetPasswordCtrl;
-	private final PasskeyListController passkeyListCtrl;
+	private PasskeyListController passkeyListCtrl;
 	private SendRecoveryKeyToUserForm sendRecoveryKeyCtrl;
 	
 	@Autowired
@@ -117,7 +117,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		mainVC = createVelocityContainer("openolat_authentications");
 		
 		withPasskey = loginModule.isOlatProviderWithPasskey();
-		mainVC.contextPut("withPasskey", Boolean.valueOf(withPasskey));
+		mainVC.contextPut("withPasskey", withPasskey);
 		
 		minimalLevel = loginModule.getPasskeyLevel(roles);
 		
@@ -133,11 +133,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		initAuthentications();
 		
 		// List of passkeys
-		passkeyListCtrl = new PasskeyListController(ureq, getWindowControl(), identityToModify,
-				getAuthenticationbyProvider(authentications, "OLAT") == null, true, true, canSendPasswordLink);
-		listenTo(passkeyListCtrl);
-		mainVC.put("passkeys", passkeyListCtrl.getInitialComponent());
-		passkeyListCtrl.getInitialComponent().setVisible(withPasskey && currentLevel != PasskeyLevels.level1);
+		initPasskeys(ureq);
 		
 		// Recovery key
 		sendRecoveryKeysLink = LinkFactory.createButton("send.recovery.key", mainVC, this);
@@ -188,8 +184,8 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	}
 	
 	private void initAuthentications() {
-		Authentication olatAuthentication = getAuthenticationbyProvider(authentications, "OLAT");
-		mainVC.contextPut("olatAuthenticationInUse", Boolean.valueOf(olatAuthentication != null));
+		Authentication olatAuthentication = getOlatAuthentication(authentications);
+		mainVC.contextPut("olatAuthenticationInUse", olatAuthentication != null);
 		if(olatAuthentication != null) {
 			IconPanel iconPanel = new IconPanel("olatauthentication");
 			mainVC.put("olatauthentication", iconPanel);
@@ -239,20 +235,48 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		}
 	}
 	
-	private Authentication getAuthenticationbyProvider(List<Authentication> authentications, String provider) {
+	private Authentication getOlatAuthentication(List<Authentication> authentications) {
+		return getAuthenticationByProvider(authentications, "OLAT");
+	}
+
+	private Authentication getAuthenticationByProvider(List<Authentication> authentications, String provider) {
 		return authentications.stream()
 				.filter(auth -> provider.equals(auth.getProvider()))
 				.findFirst()
 				.orElse(null);
 	}
 	
-	private void updateUI() {
+	private void initPasskeys(UserRequest ureq) {
+		if (passkeyListCtrl == null) {
+			passkeyListCtrl = new PasskeyListController(ureq, getWindowControl(), identityToModify,
+					getOlatAuthentication(authentications) == null, true, true, canSendPasswordLink);
+			listenTo(passkeyListCtrl);
+			mainVC.put("passkeys", passkeyListCtrl.getInitialComponent());
+		}
+		passkeyListCtrl.getInitialComponent().setVisible(passkeySectionVisible());
+	}
+
+	private boolean passkeySectionVisible() {
+		if (!withPasskey) {
+			return false;
+		}
+		if (minimalLevel != PasskeyLevels.level1) {
+			return true;
+		}
+		if (getOlatAuthentication(authentications) != null) {
+			return true;
+		}
+		return false;
+	}
+	
+	private void updateUI(UserRequest ureq) {
 		authentications = securityManager.getAuthentications(identityToModify);
 		currentLevel = PasskeyLevels.currentLevel(authentications);
 		
 		initLevels();
 		initTemporaryKeys();
 		initAuthentications();
+		initPasskeys(ureq);
 	}
 
 	@Override
@@ -270,7 +294,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		} else if(sendRecoveryKeysLink == source) {
 			doSendRecoveryKey(ureq);
 		} else if (deactivateInvitationLink == source) {
-			doDeactivateInvitation();
+			doDeactivateInvitation(ureq);
 		}
 	}
 	
@@ -278,12 +302,12 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(passkeyListCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				updateUI();
+				updateUI(ureq);
 			}
 		} else if(resetPasswordCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doFinishResetPassword(resetPasswordCtrl.getNewPassword());
-				updateUI();
+				updateUI(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -358,11 +382,11 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		listenTo(cmc);
 	}
 	
-	private void doDeactivateInvitation() {
+	private void doDeactivateInvitation(UserRequest ureq) {
 		if (deactivateInvitationLink.getUserObject() instanceof TemporaryKey tmpKey) {
 			registrationManager.deleteTemporaryKey(tmpKey);
 			showInfo("invitation.link.deactivated");
-			updateUI();
+			updateUI(ureq);
 		}
 	}
 }
