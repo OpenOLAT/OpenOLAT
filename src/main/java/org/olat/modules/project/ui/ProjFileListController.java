@@ -557,6 +557,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		String iconCSS = CSSHelper.createFiletypeIconCssClassFor(vfsMetadata.getFilename());
 		link.setIconLeftCSS("o_icon " + iconCSS);
 		
+		link.setUrl(bcFactory.getFileUrl(file));
+		classicLink.setUrl(bcFactory.getFileUrl(file));
+		
 		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			LockInfo lock = vfsLockManager.getLock(vfsLeaf);

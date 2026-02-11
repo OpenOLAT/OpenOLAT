@@ -447,6 +447,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 		link.setI18nKey(StringHelper.escapeHtml(row.getDisplayName()));
 		link.setElementCssClass("o_link_plain");
+		link.setUrl(bcFactory.getDecisionUrl(project, row));
 		link.setUserObject(row);
 		row.setSelectLink(link);
 	}
