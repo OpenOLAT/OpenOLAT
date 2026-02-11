@@ -89,7 +89,6 @@ import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -151,8 +150,6 @@ public class LectureListDetailsController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CurriculumModule curriculumModule;
-	@Autowired
-	private TaxonomyService taxonomyService;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	
@@ -282,10 +279,6 @@ public class LectureListDetailsController extends FormBasicController {
 
 		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
 		if (taxonomyRefs.isEmpty() || row.getSubjects() == null || row.getSubjects().isEmpty()) {
-			return;
-		}
-		
-		if (row.getLectureBlock().getTaxonomyLevels() == null || row.getLectureBlock().getTaxonomyLevels().isEmpty()) {
 			return;
 		}
 		
