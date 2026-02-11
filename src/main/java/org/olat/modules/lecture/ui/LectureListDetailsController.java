@@ -282,10 +282,6 @@ public class LectureListDetailsController extends FormBasicController {
 			return;
 		}
 		
-		if (row.getLectureBlock().getTaxonomyLevels() == null || row.getLectureBlock().getTaxonomyLevels().isEmpty()) {
-			return;
-		}
-		
 		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null, null);
 		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
 				"lecture.subjects", formLayout, getWindowControl(), true, source);
