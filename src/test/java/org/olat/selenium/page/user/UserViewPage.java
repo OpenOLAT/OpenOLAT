@@ -110,9 +110,9 @@ public class UserViewPage {
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		// The change password link is the first one.
-		int index = text.indexOf("a href='");
+		int index = text.indexOf("a href=\"");
 		if(index > 0) {
-			int lastIndex = text.indexOf('\'', index + 10);
+			int lastIndex = text.indexOf('\"', index + 10);
 			String link = text.substring(index + 8, lastIndex);
 			log.debug("Password link: {}", link);
 			return link;
