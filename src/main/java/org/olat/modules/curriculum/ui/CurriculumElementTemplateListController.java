@@ -141,15 +141,15 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.runtimeType, new RuntimeTypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.access, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.instantiateTemplate));
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(RepoCols.tools));
+		if(secCallback.canManageCurriculumElementResources(curriculumElement)) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(RepoCols.tools));
+		}
 
 		tableModel = new CurriculumElementRepositoryTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setSelectAllEnable(true);
-		tableEl.setMultiSelect(true);
 		tableEl.setCssDelegate(this);
-		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-templates-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-templates-list-v2");
 				
 		// special rights for managers
 		if(secCallback.canManageCurriculumElementResources(curriculumElement)
@@ -160,6 +160,10 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 			// 2) remove
 			removeTemplatesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeTemplatesButton);
+			// 3) enable select all and multi-select
+			tableEl.setSelectAllEnable(true);
+			tableEl.setMultiSelect(true);
+			
 			// empty behavior
 			String[] emptyI18nArgs = {
 					StringHelper.escapeHtml(curriculumElementType.getDisplayName())
@@ -223,7 +227,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		String[] emptyI18nArgs = {
 				curriculumElementType == null ? "" : StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 			};
-		if(linkedCourses >= 1) {
+		if(linkedCourses >= 1 || !secCallback.canManageCurriculumElementResources(curriculumElement)) {
 			tableEl.setEmptyTableSettings("table.templates.empty", "table.templates.empty.linked.hint",
 					"o_CourseModule_icon", null, null, true, emptyI18nArgs);
 		} else {
@@ -446,7 +450,8 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-			
+
+			// Tool only available if user can manage the element
 			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put("remove", removeLink);
 			mainVC.contextPut("links", List.of("remove"));

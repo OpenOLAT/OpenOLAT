@@ -169,13 +169,13 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.guests, new GuestAccessRenderer(getLocale())));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.resources));
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(RepoCols.tools));
+		if(secCallback.canManageCurriculumElementResources(curriculumElement)) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(RepoCols.tools));
+		}
 
 		tableModel = new CurriculumElementRepositoryTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setSelectAllEnable(true);
-		tableEl.setMultiSelect(true);
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list-v2");
 		
@@ -196,6 +196,9 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			// 3) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeResourcesButton);
+			// 4) enable select all and multi-select
+			tableEl.setSelectAllEnable(true);
+			tableEl.setMultiSelect(true);
 			
 			tableEl.setEmptyTableSettings("table.resources.empty", "table.resources.empty.hint", "o_CourseModule_icon",
 					"add.resource", "o_icon_add", true, emptyI18nArgs);
@@ -554,6 +557,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			
 			mainVC = createVelocityContainer("tools");
 
+			// Tool only available if user can manage the element
 			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this, Link.LINK);
 			changeStatusLink = LinkFactory.createLink("change.status.title", "change.status", getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put("remove", removeLink);
