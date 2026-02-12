@@ -229,7 +229,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			moreDropdown.addComponent(contactLink);
 		}
 
-		if (roleSecurityCallback.canResetPassword()) {
+		if (roleSecurityCallback.canResetPassword() && !roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles()) {
 			Roles roles = securityManager.getRoles(mentee);
 			if (!(roles.isAuthor() || roles.isManager() || roles.isAdministrator() || roles.isSystemAdmin() || roles.isPrincipal())) {
 				resetLink = LinkFactory.createToolLink("reset.link", translate("reset.link"), this);
