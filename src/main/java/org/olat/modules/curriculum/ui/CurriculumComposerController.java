@@ -449,8 +449,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(rootElement == null) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
+		} else {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		}
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
@@ -484,7 +485,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			
 		}
 		
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	private List<Curriculum> loadCurriculumsForFilter(UserRequest ureq) {
@@ -525,7 +526,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
 			if(status == CurriculumElementStatus.deleted
-					|| (rootElement != null && (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))) {
+					|| (rootElement != null && (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))
+					|| (rootElement == null && status == CurriculumElementStatus.active)) {
 				continue;
 			}
 			
