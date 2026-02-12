@@ -62,7 +62,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewCurriculumsTableModel.ImportCurriculumsCols;
 
 /**
@@ -79,6 +81,7 @@ public class ImportCurriculumsReviewCurriculumsController extends StepFormBasicC
 	
 	protected static final String IGNORED_KEY = "ignored";
 	protected static final String STATUS_KEY = "status";
+	protected static final String ORGANISATION_KEY = "organisation";
 	protected static final String STATUS_NEW = "new";
 	protected static final String STATUS_MODIFIED = "modified";
 	protected static final String STATUS_WITH_ERRORS = "error";
@@ -110,7 +113,13 @@ public class ImportCurriculumsReviewCurriculumsController extends StepFormBasicC
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_review_curriculums");
 		this.context = context;
 		initForm(ureq);
+		
+		// Load data for filters
 		loadModel(ureq);
+		// Initialize filters
+		initFilterTabs();
+		initFilters();
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 
 	@Override
@@ -146,10 +155,6 @@ public class ImportCurriculumsReviewCurriculumsController extends StepFormBasicC
 		tableEl.setExportEnabled(false);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCssDelegate(this);
-		
-		initFilterTabs();
-		initFilters();
-		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	private void initFilterTabs() {
@@ -203,6 +208,23 @@ public class ImportCurriculumsReviewCurriculumsController extends StepFormBasicC
 		statusKV.add(SelectionValues.entry(STATUS_WITH_CHANGES, translate("search.status.changes")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("search.import.status"),
 				STATUS_KEY, statusKV, true));
+		
+		// Organisations
+		SelectionValues organisationsKV = new SelectionValues();
+		List<Organisation> organisations = tableModel.getOrganisations();
+		for(Organisation organisation:organisations) {
+			StringBuilder sb = new StringBuilder();
+			if(StringHelper.containsNonWhitespace(organisation.getDisplayName())) {
+				sb.append(organisation.getDisplayName());
+			}
+			if(StringHelper.containsNonWhitespace(organisation.getIdentifier())) {
+				sb.append(" \u00B7 ").append(organisation.getIdentifier());
+			}
+			organisationsKV.add(SelectionValues.entry(organisation.getKey().toString(), sb.toString()));
+		}
+
+		filters.add(new FlexiTableMultiSelectionFilter(translate("search.import.organisations"),
+				ORGANISATION_KEY, organisationsKV, true));
 
 		tableEl.setFilters(true, filters, true, false);
 	}

@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.importwizard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -48,6 +50,16 @@ implements FilterableFlexiTableModel {
 		super(columnsModel);
 	}
 	
+	public List<Organisation> getOrganisations() {
+		if(backupList == null) List.of();
+
+		Set<Organisation> organisations = backupList.stream()
+			.map(CurriculumImportedRow::getOrganisation)
+			.filter(org -> org != null)
+			.collect(Collectors.toSet());
+		return List.copyOf(organisations);
+	}
+	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(StringHelper.containsNonWhitespace(searchString) || !filters.isEmpty()) {
@@ -55,10 +67,12 @@ implements FilterableFlexiTableModel {
 					? null : searchString.toLowerCase();
 			final boolean ignored = isFilterSelected(filters, ImportCurriculumsReviewCurriculumsController.IGNORED_KEY);
 			final Set<String> status = getFilteredList(filters, ImportCurriculumsReviewCurriculumsController.STATUS_KEY);
+			final Set<Long> organisations = getFilteredLongList(filters, ImportCurriculumsReviewCurriculumsController.ORGANISATION_KEY);
 			
 			List<CurriculumImportedRow> filteredRows = new ArrayList<>(backupList.size());
 			for(CurriculumImportedRow row:backupList) {
 				boolean accept = accept(loweredSearchString, row)
+						&& acceptOrganisations(organisations, row)
 						&& acceptIgnored(ignored, row)
 						&& acceptStatus(status, row);
 				if(accept) {
@@ -80,6 +94,14 @@ implements FilterableFlexiTableModel {
 		return Set.of();
 	}
 	
+	private Set<Long> getFilteredLongList(List<FlexiTableFilter> filters, String filterName) {
+		Set<String> set = getFilteredList(filters, filterName);
+		return set.stream()
+				.filter(s -> StringHelper.isLong(s))
+				.map(s -> Long.valueOf(s))
+				.collect(Collectors.toSet());
+	}
+	
 	private boolean isFilterSelected(List<FlexiTableFilter> filters, String id) {
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, id);
 		if (filter != null) {
@@ -87,6 +109,11 @@ implements FilterableFlexiTableModel {
 			return filterValues != null && filterValues.contains(id);
 		}
 		return false;
+	}
+	
+	private boolean acceptOrganisations(Set<Long> organisations, CurriculumImportedRow row) {
+		if(organisations == null || organisations.isEmpty()) return true;
+		return row.getOrganisation() != null && organisations.contains(row.getOrganisation().getKey());
 	}
 	
 	private boolean acceptStatus(Set<String> status, CurriculumImportedRow row) {
