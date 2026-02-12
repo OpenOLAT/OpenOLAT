@@ -1,0 +1,7 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("ignore.for.import"))
+		<li>$r.render("ignore.for.import")</li>
+	#elseif	($r.available("include.for.import"))
+		<li>$r.render("include.for.import")</li>
+	#end
+</ul>

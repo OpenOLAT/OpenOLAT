@@ -1,0 +1,9 @@
+<div class="o_curriculum_import">
+	<p>$r.translate("review.curriculums.infos") $r.contextHelpAdditionalInfo("manual_admin/administration/Modules_Course_Planner/")</p>
+	#if($r.visible("errors.link"))
+	<div class="o_error_with_icon" role="alert">
+		$r.translate("error.link.before") $r.render("errors.link") $r.translate("error.link.after")
+	</div>
+	#end
+	$r.render("table")
+</div>

@@ -105,6 +105,11 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canImportCurriculums() {
+			return admin;
+		}
+
+		@Override
 		public boolean canViewImplementations() {
 			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
 		}

@@ -296,6 +296,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public List<Curriculum> getCurriculumsByIdentifier(String identifier) {
+		return curriculumDao.loadByIdentifier(identifier);
+	}
+
+	@Override
 	public List<CurriculumMember> getCurriculumMembers(SearchMemberParameters params) {
 		return memberQueries.getCurriculumMembers(params);
 	}

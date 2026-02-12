@@ -35,6 +35,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
 import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -49,6 +51,9 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsContext;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileStep;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFinishStepCallback;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
@@ -67,6 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumManagerRootController extends BasicController implements Activateable2 {
 
+	private final Link importButton;
 	private final Link reportsLink;
 	private final Link curriculumsLink;
 	private final Link lecturesBlocksLink;
@@ -81,6 +87,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	
 	private CurriculumReportsController reportsCtrl;
 	private DashboardController overviewCtrl;
+	private StepsMainRunController importCurriculumsCtrl;
 	private LectureListRepositoryController lecturesCtrl;
 	private CurriculumSearchManagerController searchCtrl;
 	private CurriculumComposerController implementationsCtrl;
@@ -106,6 +113,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 		this.certificationSecCallback = certificationSecCallback;
 		
 		mainVC = createVelocityContainer("manager_overview");
+		
+		importButton= LinkFactory.createLink("curriculum.import", "curriculum.import", getTranslator(), mainVC, this, Link.BUTTON);
+		importButton.setIconLeftCSS("o_icon o_icon_import");
+		importButton.setVisible(secCallback.canImportCurriculums());
 		
 		searchFieldCtrl = new CurriculumSearchHeaderController(ureq, getWindowControl());
 		listenTo(searchFieldCtrl);
@@ -196,7 +207,17 @@ public class CurriculumManagerRootController extends BasicController implements 
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
+		} else if (importCurriculumsCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(importCurriculumsCtrl);
+		importCurriculumsCtrl = null;
 	}
 
 	@Override
@@ -213,6 +234,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if(source == certificationProgramsLink) {
 			List<ContextEntry> active = BusinessControlFactory.getInstance().createCEListFromString("[Active:0]");
 			doOpenCertificationPrograms(ureq).activate(ureq, active, null);
+		} else if(source == importButton) {
+			doImportCurriculums(ureq);
 		}
 	}
 	
@@ -321,5 +344,18 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(certificationProgramListCtrl);
 		toolbarPanel.pushController(translate("certification.programs"), certificationProgramListCtrl);
 		return certificationProgramListCtrl;
+	}
+	
+	private void doImportCurriculums(UserRequest ureq) {
+		removeAsListenerAndDispose(importCurriculumsCtrl);
+
+		final ImportCurriculumsContext context = new ImportCurriculumsContext();
+		ImportCurriculumsFileStep step = new ImportCurriculumsFileStep(ureq, context);
+		StepRunnerCallback finish = new ImportCurriculumsFinishStepCallback(context);
+	
+		String title = translate("curriculum.import.title");
+		importCurriculumsCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
+		listenTo(importCurriculumsCtrl);
+		getWindowControl().pushAsModalDialog(importCurriculumsCtrl.getInitialComponent());
 	}
 }

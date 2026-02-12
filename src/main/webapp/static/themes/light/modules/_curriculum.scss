@@ -30,6 +30,13 @@
 	}
 }
 
+a.o_validation_open_results {
+	text-decoration: none;
+}
+
+fieldset.o_validation_result {
+	//
+}
 
 @media print {
 	.o_curriculumtable.o_rendertype_custom .o_table_row {
@@ -708,7 +715,20 @@
 	font-weight: bold;
 }
 
-
+.o_curriculum_import .o_table_wrapper table.table {
+	tr.o_import_error, tr.o_import_error>td.o_col_sticky_right  {
+		background-color: $o-curriculum-import-bg-error;
+	}
+	tr.o_import_new, tr.o_import_new>td.o_col_sticky_right  {
+		background-color: $o-curriculum-import-bg-new;
+	}
+	tr.o_import_changed, tr.o_import_changed>td.o_col_sticky_right  {
+		background-color: $o-curriculum-import-bg-changed;
+	}
+	tr.o_import_ignored, tr.o_import_ignored>td.o_col_sticky_right {
+		background-color: $o-curriculum-import-bg-ignored	;
+	}
+}
 
 .o_labeled {
 	&.o_curriculum_status_preparation {

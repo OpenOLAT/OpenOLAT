@@ -39,7 +39,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
-import org.olat.modules.coach.security.EditProfileRightProvider;
 import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -85,6 +85,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_catalog_intern { @include o-add-icon('book-open');}
 .o_icon_catalog_sub { @include o-add-icon('folder');}
 .o_icon_certificate { @include o-add-icon('certificate');}
+.o_icon_changes { @include o-add-icon('pencil'); color: $o-base-blue-color }
 .o_icon_chart_simple { @include o-add-icon('chart-simple');}
 .o_icon_chat { @include o-add-icon('comment', false);}
 .o_icon_chats { @include o-add-icon('comments', false);}
@@ -594,6 +595,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_user_authentication { @include o-add-icon('user-shield');}
 .o_icon_update { @include o-add-icon('refresh');}
 .o_icon_upload { @include o-add-icon('upload');}
+.o_icon_validation_error { @include o-add-icon('circle-exclamation'); color: $brand-danger; }
+.o_icon_validation_warning { @include o-add-icon('triangle-exclamation'); color: $brand-warning; }
 .o_icon_version { @include o-add-icon('history');}
 .o_icon_video { @include o-add-icon('film');}
 .o_icon_video_play { @include o-add-icon('play');}

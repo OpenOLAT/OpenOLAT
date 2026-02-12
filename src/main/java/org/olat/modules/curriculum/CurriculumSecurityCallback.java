@@ -29,6 +29,8 @@ public interface CurriculumSecurityCallback {
 
 	boolean canViewCurriculums();
 	
+	boolean canImportCurriculums();
+	
 	boolean canViewImplementations();
 	
 	boolean canNewCurriculum();

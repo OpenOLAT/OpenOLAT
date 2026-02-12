@@ -1,7 +1,12 @@
-<h2>
-	<i class="o_icon o_icon_courseplanner" aria-hidden="true"> </i> $r.translate("curriculum.management")
+<div class="o_header_with_buttons">
+	<h2><i class="o_icon o_icon_courseplanner" aria-hidden="true"> </i> $r.translate("curriculum.management")</h2>
+	<div class="o_button_group o_button_group_right">
+	#if($r.visible("curriculum.import"))
+		$r.render("curriculum.import")
+	#end
 	$r.contextHelpWithWrapper("manual_user/area_modules/Course_Planner/")
-</h2>
+	</div>
+</div>
 $r.render("searchField")
 <ul class="o_mega_buttons o_mega_buttons_centered #if($r.visible("curriculum.reports")) o_mega_buttons_5_centered #else o_mega_buttons_4_centered #end">
 	<li aria-hidden="true"></li>

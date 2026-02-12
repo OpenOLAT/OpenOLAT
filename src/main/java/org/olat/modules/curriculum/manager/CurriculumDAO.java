@@ -81,16 +81,6 @@ public class CurriculumDAO {
 		return curriculum;
 	}
 	
-	public List<Curriculum> loadAllCurriculums() {
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("select cur from curriculum cur")
-		  .append(" left join fetch cur.organisation org")
-		  .append(" inner join fetch cur.group baseGroup");
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Curriculum.class)
-			.getResultList();
-	}
-	
 	public Curriculum loadByKey(Long key) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select cur from curriculum cur")
@@ -118,6 +108,19 @@ public class CurriculumDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Curriculum.class)
 			.setParameter("keys", keys)
+			.getResultList();
+	}
+	
+	public List<Curriculum> loadByIdentifier(String identifier) {
+		String query = """
+				select cur from curriculum cur
+				left join fetch cur.organisation org
+				inner join fetch cur.group baseGroup
+				where lower(cur.identifier)=:identifier""";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, Curriculum.class)
+			.setParameter("identifier", identifier.toLowerCase())
 			.getResultList();
 	}
 	

@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationRoles;
@@ -113,6 +114,18 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Assert.assertTrue(curriculums.contains(curriculum1));
 		Assert.assertTrue(curriculums.contains(curriculum2));
 		Assert.assertTrue(!curriculums.contains(curriculum3));
+	}
+	
+	@Test
+	public void loadByIdentifier() {
+		String identifier = UUID.randomUUID().toString();
+		Curriculum curriculum = curriculumDao.createAndPersist(identifier, "Curriculum 9", "Short desc.", false, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Curriculum> curriculums = curriculumDao.loadByIdentifier(identifier);
+		Assertions.assertThat(curriculums)
+			.hasSize(1)
+			.containsExactly(curriculum);
 	}
 	
 	@Test

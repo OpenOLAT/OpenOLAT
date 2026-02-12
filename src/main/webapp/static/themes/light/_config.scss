@@ -866,6 +866,12 @@ $o-curriculum-outline-thumb-border-radius		: 4px !default;
 $o-curriculum-outline-padding					: 10px !default;
 $o-curriculum-outline-space-width				: 2em !default;
 
+/* Curriculum import */
+$o-curriculum-import-bg-new						: $o-color-success-text-bg !default;
+$o-curriculum-import-bg-error					: $o-color-error-text-bg !default;
+$o-curriculum-import-bg-changed					: $o-color-info-text-bg	 !default;
+$o-curriculum-import-bg-ignored					: $o-color-note-text-bg !default;
+
 /* Activity */
 $o-activity-add-border							: 1px solid $brand-success !default;
 $o-activity-modify-border						: 1px solid $brand-warning !default;
