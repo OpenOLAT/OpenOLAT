@@ -422,7 +422,11 @@
 				}
 			}
 		}
-		
+	}
+	.o_row_status {
+		.o_labeled_light {
+			position: initial; // to make it clickable
+		}
 	}
 	
 	// https://piccalil.li/blog/accessible-faux-nested-interactive-controls/
