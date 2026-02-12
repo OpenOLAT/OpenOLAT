@@ -178,5 +178,8 @@ public interface RoleSecurityCallback {
 	public boolean canUploadExternalCertificate();
 	
 	public OrganisationRoles limitToRole();
+
+	public void setReadOnlyDueToAdditionalOrgRoles(boolean readOnly);
 	
+	public boolean isReadOnlyDueToAdditionalOrgRoles();
 }

@@ -56,7 +56,7 @@ public class ParticipantStatisticsEntry extends UserPropertiesRow implements Ide
 	
 	private List<OrganisationWithParents> organisations;
 	
-	private boolean readOnly;
+	private boolean readOnlyDueToAdditionalOrgRoles;
 
 	public ParticipantStatisticsEntry(Long identityKey, String externalId, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
 		super(identityKey, externalId, userPropertyHandlers, userProperties, locale);
@@ -147,12 +147,12 @@ public class ParticipantStatisticsEntry extends UserPropertiesRow implements Ide
 		this.organisations = organisations;
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
+	public boolean isReadOnlyDueToAdditionalOrgRoles() {
+		return readOnlyDueToAdditionalOrgRoles;
 	}
 
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
+	public void setReadOnlyDueToAdditionalOrgRoles(boolean readOnlyDueToAdditionalOrgRoles) {
+		this.readOnlyDueToAdditionalOrgRoles = readOnlyDueToAdditionalOrgRoles;
 	}
 
 	public record Entries(long numOfEntries, long numOfVisited, long numOfNotVisited) {

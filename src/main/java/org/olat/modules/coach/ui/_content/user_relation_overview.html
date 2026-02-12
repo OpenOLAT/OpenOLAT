@@ -15,6 +15,11 @@
 		$pendingMembershipWarning $r.render("pendingMembershipWarningLink")
 	</div>
 	#end
+	#if($additionalOrgRolesInfo)
+	<div class="o_info_with_icon">
+		$r.translate("info.additional.org.roles")
+	</div>
+	#end
 </div>
 #end
 #if($r.available("bookOnBehalf") || $r.available("moreMenu"))

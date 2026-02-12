@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -34,11 +35,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
+import org.olat.modules.coach.security.EditProfileRightProvider;
 import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,7 +101,7 @@ public class OrganisationListController extends AbstractParticipantsListControll
 		Set<Long> userAuthorKeys = usersAndAuthors.stream().map(ParticipantStatisticsEntry::getIdentityKey).collect(Collectors.toSet());
 		List<ParticipantStatisticsEntry> allEntries = coachingService.getParticipantsStatistics(searchParams(false), userPropertyHandlers, getLocale());
 		for (ParticipantStatisticsEntry entry : allEntries) {
-			entry.setReadOnly(!userAuthorKeys.contains(entry.getIdentityKey()));
+			entry.setReadOnlyDueToAdditionalOrgRoles(!userAuthorKeys.contains(entry.getIdentityKey()));
 		}		
 		return allEntries;
     }
@@ -121,25 +122,24 @@ public class OrganisationListController extends AbstractParticipantsListControll
     @Override
     protected UserOverviewController createParticipantOverview(UserRequest ureq, ParticipantStatisticsEntry statisticsEntry) {
 		Identity identity = securityManager.loadIdentityByKey(statisticsEntry.getIdentityKey());
-		if (!allowedToManageUser(identity)) {
-			showWarning("error.select.no.permission");
-			return null;
-		}
 
         OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());
         WindowControl bwControl = addToHistory(ureq, ores, null);
         
         int index = tableModel.getObjects().indexOf(statisticsEntry);
-		RoleSecurityCallback userSecurityCallback = getUserSecurityCallback(identity);
+		RoleSecurityCallback userSecurityCallback = getUserSecurityCallback(identity, statisticsEntry.isReadOnlyDueToAdditionalOrgRoles());
         return new UserOverviewController(ureq, bwControl, stackPanel, statisticsEntry, identity, index, 
 				tableModel.getRowCount(), null, userSecurityCallback);
     }
 	
-	private RoleSecurityCallback getUserSecurityCallback(Identity identity) {
+	private RoleSecurityCallback getUserSecurityCallback(Identity identity, boolean readOnly) {
 		Set<Long> userOrgKeys = organisationService.getUserOrganisationKeys(identity);
 		List<Organisation> filteredOrgs = organisations.stream()
 				.filter(org -> userOrgKeys.contains(org.getKey())).collect(Collectors.toList());
-		return RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(filteredOrgs, organisationRole), organisationRole);
+		List<RightProvider> rightProviders = organisationService.getGrantedOrganisationsRights(filteredOrgs, organisationRole);
+		RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(rightProviders, organisationRole);
+		roleSecurityCallback.setReadOnlyDueToAdditionalOrgRoles(readOnly);
+		return roleSecurityCallback;
 	}
     
 	private List<OrganisationRoles> guestAndInvitee() {
@@ -169,22 +169,4 @@ public class OrganisationListController extends AbstractParticipantsListControll
 		roles.add(OrganisationRoles.guest);
     	return roles;
     }
-
-	private boolean allowedToManageUser(Identity user) {
-		Roles userRoles = securityManager.getRoles(user);
-
-		if (userRoles.isSystemAdmin() || userRoles.isAdministrator() || userRoles.isPrincipal() || userRoles.isManager()) {
-			return false;
-		}
-
-		if (!userRoles.hasRole(OrganisationRoles.user)) {
-			return false;
-		}
-		
-		if (userRoles.isInvitee() || userRoles.hasRole(OrganisationRoles.guest)) {
-			return false;
-		}
-
-		return true;
-	}
 }

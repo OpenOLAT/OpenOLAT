@@ -81,7 +81,8 @@ public class RoleSecurityCallbackFactory {
 
 		private final List<String> roleRights;
 		private final OrganisationRoles limitToRole;
-		
+		private boolean readOnlyDueToAdditionalOrgRoles;
+
 		public RoleSecurityCallbackImpl(List<String> roleRights, OrganisationRoles limitToRole) {
 			this.roleRights = roleRights;
 			this.limitToRole = limitToRole;
@@ -205,6 +206,16 @@ public class RoleSecurityCallbackFactory {
 		@Override
 		public OrganisationRoles limitToRole() {
 			return limitToRole;
+		}
+
+		@Override
+		public void setReadOnlyDueToAdditionalOrgRoles(boolean readOnly) {
+			this.readOnlyDueToAdditionalOrgRoles = readOnly;
+		}
+
+		@Override
+		public boolean isReadOnlyDueToAdditionalOrgRoles() {
+			return readOnlyDueToAdditionalOrgRoles;
 		}
 	}
 }

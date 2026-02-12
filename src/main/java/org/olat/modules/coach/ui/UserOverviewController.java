@@ -189,7 +189,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private ACService acService;
 	
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
+								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, 
+								  RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserDataController.class, getLocale(), getTranslator()));
@@ -205,6 +206,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		mainVC = createVelocityContainer("user_relation_overview");
 
 		initUserDetails(ureq, mentee);
+		mainVC.contextPut("additionalOrgRolesInfo", roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles());
 		initPendingMembershipWarning();
 		initButtons();
 		initTabbedPane(ureq);
@@ -372,7 +374,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			calendarTabIndex = functionsTabbedPane.addTab(ureq, translate("calendar"), uureq -> doOpenCalendar(uureq).getInitialComponent());
 		}
 
-		if (roleSecurityCallback.canEditProfile()) {
+		if (roleSecurityCallback.canEditProfile() && !roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles()) {
 			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
 				profileAndHomePageEditController =  new ProfileAndHomePageEditController(uureq, bwControl, mentee, roleSecurityCallback.isAdministrativeUser());
@@ -392,7 +394,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (roleSecurityCallback.canDeactivateAccounts()) {
 			accountTabIndex = functionsTabbedPane.addTab(ureq, translate("account"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ACCOUNT), null);
-						userAccountController = new UserAccountController(bwControl, uureq, mentee, true);
+						userAccountController = new UserAccountController(bwControl, uureq, mentee, 
+								!roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles());
 				listenTo(userAccountController);
 			return userAccountController.getInitialComponent();
 			});
