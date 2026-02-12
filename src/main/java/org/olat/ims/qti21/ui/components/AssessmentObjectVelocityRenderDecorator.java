@@ -282,12 +282,16 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	//<xsl:if test="qw:is-invalid-response(@responseIdentifier)">
 	public boolean isInvalidResponse(Identifier identifier) {
 		//$itemSessionState/@invalidResponseIdentifiers
-		return AssessmentRenderFunctions.isInvalidResponse(itemSessionState, identifier);
+		return isSolutionMode()
+				? false
+				: AssessmentRenderFunctions.isInvalidResponse(itemSessionState, identifier);
 	}
 	
 	//<xsl:sequence select="$unboundResponseIdentifiers=$identifier"/>
 	public boolean isBadResponse(Identifier identifier) {
-		return AssessmentRenderFunctions.isBadResponse(itemSessionState, identifier);
+		return isSolutionMode()
+				? false
+				: AssessmentRenderFunctions.isBadResponse(itemSessionState, identifier);
 	}
 	
 	/**
