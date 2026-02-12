@@ -74,6 +74,15 @@ public class ComponentsFactory {
 		if (editMode) {
 			content = deactivateLinks(content);
 		}
+		if(content != null) {
+			// Workaround for copy/paste abuses within the editor (next step, replace with HTML parser)
+			content = content
+					.replace("class=\"o_page_part o_ed_htmlraw", "class=\"")
+					.replace("class=\"o_page_part o_ed_htmlparagraph", "class=\"")
+					.replace("class=\"o_ce_layout_predefined o_ce_html_raw o_html_col", "class=\"o")
+					.replace("class=\"o_ce_layout_predefined o_ce_html_paragraph o_html_col", "class=\"o");
+		}
+		
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
