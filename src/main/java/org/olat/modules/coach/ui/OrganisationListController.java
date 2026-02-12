@@ -96,15 +96,27 @@ public class OrganisationListController extends AbstractParticipantsListControll
     	if(organisations.isEmpty()) {
     		return List.of();
     	}
-    	SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(organisations);
-    	searchParams
-    		.withOrganisations(true)
-    		.withReservations(canViewReservations)
-			.withCourseCompletion(canViewCourseProgressAndStatus)
-			.withCourseStatus(canViewCourseProgressAndStatus)
-			.excludedRoles(excludedRoles());
-    	return coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, getLocale());
+		List<ParticipantStatisticsEntry> usersAndAuthors = coachingService.getParticipantsStatistics(searchParams(true), userPropertyHandlers, getLocale());
+		Set<Long> userAuthorKeys = usersAndAuthors.stream().map(ParticipantStatisticsEntry::getIdentityKey).collect(Collectors.toSet());
+		List<ParticipantStatisticsEntry> allEntries = coachingService.getParticipantsStatistics(searchParams(false), userPropertyHandlers, getLocale());
+		for (ParticipantStatisticsEntry entry : allEntries) {
+			entry.setReadOnly(!userAuthorKeys.contains(entry.getIdentityKey()));
+		}		
+		return allEntries;
     }
+	
+	private SearchParticipantsStatisticsParams searchParams(boolean limitToUserAndAuthor) {
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(organisations)
+			.withOrganisations(true)
+			.withReservations(canViewReservations)
+			.withCourseCompletion(canViewCourseProgressAndStatus)
+			.withCourseStatus(canViewCourseProgressAndStatus);
+		if (limitToUserAndAuthor) {
+			return searchParams.excludedRoles(allExceptUserAndAuthor());
+		} else {
+			return searchParams.excludedRoles(guestAndInvitee());
+		}
+	}
 
     @Override
     protected UserOverviewController createParticipantOverview(UserRequest ureq, ParticipantStatisticsEntry statisticsEntry) {
@@ -130,7 +142,14 @@ public class OrganisationListController extends AbstractParticipantsListControll
 		return RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(filteredOrgs, organisationRole), organisationRole);
 	}
     
-	private List<OrganisationRoles> excludedRoles() {
+	private List<OrganisationRoles> guestAndInvitee() {
+		List<OrganisationRoles> roles = new ArrayList<>();
+		roles.add(OrganisationRoles.invitee);
+		roles.add(OrganisationRoles.guest);
+    	return roles;
+    }
+
+	private List<OrganisationRoles> allExceptUserAndAuthor() {
 		List<OrganisationRoles> roles = new ArrayList<>();
 		roles.add(OrganisationRoles.sysadmin);
 		roles.add(OrganisationRoles.administrator);

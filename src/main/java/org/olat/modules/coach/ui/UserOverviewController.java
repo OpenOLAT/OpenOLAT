@@ -54,6 +54,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.ContactList;
@@ -90,6 +91,7 @@ import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.ui.admin.UserAccountController;
+import org.olat.user.ui.data.UserDataController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -190,6 +192,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(UserDataController.class, getLocale(), getTranslator()));
 
 		this.index = index;
 		this.mentee = mentee;
