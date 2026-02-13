@@ -255,8 +255,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		initButtons(formLayout, ureq);
 		initFormTable(formLayout, ureq);
-		initFilters(ureq);
-		initFiltersPresets();
 	}
 	
 	private void initButtons(FormItemContainer formLayout, UserRequest ureq) {
@@ -395,6 +393,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
+		
+		initFilters(ureq);
+		initFiltersPresets();
 		
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
