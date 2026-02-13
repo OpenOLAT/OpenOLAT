@@ -19,6 +19,7 @@
  */
 package org.olat.admin.user.groups;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CssCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
@@ -92,6 +94,7 @@ public class GroupSearchController extends StepFormBasicController {
 	private String infoMessage;
 	private String lastSearchValue;
 	private GroupChanges groupChanges;
+	private final Collator collator;
 	
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -103,6 +106,7 @@ public class GroupSearchController extends StepFormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		flc.setTranslator(pT);
+		collator = Collator.getInstance(getLocale());
 		initForm(ureq);
 	}	
 	
@@ -115,6 +119,7 @@ public class GroupSearchController extends StepFormBasicController {
 		this.groupChanges = groupChanges;
 		this.infoMessage = infoMessage;
 		flc.setTranslator(pT);
+		collator = Collator.getInstance(getLocale());
 		initForm(ureq);
 	}
 
@@ -146,15 +151,17 @@ public class GroupSearchController extends StepFormBasicController {
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.key));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groupName));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.description, new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groupName, new CssCellRenderer("o_wrap_anywhere")));
+		DefaultFlexiColumnModel descriptionModel = new DefaultFlexiColumnModel(Cols.description, new CssCellRenderer("o_wrap_anywhere", new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		descriptionModel.setDefaultVisible(false);
+		tableColumnModel.addFlexiColumnModel(descriptionModel);
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.courses));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tutor));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
-		table = uifactory.addTableElement(getWindowControl(), "groupList", tableDataModel, getTranslator(), tableCont);
-		table.setCustomizeColumns(false);
+		table = uifactory.addTableElement(getWindowControl(), "groupList", tableDataModel, 20, false, getTranslator(), tableCont);
+		table.setAndLoadPersistedPreferences(ureq, "group-search");
 		tableCont.add("groupList", table);
 		
 		if (!isUsedInStepWizzard()) {
@@ -241,6 +248,7 @@ public class GroupSearchController extends StepFormBasicController {
 				wrapper.setParticipant(createSelection("participant_" + group.getKey()));
 				groupWrappers.add(wrapper);
 			}
+			Collections.sort(groupWrappers, (g1, g2) -> collator.compare(g1.getGroupName(), g2.getGroupName()));
 
 			table.reset();
 			tableDataModel.setObjects(groupWrappers);
