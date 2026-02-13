@@ -5,9 +5,10 @@ $r.render("content")
 <h4 onclick="jQuery('#collapse_reference_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 	<i id="collapse_reference_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($referenceOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.reference.title")
 </h4>
-</fieldset></legend>
+</legend></fieldset>
 <div id="collapse_reference_${r.getCId()}" class="collapse #if($referenceOpen) in #end">$r.render("reference")</div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_reference_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -26,9 +27,10 @@ jQuery(function() {
 <h4 onclick="jQuery('#collapse_member_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 	<i id="collapse_member_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($memberOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.member.title")
 </h4>
-</fieldset></legend>
+</legend></fieldset>
 <div id="collapse_member_${r.getCId()}" class="collapse #if($memberOpen) in #end">$r.render("member")</div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_member_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -47,9 +49,10 @@ jQuery(function() {
 <h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.metadata.title")
 </h4>
-</fieldset></legend>
+</legend></fieldset>
 <div id="collapse_metadata_${r.getCId()}" class="collapse #if($metadataOpen) in #end">$r.render("metadata")</div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');

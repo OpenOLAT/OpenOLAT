@@ -7,9 +7,10 @@
 <h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("metadata")
 </h4>
-</fieldset></legend>
+</legend></fieldset>
 <div id="collapse_metadata_${r.getCId()}" class="collapse #if($metadataOpen) in #end">$r.render("metadata")</div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
