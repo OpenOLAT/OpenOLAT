@@ -14,22 +14,20 @@
 #if($r.isNotEmpty($description))
 <div class="o_curriculum_element_infos_description">
 	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_description_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_description_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($descriptionOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.description")
+	<h4 onclick="jQuery('#collapse_description_${r.getCId()}').collapse('toggle');" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_description_${r.getCId()}_toggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("infos.description")
 	</h4>
-	</fieldset></legend>
-	<div id="collapse_description_${r.getCId()}" class="collapse #if($descriptionOpen) in #end">$description</div>
+	</legend></fieldset>
+	<div id="collapse_description_${r.getCId()}" class="collapse in">$description</div>
 </div>
 <script>
 "use strict";
 jQuery(function() {
 	jQuery('#collapse_description_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_description_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "descriptionOpen","false");
 	})
 	jQuery('#collapse_description_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_description_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "descriptionOpen","true");
 	})
 });
 </script>
@@ -38,22 +36,20 @@ jQuery(function() {
 #if($r.available("outline"))
 <div class="o_curriculum_element_infos_outline">
 	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_outline_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_outline_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($outlineOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.outline")
+	<h4 onclick="jQuery('#collapse_outline_${r.getCId()}').collapse('toggle');" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_outline_${r.getCId()}_toggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("infos.outline")
 	</h4>
-	</fieldset></legend>
-	<div id="collapse_outline_${r.getCId()}" class="collapse #if($outlineOpen) in #end">$r.render("outline")</div>
+	</legend></fieldset>
+	<div id="collapse_outline_${r.getCId()}" class="collapse in">$r.render("outline")</div>
 </div>
 <script>
 "use strict";
 jQuery(function() {
 	jQuery('#collapse_outline_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_outline_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "outlineOpen","false");
 	})
 	jQuery('#collapse_outline_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_outline_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "outlineOpen","true");
 	})
 });
 </script>
@@ -62,22 +58,20 @@ jQuery(function() {
 #if($r.available("taughtby"))
 <div class="o_curriculum_element_infos_taughtby">
 	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_taughtby_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_taughtby_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($taughtbyOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.taughtby")
+	<h4 onclick="jQuery('#collapse_taughtby_${r.getCId()}').collapse('toggle');" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_taughtby_${r.getCId()}_toggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("infos.taughtby")
 	</h4>
-	</fieldset></legend>
-	<div id="collapse_taughtby_${r.getCId()}" class="collapse #if($taughtbyOpen) in #end">$r.render("taughtby")</div>
+	</legend></fieldset>
+	<div id="collapse_taughtby_${r.getCId()}" class="collapse in">$r.render("taughtby")</div>
 </div>
 <script>
 "use strict";
 jQuery(function() {
 	jQuery('#collapse_taughtby_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_taughtby_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "taughtbyOpen","false");
 	})
 	jQuery('#collapse_taughtby_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_taughtby_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "taughtbyOpen","true");
 	})
 });
 </script>
@@ -86,22 +80,20 @@ jQuery(function() {
 #if($r.isNotEmpty($objectives))
 <div class="o_curriculum_element_infos_objectives">
 	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_objectives_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_objectives_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($objectivesOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.objectives")
+	<h4 onclick="jQuery('#collapse_objectives_${r.getCId()}').collapse('toggle');" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_objectives_${r.getCId()}_toggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("infos.objectives")
 	</h4>
-	</fieldset></legend>
-	<div id="collapse_objectives_${r.getCId()}" class="collapse #if($objectivesOpen) in #end">$objectives</div>
+	</legend></fieldset>
+	<div id="collapse_objectives_${r.getCId()}" class="collapse in">$objectives</div>
 </div>
 <script>
 "use strict";
 jQuery(function() {
 	jQuery('#collapse_objectives_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_objectives_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "objectivesOpen","false");
 	})
 	jQuery('#collapse_objectives_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_objectives_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "objectivesOpen","true");
 	})
 });
 </script>
@@ -110,22 +102,20 @@ jQuery(function() {
 #if($r.isNotEmpty($requirements))
 <div class="o_curriculum_element_infos_requirements">
 	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_requirements_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_requirements_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($requirementsOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.requirements")
+	<h4 onclick="jQuery('#collapse_requirements_${r.getCId()}').collapse('toggle');" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_requirements_${r.getCId()}_toggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("infos.requirements")
 	</h4>
-	</fieldset></legend>
-	<div id="collapse_requirements_${r.getCId()}" class="collapse #if($requirementsOpen) in #end">$requirements</div>
+	</legend></fieldset>
+	<div id="collapse_requirements_${r.getCId()}" class="collapse in">$requirements</div>
 </div>
 <script>
 "use strict";
 jQuery(function() {
 	jQuery('#collapse_requirements_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_requirements_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "requirementsOpen","false");
 	})
 	jQuery('#collapse_requirements_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_requirements_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "requirementsOpen","true");
 	})
 });
 </script>
@@ -134,22 +124,20 @@ jQuery(function() {
 #if($r.isNotEmpty($credits))
 <div class="o_curriculum_element_infos_credits">
 	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_credits_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_credits_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($creditsOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.credits")
+	<h4 onclick="jQuery('#collapse_credits_${r.getCId()}').collapse('toggle');" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_credits_${r.getCId()}_toggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("infos.credits")
 	</h4>
-	</fieldset></legend>
-	<div id="collapse_credits_${r.getCId()}" class="collapse #if($creditsOpen) in #end">$credits</div>
+	</legend></fieldset>
+	<div id="collapse_credits_${r.getCId()}" class="collapse in">$credits</div>
 </div>
 <script>
 "use strict";
 jQuery(function() {
 	jQuery('#collapse_credits_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_credits_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "creditsOpen","false");
 	})
 	jQuery('#collapse_credits_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_credits_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "creditsOpen","true");
 	})
 });
 </script>

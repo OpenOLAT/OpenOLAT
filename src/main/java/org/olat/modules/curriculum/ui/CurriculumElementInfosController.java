@@ -77,13 +77,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private VFSContainer mediaContainer;
 	private final String baseUrl;
 	private Identity bookedIdentity;
-	private Boolean descriptionOpen = Boolean.TRUE;
-	private Boolean objectivesOpen = Boolean.TRUE;
-	private Boolean requirementsOpen = Boolean.TRUE;
-	private Boolean creditsOpen = Boolean.TRUE;
-	private Boolean outlineOpen = Boolean.TRUE;
-	private Boolean taughtbyOpen = Boolean.TRUE;
-
+	
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -141,22 +135,18 @@ public class CurriculumElementInfosController extends BasicController {
 		String description = getFormattedText(element.getDescription());
 		if (StringHelper.containsNonWhitespace(description)) {
 			mainVC.contextPut("description", description);
-			mainVC.contextPut("descriptionOpen",descriptionOpen);
 		}
 		String objectives = getFormattedText(element.getObjectives());
 		if (StringHelper.containsNonWhitespace(objectives)) {
 			mainVC.contextPut("objectives", objectives);
-			mainVC.contextPut("objectivesOpen",objectivesOpen);
 		}
 		String requirements = getFormattedText(element.getRequirements());
 		if (StringHelper.containsNonWhitespace(requirements)) {
 			mainVC.contextPut("requirements", requirements);
-			mainVC.contextPut("requirementsOpen",requirementsOpen);
 		}
 		String credits = getFormattedText(element.getCredits());
 		if (StringHelper.containsNonWhitespace(credits)) {
 			mainVC.contextPut("credits", credits);
-			mainVC.contextPut("creditsOpen",creditsOpen);
 		}
 		
 		
@@ -166,7 +156,6 @@ public class CurriculumElementInfosController extends BasicController {
 			listenTo(outlineCtrl);
 			if (!outlineCtrl.isEmpty()) {
 				mainVC.put("outline", outlineCtrl.getInitialComponent());
-				mainVC.contextPut("outlineOpen", outlineOpen);
 			}
 		}
 		
@@ -176,7 +165,6 @@ public class CurriculumElementInfosController extends BasicController {
 			listenTo(taughtByCtrl);
 			if (!taughtByCtrl.isEmpty()) {
 				mainVC.put("taughtby", taughtByCtrl.getInitialComponent());
-				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
 			}
 		}
 		
@@ -228,38 +216,7 @@ public class CurriculumElementInfosController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if ("ONCLICK".equals(event.getCommand())) {
-			String descriptionOpenVal = ureq.getParameter("descriptionOpen");
-			if (StringHelper.containsNonWhitespace(descriptionOpenVal)) {
-				descriptionOpen = Boolean.valueOf(descriptionOpenVal);
-				mainVC.contextPut("descriptionOpen", descriptionOpen);
-			}
-			String objectivesOpenVal = ureq.getParameter("objectivesOpen");
-			if (StringHelper.containsNonWhitespace(objectivesOpenVal)) {
-				objectivesOpen = Boolean.valueOf(objectivesOpenVal);
-				mainVC.contextPut("objectivesOpen", objectivesOpen);
-			}
-			String requirementsOpenVal = ureq.getParameter("requirementsOpen");
-			if (StringHelper.containsNonWhitespace(requirementsOpenVal)) {
-				requirementsOpen = Boolean.valueOf(requirementsOpenVal);
-				mainVC.contextPut("requirementsOpen", requirementsOpen);
-			}
-			String creditsOpenVal = ureq.getParameter("creditsOpen");
-			if (StringHelper.containsNonWhitespace(creditsOpenVal)) {
-				creditsOpen = Boolean.valueOf(creditsOpenVal);
-				mainVC.contextPut("creditsOpen", creditsOpen);
-			}
-			String outlineOpenVal = ureq.getParameter("outlineOpen");
-			if (StringHelper.containsNonWhitespace(outlineOpenVal)) {
-				outlineOpen = Boolean.valueOf(outlineOpenVal);
-				mainVC.contextPut("outlineOpen", outlineOpen);
-			}
-			String taughtbyOpenVal = ureq.getParameter("taughtbyOpen");
-			if (StringHelper.containsNonWhitespace(taughtbyOpenVal)) {
-				taughtbyOpen = Boolean.valueOf(taughtbyOpenVal);
-				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
-			}
-		}
+		//
 	}
 	
 	protected void doStart(UserRequest ureq) {
