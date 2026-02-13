@@ -329,7 +329,6 @@ public class CourseListController extends FormBasicController implements Activat
 		String[] emptyI18nArgs = getEmptyArgs();
 		tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon",
 				null, null, false, emptyI18nArgs);
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.6-" + runtimeTypesGroup.name());
 		
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -342,6 +341,7 @@ public class CourseListController extends FormBasicController implements Activat
 		if(config.withPresetsFilters()) {
 			initFiltersPresets(ureq);
 		}
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.6-" + runtimeTypesGroup.name());
 	}
 	
 	private String[] getEmptyArgs() {

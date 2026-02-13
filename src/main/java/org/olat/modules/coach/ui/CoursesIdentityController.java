@@ -362,10 +362,10 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v3.2");
 		
 		initFilters();
 		initFiltersPresets(ureq);
+		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v3.2");
 	}
 	
 	private void initFilters() {
