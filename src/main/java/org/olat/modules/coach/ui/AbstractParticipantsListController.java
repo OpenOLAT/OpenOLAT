@@ -256,7 +256,6 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
-        tableEl.setAndLoadPersistedPreferences(ureq, "coaching-" + tableId + "-v1.2");
         
         batchContactButton = uifactory.addFormLink("contact.link", formLayout, Link.BUTTON);
         batchContactButton.setIconLeftCSS("o_icon o_icon_mail");
@@ -270,6 +269,7 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
         
         initFilters(withReservations, withWithoutCourses);
         initFiltersPresets(ureq, withReservations, withWithoutCourses);
+        tableEl.setAndLoadPersistedPreferences(ureq, "coaching-" + tableId + "-v1.2");
     }
     
     protected void initFilters(boolean withReservations, boolean withWithoutCourses) {

@@ -438,6 +438,7 @@ public class CurriculumComposerController extends FormBasicController implements
 					}
 					curriculumValues.add(SelectionValues.entry(key, value));
 				}
+				curriculumValues.sort(SelectionValues.VALUE_ASC);
 				
 				FlexiTableMultiSelectionFilter curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
 						FILTER_CURRICULUM, curriculumValues, true);
@@ -462,8 +463,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		SelectionValues typesValues = new SelectionValues();
 		for(CurriculumElementType type:types) {
-			typesValues.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
+			typesValues.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
 		}
+		typesValues.sort(SelectionValues.VALUE_ASC);
 		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 				FILTER_TYPE, typesValues, true);
 		filters.add(typeFilter);
