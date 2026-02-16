@@ -1182,7 +1182,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		
 		CourseNode courseNode = course.getRunStructure().getNode(broker.getSubIdent());
-		
+		if(courseNode == null) {// If course node is not yet published
+			courseNode = course.getEditorTreeModel().getCourseNode(broker.getSubIdent());
+		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), activityLogCtrl, userCourseEnv, courseNode, "o_icon_topicbroker");
 		
 		activityLogLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, ctrl.getInitialComponent(), null);
