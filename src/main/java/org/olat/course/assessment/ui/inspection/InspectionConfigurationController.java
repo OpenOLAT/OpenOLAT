@@ -162,7 +162,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 			inspectionPeriodEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(inspectionPeriodEl.getDate() != null && inspectionPeriodEl.getSecondDate() != null) {
-			if(inspectionPeriodEl.getSecondDate().before(inspectionPeriodEl.getDate())) {
+			if(!inspectionPeriodEl.getSecondDate().after(inspectionPeriodEl.getDate())) {
 				inspectionPeriodEl.setErrorKey("error.from.to.date");
 				allOk &= false;
 			} else if(inspectionPeriodEl.getSecondDate().before(ureq.getRequestTimestamp())) {
