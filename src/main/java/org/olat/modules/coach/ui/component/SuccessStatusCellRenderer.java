@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 
 /**
@@ -39,7 +40,9 @@ public class SuccessStatusCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof SuccessStatus status) {
-			target.append("<div class='o_coaching_status'>");
+			String tooltip = translator.translate("table.header.success.status.tooltip",
+					String.valueOf(status.numPassed()), String.valueOf(status.numFailed()), String.valueOf(status.numUndefined()));
+			target.append("<div class='o_coaching_status' title='").append(StringHelper.escapeForHtmlAttribute(tooltip)).append("'>");
 			renderBars(target, status);
 			renderNumber(target, status);
 			target.append("</div>");
