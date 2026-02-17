@@ -152,7 +152,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		translator = Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale());
 		mainContainer = new VelocityContainer("main", VELOCITY_ROOT + "/langchooser.html", translator, this);
 
-		languageChooserController = new LanguageChooserController(ureq, wControl, false);
+		languageChooserController = new LanguageChooserController(ureq, wControl, false, true);
 		languageChooserController.addControllerListener(this);
 		mainContainer.put("select.language", languageChooserController.getInitialComponent());
 		mainContainer.contextPut("languageCode", locale.getLanguage());
