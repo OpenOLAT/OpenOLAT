@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,14 +54,16 @@ public class LanguageChooserController extends FormBasicController {
 	private final String curLang;
 	private SingleSelection langs;
 	
-	private boolean fireStandardEvent = true;
+	private final boolean withNextButton;
+	private final boolean fireStandardEvent;
 	
 	@Autowired
 	private I18nManager i18nManager;
 
-	public LanguageChooserController(UserRequest ureq, WindowControl wControl, boolean fireStandardEvent, Form mainForm) {
+	public LanguageChooserController(UserRequest ureq, WindowControl wControl, Form mainForm, boolean fireStandardEvent, boolean withNextButton) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.fireStandardEvent = fireStandardEvent;
+		this.withNextButton = withNextButton;
 		curLang = ureq.getLocale().toString();
 		initForm(ureq);
 	}
@@ -71,9 +74,10 @@ public class LanguageChooserController extends FormBasicController {
 	 * @param fireStandardEvent fire event with the standard fireEvent method of the controller, otherwise
 	 * use the singleUserEventCenter
 	 */
-	public LanguageChooserController(UserRequest ureq, WindowControl wControl, boolean fireStandardEvent) {
+	public LanguageChooserController(UserRequest ureq, WindowControl wControl, boolean fireStandardEvent, boolean withButtons) {
 		super(ureq, wControl);
 		this.fireStandardEvent = fireStandardEvent;
+		this.withNextButton = withButtons;
 		curLang = ureq.getLocale().toString();
 		initForm(ureq);
 	}
@@ -125,6 +129,12 @@ public class LanguageChooserController extends FormBasicController {
 		langs = uifactory.addDropdownSingleselect("select.language", formLayout, langKeys, langValues, null); 
 		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curLang, true);
+		
+		if(withNextButton) {
+			FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttonsLayout", null, formLayout);
+			uifactory.addFormSubmitButton("submit.weiter", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
 	}
 
 	@Override
