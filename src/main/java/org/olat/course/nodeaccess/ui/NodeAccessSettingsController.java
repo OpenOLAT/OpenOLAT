@@ -81,6 +81,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -139,7 +140,8 @@ public class NodeAccessSettingsController extends FormBasicController {
 		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);
 
 		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType()) && !readOnly
-				&& reSecurity.isAdministrativeUser() && hasMatchingOrgRole(ureq)) {
+				&& reSecurity.isAdministrativeUser() && hasMatchingOrgRole(ureq)
+				&& !RepositoryEntryManagedFlag.isManaged(courseEntry, RepositoryEntryManagedFlag.copy)) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
 			formLayout.add(migrationCont);
 			migrateLink = uifactory.addFormLink("settings.duplicate.as.learning.path", migrationCont, Link.BUTTON);
