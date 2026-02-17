@@ -48,7 +48,7 @@ public class RegistrationLangStep00Controller extends StepFormBasicController {
 	public RegistrationLangStep00Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
-		this.languageChooserForm = new LanguageChooserController(ureq, wControl, true, rootForm);
+		languageChooserForm = new LanguageChooserController(ureq, wControl, rootForm, true, false);
 
 		initForm(ureq);
 	}
