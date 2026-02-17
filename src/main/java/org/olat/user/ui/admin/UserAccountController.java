@@ -237,11 +237,11 @@ public class UserAccountController extends FormBasicController {
 		creationDateEl.setValue(creationDate);
 		
 		Date inactivationDate = editedIdentity.getInactivationDate();
-		inactivationDateEl.setValue(formatter.formatDate(inactivationDate));
+		inactivationDateEl.setValue(formatter.formatDateAndTime(inactivationDate));
 		inactivationDateEl.setVisible(inactivationDate != null);
 		
 		Date reactivationDate = editedIdentity.getReactivationDate();
-		reactivationDateEl.setValue(formatter.formatDate(reactivationDate));
+		reactivationDateEl.setValue(formatter.formatDateAndTime(reactivationDate));
 		reactivationDateEl.setVisible(reactivationDate != null);
 
 		daysInactivationEl.setVisible((userModule.isUserAutomaticDeactivation() || editedIdentity.getExpirationDate() != null)
