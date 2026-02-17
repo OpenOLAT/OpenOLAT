@@ -173,10 +173,12 @@ public class Deployments {
 		} else {
 			ChromeOptions options = new ChromeOptions();
 			options.setExperimentalOption("excludeSwitches", Arrays.asList("enable-automation"));
+			options.enableBiDi();
 			
 			Map<String, Object> prefs = new HashMap<>();
 			prefs.put("credentials_enable_service", Boolean.FALSE);
 			prefs.put("profile.password_manager_enabled", Boolean.FALSE);
+			prefs.put("profile.content_settings.exceptions.local_network_access.*.setting", 1);
 			options.setExperimentalOption("prefs", prefs);
 			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), options);
 		}
