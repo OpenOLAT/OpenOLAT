@@ -63,10 +63,10 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 		@Override
 		public int compare(CatalogEntryRow o1, CatalogEntryRow o2) {
 			// Nulls after string values
-			int c = -compareNullObjects(o1.getLifecycleSoftKey(), o2.getLifecycleLabel());
+			int c = -compareNullObjects(o1.getLifecycleSoftKey(), o2.getLifecycleSoftKey());
 			
 			// Rows with life cycle by date
-			if (o1.getLifecycleSoftKey() != null && o2.getLifecycleLabel() != null) {
+			if (o1.getLifecycleSoftKey() != null && o2.getLifecycleSoftKey() != null) {
 				if (c == 0) {
 					c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart(), false);
 				}
