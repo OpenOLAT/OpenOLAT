@@ -19,10 +19,10 @@
  *  <p>
  *  This plugin can be used to apply a background image carrousel effect on
  *  a DOM element. The plugin will replace the images in the provided list one
- *  after another. 
+ *  after another.
  *  This plugin should be used from within a theme.js in your custom theme if
  *  required.
- *  
+ *
  *  @author gnaegi, www.frentix.com
  *  @date August 2014
  * ========================================================
@@ -34,102 +34,155 @@
 	$.fn.ooBgCarrousel = function() {
 		return new BgCarrousel();
 	}
-	
+
 	var BgCarrousel = function() {
 		// nothing to do
 	}
-	
+
 	BgCarrousel.prototype.initCarrousel = function(params) {
     	this.settings = $.extend({
-    		query: null,			// mandatory 
+    		query: null,			// mandatory
     		images: [], 			// mandatory
-    		shuffle: false,
-    		shuffleFirst: false,
-    		durationshow: 5000,
-    		durationout: 500,
-    		durationin: 500,
-    		easeout : 'ease',
-    		easein : 'ease'
+			shuffle: false,			// true: shuffle image order on initialization
+			shuffleFirst: false,	// true: shuffle also the first image (only relevant when shuffle=true)
+ 
+			durationshow: 5000,		// duration of the display of every image
+    		scale: 1.025,			// intensity of the zoom animation. Set to 0 for no zoom
+			scaleease : 'linear',	// style of the zoom animation
+    		durationout: 1500,		// duration of the fade-out animation. Set to 0 for no fade-out
+			easeout : 'linear' 		// style of the fade-out animation
+
         }, params );
-		this.pos = null;
-		
+
 		// Query not defined? - stop right there
-    	if (this.settings.query == null || this.settings.images.length == 0) return;    	
-    	// Keep reference to initial image to remember even when shuffled
+    	if (this.settings.query == null || this.settings.images.length == 0) return;
+    	
+    	// Only one image - stop
+    	if (this.settings.images.length <= 1) return;
+
+    	// Keep reference to initial image URL to allow CSS string replacement later
     	this.initialImage = this.settings.images[0];
-    	// Shuffle image array
+
+    	// Shuffle image array if requested
+		this.pos = 0;
     	if (this.settings.shuffle) {
     		var o = this.settings.images;
     		for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    		if (!this.settings.shuffleFirst) {
+    			// Keep the initial image as the starting point: find its new position
+    			// in the shuffled array so the sequence continues without gaps or duplicates.
+    			for (var k = 0; k < this.settings.images.length; k++) {
+    				if (this.settings.images[k] === this.initialImage) {
+    					this.pos = k;
+    					break;
+    				}
+    			}
+    		}
     	}
-    	// Replace the start image without animation right away when first image should also be shuffled
-    	if (this.settings.shuffleFirst) {
-    		this._replaceImage();    		
-    	}    	
-    	// Start rotation process
-	    this.rotate();
-	}
-	
-	BgCarrousel.prototype.rotate = function() {
-		setTimeout($.proxy(this._hideCurrent, this), this.settings.durationshow);
-	}
-	
-	BgCarrousel.prototype._hideCurrent = function() {
-		// Stop animating if user enabled reduces motion settings
-    	const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    	if (!mediaQuery || !mediaQuery.matches) {
-			var el = $(this.settings.query);
-			if (el && el.length > 0) {	
-				el.transition({
-						opacity:0, 
-						duration: this.settings.durationout, 
-						easing: this.settings.easeout
-					}, $.proxy(this._showNext, this)
-				);
-			}
-	    }
-	}	
-	
-	BgCarrousel.prototype._replaceImage = function(el) {
-		if ( !el) {
-			el = $(this.settings.query);			
+
+		var container = $(this.settings.query);
+		// Get background styling from container and keep it for later CSS replacement
+		this.bgcss = container.css("background");
+		// remove the container background to remove flickering
+		container.css('background', 'none');
+
+		// Create two persistent layers. The active layer (z-index 0) sits on top
+		// and plays the zoom→fade animation. The inactive layer (z-index -1) sits
+		// underneath and is preloaded with the next image while the active layer
+		// is still animating. After the fade the layers are swapped.
+		var layerStyle = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;';
+		this.layerA = $("<div style='" + layerStyle + " z-index: 0'></div>");
+		this.layerB = $("<div style='" + layerStyle + " z-index: -1'></div>");
+		container.append(this.layerB).append(this.layerA);
+
+		this.activeLayer   = this.layerA;
+		this.inactiveLayer = this.layerB;
+
+		// Load first image on the active layer
+		this.activeLayer.css('background', this.bgcss);
+		// If shuffleFirst is true, override with the randomly picked first image
+		if (this.settings.shuffle && this.settings.shuffleFirst) {
+			this.activeLayer.css('background', this.bgcss.replace(this.initialImage, this.settings.images[0]));
 		}
-		if (el && el.length > 0) {
-			this.newImg = "";
-			this.oldImg = "";
-			if (this.pos == null) {
-				// initial value
-				this.pos = 1;
-				this.oldImg = this.initialImage;
-			} else {
-				this.oldImg = this.settings.images[this.pos];
-				this.pos++;
-				if (this.settings.images.length == this.pos) {
-					// restart with first one
-					this.pos = 0;
-				}					
-			}
-			this.newImg = this.settings.images[this.pos];
-			var css = el.css('background-image');
-			if (css.indexOf(this.oldImg) == -1) {
-				// abort, don't know what to do, show image again and exit
-				el.transition({ opacity:1, duration: 0 });	
-				return;
-			}
-			var newCss = css.replace(this.oldImg, this.newImg);
-			el.css('background-image', newCss);	
+
+		// Preload the second image on the inactive layer
+		this._preloadNext();
+
+		// Kick off the animation sequence
+		this._zoom();
+	}
+
+
+	// Load the next image (by pos) into the inactive layer and reset its state
+	// so it is ready to become the active layer after the current fade.
+	BgCarrousel.prototype._preloadNext = function() {
+		this.pos++;
+		if (this.pos >= this.settings.images.length) {
+			this.pos = 0;
+		}
+		var nextBg = this.bgcss.replace(this.initialImage, this.settings.images[this.pos]);
+		this.inactiveLayer.css('background', nextBg);
+		// Reset scale and opacity instantly so the layer is clean when it becomes active
+		this.inactiveLayer.transition({ scale: 1, opacity: 1, duration: 0 });
+	}
+
+
+	// Step 1: zoom the active layer. When done, trigger the fade.
+	BgCarrousel.prototype._zoom = function() {
+		var self = this;
+		// Ensure the active layer starts from a clean state
+		self.activeLayer.transition({ scale: 1, opacity: 1, duration: 0 });
+
+		if (self.settings.durationshow > 100) {
+			self.activeLayer.transition({
+				scale: self.settings.scale,
+				duration: self.settings.durationshow,
+				easing: self.settings.scaleease
+			}, function() {
+				self._fade();
+			});
+		} else {
+			self._fade();
 		}
 	}
-	
-	BgCarrousel.prototype._showNext = function() {
-		var el = $(this.settings.query);
-		this._replaceImage(el);
-		el.transition({
-				opacity:1, 
-				duration: this.settings.durationin, 
-				easing: this.settings.easein
-			}, $.proxy(this.rotate,this)
-		);	
+
+
+	// Step 2: fade out the active layer. When done, switch to the next image.
+	BgCarrousel.prototype._fade = function() {
+		var self = this;
+
+		if (self.settings.durationout > 100) {
+			self.activeLayer.transition({
+				opacity: 0,
+				duration: self.settings.durationout,
+				easing: self.settings.easeout
+			}, function() {
+				self._switchToNext();
+			});
+		} else {
+			self.activeLayer.css('opacity', 0);
+			self._switchToNext();
+		}
 	}
-	
+
+
+	// Step 3: swap layers, preload the image after next, start zooming the new active layer.
+	BgCarrousel.prototype._switchToNext = function() {
+		// Swap active and inactive references
+		var temp          = this.activeLayer;
+		this.activeLayer   = this.inactiveLayer;
+		this.inactiveLayer = temp;
+
+		// Promote the new active layer to the top
+		this.activeLayer.css('z-index', 0);
+		this.inactiveLayer.css('z-index', -1);
+
+		// Preload the image after this one on the now-inactive layer
+		this._preloadNext();
+
+		// Start the zoom on the newly active layer
+		this._zoom();
+	}
+
+
 }(jQuery);
