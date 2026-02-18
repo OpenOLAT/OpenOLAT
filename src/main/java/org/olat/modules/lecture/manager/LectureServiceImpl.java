@@ -1581,6 +1581,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public List<LectureBlock> loadLectureBlocksByExternalRef(String ref) {
+		return lectureBlockDao.loadLectureBlocksByExternalRef(ref);
+	}
+
+	@Override
 	public List<LectureBlockRef> getAssessedLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		return lectureBlockDao.searchAssessedLectureBlocks(searchParams);
 	}

@@ -100,7 +100,7 @@ public interface CurriculumService {
 	
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
 	
-	public List<Curriculum> getCurriculumsByIdentifier(String identifier);
+	public List<Curriculum> getCurriculumsByIdentifier(String identifier, CurriculumStatus status);
 
 	public CurriculumInfos getCurriculumWithInfos(CurriculumRef curriculum);
 	
@@ -387,7 +387,7 @@ public interface CurriculumService {
 	 * @param key The primary (optional)
 	 * @return A list of curriculum elements
 	 */
-	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key);
+	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key, CurriculumElementStatus... status);
 	
 	/**
 	 * 

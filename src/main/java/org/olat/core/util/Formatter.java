@@ -35,7 +35,9 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
@@ -244,6 +246,16 @@ public class Formatter {
 	}
 	
 	public String formatDate(ZonedDateTime date) {
+		if (date == null) return null;
+		return shortDateFormatter.format(date);
+	}
+	
+	public String formatDate(LocalDate date) {
+		if (date == null) return null;
+		return shortDateFormatter.format(date);
+	}
+	
+	public String formatDate(LocalDateTime date) {
 		if (date == null) return null;
 		return shortDateFormatter.format(date);
 	}
@@ -469,6 +481,16 @@ public class Formatter {
 	}
 	
 	public String formatTimeShort(ZonedDateTime d) {
+		if(d == null) return "";
+		return shortTimeFormatter.format(d);
+	}
+	
+	public String formatTimeShort(LocalDateTime d) {
+		if(d == null) return "";
+		return shortTimeFormatter.format(d);
+	}
+	
+	public String formatTimeShort(LocalTime d) {
 		if(d == null) return "";
 		return shortTimeFormatter.format(d);
 	}

@@ -42,6 +42,7 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -122,7 +123,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumDao.createAndPersist(identifier, "Curriculum 9", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		
-		List<Curriculum> curriculums = curriculumDao.loadByIdentifier(identifier);
+		List<Curriculum> curriculums = curriculumDao.loadByIdentifier(identifier, CurriculumStatus.active);
 		Assertions.assertThat(curriculums)
 			.hasSize(1)
 			.containsExactly(curriculum);

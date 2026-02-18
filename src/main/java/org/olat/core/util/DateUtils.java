@@ -23,6 +23,7 @@ import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -78,6 +79,11 @@ public class DateUtils {
 	public static LocalDateTime toLocalDateTime(Date date) {
 		if (date == null) return null;
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+	}
+	
+	public static LocalTime toLocalTime(Date date) {
+		if (date == null) return null;
+		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
 	}
 	
 	public static ZonedDateTime toZonedDateTime(Date date) {

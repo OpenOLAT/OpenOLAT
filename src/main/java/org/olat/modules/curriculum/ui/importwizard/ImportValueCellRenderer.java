@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.importwizard;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -33,8 +34,11 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewCurriculumsTableModel.ImportCurriculumsCols;
+import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalDate;
+import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalTime;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 
 /**
  * 
@@ -49,10 +53,12 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 	private static final List<String> actions = List.of(CMD_ACTIONS);
 	private static final ImportCurriculumsCols[] COLS = ImportCurriculumsCols.values();
 	
+	private final Formatter format;
 	private final ImportCurriculumsCols col;
 	
-	public ImportValueCellRenderer(ImportCurriculumsCols col) {
+	public ImportValueCellRenderer(ImportCurriculumsCols col, Locale locale) {
 		this.col = col;
+		format = Formatter.getInstance(locale);
 	}
 	
 	@Override
@@ -86,7 +92,7 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
-		if(obj instanceof CurriculumImportedRow importedRow) {
+		if(obj instanceof ImportedRow importedRow) {
 			CurriculumImportedValue val = importedRow.getValidation(col);
 			if(val != null) {
 				renderValue(target, cellValue, row, val, source);
@@ -101,6 +107,18 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 	private void renderCellValue(StringOutput target, Object cellValue) {
 		if(cellValue instanceof String string) {
 			target.appendHtmlEscaped(string);
+		} else if(cellValue instanceof ReaderLocalDate readerDate) {
+			if(readerDate.date() != null) {
+				target.append(format.formatDate(readerDate.date()));
+			} else if(readerDate.val() != null) {
+				target.appendHtmlEscaped(readerDate.val());
+			}
+		} else if(cellValue instanceof ReaderLocalTime readerTime) {
+			if(readerTime.time() != null) {
+				target.append(format.formatTimeShort(readerTime.time()));
+			} else if(readerTime.val() != null) {
+				target.appendHtmlEscaped(readerTime.val());
+			}
 		}
 	}
 	
@@ -109,8 +127,8 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 		target.append("<i class='o_icon ").append(val.getLevel().iconCssClass()).append ("'> </i> ");
 		if(StringHelper.containsNonWhitespace(val.getPlaceholder())) {
 			target.appendHtmlEscaped(val.getPlaceholder());
-		} else if(cellValue instanceof String string) {
-			target.appendHtmlEscaped(string);
+		} else {
+			renderCellValue(target, cellValue);
 		}
 		renderEnd(target);
 	}

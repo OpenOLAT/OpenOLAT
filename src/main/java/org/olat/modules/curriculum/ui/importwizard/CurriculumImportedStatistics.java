@@ -31,4 +31,13 @@ public record CurriculumImportedStatistics(int errors, int warnings, int changes
 	public boolean isEmpty() {
 		return errors <= 0 && warnings <= 0 && changes <= 0;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(errors()).append("/")
+		  .append(warnings()).append("/")
+		  .append(changes());
+		return sb.toString();
+	}
 }

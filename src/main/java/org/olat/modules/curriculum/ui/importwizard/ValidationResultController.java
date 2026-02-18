@@ -19,12 +19,17 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.CurriculumImportedValue.Level;
 
@@ -36,11 +41,13 @@ import org.olat.modules.curriculum.ui.importwizard.CurriculumImportedValue.Level
  */
 public class ValidationResultController extends FormBasicController {
 	
+	private final Formatter formatter;
 	private final CurriculumImportedValue value;
 	
 	public ValidationResultController(UserRequest ureq, WindowControl wControl, CurriculumImportedValue value) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.value = value;
+		formatter = Formatter.getInstance(getLocale());
 		initForm(ureq);
 	}
 
@@ -76,6 +83,17 @@ public class ValidationResultController extends FormBasicController {
 		String val;
 		if(obj instanceof String string) {
 			val = string;
+		} else if(obj instanceof LocalDate localDate) {
+			val = formatter.formatDate(localDate);
+		} else if(obj instanceof LocalTime localTime) {
+			val = formatter.formatTimeShort(localTime);
+		} else if(obj instanceof LocalTime localTime) {
+			val = formatter.formatTimeShort(localTime);
+		} else if(obj instanceof List<?> list) {
+			List<String> values = list.stream()
+					.map(this::valueToString)
+					.toList();
+			val = String.join("; ", values);
 		} else if(obj != null) {
 			val = obj.toString();
 		} else {

@@ -625,6 +625,14 @@ public interface LectureService {
 	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams, int maxResults, Boolean orderAsc);
 	
 	/**
+	 * This is ofr exact match.
+	 * 
+	 * @param identifier The identifier / external ref.
+	 * @return A list of blocks
+	 */
+	public List<LectureBlock> loadLectureBlocksByExternalRef(String ref);
+	
+	/**
 	 * Return the list of lecture blocks of a course with the teachers.
 	 * 
 	 * @param entry

@@ -142,6 +142,20 @@ public class LectureBlockDAO {
 		return blocks == null || blocks.isEmpty() ? null : blocks.get(0);
 	}
 	
+	public List<LectureBlock> loadLectureBlocksByExternalRef(String externalRef) {
+		if(!StringHelper.containsNonWhitespace(externalRef)) return new ArrayList<>();
+		
+		String query = """
+				select block from lectureblock block
+				left join fetch block.entry entry
+				where block.externalRef=:externalRef""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LectureBlock.class)
+				.setParameter("externalRef", externalRef)
+				.getResultList();
+	}
+	
 	/**
 	 * Delete the relation to group, the roll call, the reminders and at the
 	 * end the lecture block itself. The lecture block needs to be loaded

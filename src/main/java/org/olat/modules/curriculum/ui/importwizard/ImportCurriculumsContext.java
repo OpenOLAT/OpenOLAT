@@ -29,13 +29,22 @@ import java.util.List;
  */
 public class ImportCurriculumsContext {
 	
-	private List<CurriculumImportedRow> importedRows;
+	private List<ImportedRow> importedCurriculumsRows;
+	private List<ImportedRow> importedElementsRows;
 
-	public List<CurriculumImportedRow> getImportedRows() {
-		return importedRows;
+	public List<ImportedRow> getImportedCurriculumsRows() {
+		return importedCurriculumsRows;
 	}
 
-	public void setImportedRows(List<CurriculumImportedRow> importedRows) {
-		this.importedRows = importedRows;
+	public void setImportedCurriculumsRows(List<ImportedRow> rows) {
+		this.importedCurriculumsRows = rows;
+	}
+
+	public List<ImportedRow> getImportedElementsRows() {
+		return importedElementsRows;
+	}
+
+	public void setImportedElementsRows(List<ImportedRow> rows) {
+		this.importedElementsRows = rows;
 	}
 }

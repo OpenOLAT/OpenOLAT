@@ -716,6 +716,10 @@ fieldset.o_validation_result {
 }
 
 .o_curriculum_import .o_table_wrapper table.table {
+	th.o_col_infos {
+		white-space: nowrap;
+	}
+
 	tr.o_import_error, tr.o_import_error>td.o_col_sticky_right  {
 		background-color: $o-curriculum-import-bg-error;
 	}

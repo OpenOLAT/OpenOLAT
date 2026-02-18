@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 2 févr. 2026<br>
@@ -26,9 +28,24 @@ package org.olat.modules.curriculum.ui;
  *
  */
 public enum CurriculumExportType {
+	CUR,
 	IMPL,
 	ELEM,
 	TMPL,
 	COURSE,
-	EVENT
+	EVENT,
+	UNKOWN;
+	
+	public static final CurriculumExportType secureValueOf(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			String uVal = val.toUpperCase();
+			for(CurriculumExportType type:values()) {
+				if(uVal.equals(type.name())) {
+					return type;
+				}
+			}
+			return UNKOWN;
+		}
+		return null;
+	}
 }

@@ -88,8 +88,9 @@ public class CurriculumImportedValue {
 		this.message = message;
 	}
 	
-	public void setWarning(String message) {
+	public void setWarning(String placeholder, String message) {
 		this.level = Level.WARNING;
+		this.placeholder = placeholder;
 		this.message = message;
 	}
 	

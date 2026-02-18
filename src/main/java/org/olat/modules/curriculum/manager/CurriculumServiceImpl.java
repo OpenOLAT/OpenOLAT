@@ -296,8 +296,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public List<Curriculum> getCurriculumsByIdentifier(String identifier) {
-		return curriculumDao.loadByIdentifier(identifier);
+	public List<Curriculum> getCurriculumsByIdentifier(String identifier, CurriculumStatus status) {
+		return curriculumDao.loadByIdentifier(identifier, status);
 	}
 
 	@Override
@@ -1079,8 +1079,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key) {
-		return curriculumElementDao.searchElements(externalId, identifier, key);
+	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key, CurriculumElementStatus... status) {
+		return curriculumElementDao.searchElements(externalId, identifier, key, status);
 	}
 
 	@Override

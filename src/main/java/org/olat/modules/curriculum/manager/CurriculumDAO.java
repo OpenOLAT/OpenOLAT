@@ -111,16 +111,17 @@ public class CurriculumDAO {
 			.getResultList();
 	}
 	
-	public List<Curriculum> loadByIdentifier(String identifier) {
+	public List<Curriculum> loadByIdentifier(String identifier, CurriculumStatus status) {
 		String query = """
 				select cur from curriculum cur
 				left join fetch cur.organisation org
 				inner join fetch cur.group baseGroup
-				where lower(cur.identifier)=:identifier""";
+				where lower(cur.identifier)=:identifier and cur.status=:status""";
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(query, Curriculum.class)
 			.setParameter("identifier", identifier.toLowerCase())
+			.setParameter("status", status.name())
 			.getResultList();
 	}
 	

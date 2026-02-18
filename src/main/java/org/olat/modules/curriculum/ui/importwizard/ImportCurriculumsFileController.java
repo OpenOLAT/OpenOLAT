@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui.importwizard;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -38,6 +37,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsHelper.Import;
 
 /**
  * 
@@ -73,10 +73,12 @@ public class ImportCurriculumsFileController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		loadFile();
+		if(context.getImportedCurriculumsRows() == null && context.getImportedElementsRows() == null) {
+			loadFile();
+		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-	
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -98,8 +100,9 @@ public class ImportCurriculumsFileController extends StepFormBasicController {
 	private void loadFile() {
 		File file = importFileEl.getUploadFile();
 		if(file != null) {
-			List<CurriculumImportedRow> rows = new ImportCurriculumsHelper(getTranslator()).loadFile(file);
-			context.setImportedRows(rows);
+			Import rows = new ImportCurriculumsHelper(getTranslator()).loadFile(file);
+			context.setImportedCurriculumsRows(rows.curriculumsRows());
+			context.setImportedElementsRows(rows.elementsRows());
 		}
 	}
 	

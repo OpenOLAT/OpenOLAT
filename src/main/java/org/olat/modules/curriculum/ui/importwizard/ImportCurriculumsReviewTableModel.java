@@ -39,14 +39,14 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ImportCurriculumsReviewCurriculumsTableModel extends DefaultFlexiTableDataModel<CurriculumImportedRow>
+public class ImportCurriculumsReviewTableModel extends DefaultFlexiTableDataModel<ImportedRow>
 implements FilterableFlexiTableModel {
 	
 	private static final ImportCurriculumsCols[] COLS = ImportCurriculumsCols.values();
 
-	private List<CurriculumImportedRow> backupList;
+	private List<ImportedRow> backupList;
 	
-	public ImportCurriculumsReviewCurriculumsTableModel(FlexiTableColumnModel columnsModel) {
+	public ImportCurriculumsReviewTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
 	
@@ -54,7 +54,7 @@ implements FilterableFlexiTableModel {
 		if(backupList == null) List.of();
 
 		Set<Organisation> organisations = backupList.stream()
-			.map(CurriculumImportedRow::getOrganisation)
+			.map(ImportedRow::getOrganisation)
 			.filter(org -> org != null)
 			.collect(Collectors.toSet());
 		return List.copyOf(organisations);
@@ -67,12 +67,16 @@ implements FilterableFlexiTableModel {
 					? null : searchString.toLowerCase();
 			final boolean ignored = isFilterSelected(filters, ImportCurriculumsReviewCurriculumsController.IGNORED_KEY);
 			final Set<String> status = getFilteredList(filters, ImportCurriculumsReviewCurriculumsController.STATUS_KEY);
+			final Set<String> curriculums = getFilteredList(filters, ImportCurriculumsReviewCurriculumsController.CURRICULUM_KEY);
+			final Set<String> objectTypes = getFilteredList(filters, ImportCurriculumsReviewCurriculumsController.OBJECT_TYPE_KEY);
 			final Set<Long> organisations = getFilteredLongList(filters, ImportCurriculumsReviewCurriculumsController.ORGANISATION_KEY);
 			
-			List<CurriculumImportedRow> filteredRows = new ArrayList<>(backupList.size());
-			for(CurriculumImportedRow row:backupList) {
+			List<ImportedRow> filteredRows = new ArrayList<>(backupList.size());
+			for(ImportedRow row:backupList) {
 				boolean accept = accept(loweredSearchString, row)
 						&& acceptOrganisations(organisations, row)
+						&& acceptObjectTypes(objectTypes, row)
+						&& acceptCurriculums(curriculums, row)
 						&& acceptIgnored(ignored, row)
 						&& acceptStatus(status, row);
 				if(accept) {
@@ -111,16 +115,32 @@ implements FilterableFlexiTableModel {
 		return false;
 	}
 	
-	private boolean acceptOrganisations(Set<Long> organisations, CurriculumImportedRow row) {
+	private boolean acceptCurriculums(Set<String> curriculumsIdentifiers, ImportedRow row) {
+		if(curriculumsIdentifiers == null || curriculumsIdentifiers.isEmpty()) return true;
+		
+		String rowIdentifier = row.getCurriculumIdentifier();
+		return rowIdentifier != null && curriculumsIdentifiers.contains(rowIdentifier);
+	}
+	
+	private boolean acceptObjectTypes(Set<String> types, ImportedRow row) {
+		if(types == null || types.isEmpty()) return true;
+		return row.type() != null && types.contains(row.type().name());
+	}
+	
+	private boolean acceptOrganisations(Set<Long> organisations, ImportedRow row) {
 		if(organisations == null || organisations.isEmpty()) return true;
 		return row.getOrganisation() != null && organisations.contains(row.getOrganisation().getKey());
 	}
 	
-	private boolean acceptStatus(Set<String> status, CurriculumImportedRow row) {
+	private boolean acceptStatus(Set<String> status, ImportedRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
 		if((row.getStatus() == ImportCurriculumsStatus.ERROR && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_WITH_ERRORS))
 				|| (row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))) {
+			return true;
+		}
+		
+		if(row.isNew() && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_NEW)) {
 			return true;
 		}
 		
@@ -133,12 +153,12 @@ implements FilterableFlexiTableModel {
 		return false;
 	}
 	
-	private boolean acceptIgnored(boolean ignored, CurriculumImportedRow row) {
+	private boolean acceptIgnored(boolean ignored, ImportedRow row) {
 		if(!ignored) return true;
 		return row.isIgnored();
 	}
 	
-	private boolean accept(String searchValue, CurriculumImportedRow row) {
+	private boolean accept(String searchValue, ImportedRow row) {
 		if(searchValue == null) return true;
 		return accept(searchValue, row.getDisplayName())
 				|| accept(searchValue, row.getIdentifier())
@@ -151,17 +171,33 @@ implements FilterableFlexiTableModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CurriculumImportedRow importedRow = getObject(row);
+		ImportedRow importedRow = getObject(row);
 		return switch(COLS[col]) {
 			case rowNum -> Integer.valueOf(importedRow.getRowNum());
 			case status -> importedRow.getStatus();
 			case infos -> importedRow.getValidationResultsLink();
 			case ignore -> importedRow.getIgnoreEl();
+			case curriculumIdentifier -> importedRow.getCurriculumIdentifier();
+			case implementationIdentifier -> importedRow.getImplementationIdentifier();
+			case objectType -> importedRow.getRawType();
+			case level -> importedRow.getLevel();
 			case displayName -> importedRow.getDisplayName();
 			case identifier -> importedRow.getIdentifier();
+			case elementStatus -> importedRow.getElementStatus();
 			case organisationIdentifier -> importedRow.getOrganisationIdentifier();
+			case startDate -> importedRow.getStartDate();
+			case startTime -> importedRow.getStartTime();
+			case endDate -> importedRow.getEndDate();
+			case endTime -> importedRow.getEndTime();
+			case unit -> importedRow.getUnit();
+			case referenceIdentifier -> importedRow.getReferenceExternalRef();
+			case location -> importedRow.getLocation();
+			case elementType -> importedRow.getCurriculumElementTypeIdentifier();
+			case calendar -> importedRow.getCalendar();
 			case absences -> importedRow.getAbsences();
+			case progress -> importedRow.getProgress();
 			case description -> importedRow.getDescription();
+			case taxonomyLevels -> importedRow.getSubjects();
 			case creationDate -> importedRow.getCreationDate();
 			case lastModified -> importedRow.getLastModified();
 			case tools -> Boolean.valueOf(importedRow.getIgnoreEl() != null);
@@ -170,41 +206,58 @@ implements FilterableFlexiTableModel {
 	}
 	
 	@Override
-	public void setObjects(List<CurriculumImportedRow> objects) {
+	public void setObjects(List<ImportedRow> objects) {
 		this.backupList = new ArrayList<>(objects);
 		super.setObjects(objects);
 	}
-
+	
 	public enum ImportCurriculumsCols implements FlexiSortableColumnDef {
 		rowNum("table.header.row.num"),
 		status("table.header.import.status"),
 		infos("table.header.import.infos"),
 		ignore("table.header.ignore"),
+		curriculumIdentifier("table.header.curriculum.identifier"),
+		implementationIdentifier("table.header.implementation.identifier"),
+		objectType("table.header.object.type"),
+		level("table.header.level"),
 		displayName("table.header.title"),
 		identifier("table.header.identifier"),
+		elementStatus("table.header.element.status"),
 		organisationIdentifier("table.header.organisation.identifier"),
+		startDate("table.header.start.date"),
+		startTime("table.header.start.time"),
+		endDate("table.header.end.date"),
+		endTime("table.header.end.time"),
+		unit("table.header.unit"),
+		referenceIdentifier("table.header.reference.identifier"),
+		location("table.header.location"),
+		elementType("table.header.element.type"),
 		absences("table.header.absences"),
+		calendar("table.header.calendar"),
+		progress("table.header.progress"),
 		description("table.header.description"),
+		taxonomyLevels("table.header.subjects"),
 		creationDate("table.header.creation.date"),
 		lastModified("table.header.last.modified"),
-		tools("action.more");
+		tools("action.more")
+		;
 		
 		private final String i18nHeaderKey;
 		
 		private ImportCurriculumsCols(String i18nHeaderKey) {
 			this.i18nHeaderKey = i18nHeaderKey;
 		}
-
+	
 		@Override
 		public boolean sortable() {
 			return false;
 		}
-
+	
 		@Override
 		public String sortKey() {
 			return name();
 		}
-
+	
 		@Override
 		public String i18nHeaderKey() {
 			return i18nHeaderKey;
