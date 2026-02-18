@@ -43,7 +43,7 @@ import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterButton
 public class InPreparationDataModel extends DefaultFlexiTableDataModel<InPreparationRow>
 implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableModel {
 	
-	private static final InPreparationCols[] COLS = InPreparationCols.values();
+	static final InPreparationCols[] COLS = InPreparationCols.values();
 	
 	private final Locale locale;
 	private List<InPreparationRow> backups;

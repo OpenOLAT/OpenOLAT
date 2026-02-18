@@ -61,7 +61,7 @@ public class CertificationProgramRecertificationTableSortDelegate extends Sortab
 		@Override
 		public int compare(CertificationProgramRecertificationRow o1, CertificationProgramRecertificationRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			Date c1 = o1.getCertificationDate();
@@ -82,13 +82,13 @@ public class CertificationProgramRecertificationTableSortDelegate extends Sortab
 		@Override
 		public int compare(CertificationProgramRecertificationRow o1, CertificationProgramRecertificationRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			CertificationStatus c1 = o1.getCertificationStatus();
 			CertificationStatus c2 = o2.getCertificationStatus();
 			if(c1 == null || c2 == null) {
-				return compareNullObjectsLast(c1, c2);
+				return compareNullObjectsAlwaysLast(c1, c2);
 			}
 			return c1.compareTo(c2);
 		}
@@ -99,13 +99,13 @@ public class CertificationProgramRecertificationTableSortDelegate extends Sortab
 		@Override
 		public int compare(CertificationProgramRecertificationRow o1, CertificationProgramRecertificationRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			NextRecertificationInDays n1 = o1.getNextRecertification();
 			NextRecertificationInDays n2 = o2.getNextRecertification();
 			if(n1 == null || n2 == null) {
-				return compareNullObjectsLast(n1, n2);
+				return compareNullObjectsAlwaysLast(n1, n2);
 			}
 			
 			int c = compareLongs(n1.days(), n2.days());

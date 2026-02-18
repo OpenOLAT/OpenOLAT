@@ -695,13 +695,15 @@ public class RepositoryEntryAuthorQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case lifecycleLabel:
-					sb.append(" order by lifecycle.label ");
+					sb.append(" order by case when lifecycle.privateCycle = false then lifecycle.label end ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleSoftkey:
-					sb.append(" order by lifecycle.softKey ");
+					sb.append(" order by case when lifecycle.privateCycle = false then lifecycle.validFrom end ");
+					appendAsc(sb, asc).append(" nulls last");
+					sb.append(", case when lifecycle.privateCycle = false then lifecycle.validTo end ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
-					break;	
+					break;
 				case lifecycleStart:
 					sb.append(" order by lifecycle.validFrom ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");

@@ -57,7 +57,7 @@ public class CertificationProgramEfficiencyStatementTableSortDelegate extends So
 		@Override
 		public int compare(CertificationProgramEfficiencyStatementRow o1, CertificationProgramEfficiencyStatementRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			int c = compareBigDecimal(o1.getScore(), o2.getScore());

@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -34,6 +37,44 @@ public class InPreparationSortDelegate extends SortableFlexiTableModelDelegate<I
 	
 	public InPreparationSortDelegate(SortKey orderBy, InPreparationDataModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
+	}
+	
+	@Override
+	protected void sort(List<InPreparationRow> rows) {
+		int columnIndex = getColumnIndex();
+		switch(InPreparationDataModel.COLS[columnIndex]) {
+			case lifecycleSoftkey: Collections.sort(rows, new LifecycleComparator()); break;
+			case lifecycleLabel: Collections.sort(rows, (r1, r2) -> compareString(r1.getLifecycleLabel(), r2.getLifecycleLabel(), false)); break;
+			case lifecycleStart: Collections.sort(rows, new DateNullAlwaysLastComparator(InPreparationRow::getLifecycleStart)); break;
+			case lifecycleEnd: Collections.sort(rows, new DateNullAlwaysLastComparator(InPreparationRow::getLifecycleEnd)); break;
+			default: super.sort(rows);
+		}
+	}
+	
+	private class LifecycleComparator implements Comparator<InPreparationRow> {
+		
+		@Override
+		public int compare(InPreparationRow o1, InPreparationRow o2) {
+			// Nulls after string values
+			int c = -compareNullObjects(o1.getLifecycleSoftKey(), o2.getLifecycleLabel());
+			
+			// Rows with life cycle by date
+			if (o1.getLifecycleSoftKey() != null && o2.getLifecycleLabel() != null) {
+				if (c == 0) {
+					c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart(), false);
+				}
+				
+				if (c == 0) {
+					c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd(), false);
+				}
+			}
+			
+			if (c == 0) {
+				c = compareString(o1.getDisplayName(), o2.getDisplayName());
+			}
+			
+			return c;
+		}
 	}
 
 }

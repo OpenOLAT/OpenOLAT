@@ -19,6 +19,7 @@
  */
 package org.olat.modules.catalog.filter;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -98,22 +99,21 @@ public class LifecyclePublicHandler implements CatalogFilterHandler {
 	@Override
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
 			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		Comparator<CatalogEntry> lifecycleComparator = Comparator
+				.comparing(CatalogEntry::getLifecycleStart, Comparator.nullsLast(Comparator.naturalOrder()))
+				.thenComparing(Comparator.comparing(CatalogEntry::getLifecycleEnd, Comparator.nullsLast(Comparator.naturalOrder())));
 		SelectionValues filterSV = new SelectionValues();
-		for (CatalogEntry catalogEntry : catalogEntries) {
-			if (StringHelper.containsNonWhitespace(catalogEntry.getLifecycleSoftKey())) {
-				if (!filterSV.containsKey(catalogEntry.getLifecycleSoftKey())) {
-					filterSV.add(new SelectionValue(
+		catalogEntries.stream()
+				.filter(catalogEntry -> StringHelper.containsNonWhitespace(catalogEntry.getLifecycleSoftKey()))
+				.distinct()
+				.sorted(lifecycleComparator)
+				.forEach(catalogEntry -> filterSV.add(new SelectionValue(
 							catalogEntry.getLifecycleSoftKey(),
-							StringHelper.escapeHtml(catalogEntry.getLifecycleLabel())));
-				}
-			}
-		}
+							StringHelper.escapeHtml(catalogEntry.getLifecycleLabel()))));
 		
 		if (filterSV.isEmpty()) {
 			return null;
 		}
-		
-		filterSV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(translator.translate("cif.public.dates"), TYPE, filterSV,
 				catalogFilter.isDefaultVisible());

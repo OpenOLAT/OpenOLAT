@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,68 +50,13 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 		if(columnIndex >= 0 && columnIndex < COLS.length) {
 			switch(COLS[columnIndex]) {
 				case resources: Collections.sort(rows, new ResourcesComparator()); break;
-				case beginDate: Collections.sort(rows, new BeginDateComparator()); break;
-				case endDate: Collections.sort(rows, new EndDateComparator()); break;
+				case beginDate: Collections.sort(rows,new DateNullAlwaysLastComparator(CurriculumElementRow::getBeginDate)); break;
+				case endDate: Collections.sort(rows, new DateNullAlwaysLastComparator(CurriculumElementRow::getEndDate)); break;
 				case availability: Collections.sort(rows, new AvailabilityComparator()); break;
 				default: super.sort(rows); break;
 			}
 		} else {
 			super.sort(rows);
-		}
-	}
-	
-	@Override
-	protected void reverse(List<CurriculumElementRow> rows) {
-		int columnIndex = getColumnIndex();
-		if(columnIndex >= 0 && columnIndex < COLS.length) {
-			switch(COLS[columnIndex]) {
-				case endDate, beginDate: break;
-				default: super.reverse(rows); break;
-			}
-		} else {
-			super.reverse(rows);
-		}
-	}
-	
-	private int compareNullLast(Object o1, Object o2) {
-		if(o1 == null && o2 != null) {
-			return 1;
-		}
-		if(o1 != null && o2 == null) {
-			return -1;
-		}
-		return 0;
-	}
-	
-	private class BeginDateComparator implements Comparator<CurriculumElementRow> {
-		@Override
-		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
-			if(o1 == null || o2 == null) {
-				return compareNullObjects(o1, o2);
-			}
-			Date d1 = o1.getBeginDate();
-			Date d2 = o2.getBeginDate();
-			if (d1 == null || d2 == null) {
-				return compareNullLast(d1, d2);
-			}
-			int c = compareDateAndTimestamps(d1, d2, true);
-			return isAsc() ? c : -c;
-		}
-	}
-	
-	private class EndDateComparator implements Comparator<CurriculumElementRow> {
-		@Override
-		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
-			if(o1 == null || o2 == null) {
-				return compareNullObjects(o1, o2);
-			}
-			Date d1 = o1.getBeginDate();
-			Date d2 = o2.getBeginDate();
-			if (d1 == null || d2 == null) {
-				return compareNullLast(d1, d2);
-			}
-			int c = compareDateAndTimestamps(d1, d2, true);
-			return isAsc() ? c : -c;
 		}
 	}
 	
@@ -142,19 +86,19 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 		@Override
 		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjects(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			ParticipantsAvailabilityNum an1 = o1.getParticipantsAvailabilityNum();
 			ParticipantsAvailabilityNum an2 = o2.getParticipantsAvailabilityNum();
 			if (an1 == null || an2 == null) {
-				return compareNullLast(an1, an2);
+				return compareNullObjectsAlwaysLast(an1, an2);
 			}
 			
 			ParticipantsAvailability a1 = an1.availability();
 			ParticipantsAvailability a2 = an2.availability();
 			if (a1 == null || a2 == null) {
-				return compareNullLast(a1, a2);
+				return compareNullObjectsAlwaysLast(a1, a2);
 			}
 			
 			int c = Integer.compare(a1.ordinal(), a2.ordinal());

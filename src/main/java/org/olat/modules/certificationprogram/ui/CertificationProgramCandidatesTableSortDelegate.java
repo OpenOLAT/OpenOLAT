@@ -58,7 +58,7 @@ public class CertificationProgramCandidatesTableSortDelegate extends SortableFle
 		@Override
 		public int compare(CertificationProgramCandidateRow o1, CertificationProgramCandidateRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			List<CurriculumElement> l1 = o1.getCurriculumElements();

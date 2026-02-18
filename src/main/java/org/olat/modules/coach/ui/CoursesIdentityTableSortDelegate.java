@@ -69,10 +69,10 @@ public class CoursesIdentityTableSortDelegate extends SortableFlexiTableModelDel
 		@Override
 		public int compare(CourseIdentityRow o1, CourseIdentityRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			if(o1.getNumberAssessment() == null || o2.getNumberAssessment() == null) {
-				return compareNullObjectsLast(o1.getNumberAssessment(), o2.getNumberAssessment());
+				return compareNullObjectsAlwaysLast(o1.getNumberAssessment(), o2.getNumberAssessment());
 			}
 			
 			int c = Integer.compare(o1.getNumberAssessment().getGreen(), o2.getNumberAssessment().getGreen());
@@ -88,11 +88,11 @@ public class CoursesIdentityTableSortDelegate extends SortableFlexiTableModelDel
 		@Override
 		public int compare(CourseIdentityRow o1, CourseIdentityRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			
 			if(o1.getAssessmentEntryCompletion() == null || o2.getAssessmentEntryCompletion() == null) {
-				return compareNullObjectsLast(o1.getAssessmentEntryCompletion(), o2.getAssessmentEntryCompletion());
+				return compareNullObjectsAlwaysLast(o1.getAssessmentEntryCompletion(), o2.getAssessmentEntryCompletion());
 			}
 			
 			int c = compareDoubles(o1.getAssessmentEntryCompletion().doubleValue(), o2.getAssessmentEntryCompletion().doubleValue());
@@ -107,10 +107,10 @@ public class CoursesIdentityTableSortDelegate extends SortableFlexiTableModelDel
 		@Override
 		public int compare(CourseIdentityRow o1, CourseIdentityRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsLast(o1, o2);
+				return compareNullObjectsAlwaysLast(o1, o2);
 			}
 			if(o1.getLectureBlockStatistics() == null || o2.getLectureBlockStatistics() == null) {
-				return compareNullObjectsLast(o1.getLectureBlockStatistics(), o2.getLectureBlockStatistics());
+				return compareNullObjectsAlwaysLast(o1.getLectureBlockStatistics(), o2.getLectureBlockStatistics());
 			}
 			
 			LectureBlockStatistics s1 = o1.getLectureBlockStatistics();

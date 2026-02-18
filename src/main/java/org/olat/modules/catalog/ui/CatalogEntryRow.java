@@ -25,6 +25,7 @@ import java.util.Set;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntry;
@@ -120,8 +121,8 @@ public class CatalogEntryRow {
 		publicVisible = catalogEntry.isPublicVisible();
 		lifecycleLabel = catalogEntry.getLifecycleLabel();
 		lifecycleSoftKey = catalogEntry.getLifecycleSoftKey();
-		lifecycleStart = catalogEntry.getLifecycleStart();
-		lifecycleEnd = catalogEntry.getLifecycleEnd();
+		lifecycleStart = DateUtils.getStartOfDay(catalogEntry.getLifecycleStart());
+		lifecycleEnd = DateUtils.getStartOfDay(catalogEntry.getLifecycleEnd());
 		olatResource = catalogEntry.getOlatResource();
 		taxonomyLevels = catalogEntry.getTaxonomyLevels();
 		member = catalogEntry.isMember();
