@@ -69,6 +69,9 @@ public class AssessmentInspectionWizardPage {
 		OOGraphene.waitingALittleBit();
 		
 		OOGraphene.nextStep(browser);
+		OOGraphene.waitingALittleBit();
+		OOGraphene.nextStep(browser);
+		
 		OOGraphene.waitElement(By.className("o_sel_contact_form"), browser);
 		return this;
 	}
