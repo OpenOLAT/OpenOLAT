@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
 import org.olat.modules.qpool.QPoolService;
@@ -103,10 +104,10 @@ public class PoolEditorController extends FormBasicController {
 			authors = qpoolService.getAuthors(masterItem);
 		}
 		if(authors != null && !authors.isEmpty()) {
-			String author = userManager.getUserDisplayName(authors.get(0));
+			String author = StringHelper.escapeHtml(userManager.getUserDisplayName(authors.get(0)));
 			uifactory.addStaticTextElement("rights.owners", author, formLayout);
 			for(int i=1; i<authors.size(); i++) {
-				author = userManager.getUserDisplayName(authors.get(i));
+				author = StringHelper.escapeHtml(userManager.getUserDisplayName(authors.get(i)));
 				uifactory.addStaticTextElement("rightss.owners_" + i, null, author, formLayout);
 			}
 		}
