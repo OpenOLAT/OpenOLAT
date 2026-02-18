@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Base: warm amber top dominates -->
+    <linearGradient id="base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#d45a18"/>
+      <stop offset="35%"  stop-color="#e8880a"/>
+      <stop offset="65%"  stop-color="#f0a820"/>
+      <stop offset="100%" stop-color="#c88010"/>
+    </linearGradient>
+
+    <!-- Teal zone: bottom sweeping up from left -->
+    <radialGradient id="teal" cx="10%" cy="95%" r="85%">
+      <stop offset="0%"   stop-color="#1a8890"/>
+      <stop offset="30%"  stop-color="#0d5860"/>
+      <stop offset="60%"  stop-color="#0a393a"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Red-orange zone upper left -->
+    <radialGradient id="redzone" cx="0%" cy="0%" r="65%">
+      <stop offset="0%"   stop-color="#c83020"/>
+      <stop offset="40%"  stop-color="#a82818"/>
+      <stop offset="100%" stop-color="#601010" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Cream/highlight: the broad sweeping arc between teal and orange -->
+    <radialGradient id="cream" cx="55%" cy="52%" r="48%">
+      <stop offset="0%"   stop-color="#f8f0d8" stop-opacity="0.9"/>
+      <stop offset="30%"  stop-color="#f0d8a0" stop-opacity="0.65"/>
+      <stop offset="70%"  stop-color="#d8a860" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c09040" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Darker sweep — the curved dark boundary line between teal and orange -->
+    <radialGradient id="darkarc" cx="30%" cy="78%" r="60%">
+      <stop offset="0%"   stop-color="#050e10" stop-opacity="0.9"/>
+      <stop offset="35%"  stop-color="#070f10" stop-opacity="0.7"/>
+      <stop offset="70%"  stop-color="#0a393a" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Warm glow upper right -->
+    <radialGradient id="warmright" cx="95%" cy="5%" r="55%">
+      <stop offset="0%"   stop-color="#f8c840" stop-opacity="0.9"/>
+      <stop offset="50%"  stop-color="#f0a820" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#e09010" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Secondary teal punch bottom -->
+    <radialGradient id="teal2" cx="35%" cy="100%" r="55%">
+      <stop offset="0%"   stop-color="#2ab0b8" stop-opacity="0.8"/>
+      <stop offset="50%"  stop-color="#1a8888" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Maroon shadow depth upper-left corner -->
+    <radialGradient id="maroon" cx="0%" cy="0%" r="50%">
+      <stop offset="0%"   stop-color="#300808" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#300808" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="xl" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="130"/>
+    </filter>
+    <filter id="lg" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="85"/>
+    </filter>
+    <filter id="md" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="55"/>
+    </filter>
+    <filter id="sm" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Upper-left maroon depth -->
+  <rect width="1920" height="1080" fill="url(#maroon)"/>
+  <!-- Warm right brightening -->
+  <rect width="1920" height="1080" fill="url(#warmright)"/>
+  <!-- Red zone upper left -->
+  <rect width="1920" height="1080" fill="url(#redzone)"/>
+
+  <!-- Teal invasion from bottom — the key contrast colour -->
+  <rect width="1920" height="1080" fill="url(#teal)" filter="url(#xl)"/>
+  <rect width="1920" height="1080" fill="url(#teal2)" filter="url(#lg)"/>
+
+  <!-- Dark boundary arc between zones — organic curved transition -->
+  <ellipse cx="480" cy="840" rx="900" ry="650" fill="url(#darkarc)" filter="url(#xl)"/>
+  <ellipse cx="400" cy="760" rx="600" ry="420" fill="#060d10" opacity="0.35" filter="url(#lg)"/>
+
+  <!-- Cream highlight — the broad glowing transition zone -->
+  <ellipse cx="1050" cy="560" rx="700" ry="460" fill="url(#cream)" filter="url(#xl)"/>
+  <ellipse cx="980"  cy="510" rx="420" ry="280" fill="url(#cream)" filter="url(#lg)" opacity="0.55"/>
+</svg>

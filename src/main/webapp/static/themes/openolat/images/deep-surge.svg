@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Deep dark base -->
+    <linearGradient id="base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#010f10"/>
+      <stop offset="100%" stop-color="#030e0e"/>
+    </linearGradient>
+
+    <!-- Volumetric light source - top left -->
+    <radialGradient id="vol1" cx="15%" cy="10%" r="65%">
+      <stop offset="0%" stop-color="#00e5cc" stop-opacity="0.55"/>
+      <stop offset="40%" stop-color="#00b3a4" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#00b3a4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Secondary glow - center right -->
+    <radialGradient id="vol2" cx="85%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#0a8aff" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#0a6adf" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0a6adf" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Deep teal anchor center -->
+    <radialGradient id="vol3" cx="50%" cy="60%" r="60%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#061f20" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#061f20" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Warm accent bottom right -->
+    <radialGradient id="vol4" cx="90%" cy="90%" r="50%">
+      <stop offset="0%" stop-color="#1affe0" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#1affe0" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="f1"><feGaussianBlur stdDeviation="140"/></filter>
+    <filter id="f2"><feGaussianBlur stdDeviation="80"/></filter>
+    <filter id="f3"><feGaussianBlur stdDeviation="40"/></filter>
+
+    <!-- Big Sur style fluid layer gradients -->
+    <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d6b70" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#052e30" stop-opacity="0.4"/>
+    </linearGradient>
+    <linearGradient id="wave2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a9aa0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="wave3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#062526" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#0d5a5e" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#1affe0" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Volumetric light blobs -->
+  <ellipse cx="288" cy="108" rx="900" ry="700" fill="url(#vol1)" filter="url(#f1)"/>
+  <ellipse cx="1632" cy="432" rx="900" ry="700" fill="url(#vol2)" filter="url(#f1)"/>
+  <ellipse cx="960" cy="648" rx="1000" ry="700" fill="url(#vol3)" filter="url(#f1)"/>
+  <ellipse cx="1728" cy="972" rx="700" ry="500" fill="url(#vol4)" filter="url(#f2)"/>
+
+  <!-- Big Sur style fluid landscape layers - smooth rolling forms -->
+  <!-- Bottom layer - darkest, furthest away -->
+  <path d="M0,1080 L0,720 C120,680 280,700 450,660 C650,615 820,640 1020,595 C1200,555 1380,575 1550,540 C1700,510 1820,525 1920,505 L1920,1080 Z"
+        fill="url(#wave1)" opacity="0.6"/>
+
+  <!-- Mid layer -->
+  <path d="M0,1080 L0,800 C200,745 400,780 620,730 C820,685 1000,720 1220,668 C1420,622 1620,655 1920,615 L1920,1080 Z"
+        fill="url(#wave2)" opacity="0.5"/>
+
+  <!-- Foreground layer - lightest -->
+  <path d="M0,1080 L0,880 C150,840 320,870 520,830 C720,790 920,820 1120,778 C1320,736 1520,762 1720,730 C1820,714 1880,720 1920,715 L1920,1080 Z"
+        fill="url(#wave3)" opacity="0.55"/>
+
+  <!-- Upper haze layers -->
+  <path d="M0,0 L0,280 C200,310 420,270 650,300 C880,330 1080,285 1300,310 C1520,335 1720,295 1920,320 L1920,0 Z"
+        fill="#061f20" opacity="0.4"/>
+  <path d="M0,0 L0,160 C280,190 550,155 800,180 C1050,205 1300,160 1600,185 C1760,198 1860,175 1920,170 L1920,0 Z"
+        fill="#041718" opacity="0.6"/>
+
+  <!-- Subtle highlight edge on waves -->
+  <path d="M0,800 C200,745 400,780 620,730 C820,685 1000,720 1220,668 C1420,622 1620,655 1920,615"
+        stroke="#1affe0" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <path d="M0,880 C150,840 320,870 520,830 C720,790 920,820 1120,778 C1320,736 1520,762 1720,730"
+        stroke="#00e5cc" stroke-width="1" fill="none" opacity="0.18"/>
+
+  <!-- Vignette -->
+  <radialGradient id="vig" cx="50%" cy="50%" r="75%" xmlns="http://www.w3.org/2000/svg">
+    <stop offset="50%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#000a0a" stop-opacity="0.65"/>
+  </radialGradient>
+  <rect width="1920" height="1080" fill="url(#vig)"/>
+</svg>

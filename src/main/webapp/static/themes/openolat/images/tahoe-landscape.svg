@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Bright, airy macOS Sequoia/Tahoe style - lighter & more colorful -->
+    <linearGradient id="sky" x1="0%" y1="0%" x2="10%" y2="100%">
+      <stop offset="0%" stop-color="#0a4f52"/>
+      <stop offset="35%" stop-color="#0d6b6e"/>
+      <stop offset="70%" stop-color="#1a9aa0"/>
+      <stop offset="100%" stop-color="#24b8be"/>
+    </linearGradient>
+
+    <!-- Upper atmosphere color wash -->
+    <linearGradient id="atmos" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.8"/>
+      <stop offset="30%" stop-color="#0d5f62" stop-opacity="0.4"/>
+      <stop offset="70%" stop-color="#1a9aa0" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0.7"/>
+    </linearGradient>
+
+    <!-- Cloud / mist radials -->
+    <radialGradient id="cloud1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e0fffe" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#e0fffe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cloud2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunburst" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe066" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#ffd020" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#ffd020" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="peach" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff9a6c" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ff9a6c" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="cloudblur"><feGaussianBlur stdDeviation="80"/></filter>
+    <filter id="hazeblur"><feGaussianBlur stdDeviation="120"/></filter>
+    <filter id="mistblur"><feGaussianBlur stdDeviation="50"/></filter>
+  </defs>
+
+  <!-- Sky gradient background -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#atmos)"/>
+
+  <!-- Sun/light source - upper right area -->
+  <ellipse cx="1400" cy="180" rx="450" ry="350" fill="url(#sunburst)" filter="url(#hazeblur)"/>
+  <ellipse cx="1600" cy="100" rx="300" ry="250" fill="url(#cloud2)" filter="url(#cloudblur)"/>
+
+  <!-- Peach horizon warmth -->
+  <ellipse cx="960" cy="1000" rx="1200" ry="400" fill="url(#peach)" filter="url(#hazeblur)"/>
+
+  <!-- Volumetric cloud/mist shapes - Tahoe/Sequoia style -->
+  <ellipse cx="200" cy="380" rx="500" ry="250" fill="url(#cloud1)" filter="url(#cloudblur)"/>
+  <ellipse cx="700" cy="250" rx="600" ry="220" fill="url(#cloud2)" filter="url(#cloudblur)"/>
+  <ellipse cx="1300" cy="350" rx="550" ry="200" fill="url(#cloud1)" filter="url(#cloudblur)" opacity="0.8"/>
+  <ellipse cx="1750" cy="450" rx="400" ry="200" fill="url(#cloud2)" filter="url(#mistblur)" opacity="0.7"/>
+  <ellipse cx="500" cy="600" rx="500" ry="180" fill="url(#cloud1)" filter="url(#cloudblur)" opacity="0.5"/>
+
+  <!-- Landscape layers - rolling hills / Big Sur cliff feel -->
+  <!-- Far mountains -->
+  <path d="M0,900 C200,820 400,860 600,800 C750,755 900,790 1050,745 C1200,700 1350,735 1500,700 C1650,665 1800,695 1920,670 L1920,1080 L0,1080 Z"
+        fill="#0a393a" opacity="0.35"/>
+  <path d="M0,920 C300,860 550,890 800,845 C1000,810 1150,840 1350,800 C1550,762 1750,790 1920,765 L1920,1080 L0,1080 Z"
+        fill="#0a393a" opacity="0.5"/>
+
+  <!-- Mid ground with teal -->
+  <path d="M0,960 C250,920 500,950 750,910 C950,878 1150,900 1400,865 C1600,836 1800,860 1920,840 L1920,1080 L0,1080 Z"
+        fill="#052022" opacity="0.7"/>
+
+  <!-- Foreground - darkest, closest -->
+  <path d="M0,1020 C300,990 600,1010 900,980 C1100,960 1300,978 1600,955 C1760,943 1860,955 1920,948 L1920,1080 L0,1080 Z"
+        fill="#031314" opacity="0.85"/>
+
+  <!-- Horizon haze line -->
+  <path d="M0,740 C400,720 800,750 1200,730 C1600,710 1800,735 1920,725"
+        stroke="#80fff6" stroke-width="1" fill="none" opacity="0.15"/>
+
+  <!-- Subtle light shimmer on landscape edge -->
+  <path d="M0,900 C200,820 400,860 600,800 C750,755 900,790 1050,745 C1200,700 1350,735 1500,700 C1650,665 1800,695 1920,670"
+        stroke="#a0fff8" stroke-width="1.5" fill="none" opacity="0.18"/>
+
+  <!-- Vignette -->
+  <radialGradient id="vig5" cx="50%" cy="50%" r="75%" xmlns="http://www.w3.org/2000/svg">
+    <stop offset="45%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#020e0f" stop-opacity="0.6"/>
+  </radialGradient>
+  <rect width="1920" height="1080" fill="url(#vig5)"/>
+</svg>

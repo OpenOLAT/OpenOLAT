@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4f0ff"/>
+      <stop offset="28%" stop-color="#7ecfea"/>
+      <stop offset="58%" stop-color="#2a90a0"/>
+      <stop offset="82%" stop-color="#0d5060"/>
+      <stop offset="100%" stop-color="#0a393a"/>
+    </linearGradient>
+
+    <!-- Bright diagonal light sweep gradients -->
+    <linearGradient id="diag1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="25%"  stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="42%"  stop-color="#e0fbff" stop-opacity="0.38"/>
+      <stop offset="52%"  stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="70%"  stop-color="#b0f0ff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#b0f0ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="diag2" x1="0%" y1="20%" x2="100%" y2="80%">
+      <stop offset="0%"   stop-color="#a78bfa" stop-opacity="0"/>
+      <stop offset="30%"  stop-color="#a78bfa" stop-opacity="0.35"/>
+      <stop offset="55%"  stop-color="#c4b5fd" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="r1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f0fffe" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#f0fffe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="r2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#6ee7b7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="r3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="r4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="r5" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="dark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="xl"><feGaussianBlur stdDeviation="150"/></filter>
+    <filter id="lg"><feGaussianBlur stdDeviation="95"/></filter>
+    <filter id="md"><feGaussianBlur stdDeviation="50"/></filter>
+    <filter id="streak"><feGaussianBlur stdDeviation="55"/></filter>
+
+    <linearGradient id="lay1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#0d5a60" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#072a2e" stop-opacity="0.65"/>
+    </linearGradient>
+    <linearGradient id="lay2" x1="100%" y1="0%" x2="10%" y2="0%">
+      <stop offset="0%" stop-color="#051c1e" stop-opacity="0.75"/>
+      <stop offset="50%" stop-color="#0a393a" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#062022" stop-opacity="0.65"/>
+    </linearGradient>
+    <linearGradient id="lay3" x1="30%" y1="0%" x2="70%" y2="0%">
+      <stop offset="0%" stop-color="#020c0d" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#0a393a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#010809" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <radialGradient id="vig" cx="60%" cy="30%" r="80%">
+      <stop offset="30%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#020c0e" stop-opacity="0.55"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Diagonal light sweep — main bright band, upper-left to lower-right -->
+  <rect width="1920" height="1080" fill="url(#diag1)" filter="url(#streak)"/>
+  <!-- Violet counter-diagonal -->
+  <rect width="1920" height="1080" fill="url(#diag2)" filter="url(#streak)"/>
+
+  <!-- Bright source — upper left -->
+  <ellipse cx="220"  cy="120"  rx="800" ry="600" fill="url(#r1)" filter="url(#xl)"/>
+
+  <!-- Mint/emerald — lower right -->
+  <ellipse cx="1700" cy="900"  rx="750" ry="520" fill="url(#r2)" filter="url(#xl)"/>
+  <ellipse cx="1350" cy="750"  rx="450" ry="350" fill="url(#r5)" filter="url(#lg)" opacity="0.7"/>
+
+  <!-- Indigo — right mid -->
+  <ellipse cx="1800" cy="380"  rx="600" ry="480" fill="url(#r3)" filter="url(#xl)"/>
+  <ellipse cx="1200" cy="280"  rx="400" ry="320" fill="url(#r3)" filter="url(#lg)" opacity="0.5"/>
+
+  <!-- Amber — lower left -->
+  <ellipse cx="200"  cy="850"  rx="600" ry="420" fill="url(#r4)" filter="url(#xl)" opacity="0.7"/>
+
+  <!-- Teal dark anchor bottom center-right -->
+  <ellipse cx="1500" cy="1060" rx="800" ry="430" fill="url(#dark)" filter="url(#xl)"/>
+  <ellipse cx="700"  cy="950"  rx="500" ry="320" fill="url(#dark)" filter="url(#lg)" opacity="0.6"/>
+
+  <!-- Landscape wave layers -->
+  <path d="M0,730 C100,688 320,725 580,672 C840,618 1080,660 1340,608 C1560,562 1770,598 1920,572 L1920,1080 L0,1080 Z"
+        fill="url(#lay1)" opacity="0.5"/>
+  <path d="M0,800 C180,758 440,793 700,746 C950,702 1180,740 1450,692 C1670,652 1860,678 1920,664 L1920,1080 L0,1080 Z"
+        fill="url(#lay2)" opacity="0.56"/>
+  <path d="M0,872 C220,838 500,864 780,826 C1020,792 1250,818 1530,782 C1750,752 1900,770 1920,765 L1920,1080 L0,1080 Z"
+        fill="url(#lay3)" opacity="0.65"/>
+
+  <!-- Wave edge glow -->
+  <path d="M0,730 C100,688 320,725 580,672 C840,618 1080,660 1340,608 C1560,562 1770,598 1920,572"
+        stroke="white" stroke-width="1.2" fill="none" opacity="0.14"/>
+
+  <rect width="1920" height="1080" fill="url(#vig)"/>
+</svg>

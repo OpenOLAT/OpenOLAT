@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="base" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0f8ff"/>
+      <stop offset="30%" stop-color="#8adff0"/>
+      <stop offset="65%" stop-color="#2ab0b8"/>
+      <stop offset="100%" stop-color="#0a393a"/>
+    </linearGradient>
+
+    <radialGradient id="w1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f0fffe" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#f0fffe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="w2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="w3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fdba74" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#fdba74" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="w4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="w5" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f472b6" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="w6" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a3e635" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#a3e635" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="dark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="xl"><feGaussianBlur stdDeviation="155"/></filter>
+    <filter id="lg"><feGaussianBlur stdDeviation="100"/></filter>
+    <filter id="md"><feGaussianBlur stdDeviation="55"/></filter>
+
+    <linearGradient id="lay1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.6"/>
+      <stop offset="35%" stop-color="#0d5a5e" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#062a2c" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="lay2" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#104a4e" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#041a1c" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="lay3" x1="20%" y1="0%" x2="80%" y2="0%">
+      <stop offset="0%" stop-color="#030e0f" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#0a393a" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#020a0b" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <radialGradient id="vig" cx="25%" cy="25%" r="85%">
+      <stop offset="20%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#030c0e" stop-opacity="0.55"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Bright white glow — upper right, off-center -->
+  <ellipse cx="1550" cy="130" rx="850" ry="650" fill="url(#w1)" filter="url(#xl)"/>
+
+  <!-- Emerald green — lower left -->
+  <ellipse cx="180"  cy="820" rx="750" ry="520" fill="url(#w2)" filter="url(#xl)"/>
+  <ellipse cx="500"  cy="600" rx="450" ry="340" fill="url(#w2)" filter="url(#lg)" opacity="0.5"/>
+
+  <!-- Peach/amber — left upper -->
+  <ellipse cx="280"  cy="200" rx="650" ry="480" fill="url(#w3)" filter="url(#xl)"/>
+
+  <!-- Sky blue — center -->
+  <ellipse cx="950"  cy="350" rx="600" ry="450" fill="url(#w4)" filter="url(#lg)"/>
+  <ellipse cx="1400" cy="650" rx="550" ry="420" fill="url(#w4)" filter="url(#lg)" opacity="0.5"/>
+
+  <!-- Soft pink accent -->
+  <ellipse cx="1750" cy="900" rx="600" ry="420" fill="url(#w5)" filter="url(#xl)"/>
+
+  <!-- Lime accent -->
+  <ellipse cx="1100" cy="900" rx="480" ry="360" fill="url(#w6)" filter="url(#lg)" opacity="0.6"/>
+
+  <!-- Dark teal anchors -->
+  <ellipse cx="1900" cy="1080" rx="700" ry="480" fill="url(#dark)" filter="url(#xl)"/>
+  <ellipse cx="960"  cy="750"  rx="600" ry="400" fill="url(#dark)" filter="url(#lg)" opacity="0.5"/>
+
+  <!-- Landscape wave layers -->
+  <path d="M0,740 C120,698 350,732 600,682 C860,628 1100,672 1360,620 C1580,574 1780,610 1920,585 L1920,1080 L0,1080 Z"
+        fill="url(#lay1)" opacity="0.5"/>
+  <path d="M0,810 C200,768 480,800 740,754 C980,712 1200,748 1480,700 C1700,660 1870,685 1920,672 L1920,1080 L0,1080 Z"
+        fill="url(#lay2)" opacity="0.55"/>
+  <path d="M0,880 C240,848 520,872 800,836 C1040,804 1270,828 1550,792 C1760,764 1900,780 1920,775 L1920,1080 L0,1080 Z"
+        fill="url(#lay3)" opacity="0.65"/>
+
+  <!-- Highlight on first ridge -->
+  <path d="M0,740 C120,698 350,732 600,682 C860,628 1100,672 1360,620 C1580,574 1780,610 1920,585"
+        stroke="white" stroke-width="1.2" fill="none" opacity="0.16"/>
+
+  <rect width="1920" height="1080" fill="url(#vig)"/>
+</svg>

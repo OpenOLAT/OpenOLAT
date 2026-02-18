@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Classic macOS Jaguar/Panther radial style -->
+    <radialGradient id="bg3" cx="38%" cy="42%" r="80%">
+      <stop offset="0%" stop-color="#1a6e72"/>
+      <stop offset="25%" stop-color="#0a393a"/>
+      <stop offset="60%" stop-color="#052224"/>
+      <stop offset="100%" stop-color="#010a0b"/>
+    </radialGradient>
+
+    <!-- Bright core glow -->
+    <radialGradient id="core" cx="38%" cy="42%" r="30%">
+      <stop offset="0%" stop-color="#40e8e0" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#20a8a0" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#20a8a0" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Outer ray coloring -->
+    <radialGradient id="raycolor" cx="38%" cy="42%" r="90%">
+      <stop offset="0%" stop-color="#1e8a8e"/>
+      <stop offset="50%" stop-color="#0a393a"/>
+      <stop offset="100%" stop-color="#020c0d"/>
+    </radialGradient>
+
+    <filter id="softglow"><feGaussianBlur stdDeviation="25"/></filter>
+    <filter id="coreglow"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="rayblur"><feGaussianBlur stdDeviation="12"/></filter>
+
+    <!-- Ray gradient -->
+    <linearGradient id="rayg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#40e8e0" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#40e8e0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base -->
+  <rect width="1920" height="1080" fill="url(#bg3)"/>
+
+  <!-- Radial rays - classic Jaguar starburst feel -->
+  <!-- Each ray is a thin triangle from center -->
+  <g opacity="0.18" filter="url(#rayblur)">
+    <g transform="translate(730, 454)">
+      <!-- 24 rays -->
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(0)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(15)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(30)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(45)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(60)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(75)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(90)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(105)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(120)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(135)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(150)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(165)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(180)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(195)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(210)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(225)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(240)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(255)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(270)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(285)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(300)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(315)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(330)"/>
+      <polygon points="0,0 2000,80 2000,-80" fill="#1affe0" transform="rotate(345)"/>
+    </g>
+  </g>
+
+  <!-- Overdraw base radial to integrate rays -->
+  <rect width="1920" height="1080" fill="url(#bg3)" opacity="0.55"/>
+
+  <!-- Core glow overlay -->
+  <ellipse cx="730" cy="454" rx="600" ry="500" fill="url(#core)" filter="url(#softglow)"/>
+
+  <!-- Bright center point -->
+  <circle cx="730" cy="454" r="120" fill="#40e8e0" opacity="0.08" filter="url(#softglow)"/>
+  <circle cx="730" cy="454" r="50" fill="#80f8f4" opacity="0.12" filter="url(#coreglow)"/>
+
+  <!-- Concentric circles - classic macOS rings -->
+  <g fill="none" stroke="#1affe0" transform="translate(730,454)">
+    <circle r="150" opacity="0.06" stroke-width="1"/>
+    <circle r="280" opacity="0.05" stroke-width="1"/>
+    <circle r="420" opacity="0.04" stroke-width="1"/>
+    <circle r="580" opacity="0.035" stroke-width="1"/>
+    <circle r="760" opacity="0.025" stroke-width="1"/>
+    <circle r="960" opacity="0.02" stroke-width="0.8"/>
+    <circle r="1200" opacity="0.015" stroke-width="0.8"/>
+  </g>
+
+  <!-- Vignette -->
+  <radialGradient id="vig3" cx="38%" cy="42%" r="80%" xmlns="http://www.w3.org/2000/svg">
+    <stop offset="40%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#010608" stop-opacity="0.85"/>
+  </radialGradient>
+  <rect width="1920" height="1080" fill="url(#vig3)"/>
+</svg>

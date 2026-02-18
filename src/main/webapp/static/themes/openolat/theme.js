@@ -1,4 +1,4 @@
-/**
+/**wallpaper-1-fluid-waves.svg
  *  OpenOLAT theme JS extensions as jQuery module
  *  
  *  @dependencies jQuery
@@ -40,14 +40,31 @@
 			this.dmzCarrousel = jQuery().ooBgCarrousel();
 			this.dmzCarrousel.initCarrousel({
 				query: "#o_body.o_dmz #o_bg", 
-				images: ['infinite.jpg', 'holger.jpg', 'marco.jpg', 'openolat_award.jpg', 'weg.jpg', 'christian.jpg'], 
-				shuffle: true,
-				shuffleFirst: false,
-				durationshow: 5000,
-				durationout: 500,
-				durationin: 500,
-				easeout : 'ease',
-				easein : 'ease'
+				images: [
+						'sunrise-surge.svg',
+						'deep-surge.svg',
+						'tahoe-landscape.svg',
+						'sonoma-mesh.svg',
+						'jaguar-starburst.svg',
+						'tiger-streak.svg',						
+						'violet-lime-teal.svg',
+						'amber-rose-teal.svg',
+						'sky-emerald-peach.svg',
+						'indigo-mint-sweep.svg',
+						'coral-lavender-teal.svg',
+						'arctic-sapphire.svg',						
+						'solar.svg',
+						'bop.svg',
+						'firelicked.svg',
+						'bright-flow.svg'						
+						],
+				shuffle: true,			// true: shuffle image order on initialization
+				shuffleFirst: false,		// true: shuffle also the first image (only relevant when shuffle=true)
+    			durationshow: 5000,		// duration of the display of every image
+	    		scale: 1.05,			// intensity of the zoom animation. Set to 0 for no zoom
+    			scaleease : 'linear',	// style of the zoom animation
+	    		durationout: 1500,		// duration of the fade-out animation. Set to 0 for no fade-out
+    			easeout : 'linear' 		// style of the fade-out animation
 			});
 		}
 		
@@ -59,3 +76,4 @@
 		});
 		
 })(jQuery);
+

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#ffe8c8"/>
+      <stop offset="25%" stop-color="#ffb870"/>
+      <stop offset="55%" stop-color="#d06890"/>
+      <stop offset="80%" stop-color="#6a3080"/>
+      <stop offset="100%" stop-color="#0a393a"/>
+    </linearGradient>
+
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff8e8" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#ffd080" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#ffd080" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rose" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffa0c0" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ffa0c0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyan" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#80f0f8" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#80f0f8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="violet" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="teal" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="xl"><feGaussianBlur stdDeviation="140"/></filter>
+    <filter id="lg"><feGaussianBlur stdDeviation="90"/></filter>
+    <filter id="md"><feGaussianBlur stdDeviation="45"/></filter>
+    <filter id="sm"><feGaussianBlur stdDeviation="20"/></filter>
+
+    <!-- Landscape wave gradients -->
+    <linearGradient id="ridge1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6a3080" stop-opacity="0.55"/>
+      <stop offset="40%" stop-color="#8a3060" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0.65"/>
+    </linearGradient>
+    <linearGradient id="ridge2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.65"/>
+      <stop offset="50%" stop-color="#0d5058" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#103a3c" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="ridge3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0d2a2c" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#0a393a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#061a1c" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <radialGradient id="vig" cx="80%" cy="20%" r="90%">
+      <stop offset="30%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#060810" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+
+  <!-- Sun/light source — off-center upper right -->
+  <ellipse cx="1380" cy="160"  rx="750" ry="600" fill="url(#sun)"    filter="url(#xl)"/>
+  <ellipse cx="1650" cy="80"   rx="500" ry="380" fill="url(#sun)"    filter="url(#lg)" opacity="0.7"/>
+
+  <!-- Rose glow mid-right -->
+  <ellipse cx="1700" cy="500"  rx="700" ry="520" fill="url(#rose)"   filter="url(#xl)"/>
+
+  <!-- Cyan hint bottom left -->
+  <ellipse cx="150"  cy="750"  rx="650" ry="480" fill="url(#cyan)"   filter="url(#xl)"/>
+  <ellipse cx="400"  cy="400"  rx="400" ry="320" fill="url(#cyan)"   filter="url(#lg)" opacity="0.4"/>
+
+  <!-- Violet atmospheric sweep upper left -->
+  <ellipse cx="200"  cy="180"  rx="700" ry="500" fill="url(#violet)" filter="url(#xl)" opacity="0.7"/>
+  <ellipse cx="900"  cy="350"  rx="500" ry="380" fill="url(#violet)" filter="url(#lg)" opacity="0.4"/>
+
+  <!-- Teal anchor — bottom & lower-left -->
+  <ellipse cx="300"  cy="1050" rx="700" ry="400" fill="url(#teal)"   filter="url(#xl)"/>
+  <ellipse cx="1100" cy="1000" rx="600" ry="350" fill="url(#teal)"   filter="url(#lg)" opacity="0.8"/>
+
+  <!-- Landscape ridges — Big Sur style, asymmetric curves -->
+  <path d="M0,760 C150,720 380,750 600,700 C820,650 1050,690 1300,638 C1520,592 1740,628 1920,600 L1920,1080 L0,1080 Z"
+        fill="url(#ridge1)" opacity="0.5"/>
+  <path d="M0,820 C220,778 500,812 760,762 C1000,716 1220,752 1500,702 C1720,660 1870,690 1920,675 L1920,1080 L0,1080 Z"
+        fill="url(#ridge2)" opacity="0.55"/>
+  <path d="M0,890 C280,854 560,882 840,842 C1080,806 1300,832 1580,796 C1780,768 1900,785 1920,780 L1920,1080 L0,1080 Z"
+        fill="url(#ridge3)" opacity="0.65"/>
+
+  <!-- Ridge highlight lines -->
+  <path d="M0,760 C150,720 380,750 600,700 C820,650 1050,690 1300,638 C1520,592 1740,628 1920,600"
+        stroke="#ffa8c8" stroke-width="1.2" fill="none" opacity="0.18"/>
+  <path d="M0,820 C220,778 500,812 760,762 C1000,716 1220,752 1500,702 C1720,660 1870,690 1920,675"
+        stroke="#80f0e8" stroke-width="0.9" fill="none" opacity="0.12"/>
+
+  <!-- Atmospheric haze band -->
+  <linearGradient id="haze" x1="0%" y1="0%" x2="0%" y2="100%" xmlns="http://www.w3.org/2000/svg">
+    <stop offset="0%" stop-color="transparent"/>
+    <stop offset="55%" stop-color="transparent"/>
+    <stop offset="72%" stop-color="#ffecd0" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="transparent"/>
+  </linearGradient>
+  <rect width="1920" height="1080" fill="url(#haze)"/>
+
+  <rect width="1920" height="1080" fill="url(#vig)"/>
+</svg>

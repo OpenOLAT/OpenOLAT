@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="base" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a393a"/>
+      <stop offset="35%" stop-color="#1a7a80"/>
+      <stop offset="70%" stop-color="#4ab8c0"/>
+      <stop offset="100%" stop-color="#8ae8e4"/>
+    </linearGradient>
+
+    <radialGradient id="c1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c4f0ff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#c4f0ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#86efac" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#86efac" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fde68a" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#fde68a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c5" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c6" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c7" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fb7185" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#fb7185" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="dark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a393a" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0a393a" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="xl"><feGaussianBlur stdDeviation="160"/></filter>
+    <filter id="lg"><feGaussianBlur stdDeviation="110"/></filter>
+    <filter id="md"><feGaussianBlur stdDeviation="70"/></filter>
+
+    <radialGradient id="vig" cx="15%" cy="85%" r="80%">
+      <stop offset="25%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#040f10" stop-opacity="0.65"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Bright top-right cluster -->
+  <ellipse cx="1480" cy="120"  rx="750" ry="550" fill="url(#c5)" filter="url(#xl)"/>
+  <ellipse cx="1700" cy="300"  rx="550" ry="420" fill="url(#c1)" filter="url(#lg)"/>
+  <ellipse cx="1200" cy="80"   rx="500" ry="350" fill="url(#c4)" filter="url(#lg)"/>
+
+  <!-- Violet sweep - right middle -->
+  <ellipse cx="1800" cy="650"  rx="600" ry="500" fill="url(#c2)" filter="url(#xl)"/>
+  <ellipse cx="1350" cy="500"  rx="450" ry="380" fill="url(#c2)" filter="url(#lg)" opacity="0.7"/>
+
+  <!-- Lime/green lower left -->
+  <ellipse cx="200"  cy="900"  rx="700" ry="450" fill="url(#c3)" filter="url(#xl)"/>
+  <ellipse cx="500"  cy="700"  rx="500" ry="380" fill="url(#c6)" filter="url(#lg)"/>
+
+  <!-- Pink hint upper left -->
+  <ellipse cx="100"  cy="250"  rx="500" ry="380" fill="url(#c7)" filter="url(#lg)" opacity="0.6"/>
+
+  <!-- Cyan mid -->
+  <ellipse cx="850"  cy="450"  rx="550" ry="400" fill="url(#c6)" filter="url(#lg)" opacity="0.5"/>
+
+  <!-- Teal dark anchors - bottom right & left -->
+  <ellipse cx="1700" cy="1050" rx="700" ry="420" fill="url(#dark)" filter="url(#xl)"/>
+  <ellipse cx="0"    cy="1080" rx="500" ry="350" fill="url(#dark)" filter="url(#lg)" opacity="0.7"/>
+
+  <!-- Contour topography lines - very faint -->
+  <g fill="none" stroke="white" stroke-width="0.7" opacity="0.04">
+    <path d="M0,300 C300,260 600,310 900,270 C1200,230 1500,280 1920,250"/>
+    <path d="M0,360 C300,320 600,370 900,330 C1200,290 1500,340 1920,310"/>
+    <path d="M0,420 C350,385 650,430 950,395 C1250,360 1550,400 1920,372"/>
+    <path d="M0,480 C350,450 680,490 980,458 C1280,426 1580,462 1920,434"/>
+  </g>
+
+  <!-- Vignette off-center bottom-left -->
+  <rect width="1920" height="1080" fill="url(#vig)"/>
+
+  <!-- Top-left darkening to keep teal brand visible in corner -->
+  <linearGradient id="tl" x1="0%" y1="0%" x2="100%" y2="100%" xmlns="http://www.w3.org/2000/svg">
+    <stop offset="0%" stop-color="#0a393a" stop-opacity="0.35"/>
+    <stop offset="30%" stop-color="transparent"/>
+  </linearGradient>
+  <rect width="1920" height="1080" fill="url(#tl)"/>
+</svg>
