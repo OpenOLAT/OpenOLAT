@@ -511,7 +511,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 					if (navEl.getExternalUrl() != null && !navEl.isExternalUrlInIFrame()) {
 						ExternalLink extLink = LinkFactory.createExternalLink(linkName, "t", navEl.getExternalUrl());		
 						navSitesVc.put(linkName, extLink);
-						extLink.setName(StringHelper.escapeHtml(navEl.getTitle()));
+						extLink.setName(navEl.getTitle());
 						extLink.setTooltip(navEl.getDescription());
 					} else {						
 						Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
