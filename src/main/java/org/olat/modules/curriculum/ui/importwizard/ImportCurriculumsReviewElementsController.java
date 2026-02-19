@@ -168,14 +168,14 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 			rows = List.of();
 		} else {
 			final Roles roles = ureq.getUserSession().getRoles();
-			final ImportCurriculumsHelper helper = new ImportCurriculumsHelper(getTranslator());
+			final ImportCurriculumsHelper helper = new ImportCurriculumsHelper(getIdentity(), roles, getTranslator());
 			helper.loadCurrentElements(rows, context.getImportedCurriculumsRows());
 			if(taxonomyModule.isEnabled()) {
 				helper.loadTaxonomy(rows);
 			}
 			
 			for(ImportedRow row:rows) {
-				helper.validate(row, roles);
+				helper.validate(row);
 			}
 			helper.validateUniqueIdentifiers(rows);
 			

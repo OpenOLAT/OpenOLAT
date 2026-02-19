@@ -387,7 +387,8 @@ public interface CurriculumService {
 	 * @param key The primary (optional)
 	 * @return A list of curriculum elements
 	 */
-	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key, CurriculumElementStatus... status);
+	public List<CurriculumElement> searchCurriculumElements(CurriculumRef curriculum, CurriculumElementRef implementation,
+			String externalId, String identifier, Long key, CurriculumElementStatus... status);
 	
 	/**
 	 * 

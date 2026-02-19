@@ -140,7 +140,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		int plannedLectures = 1;
 		if(StringHelper.isLong(unit)) {
 			int lectures = Integer.parseInt(unit);
-			if(lectures > 0 && lectures <= 12) {
+			if(lectures > 0 && lectures <= LectureBlock.MAX_PLANNED_LECTURES) {
 				plannedLectures = lectures;
 			}
 		}
@@ -171,8 +171,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 						updateCurriculum(curriculum, importedRow);
 					}
 				}
+				dbInstance.commit();
 			}
-			dbInstance.commit();
 		}
 		dbInstance.commitAndCloseSession();
 	}
@@ -222,13 +222,13 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	private void processCurriculumElements() {
 		List<ImportedRow> importedRows = context.getImportedElementsRows();
 		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.IMPL) {
+			if(importedRow.type() == CurriculumExportType.IMPL && !isIgnored(importedRow)) {
 				processCurriculumElement(importedRow);
 				dbInstance.commit();
 			}
 		}
 		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.ELEM) {
+			if(importedRow.type() == CurriculumExportType.ELEM && !isIgnored(importedRow)) {
 				processCurriculumElement(importedRow);
 				dbInstance.commit();
 			}

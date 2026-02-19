@@ -647,22 +647,60 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//search by external id
-		List<CurriculumElement> elementsByExternalId = curriculumElementDao.searchElements(externalId, null, null);
-		Assert.assertNotNull(elementsByExternalId);
-		Assert.assertEquals(1, elementsByExternalId.size());
-		Assert.assertEquals(element, elementsByExternalId.get(0));
+		List<CurriculumElement> elementsByExternalId = curriculumElementDao.searchElements(null, null, externalId, null, null);
+		Assertions.assertThat(elementsByExternalId)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
 		
 		//search by identifier 
-		List<CurriculumElement> elementsByIdentifier = curriculumElementDao.searchElements(null, identifier, null);
-		Assert.assertNotNull(elementsByIdentifier);
-		Assert.assertEquals(1, elementsByIdentifier.size());
-		Assert.assertEquals(element, elementsByIdentifier.get(0));
+		List<CurriculumElement> elementsByIdentifier = curriculumElementDao.searchElements(null, null, null, identifier, null);
+		Assertions.assertThat(elementsByIdentifier)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
+		
+		//search by identifier 
+		List<CurriculumElement> elementsByIdentifierAndCurriculum = curriculumElementDao.searchElements(curriculum, null, null, identifier, null);
+		Assertions.assertThat(elementsByIdentifierAndCurriculum)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
 		
 		// search by primary key
-		List<CurriculumElement> elementsByKey = curriculumElementDao.searchElements(null, null, element.getKey());
-		Assert.assertNotNull(elementsByKey);
-		Assert.assertEquals(1, elementsByKey.size());
-		Assert.assertEquals(element, elementsByKey.get(0));
+		List<CurriculumElement> elementsByKey = curriculumElementDao.searchElements(null, null, null, null, element.getKey());
+		Assertions.assertThat(elementsByKey)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
+	}
+	
+	@Test
+	public void searchElementsWithImplementation() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-26", "Curriculum for element", "Curriculum", false, null);
+		String identifier = UUID.randomUUID().toString();
+		CurriculumElement implementation = curriculumElementDao.createCurriculumElement(identifier, "26.1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "26.1 Element",
+				CurriculumElementStatus.active, null, null, implementation, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		dbInstance.commitAndCloseSession();
+		
+		//search by identifier 
+		List<CurriculumElement> elementsByIdentifier = curriculumElementDao.searchElements(null, implementation, null, identifier, null);
+		Assertions.assertThat(elementsByIdentifier)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
+		
+		//search by identifier 
+		List<CurriculumElement> elementsByIdentifierAndCurriculum = curriculumElementDao.searchElements(curriculum, implementation, null, identifier, null);
+		Assertions.assertThat(elementsByIdentifierAndCurriculum)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
+		
+		// search by primary key
+		List<CurriculumElement> elementsByKey = curriculumElementDao.searchElements(null, implementation, null, null, element.getKey());
+		Assertions.assertThat(elementsByKey)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(element);
 	}
 	
 	@Test

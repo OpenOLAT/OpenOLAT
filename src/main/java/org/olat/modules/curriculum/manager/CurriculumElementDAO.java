@@ -768,13 +768,21 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElement> searchElements(String externalId, String identifier, Long key, CurriculumElementStatus... status) {
+	public List<CurriculumElement> searchElements(CurriculumRef curriculum, CurriculumElementRef implementation,
+			String externalId, String identifier, Long key, CurriculumElementStatus... status) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" left join fetch el.implementation implementation")
 		  .append(" inner join fetch el.group bGroup")
 		  .append(" left join fetch curriculum.organisation org");
 		
+		if(curriculum != null) {
+			sb.and().append("curriculum.key=:curriculumKey");
+		}
+		if(implementation != null) {
+			sb.and().append("implementation.key=:implementationKey");
+		}
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			sb.and().append("el.externalId=:externalId");
 		}
@@ -790,6 +798,12 @@ public class CurriculumElementDAO {
 		
 		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class);
+		if(curriculum != null) {
+			query.setParameter("curriculumKey", curriculum.getKey());
+		}
+		if(implementation != null) {
+			query.setParameter("implementationKey", implementation.getKey());
+		}
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			query.setParameter("externalId", externalId);
 		}

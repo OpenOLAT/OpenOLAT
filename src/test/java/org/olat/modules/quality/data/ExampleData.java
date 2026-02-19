@@ -157,7 +157,7 @@ public class ExampleData extends OlatTestCase {
 		String identifier = prefix + input.getIdentifier();
 		String displayName = prefix + input.getDisplayName();
 		
-		List<CurriculumElement> curriculumElements = curriculumService.searchCurriculumElements(null, identifier, null);
+		List<CurriculumElement> curriculumElements = curriculumService.searchCurriculumElements(null, null, null, identifier, null);
 		if (!curriculumElements.isEmpty()) {
 			return curriculumElements.get(0);
 		}

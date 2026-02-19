@@ -118,11 +118,11 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 			rows = List.of();
 		} else {
 			final Roles roles = ureq.getUserSession().getRoles();
-			final ImportCurriculumsHelper helper = new ImportCurriculumsHelper(getTranslator());
+			final ImportCurriculumsHelper helper = new ImportCurriculumsHelper(getIdentity(), roles, getTranslator());
 			helper.loadCurrentCurriculums(rows);
 			
 			for(ImportedRow row:rows) {
-				helper.validate(row, roles);
+				helper.validate(row);
 			}
 			helper.validateCurriculumsUniqueIdentifiers(rows);
 			

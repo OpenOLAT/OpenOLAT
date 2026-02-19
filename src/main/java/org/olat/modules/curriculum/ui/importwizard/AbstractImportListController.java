@@ -200,21 +200,23 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		ImportedRow importedRow = tableModel.getObject(pos);
 		String cssClass = null;
 		if(importedRow != null) {
-			if(importedRow.isIgnored()) {
-				cssClass = "o_import_ignored";
-			} else if(importedRow.getStatus() == ImportCurriculumsStatus.ERROR) {
+			if(importedRow.getStatus() == ImportCurriculumsStatus.ERROR) {
 				cssClass = "o_import_error";
 			} else {
 				CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
 				if(importedRow.getStatus() == ImportCurriculumsStatus.NEW) {
 					if(statistics.errors() > 0) {
 						cssClass = "o_import_error";
+					} else if(importedRow.isIgnored()) {
+						cssClass = "o_import_ignored";
 					} else {
 						cssClass = "o_import_new";
 					}
+				} else if(importedRow.isIgnored()) {
+					cssClass = "o_import_ignored";
 				} else if(statistics.changes() > 0) {
 					cssClass = "o_import_changed";
-				}
+				} 
 			}
 		}
 		return cssClass;
@@ -222,20 +224,40 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	
 	protected void forgeRow(ImportedRow row, SelectionValues ignorePK) {
 		ImportCurriculumsStatus status = row.getStatus();
+		CurriculumImportedStatistics statistics = row.getValidationStatistics();
+		
 		if(status != null && status != ImportCurriculumsStatus.NO_CHANGES) {
 			MultipleSelectionElement ignoreEl = uifactory
 					.addCheckboxesHorizontal("ignore_" + (count++), null, flc, ignorePK.keys(), ignorePK.values());
 			ignoreEl.setAjaxOnly(true);
+			ignoreEl.setUserObject(row);
 			row.setIgnoreEl(ignoreEl);
+			if(isIgnored(row)) {
+				ignoreEl.select(IGNORE, true);
+				ignoreEl.setEnabled(false);
+			}
 		}
 			
-		CurriculumImportedStatistics statistics = row.getValidationStatistics();
-		if(statistics != null && !statistics.isEmpty()) {
+		if(!statistics.isEmpty()) {
 			String link = statistics.toString();
 			FormLink validationResults = uifactory.addFormLink("results_" + (count++), CMD_VALIDATION_RESULTS, link, tableEl, Link.LINK | Link.NONTRANSLATED);
 			row.setValidationResultsLink(validationResults);
 			validationResults.setUserObject(row);
 		}
+	}
+	
+	private boolean isIgnored(ImportedRow row) {
+		CurriculumImportedStatistics statistics = row.getValidationStatistics();
+		if(statistics.errors() > 0) {
+			return true;
+		}
+		if(row.getIgnoreEl() != null && row.getIgnoreEl().isAtLeastSelected(1)) {
+			return true;
+		}
+		if(row.getCurriculumElementParentRow() != null && isIgnored(row.getCurriculumElementParentRow())) {
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -258,7 +280,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	}
 	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+	protected final void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(errorsLink == source) {
 			doFilterErrors(ureq);
 		} else if(tableEl == source) {
@@ -281,8 +303,46 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		} else if(source instanceof FormLink link && CMD_VALIDATION_RESULTS.equals(link.getCmd())
 				&& link.getUserObject() instanceof ImportedRow importedRow) {
 			doOpenValidationResultsCallout(ureq, importedRow, link.getFormDispatchId());
+		} else if(source instanceof MultipleSelectionElement check
+				&& check.getUserObject() instanceof ImportedRow importedRow) {
+			doIgnore(importedRow, check.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doIgnore(ImportedRow importedRow, boolean ignore) {
+		List<ImportedRow> rows = tableModel.getObjects();
+		if(ignore) {
+			for(ImportedRow row:rows) {
+				if(row.getIgnoreEl() == null) continue;
+
+				for(ImportedRow parentRow=row.getCurriculumElementParentRow(); parentRow != null; parentRow=parentRow.getCurriculumElementParentRow()) {
+					if(importedRow == parentRow) {
+						row.getIgnoreEl().select(IGNORE, true);
+						row.getIgnoreEl().setEnabled(false);
+					}
+				}
+			}
+		} else {
+			recalculateIgnoredEnabled(rows);
+		}
+	}
+	
+	private void recalculateIgnoredEnabled(List<ImportedRow> rows) {
+		for(ImportedRow row:rows) {
+			if(row.getIgnoreEl() == null) continue;
+			
+			boolean enabled = !row.hasValidationErrors() && row.getStatus() != ImportCurriculumsStatus.ERROR;
+			for(ImportedRow parentRow=row.getCurriculumElementParentRow(); parentRow != null && !parentRow.hasValidationErrors(); parentRow=parentRow.getCurriculumElementParentRow()) {
+				enabled &= !parentRow.isIgnored() && !parentRow.hasValidationErrors() && parentRow.getStatus() != ImportCurriculumsStatus.ERROR;
+			}
+			
+			if(enabled && !row.getIgnoreEl().isEnabled()) {
+				row.getIgnoreEl().setEnabled(true);
+			} else if(!enabled && row.getIgnoreEl().isEnabled()) {
+				row.getIgnoreEl().setEnabled(false);
+			}
+		}
 	}
 	
 	private void doFilterErrors(UserRequest ureq) {

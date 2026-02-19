@@ -39,6 +39,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo, OLATResourceable {
 	
+	public static final int MAX_PLANNED_LECTURES = 12;
+	
 	public String getExternalId();
 
 	public void setExternalId(String externalId);

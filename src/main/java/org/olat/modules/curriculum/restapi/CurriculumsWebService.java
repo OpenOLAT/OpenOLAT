@@ -373,7 +373,7 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<CurriculumElement> elements = curriculumService.searchCurriculumElements(externalId, identifier, key);
+		List<CurriculumElement> elements = curriculumService.searchCurriculumElements(null, null, externalId, identifier, key);
 		CurriculumElementVO[] voes = new CurriculumElementVO[elements.size()];
 		for(int i=elements.size(); i-->0; ) {
 			voes[i] = CurriculumElementVO.valueOf(elements.get(i));

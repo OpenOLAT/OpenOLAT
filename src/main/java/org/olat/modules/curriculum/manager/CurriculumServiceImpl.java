@@ -1079,8 +1079,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key, CurriculumElementStatus... status) {
-		return curriculumElementDao.searchElements(externalId, identifier, key, status);
+	public List<CurriculumElement> searchCurriculumElements(CurriculumRef curriculum, CurriculumElementRef implementation,
+			String externalId, String identifier, Long key, CurriculumElementStatus... status) {
+		return curriculumElementDao.searchElements(curriculum, implementation, externalId, identifier, key, status);
 	}
 
 	@Override

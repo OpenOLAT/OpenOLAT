@@ -322,7 +322,7 @@ public class EditLectureBlockController extends FormBasicController {
 		dateEl.setValidDateCheck("form.error.date");
 		
 		int plannedNumOfLectures = lectureBlock == null ? lectureModule.getDefaultPlannedLectures() : lectureBlock.getPlannedLecturesNumber();
-		int maxNumOfLectures = Math.max(12, plannedNumOfLectures);
+		int maxNumOfLectures = Math.max(LectureBlock.MAX_PLANNED_LECTURES, plannedNumOfLectures);
 		SelectionValues plannedLecturesKeys = new SelectionValues();
 		for(int i=1; i<=maxNumOfLectures; i++) {
 			String num = String.valueOf(i);

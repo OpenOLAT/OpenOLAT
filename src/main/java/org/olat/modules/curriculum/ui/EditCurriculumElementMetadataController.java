@@ -336,7 +336,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		identifierEl.clearWarning();
 		
 		if(StringHelper.containsNonWhitespace(identifierEl.getValue())) {
-			List<CurriculumElement> elements = curriculumService.searchCurriculumElements(null, identifierEl.getValue(), null);
+			List<CurriculumElement> elements = curriculumService.searchCurriculumElements(null, null, null, identifierEl.getValue(), null);
 			if(element != null) {
 				elements.remove(element);
 			}

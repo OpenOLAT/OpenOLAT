@@ -91,6 +91,10 @@ public class ImportedRow {
 	private RepositoryEntry course;
 	private RepositoryEntry template;
 	
+	private List<ImportedRow> courseRows;
+	private List<ImportedRow> templateRows;
+	private List<ImportedRow> subCurriculumElementRows;
+	
 	private String subjects;
 	private List<TaxonomyLevel> taxonomyLevels;
 	
@@ -216,6 +220,14 @@ public class ImportedRow {
 		return level;
 	}
 	
+	public String getParentLevel() {
+		if(StringHelper.containsNonWhitespace(level) && level.indexOf('.') > 0) {
+			int lastIndex = level.lastIndexOf('.');
+			return level.substring(0, lastIndex);
+		}
+		return null;
+	}
+	
 	public String getElementStatus() {
 		return elementStatus;
 	}
@@ -239,6 +251,9 @@ public class ImportedRow {
 
 	public void setCurriculumRow(ImportedRow curriculumRow) {
 		this.curriculumRow = curriculumRow;
+		if(curriculumRow != null && curriculumRow.getCurriculum() != null && curriculum == null) {
+			curriculum = curriculumRow.getCurriculum();
+		}
 	}
 
 	public Organisation getOrganisation() {
@@ -275,8 +290,8 @@ public class ImportedRow {
 
 	public void setImplementationRow(ImportedRow implementationRow) {
 		this.implementationRow = implementationRow;
-		if(implementationRow != null && implementationRow.getCurriculumElement() != null) {
-			this.implementation = implementationRow.getCurriculumElement();
+		if(implementation == null && implementationRow != null) {
+			implementation = implementationRow.getCurriculumElement();
 		}
 	}
 
@@ -318,6 +333,51 @@ public class ImportedRow {
 
 	public void setCurriculumElementParentRow(ImportedRow curriculumElementParentRow) {
 		this.curriculumElementParentRow = curriculumElementParentRow;
+		
+		if(curriculumElementParentRow != null) {
+			if(type() == CurriculumExportType.COURSE) {
+				curriculumElementParentRow.addCourseRow(this);
+			} else if(type() == CurriculumExportType.TMPL) {
+				curriculumElementParentRow.addTemplateRow(this);
+			} else if(type() == CurriculumExportType.IMPL || type() == CurriculumExportType.ELEM) {
+				curriculumElementParentRow.addSubElementRow(this);
+			}
+		}
+	}
+	
+	public int getNumResources(CurriculumExportType ofType) {
+		if(ofType == CurriculumExportType.COURSE) {
+			return courseRows == null ? 0 : courseRows.size();
+		}
+		if(ofType == CurriculumExportType.TMPL) {
+			return templateRows == null ? 0 : templateRows.size();
+		}
+		return 0;
+	}
+
+	public int getNumOfSubCurriculumElements() {
+		return subCurriculumElementRows == null ? 0 : subCurriculumElementRows.size();
+	}
+	
+	private void addCourseRow(ImportedRow row) {
+		if(courseRows == null) {
+			courseRows = new ArrayList<>(3);
+		}
+		courseRows.add(row);
+	}
+	
+	private void addTemplateRow(ImportedRow row) {
+		if(templateRows == null) {
+			templateRows = new ArrayList<>(3);
+		}
+		templateRows.add(row);
+	}
+	
+	private void addSubElementRow(ImportedRow row) {
+		if(subCurriculumElementRows == null) {
+			subCurriculumElementRows = new ArrayList<>(3);
+		}
+		subCurriculumElementRows.add(row);
 	}
 
 	public RepositoryEntry getCourse() {
@@ -420,7 +480,6 @@ public class ImportedRow {
 	public LocalDateTime getLastModified() {
 		return lastModified;
 	}
-	
 
 	public boolean isIgnored() {
 		return ignoreEl != null && ignoreEl.isAtLeastSelected(1);
@@ -472,6 +531,15 @@ public class ImportedRow {
 		}
 	}
 	
+	public boolean hasValidationError(ImportCurriculumsCols col) {
+		CurriculumImportedValue val = validationMap.get(col);
+		return val != null && val.isError();
+	}
+	
+	public boolean hasValidationErrors() {
+		return validationMap.values().stream().anyMatch(v -> v.isError());
+	}
+	
 	public CurriculumImportedStatistics getValidationStatistics() {
 		int errors = 0;
 		int warnings = 0;
@@ -490,6 +558,14 @@ public class ImportedRow {
 		}
 		
 		return new CurriculumImportedStatistics(errors, warnings, changes);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(type()).append("[identifier=").append(identifier == null ? "NULL" : identifier)
+		  .append("]");
+		return sb.toString();
 	}
 
 }

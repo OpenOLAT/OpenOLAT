@@ -43,7 +43,7 @@ public class ImportCurriculumsHelperTest extends OlatTestCase {
 		File file = new File(url.toURI());
 		
 		Translator translator = Util.createPackageTranslator(ImportCurriculumsHelper.class, Locale.ENGLISH);
-		ImportCurriculumsHelper helper = new ImportCurriculumsHelper(translator);
+		ImportCurriculumsHelper helper = new ImportCurriculumsHelper(null, null, translator);
 		helper.loadFile(file);
 	}
 

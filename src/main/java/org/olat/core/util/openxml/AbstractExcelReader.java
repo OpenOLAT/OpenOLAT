@@ -20,10 +20,13 @@
 package org.olat.core.util.openxml;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.Locale;
 
 import org.dhatim.fastexcel.reader.Cell;
 import org.dhatim.fastexcel.reader.CellType;
@@ -37,6 +40,8 @@ import org.olat.core.util.DateUtils;
  *
  */
 public abstract class AbstractExcelReader {
+
+	private static final DecimalFormat hierarchyFormat = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
 	
 	public String getString(Row r, int pos) {
 		if(r.getCellCount() <= pos) return null;
@@ -63,7 +68,41 @@ public abstract class AbstractExcelReader {
 			return val == null ? null : val.toString();
 		}
 		// Fallback to string
-		return getString(r, pos);
+		if(cell.getType() == CellType.STRING) {
+			return r.getCellAsString(pos).orElse(null);
+		}
+		return null;
+	}
+	
+	/**
+	 * Method to read hierarchy made of numbers: 1.1, 1.1.1, 1.2, 1.2.1 and
+	 * resolve some rounding issues if Excel saved the number as a number.
+	 * 
+	 * @param r The row
+	 * @param pos The position of the cell.
+	 * @return
+	 */
+	public String getHierarchicalNumber(Row r, int pos) {
+		if(r.getCellCount() <= pos) return null;
+		
+		Cell cell = r.getCell(pos);
+		if(cell == null || cell.getType() == CellType.EMPTY || cell.getType() == CellType.ERROR) {
+			return null;
+		}
+		if(cell.getType() == CellType.NUMBER) {
+			BigDecimal val = r.getCellAsNumber(pos).orElse(null);
+			if(val == null) {
+				return null;
+			}
+			synchronized(hierarchyFormat) {
+				return hierarchyFormat.format(val.doubleValue());
+			}
+		}
+		// Fallback to string
+		if(cell.getType() == CellType.STRING) {
+			return r.getCellAsString(pos).orElse(null);
+		}
+		return null;
 	}
 	
 	public LocalDateTime getDateTime(Row r, int pos) {
