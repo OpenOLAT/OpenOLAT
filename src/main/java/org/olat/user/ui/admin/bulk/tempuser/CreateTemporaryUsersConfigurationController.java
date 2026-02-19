@@ -54,6 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateTemporaryUsersConfigurationController extends StepFormBasicController {
 	
+	private static final int MAX_NUMBER_USERS = 4000;
+	
 	private TextElement numOfUsersEl;
 	private TextElement usernamePrefixEl;
 	private TextElement firstNamePrefixEl;
@@ -145,6 +147,9 @@ public class CreateTemporaryUsersConfigurationController extends StepFormBasicCo
 				int value = Integer.parseInt(val);
 				if(value < 1) {
 					el.setErrorKey("form.error.nointeger");
+					allOk = false;
+				} else if(value > MAX_NUMBER_USERS) {
+					el.setErrorKey("form.error.nointeger.between", "1", Integer.toString(MAX_NUMBER_USERS));
 					allOk = false;
 				}
 			} catch (NumberFormatException e) {
