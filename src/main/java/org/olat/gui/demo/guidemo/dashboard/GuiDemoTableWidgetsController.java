@@ -48,25 +48,25 @@ public class GuiDemoTableWidgetsController extends BasicController {
 		
 		GuiDemoTableWidgetController table1Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title"),
-				translate("select.3"), true, false, false, "guidemo.table.widget.1");
+				true, false, false, "guidemo.table.widget.1");
 		listenTo(table1Ctrl);
 		mainVC.put("table1", table1Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table2Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.without.header"),
-				translate("select.3"), false, false, false, "guidemo.table.widget.2");
+				false, false, false, "guidemo.table.widget.2");
 		listenTo(table2Ctrl);
 		mainVC.put("table2", table2Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table3Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.with.cell.links"),
-				translate("select.3"), true, true, false, "guidemo.table.widget.3");
+				true, true, false, "guidemo.table.widget.3");
 		listenTo(table3Ctrl);
 		mainVC.put("table3", table3Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table4Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.list.view"),
-				translate("select.3"), true, false, true, "guidemo.table.widget.4");
+				true, false, true, "guidemo.table.widget.4");
 		listenTo(table4Ctrl);
 		mainVC.put("table4", table4Ctrl.getInitialComponent());
 		

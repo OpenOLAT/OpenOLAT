@@ -84,10 +84,6 @@ public abstract class TableWidgetController extends FormBasicController {
 	protected abstract String createTable(FormLayoutContainer widgetCont);
 	protected abstract String createShowAll(FormLayoutContainer widgetCont);
 	
-	protected void setTableTitle(String tableTitle) {
-		widgetCont.contextPut("tableTitle", tableTitle);
-	}
-	
 	/**
 	 * @param widgetCont 
 	 */

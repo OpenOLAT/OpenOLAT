@@ -279,9 +279,6 @@
 	h3 {
 		font-size: $o-dashboard-widget-title-font-size;
 	}
-	h4 {
-		font-size: $o-dashboard-widget-sub-title-font-size;
-	}
 	
 	.o_dashboard_widget_header {
 		margin: $o-dashboard-widget-header-margin;
@@ -291,9 +288,6 @@
 		h3 {
 			margin: 0;
 		}
-	}
-	.o_dashboard_widget_sub_title {
-		margin: $o-dashboard-widget-sub-title-margin;
 	}
 	
 	.o_dashboard_widget_indicators {

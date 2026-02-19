@@ -76,8 +76,8 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	private final SelectionValues figureValues;
 
 
-	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, String tableTitle,
-			boolean showHeader, boolean linkCells, boolean listView, String prefsId) {
+	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, boolean showHeader,
+			boolean linkCells, boolean listView, String prefsId) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
 		this.title = title;
@@ -94,7 +94,6 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		figureValues.add(SelectionValues.entry("5", ""));
 		
 		initForm(ureq);
-		setTableTitle(tableTitle);
 	}
 
 	@Override

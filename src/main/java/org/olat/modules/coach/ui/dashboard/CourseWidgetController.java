@@ -188,8 +188,6 @@ public class CourseWidgetController extends TableWidgetController
 				.toList();
 		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
 		
-		setTableTitle(figureValues.getValue(keyFigureKey));
-		
 		tableEl.setPageSize(prefs.getNumRows());
 		
 		reload();
