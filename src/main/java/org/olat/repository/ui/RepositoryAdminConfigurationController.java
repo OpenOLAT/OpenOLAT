@@ -134,15 +134,9 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 
 		boolean inPreparationEnabled = repositoryModule.isMyCoursesInPreparationEnabled();
 		String[] values = new String[] { translate("on") };
-<<<<<<< HEAD
-		myCourseSearchEl = uifactory.addCheckboxesHorizontal("repository.admin.search.enabled", searchCont, keys, values);
-		myCourseSearchEl.addActionListener(FormEvent.ONCHANGE);
-		myCourseSearchEl.select(keys[0], searchEnabled);
-=======
 		myCourseInPreparationEl = uifactory.addCheckboxesHorizontal("my.course.in.preparation.enabled", searchCont, keys, values);
 		myCourseInPreparationEl.addActionListener(FormEvent.ONCHANGE);
 		myCourseInPreparationEl.select(keys[0], inPreparationEnabled);
->>>>>>> refs/remotes/origin/OpenOLAT_20.2
 		
 		boolean commentEnabled = repositoryModule.isCommentEnabled();
 		commentEl = uifactory.addCheckboxesHorizontal("repository.admin.comment.enabled", searchCont, keys, values);
