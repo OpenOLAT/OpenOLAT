@@ -94,9 +94,9 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 	private MultipleSelectionElement ratingEl;
 	private MultipleSelectionElement membershipEl;
 	private MultipleSelectionElement commentEl;
-	private MultipleSelectionElement myCourseSearchEl;
 	private MultipleSelectionElement taxonomyEl;
 	private MultipleSelectionElement notificationEl;
+	private MultipleSelectionElement myCourseInPreparationEl;
 	private FlexiTableElement tableEl;
 	private RoleDataModel dataModel;
 	
@@ -132,11 +132,17 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 		formLayout.add(searchCont);
 		searchCont.setRootForm(mainForm);
 
-		boolean searchEnabled = repositoryModule.isMyCoursesSearchEnabled();
+		boolean inPreparationEnabled = repositoryModule.isMyCoursesInPreparationEnabled();
 		String[] values = new String[] { translate("on") };
+<<<<<<< HEAD
 		myCourseSearchEl = uifactory.addCheckboxesHorizontal("repository.admin.search.enabled", searchCont, keys, values);
 		myCourseSearchEl.addActionListener(FormEvent.ONCHANGE);
 		myCourseSearchEl.select(keys[0], searchEnabled);
+=======
+		myCourseInPreparationEl = uifactory.addCheckboxesHorizontal("my.course.in.preparation.enabled", searchCont, keys, values);
+		myCourseInPreparationEl.addActionListener(FormEvent.ONCHANGE);
+		myCourseInPreparationEl.select(keys[0], inPreparationEnabled);
+>>>>>>> refs/remotes/origin/OpenOLAT_20.2
 		
 		boolean commentEnabled = repositoryModule.isCommentEnabled();
 		commentEl = uifactory.addCheckboxesHorizontal("repository.admin.comment.enabled", searchCont, keys, values);
@@ -269,9 +275,9 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(myCourseSearchEl == source) {
-			boolean on = !myCourseSearchEl.getSelectedKeys().isEmpty();
-			repositoryModule.setMyCoursesSearchEnabled(on);
+		if(myCourseInPreparationEl == source) {
+			boolean on = myCourseInPreparationEl.isAtLeastSelected(1);
+			repositoryModule.setMyCoursesInPreparationEnabled(on);
 			getWindowControl().setInfo("saved");
 		} else if(commentEl == source) {
 			boolean on = !commentEl.getSelectedKeys().isEmpty();

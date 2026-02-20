@@ -73,7 +73,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String CATALOG_MULTI_SELECT_ENABLED = "catalog.multi.select.enable";
 	private static final String CATALOG_ADD_ENTRY_POSITION = "catalog.add.entry.position";
 	private static final String CATALOG_ADD_CATEGORY_POSITION = "catalog.add.catalog.position";
-	private static final String MYCOURSES_SEARCH_ENABLED = "mycourses.search.enabled";
+	private static final String MYCOURSES_IN_PREPARATION_ENABLED = "mycourses.in.preparation.enabled";
 	private static final String MYCOURSES_ALL_RESOURCES_ENABLED = "mycourses.all.resources.enabled";
 	private static final String MYCOURSES_PARTICIPANTS_ONLY = "repo.my.courses.participant.only";
 	private static final String MYCOURSES_COACHING_TOOL_HINT = "repo.my.courses.coaching.tool.hint";
@@ -112,6 +112,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private boolean managedRepositoryEntries;
 	@Value("${mycourses.search.enabled:true}")
 	private boolean myCoursesSearchEnabled;
+	@Value("${mycourses.in.preparation.enabled:true}")
+	private boolean myCoursesInPreparationEnabled;
 	@Value("${mycourses.all.resources.enabled:true}")
 	private boolean listAllResourceTypes;
 	@Value("${repo.comment.enabled:true}")
@@ -224,9 +226,9 @@ public class RepositoryModule extends AbstractSpringModule {
 			catalogMultiSelectEnabled = "true".equals(catalogMultiSelect);
 		}
 		
-		String myCoursesSearch = getStringPropertyValue(MYCOURSES_SEARCH_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(myCoursesSearch)) {
-			myCoursesSearchEnabled = "true".equals(myCoursesSearch);
+		String myCoursesInPreparation = getStringPropertyValue(MYCOURSES_IN_PREPARATION_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(myCoursesInPreparation)) {
+			myCoursesInPreparationEnabled = "true".equals(myCoursesInPreparation);
 		}
 		
 		String myCoursesAllResources = getStringPropertyValue(MYCOURSES_ALL_RESOURCES_ENABLED, true);
@@ -401,14 +403,14 @@ public class RepositoryModule extends AbstractSpringModule {
 		catalogAddCategoryPosition = position;
 		setIntProperty(CATALOG_ADD_CATEGORY_POSITION, position, true);
 	}
-
-	public boolean isMyCoursesSearchEnabled() {
-		return myCoursesSearchEnabled;
+	
+	public boolean isMyCoursesInPreparationEnabled() {
+		return myCoursesInPreparationEnabled;
 	}
 
-	public void setMyCoursesSearchEnabled(boolean enabled) {
-		myCoursesSearchEnabled = enabled;
-		setStringProperty(MYCOURSES_SEARCH_ENABLED, Boolean.toString(enabled), true);
+	public void setMyCoursesInPreparationEnabled(boolean enabled) {
+		myCoursesInPreparationEnabled = enabled;
+		setStringProperty(MYCOURSES_IN_PREPARATION_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public boolean isMyCoursesParticipantsOnly() {

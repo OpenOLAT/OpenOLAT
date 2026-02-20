@@ -80,10 +80,15 @@ public class InPreparationQueries {
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 
 	public boolean hasInPreparation(IdentityRef identity, boolean participantsOnly) {
-		List<RepositoryEntry> entries = searchRepositoryEntries(identity, participantsOnly, 0, 1);
+		List<RepositoryEntry> entries = searchRepositoryEntriesByRoles(identity, participantsOnly, 0, 1);
 		if(!entries.isEmpty()) {
 			return true;
 		}
+		List<RepositoryEntry> reservations = searchRepositoryEntriesByReservations(identity, 0, 1);
+		if(!reservations.isEmpty()) {
+			return true;
+		}
+		
 		if(curriculumModule.isEnabled()) {
 			List<CurriculumElementAndRepositoryEntry> elements = searchCurriculumElements(identity);
 			if(!elements.isEmpty()) {
@@ -93,30 +98,19 @@ public class InPreparationQueries {
 		return false;
 	}
 	
-	private List<RepositoryEntry> searchRepositoryEntries(IdentityRef identity, boolean participantsOnly, int firstResult, int maxResults) {
+	protected List<RepositoryEntry> searchRepositoryEntriesByRoles(IdentityRef identity, boolean participantsOnly, int firstResult, int maxResults) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select v")
 		  .append(" from repositoryentry as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
 		  .append(" inner join fetch v.olatResource as res")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join fetch v.educationalType as educationalType")
 		  .where()
-		  .append(" v.status in (:status)");
-		
-		sb.and().append("(");
-		// check participants
-		sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
-		  .append("  where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("  and membership.role in (:roles)")
-		  .append(" )");
-		
-		// checks reservation
-		sb.append(" or exists (select reservation.key from resourcereservation as reservation")
-		  .append("  where reservation.resource.key=res.key and reservation.identity.key=:identityKey")
-		  .append(" )");
-		
-		sb.append(")");
-		
+		  .append(" membership.identity.key=:identityKey and membership.role in (:roles) and v.status in (:status)");
+
 		List<String> roles = participantsOnly
 				? List.of(GroupRoles.participant.name())
 				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name(), GroupRoles.owner.name());
@@ -135,8 +129,37 @@ public class InPreparationQueries {
 		return query.getResultList();
 	}
 	
+	protected List<RepositoryEntry> searchRepositoryEntriesByReservations(IdentityRef identity, int firstResult, int maxResults) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select v")
+		  .append(" from repositoryentry as v")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch resourcereservation as reservation on (reservation.resource.key=res.key)")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" left join fetch v.educationalType as educationalType")
+		  .where()
+		  .append(" reservation.identity.key=:identityKey and v.status in (:status) ");
+
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), RepositoryEntry.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("status", IN_PREPARATION_STATUS);
+		if(maxResults > 0) {
+			query
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
+	
 	public List<RepositoryEntryInPreparation> searchRepositoryEntriesInPreparation(IdentityRef identity, boolean participantsOnly) {
-		List<RepositoryEntry> entries = searchRepositoryEntries(identity, participantsOnly, 0, -1);
+		List<RepositoryEntry> entries = searchRepositoryEntriesByRoles(identity, participantsOnly, 0, -1);
+		List<RepositoryEntry> reservations = searchRepositoryEntriesByReservations(identity, 0, -1);
+		if(!reservations.isEmpty()) {
+			reservations.removeAll(entries);
+			entries.addAll(reservations);
+		}
+		
 		List<Long> entriesKeys = entries.stream()
 				.map(RepositoryEntry::getKey).toList();
 
