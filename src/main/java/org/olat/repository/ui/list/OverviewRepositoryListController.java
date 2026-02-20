@@ -203,7 +203,7 @@ public class OverviewRepositoryListController extends BasicController implements
 				}
 			}
 			
-			if(inPreparationQueries.hasInPreparation(getIdentity(), participantsOnly)) {
+			if(repositoryModule.isMyCoursesInPreparationEnabled() && inPreparationQueries.hasInPreparation(getIdentity(), participantsOnly)) {
 				scopes.add(ScopeFactory.createScope(CMD_IN_PREPARATION, translate("search.preparation"),
 					null, "o_icon o_icon-fw o_ac_offer_pending_icon"));
 			}
