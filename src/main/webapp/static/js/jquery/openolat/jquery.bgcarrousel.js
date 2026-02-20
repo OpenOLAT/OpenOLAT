@@ -60,7 +60,7 @@
     	// Only one image - stop
     	if (this.settings.images.length <= 1) return;
 
-    	// Keep reference to initial image URL to allow CSS string replacement later
+    	// Keep reference to initial image URL for the shuffle logic below
     	this.initialImage = this.settings.images[0];
 
     	// Shuffle image array if requested
@@ -81,9 +81,21 @@
     	}
 
 		var container = $(this.settings.query);
-		// Get background styling from container and keep it for later CSS replacement
-		this.bgcss = container.css("background");
-		// remove the container background to remove flickering
+		// Read the full background shorthand (works in Chrome/Safari) and keep it
+		// for later use as template when constructing the next-image backgrounds.
+		this.bgcss = container.css("background"); 
+		// Read the computed background-image separately: browsers always resolve the
+		// URL to an absolute path here, even when the original CSS used a relative URL.
+		// This absolute value is used to reliably replace the URL in bgcss across all
+		// browsers (Firefox returns absolute URLs in computed styles).
+		var cssBgImg = container.css("background-image");
+		// Keep initial image for later search/replace when replacing with new images
+		this.initialBgImage = cssBgImg.substring(cssBgImg.lastIndexOf('/')).slice(0, -2);
+		// Now replace the bg-image url in the original background with the absolute URL
+		// (FF hack)
+		this.bgcss = this.bgcss.replace(/url[^\)]*\)/, cssBgImg );
+		
+		// remove the container background to remove flickering		
 		container.css('background', 'none');
 
 		// Create two persistent layers. The active layer (z-index 0) sits on top
