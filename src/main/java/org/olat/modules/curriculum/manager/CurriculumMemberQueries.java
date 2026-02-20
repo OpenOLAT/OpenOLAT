@@ -35,6 +35,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.CurriculumMemberWithElement;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,36 @@ public class CurriculumMemberQueries {
 			members.add(new CurriculumMember(identity, role, inheritanceMode, creationDate));
 		}
 		return members;
+	}
+	
+	public List<CurriculumMemberWithElement> getCurriculumElementsMembersWith(SearchMemberParameters params) {
+		List<Long> curriculumElementsKeys = params.getCurriculumElementsKeys();
+		if(curriculumElementsKeys.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new CurriculumMemberWithElement(ident, membership.role, membership.inheritanceModeString, membership.creationDate,")
+		  .append(" curriculum.key, curriculum.identifier, el.key, el.identifier, implementation.key, implementation.identifier)")
+		  .append(" from curriculumelement el")
+		  .append(" inner join el.curriculum curriculum")
+		  .append(" left join el.implementation implementation")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where el.key in (:elementsKeys)");
+		createQueryPart(sb, params);
+		createUserPropertiesQueryPart(sb, params.getLogin(), params.getSearchString(),
+				params.getUserProperties(), params.getUserPropertiesSearch());
+		
+		TypedQuery<CurriculumMemberWithElement> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumMemberWithElement.class)
+				.setParameter("elementsKeys", curriculumElementsKeys);
+		createQueryParameters(query, params);
+		createUserPropertiesQueryParameters(query, params.getLogin(), params.getSearchString(), params.getUserPropertiesSearch());
+					
+		return query.getResultList();
 	}
 
 	private void createQueryPart(QueryBuilder sb, SearchMemberParameters params) {

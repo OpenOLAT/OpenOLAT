@@ -50,6 +50,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
 import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -420,7 +421,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
 		
 		List<Curriculum> curriculums = List.of(curriculum);
-		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), url, getTranslator());
+		Roles roles = ureq.getUserSession().getRoles();
+		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), roles, url, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 }

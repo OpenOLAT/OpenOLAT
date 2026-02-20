@@ -61,6 +61,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dashboard.BentoBoxSize;
 import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -880,10 +881,11 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void doExport(UserRequest ureq) {
 		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
 		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+		Roles roles = ureq.getUserSession().getRoles();
 		
 		List<Curriculum> curriculums = List.of(curriculum);
 		List<CurriculumElement> implementations = List.of(curriculumElement);
-		CurriculumExport export = new CurriculumExport(curriculums, implementations, getIdentity(), url, getTranslator());
+		CurriculumExport export = new CurriculumExport(curriculums, implementations, getIdentity(), roles, url, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 }

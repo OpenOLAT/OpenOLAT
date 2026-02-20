@@ -20,16 +20,27 @@
 package org.olat.modules.curriculum.ui;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityOrganisationsRow;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -43,8 +54,13 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumMemberQueries;
+import org.olat.modules.curriculum.model.CurriculumMemberWithElement;
 import org.olat.modules.curriculum.model.RepositoryEntryInfos;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
@@ -54,6 +70,8 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +84,15 @@ public class CurriculumExport {
 	
 	private static final Logger log = Tracing.createLoggerFor(CurriculumExport.class);
 	
+	// UserTableDataModel
+	public static final String usageIdentifyer = AbstractMembersController.usageIdentifyer;
+	
+	public static final String PARTICIPANT = "PARTICIPANT";
+	public static final String COACH = "COACH";
+	public static final String MASTER_COACH = "MASTER_COACH";
+	public static final String COURSE_OWNER = "COURSE_OWNER";
+	public static final String ELEM_OWNER = "ELEM_OWNER";
+	
 	private static final String MANDATORY = " *";
 
 	private final String url;
@@ -75,6 +102,7 @@ public class CurriculumExport {
 	
 	private final List<Curriculum> curriculums;
 	private final List<CurriculumElement> implementations;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
 	private DB dbInstance;
@@ -83,23 +111,32 @@ public class CurriculumExport {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumMemberQueries curriculumMemberQueries;
+	@Autowired
+	private IdentityPowerSearchQueries identityPowerSearchQueries;
 	
-	public CurriculumExport(List<Curriculum> curriculums, Identity identity, String url, Translator translator) {
-		this(curriculums, null, identity, url, translator);
+	public CurriculumExport(List<Curriculum> curriculums, Identity identity, Roles roles, String url, Translator translator) {
+		this(curriculums, null, identity, roles, url, translator);
 	}
 	
 	public CurriculumExport(List<Curriculum> curriculums, List<CurriculumElement> implementations,
-			Identity identity, String url, Translator translator) {
+			Identity identity, Roles roles, String url, Translator translator) {
 		CoreSpringFactory.autowireObject(this);
 		this.url = url;
 		this.identity = identity;
-		this.translator = translator;
 		this.curriculums = curriculums;
 		this.implementations = implementations;
 		formatter = Formatter.getInstance(translator.getLocale());
+		this.translator = userManager.getPropertyHandlerTranslator(translator);
+		
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 	}
 	
 	public OpenXMLWorkbookResource createMediaResource() {
@@ -116,24 +153,133 @@ public class CurriculumExport {
 	
 	private void createWorkbook(OutputStream out) {
 		List<String> sheetNames = List.of(translator.translate("export.products"),
-				translator.translate("export.implementations"), translator.translate("export.informations"));
-		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 3, sheetNames)) {
+				translator.translate("export.implementations"), translator.translate("export.members"),
+				translator.translate("export.users"), translator.translate("export.informations"));
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 5, sheetNames)) {
+			// Curriculums / products
 			OpenXMLWorksheet curriculumsSheet = workbook.nextWorksheet();
 			addCurriculumsHeader(workbook, curriculumsSheet);
 			addCurriculumsContent(workbook, curriculumsSheet);
+			// Elements
 			OpenXMLWorksheet implementationsSheet = workbook.nextWorksheet();
 			addImplementationsHeader(workbook, implementationsSheet);
+			List<CurriculumElement> elements;
 			if(implementations == null) {
-				addCurriculumsImplementationsContent(workbook, implementationsSheet);
+				elements = addCurriculumsImplementationsContent(workbook, implementationsSheet);
 			} else {
-				addImplementationsContent(workbook, implementationsSheet);
+				elements = addImplementationsContent(workbook, implementationsSheet);
 			}
+			// Members
+			OpenXMLWorksheet membershipsSheet = workbook.nextWorksheet();
+			addMembershipsHeader(workbook, membershipsSheet);
+			Set<Member> users = addMemberships(elements, workbook, membershipsSheet);
+			// Users
+			OpenXMLWorksheet usersSheet = workbook.nextWorksheet();
+			addUsersHeader(workbook, usersSheet);
+			addUsers(users, workbook, usersSheet);
+			// Informations
 			OpenXMLWorksheet infosSheet = workbook.nextWorksheet();
 			addInformations(workbook, infosSheet);
 			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	private void addMembershipsHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+		
+		int col = 0;
+		Row headerRow = exportSheet.newRow();
+		headerRow.addCell(col++, translator.translate("export.implementation.prod.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.implementation.impl.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.external.ref") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.role") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.username") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.registration.date"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.last.modified"), workbook.getStyles().getHeaderStyle());
+	}
+	
+	private Set<Member> addMemberships(List<CurriculumElement> elements, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		Set<Member> users = new HashSet<>();
+		Collection<List<CurriculumElement>> chunks = PersistenceHelper.chunks(elements, 16);
+		for(List<CurriculumElement> chunk:chunks) {
+			SearchMemberParameters searchParams = new SearchMemberParameters(chunk);
+			List<CurriculumMemberWithElement> memberships = curriculumMemberQueries.getCurriculumElementsMembersWith(searchParams);
+			for(CurriculumMemberWithElement membership:memberships) {
+				Member member = new Member(membership.identity(), userPropertyHandlers, translator.getLocale());
+				addMembership(member, membership, workbook, exportSheet);
+				users.add(member);
+			}
+		}
+		return users;
+	}
+
+	private void addMembership(Member member, CurriculumMemberWithElement membership, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		int col = 0;
+		Row row = exportSheet.newRow();
+		row.addCell(col++, membership.curriculumIdentifier());
+		String implementationIdentifier = membership.implementationKey() == null
+				? membership.elementIdentifier()
+				: membership.implementationIdentifier();
+		row.addCell(col++, implementationIdentifier);
+		row.addCell(col++, membership.elementIdentifier());
+		row.addCell(col++, formatRole(membership.role()));
+		row.addCell(col++, member.getNickName());
+		row.addCell(col++, membership.creationDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(col++, membership.creationDate(), workbook.getStyles().getDateTimeStyle());
+	}
+	
+	private void addUsersHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+		
+		int col = 0;
+		Row headerRow = exportSheet.newRow();
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			String name = translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey());
+			boolean mandatory = userManager.isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
+			if(mandatory) {
+				headerRow.addCell(col++, name + MANDATORY, workbook.getStyles().getHeaderStyle());
+			}
+		}
+		
+		headerRow.addCell(col++, translator.translate("export.organisation.affilition") + MANDATORY, workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("export.creation.date"), workbook.getStyles().getHeaderStyle());
+	}
+	
+	private void addUsers(Set<Member> usersSet, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		List<Member> users = new ArrayList<>(usersSet);
+		identityPowerSearchQueries.appendOrganisations(users);
+		for(Member user:users) {
+			addUser(user, workbook, exportSheet);
+		}
+	}
+
+	private void addUser(Member user, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		int col = 0;
+		Row row = exportSheet.newRow();
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			boolean mandatory = userManager.isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
+			if(mandatory) {
+				row.addCell(col++, user.getIdentityProp(i));
+			}
+		}
+		
+		// Organisation
+		List<OrganisationWithParents> organisations = user.getOrganisations();
+		if(organisations == null || organisations.isEmpty()) {
+			col++;
+		} else {
+			List<String> identifiers = organisations.stream()
+					.map(OrganisationWithParents::getIdentifier)
+					.filter(identifier -> StringHelper.containsNonWhitespace(identifier))
+					.toList();
+			row.addCell(col++, String.join(";", identifiers));
+		}
+		
+		row.addCell(col++, user.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 	}
 	
 	private void addCurriculumsHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
@@ -203,21 +349,26 @@ public class CurriculumExport {
 		headerRow.addCell(col++, translator.translate("export.last.modified"), workbook.getStyles().getHeaderStyle());
 	}
 
-	private void addCurriculumsImplementationsContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+	private List<CurriculumElement> addCurriculumsImplementationsContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		List<CurriculumElement> allElements = new ArrayList<>();
 		for(Curriculum curriculum:curriculums) {
-			List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum, CurriculumElementStatus.notDeleted());
-			for(CurriculumElement implementation:implementations) {
+			List<CurriculumElement> curriculumImplementations = curriculumService.getImplementations(curriculum, CurriculumElementStatus.notDeleted());
+			for(CurriculumElement implementation:curriculumImplementations) {
 				List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(implementation);
 				addContent(implementation, workbook, exportSheet);
 				for(CurriculumElement descendant:descendants) {
 					addContent(descendant,  workbook, exportSheet);
 				}
 				dbInstance.commitAndCloseSession();
+				allElements.add(implementation);
+				allElements.addAll(descendants);
 			}
 		}
+		return allElements;
 	}
 	
-	private void addImplementationsContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+	private List<CurriculumElement> addImplementationsContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		List<CurriculumElement> allElements = new ArrayList<>();
 		for(CurriculumElement element:implementations) {
 			element = curriculumService.getCurriculumElement(element);
 			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
@@ -226,7 +377,10 @@ public class CurriculumExport {
 				addContent(descendant,  workbook, exportSheet);
 			}
 			dbInstance.commitAndCloseSession();
+			allElements.add(element);
+			allElements.addAll(descendants);
 		}
+		return allElements;
 	}
 
 	private void addContent(CurriculumElement element, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
@@ -501,5 +655,62 @@ public class CurriculumExport {
 		row.addCell(0, translator.translate("export.information.by"), workbook.getStyles().getHeaderStyle());
 		String fullname = userManager.getUserDisplayName(identity);
 		row.addCell(1, fullname, null);
+	}
+	
+	public static final String formatRole(String role) {
+		return switch(CurriculumRoles.valueOf(role)) {
+			case participant -> PARTICIPANT;
+			case coach -> COACH;
+			case mastercoach -> MASTER_COACH;
+			case owner -> COURSE_OWNER;
+			case curriculumelementowner -> ELEM_OWNER;
+			default -> null;
+		};
+	}
+	
+	private static class Member extends UserPropertiesRow implements IdentityOrganisationsRow {
+		
+		private final String nickName;
+		private final Date creationDate;
+		private List<OrganisationWithParents> organisations;
+		
+		public Member(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+			super(identity, userPropertyHandlers, locale);
+			nickName = identity.getUser().getNickName();
+			creationDate = identity.getCreationDate();
+		}
+		
+		public String getNickName() {
+			return nickName;
+		}
+		
+		public Date getCreationDate() {
+			return creationDate;
+		}
+		
+		public List<OrganisationWithParents> getOrganisations() {
+			return organisations;
+		}
+
+		@Override
+		public void setOrganisations(List<OrganisationWithParents> organisations) {
+			this.organisations = organisations;
+		}
+
+		@Override
+		public int hashCode() {
+			return getIdentityKey().hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(obj == this) {
+				return true;
+			}
+			if(obj instanceof Member m) {
+				return getIdentityKey().equals(m.getIdentityKey());
+			}
+			return false;
+		}
 	}
 }

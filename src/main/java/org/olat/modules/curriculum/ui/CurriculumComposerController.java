@@ -1350,8 +1350,9 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doExport(UserRequest ureq, List<Curriculum> curriculums, List<CurriculumElement> implementations) {
 		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
 		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+		Roles roles = ureq.getUserSession().getRoles();
 		
-		CurriculumExport export = new CurriculumExport(curriculums, implementations, getIdentity(), url, getTranslator());
+		CurriculumExport export = new CurriculumExport(curriculums, implementations, getIdentity(), roles, url, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	

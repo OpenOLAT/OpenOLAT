@@ -51,6 +51,10 @@ public class OrganisationWithParents implements OrganisationRef, Comparable<Orga
 		return organisation.getDisplayName();
 	}
 	
+	public String getIdentifier() {
+		return organisation.getIdentifier();
+	}
+	
 	public Organisation getOrganisation() {
 		return organisation;
 	}

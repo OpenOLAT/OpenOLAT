@@ -523,6 +523,10 @@ public class PersistenceHelper {
 	
 	public static <T> Collection<List<T>> collectionOfChunks(List<T> list, int numOfParameters) {
 		final int chunkSize = DEFAULT_CHUNK_SIZE / numOfParameters;
+		return chunks(list, chunkSize);
+	}
+	
+	public static <T> Collection<List<T>> chunks(List<T> list, int chunkSize) {
 		AtomicInteger counter = new AtomicInteger();
 		return list.stream()
 			.collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize))

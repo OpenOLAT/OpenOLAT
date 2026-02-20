@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.CurriculumMemberWithElement;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -92,6 +93,26 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		CurriculumMember member = members.get(0);
 		Assert.assertEquals(supervisor, member.getIdentity());
 		Assert.assertEquals(CurriculumRoles.curriculumelementowner.name(), member.getRole());
+	}
+	
+	@Test
+	public void getCurriculumElementMembersWith() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4-with", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4-with", "4. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMemberParameters params = new SearchMemberParameters(element);
+		List<CurriculumMemberWithElement> members = memberQueries.getCurriculumElementsMembersWith(params);
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		CurriculumMemberWithElement member = members.get(0);
+		Assert.assertEquals(participant, member.identity());
+		Assert.assertEquals(CurriculumRoles.participant.name(), member.role());
 	}
 	
 	@Test

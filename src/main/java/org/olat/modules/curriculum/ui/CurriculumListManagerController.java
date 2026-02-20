@@ -643,7 +643,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
 		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
 		
-		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), url, getTranslator());
+		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), roles, url, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	
