@@ -75,6 +75,8 @@ public class VideoModule extends AbstractSpringModule {
 	// transcoding related configuration
 	@Value("${video.transcoding.enabled:false}")
 	private boolean transcodingEnabled;
+	@Value("${video.transcoding.readonly:false}")
+	private boolean videoTranscodingReadOnly;
 	@Value("${video.transcoding.local:true}")
 	private boolean transcodingLocal;
 	@Value("${video.transcoding.mode}")
@@ -189,6 +191,7 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.transcoding.resolutions={}", Arrays.toString(getTranscodingResolutions()));
 		log.info("video.transcoding.resolution.preferred={}", getPreferredDefaultResolution());
 		log.info("video.transcoding.taskset.cpuconfig={}", getTranscodingTasksetConfig());
+		log.info("video.transcoding.readonly={}", videoTranscodingReadOnly);
 		log.info("video.transcoding.mode={}", videoTranscodingMode);
 		log.info("video.transcoding.service.url={}", transcodingServiceUrl);
 		log.info("video.transcoding.profile={}", getVideoTranscodingProfile());
@@ -360,6 +363,10 @@ public class VideoModule extends AbstractSpringModule {
 	public void setTranscodingEnabled(boolean transcodingEnabled) {
 		this.transcodingEnabled = transcodingEnabled;
 		setStringProperty(VIDEOTRANSCODING_ENABLED, Boolean.toString(transcodingEnabled), true);
+	}
+
+	public boolean isVideoTranscodingReadOnly() {
+		return videoTranscodingReadOnly;
 	}
 
 	public VideoTranscodingMode getVideoTranscodingMode() {

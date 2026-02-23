@@ -79,12 +79,16 @@ public class AVModule extends AbstractSpringModule {
 	private boolean videoRecordingEnabled;
 	@Value("${av.audio.recording.enabled:false}")
 	private boolean audioRecordingEnabled;
+	@Value("${av.video.conversion.readonly:false}")
+	private boolean videoConversionReadOnly;
 	@Value("${av.local.transcoding.enabled:false}")
 	private boolean localTranscodingEnabled;
 	@Value("${av.video.conversion.mode:true}")
 	private String videoConversionMode;
 	@Value("${av.video.conversion.service.url}")
 	private String videoConversionServiceUrl;
+	@Value("${av.audio.conversion.readonly:false}")
+	private boolean audioConversionReadOnly;
 	@Value("${av.local.audio.conversion.enabled:false}")
 	private boolean localAudioConversionEnabled;
 	@Value("${av.audio.conversion.mode:true}")
@@ -190,10 +194,12 @@ public class AVModule extends AbstractSpringModule {
 
 		log.info("av.video.recording.enabled={}", videoRecordingEnabled);
 		log.info("av.audio.recording.enabled={}", audioRecordingEnabled);
+		log.info("av.video.conversion.readonly={}", videoConversionReadOnly);
 		log.info("av.video.conversion.mode={}",  videoConversionMode);
-		log.info("av.local.video.conversion.service.url={}", videoConversionServiceUrl);
+		log.info("av.video.conversion.service.url={}", videoConversionServiceUrl);
+		log.info("av.audio.conversion.readonly={}", audioConversionReadOnly);
 		log.info("av.audio.conversion.mode={}",  audioConversionMode);
-		log.info("av.local.audio.conversion.service.url={}", audioConversionServiceUrl);
+		log.info("av.audio.conversion.service.url={}", audioConversionServiceUrl);
 		log.info("av.handbrakecli.path={}", handbrakeCliPath);
 		log.info("av.ffmpeg.path={}", ffmpegPath);
 		log.info("folder.root={}", folderRoot);
@@ -278,6 +284,10 @@ public class AVModule extends AbstractSpringModule {
 		setStringProperty(AUDIO_RECORDING_ENABLED, Boolean.toString(audioRecordingEnabled), true);
 	}
 
+	public boolean isVideoConversionReadOnly() {
+		return videoConversionReadOnly;
+	}
+
 	public VideoTranscodingMode getVideoConversionMode() {
 		return VideoTranscodingMode.valueOf(videoConversionMode);
 	}
@@ -294,6 +304,10 @@ public class AVModule extends AbstractSpringModule {
 	public void setVideoConversionServiceUrl(String videoConversionServiceUrl) {
 		this.videoConversionServiceUrl = videoConversionServiceUrl;
 		setStringProperty(VIDEO_CONVERSION_SERVICE_URL, videoConversionServiceUrl, true);
+	}
+
+	public boolean isAudioConversionReadOnly() {
+		return audioConversionReadOnly;
 	}
 
 	public VideoTranscodingMode getAudioConversionMode() {
