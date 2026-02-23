@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.5</org.springframework.version>
-		<org.hibernate.version>7.2.4.Final</org.hibernate.version>
+		<org.hibernate.version>7.2.5.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.6</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.0</apache.cxf>
@@ -2166,7 +2166,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>10.7</version>		
+			<version>10.8</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
