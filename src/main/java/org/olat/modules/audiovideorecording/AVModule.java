@@ -195,11 +195,11 @@ public class AVModule extends AbstractSpringModule {
 		log.info("av.video.recording.enabled={}", videoRecordingEnabled);
 		log.info("av.audio.recording.enabled={}", audioRecordingEnabled);
 		log.info("av.video.conversion.readonly={}", videoConversionReadOnly);
-		log.info("av.audio.conversion.readonly={}", audioConversionReadOnly);
 		log.info("av.video.conversion.mode={}",  videoConversionMode);
-		log.info("av.local.video.conversion.service.url={}", videoConversionServiceUrl);
+		log.info("av.video.conversion.service.url={}", videoConversionServiceUrl);
+		log.info("av.audio.conversion.readonly={}", audioConversionReadOnly);
 		log.info("av.audio.conversion.mode={}",  audioConversionMode);
-		log.info("av.local.audio.conversion.service.url={}", audioConversionServiceUrl);
+		log.info("av.audio.conversion.service.url={}", audioConversionServiceUrl);
 		log.info("av.handbrakecli.path={}", handbrakeCliPath);
 		log.info("av.ffmpeg.path={}", ffmpegPath);
 		log.info("folder.root={}", folderRoot);

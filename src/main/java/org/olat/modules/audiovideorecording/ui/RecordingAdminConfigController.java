@@ -159,6 +159,7 @@ public class RecordingAdminConfigController extends FormBasicController {
 	}
 
 	private void updateLocalVideoConversion() {
+		boolean readOnly = avModule.isVideoConversionReadOnly();
 		VideoTranscodingMode mode = avModule.getVideoConversionMode();
 		videoConversionModeEl.select(mode.name(), true);
 
@@ -166,6 +167,7 @@ public class RecordingAdminConfigController extends FormBasicController {
 		if (VideoTranscodingMode.local.equals(mode) && !avModule.isLocalVideoConversionPossible()) {
 			videoConversionModeEl.setWarningKey("admin.recording.enable.local.video.conversion.warning");
 		}
+		videoConversionModeEl.setEnabled(!readOnly);
 		
 		videoConversionServiceUrlEl.setVisible(VideoTranscodingMode.service.equals(mode));
 		if (videoConversionServiceUrlEl.isVisible()) {
@@ -173,16 +175,25 @@ public class RecordingAdminConfigController extends FormBasicController {
 			if (!StringHelper.containsNonWhitespace(videoConversionServiceUrlEl.getValue())) {
 				videoConversionServiceUrlEl.setErrorKey("form.legende.mandatory");
 			}
+			videoConversionServiceUrlEl.setEnabled(!readOnly);
 		}
 		
 		handBrakeCliEl.setVisible(VideoTranscodingMode.local.equals(mode));
 		if (handBrakeCliEl.isVisible()) {
 			String handBrakeCliPath = avModule.getHandBrakeCliCommandPath();
 			handBrakeCliEl.setValue(handBrakeCliPath);
+			handBrakeCliEl.setEnabled(!readOnly);
+		}
+		
+		if (readOnly) {
+			videoConversionModeEl.setHelpTextKey("transcoding.help.readonly", null);
+			videoConversionServiceUrlEl.setHelpTextKey("transcoding.help.readonly", null);
+			handBrakeCliEl.setHelpTextKey("transcoding.help.readonly", null);
 		}
 	}
 	
 	private void updateLocalAudioConversion() {
+		boolean readOnly = avModule.isAudioConversionReadOnly();
 		VideoTranscodingMode mode = avModule.getAudioConversionMode();
 		audioConversionModeEl.select(mode.name(), true);
 
@@ -190,6 +201,7 @@ public class RecordingAdminConfigController extends FormBasicController {
 		if (VideoTranscodingMode.local.equals(mode) && !avModule.isLocalAudioConversionPossible()) {
 			audioConversionModeEl.setWarningKey("admin.recording.enable.local.audio.conversion.warning");
 		}
+		audioConversionModeEl.setEnabled(!readOnly);
 
 		audioConversionServiceUrlEl.setVisible(VideoTranscodingMode.service.equals(mode));
 		if (audioConversionServiceUrlEl.isVisible()) {
@@ -197,12 +209,20 @@ public class RecordingAdminConfigController extends FormBasicController {
 			if (!StringHelper.containsNonWhitespace(audioConversionServiceUrlEl.getValue())) {
 				audioConversionServiceUrlEl.setErrorKey("form.legende.mandatory");
 			}
+			audioConversionServiceUrlEl.setEnabled(!readOnly);
 		}
 		
 		ffmpegEl.setVisible(VideoTranscodingMode.local.equals(mode));
 		if (ffmpegEl.isVisible()) {
 			String ffmpegPath = avModule.getFfmpegPath();
 			ffmpegEl.setValue(ffmpegPath);
+			ffmpegEl.setEnabled(!readOnly);
+		}
+		
+		if (readOnly) {
+			audioConversionModeEl.setHelpTextKey("transcoding.help.readonly", null);
+			audioConversionServiceUrlEl.setHelpTextKey("transcoding.help.readonly", null);
+			ffmpegEl.setHelpTextKey("transcoding.help.readonly", null);
 		}
 	}
 

@@ -179,6 +179,15 @@ public class VideoAdminSetController extends FormBasicController  {
 		transcodingServiceUrlEl.setVisible(transcodingEnabled && videoModule.getVideoTranscodingMode() == VideoTranscodingMode.service);
 		handBrakeCliEl.setVisible(transcodingEnabled && videoModule.getVideoTranscodingMode() == VideoTranscodingMode.local);
 
+		if (videoModule.isVideoTranscodingReadOnly()) {
+			transcodingModeEl.setEnabled(false);
+			transcodingModeEl.setHelpTextKey("transcoding.help.readonly", null);
+			transcodingServiceUrlEl.setEnabled(false);
+			transcodingServiceUrlEl.setHelpTextKey("transcoding.help.readonly", null);
+			handBrakeCliEl.setEnabled(false);
+			handBrakeCliEl.setHelpTextKey("transcoding.help.readonly", null);
+		}
+
 		if (handBrakeCliEl.isVisible()) {
 			String handBrakeCliPath = avModule.getHandBrakeCliCommandPath();
 			if (StringHelper.containsNonWhitespace(handBrakeCliPath)) {
