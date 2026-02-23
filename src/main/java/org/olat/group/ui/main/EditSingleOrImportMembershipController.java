@@ -162,7 +162,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		this.businessGroup = businessGroup;
 		if(organisationService.hasRole(member, OrganisationRoles.invitee)) {
 			allowedRoles = List.of(GroupRoles.coach.name(), GroupRoles.participant.name());
-		} else if(repoEntry != null && repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
+		} else if(repoEntry != null && (repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.embedded
+				|| repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.curricular)) {
 			allowedRoles = List.of(GroupRoles.owner.name());
 		} else {
 			allowedRoles = null;
