@@ -78,14 +78,14 @@
 		<org.bouncycastle>1.83</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.3.23.Final</io.undertow>
-		<jackson.version>2.21.0</jackson.version>
+		<jackson.version>2.21.1</jackson.version>
 		<jackson.annotations.version>2.21</jackson.annotations.version>
-		<swagger.ui.version>5.31.0</swagger.ui.version>
+		<swagger.ui.version>5.31.2</swagger.ui.version>
 		<com.mysql.version>9.6.0</com.mysql.version>
 		<org.postgresql.version>42.7.10</org.postgresql.version>
 		<org.infinispan.version>16.1.0</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.40.0</version.selenium>
+		<version.selenium>4.41.0</version.selenium>
 		<activemq.artemis.version>2.51.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
@@ -2179,7 +2179,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.61.0</version>
+			<version>6.62.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
