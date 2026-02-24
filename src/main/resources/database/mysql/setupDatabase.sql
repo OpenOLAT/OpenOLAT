@@ -1805,7 +1805,7 @@ create table o_as_mode_course_to_cur_el (
 
 -- Safe Exam Browser template
 create table o_as_seb_template (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    a_active bool not null default true,

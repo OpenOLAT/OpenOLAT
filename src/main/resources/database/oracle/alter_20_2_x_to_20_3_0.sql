@@ -32,7 +32,7 @@ create index idx_cer_log_to_cur_elem_idx on o_cer_program_log (fk_element);
 
 -- Safe Exam Browser template
 create table o_as_seb_template (
-   id number(20) not null,
+   id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
    a_active number default 1 not null,

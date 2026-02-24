@@ -27,7 +27,7 @@ alter table o_cer_program_log add constraint cer_log_to_cur_elem_idx foreign key
 
 -- Safe Exam Browser template
 create table o_as_seb_template (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    a_active bool not null default true,
