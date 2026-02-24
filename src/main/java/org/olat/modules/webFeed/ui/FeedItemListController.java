@@ -389,6 +389,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
+		if (!feedRss.isInternal() || !feedSecCallback.mayEditItems()) {
+			return;
+		}
+		
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
 		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("filter.all"),
@@ -396,15 +400,13 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		if (feedRss.isInternal()) {
-			FlexiFiltersTab myItemsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("owned", translate("filter.my.entries"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.OWNED, "owned")));
-			tabs.add(myItemsTab);
+		FlexiFiltersTab myItemsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("owned", translate("filter.my.entries"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.OWNED, "owned")));
+		tabs.add(myItemsTab);
 
-			FlexiFiltersTab draftTab = FlexiFiltersTabFactory.tabWithImplicitFilters("drafts", translate("filter.drafts"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.STATUS, FeedItemStatusEnum.draft.name())));
-			tabs.add(draftTab);
-		}
+		FlexiFiltersTab draftTab = FlexiFiltersTabFactory.tabWithImplicitFilters("drafts", translate("filter.drafts"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.STATUS, FeedItemStatusEnum.draft.name())));
+		tabs.add(draftTab);
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, allTab);
@@ -413,7 +415,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 
-		if (tableEl.getSelectedFilterTab().getId().equals("all") && feedRss.isInternal()) {
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab().getId().equals("all")) {
 			SelectionValues myEntriesValues = new SelectionValues();
 			myEntriesValues.add((SelectionValues.entry("owned", translate("table.filter.my.entries"))));
 			FlexiTableOneClickSelectionFilter myEntriesFilter = new FlexiTableOneClickSelectionFilter(translate("table.filter.my.entries"),
@@ -434,18 +436,20 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				FeedItemFilter.PUBLISHDATE.name(), true, true, getLocale());
 		filters.add(publishDateFilter);
 
-		SelectionValues statusValues = new SelectionValues();
-		List<FeedItemRow> feedItemRows = tableModel.getObjects();
-		List<FeedItemStatusEnum> feedItemStatusEnumList = feedItemRows.stream().map(FeedItemRow::getStatus).toList().stream().distinct().sorted().toList();
+		if (feedSecCallback.mayCreateItems() || feedSecCallback.mayEditItems()) {
+			SelectionValues statusValues = new SelectionValues();
+			List<FeedItemRow> feedItemRows = tableModel.getObjects();
+			List<FeedItemStatusEnum> feedItemStatusEnumList = feedItemRows.stream().map(FeedItemRow::getStatus).toList().stream().distinct().sorted().toList();
+			
+			for (FeedItemStatusEnum statusEnum : feedItemStatusEnumList) {
+				statusValues.add(SelectionValues.entry(statusEnum.name(), translate("feed.item." + statusEnum.name())));
+			}
 
-		for (FeedItemStatusEnum statusEnum : feedItemStatusEnumList) {
-			statusValues.add(SelectionValues.entry(statusEnum.name(), translate("feed.item." + statusEnum.name())));
+			FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("table.filter.status"),
+					FeedItemFilter.STATUS.name(), statusValues, true);
+			filters.add(statusFilter);
 		}
-
-		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("table.filter.status"),
-				FeedItemFilter.STATUS.name(), statusValues, true);
-		filters.add(statusFilter);
-
+		
 		tableEl.setFilters(true, filters, false, false);
 		tableEl.expandFilters(false);
 	}
