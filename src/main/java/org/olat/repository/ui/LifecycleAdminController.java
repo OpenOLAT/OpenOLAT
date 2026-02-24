@@ -57,7 +57,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
-import org.olat.repository.DefaultCycleBadgeRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultConfigCellRenderer;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -120,7 +120,7 @@ public class LifecycleAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validFrom));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validTo));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.defaultCycle, new DefaultCycleBadgeRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.defaultCycle, new DefaultConfigCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.usages));
 
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(

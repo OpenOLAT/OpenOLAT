@@ -21,10 +21,12 @@ package org.olat.course.assessment;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
@@ -197,5 +199,17 @@ public interface AssessmentModeManager {
 	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
 	
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node);
+
+	public SafeExamBrowserTemplate createSafeExamBrowserTemplate(String name);
+
+	public SafeExamBrowserTemplate updateSafeExamBrowserTemplate(SafeExamBrowserTemplate sebTemplate);
+
+	public void deleteSafeExamBrowserTemplate(SafeExamBrowserTemplate sebTemplate);
+	
+	public List<SafeExamBrowserTemplate> getSafeExamBrowserTemplates(SafeExamBrowserTemplateSearchParams params);
+
+	public Map<Long, Long> getSafeExamBrowserTemplateUsageCounts();
+
+	public SafeExamBrowserConfiguration getDefaultSafeExamBrowserConfiguration();
 
 }

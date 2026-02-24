@@ -131,7 +131,10 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 		
 		super.initSafeExamBrowserForm(enableCont);
 
-		downloadConfigEl.setEnabled(!AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser));
+		boolean managed = AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser);
+		configSourceEl.setEnabled(!managed);
+		templateEl.setEnabled(!managed);
+		downloadConfigEl.setEnabled(!managed);
 	}
 
 	@Override

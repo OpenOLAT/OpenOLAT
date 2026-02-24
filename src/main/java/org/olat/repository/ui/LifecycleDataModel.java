@@ -91,7 +91,7 @@ public class LifecycleDataModel
 		validFrom("lifecycle.validFrom"),
 		validTo("lifecycle.validTo"),
 		edit("table.header.edit"),
-		defaultCycle("lifecycle.default"),
+		defaultCycle("default"),
 		usages("lifecycle.usages"),
 		tools("action.more");
 

@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -43,10 +44,14 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.SafeExamBrowserTemplate;
+import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeToAreaImpl;
 import org.olat.course.assessment.model.AssessmentModeToCurriculumElementImpl;
 import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
+import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
@@ -84,6 +89,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Autowired
 	private BGAreaManager areaMgr;
 	@Autowired
+	private AssessmentModule assessmentModule;
+	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
@@ -95,6 +102,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
+	@Autowired
+	private SafeExamBrowserTemplateDAO safeExamBrowserTemplateDao;
 	@Autowired
 	private AssessmentModeCoordinationServiceImpl assessmentModeCoordinationService;
 
@@ -503,4 +512,44 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
 		return assessmentModeDao.isNodeInUse(entry, node);
 	}
+
+	@Override
+	public SafeExamBrowserTemplate createSafeExamBrowserTemplate(String name) {
+		return safeExamBrowserTemplateDao.createTemplate(name);
+	}
+
+	@Override
+	public SafeExamBrowserTemplate updateSafeExamBrowserTemplate(SafeExamBrowserTemplate sebTemplate) {
+		return safeExamBrowserTemplateDao.updateTemplate(sebTemplate);
+	}
+
+	@Override
+	public void deleteSafeExamBrowserTemplate(SafeExamBrowserTemplate sebTemplate) {
+		safeExamBrowserTemplateDao.deleteTemplate(sebTemplate);
+	}
+
+	@Override
+	public List<SafeExamBrowserTemplate> getSafeExamBrowserTemplates(SafeExamBrowserTemplateSearchParams params) {
+		return safeExamBrowserTemplateDao.loadTemplates(params);
+	}
+
+	@Override
+	public Map<Long, Long> getSafeExamBrowserTemplateUsageCounts() {
+		return safeExamBrowserTemplateDao.getTemplateToUsageCount();
+	}
+	
+	@Override
+	public SafeExamBrowserConfiguration getDefaultSafeExamBrowserConfiguration() {
+		SafeExamBrowserTemplateSearchParams params = new SafeExamBrowserTemplateSearchParams();
+		params.setDefault(Boolean.TRUE);
+		List<SafeExamBrowserTemplate> templates = getSafeExamBrowserTemplates(params);
+		if (templates.isEmpty()) {
+			SafeExamBrowserTemplate template = safeExamBrowserTemplateDao.createTemplate("Default");
+			template.setDefault(true);
+			template.setSafeExamBrowserConfiguration(assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration());
+			return safeExamBrowserTemplateDao.updateTemplate(template).getSafeExamBrowserConfiguration();
+		}
+		return templates.get(0).getSafeExamBrowserConfiguration();
+	}
+	
 }

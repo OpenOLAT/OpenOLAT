@@ -50,7 +50,7 @@ public class AssessmentModeAdminController extends BasicController {
 	
 	private AssessmentModeAdminListController modeListCtrl;
 	private AssessmentModeAdminSettingsController settingsCtrl;
-	private SafeExamBrowserAdminController safeExamBrowserCtrl;
+	private SafeExamBrowserTemplateListController safeExamBrowserCtrl;
 	
 	public AssessmentModeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -113,7 +113,7 @@ public class AssessmentModeAdminController extends BasicController {
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("SafeExamBrowser", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		safeExamBrowserCtrl = new SafeExamBrowserAdminController(ureq, bwControl);
+		safeExamBrowserCtrl = new SafeExamBrowserTemplateListController(ureq, bwControl);
 		listenTo(safeExamBrowserCtrl);
 		mainVC.put("segmentCmp", safeExamBrowserCtrl.getInitialComponent());
 	}

@@ -19,43 +19,38 @@
  */
 package org.olat.course.assessment;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 
 /**
  *
- * Initial date: 15 déc. 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 19 Feb 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface SafeExamBrowserEnabled {
+public interface SafeExamBrowserTemplate extends ModifiedInfo, CreateInfo {
 
-	boolean isSafeExamBrowser();
+	Long getKey();
 
-	void setSafeExamBrowser(boolean safeExamBrowser);
+	boolean isActive();
 
-	String getSafeExamBrowserKey();
+	void setActive(boolean active);
 
-	void setSafeExamBrowserKey(String safeExamBrowserKey);
+	boolean isDefault();
 
-	SafeExamBrowserTemplate getSafeExamBrowserTemplate();
+	void setDefault(boolean isDefault);
 
-	void setSafeExamBrowserTemplate(SafeExamBrowserTemplate template);
+	String getName();
+
+	void setName(String name);
 
 	SafeExamBrowserConfiguration getSafeExamBrowserConfiguration();
 
 	void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration);
-	
+
 	String getSafeExamBrowserConfigPList();
 
 	String getSafeExamBrowserConfigPListKey();
-	
-	boolean isSafeExamBrowserConfigDownload();
-
-	void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload);
-
-	String getSafeExamBrowserHint();
-
-	void setSafeExamBrowserHint(String safeExamBrowserHint);
-
 
 }

@@ -25,4 +25,23 @@ alter table o_cer_program_log add constraint cer_log_to_prog_idx foreign key (fk
 
 alter table o_cer_program_log add constraint cer_log_to_cur_elem_idx foreign key (fk_element) references o_cur_curriculum_element (id);
 
+-- Safe Exam Browser template
+create table o_as_seb_template (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_active bool not null default true,
+   a_default bool not null default false,
+   a_name varchar(255),
+   a_safeexambrowserconfig_xml mediumtext,
+   a_safeexambrowserconfig_plist mediumtext,
+   a_safeexambrowserconfig_pkey varchar(255),
+   primary key (id)
+);
+
+alter table o_as_mode_course add column fk_seb_template bigint;
+alter table o_as_mode_course add constraint as_mode_to_seb_template_idx foreign key (fk_seb_template) references o_as_seb_template (id);
+
+alter table o_as_inspection_configuration add column fk_seb_template bigint;
+alter table o_as_inspection_configuration add constraint as_insp_to_seb_template_idx foreign key (fk_seb_template) references o_as_seb_template (id);
 

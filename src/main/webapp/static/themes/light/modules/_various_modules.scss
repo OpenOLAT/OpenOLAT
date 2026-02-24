@@ -1640,7 +1640,11 @@ a.o_labeled_light {
 	}
 }
 
- 
+.o_default_config {
+	border-color: #14892c;
+	color: #14892c;
+}
+
  /* Multiselect dropdown element */
  .o_ms_button {
  	max-width: 100%;

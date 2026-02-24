@@ -1799,6 +1799,7 @@ create table o_as_mode_course (
    a_applysettingscoach bool not null default false,
    fk_entry int8 not null,
    fk_lecture_block int8,
+   fk_seb_template int8,
    primary key (id)
 );
 
@@ -1823,6 +1824,20 @@ create table o_as_mode_course_to_cur_el (
    primary key (id)
 );
 
+-- Safe Exam Browser template
+create table o_as_seb_template (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   a_active bool not null default true,
+   a_default bool not null default false,
+   a_name varchar(255),
+   a_safeexambrowserconfig_xml text,
+   a_safeexambrowserconfig_plist text,
+   a_safeexambrowserconfig_pkey varchar(255),
+   primary key (id)
+);
+
 -- Assessment inspection
 create table o_as_inspection_configuration (
    id bigserial,
@@ -1841,6 +1856,7 @@ create table o_as_inspection_configuration (
    a_safeexambrowserconfig_dload bool default true not null,
    a_safeexambrowserhint text,
    fk_entry int8 not null,
+   fk_seb_template int8,
    primary key (id)
 );
 
@@ -6250,6 +6266,8 @@ alter table o_as_mode_course add constraint as_mode_to_repo_entry_idx foreign ke
 create index idx_as_mode_to_repo_entry_idx on o_as_mode_course (fk_entry);
 alter table o_as_mode_course add constraint as_mode_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 create index idx_as_mode_to_lblock_idx on o_as_mode_course (fk_lecture_block);
+alter table o_as_mode_course add constraint as_mode_to_seb_template_idx foreign key (fk_seb_template) references o_as_seb_template (id);
+create index idx_as_mode_to_seb_template_idx on o_as_mode_course (fk_seb_template);
 
 alter table o_as_mode_course_to_group add constraint as_modetogroup_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_as_mode_course_to_group add constraint as_modetogroup_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
@@ -6269,6 +6287,8 @@ create index idx_as_modetocur_mode_idx on o_as_mode_course_to_cur_el (fk_assessm
 -- assessment inspection
 alter table o_as_inspection_configuration add constraint as_insp_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_as_insp_to_repo_entry_idx on o_as_inspection_configuration (fk_entry);
+alter table o_as_inspection_configuration add constraint as_insp_to_seb_template_idx foreign key (fk_seb_template) references o_as_seb_template (id);
+create index idx_as_insp_to_seb_template_idx on o_as_inspection_configuration (fk_seb_template);
 
 alter table o_as_inspection add constraint as_insp_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_as_insp_to_ident_idx on o_as_inspection (fk_identity);

@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,8 +55,9 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserEnabled;
+import org.olat.course.assessment.SafeExamBrowserTemplate;
+import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -82,6 +85,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeForLectureEditController extends FormBasicController {
 
+	/*
+	 * Custom is only available to legacy reasons.
+	 */
+	private static final String KEY_CUSTOM = "custom";
+
 	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
 
 	private FormLink chooseElementsButton;
@@ -89,8 +97,9 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	private RichTextElement descriptionEl;
 	private StaticTextElement chooseElementsCont;
 	private FormToggle useSafeExamBrowserEl;
-	private TextAreaElement safeExamBrowserKeyEl;
+	private SingleSelection sebTemplateEl;
 	private FormLink safeExamBrowserConfigurationEl;
+	private TextAreaElement safeExamBrowserKeyEl;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCtrl;
@@ -110,8 +119,6 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
-	private AssessmentModule assessmentModule;
-	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -121,7 +128,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModeCoordinationService modeCoordinationService;
-	
+
 	public AssessmentModeForLectureEditController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, AssessmentMode assessmentMode) {
 		super(ureq, wControl);
@@ -211,13 +218,39 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		useSafeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
 		useSafeExamBrowserEl.toggle(useSEB);
 		
-		safeExamBrowserConfigurationEl = uifactory.addFormLink("show.safeexambrowser.configuration", "show.safeexambrowser.configuration",
-				"show.safeexambrowser.configuration.label", formLayout, Link.BUTTON);
+		SelectionValues sebTemplateSV = new SelectionValues();
+		String sebTemplateSelectedKey = null;
+		SafeExamBrowserTemplateSearchParams templateSearchParams = new SafeExamBrowserTemplateSearchParams();
+		templateSearchParams.setActive(Boolean.TRUE);
+		List<SafeExamBrowserTemplate> sebTemplates = assessmentModeMgr.getSafeExamBrowserTemplates(templateSearchParams);
+		for (SafeExamBrowserTemplate sebTemplate : sebTemplates) {
+			sebTemplateSV.add(SelectionValues.entry(sebTemplate.getKey().toString(), sebTemplate.getName()));
+			if (sebTemplate.isDefault()) {
+				sebTemplateSelectedKey = sebTemplate.getKey().toString();
+			}
+		}
+		SafeExamBrowserTemplate currentSebTemplate = assessmentMode.getSafeExamBrowserTemplate();
+		if (currentSebTemplate != null) {
+			sebTemplateSelectedKey = currentSebTemplate.getKey().toString();
+			if (!sebTemplateSV.containsKey(sebTemplateSelectedKey)) {
+				// Inactive template
+				sebTemplateSV.add(SelectionValues.entry(currentSebTemplate.getKey().toString(), currentSebTemplate.getName()));
+			}
+		} else if (assessmentMode.getSafeExamBrowserConfiguration() != null) {
+			sebTemplateSV.add(SelectionValues.entry(KEY_CUSTOM, translate("custom")));
+			sebTemplateSelectedKey = KEY_CUSTOM;
+		}
+		sebTemplateSV.sort(SelectionValues.VALUE_ASC);
+		sebTemplateEl = uifactory.addDropdownSingleselect("show.safeexambrowser.configuration.label", formLayout,
+				sebTemplateSV.keys(), sebTemplateSV.values());
+		if (sebTemplateSelectedKey != null) {
+			sebTemplateEl.select(sebTemplateSelectedKey, true);
+		}
+		
+		safeExamBrowserConfigurationEl = uifactory.addFormLink("show.seb.configuration",
+				"show.safeexambrowser.configuration", null, formLayout, Link.BUTTON);
 		safeExamBrowserConfigurationEl.getComponent().setSuppressDirtyFormWarning(true);
 		safeExamBrowserConfigurationEl.setGhost(true);
-		boolean showConfiguration = (assessmentMode.getKey() == null && lectureModule.isAssessmentModeSebDefault())
-				|| (assessmentMode.getKey() != null && assessmentMode.isSafeExamBrowser() && assessmentMode.getSafeExamBrowserConfiguration() != null);
-		safeExamBrowserConfigurationEl.setVisible(showConfiguration);
 		
 		String key = assessmentMode.getKey() == null
 				? ConfigurationHelper.getSebKeys(lectureConfig, lectureModule)
@@ -309,6 +342,12 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	
 	private void updateUI() {
 		boolean useSEB = useSafeExamBrowserEl.isOn();
+		
+		boolean showConfiguration = (assessmentMode.getKey() == null && lectureModule.isAssessmentModeSebDefault())
+				|| (assessmentMode.getKey() != null && assessmentMode.isSafeExamBrowser() && assessmentMode.getSafeExamBrowserConfiguration() != null);
+		sebTemplateEl.setVisible(useSEB && showConfiguration);
+		safeExamBrowserConfigurationEl.setVisible(useSEB && showConfiguration);
+		
 		boolean useKeys = (assessmentMode.getKey() == null && !lectureModule.isAssessmentModeSebDefault())
 				|| (assessmentMode.getKey() != null && StringHelper.containsNonWhitespace(assessmentMode.getSafeExamBrowserKey()));
 		safeExamBrowserKeyEl.setVisible(useSEB && useKeys);
@@ -428,8 +467,28 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		assessmentMode.setSafeExamBrowser(useSEB);
 		if(useSEB) {
 			if(lectureModule.isAssessmentModeSebDefault()) {
-				SafeExamBrowserConfiguration configuration = assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration();
-				assessmentMode.setSafeExamBrowserConfiguration(configuration);
+				boolean withTemplate = false;
+				SafeExamBrowserConfiguration configuration = null;
+				if (sebTemplateEl.isOneSelected()) {
+					if (KEY_CUSTOM.equals(sebTemplateEl.getSelectedKey())) {
+						configuration = assessmentMode.getSafeExamBrowserConfiguration();
+					} else {
+						SafeExamBrowserTemplateSearchParams params = new SafeExamBrowserTemplateSearchParams();
+						params.setKey(Long.valueOf(sebTemplateEl.getSelectedKey()));
+						List<SafeExamBrowserTemplate> templates = assessmentModeMgr.getSafeExamBrowserTemplates(params);
+						if (!templates.isEmpty()) {
+							assessmentMode.setSafeExamBrowserTemplate(templates.get(0));
+							withTemplate = true;
+						}
+					}
+				}
+				if (!withTemplate) {
+					if (configuration == null) {
+						configuration = assessmentModeMgr.getDefaultSafeExamBrowserConfiguration();
+					}
+					assessmentMode.setSafeExamBrowserConfiguration(configuration);
+				}
+				
 				boolean safeExamBrowserConfigDownload = lectureModule.isAssessmentModeSebDownload();
 				assessmentMode.setSafeExamBrowserConfigDownload(safeExamBrowserConfigDownload);
 				String safeExamBrowserHint = lectureModule.getAssessmentModeSebHint();
@@ -512,12 +571,27 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	}
 	
 	private void doShowSafeExamBrowserConfiguration(UserRequest ureq) {
-		SafeExamBrowserEnabled configuration;
-		if(assessmentMode.getKey() == null) {
-			configuration = new DefaultSafeExamBrowserConfiguration();
-		} else {
-			configuration = assessmentMode;
+		SafeExamBrowserEnabled configuration = null;
+		if (sebTemplateEl.isOneSelected()) {
+			if (KEY_CUSTOM.equals(sebTemplateEl.getSelectedKey())) {
+				configuration = assessmentMode;
+			} else {
+				SafeExamBrowserTemplateSearchParams params = new SafeExamBrowserTemplateSearchParams();
+				params.setKey(Long.valueOf(sebTemplateEl.getSelectedKey()));
+				List<SafeExamBrowserTemplate> templates = assessmentModeMgr.getSafeExamBrowserTemplates(params);
+				if (!templates.isEmpty()) {
+					SafeExamBrowserConfiguration sebConfig = templates.get(0).getSafeExamBrowserConfiguration();
+					if (sebConfig != null) {
+						configuration = new SafeExamBrowserConfigurationWrapper(sebConfig);
+					}
+				}
+			}
 		}
+		if (configuration == null) {
+			SafeExamBrowserConfiguration sebConfig = assessmentModeMgr.getDefaultSafeExamBrowserConfiguration();
+			configuration = new SafeExamBrowserConfigurationWrapper(sebConfig);
+		}
+		
 		safeExamBrowserConfigurationCtrl = new SafeExamBrowserConfigurationController(ureq, getWindowControl(), configuration);
 		listenTo(safeExamBrowserConfigurationCtrl);
 		
@@ -527,8 +601,14 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		cmc.activate();
 	}
 	
-	private class DefaultSafeExamBrowserConfiguration implements SafeExamBrowserEnabled {
-
+	private class SafeExamBrowserConfigurationWrapper implements SafeExamBrowserEnabled {
+		
+		private final SafeExamBrowserConfiguration sebConfig;
+		
+		public SafeExamBrowserConfigurationWrapper(SafeExamBrowserConfiguration sebConfig) {
+			this.sebConfig = sebConfig;
+		}
+	
 		@Override
 		public boolean isSafeExamBrowser() {
 			return true;
@@ -550,8 +630,18 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 
 		@Override
+		public SafeExamBrowserTemplate getSafeExamBrowserTemplate() {
+			return null;
+		}
+
+		@Override
+		public void setSafeExamBrowserTemplate(SafeExamBrowserTemplate template) {
+			//
+		}
+
+		@Override
 		public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration() {
-			return assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration();
+			return sebConfig;
 		}
 
 		@Override
@@ -613,9 +703,11 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		@Override
 		protected void updateUI() {
 			super.updateUI();
-			
+
 			safeExamBrowserEl.setVisible(false);
 			typeOfUseEl.setVisible(false);
+			configSourceEl.setVisible(false);
+			templateEl.setVisible(false);
 			downloadConfigEl.setEnabled(isEditable());
 			safeExamBrowserHintEl.setEnabled(isEditable());
 		}

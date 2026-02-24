@@ -150,6 +150,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}
 .o_icon_decline { @include o-add-icon('thumbs-down', false);}
+.o_icon_default_config { @include o-add-icon('star');}
 .o_icon_delete_item { @include o-add-icon('trash-can', false);}
 .o_icon_delete { @include o-add-icon('minus-circle'); color: #A87E7E;}
 .o_icon_deleted { @include o-add-icon('trash-can', false);}

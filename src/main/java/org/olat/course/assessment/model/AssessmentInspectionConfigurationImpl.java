@@ -42,6 +42,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializer;
 import org.olat.repository.RepositoryEntry;
 
@@ -93,6 +94,10 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 	
 	@Column(name="a_safeexambrowserhint", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserHint;
+
+	@ManyToOne(targetEntity=SafeExamBrowserTemplateImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_seb_template", nullable=true, updatable=true)
+	private SafeExamBrowserTemplate safeExamBrowserTemplate;
 
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, updatable=false)
@@ -213,9 +218,27 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 	public void setSafeExamBrowserKey(String safeExamBrowserKey) {
 		this.safeExamBrowserKey = safeExamBrowserKey;
 	}
-	
+
+	@Override
+	public SafeExamBrowserTemplate getSafeExamBrowserTemplate() {
+		return safeExamBrowserTemplate;
+	}
+
+	@Override
+	public void setSafeExamBrowserTemplate(SafeExamBrowserTemplate template) {
+		if(template != null) {
+			setSafeExamBrowserConfigXml(null);
+			setSafeExamBrowserConfigPList(null);
+			setSafeExamBrowserConfigPListKey(null);
+		}
+		safeExamBrowserTemplate = template;
+	}
+
 	@Override
 	public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration() {
+		if(safeExamBrowserTemplate != null) {
+			return safeExamBrowserTemplate.getSafeExamBrowserConfiguration();
+		}
 		if(StringHelper.containsNonWhitespace(safeExamBrowserConfigXml)) {
 			return SafeExamBrowserConfigurationSerializer.fromXml(safeExamBrowserConfigXml);
 		}
@@ -229,6 +252,7 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 			setSafeExamBrowserConfigPList(null);
 			setSafeExamBrowserConfigPListKey(null);
 		} else {
+			safeExamBrowserTemplate = null;
 			AssessmentModule assessmentModule = CoreSpringFactory.getImpl(AssessmentModule.class);
 			String xml = SafeExamBrowserConfigurationSerializer.toXml(configuration);
 			setSafeExamBrowserConfigXml(xml);

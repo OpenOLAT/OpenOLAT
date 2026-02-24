@@ -17,29 +17,30 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.repository;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 
 /**
- * Initial date: Mär 03, 2025
  *
- * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
+ * Initial date: 20 Feb 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
+ *
  */
-public class DefaultCycleBadgeRenderer implements FlexiCellRenderer {
+public class DefaultConfigCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object cellValue,
 					   int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof Boolean isDefault && Boolean.TRUE.equals(isDefault)) {
-			String title = translator.translate("lifecycle.default");
-			sb.append("<span class='o_labeled_light o_default_cycle_badge' title='").append(title).append("'>")
-					.append("<i class='o_icon o_icon-fw o_icon_star'> </i> ")
+			Translator t = Util.createPackageTranslator(DefaultConfigCellRenderer.class, translator.getLocale());
+			String title = t.translate("default");
+			sb.append("<span class='o_labeled_light o_default_config'>")
+					.append("<i class='o_icon o_icon-fw o_icon_default_config'> </i> ")
 					.append("<span>").append(title).append("</span>")
 					.append("</span>");
 		}

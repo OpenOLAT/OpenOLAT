@@ -37,13 +37,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Description:<br>
- * This is a PublishEvent listener, and triggers the update of the EfficiencyStatements 
- * for the published course. It only considers the events from the same JVM.
- * 
- * <P>
+ *
  * Initial Date: 11.08.2006 <br>
- * 
+ *
  * @author patrickb
  */
 @Service("assessmentModule")
@@ -131,7 +127,7 @@ public class AssessmentModule extends AbstractSpringModule {
 	private String safeExamBrowserBlockedUrlRegex;
 
 	@Value("${safe.exam.browser.hint}")
-	private String safeExamBrowserHint;	
+	private String safeExamBrowserHint;
 	
 	@Value("${safe.exam.browser.download.url}")
 	private String safeExamBrowserDownloadUrl;
@@ -232,6 +228,9 @@ public class AssessmentModule extends AbstractSpringModule {
 		return safeExamBrowserDownloadUrl;
 	}
 
+	/*
+	 * Do not use but for the creation of the default template.
+	 */
 	public SafeExamBrowserConfiguration getSafeExamBrowserConfigurationDefaultConfiguration() {
 		SafeExamBrowserConfiguration config = new SafeExamBrowserConfiguration();
 		config.setStartUrl(Settings.getServerContextPathURI());
@@ -269,60 +268,30 @@ public class AssessmentModule extends AbstractSpringModule {
 		return config;
 	}
 
-	public boolean isSafeExamBrowserShowTaskBar() {
+	private boolean isSafeExamBrowserShowTaskBar() {
 		return "true".equals(safeExamBrowserShowTaskBar);
 	}
 
-	public void setSafeExamBrowserShowTaskBar(boolean showTaskBar) {
-		safeExamBrowserShowTaskBar = showTaskBar ? "true" : "false";
-		setStringProperty(SEB_SHOWTASKBAR, safeExamBrowserShowTaskBar, true);
-	}
-
-	public boolean isSafeExamBrowserShowReloadButton() {
+	private boolean isSafeExamBrowserShowReloadButton() {
 		return "true".equals(safeExamBrowserShowReloadButton);
 	}
 
-	public void setSafeExamBrowserShowReloadButton(boolean showReloadButton) {
-		safeExamBrowserShowReloadButton = showReloadButton ? "true" : "false";
-		setStringProperty(SEB_SHOWRELOADBUTTON, safeExamBrowserShowReloadButton, true);
-	}
-
-	public boolean isSafeExamBrowserShowTime() {
+	private boolean isSafeExamBrowserShowTime() {
 		return "true".equals(safeExamBrowserShowTime);
 	}
 
-	public void setSafeExamBrowserShowTime(boolean showTime) {
-		safeExamBrowserShowTime = showTime ? "true" : "false";
-		setStringProperty(SEB_SHOWTIME, safeExamBrowserShowTime, true);
-	}
-	
-	public boolean isSafeExamBrowserShowInputLanguage() {
+	private boolean isSafeExamBrowserShowInputLanguage() {
 		return "true".equals(safeExamBrowserShowInputLanguage);
 	}
 
-	public void setSafeExamBrowserShowInputLanguage(boolean showInputLanguage) {
-		safeExamBrowserShowInputLanguage = showInputLanguage ? "true" : "false";
-		setStringProperty(SEB_SHOWINPUTLANGUAGE, safeExamBrowserShowInputLanguage, true);
-	}
-
-	public boolean isSafeExamBrowserAllowQuit() {
+	private boolean isSafeExamBrowserAllowQuit() {
 		return "true".equals(safeExamBrowserAllowQuit);
 	}
 
-	public void setSafeExamBrowserAllowQuit(boolean allowQuit) {
-		safeExamBrowserAllowQuit = allowQuit ? "true" : "false";
-		setStringProperty(SEB_ALLOWQUIT, safeExamBrowserAllowQuit, true);
-	}
-	
-	public boolean isSafeExamBrowserQuitURL() {
+	private boolean isSafeExamBrowserQuitURL() {
 		return "true".equals(safeExamBrowserQuitUrl);
 	}
 
-	public void setSafeExamBrowserQuitURL(boolean quitUrl) {
-		safeExamBrowserQuitUrl = quitUrl ? "true" : "false";
-		setStringProperty(SEB_QUITURL, safeExamBrowserQuitUrl, true);
-	}
-	
 	public synchronized String getShadowQuitURL() {
 		if(shadowQuitUrl == null) {
 			shadowQuitUrl = Settings.getServerContextPathURI() + "/" + UUID.randomUUID().toString();
@@ -330,148 +299,68 @@ public class AssessmentModule extends AbstractSpringModule {
 		return shadowQuitUrl;
 	}
 
-	public boolean isSafeExamBrowserQuitURLConfirm() {
+	private boolean isSafeExamBrowserQuitURLConfirm() {
 		return "true".equals(safeExamBrowserQuitURLConfirm);
 	}
 
-	public void setSafeExamBrowserQuitURLConfirm(boolean quitURLConfirm) {
-		safeExamBrowserQuitURLConfirm = quitURLConfirm ? "true" : "false";
-		setStringProperty(SEB_QUITURLCONFIRM, safeExamBrowserQuitURLConfirm, true);
-	}
-
-	public boolean isSafeExamBrowserAudioControlEnabled() {
+	private boolean isSafeExamBrowserAudioControlEnabled() {
 		return "true".equals(safeExamBrowserAudioControlEnabled);
 	}
 
-	public void setSafeExamBrowserAudioControlEnabled(boolean audioControlEnabled) {
-		safeExamBrowserAudioControlEnabled = audioControlEnabled ? "true" : "false";
-		setStringProperty(SEB_AUDIOCONTROLENABLED, safeExamBrowserAudioControlEnabled, true);
-	}
-
-	public boolean isSafeExamBrowserAudioMute() {
+	private boolean isSafeExamBrowserAudioMute() {
 		return "true".equals(safeExamBrowserAudioMute);
 	}
 
-	public void setSafeExamBrowserAudioMute(boolean audioMute) {
-		safeExamBrowserAudioMute = audioMute ? "true" : "false";
-		setStringProperty(SEB_AUDIOMUTE, safeExamBrowserAudioMute, true);
-	}
-	
-	public int getSafeExamBrowserViewMode() {
+	private int getSafeExamBrowserViewMode() {
 		return safeExamBrowserViewMode;
 	}
 
-	public void setSafeExamBrowserViewMode(int viewMode) {
-		this.safeExamBrowserViewMode = viewMode;
-		setStringProperty(SEB_VIEWMODE, Integer.toString(viewMode), true);
-	}
-
-	public boolean isSafeExamBrowserAllowWlan() {
+	private boolean isSafeExamBrowserAllowWlan() {
 		return "true".equals(safeExamBrowserAllowWlan);
 	}
 
-	public void setSafeExamBrowserAllowWlan(boolean allowWlan) {
-		safeExamBrowserAllowWlan = allowWlan ? "true" : "false";
-		setStringProperty(SEB_ALLOWWLAN, safeExamBrowserAllowWlan, true);
-	}
-
-	public boolean isSafeExamBrowserAllowAudioCapture() {
+	private boolean isSafeExamBrowserAllowAudioCapture() {
 		return "true".equals(safeExamBrowserAllowAudioCapture);
 	}
 
-	public void setSafeExamBrowserAllowAudioCapture(boolean allowAudioCapture) {
-		safeExamBrowserAllowAudioCapture = allowAudioCapture ? "true" : "false";
-		setStringProperty(SEB_ALLOWAUDIOCAPTURE, safeExamBrowserAllowAudioCapture, true);
-	}
-
-	public boolean isSafeExamBrowserAllowVideoCapture() {
+	private boolean isSafeExamBrowserAllowVideoCapture() {
 		return "true".equals(safeExamBrowserAllowVideoCapture);
 	}
 
-	public void setSafeExamBrowserAllowVideoCapture(boolean allowVideoCapture) {
-		safeExamBrowserAllowVideoCapture = allowVideoCapture ? "true" : "false";
-		setStringProperty(SEB_ALLOWVIDEOCAPTURE, safeExamBrowserAllowVideoCapture, true);
-	}
-
-	public boolean isSafeExamBrowserAllowSpellCheck() {
+	private boolean isSafeExamBrowserAllowSpellCheck() {
 		return "true".equals(safeExamBrowserAllowSpellCheck);
 	}
 
-	public void setSafeExamBrowserAllowSpellCheck(boolean allowSpellCheck) {
-		safeExamBrowserAllowSpellCheck = allowSpellCheck ? "true" : "false";
-		setStringProperty(SEB_ALLOWSPELLCHECK, safeExamBrowserAllowSpellCheck, true);
-	}
-
-	public boolean isSafeExamBrowserBrowserWindowAllowReload() {
+	private boolean isSafeExamBrowserBrowserWindowAllowReload() {
 		return "true".equals(safeExamBrowserBrowserWindowAllowReload);
 	}
 
-	public void setSafeExamBrowserBrowserWindowAllowReload(boolean browserWindowAllowReload) {
-		safeExamBrowserBrowserWindowAllowReload = browserWindowAllowReload ? "true" : "false";
-		setStringProperty(SEB_BROWSERWINDOWALLOWRELOAD, safeExamBrowserBrowserWindowAllowReload, true);
-	}
-
-	public boolean isSafeExamBrowserAllowZoomInOut() {
+	private boolean isSafeExamBrowserAllowZoomInOut() {
 		return "true".equals(safeExamBrowserAllowZoomInOut);
 	}
 
-	public void setSafeExamBrowserAllowZoomInOut(boolean allowZoomInOut) {
-		this.safeExamBrowserAllowZoomInOut = allowZoomInOut ? "true" : "false";
-		setStringProperty(SEB_ALLOWZOOMINOUT, safeExamBrowserAllowZoomInOut, true);
-	}
-
-	public boolean isSafeExamBrowserUrlFilter() {
+	private boolean isSafeExamBrowserUrlFilter() {
 		return "true".equals(safeExamBrowserUrlFilter);
 	}
 
-	public void setSafeExamBrowserUrlFilter(boolean urlFilter) {
-		safeExamBrowserUrlFilter = urlFilter ? "true" : "false";
-		setStringProperty(SEB_URLFILTER, safeExamBrowserUrlFilter, true);
-	}
-
-	public boolean isSafeExamBrowserUrlContentFilter() {
+	private boolean isSafeExamBrowserUrlContentFilter() {
 		return "true".equals(safeExamBrowserUrlContentFilter);
 	}
 
-	public void setSafeExamBrowserUrlContentFilter(boolean urlContentFilter) {
-		safeExamBrowserUrlContentFilter = urlContentFilter ? "true" : "false";
-		setStringProperty(SEB_URLCONTENTFILTER, safeExamBrowserUrlContentFilter, true);
-	}
-
-	public String getSafeExamBrowserAllowedUrlExpressions() {
+	private String getSafeExamBrowserAllowedUrlExpressions() {
 		return safeExamBrowserAllowedUrlExpressions;
 	}
 
-	public void setSafeExamBrowserAllowedUrlExpressions(String allowedUrlExpressions) {
-		safeExamBrowserAllowedUrlExpressions = allowedUrlExpressions;
-		setStringProperty(SEB_ALLOWEDURLEXPRESSIONS, safeExamBrowserAllowedUrlExpressions, true);
-	}
-
-	public String getSafeExamBrowserAllowedUrlRegex() {
+	private String getSafeExamBrowserAllowedUrlRegex() {
 		return safeExamBrowserAllowedUrlRegex;
 	}
 
-	public void setSafeExamBrowserAllowedUrlRegex(String allowedUrlRegex) {
-		safeExamBrowserAllowedUrlRegex = allowedUrlRegex;
-		setStringProperty(SEB_ALLOWEDURLREGEX, safeExamBrowserAllowedUrlRegex, true);
-	}
-
-	public String getSafeExamBrowserBlockedUrlExpressions() {
+	private String getSafeExamBrowserBlockedUrlExpressions() {
 		return safeExamBrowserBlockedUrlExpressions;
 	}
 
-	public void setSafeExamBrowserBlockedUrlExpressions(String blockedUrlExpressions) {
-		safeExamBrowserBlockedUrlExpressions = blockedUrlExpressions;
-		setStringProperty(SEB_BLOCKEDURLEXPRESSIONS, safeExamBrowserBlockedUrlExpressions, true);
-	}
-
-	public String getSafeExamBrowserBlockedUrlRegex() {
+	private String getSafeExamBrowserBlockedUrlRegex() {
 		return safeExamBrowserBlockedUrlRegex;
-	}
-
-	public void setSafeExamBrowserBlockedUrlRegex(String blockedUrlRegex) {
-		safeExamBrowserBlockedUrlRegex = blockedUrlRegex;
-		setStringProperty(SEB_BLOCKEDURLREGEX, safeExamBrowserBlockedUrlRegex, true);
 	}
 
 	public String getSafeExamBrowserHint() {
