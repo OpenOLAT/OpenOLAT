@@ -28,7 +28,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 
@@ -60,25 +59,6 @@ public class EditSingleMembershipController extends BasicController {
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		
 		membershipCtrl = new EditSingleOrImportMembershipController(ureq, wControl, identity, repoEntry, group, overrideManaged);
-		listenTo(membershipCtrl);
-		mainVC.put("edit", membershipCtrl.getInitialComponent());
-		
-		putInitialPanel(mainVC);
-	}
-	
-	public EditSingleMembershipController(UserRequest ureq, WindowControl wControl,  Identity identity,
-			Curriculum curriculum, CurriculumElement curriculumElement, boolean withUserLinks, boolean overrideManaged) {
-		super(ureq, wControl);
-		this.repoEntry = null;
-		this.member = identity;
-		this.curriculumElement = curriculumElement;
-		
-		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
-		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, null, withUserLinks);
-		listenTo(infoCtrl);
-		mainVC.put("infos", infoCtrl.getInitialComponent());
-		
-		membershipCtrl = new EditSingleOrImportMembershipController(ureq, wControl, identity, curriculum, curriculumElement, overrideManaged);
 		listenTo(membershipCtrl);
 		mainVC.put("edit", membershipCtrl.getInitialComponent());
 		

@@ -163,7 +163,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		if(organisationService.hasRole(member, OrganisationRoles.invitee)) {
 			allowedRoles = List.of(GroupRoles.coach.name(), GroupRoles.participant.name());
 		} else if(repoEntry != null && (repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.embedded
-				|| repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.curricular)) {
+				|| repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.curricular
+				|| repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.template)) {
 			allowedRoles = List.of(GroupRoles.owner.name());
 		} else {
 			allowedRoles = null;
@@ -198,31 +199,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 				}
 			}
 		}
-	}
-	
-	public EditSingleOrImportMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
-			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
-		
-		this.member = member;
-		this.members = null;
-		this.allowedRoles = null;
-		exclusiveResource = false;
-		repoEntry = null;
-		businessGroup = null;
-		this.curriculum = curriculum;
-		this.rootCurriculumElement = curriculumElement;
-		this.withButtons = true;
-		this.overrideManaged = overrideManaged;
-		this.curriculumEditable = true;
-		extendedCurriculumRoles = true;
-		
-		memberships = Collections.emptyList();
-		curriculumElementMemberships =  curriculumService
-				.getCurriculumElementMemberships(Collections.singletonList(curriculumElement), member);
-
-		initForm(ureq);
-		loadModel(ureq, member);
 	}
 	
 	public EditSingleOrImportMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
