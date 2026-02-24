@@ -83,6 +83,8 @@ public interface CatalogEntry {
 	
 	Long getCurriculumKey();
 	
+	Long getCurriculumElementTypeKey();
+	
 	String getCurriculumElementTypeName();
 	
 	OLATResource getOlatResource();

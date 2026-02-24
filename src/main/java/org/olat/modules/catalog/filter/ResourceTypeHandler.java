@@ -124,8 +124,8 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 							null,
 							true));
 				}
-			} else if (curriculumModule.isEnabled() && StringHelper.containsNonWhitespace(catalogEntry.getCurriculumElementTypeName())) {
-				String filterType = CE_PREFIX + catalogEntry.getCurriculumElementTypeName();
+			} else if (curriculumModule.isEnabled() && catalogEntry.getCurriculumElementTypeKey() != null) {
+				String filterType = CE_PREFIX + catalogEntry.getCurriculumElementTypeKey();
 				if (!typesSV.containsKey(filterType)) {
 					typesSV.add(new SelectionValue(
 							filterType,
@@ -153,12 +153,12 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 		List<String> types = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
 		if (types != null && !types.isEmpty()) {
 			Set<String> reTypes = new HashSet<>(1);
-			Set<String> ceTypes = new HashSet<>(1);
+			Set<Long> ceTypes = new HashSet<>(1);
 			for (String type: types) {
 				if (type.startsWith(RE_PREFIX)) {
 					reTypes.add(type.substring(4));
 				} else if (type.startsWith(CE_PREFIX)) {
-					ceTypes.add(type.substring(4));
+					ceTypes.add(Long.valueOf(type.substring(4)));
 				}
 			}
 			rows.removeIf(row -> {
@@ -167,7 +167,7 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 						|| row.getOlatResource().getResourceableTypeName() == null
 						|| !reTypes.contains(row.getOlatResource().getResourceableTypeName());
 				}
-				return !ceTypes.contains(row.getCurriculumElementTypeName());
+				return !ceTypes.contains(row.getCurriculumElementTypeKey());
 			});
 		}
 	}

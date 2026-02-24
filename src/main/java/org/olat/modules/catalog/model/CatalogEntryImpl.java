@@ -68,6 +68,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private final boolean publicVisible;
 	
 	private final Long curriculumKey;
+	private final Long curriculumElementTypeKey;
 	private final String curriculumElementTypeName;
 	
 	private final OLATResource olatResource;
@@ -136,6 +137,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		}
 		
 		curriculumKey = null;
+		curriculumElementTypeKey = null;
 		curriculumElementTypeName = null;
 		singleCourseImplementation = false;
 		singleCourseEntryKey = null;
@@ -172,6 +174,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		numOfComments = null;
 		
 		curriculumKey = element.getCurriculum().getKey();
+		curriculumElementTypeKey = element.getType().getKey();
 		curriculumElementTypeName = element.getType().getDisplayName();
 		singleCourseImplementation = element.isSingleCourseImplementation();
 		
@@ -286,6 +289,11 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@Override
 	public Long getCurriculumKey() {
 		return curriculumKey;
+	}
+
+	@Override
+	public Long getCurriculumElementTypeKey() {
+		return curriculumElementTypeKey;
 	}
 
 	@Override
