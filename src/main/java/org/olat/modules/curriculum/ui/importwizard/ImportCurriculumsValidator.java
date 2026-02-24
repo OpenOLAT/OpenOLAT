@@ -19,59 +19,49 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
-import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.logging.log4j.Logger;
-import org.dhatim.fastexcel.reader.ReadableWorkbook;
-import org.dhatim.fastexcel.reader.Row;
-import org.dhatim.fastexcel.reader.Sheet;
+import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.Tracing;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.AbstractExcelReader;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalDate;
+import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalTime;
+import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.ValidationDescription;
+import org.olat.login.validation.ValidationResult;
 import org.olat.modules.curriculum.CurriculumElementStatus;
-import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
-import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.CurriculumStatus;
+import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
-import org.olat.modules.lecture.LectureService;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
-import org.olat.repository.RepositoryService;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,10 +70,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ImportCurriculumsHelper extends AbstractExcelReader {
+public class ImportCurriculumsValidator {
 	
-	private static final Logger log = Tracing.createLoggerFor(ImportCurriculumsHelper.class);
-
 	private final Roles roles;
 	private final Identity identity;
 	private final Translator translator;
@@ -92,332 +80,45 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 	public static final String OFF = "OFF";
 	public static final String DEFAULT = "DEFAULT";
 	
+	private final List<UserPropertyHandler> userPropertyHandlers;
+
 	@Autowired
-	private LectureService lectureService;
+	private UserManager userManager;
 	@Autowired
-	private TaxonomyModule taxonomyModule;
+	private OLATAuthManager olatAuthManager;
 	@Autowired
-	private CurriculumModule curriculumModule;
-	@Autowired
-	private RepositoryModule repositoryModule;
-	@Autowired
-	private TaxonomyService taxonomyService;
-	@Autowired
-	private CurriculumService curriculumService;
-	@Autowired
-	private RepositoryService repositoryService;
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public ImportCurriculumsHelper(Identity identity, Roles roles, Translator translator) {
+	public ImportCurriculumsValidator(Identity identity, Roles roles, Translator translator) {
 		CoreSpringFactory.autowireObject(this);
 		this.roles = roles;
 		this.identity = identity;
 		this.translator = translator;
+		
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CurriculumExport.usageIdentifyer, isAdministrativeUser)
+				.stream()
+				.filter(handler -> userManager.isMandatoryUserProperty(CurriculumExport.usageIdentifyer, handler))
+				.toList();
+	}
+
+	public List<UserPropertyHandler> getUserPropertyHandlers() {
+		return userPropertyHandlers;
+	}
+	
+	public UserPropertyHandler getUserPropertyHandler(int index) {
+		if(index >= 0 && userPropertyHandlers != null && index < userPropertyHandlers.size()) {
+			return userPropertyHandlers.get(index);
+		}
+		return null;
 	}
 	
 	private String translate(String i18nKey) {
 		return translator.translate(i18nKey);
-	}
-	
-	public void loadCurrentCurriculums(List<ImportedRow> importedRows) {
-		Map<String,Organisation> organisationMap = new HashMap<>();
-		
-		for(ImportedRow importedRow:importedRows) {
-			List<Curriculum> curriculums = curriculumService.getCurriculumsByIdentifier(importedRow.getIdentifier(), CurriculumStatus.active);
-			if(curriculums.isEmpty()) {
-				importedRow.setStatus(ImportCurriculumsStatus.NEW);
-			} else if(curriculums.size() == 1) {
-				importedRow.setCurriculum(curriculums.get(0));
-			} else {
-				// Duplicate
-				notUniqueIdentifierError(importedRow);
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-			}
-			
-			String organisationIdentifier = importedRow.getOrganisationIdentifier();
-			if(StringHelper.containsNonWhitespace(organisationIdentifier)) {
-				Organisation organisation = organisationMap.get(organisationIdentifier);
-				if(organisation == null) {
-					List<Organisation> organisations = organisationService.findOrganisationByIdentifier(organisationIdentifier);
-					if(organisations.size() == 1) {
-						organisation = organisations.get(0);
-						organisationMap.put(organisationIdentifier, organisation);
-					}
-				}
-				importedRow.setOrganisation(organisation);
-			}
-		}
-	}
-	
-	public void loadCurrentElements(List<ImportedRow> importedRows, List<ImportedRow> curriculumsRows) {
-		Map<String,ImportedRow> curriculumsMap = curriculumsRows.stream()
-				.filter(r -> StringHelper.containsNonWhitespace(r.getCurriculumIdentifier()))
-				.collect(Collectors.toMap(ImportedRow::getCurriculumIdentifier, r -> r, (u, v) -> u));
-		
-		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
-		Map<String,CurriculumElementType> typesMap = types.stream()
-				.filter(t -> StringHelper.containsNonWhitespace(t.getIdentifier()))
-				.collect(Collectors.toMap(CurriculumElementType::getIdentifier, t -> t, (u, v) -> u));
-
-		// First load the implementations
-		Map<String,ImportedRow> implementations = new HashMap<>();
-		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.IMPL) {
-				loadElement(importedRow, curriculumsMap, typesMap);
-				if(StringHelper.containsNonWhitespace(importedRow.getIdentifier())) {
-					implementations.put(importedRow.getIdentifier(), importedRow);
-				}
-			}
-		}
-		
-		// Load the curriculum elements
-		Map<String,ImportedRow> elements = new HashMap<>();
-		Map<LevelKey,ImportedRow> levelElementsMap = new HashMap<>();
-		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.ELEM) {
-				// Match the implementation
-				if(StringHelper.containsNonWhitespace(importedRow.getImplementationIdentifier())) {
-					importedRow.setImplementationRow(implementations.get(importedRow.getImplementationIdentifier()));
-					if(StringHelper.containsNonWhitespace(importedRow.getLevel())) {
-						levelElementsMap.put(new LevelKey(importedRow.getImplementationIdentifier(), importedRow.getLevel()), importedRow);
-					}
-				}
-				
-				loadElement(importedRow, curriculumsMap, typesMap);
-				if(StringHelper.containsNonWhitespace(importedRow.getIdentifier())) {
-					elements.put(importedRow.getIdentifier(), importedRow);
-				}
-			}
-		}
-		
-		// Build the structure with key { implementation : level }
-		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.ELEM) {
-				String parentLevel = importedRow.getParentLevel();
-				if(parentLevel == null) {
-					importedRow.setCurriculumElementParentRow(importedRow.getImplementationRow());
-				} else {
-					ImportedRow parentRow = levelElementsMap.get(new LevelKey(importedRow.getImplementationIdentifier(), parentLevel));
-					if(parentRow == null) {
-						levelNotFoundError(importedRow, parentLevel);
-					} else {
-						importedRow.setCurriculumElementParentRow(parentRow);
-					}
-				}
-			} else if(importedRow.type() == CurriculumExportType.COURSE
-					|| importedRow.type() == CurriculumExportType.TMPL
-					|| importedRow.type() == CurriculumExportType.EVENT) {
-				if(StringHelper.containsNonWhitespace(importedRow.getImplementationIdentifier())) {
-					importedRow.setImplementationRow(implementations.get(importedRow.getImplementationIdentifier()));
-				}
-				
-				String level = importedRow.getLevel();
-				if(level == null) {
-					importedRow.setCurriculumElementParentRow(importedRow.getImplementationRow());
-				} else {
-					ImportedRow parentRow = levelElementsMap.get(new LevelKey(importedRow.getImplementationIdentifier(), level));
-					if(parentRow == null) {
-						levelNotFoundError(importedRow, level);
-					} else {
-						importedRow.setCurriculumElementParentRow(parentRow);
-					}
-				}
-			}
-			
-			if(StringHelper.containsNonWhitespace(importedRow.getCurriculumIdentifier())) {
-				importedRow.setCurriculumRow(curriculumsMap.get(importedRow.getCurriculumIdentifier()));
-			} 
-		}
-
-		// Load the courses and templates
-		Map<String,RepositoryEntry> entries = new HashMap<>();
-		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.COURSE || importedRow.type() == CurriculumExportType.TMPL) {
-				RepositoryEntry entry = loadRepositoryEntry(importedRow, curriculumsMap);
-				if(entry != null) {
-					entries.put(entry.getExternalRef(), entry);
-				}
-			}
-		}
-		
-		// Load the events
-		for(ImportedRow importedRow:importedRows) {
-			if(importedRow.type() == CurriculumExportType.EVENT) {
-				loadLectureBlock(importedRow, entries);
-			}
-		}
-	}
-	
-	public void loadTaxonomy(List<ImportedRow> importedRows) {
-		if(!taxonomyModule.isEnabled()) return;
-		
-		List<TaxonomyRef> taxonomyRefs = new ArrayList<>();
-		taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
-		taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
-		if(taxonomyRefs.isEmpty()) return;
-		
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
-		Map<String,TaxonomyLevel> levelsMap = levels.stream()
-				.filter(t -> StringHelper.containsNonWhitespace(t.getMaterializedPathIdentifiers()))
-		        .collect(Collectors.toMap(TaxonomyLevel::getMaterializedPathIdentifiers, t -> t, (u, v) -> u));
-
-		for(ImportedRow importedRow:importedRows) {
-			String subjects = importedRow.getSubjects();
-			if(StringHelper.containsNonWhitespace(subjects)) {
-				String[] subjectsArr = subjects.split(";");
-				for(String subject:subjectsArr) {
-					if(StringHelper.containsNonWhitespace(subject)) {
-						TaxonomyLevel level = levelsMap.get(subject);
-						if(level != null) {
-							importedRow.addTaxonomyLevel(level);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	private RepositoryEntry loadRepositoryEntry(ImportedRow importedRow,
-			Map<String,ImportedRow> curriculumsMap) {
-		
-		List<RepositoryEntry> entries = repositoryService.loadRepositoryEntriesByExternalRef(importedRow.getIdentifier());
-		RepositoryEntry entry = null;
-		if(entries.isEmpty()) {
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-		} else if(entries.size() == 1) {
-			if(importedRow.type() == CurriculumExportType.COURSE) {
-				importedRow.setCourse(entries.get(0));
-				loadTaxonomyLevels(importedRow);
-				entry = entries.get(0);
-			} else if(importedRow.type() == CurriculumExportType.TMPL) {
-				importedRow.setTemplate(entries.get(0));
-				loadTaxonomyLevels(importedRow);
-				entry = entries.get(0);
-			}
-		} else {
-			// Duplicate
-			notUniqueIdentifierError(importedRow);
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-		}
-
-		// Map curriculum
-		if(StringHelper.containsNonWhitespace(importedRow.getCurriculumIdentifier())) {
-			importedRow.setCurriculumRow(curriculumsMap.get(importedRow.getCurriculumIdentifier()));
-		} 
-		
-		return entry;
-	}
-	
-	private LectureBlock loadLectureBlock(ImportedRow importedRow, Map<String,RepositoryEntry> entries) {
-		if(StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef())) {
-			RepositoryEntry course = entries.get(importedRow.getReferenceExternalRef());
-			if(course == null) {
-				// For error handling
-				List<RepositoryEntry> moreEntries = repositoryService.loadRepositoryEntriesByExternalRef(importedRow.getReferenceExternalRef());
-				if(moreEntries.size() == 1) {
-					course = moreEntries.get(0);
-				}
-			}
-			importedRow.setCourse(course);
-		}
-		
-		
-		List<LectureBlock> lectureBlocks = lectureService.loadLectureBlocksByExternalRef(importedRow.getIdentifier());
-		LectureBlock lectureBlock = null;
-		
-		if(lectureBlocks.isEmpty()) {
-			importedRow.setStatus(ImportCurriculumsStatus.NEW);
-		} else if(lectureBlocks.size() == 1) {
-			importedRow.setLectureBlock(lectureBlocks.get(0));
-			lectureBlock = lectureBlocks.get(0);
-			loadTaxonomyLevels(importedRow);
-		} else {
-			// Duplicate
-			notUniqueIdentifierError(importedRow);
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-		}
-
-		return lectureBlock;
-	}
-
-	private CurriculumElement loadElement(ImportedRow importedRow, Map<String,ImportedRow> curriculumsMap, Map<String,CurriculumElementType> typesMap) {
-		// Map curriculum
-		if(StringHelper.containsNonWhitespace(importedRow.getCurriculumIdentifier())) {
-			importedRow.setCurriculumRow(curriculumsMap.get(importedRow.getCurriculumIdentifier()));
-		}
-		
-		String identifier = importedRow.getIdentifier();
-		
-		// Search existing element
-		List<CurriculumElement> elements;
-		if(importedRow.type() == CurriculumExportType.IMPL) {
-			if(importedRow.getCurriculum() != null) {
-				elements = curriculumService.searchCurriculumElements(importedRow.getCurriculum(), null, null, identifier, null, CurriculumElementStatus.notDeleted());
-			} else {
-				elements = List.of();
-			}
-		} else if(importedRow.type() == CurriculumExportType.ELEM) {
-			if(importedRow.getImplementation() != null) {
-				elements = curriculumService.searchCurriculumElements(importedRow.getCurriculum(), importedRow.getImplementation(), null, identifier, null, CurriculumElementStatus.notDeleted());
-			} else {
-				elements = List.of();
-			}
-		} else {
-			return null;
-		}
-
-		if(elements.isEmpty()) {
-			importedRow.setStatus(ImportCurriculumsStatus.NEW);
-		} else if(elements.size() == 1) {
-			importedRow.setCurriculumElement(elements.get(0));
-			if(importedRow.type() == CurriculumExportType.IMPL) {
-				importedRow.setImplementation(elements.get(0));
-			}
-			loadTaxonomyLevels(importedRow);
-		} else {
-			// Duplicate
-			notUniqueIdentifierError(importedRow);
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-		}
-		
-		// Map curriculum element type
-		if(StringHelper.containsNonWhitespace(importedRow.getCurriculumElementTypeIdentifier())) {
-			importedRow.setCurriculumElementType(typesMap.get(importedRow.getCurriculumElementTypeIdentifier()));
-		}
-
-		return elements.size() == 1 ? elements.get(0) : null;
-	}
-	
-	private List<String> loadTaxonomyLevels(ImportedRow importedRow) {
-		List<String> levels;
-		if((importedRow.type() == CurriculumExportType.IMPL || importedRow.type() == CurriculumExportType.ELEM)
-				&& importedRow.getCurriculumElement() != null) {
-			levels = importedRow.getCurriculumElement().getTaxonomyLevels().stream()
-					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
-					.toList();
-		} else if(importedRow.type() == CurriculumExportType.COURSE && importedRow.getCourse() != null) {
-			levels = importedRow.getCourse().getTaxonomyLevels().stream()
-					.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
-					.toList();
-		} else if(importedRow.type() == CurriculumExportType.TMPL && importedRow.getTemplate() != null) {
-			levels = importedRow.getTemplate().getTaxonomyLevels().stream()
-					.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
-					.toList();
-		} else if(importedRow.type() == CurriculumExportType.EVENT && importedRow.getLectureBlock() != null) {
-			levels = importedRow.getLectureBlock().getTaxonomyLevels().stream()
-					.map(LectureBlockToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
-					.toList();
-		} else {
-			levels = List.of();
-		}
-		return levels;
 	}
 	
 	public void validateCurriculumsUniqueIdentifiers(List<ImportedRow> importedRows) {
@@ -470,14 +171,22 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		}
 	}
 	
-	private void notUniqueIdentifierError(ImportedRow importedRow) {
-		String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
-		importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translate("error.value.duplicate"));
+	public void validateUsersUniqueUsernames(List<ImportedUserRow> importedRows) {
+		Map<String, ImportedUserRow> identifiersMap = new HashMap<>();
+		for(ImportedUserRow row:importedRows) {
+			String username = row.getUsername();
+			if(identifiersMap.containsKey(username)) {
+				notUniqueIdentifierError(row);
+				notUniqueIdentifierError(identifiersMap.get(username));
+			} else {
+				identifiersMap.put(username, row);
+			}
+		}
 	}
 	
-	private void levelNotFoundError(ImportedRow importedRow, String level) {
-		String column = translate(ImportCurriculumsCols.level.i18nHeaderKey());
-		importedRow.addValidationError(ImportCurriculumsCols.level, column, null, translator.translate("error.level.not.found", level));
+	private void notUniqueIdentifierError(AbstractImportRow importedRow) {
+		String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
+		importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translate("error.value.duplicate"));
 	}
 	
 	public void validate(ImportedRow importedRow) {
@@ -504,6 +213,138 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
+			}
+		}
+	}
+	
+	public void validate(ImportedUserRow importedRow) {
+		// User properties inclusive username
+		for(int i=0; i<userPropertyHandlers.size(); i++) {
+			UserPropertyHandler handler = userPropertyHandlers.get(i);
+			String value = importedRow.getIdentityProp(i);
+			
+			User user = importedRow.getIdentity() == null
+					? null
+					: importedRow.getIdentity().getUser();
+			
+			String currentValue = user == null
+					? null
+					: handler.getUserProperty(user, translator.getLocale());
+
+			ValidationError validationError = new ValidationError();
+			String column = translate(handler.i18nColumnDescriptorLabelKey());
+			
+			if(validateMandatory(importedRow, value, handler)
+					&& validateLength(importedRow, value, 128, handler)) {
+			
+				if(UserConstants.NICKNAME.equals(handler.getName())) {
+					if(importedRow.getIdentity() == null) {
+						ValidationResult result = olatAuthManager.validateAuthenticationUsername(value, "OLAT", importedRow.getIdentity());
+						if(!result.isValid() && result.getInvalidDescriptions() != null) {
+							List<ValidationDescription> errors = result.getInvalidDescriptions();
+							String description = validationDescriptionToString(errors);
+							importedRow.addValidationError(handler.getName(), column, null, description);
+						}
+					}
+				} else if(!handler.isValidValue(user, value, validationError, translator.getLocale())) {
+					String description = translate(validationError.getErrorKey());
+					importedRow.addValidationError(handler.getName(), column, null, description);
+				} else if((handler.getName().equals(UserConstants.INSTITUTIONALEMAIL) && StringHelper.containsNonWhitespace(value)) 
+						|| handler.getName().equals(UserConstants.EMAIL)) {
+					if (!userManager.isEmailAllowed(value, user)) {
+						String description = translator.translate("form.name." + handler.getName() + ".error.exists", new String[] { value });
+						importedRow.addValidationError(handler.getName(), column, null, description);
+					}
+				} else if(currentValue != null && !Objects.equals(currentValue, value)) {
+					importedRow.addValidationWarning(handler.getName(), column, null,
+							translator.translate("warning.change.ignore", value));
+				}
+			}
+		}
+		
+		// Organisation
+		if(validateMandatory(importedRow, importedRow.getOrganisationIdentifier(), ImportCurriculumsCols.organisationIdentifier)) {
+			String organisationColumn = translate(ImportCurriculumsCols.organisationIdentifier.i18nHeaderKey());
+			if(importedRow.getOrganisation() == null) {
+				// Has an organisation identifier
+				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+						null, translator.translate("error.not.exist", importedRow.getOrganisationIdentifier()));
+			} else if(!hasOrganisationPermission(importedRow.getOrganisation())) {
+				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+						null, translate("error.permissions"));
+			} else if(importedRow.getIdentity() != null) {
+				List<Organisation> currentOrganisations = organisationService.getOrganisations(importedRow.getIdentity(), OrganisationRoles.user);
+				if(!currentOrganisations.contains(importedRow.getOrganisation())) {
+					importedRow.addValidationWarning(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+							null, translate("error.no.update"));
+				}
+			}
+		}
+		
+		if(importedRow.getStatus() == null) {
+			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
+			if(statistics.errors() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
+			} else if(statistics.changes() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
+			} else {
+				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
+			}
+		}
+	}
+	
+	public void validatePassword(ImportedUserRow importedRow) {
+		if(!StringHelper.containsNonWhitespace(importedRow.getPassword())) return;
+		
+		if(importedRow.getIdentity() == null) {
+			TransientIdentity newIdentity = new TransientIdentity();
+			newIdentity.setName(importedRow.getUsername());
+			ValidationResult validationResult = olatAuthManager.createPasswordSytaxValidator().validate(importedRow.getPassword(), newIdentity);
+			if(!validationResult.isValid()) {
+				String column = translate(ImportCurriculumsCols.password.i18nHeaderKey());
+				String description = validationDescriptionToString(validationResult.getInvalidDescriptions());
+				importedRow.addValidationError(ImportCurriculumsCols.password, column,
+						null, description);
+			}
+		} else if(StringHelper.containsNonWhitespace(importedRow.getPassword())) {
+			String column = translate(ImportCurriculumsCols.password.i18nHeaderKey());
+			importedRow.addValidationError(ImportCurriculumsCols.password, column,
+					null, translate("error.password.user.exists"));
+		}
+	}
+	
+	public void validate(ImportedMembershipRow importedRow) {
+		// Curriculum / implementations
+		validateCurriculumAndImplementation(importedRow);
+		
+		// User name
+		if(validateMandatory(importedRow, importedRow.getUsername(), ImportCurriculumsCols.username)) {
+			String sheet = translate("export.users");
+			String column = translate(ImportCurriculumsCols.username.i18nHeaderKey());
+			if(importedRow.getUserRow() == null) {
+				importedRow.addValidationError(ImportCurriculumsCols.username, column, null,
+						translator.translate("error.not.exist.sheet", sheet));
+			} else if(importedRow.getUserRow().hasValidationErrors()) {
+				importedRow.addValidationError(ImportCurriculumsCols.username, column,
+						null, translator.translate("error.precent.errors", sheet));
+			} else if(importedRow.getUserRow().isIgnored()) {
+				importedRow.addValidationError(ImportCurriculumsCols.username, column,
+						null, translator.translate("error.ignored.in.sheet", sheet));
+			}
+		}
+		
+		// Role
+		if(validateMandatory(importedRow, importedRow.getRole(), ImportCurriculumsCols.role)
+				&& validateRole(importedRow, importedRow.getRole(), ImportCurriculumsCols.role)) {
+			//
+		}
+		
+		if(importedRow.getStatus() == null) {
+			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
+			if(statistics.errors() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
+			} else {
+				importedRow.setStatus(ImportCurriculumsStatus.NEW);
 			}
 		}
 	}
@@ -882,6 +723,53 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		}
 	}
 	
+	private void validateCurriculumAndImplementation(ImportedMembershipRow importedRow) {
+		if(validateMandatory(importedRow, importedRow.getCurriculumIdentifier(), ImportCurriculumsCols.curriculumIdentifier)) {
+			String sheet = translate("export.products");
+			String column = translate(ImportCurriculumsCols.curriculumIdentifier.i18nHeaderKey());
+			if(importedRow.getCurriculumRow() == null) {
+				importedRow.addValidationError(ImportCurriculumsCols.curriculumIdentifier, column,
+						null, translator.translate("error.not.exist", importedRow.getCurriculumIdentifier()));
+			} else if(importedRow.getCurriculumRow().hasValidationErrors()) {
+				importedRow.addValidationError(ImportCurriculumsCols.curriculumIdentifier, column,
+						null, translator.translate("error.precent.errors", sheet));
+			} else if(importedRow.getCurriculumRow().isIgnored()) {
+				importedRow.addValidationError(ImportCurriculumsCols.curriculumIdentifier, column,
+						null, translator.translate("error.ignored.in.sheet", sheet));
+			} 
+		}
+		
+		if(validateMandatory(importedRow, importedRow.getImplementationIdentifier(), ImportCurriculumsCols.implementationIdentifier)) {
+			String sheet = translate("export.implementations");
+			String column = translate(ImportCurriculumsCols.implementationIdentifier.i18nHeaderKey());
+			if(importedRow.getImplementationRow() == null) {
+				importedRow.addValidationError(ImportCurriculumsCols.implementationIdentifier, column,
+						null, translator.translate("error.not.exist", importedRow.getImplementationIdentifier()));
+			} else if(importedRow.getImplementationRow().hasValidationErrors()) {
+				importedRow.addValidationError(ImportCurriculumsCols.implementationIdentifier, column,
+						null, translator.translate("error.precent.errors", sheet));
+			} else if(importedRow.getImplementationRow().isIgnored()) {
+				importedRow.addValidationError(ImportCurriculumsCols.implementationIdentifier, column,
+						null, translator.translate("error.ignored.in.sheet", sheet));
+			} 
+		}
+		
+		if(validateMandatory(importedRow, importedRow.getImplementationIdentifier(), ImportCurriculumsCols.identifier)) {
+			String sheet = translate("export.implementations");
+			String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
+			if(importedRow.getImplementationRow() == null) {
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
+						null, translator.translate("error.not.exist", importedRow.getImplementationIdentifier()));
+			} else if(importedRow.getImplementationRow().hasValidationErrors()) {
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
+						null, translator.translate("error.precent.errors", sheet));
+			} else if(importedRow.getImplementationRow().isIgnored()) {
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
+						null, translator.translate("error.ignored.in.sheet", sheet));
+			} 
+		}
+	}
+	
 	private boolean validateIdentifier(ImportedRow importedRow) {
 		// Identifier / external ref.
 		boolean allOk = validateMandatory(importedRow, importedRow.getIdentifier(), ImportCurriculumsCols.identifier);
@@ -924,7 +812,7 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		
 		String subjects = importedRow.getSubjects();
 		List<String> subjectsList = importedRow.getSubjectsList();
-		List<String> currentPaths = loadTaxonomyLevels(importedRow);
+		List<String> currentPaths = ImportCurriculumsObjectsLoader.loadTaxonomyLevels(importedRow);
 		String column = translate(ImportCurriculumsCols.taxonomyLevels.i18nHeaderKey());
 		
 		for(String subject:subjectsList) {
@@ -948,7 +836,27 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		return allOk;
 	}
 	
-	private boolean validateMandatory(ImportedRow importedRow, String val, ImportCurriculumsCols col) {
+	private boolean validateRole(AbstractImportRow importedRow, String val, ImportCurriculumsCols col) {
+		boolean allOk = true;
+		if(CurriculumExport.parseRole(val) == null) {
+			String column = translate(col.i18nHeaderKey());
+			importedRow.addValidationError(col, column, null, translator.translate("warning.value.not.supported", val));
+			allOk &= false;
+		}
+		return allOk;
+	}
+	
+	private boolean validateMandatory(ImportedUserRow importedRow, String val, UserPropertyHandler handler) {
+		boolean allOk = true;
+		if(!StringHelper.containsNonWhitespace(val)) {
+			String column = translate(handler.i18nColumnDescriptorLabelKey());
+			importedRow.addValidationError(handler.getName(), column, translate("error.no.value"), translate("error.value.required"));
+			allOk &= false;
+		}
+		return allOk;
+	}
+	
+	private boolean validateMandatory(AbstractImportRow importedRow, String val, ImportCurriculumsCols col) {
 		boolean allOk = true;
 		if(!StringHelper.containsNonWhitespace(val)) {
 			String column = translate(col.i18nHeaderKey());
@@ -958,7 +866,7 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		return allOk;
 	}
 	
-	private boolean validateMandatory(ImportedRow importedRow, ReaderLocalDate val, ImportCurriculumsCols col) {
+	private boolean validateMandatory(AbstractImportRow importedRow, ReaderLocalDate val, ImportCurriculumsCols col) {
 		boolean allOk = true;
 		if(val != null && val.date() == null && !StringHelper.containsNonWhitespace(val.val())) {
 			String column = translate(col.i18nHeaderKey());
@@ -968,7 +876,7 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		return allOk;
 	}
 	
-	private boolean validateMandatory(ImportedRow importedRow, ReaderLocalTime val, ImportCurriculumsCols col) {
+	private boolean validateMandatory(AbstractImportRow importedRow, ReaderLocalTime val, ImportCurriculumsCols col) {
 		boolean allOk = true;
 		if(val != null && val.time() == null && !StringHelper.containsNonWhitespace(val.val())) {
 			String column = translate(col.i18nHeaderKey());
@@ -978,7 +886,7 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		return allOk;
 	}
 	
-	private boolean validateEmpty(ImportedRow importedRow, Object val, ImportCurriculumsCols col) {
+	private boolean validateEmpty(AbstractImportRow importedRow, Object val, ImportCurriculumsCols col) {
 		boolean allOk = true;
 		if(val != null) {
 			String column = translate(col.i18nHeaderKey());
@@ -997,6 +905,16 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		}
 		return allOk;
 	}
+	
+	private boolean validateLength(ImportedUserRow importedRow, String val, int maxLength, UserPropertyHandler handler) {
+		boolean allOk = true;
+		if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
+			String column = translate(handler.i18nColumnDescriptorLabelKey());
+			importedRow.addValidationError(handler.getName(), column, null, translate("error.value.length"));
+			allOk &= false;
+		}
+		return allOk;
+	} 
 	
 	private boolean validateDate(ImportedRow importedRow, ReaderLocalDate val, ImportCurriculumsCols col, boolean warningForCurrent) {
 		boolean allOk = true;
@@ -1108,6 +1026,13 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		importedRow.addChanged(column, currentValue, newValue, col);
 	}
 	
+	private String validationDescriptionToString(List<ValidationDescription> errors) {
+		if(errors == null || errors.isEmpty()) return "";
+		return errors.stream()
+					.map(d -> d.getText(translator.getLocale()))
+					.collect(Collectors.joining("; "));
+	}
+	
 	private String toExcelFormat(Enum<?> val) {
 		if(val == null) return null;
 		
@@ -1147,93 +1072,7 @@ public class ImportCurriculumsHelper extends AbstractExcelReader {
 		return ok;
 	}
 	
-	public Import loadFile(File file) {
-
-		List<ImportedRow> elementsRows = null;
-		List<ImportedRow> curriculumsRows = null;
-		
-		try(ReadableWorkbook wb = new ReadableWorkbook(file)) {
-			Sheet curriculumsSheet = wb.getFirstSheet();
-			try (Stream<Row> rows = curriculumsSheet.openStream()) {
-				curriculumsRows = rows
-					.filter(r -> r.getRowNum() > 1)
-					.map(r -> {
-						// Title, Ext. ref., Organisation ref., absences, description, creation date, last modified
-						String title = getString(r, 0);
-						String externalRef = getString(r, 1);
-						String organisationExtRel = getString(r, 2);
-						String absences = getString(r, 3);
-						String description = getString(r, 4);
-						LocalDateTime creationDate = getDateTime(r, 5);
-						LocalDateTime lastModified = getDateTime(r, 6);
-						
-						return new ImportedRow(r.getRowNum(), title, externalRef, organisationExtRel,
-								absences, description, creationDate, lastModified);
-					}).toList();
-			} catch(Exception e) {
-				log.error("", e);
-			}
-			
-			Sheet elementsSheet = wb.getSheet(1)
-					.orElse(null);
-			try (Stream<Row> rows = elementsSheet.openStream()) {
-				elementsRows = rows
-					.filter(r -> r.getRowNum() > 1)
-					.map(r -> {
-						// Prod. ext. ref, Impl. ext. ref., Object type, Title, Ext. ref., Organisation ref., absences, description, creation date, last modified
-						String curriculumIdentifier = getString(r, 0);
-						String implementationIdentifier = getString(r, 1);
-						String type = getString(r, 2);
-						String level = getHierarchicalNumber(r, 3);
-						
-						String title = getString(r, 4);
-						String externalRef = getString(r, 5);
-						String elementStatus = getString(r, 6);
-						
-						ReaderLocalDate startDate = getDate(r, 7);
-						ReaderLocalTime startTime = getTime(r, 8);
-						ReaderLocalDate endDate = getDate(r, 9);
-						ReaderLocalTime endTime = getTime(r, 10);
-						
-						String unit = getNumberAsString(r, 11);
-						String referenceExternalRef = getString(r, 12);
-						String location = getString(r, 13);
-						String curriculumElementType = getString(r, 14);
-						
-						String calendar = getString(r, 15);
-						String absences = getString(r, 16);
-						String progress = getString(r, 17);
-						
-						String subjects = getString(r, 18);
-						
-						LocalDateTime creationDate = getDateTime(r, 19);
-						LocalDateTime lastModified = getDateTime(r, 20);
-						
-						if(!StringHelper.containsNonWhitespace(type)
-								&& !StringHelper.containsNonWhitespace(curriculumIdentifier)
-								&& !StringHelper.containsNonWhitespace(implementationIdentifier)) {
-							return null;
-						}
-						return new ImportedRow(type, r.getRowNum(), title, externalRef,
-									curriculumIdentifier, implementationIdentifier, level, elementStatus, curriculumElementType,
-									referenceExternalRef, unit, startDate, startTime, endDate, endTime, location,
-									calendar, absences, progress, subjects, creationDate, lastModified);
-					})
-					.filter(r -> r != null)
-					.toList();
-			} catch(Exception e) {
-				log.error("", e);
-			}
-			
-		} catch(Exception e) {
-			log.error("", e);
-		}
-		return new Import(curriculumsRows, elementsRows);
-	}
 	
-	public record Import(List<ImportedRow> curriculumsRows, List<ImportedRow> elementsRows) {
-		//
-	}
 	
 	public record Identifier(String implementationIdentifier, String identifier) {
 		@Override

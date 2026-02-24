@@ -39,6 +39,7 @@ public class ValidationResultListController extends FormBasicController {
 	
 	public ValidationResultListController(UserRequest ureq, WindowControl wControl, List<CurriculumImportedValue> values) {
 		super(ureq, wControl, "validation_results");
+
 		this.values = values;
 		initForm(ureq);
 	}

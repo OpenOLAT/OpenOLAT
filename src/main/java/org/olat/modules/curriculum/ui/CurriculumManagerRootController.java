@@ -37,11 +37,14 @@ import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.certificationprogram.CertificationModule;
 import org.olat.modules.certificationprogram.ui.CertificationProgramListController;
@@ -61,6 +64,7 @@ import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,6 +100,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CertificationProgramListController certificationProgramListCtrl;
 
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -349,7 +355,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private void doImportCurriculums(UserRequest ureq) {
 		removeAsListenerAndDispose(importCurriculumsCtrl);
 
-		final ImportCurriculumsContext context = new ImportCurriculumsContext();
+		final Roles roles = ureq.getUserSession().getRoles();
+		Translator translator = Util.createPackageTranslator(ImportCurriculumsContext.class, getLocale(),
+				userManager.getPropertyHandlerTranslator(getTranslator()));
+		final ImportCurriculumsContext context = new ImportCurriculumsContext(getIdentity(), roles, translator);
 		ImportCurriculumsFileStep step = new ImportCurriculumsFileStep(ureq, context);
 		StepRunnerCallback finish = new ImportCurriculumsFinishStepCallback(context);
 	

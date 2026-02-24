@@ -29,20 +29,20 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
  * 
- * Initial date: 12 févr. 2026<br>
+ * Initial date: 20 févr. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ImportCurriculumsReviewElementsStep extends BasicStep {
-
+public class ImportCurriculumsReviewUsersStep extends BasicStep {
+	
 	private ImportCurriculumsContext context;
 	
-	public ImportCurriculumsReviewElementsStep(UserRequest ureq, ImportCurriculumsContext context) {
+	public ImportCurriculumsReviewUsersStep(UserRequest ureq, ImportCurriculumsContext context) {
 		super(ureq);
 		this.context = context;
 
-		setNextStep(new ImportCurriculumsReviewUsersStep(ureq, context));
-		setI18nTitleAndDescr("review.elements.title", "review.elements.title");
+		setNextStep(new ImportCurriculumsReviewMembershipsStep(ureq, context));
+		setI18nTitleAndDescr("review.users.title", "review.users.title");
 	}
 	
 	@Override
@@ -53,6 +53,7 @@ public class ImportCurriculumsReviewElementsStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new ImportCurriculumsReviewElementsController(ureq, wControl, form, context, runContext);
+		return new ImportCurriculumsReviewUsersController(ureq, wControl, form, context, runContext);
 	}
+
 }

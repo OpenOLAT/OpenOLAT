@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
@@ -35,7 +37,9 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -48,8 +52,10 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
+import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -58,6 +64,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,6 +83,10 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -84,7 +96,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
-	
+
 	public ImportCurriculumsFinishStepCallback(ImportCurriculumsContext context) {
 		CoreSpringFactory.autowireObject(this);
 		this.context = context;
@@ -96,7 +108,59 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		processCurriculumElements();
 		processRepositoryEntries();
 		processEvents();
+		processUsers(ureq.getIdentity());
+		processMemberships(ureq.getIdentity());
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private void processMemberships(Identity doer) {
+		List<ImportedMembershipRow> importedRows = context.getImportedMembershipsRows();
+		for(ImportedMembershipRow importedRow:importedRows) {
+			CurriculumRoles role = CurriculumExport.parseRole(importedRow.getRole());
+			if(!isIgnored(importedRow) && role != null
+					&& importedRow.getElementRow() != null && importedRow.getElementRow().getCurriculumElement() != null
+					&& importedRow.getUserRow() != null && importedRow.getUserRow().getIdentity() != null) {
+				CurriculumElement element = importedRow.getElementRow().getCurriculumElement();
+				Identity identity = importedRow.getUserRow().getIdentity();
+				curriculumService.addMember(element, identity, role, doer);
+				dbInstance.commit();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private void processUsers(Identity doer) {
+		List<ImportedUserRow> importedRows = context.getImportedUsersRows();
+		for(ImportedUserRow importedRow:importedRows) {
+			if(!isIgnored(importedRow) && importedRow.getIdentity() == null) {
+				Identity newIdentity = createIdentity(importedRow, doer);
+				importedRow.setIdentity(newIdentity);
+				dbInstance.commit();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private Identity createIdentity(ImportedUserRow row, Identity doer) {
+		User newUser = userManager.createUser(null, null, null);
+		List<UserPropertyHandler> handlers = context.getUserPropertyHandlers();
+		for (int i=0; i<handlers.size(); i++) {
+			String value = row.getIdentityProp(i);
+			if(value != null) {
+				newUser.setProperty(handlers.get(i).getName(), value);
+			}
+		}
+		
+		String pwd = null;
+		String provider = null;
+		String authusername = null;
+		String nickName = row.getUsername();
+		if(StringHelper.containsNonWhitespace(row.getPassword())) {
+			provider = BaseSecurityModule.getDefaultAuthProviderIdentifier();
+			authusername = nickName;
+			pwd = row.getPassword();
+		}
+		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, newUser, provider, BaseSecurity.DEFAULT_ISSUER, null, authusername, pwd, row.getOrganisation(), null, doer);
 	}
 	
 	private void processEvents() {
@@ -324,30 +388,30 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	private CurriculumLearningProgress toCurriculumLearningProgress(String val) {
-		if(ImportCurriculumsHelper.ON.equalsIgnoreCase(val)) {
+		if(ImportCurriculumsValidator.ON.equalsIgnoreCase(val)) {
 			return CurriculumLearningProgress.enabled;
 		}
-		if(ImportCurriculumsHelper.OFF.equalsIgnoreCase(val)) {
+		if(ImportCurriculumsValidator.OFF.equalsIgnoreCase(val)) {
 			return CurriculumLearningProgress.disabled;
 		}
 		return CurriculumLearningProgress.inherited;
 	}
 	
 	private CurriculumLectures toCurriculumLectures(String val) {
-		if(ImportCurriculumsHelper.ON.equalsIgnoreCase(val)) {
+		if(ImportCurriculumsValidator.ON.equalsIgnoreCase(val)) {
 			return CurriculumLectures.enabled;
 		}
-		if(ImportCurriculumsHelper.OFF.equalsIgnoreCase(val)) {
+		if(ImportCurriculumsValidator.OFF.equalsIgnoreCase(val)) {
 			return CurriculumLectures.disabled;
 		}
 		return CurriculumLectures.inherited;
 	}
 	
 	private CurriculumCalendars toCurriculumCalendars(String val) {
-		if(ImportCurriculumsHelper.ON.equalsIgnoreCase(val)) {
+		if(ImportCurriculumsValidator.ON.equalsIgnoreCase(val)) {
 			return CurriculumCalendars.enabled;
 		}
-		if(ImportCurriculumsHelper.OFF.equalsIgnoreCase(val)) {
+		if(ImportCurriculumsValidator.OFF.equalsIgnoreCase(val)) {
 			return CurriculumCalendars.disabled;
 		}
 		return CurriculumCalendars.inherited;
@@ -413,7 +477,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	 * @param importedRow The row to import
 	 * @return true if the row is ignored
 	 */
-	private boolean isIgnored(ImportedRow importedRow) {
+	private boolean isIgnored(AbstractImportRow importedRow) {
 		if(importedRow.isIgnored()
 				|| importedRow.getStatus() == ImportCurriculumsStatus.NO_CHANGES
 				|| importedRow.getStatus() == ImportCurriculumsStatus.ERROR

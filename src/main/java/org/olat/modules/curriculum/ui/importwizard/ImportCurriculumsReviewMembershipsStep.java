@@ -24,35 +24,37 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
  * 
- * Initial date: 12 févr. 2026<br>
+ * Initial date: 20 févr. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ImportCurriculumsReviewElementsStep extends BasicStep {
-
+public class ImportCurriculumsReviewMembershipsStep extends BasicStep {
+	
 	private ImportCurriculumsContext context;
 	
-	public ImportCurriculumsReviewElementsStep(UserRequest ureq, ImportCurriculumsContext context) {
+	public ImportCurriculumsReviewMembershipsStep(UserRequest ureq, ImportCurriculumsContext context) {
 		super(ureq);
 		this.context = context;
 
-		setNextStep(new ImportCurriculumsReviewUsersStep(ureq, context));
-		setI18nTitleAndDescr("review.elements.title", "review.elements.title");
+		setNextStep(Step.NOSTEP);
+		setI18nTitleAndDescr("review.memberships.title", "review.memberships.title");
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_NEXT;
+		return PrevNextFinishConfig.BACK_FINISH;
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new ImportCurriculumsReviewElementsController(ureq, wControl, form, context, runContext);
+		return new ImportCurriculumsReviewMembershipsController(ureq, wControl, form, context, runContext);
 	}
+
 }

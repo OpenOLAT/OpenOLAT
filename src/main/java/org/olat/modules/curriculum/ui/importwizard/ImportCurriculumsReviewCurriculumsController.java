@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
@@ -34,7 +35,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 
@@ -46,14 +46,16 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableM
  */
 public class ImportCurriculumsReviewCurriculumsController extends AbstractImportListController {
 	
+	private ImportCurriculumsReviewTableModel tableModel;
+	
 	public ImportCurriculumsReviewCurriculumsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			ImportCurriculumsContext context, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, "import_review_curriculums", context, runContext);
+		super(ureq, wControl, rootForm, "import_review_curriculums", context, runContext, "Curriculums", true, true);
 
 		initForm(ureq);
 		
 		// Load data for filters
-		loadModel(ureq);
+		loadModel();
 		// Initialize filters
 		initFilterTabs();
 		initFilters();
@@ -80,6 +82,12 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 				new DateTimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImportCurriculumsCols.lastModified,
 				new DateTimeFlexiCellRenderer(getLocale())));
+	}
+	
+	@Override
+	protected DefaultFlexiTableDataModel<? extends AbstractImportRow> initTableModel(FlexiTableColumnModel columnsModel) {
+		tableModel = new ImportCurriculumsReviewTableModel(columnsModel);
+		return tableModel;
 	}
 
 	@Override
@@ -112,15 +120,13 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 				ORGANISATION_KEY, organisationsKV, true));
 	}
 
-	private void loadModel(UserRequest ureq) {
+	private void loadModel() {
 		List<ImportedRow> rows = context.getImportedCurriculumsRows();
 		if(rows == null) {
 			rows = List.of();
 		} else {
-			final Roles roles = ureq.getUserSession().getRoles();
-			final ImportCurriculumsHelper helper = new ImportCurriculumsHelper(getIdentity(), roles, getTranslator());
-			helper.loadCurrentCurriculums(rows);
-			
+			context.getLoader().loadCurrentCurriculums(rows);
+			ImportCurriculumsValidator helper = context.getValidator();
 			for(ImportedRow row:rows) {
 				helper.validate(row);
 			}
@@ -154,14 +160,8 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	@Override
 	public void back() {
-		context.setImportedCurriculumsRows(null);
-		context.setImportedElementsRows(null);
+		context.reset();
 		super.back();
 	}
 

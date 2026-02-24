@@ -27,9 +27,9 @@ package org.olat.modules.curriculum.ui.importwizard;
  */
 public enum ImportCurriculumsStatus {
 	
-	NO_CHANGES,
-	MODIFIED,
 	NEW,
+	MODIFIED,
+	NO_CHANGES,
 	ERROR
 
 }

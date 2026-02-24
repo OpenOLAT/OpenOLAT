@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.junit.Test;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.test.OlatTestCase;
 
@@ -42,9 +43,10 @@ public class ImportCurriculumsHelperTest extends OlatTestCase {
 		URL url = ImportCurriculumsHelperTest.class.getResource("products_2.xlsx");
 		File file = new File(url.toURI());
 		
-		Translator translator = Util.createPackageTranslator(ImportCurriculumsHelper.class, Locale.ENGLISH);
-		ImportCurriculumsHelper helper = new ImportCurriculumsHelper(null, null, translator);
+		ImportCurriculumsFileReader helper = new ImportCurriculumsFileReader(Roles.administratorRoles());
 		helper.loadFile(file);
+		
+		Translator translator = Util.createPackageTranslator(ImportCurriculumsValidator.class, Locale.ENGLISH);
 	}
 
 }

@@ -19,22 +19,13 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.id.Organisation;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalDate;
 import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalTime;
@@ -42,17 +33,21 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
-import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 
-public class ImportedRow {
+/**
+ * 
+ * Initial date: 20 févr. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ *
+ */
+public class ImportedRow extends AbstractImportRow {
 	
 	private final CurriculumExportType type;
 	private final String rawType;
 	
-	private final int rowNum;
 	private final String identifier;
 	private final String displayName;
 	private String level;
@@ -83,7 +78,6 @@ public class ImportedRow {
 	private String referenceExternalRef;
 
 	private CurriculumElement curriculumElement;
-	private ImportedRow curriculumElementParentRow;
 	private CurriculumElementType curriculumElementType;
 	private String curriculumElementTypeIdentifier;
 	
@@ -101,19 +95,12 @@ public class ImportedRow {
 	private final LocalDateTime creationDate;
 	private final LocalDateTime lastModified;
 
-	private ImportCurriculumsStatus status;
-	
-	private FormLink validationResultsLink;
-	private MultipleSelectionElement ignoreEl;
-	
-	private Map<ImportCurriculumsCols,CurriculumImportedValue> validationMap = new EnumMap<>(ImportCurriculumsCols.class);
-	
 	public ImportedRow(int rowNum, String displayName, String identifier,
 			String organisationIdentifier, String absences, String description,
 			LocalDateTime creationDate, LocalDateTime lastModified) {
+		super(rowNum);
 		type = CurriculumExportType.CUR;
 		this.rawType = null;
-		this.rowNum = rowNum;
 		this.displayName = displayName;
 		this.identifier = identifier;
 		this.curriculumIdentifier = identifier;
@@ -128,9 +115,9 @@ public class ImportedRow {
 			String curriculumIdentifier, String implementationIdentifier, String level, String elementStatus, String curriculumElementTypeIdentifier,
 			String referenceExternalRef, String unit, ReaderLocalDate startDate, ReaderLocalTime startTime, ReaderLocalDate endDate, ReaderLocalTime endTime,
 			String location, String calendar, String absences, String progress, String subjects, LocalDateTime creationDate, LocalDateTime lastModified) {
+		super(rowNum);
 		this.type = CurriculumExportType.secureValueOf(type);
 		this.rawType = type;
-		this.rowNum = rowNum;
 		this.displayName = displayName;
 		this.identifier = identifier;
 		this.curriculumIdentifier = curriculumIdentifier;
@@ -161,23 +148,11 @@ public class ImportedRow {
 		return rawType;
 	}
 	
-	public ImportCurriculumsStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(ImportCurriculumsStatus status) {
-		this.status = status;
-	}
-	
 	public boolean isNew() {
 		return (type == CurriculumExportType.CUR && curriculum == null)
 				|| (type == CurriculumExportType.IMPL && curriculumElement == null)
 				|| (type == CurriculumExportType.ELEM && curriculumElement == null)
 				|| (type == CurriculumExportType.EVENT && lectureBlock == null);
-	}
-
-	public int getRowNum() {
-		return rowNum;
 	}
 
 	public String getIdentifier() {
@@ -327,12 +302,8 @@ public class ImportedRow {
 		this.curriculumElementTypeIdentifier = curriculumElementTypeIdentifier;
 	}
 
-	public ImportedRow getCurriculumElementParentRow() {
-		return curriculumElementParentRow;
-	}
-
 	public void setCurriculumElementParentRow(ImportedRow curriculumElementParentRow) {
-		this.curriculumElementParentRow = curriculumElementParentRow;
+		super.setCurriculumElementParentRow(curriculumElementParentRow);
 		
 		if(curriculumElementParentRow != null) {
 			if(type() == CurriculumExportType.COURSE) {
@@ -479,85 +450,6 @@ public class ImportedRow {
 
 	public LocalDateTime getLastModified() {
 		return lastModified;
-	}
-
-	public boolean isIgnored() {
-		return ignoreEl != null && ignoreEl.isAtLeastSelected(1);
-	}
-
-	public MultipleSelectionElement getIgnoreEl() {
-		return ignoreEl;
-	}
-
-	public void setIgnoreEl(MultipleSelectionElement ignoreEl) {
-		this.ignoreEl = ignoreEl;
-	}
-	
-	public FormLink getValidationResultsLink() {
-		return validationResultsLink;
-	}
-
-	public void setValidationResultsLink(FormLink validationResultsLink) {
-		this.validationResultsLink = validationResultsLink;
-	}
-
-	public CurriculumImportedValue getValidation(ImportCurriculumsCols col) {
-		return validationMap.get(col);
-	}
-	
-	public List<CurriculumImportedValue> getValues() {
-		return List.copyOf(validationMap.values());
-	}
-	
-	public void addValidationWarning(ImportCurriculumsCols col, String column, String placeholder, String message) {
-		validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-			.setWarning(placeholder, message);
-	}
-	
-	public void addValidationError(ImportCurriculumsCols col, String column, String placeholder, String message) {
-		validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-			.setError(placeholder, message);
-	}
-	
-	public void addChanged(String column, Object currentValue, Object newValue, ImportCurriculumsCols col) {
-		if(currentValue instanceof Date date && newValue instanceof LocalDate) {
-			currentValue = DateUtils.toLocalDate(date);	
-		} else if(currentValue instanceof Date date && newValue instanceof LocalTime) {
-			currentValue = DateUtils.toLocalTime(date);	
-		}
-		if(!Objects.equals(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-				.setChanged(currentValue, newValue);
-		}
-	}
-	
-	public boolean hasValidationError(ImportCurriculumsCols col) {
-		CurriculumImportedValue val = validationMap.get(col);
-		return val != null && val.isError();
-	}
-	
-	public boolean hasValidationErrors() {
-		return validationMap.values().stream().anyMatch(v -> v.isError());
-	}
-	
-	public CurriculumImportedStatistics getValidationStatistics() {
-		int errors = 0;
-		int warnings = 0;
-		int changes = 0;
-		
-		for(Map.Entry<ImportCurriculumsCols, CurriculumImportedValue> entries:validationMap.entrySet()) {
-			CurriculumImportedValue val = entries.getValue();
-			if(val.isChanged()) {
-				changes++;
-			}
-			if(val.isError()) {
-				errors++;
-			} else if(val.isWarning()) {
-				warnings++;
-			}
-		}
-		
-		return new CurriculumImportedStatistics(errors, warnings, changes);
 	}
 	
 	@Override

@@ -37,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCel
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -60,6 +62,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,13 +74,15 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableM
 abstract class AbstractImportListController extends StepFormBasicController implements FlexiTableCssDelegate {
 
 	protected static final String IGNORE = "xignore";
-	protected static final String CMD_VALIDATION_RESULTS = "ovalidationresults";
+	protected static final String CMD_VALIDATION_RESULTS_PREFIX = "ovalidationresults";
 	
 	protected static final String STATUS_KEY = "status";
 	protected static final String IGNORED_KEY = "ignored";
+	protected static final String USERNAME_KEY = "username";
 	protected static final String CURRICULUM_KEY = "curriculum";
 	protected static final String OBJECT_TYPE_KEY = "objecttype";
 	protected static final String ORGANISATION_KEY = "organisation";
+	protected static final String IMPLEMENTATION_KEY = "implementation";
 	
 	protected static final String STATUS_NEW = "new";
 	protected static final String STATUS_MODIFIED = "modified";
@@ -94,21 +100,33 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	
 	protected FormLink errorsLink;
 	protected FlexiTableElement tableEl;
-	protected ImportCurriculumsReviewTableModel tableModel;
+	private DefaultFlexiTableDataModel<? extends AbstractImportRow> tableModel;
 
 	protected int count = 0;
-	protected final ImportCurriculumsContext context;
+	private final boolean withWarnings;
+	private final boolean withChanges;
 	
+	protected final String id;
+	protected final String cmdValidationResults;
+	protected final ImportCurriculumsContext context;
+	 
 	private ToolsController toolsCtrl;
-	private ValidationResultController validationCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
+	protected ValidationResultController validationCtrl;
+	protected CloseableCalloutWindowController calloutCtrl;
 	private ValidationResultListController validationListCtrl;
 	
+	@Autowired
+	protected UserManager userManager;
+	
 	public AbstractImportListController(UserRequest ureq, WindowControl wControl, Form rootForm, String pageName,
-			ImportCurriculumsContext context, StepsRunContext runContext) {
+			ImportCurriculumsContext context, StepsRunContext runContext,
+			String id, boolean withWarnings, boolean withChanges) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, pageName);
+		this.withChanges = withChanges;
+		this.withWarnings = withWarnings;
 		this.context = context;
-
+		this.id = id;
+		cmdValidationResults = CMD_VALIDATION_RESULTS_PREFIX + id;
 	}
 	
 	@Override
@@ -122,14 +140,21 @@ abstract class AbstractImportListController extends StepFormBasicController impl
         actionsCol.setCellRenderer(new BooleanCellRenderer(new ActionsCellRenderer(getTranslator()), null));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		tableModel = new ImportCurriculumsReviewTableModel(columnsModel);
+		tableModel = initTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCssDelegate(this);
+		sortOptions();
+	}
+	
+	protected void sortOptions() {
+		//
 	}
 	
 	protected abstract void initColumns(FlexiTableColumnModel columnsModel);
+	
+	protected abstract DefaultFlexiTableDataModel<? extends AbstractImportRow> initTableModel(FlexiTableColumnModel columnsModel);
 	
 	protected void initFilterTabs() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
@@ -138,9 +163,11 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 				TabSelectionBehavior.reloadData, List.of());
 		tabs.add(allTab);
 
-		modifiedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Modified", translate("search.status.modified"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_MODIFIED)));
-		tabs.add(modifiedTab);
+		if(withChanges) {
+			modifiedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Modified", translate("search.status.modified"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_MODIFIED)));
+			tabs.add(modifiedTab);
+		}
 		
 		newTab = FlexiFiltersTabFactory.tabWithImplicitFilters("New", translate("search.status.new"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_NEW)));
@@ -154,13 +181,17 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_WITH_ERRORS)));
 		tabs.add(withErrorsTab);
 		
-		withWarningsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Warnings", translate("search.status.warnings"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_WITH_WARNINGS)));
-		tabs.add(withWarningsTab);
+		if(withWarnings) {
+			withWarningsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Warnings", translate("search.status.warnings"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_WITH_WARNINGS)));
+			tabs.add(withWarningsTab);
+		}
 		
-		withChangesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Changes", translate("search.status.changes"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_WITH_CHANGES)));
-		tabs.add(withChangesTab);
+		if(withChanges) {
+			withChangesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Changes", translate("search.status.changes"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(STATUS_KEY, STATUS_WITH_CHANGES)));
+			tabs.add(withChangesTab);
+		}
 		
 		tableEl.setFilterTabs(true, tabs);
 	}
@@ -181,8 +212,10 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	protected abstract void initFilters(List<FlexiTableExtendedFilter> filters);
 	
 	protected void filterModel() {
-		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
-		tableEl.reset(true, true, true);
+		if(tableModel instanceof FilterableFlexiTableModel filterTableModel) {
+			filterTableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+			tableEl.reset(true, true, true);
+		}
 	}
 	
 	@Override
@@ -197,7 +230,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		ImportedRow importedRow = tableModel.getObject(pos);
+		AbstractImportRow importedRow = tableModel.getObject(pos);
 		String cssClass = null;
 		if(importedRow != null) {
 			if(importedRow.getStatus() == ImportCurriculumsStatus.ERROR) {
@@ -222,7 +255,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		return cssClass;
 	}
 	
-	protected void forgeRow(ImportedRow row, SelectionValues ignorePK) {
+	protected void forgeRow(AbstractImportRow row, SelectionValues ignorePK) {
 		ImportCurriculumsStatus status = row.getStatus();
 		CurriculumImportedStatistics statistics = row.getValidationStatistics();
 		
@@ -239,14 +272,22 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		}
 			
 		if(!statistics.isEmpty()) {
-			String link = statistics.toString();
-			FormLink validationResults = uifactory.addFormLink("results_" + (count++), CMD_VALIDATION_RESULTS, link, tableEl, Link.LINK | Link.NONTRANSLATED);
+			StringBuilder sb = new StringBuilder();
+			sb.append(statistics.errors());
+			if(withWarnings) {
+				sb.append("/").append(statistics.warnings());
+			}
+			if(withChanges) {
+				sb.append("/").append(statistics.changes());
+			}
+
+			FormLink validationResults = uifactory.addFormLink("results_" + (count++), CMD_VALIDATION_RESULTS_PREFIX + id, sb.toString(), tableEl, Link.LINK | Link.NONTRANSLATED);
 			row.setValidationResultsLink(validationResults);
 			validationResults.setUserObject(row);
 		}
 	}
 	
-	private boolean isIgnored(ImportedRow row) {
+	private boolean isIgnored(AbstractImportRow row) {
 		CurriculumImportedStatistics statistics = row.getValidationStatistics();
 		if(statistics.errors() > 0) {
 			return true;
@@ -258,6 +299,20 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 			return true;
 		}
 		return false;
+	}
+	
+	protected void loadErrorMessage(List<? extends AbstractImportRow> rows, String suffix) {
+		long numOfErrors = rows.stream()
+				.filter(row -> row.getStatus() == ImportCurriculumsStatus.ERROR || row.getValidationStatistics().errors() > 0)
+				.count();
+
+		if(numOfErrors > 0) {
+			String i18nKey = suffix + (numOfErrors > 1 ? ".link.plural" : ".link");
+			String link = translate(i18nKey, Long.toString(numOfErrors));	
+			errorsLink = uifactory.addFormLink(suffix + ".link", link, null, flc, Link.LINK | Link.NONTRANSLATED);
+		} else {
+			flc.remove("errors.link");
+		}
 	}
 	
 	@Override
@@ -280,28 +335,30 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	}
 	
 	@Override
-	protected final void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(errorsLink == source) {
 			doFilterErrors(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				if(ActionsCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
 					String targetId = ActionsCellRenderer.getId(se.getIndex());
-					ImportedRow selectedRow = tableModel.getObject(se.getIndex());
+					AbstractImportRow selectedRow = tableModel.getObject(se.getIndex());
 					doOpenTools(ureq, selectedRow, targetId);
 				} else if(ImportValueCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
-					ImportedRow selectedRow = tableModel.getObject(se.getIndex());
+					AbstractImportRow selectedRow = tableModel.getObject(se.getIndex());
 					ImportCurriculumsCols col = ImportValueCellRenderer.getCol(ureq);
-					String targetId = ImportValueCellRenderer.getId(se.getIndex(), col);
-					if(targetId != null) {
-						doOpenValidationCallout(ureq, selectedRow, col, targetId);
+					if(col != null) {
+						String targetId = ImportValueCellRenderer.getId(se.getIndex(), col);
+						if(targetId != null) {
+							doOpenValidationCallout(ureq, selectedRow, col, targetId);
+						}
 					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				filterModel();
 			}
-		} else if(source instanceof FormLink link && CMD_VALIDATION_RESULTS.equals(link.getCmd())
-				&& link.getUserObject() instanceof ImportedRow importedRow) {
+		} else if(source instanceof FormLink link && cmdValidationResults.equals(link.getCmd())
+				&& link.getUserObject() instanceof AbstractImportRow importedRow) {
 			doOpenValidationResultsCallout(ureq, importedRow, link.getFormDispatchId());
 		} else if(source instanceof MultipleSelectionElement check
 				&& check.getUserObject() instanceof ImportedRow importedRow) {
@@ -310,10 +367,15 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	@Override
+	protected final void formOK(UserRequest ureq) {
+		//
+	}
+	
 	private void doIgnore(ImportedRow importedRow, boolean ignore) {
-		List<ImportedRow> rows = tableModel.getObjects();
+		List<? extends AbstractImportRow> rows = tableModel.getObjects();
 		if(ignore) {
-			for(ImportedRow row:rows) {
+			for(AbstractImportRow row:rows) {
 				if(row.getIgnoreEl() == null) continue;
 
 				for(ImportedRow parentRow=row.getCurriculumElementParentRow(); parentRow != null; parentRow=parentRow.getCurriculumElementParentRow()) {
@@ -328,8 +390,8 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		}
 	}
 	
-	private void recalculateIgnoredEnabled(List<ImportedRow> rows) {
-		for(ImportedRow row:rows) {
+	private void recalculateIgnoredEnabled(List<? extends AbstractImportRow> rows) {
+		for(AbstractImportRow row:rows) {
 			if(row.getIgnoreEl() == null) continue;
 			
 			boolean enabled = !row.hasValidationErrors() && row.getStatus() != ImportCurriculumsStatus.ERROR;
@@ -350,7 +412,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		filterModel();
 	}
 
-	private void doOpenValidationCallout(UserRequest ureq, ImportedRow row, ImportCurriculumsCols col, String targetId) {
+	private void doOpenValidationCallout(UserRequest ureq, AbstractImportRow row, ImportCurriculumsCols col, String targetId) {
 		removeAsListenerAndDispose(validationCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		
@@ -364,7 +426,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		calloutCtrl.activate();
 	}
 	
-	private void doOpenValidationResultsCallout(UserRequest ureq, ImportedRow row, String targetId) {
+	private void doOpenValidationResultsCallout(UserRequest ureq, AbstractImportRow row, String targetId) {
 		removeAsListenerAndDispose(validationListCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		
@@ -378,7 +440,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		calloutCtrl.activate();
 	}
 	
-	private void doOpenTools(UserRequest ureq, ImportedRow row, String targetId) {
+	private void doOpenTools(UserRequest ureq, AbstractImportRow row, String targetId) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 
@@ -391,7 +453,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		calloutCtrl.activate();
 	}
 	
-	private void doToggleIgnoreEl(ImportedRow row, boolean ignore) {
+	private void doToggleIgnoreEl(AbstractImportRow row, boolean ignore) {
 		if(row.getIgnoreEl() == null) return;
 		
 		if(ignore) {
@@ -407,9 +469,9 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		private Link ignoreForImportLink;
 		private Link includeForImportLink;
 		
-		private final ImportedRow row;
+		private final AbstractImportRow row;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, ImportedRow row) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, AbstractImportRow row) {
 			super(ureq, wControl);
 			this.row = row;
 

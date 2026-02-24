@@ -37,8 +37,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
-import org.olat.core.id.Roles;
-import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsHelper.Import;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileReader.Import;
 
 /**
  * 
@@ -75,7 +74,7 @@ public class ImportCurriculumsFileController extends StepFormBasicController {
 	@Override
 	protected void formNext(UserRequest ureq) {
 		if(context.getImportedCurriculumsRows() == null && context.getImportedElementsRows() == null) {
-			loadFile(ureq);
+			loadFile();
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
@@ -98,13 +97,14 @@ public class ImportCurriculumsFileController extends StepFormBasicController {
 		//
 	}
 	
-	private void loadFile(UserRequest ureq) {
+	private void loadFile() {
 		File file = importFileEl.getUploadFile();
 		if(file != null) {
-			Roles roles = ureq.getUserSession().getRoles(); 
-			Import rows = new ImportCurriculumsHelper(getIdentity(), roles, getTranslator()).loadFile(file);
+			Import rows = context.getReader().loadFile(file);
 			context.setImportedCurriculumsRows(rows.curriculumsRows());
 			context.setImportedElementsRows(rows.elementsRows());
+			context.setImportedMembershipsRows(rows.membershipsRows());
+			context.setImportedUsersRows(rows.usersRows());
 		}
 	}
 	

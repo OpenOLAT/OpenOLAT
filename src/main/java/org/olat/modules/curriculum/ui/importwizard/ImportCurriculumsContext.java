@@ -21,6 +21,12 @@ package org.olat.modules.curriculum.ui.importwizard;
 
 import java.util.List;
 
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+
 /**
  * 
  * Initial date: 6 févr. 2026<br>
@@ -28,10 +34,38 @@ import java.util.List;
  *
  */
 public class ImportCurriculumsContext {
-	
-	private List<ImportedRow> importedCurriculumsRows;
-	private List<ImportedRow> importedElementsRows;
 
+	private List<ImportedUserRow> importedUsersRows;
+	private List<ImportedRow> importedElementsRows;
+	private List<ImportedRow> importedCurriculumsRows;
+	private List<ImportedMembershipRow> importedMembershipsRows;
+
+	private final ImportCurriculumsFileReader reader;
+	private final ImportCurriculumsValidator validator;
+	private final ImportCurriculumsObjectsLoader loader;
+	
+	public ImportCurriculumsContext(Identity identity, Roles roles, Translator translator) {
+		reader = new ImportCurriculumsFileReader(roles);
+		loader = new ImportCurriculumsObjectsLoader(translator);
+		validator = new ImportCurriculumsValidator(identity, roles, translator);
+	}
+	
+	public List<UserPropertyHandler> getUserPropertyHandlers() {
+		return validator.getUserPropertyHandlers();
+	}
+	
+	public ImportCurriculumsObjectsLoader getLoader() {
+		return loader;
+	}
+
+	public ImportCurriculumsValidator getValidator() {
+		return validator;
+	}
+	
+	public ImportCurriculumsFileReader getReader() {
+		return reader;
+	}
+	
 	public List<ImportedRow> getImportedCurriculumsRows() {
 		return importedCurriculumsRows;
 	}
@@ -46,5 +80,34 @@ public class ImportCurriculumsContext {
 
 	public void setImportedElementsRows(List<ImportedRow> rows) {
 		this.importedElementsRows = rows;
+	}
+	
+	public boolean hasImportedUsersPasswords() {
+		if(importedUsersRows == null || importedUsersRows.isEmpty()) return false;
+		return importedUsersRows.stream()
+				.anyMatch(usr -> StringHelper.containsNonWhitespace(usr.getPassword()));
+	}
+
+	public List<ImportedUserRow> getImportedUsersRows() {
+		return importedUsersRows;
+	}
+
+	public void setImportedUsersRows(List<ImportedUserRow> importedUsersRows) {
+		this.importedUsersRows = importedUsersRows;
+	}
+
+	public List<ImportedMembershipRow> getImportedMembershipsRows() {
+		return importedMembershipsRows;
+	}
+
+	public void setImportedMembershipsRows(List<ImportedMembershipRow> importedMembershipsRows) {
+		this.importedMembershipsRows = importedMembershipsRows;
+	}
+	
+	public void reset() {
+		importedUsersRows = null;
+		importedElementsRows = null;
+		importedCurriculumsRows = null;
+		importedMembershipsRows = null;
 	}
 }

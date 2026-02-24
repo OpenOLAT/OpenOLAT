@@ -668,6 +668,19 @@ public class CurriculumExport {
 		};
 	}
 	
+	public static final CurriculumRoles parseRole(String role) {
+		if(!StringHelper.containsNonWhitespace(role)) return null;
+		
+		return switch(role) {
+			case PARTICIPANT -> CurriculumRoles.participant;
+			case COACH -> CurriculumRoles.coach;
+			case MASTER_COACH -> CurriculumRoles.mastercoach;
+			case COURSE_OWNER -> CurriculumRoles.owner;
+			case ELEM_OWNER -> CurriculumRoles.curriculumelementowner;
+			default -> null;
+		};
+	}
+	
 	private static class Member extends UserPropertiesRow implements IdentityOrganisationsRow {
 		
 		private final String nickName;

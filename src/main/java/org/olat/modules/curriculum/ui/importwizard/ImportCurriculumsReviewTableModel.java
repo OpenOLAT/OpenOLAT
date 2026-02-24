@@ -175,7 +175,7 @@ implements FilterableFlexiTableModel {
 		return switch(COLS[col]) {
 			case rowNum -> Integer.valueOf(importedRow.getRowNum());
 			case status -> importedRow.getStatus();
-			case infos -> importedRow.getValidationResultsLink();
+			case infos, infosWarnings, infosErrors -> importedRow.getValidationResultsLink();
 			case ignore -> importedRow.getIgnoreEl();
 			case curriculumIdentifier -> importedRow.getCurriculumIdentifier();
 			case implementationIdentifier -> importedRow.getImplementationIdentifier();
@@ -200,7 +200,7 @@ implements FilterableFlexiTableModel {
 			case taxonomyLevels -> importedRow.getSubjects();
 			case creationDate -> importedRow.getCreationDate();
 			case lastModified -> importedRow.getLastModified();
-			case tools -> Boolean.valueOf(importedRow.getIgnoreEl() != null);
+			case tools -> Boolean.valueOf(importedRow.getIgnoreEl() != null && importedRow.getIgnoreEl().isEnabled());
 			default -> "ERROR";
 		};
 	}
@@ -215,6 +215,8 @@ implements FilterableFlexiTableModel {
 		rowNum("table.header.row.num"),
 		status("table.header.import.status"),
 		infos("table.header.import.infos"),
+		infosWarnings("table.header.import.infos.warnings"),
+		infosErrors("table.header.import.infos.errors"),
 		ignore("table.header.ignore"),
 		curriculumIdentifier("table.header.curriculum.identifier"),
 		implementationIdentifier("table.header.implementation.identifier"),
@@ -237,6 +239,9 @@ implements FilterableFlexiTableModel {
 		progress("table.header.progress"),
 		description("table.header.description"),
 		taxonomyLevels("table.header.subjects"),
+		role("table.header.role"),
+		username("table.header.username"),
+		password("table.header.password"),
 		creationDate("table.header.creation.date"),
 		lastModified("table.header.last.modified"),
 		tools("action.more")

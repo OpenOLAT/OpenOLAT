@@ -19,22 +19,24 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
@@ -49,15 +51,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImportCurriculumsReviewElementsController extends AbstractImportListController implements FlexiTableCssDelegate {
 	
+	protected static final String SORT_RELEVANCE_KEY = "relevant";
+	
+	private ImportCurriculumsReviewTableModel tableModel;
+	
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	
 	public ImportCurriculumsReviewElementsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			ImportCurriculumsContext context, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, "import_review_elements", context, runContext);
+		super(ureq, wControl, rootForm, "import_review_elements", context, runContext, "Elements", true, true);
 		initForm(ureq);
 		
-		loadModel(ureq);
+		loadModel();
 		// Initialize filters
 		initFilterTabs();
 		initFilters();
@@ -123,6 +129,12 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 	}
 	
 	@Override
+	protected DefaultFlexiTableDataModel<? extends AbstractImportRow> initTableModel(FlexiTableColumnModel columnsModel) {
+		tableModel = new ImportCurriculumsReviewTableModel(columnsModel);
+		return tableModel;
+	}
+	
+	@Override
 	protected void initFilters(List<FlexiTableExtendedFilter> filters) {
 		// Status
 		SelectionValues statusKV = new SelectionValues();
@@ -162,22 +174,29 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 				OBJECT_TYPE_KEY, objectTypeKV, true));
 	}
 
-	private void loadModel(UserRequest ureq) {
+	@Override
+	protected void sortOptions() {
+		List<FlexiTableSort> sorters = new ArrayList<>();
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), SORT_RELEVANCE_KEY));
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		tableEl.setSortSettings(options);
+	}
+
+	private void loadModel() {
 		List<ImportedRow> rows = context.getImportedElementsRows();
 		if(rows == null) {
 			rows = List.of();
 		} else {
-			final Roles roles = ureq.getUserSession().getRoles();
-			final ImportCurriculumsHelper helper = new ImportCurriculumsHelper(getIdentity(), roles, getTranslator());
-			helper.loadCurrentElements(rows, context.getImportedCurriculumsRows());
+			context.getLoader().loadCurrentElements(rows, context.getImportedCurriculumsRows());
 			if(taxonomyModule.isEnabled()) {
-				helper.loadTaxonomy(rows);
+				context.getLoader().loadTaxonomy(rows);
 			}
-			
+
+			final ImportCurriculumsValidator validator = context.getValidator();
 			for(ImportedRow row:rows) {
-				helper.validate(row);
+				validator.validate(row);
 			}
-			helper.validateUniqueIdentifiers(rows);
+			validator.validateUniqueIdentifiers(rows);
 			
 			SelectionValues ignorePK = new SelectionValues();
 			ignorePK.add(SelectionValues.entry(IGNORE, ""));
@@ -189,30 +208,11 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
-		loadErrorMessage(rows);
-	}
-	
-	private void loadErrorMessage(List<ImportedRow> rows) {
-		long numOfErrors = rows.stream()
-			.filter(row -> row.getStatus() == ImportCurriculumsStatus.ERROR || row.getValidationStatistics().errors() > 0)
-			.count();
-
-		if(numOfErrors > 0) {
-			String i18nKey = numOfErrors > 1 ? "error.elements.link.plural" : "error.elements.link";
-			String link = translate(i18nKey, Long.toString(numOfErrors));	
-			errorsLink = uifactory.addFormLink("errors.elements.link", link, null, flc, Link.LINK | Link.NONTRANSLATED);
-		} else {
-			flc.remove("errors.link");
-		}
+		loadErrorMessage(rows, "error.elements");
 	}
 	
 	@Override
-	protected void formFinish(UserRequest ureq) {
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	protected void formNext(UserRequest ureq) {
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

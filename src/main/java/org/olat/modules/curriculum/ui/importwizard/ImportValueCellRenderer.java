@@ -50,34 +50,72 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 
 	public static final String PARAM = "col";
 	public static final String CMD_ACTIONS = "oValidation";
+	private static final String OBFUSCATED_STRING = "********";
 	private static final List<String> actions = List.of(CMD_ACTIONS);
 	private static final ImportCurriculumsCols[] COLS = ImportCurriculumsCols.values();
 	
+	private final int index;
+	private final String name;
 	private final Formatter format;
 	private final ImportCurriculumsCols col;
 	
+	private boolean obsfuscate;
+	
 	public ImportValueCellRenderer(ImportCurriculumsCols col, Locale locale) {
 		this.col = col;
+		this.name = null;
+		this.index = col.ordinal();
 		format = Formatter.getInstance(locale);
 	}
 	
+	public ImportValueCellRenderer(int index, String name, Locale locale) {
+		this.col = null;
+		this.name = name;
+		this.index = index;
+		format = Formatter.getInstance(locale);
+	}
+
+	public boolean isObsfuscate() {
+		return obsfuscate;
+	}
+
+	public void setObsfuscate(boolean obsfuscate) {
+		this.obsfuscate = obsfuscate;
+	}
+
 	@Override
 	public List<String> getActions() {
 		return actions;
 	}
 	
 	public static String getId(int row, ImportCurriculumsCols column) {
-		return "o_c" + CMD_ACTIONS + "_" + row + "_" + column.ordinal();
+		return getId(row, column.ordinal());
+	}
+	
+	public static String getId(int row, int index) {
+		return "o_c" + CMD_ACTIONS + "_" + row + "_" + index;
 	}
 	
 	public static ImportCurriculumsCols getCol(UserRequest ureq) {
 		String param = ureq.getParameter(PARAM);
 		if(StringHelper.isLong(param)) {
 			int ordinal = Integer.parseInt(param);
-			if(ordinal >= 0 && ordinal < COLS.length)
-			return COLS[ordinal];
+			if(ordinal >= 0 && ordinal < COLS.length) {
+				return COLS[ordinal];
+			}
 		}
 		return null;
+	}
+	
+	public static int getColIndex(UserRequest ureq) {
+		String param = ureq.getParameter(PARAM);
+		if(StringHelper.isLong(param)) {
+			int index = Integer.parseInt(param);
+			if(index >= 0) {
+				return index;
+			}
+		}
+		return -1;
 	}
 	
 	public static String getId(int row, UserRequest ureq) {
@@ -92,7 +130,14 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
-		if(obj instanceof ImportedRow importedRow) {
+		if(obj instanceof ImportedUserRow importedRow && name != null) {
+			CurriculumImportedValue val = importedRow.getHandlerValidation(name);
+			if(val != null) {
+				renderValue(target, cellValue, row, val, source);
+			} else {
+				renderCellValue(target, cellValue);
+			}
+		} else if(obj instanceof AbstractImportRow importedRow) {
 			CurriculumImportedValue val = importedRow.getValidation(col);
 			if(val != null) {
 				renderValue(target, cellValue, row, val, source);
@@ -106,7 +151,11 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 	
 	private void renderCellValue(StringOutput target, Object cellValue) {
 		if(cellValue instanceof String string) {
-			target.appendHtmlEscaped(string);
+			if(obsfuscate) {
+				target.append(OBFUSCATED_STRING);
+			} else {
+				target.appendHtmlEscaped(string);
+			}
 		} else if(cellValue instanceof ReaderLocalDate readerDate) {
 			if(readerDate.date() != null) {
 				target.append(format.formatDate(readerDate.date()));
@@ -137,11 +186,10 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 		FlexiTableElementImpl ftE = source.getFormItem();
 		String id = source.getFormDispatchId();
 		Form rootForm = ftE.getRootForm();
-
-		String actionId = getId(row, col);
+		String actionId = getId(row, index);
 		
 		NameValuePair pair = new NameValuePair(CMD_ACTIONS, Integer.toString(row));
-		NameValuePair colPair = new NameValuePair(PARAM, Integer.toString(col.ordinal()));
+		NameValuePair colPair = new NameValuePair(PARAM, Integer.toString(index));
 		String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, true, false, pair, colPair);
 		target.append("<a id=\"").append(actionId).append("\" href=\"javascript:;\" onclick=\"")
 		      .append(jsCode).append("; return false;\"")

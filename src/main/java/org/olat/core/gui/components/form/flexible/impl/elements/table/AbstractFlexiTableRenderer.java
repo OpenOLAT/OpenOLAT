@@ -504,61 +504,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		return selected.toString();
 	}
 	
-	protected void renderSortDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableSort> sorts, Translator translator) {
-		Form theForm = ftE.getRootForm();
-		String dispatchId = ftE.getFormDispatchId();
-		
-		FlexiTableSort selectedSort = null;
-		for(FlexiTableSort sort:sorts) {
-			if(sort.isSelected()) {
-				selectedSort = sort;
-			}
-		}
-
-		sb.append("<div class='btn-group'>")
-		  .append("<button id='table-button-sorters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'")
-		  .append(" aria-label='").append(translator.translate("aria.sort")).append("'>");
-		
-		if(selectedSort != null) {
-			if(selectedSort.getSortKey().isAsc()) {
-				sb.append("<i class='o_icon o_icon_sort_amount_asc o_icon-lg'> </i> ");
-			} else {
-				sb.append("<i class='o_icon o_icon_sort_amount_desc o_icon-lg'> </i> ");
-			}
-			if(StringHelper.containsNonWhitespace(selectedSort.getLabel())) {
-				sb.append(selectedSort.getLabel()).append(" ");
-			}
-		} else {
-			sb.append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> ");
-		}
-		sb.append("<b class='caret'></b></button>")
-		  .append("<div id='table-sorters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
-		
-		for(FlexiTableSort sort:sorts) {
-			if(FlexiTableSort.SPACER.equals(sort)) {
-				sb.append("<li class='divider'></li>");
-			} else {
-				sb.append("<li role='menuitem'><a href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-						  new NameValuePair("sort", sort.getSortKey().getKey()),
-						  new NameValuePair("asc",  sort.getSortKey().isAsc() ? "desc" : "asc")))
-				  .append("\" draggable=\"false\">");
-				if(sort.isSelected()) {
-					if(sort.getSortKey().isAsc()) {
-						sb.append("<i class='o_icon o_icon_sort_desc o_icon-fw'> </i> ");
-					} else {
-						sb.append("<i class='o_icon o_icon_sort_asc o_icon-fw'> </i> ");
-					}
-				}
-				sb.append(sort.getLabel()).append("</a></li>");
-			}
-		}
-		sb.append("</ul></div></div>\n")
-		  .append("<script>\n")
-		  .append("jQuery(function() { o_popover('table-button-sorters-").append(dispatchId).append("','table-sorters-").append(dispatchId).append("'); });\n")
-		  .append("</script>");
-	}
-	
 	protected void renderHeaderSwitchType(FlexiTableRendererType type, Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		if(type != null) {
