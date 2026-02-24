@@ -66,6 +66,7 @@ public class CatalogEntryRow {
 	private final Date lifecycleEnd;
 	
 	private final Long curriculumKey;
+	private final Long curriculumElementTypeKey;
 	private final String curriculumElementTypeName;
 	
 	private final OLATResource olatResource;
@@ -140,6 +141,7 @@ public class CatalogEntryRow {
 		averageRating = catalogEntry.getAverageRating();
 		
 		curriculumKey = catalogEntry.getCurriculumKey();
+		curriculumElementTypeKey = catalogEntry.getCurriculumElementTypeKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
 		
 		certificate = catalogEntry.isHasCertificate();
@@ -202,6 +204,10 @@ public class CatalogEntryRow {
 
 	public Long getCurriculumKey() {
 		return curriculumKey;
+	}
+
+	public Long getCurriculumElementTypeKey() {
+		return curriculumElementTypeKey;
 	}
 
 	public String getCurriculumElementTypeName() {
