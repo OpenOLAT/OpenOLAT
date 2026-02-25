@@ -382,12 +382,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		startDateEl = uifactory.addDateChooser("date.start", "cif.date.from", null, privateDatesCont);
 		endDateEl = uifactory.addDateChooser("date.end", "cif.date.to", null, privateDatesCont);
-		
-		if (startDateEl != null && endDateEl != null) {
-			startDateEl.addActionListener(FormEvent.ONCHANGE);
-			endDateEl.addActionListener(FormEvent.ONCHANGE);
-		}
-		
+
 		updateDatesVisibility();
 	}
 
