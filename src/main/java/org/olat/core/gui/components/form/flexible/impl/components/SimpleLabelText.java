@@ -133,6 +133,7 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 				// tooltip is bound to this icon
 				sb.append("<i class='o_form_chelp o_icon o_icon-fw o_icon_help help-block' id='").append(helpIconId).append("'></i>");
 				if (helpUrl != null) {
+					sb.append("<span class=\"sr-only\">").append(translator.translate("help.tooltip.aria")).append("</span>");
 					sb.append("</a>");
 				}			
 				// Attach bootstrap tooltip handler to help icon
