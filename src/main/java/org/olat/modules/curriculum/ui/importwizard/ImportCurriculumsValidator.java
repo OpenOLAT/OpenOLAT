@@ -344,7 +344,7 @@ public class ImportCurriculumsValidator {
 			if(statistics.errors() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
-				importedRow.setStatus(ImportCurriculumsStatus.NEW);
+				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
 		}
 	}
@@ -537,7 +537,7 @@ public class ImportCurriculumsValidator {
 		if(validateDate(importedRow, importedRow.getStartDate(), ImportCurriculumsCols.startDate, true)
 				&& importedRow.getStartDate() != null && !importedRow.isNew()) {
 			String column = translate(ImportCurriculumsCols.startDate.i18nHeaderKey());
-			Date from = entry.getLifecycle() == null ? null : entry.getLifecycle().getValidFrom();
+			Date from = entry == null || entry.getLifecycle() == null ? null : entry.getLifecycle().getValidFrom();
 			importedRow.addChanged(column, from, importedRow.getStartDate().date(), ImportCurriculumsCols.startDate);
 		}
 		validateEmpty(importedRow, importedRow.getStartTime(), ImportCurriculumsCols.startTime);
@@ -545,7 +545,7 @@ public class ImportCurriculumsValidator {
 				&& validateAfter(importedRow, ImportCurriculumsCols.endDate)
 				&& importedRow.getEndDate() != null && !importedRow.isNew()) {
 			String column = translate(ImportCurriculumsCols.endDate.i18nHeaderKey());
-			Date to = entry.getLifecycle() == null ? null : entry.getLifecycle().getValidTo();
+			Date to = entry == null || entry.getLifecycle() == null ? null : entry.getLifecycle().getValidTo();
 			importedRow.addChanged(column, to, importedRow.getEndDate().date(), ImportCurriculumsCols.endDate);
 		}
 		validateEmpty(importedRow, importedRow.getEndTime(), ImportCurriculumsCols.endTime);
@@ -996,7 +996,10 @@ public class ImportCurriculumsValidator {
 	private boolean validateOnOff(ImportedRow importedRow, ImportCurriculumsCols optionColumn, String val) {
 		boolean allOk = true;
 		
-		if(!"ON".equalsIgnoreCase(val) && !"OFF".equalsIgnoreCase(val)) {
+		if(!ImportCurriculumsValidator.ON.equalsIgnoreCase(val)
+				&& !ImportCurriculumsValidator.OFF.equalsIgnoreCase(val)
+				&& !ImportCurriculumsValidator.DEFAULT.equals(val)) {
+			
 			String message = translator.translate("warning.value.not.supported", val);
 			String column = translate(optionColumn.i18nHeaderKey());
 			if(importedRow.isNew()) {

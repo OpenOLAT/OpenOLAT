@@ -137,7 +137,7 @@ public class ImportedUserRow extends AbstractImportRow {
 	
 	@Override
 	public boolean hasValidationErrors() {
-		return hasHandlersValidationErrors() && super.hasValidationErrors();
+		return hasHandlersValidationErrors() || super.hasValidationErrors();
 	}
 	
 	public boolean hasHandlersValidationErrors() {

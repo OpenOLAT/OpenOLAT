@@ -28,25 +28,30 @@ import org.junit.Test;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileReader.Import;
 import org.olat.test.OlatTestCase;
 
 /**
  * 
- * Initial date: 9 févr. 2026<br>
+ * Initial date: 24 févr. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ImportCurriculumsHelperTest extends OlatTestCase {
+public class ImportCurriculumsObjectsLoaderTest extends OlatTestCase {
 	
 	@Test
-	public void loadFile() throws URISyntaxException {
-		URL url = ImportCurriculumsHelperTest.class.getResource("products_2.xlsx");
+	public void loaderSmokeTest() throws URISyntaxException {
+		URL url = ImportCurriculumsFileReaderTest.class.getResource("products-reader-test.xlsx");
 		File file = new File(url.toURI());
-		
-		ImportCurriculumsFileReader helper = new ImportCurriculumsFileReader(Roles.administratorRoles());
-		helper.loadFile(file);
-		
-		Translator translator = Util.createPackageTranslator(ImportCurriculumsValidator.class, Locale.ENGLISH);
-	}
 
+		ImportCurriculumsFileReader reader = new ImportCurriculumsFileReader(Roles.administratorRoles());
+		Import data = reader.loadFile(file);
+		
+		Translator translator = Util.createPackageTranslator(ImportCurriculumsObjectsLoader.class, Locale.ENGLISH);
+		ImportCurriculumsObjectsLoader loader = new ImportCurriculumsObjectsLoader(translator);
+		loader.loadCurrentCurriculums(data.curriculumsRows());
+		loader.loadCurrentElements(data.elementsRows(), data.curriculumsRows());
+		loader.loadUsers(data.usersRows());
+		loader.loadMemberships(data.membershipsRows(), data.curriculumsRows(), data.elementsRows(), data.usersRows());
+	}
 }

@@ -133,10 +133,8 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 		// Status
 		SelectionValues statusKV = new SelectionValues();
 		statusKV.add(SelectionValues.entry(STATUS_NEW, translate("search.status.new")));
-		statusKV.add(SelectionValues.entry(STATUS_MODIFIED, translate("search.status.modified")));
 		statusKV.add(SelectionValues.entry(STATUS_WITH_ERRORS, translate("search.status.errors")));
 		statusKV.add(SelectionValues.entry(STATUS_WITH_WARNINGS, translate("search.status.warnings")));
-		statusKV.add(SelectionValues.entry(STATUS_WITH_CHANGES, translate("search.status.changes")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("search.import.object.status"),
 				STATUS_KEY, statusKV, true));
 		
@@ -186,10 +184,10 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 			
 			ImportCurriculumsValidator validator = context.getValidator();
 			for(ImportedUserRow row:rows) {
-				validator.validate(row);
 				if(importUsersPasswords) {
 					validator.validatePassword(row);
 				}
+				validator.validate(row);
 			}
 			validator.validateUsersUniqueUsernames(rows);
 			

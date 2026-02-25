@@ -123,11 +123,8 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedMember
 		if(status == null || status.isEmpty()) return true;
 		
 		if((row.getStatus() == ImportCurriculumsStatus.ERROR && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_WITH_ERRORS))
-				|| (row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))) {
-			return true;
-		}
-		
-		if(status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_NEW)) {
+				|| (row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))
+				|| (row.getStatus() == ImportCurriculumsStatus.NEW && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))) {
 			return true;
 		}
 		

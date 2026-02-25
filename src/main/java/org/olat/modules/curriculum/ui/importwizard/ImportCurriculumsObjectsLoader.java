@@ -41,8 +41,10 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
+import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
@@ -389,6 +391,11 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 	}
 	
 	public void loadMemberships(List<ImportedMembershipRow> rows, List<ImportedRow> curriculumsRows, List<ImportedRow> elements, List<ImportedUserRow> users) {
+		loadMembershipsRelations(rows, curriculumsRows, elements, users);
+		loadCurrentMemberships(rows);
+	}
+	
+	private void loadMembershipsRelations(List<ImportedMembershipRow> rows, List<ImportedRow> curriculumsRows, List<ImportedRow> elements, List<ImportedUserRow> users) {
 		Map<String, ImportedRow> curriculumsMaps = curriculumsRows.stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getCurriculumIdentifier()))
 				.collect(Collectors.toMap(ImportedRow::getCurriculumIdentifier, r -> r, (u, v) -> u));
@@ -420,6 +427,34 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			}
 		}
 	}
+		
+	public void loadCurrentMemberships(List<ImportedMembershipRow> rows) {	
+		Map<ElementRoleKey,Set<Long>> membersMap = new HashMap<>();
+		for(ImportedMembershipRow row:rows) {
+			if(row.getUserRow() == null) continue;
+			
+			final CurriculumRoles role = CurriculumExport.parseRole(row.getRole());
+			if(row.getUserRow().getIdentity() == null || row.getElementRow() == null) {
+				row.setStatus(ImportCurriculumsStatus.NEW);
+			} else if(row.getUserRow().getIdentity() != null
+					&& row.getElementRow() != null && row.getElementRow().getCurriculumElement() != null
+					&& role != null) {
+				
+				final CurriculumElement element = row.getElementRow().getCurriculumElement();
+				Set<Long> membersKeys = membersMap.computeIfAbsent(new ElementRoleKey(element.getKey(), role), key -> {
+					List<Identity> members = curriculumService.getMembersIdentity(element, role);
+					List<Long> membersKeysList = members.stream()
+							.map(Identity::getKey)
+							.toList();
+					return Set.copyOf(membersKeysList);
+				});
+				
+				if(!membersKeys.contains(row.getUserRow().getIdentity().getKey())) {
+					row.setStatus(ImportCurriculumsStatus.NEW);
+				}
+			}
+		}
+	}
 	
 	public void loadUsers(List<ImportedUserRow> rows) {
 		List<String> usernames = rows.stream()
@@ -448,7 +483,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			importedRow.setOrganisation(organisation);
 		}
 	}
-	
+
 	private Organisation loadOrganisation(String organisationIdentifier) {
 		Organisation organisation = organisationMap.get(organisationIdentifier);
 		if(organisation == null) {
@@ -471,27 +506,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		importedRow.addValidationError(ImportCurriculumsCols.level, column, null, translator.translate("error.level.not.found", level));
 	}
 	
-	public record Identifier(String implementationIdentifier, String identifier) {
-		@Override
-		public int hashCode() {
-			return (implementationIdentifier == null ? 0 : implementationIdentifier.hashCode())
-					+ (identifier == null ? 0 : identifier.hashCode());
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if(obj == this) {
-				return true;
-			}
-			if(obj instanceof Identifier key) {
-				return implementationIdentifier != null && implementationIdentifier.equals(key.implementationIdentifier)
-						&& identifier != null && identifier.equals(key.identifier);
-			}
-			return false;
-		}
-	}
-	
-	public record LevelKey(String implementationIdentifier, String level) {
+	private record LevelKey(String implementationIdentifier, String level) {
 		@Override
 		public int hashCode() {
 			return (implementationIdentifier == null ? 0 : implementationIdentifier.hashCode())
@@ -506,6 +521,27 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			if(obj instanceof LevelKey key) {
 				return implementationIdentifier != null && implementationIdentifier.equals(key.implementationIdentifier)
 						&& level != null && level.equals(key.level);
+			}
+			return false;
+		}
+	}
+	
+	private record ElementRoleKey(Long elementKey, CurriculumRoles role) {
+		//
+		@Override
+		public int hashCode() {
+			return (elementKey == null ? 29881 : elementKey.hashCode())
+					+ (role == null ? -4587 : role.ordinal());
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof ElementRoleKey erk) {
+				return elementKey != null && elementKey.equals(erk.elementKey)
+						&& role != null && role.equals(erk.role);
 			}
 			return false;
 		}
