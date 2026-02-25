@@ -79,7 +79,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		limitAttemptsEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
-		maxAttemptsEl = uifactory.addTextElement("maxAttempts", null, 8, maxAttemptsStr, formLayout);
+		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "item.session.control.attempts", 8, maxAttemptsStr, formLayout);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit && !readOnly);
 	}
