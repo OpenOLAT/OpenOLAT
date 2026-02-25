@@ -18,7 +18,8 @@ form .o_form, form.o_form {
 	}
 
 	/* context help for input element, right from label */
-	a:has(>.o_form_chelp) {
+	a:has(>.o_form_chelp),
+	:not(a) > .o_form_chelp {
 		padding-left: 0.25em;
 		margin-right: -1.25em;
 	}
