@@ -389,7 +389,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
-		if (!feedRss.isInternal() || !feedSecCallback.mayEditItems()) {
+		if (!feedRss.isInternal() || (!feedSecCallback.mayEditItems() && !feedSecCallback.mayCreateItems())) {
 			return;
 		}
 		
