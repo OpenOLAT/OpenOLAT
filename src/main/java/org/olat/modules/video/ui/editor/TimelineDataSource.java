@@ -116,7 +116,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 			String chapterId = generateChapterId(ch);
 			long durationInMillis = ch.getEnd().getTime() - ch.getBegin().getTime();
 			rows.add(new TimelineRow(chapterId, ch.getBegin().getTime(), durationInMillis,
-					TimelineEventType.CHAPTER, ch.getChapterName(), "o_video_marker_gray"));
+					TimelineEventType.CHAPTER, ch.getChapterName(), "o_video_marker_silver"));
 		});
 		
 		if(taskSessions != null && !taskSessions.isEmpty()) {

@@ -752,6 +752,11 @@
 		outline: 1px solid $brand-primary;
 	}
 
+	&.o_video_marker_silver {
+		background-color: $o-video-color-silver;
+		color: $text-color;
+	}
+	
 	&.o_video_marker_lightgray {
 		background-color: $o-video-color-light-gray;
 	}
