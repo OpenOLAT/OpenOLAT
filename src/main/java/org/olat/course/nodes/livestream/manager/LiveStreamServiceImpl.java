@@ -28,7 +28,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -51,6 +50,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
+import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
@@ -97,13 +97,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	
 	@PostConstruct
 	public void init() {
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
+		velocityEngine = VelocityFactory.createEngine(false);
 	}
 
 	@Override
