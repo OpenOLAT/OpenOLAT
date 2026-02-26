@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +57,6 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.app.VelocityEngine;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.olat.basesecurity.IdentityRef;
@@ -187,7 +185,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 
-	private VelocityEngine velocityEngine;
 	@Autowired
 	private BadgeOrganizationDAO badgeOrganizationDAO;
 
@@ -199,15 +196,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		createBadgeAssertionsRoot();
 		createBadgeTemplatesRoot();
 		createBadgeClassesRoot();
-
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
-
 		createFactoryBadgeTemplates();
 	}
 
@@ -1562,8 +1550,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	static void writeImageIOImage(IIOImage iioImage, OutputStream outputStream) throws IOException {
-		Iterator imageWriters = ImageIO.getImageWritersByFormatName("png");
-		ImageWriter imageWriter = (ImageWriter) imageWriters.next();
+		Iterator<ImageWriter> imageWriters = ImageIO.getImageWritersByFormatName("png");
+		ImageWriter imageWriter = imageWriters.next();
 		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(outputStream);
 		imageWriter.setOutput(imageOutputStream);
 		imageWriter.write(null, iioImage, null);

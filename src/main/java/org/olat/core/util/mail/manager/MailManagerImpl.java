@@ -71,7 +71,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -81,6 +80,8 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.model.DBSecureRunnable;
+import org.olat.core.gui.render.velocity.ReadOnlyContext;
+import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -164,15 +165,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		PublisherData pdata = getPublisherData();
 		SubscriptionContext scontext = getSubscriptionContext();
 		notificationsManager.getOrCreatePublisher(scontext, pdata);
-		
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
+		velocityEngine = VelocityFactory.createNoIntrospectEngine();
 	}
 	
 	@Override
@@ -869,7 +862,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	protected void evaluate(Context context, String template, StringWriter writer, MailerResult mailerResult) {
 		try {
 			if(StringHelper.containsNonWhitespace(template)) {
-				boolean result = velocityEngine.evaluate(context, writer, "mailTemplate", template);
+				final ReadOnlyContext roctx = new ReadOnlyContext(context);
+				final boolean result = velocityEngine.evaluate(roctx, writer, "mailTemplate", template);
 				if (result) {
 					mailerResult.setReturnCode(MailerResult.OK);
 				} else {

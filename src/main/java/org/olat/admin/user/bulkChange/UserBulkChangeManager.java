@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
@@ -39,6 +38,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.ValidationError;
+import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -106,14 +106,7 @@ public class UserBulkChangeManager implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// init velocity engine
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
+		velocityEngine = VelocityFactory.createEngine(false);
 	}
 
 	public void changeSelectedIdentities(List<Identity> selIdentities, UserBulkChanges userBulkChanges,
