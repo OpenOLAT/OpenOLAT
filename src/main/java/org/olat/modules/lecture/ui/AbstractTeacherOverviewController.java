@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -118,6 +120,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.off"));
 		}
 		putInitialPanel(mainVC);
+
+		EmptyState emptyState = EmptyStateFactory.create("emptyState", mainVC, this);
+		emptyState.setIconCss("o_icon_calendar");
+		emptyState.setMessageI18nKey("empty.table.lectures.blocks");
 	}
 	
 	protected void initTables(UserRequest ureq, boolean withTeachers, boolean withAssessment) {
