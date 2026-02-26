@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -52,9 +54,10 @@ import org.olat.search.model.ResultDocument;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class ResultsController extends FormBasicController {
-	private FormLink previousLink, nextLink; 
+	private FormLink previousLink, nextLink;
 	private FormLink highlightLink, dishighlightLink;
-	
+	private EmptyState emptyState;
+
 	private int currentPage;
 	public static final int RESULT_PER_PAGE = 10;
 	private boolean highlight = true;
@@ -77,6 +80,12 @@ public class ResultsController extends FormBasicController {
 		highlightLink = uifactory.addFormLink("highlight.page", "enable.highlighting", "enable.highlighting", formLayout, Link.LINK);
 		dishighlightLink = uifactory.addFormLink("dishighlight.page", "disable.highlighting", "disable.highlighting", formLayout, Link.LINK);
 		flc.contextPut("highlight", true);
+
+		emptyState = EmptyStateFactory.create("emptyState", flc.getFormItemComponent(), this);
+		emptyState.setIconCss("o_icon_database");
+		emptyState.setMessageI18nKey("search.empty.result");
+		emptyState.setHintI18nKey("search.empty.result.hint");
+
 		reset();
 	}
 	
@@ -149,7 +158,11 @@ public class ResultsController extends FormBasicController {
 		flc.contextPut("emptyResult", documents.isEmpty());
 		flc.contextPut("searchResults", searchResults);
 		flc.contextPut("currentPage", currentPage + 1);
-		
+
+		if (documents.isEmpty() && searchResults != null) {
+			emptyState.setHintI18nArgs(new String[] {String.valueOf(searchResults.getNumberOfIndexDocuments())});
+		}
+
 		previousLink.setEnabled(currentPage != 0);
 		nextLink.setEnabled(currentPage != getMaxPage());
 		

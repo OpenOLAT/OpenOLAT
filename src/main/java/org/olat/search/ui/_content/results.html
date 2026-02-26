@@ -1,15 +1,7 @@
 #if($hasResult)
 	#if ($emptyResult)
-		<div class="o_empty_state">
-			<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_database"></i></div>
-			<div class="o_empty_msg">
-				$r.translate("search.empty.result")
-			</div>
-			<div class="o_empty_hint">
-				$r.translate("search.empty.result.hint",$searchResults.getNumberOfIndexDocuments())
-			</div>
-		</div>
-  	#else
+		$r.render("emptyState")
+	#else
 	  	<div id="o_search_results_header" class="clearfix o_block">
 	  		<i class="o_icon o_icon-fw o_icon_search"></i>
 		    $resultTitle
