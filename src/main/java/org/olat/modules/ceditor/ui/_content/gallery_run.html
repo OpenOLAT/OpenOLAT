@@ -69,15 +69,7 @@
 	</div>
 	#end
 	#if($galleryImageItems.isEmpty())
-	<div class="o_empty_state">
-		<div class="o_empty_visual">
-			<i class="o_icon o_icon_empty_indicator"></i>
-			<i class="o_icon o_icon_image"></i>
-		</div>
-		<div class="o_empty_msg">
-			$r.translate("gallery.no.image")
-		</div>
-	</div>
+	$r.render("emptyState")
 	#end
 	#if($showThumbnails)
 	<div id="o_swiper_thumbs_$r.getCId()" class="swiper o_gallery_thumbs">

@@ -26,6 +26,8 @@ import java.util.Objects;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -92,6 +94,10 @@ public class GalleryRunController extends BasicController implements PageRunElem
 
 	private void initUI(UserRequest ureq) {
 		mainVC.contextPut("isReadOnly", editable);
+
+		EmptyState emptyState = EmptyStateFactory.create("emptyState", mainVC, this);
+		emptyState.setIconCss("o_icon_image");
+		emptyState.setMessageI18nKey("gallery.no.image");
 
 		galleryImages = new GalleryImages(new ArrayList<>());
 
