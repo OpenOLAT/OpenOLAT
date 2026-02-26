@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -98,7 +99,11 @@ public class ViteroBookingsEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		reloadModel();
-		
+
+		var emptyState = EmptyStateFactory.create("emptyState", flc.getFormItemComponent(), this);
+		emptyState.setIconCss("o_cal_icon");
+		emptyState.setMessageI18nKey("table.empty");
+
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons-cont", getTranslator());
 		formLayout.add(buttonLayout);
 		newButton = uifactory.addFormLink("new", buttonLayout, Link.BUTTON);

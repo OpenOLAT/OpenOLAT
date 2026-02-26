@@ -2,12 +2,7 @@
 	<legend>$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_vitero/")
 	$r.translate("booking.admin.title")</legend>
 	#if($bookingDisplays.isEmpty())
-	<div class="o_empty_state">
-		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_cal_icon"></i></div>
-		<div class="o_empty_msg">
-			$r.translate("table.empty")			
-		</div>
-	</div>
+	$r.render("emptyState")
 	#else
 	<table class="table">
 		<thead>
