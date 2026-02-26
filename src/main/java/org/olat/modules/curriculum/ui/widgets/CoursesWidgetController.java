@@ -53,6 +53,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.ConfirmInstantiateTemplateController;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
@@ -79,6 +80,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 
 	private final MapperKey mapperThumbnailKey;
 	private final CurriculumElement curriculumElement;
+	private final CurriculumSecurityCallback secCallback;
 	private final RepositoryEntryImageMapper mapperThumbnail;
 	
 	private CloseableModalController cmc;
@@ -89,11 +91,12 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public CoursesWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public CoursesWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "courses_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
-		
+
+		this.secCallback = secCallback;
 		this.curriculumElement = curriculumElement;
 		
 		initForm(ureq);
@@ -177,7 +180,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		openLink.setUrl(url);
 		
 		FormLink instantiateLink = null;
-		if(template && numOfEntries == 0) {
+		if(template && numOfEntries == 0 && secCallback.canManageCurriculumElementResources(curriculumElement)) {
 			instantiateLink = uifactory.addFormLink("instantiate_" + entry.getKey(), "instantiate", "instantiate.template", null, flc, Link.BUTTON);
 			instantiateLink.setElementCssClass("btn btn-primary");
 			instantiateLink.setUserObject(entry);

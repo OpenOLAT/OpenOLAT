@@ -615,7 +615,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 
-		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement);
+		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
 		listenTo(coursesWidgetCtrl);
 		overviewCtrl.addWidget("courses", coursesWidgetCtrl, BentoBoxSize.box_4_1);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
