@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -40,10 +39,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.render.velocity.VelocityModule;
+import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
@@ -87,16 +85,7 @@ public class CPOfflineReadableManager {
 		// private since singleton
 
 		// init velocity engine
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
-			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
-			p.setProperty("resource.loader.classpath.cache", Settings.isDebuging() ? "false" : "true");
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
+		velocityEngine = VelocityFactory.createEngine(!Settings.isDebuging());
 	}
 
 	/**

@@ -42,7 +42,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,18 +58,8 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.Payload;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.app.VelocityEngine;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.olat.basesecurity.IdentityRef;
@@ -150,6 +139,16 @@ import org.springframework.stereotype.Service;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+
 /**
  * Initial date: 2023-05-08<br>
  *
@@ -208,7 +207,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 
-	private VelocityEngine velocityEngine;
 	@Autowired
 	private BadgeOrganizationDAO badgeOrganizationDAO;
 
@@ -220,15 +218,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		createBadgeAssertionsRoot();
 		createBadgeTemplatesRoot();
 		createBadgeClassesRoot();
-
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
-
 		createFactoryBadgeTemplates();
 	}
 
@@ -1757,8 +1746,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	static void writeImageIOImage(IIOImage iioImage, OutputStream outputStream) throws IOException {
-		Iterator imageWriters = ImageIO.getImageWritersByFormatName("png");
-		ImageWriter imageWriter = (ImageWriter) imageWriters.next();
+		Iterator<ImageWriter> imageWriters = ImageIO.getImageWritersByFormatName("png");
+		ImageWriter imageWriter = imageWriters.next();
 		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(outputStream);
 		imageWriter.setOutput(imageOutputStream);
 		imageWriter.write(null, iioImage, null);

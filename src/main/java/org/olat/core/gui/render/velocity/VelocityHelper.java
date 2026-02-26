@@ -37,6 +37,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.util.introspection.SecureUberspector;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
@@ -77,6 +78,9 @@ public class VelocityHelper {
 		try {
 			ve = new VelocityEngine();
 			p = new Properties();
+	        p.setProperty(RuntimeConstants.INTROSPECTOR_RESTRICT_PACKAGES, VelocityFactory.RESTRICTED_PACKAGES);
+			p.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME, SecureUberspector.class.getName());
+			
 			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());	
 			p.setProperty(RuntimeConstants.PARSER_POOL_SIZE, VelocityModule.getParserPoolSize());
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
@@ -102,6 +106,7 @@ public class VelocityHelper {
 			p.setProperty(RuntimeConstants.VM_LIBRARY, "velocity/olat_velocimacros.vm");
 			p.setProperty(RuntimeConstants.VM_LIBRARY_AUTORELOAD, "false");
 			ve.init(p);
+			ve.removeDirective("include");
 		} catch (Exception e) {
 			throw new RuntimeException("config error " + p);
 		}
