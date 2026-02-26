@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,6 +79,7 @@ import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -233,13 +233,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		getCertificateRoot();
 		usersStorage = new FileStorage(getCertificateRootContainer());
 		
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
+		velocityEngine = VelocityFactory.createEngine(false);
 		
 		//deploy script
 		try(InputStream inQRCodeLib = CertificatesManager.class.getResourceAsStream("qrcode.min.js")) {

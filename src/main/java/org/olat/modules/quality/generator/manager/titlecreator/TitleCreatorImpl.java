@@ -28,14 +28,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import jakarta.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.TitleCreatorHandler;
@@ -64,13 +64,7 @@ public class TitleCreatorImpl implements TitleCreator {
 
 	@PostConstruct
 	public void afterPropertiesSet() {
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
+		velocityEngine = VelocityFactory.createEngine(false);
 	}
 	
 	@Override
