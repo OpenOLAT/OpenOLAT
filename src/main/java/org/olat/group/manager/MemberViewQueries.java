@@ -370,11 +370,12 @@ public class MemberViewQueries {
 	
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ident, reservation.resource, reservation from resourcereservation as reservation")
+		sb.append("select ident, resource, reservation from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
+		  .append(" inner join fetch reservation.resource as resource")
 		  .append(" inner join fetch ident.user as identUser")
-		  .where().append(" (reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
-		  .append(" or reservation.resource.key in (select grp.resource.key from businessgroup as grp")
+		  .where().append(" (resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
+		  .append(" or resource.key in (select grp.resource.key from businessgroup as grp")
 		  .append("   inner join repoentrytogroup as rel on (grp.baseGroup.key=rel.group.key)")
 		  .append("   where rel.entry.key=:repoEntryKey")
 		  .append(" ))");
