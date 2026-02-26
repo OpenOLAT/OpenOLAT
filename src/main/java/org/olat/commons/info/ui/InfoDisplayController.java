@@ -41,8 +41,11 @@ import org.olat.commons.info.InfoMessageToGroup;
 import org.olat.commons.info.manager.MailFormatter;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.date.DateElement;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -93,6 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class InfoDisplayController extends FormBasicController {
 
 	private Step start;
+	private EmptyState emptyState;
 	private FormLink newInfoLink;
 	private FormLink oldMsgsLink;
 	private FormLink newMsgsLink;
@@ -335,7 +339,16 @@ public class InfoDisplayController extends FormBasicController {
 		oldMsgsLink.setElementCssClass("o_sel_course_info_old_msgs");
 		newMsgsLink = uifactory.addFormLink("display.new_messages", "display.new_messages", "display.new_messages", formLayout, Link.BUTTON);
 		newMsgsLink.setElementCssClass("o_sel_course_info_new_msgs");
-		
+
+		emptyState = EmptyStateFactory.create("emptyState", flc.getFormItemComponent(), this);
+		emptyState.setIconCss("o_icon_news");
+		emptyState.setMessageI18nKey("display.no_messages");
+		if (secCallback.canAdd()) {
+			emptyState.setHintI18nKey("display.no_messages.hint");
+			emptyState.setButtonI18nKey("new_message");
+			emptyState.setButtonLeftIconCss("o_icon o_icon-fw o_icon_add o_sel_course_info_create_msg");
+		}
+
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("attachmentMapper", attachmentMapper);
 		}
@@ -400,15 +413,26 @@ public class InfoDisplayController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == emptyState && event == EmptyState.EVENT) {
+			doCreateNewMessage(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doCreateNewMessage(UserRequest ureq) {
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, resSubPath, businessPath, getIdentity());
+		start = new CreateInfoStep(ureq, ores, resSubPath, sendSubscriberOption, sendMailOptions, groupsMailOptions, curriculaMailOptions, msg);
+		newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
+				new CancelCallback(), translate("create_message"), "o_sel_info_messages_create_wizard");
+		listenTo(newInfoWizard);
+		getWindowControl().pushAsModalDialog(newInfoWizard.getInitialComponent());
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == newInfoLink) {
-			InfoMessage msg = infoMessageManager.createInfoMessage(ores, resSubPath, businessPath, getIdentity());
-			
-			start = new CreateInfoStep(ureq, ores, resSubPath, sendSubscriberOption, sendMailOptions, groupsMailOptions, curriculaMailOptions, msg);
-			newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
-					new CancelCallback(), translate("create_message"), "o_sel_info_messages_create_wizard");
-			listenTo(newInfoWizard);
-			getWindowControl().pushAsModalDialog(newInfoWizard.getInitialComponent());
+	    if(source == newInfoLink) {
+			doCreateNewMessage(ureq);
 		} else if(deleteLinks.contains(source)) {
 			InfoMessage msg = (InfoMessage)source.getUserObject();
 			popupDelete(ureq, msg);

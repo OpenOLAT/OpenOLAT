@@ -16,21 +16,8 @@ function o_activateInfoTool(toolname) {
 </script>
 
 #if($infos.isEmpty())
-	<div class="o_empty_state">
-		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_news"></i></div>
-		<div class="o_empty_msg">
-			$r.translate("display.no_messages")
-		</div>
-		#if($r.available("new_message"))
-		<div class="o_empty_hint">
-			$r.translate("display.no_messages.hint")
-		</div>
-		<div class="o_empty_action">
-			$r.render("new_message", "btn-primary")
-		</div>
-		#end		
-	</div>
-#else 
+	$r.render("emptyState")
+#else
 	#if($r.available("new_message"))
 		<div class="clearfix">
 			<div class="o_infomsg_create_button pull-right">
