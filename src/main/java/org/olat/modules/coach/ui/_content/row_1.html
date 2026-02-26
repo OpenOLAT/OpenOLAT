@@ -93,8 +93,8 @@
 					&#8960; ${row.averageCompletionInPercents}&#37;
 					<span class="o_spacer">&middot;</span>
 				#end
-				
-				<span class="o_progress">
+					
+				<span class="o_progress" title="$r.escapeForHtmlAttribute($r.translate("table.header.success.status.tooltip", ${row.getNumPassed()}, ${row.getNumFailed()}, ${row.getNumUndefined()}))">
 					<span class='progress ' style="width:100px;">
 						<span class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='${row.getNumPassed()}' aria-valuemin='0' aria-valuemax='${row.getNumTotal()}' style='width: ${row.getNumPassedPercent()}%;'>
 		      				<span class='sr-only'>${row.getNumPassedPercent()}%</span></span>
