@@ -291,6 +291,11 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 		return sessionState.getItemSessionStates().get(nodeKey);
 	}
 	
+	public ItemProcessingContext getItemProcessingContext(TestPlanNode itemRefNode) {
+		ItemProcessingContext itemProcessingContext = getTestSessionController().getItemProcessingContext(itemRefNode);
+		return itemProcessingContext;
+	}
+	
 	//<xsl:if test="$itemFeedbackAllowed and $sessionStatus='final'">
 	//<xsl:variable name="itemFeedbackAllowed" as="xs:boolean"
 	//	    select="if ($reviewMode)

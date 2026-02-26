@@ -676,10 +676,10 @@ body>li.o_assessmentitem_order_item  {
 		
 		.o_qti_item_max_score {
 			display: inline-block;
-			padding: 0.2em 0.4em;
+			padding: 0.2em 0.7em;
 			margin-left: 10px;
-			border-radius: 0.3em;
-			border: 1px solid $o-qti-item-title-border-color;
+			border-radius: 1em;
+			border: 1px solid $o-qti-item-max-score-border-color;
 			font-size: 0.8em;
 			line-height: 1.2em;
 			color: $text-color;		
@@ -690,10 +690,7 @@ body>li.o_assessmentitem_order_item  {
 			float: right;		
 			display: flex;
 			margin: 0 0 5px 10px;
-			
-			.o_assessmentitem_status {
-				margin-left: 0;
-			}
+
 			.o_assessmentitem_level {
 				margin-left: 0;
 				font-size: 80%;
@@ -709,13 +706,6 @@ body>li.o_assessmentitem_order_item  {
 			}
 			.o_assessmentitem_status {
 				order: 2;
-			}	
-			.o_assessmentitem_status + .o_qti_item_max_score {
-				/* visually make split-button view */
-				margin-right: -3px;
-				border-right: 0;
-				border-top-right-radius: 0;
-				border-bottom-right-radius: 0;
 			}
 		}
 		
@@ -868,19 +858,19 @@ body>li.o_assessmentitem_order_item  {
 	margin-top: 0;
 	margin-bottom: $padding-large-horizontal;
 	padding: $padding-small-vertical $padding-small-horizontal;
+	text-align: center;
 	
 	button, a {
 		margin-bottom: 0;
 	}
+	.o_assessmentitem_attempts {
+		margin: 2px 0 5px 0;
+	}
+	.o_button_group {
+		margin: 0;
+	}
 	
 	/* button icons */
-	.o_sel_assessment_item_submit span { 
-		@include o-add-icon('check');
-		@include o-add-icon-font();
-		&:before {
-			padding-right: 0.5em		
-		}
-	}
 	.o_sel_next_question span { 
 		@include o-add-icon('chevron-right', true, false);
 		@include o-add-icon-font(false);
@@ -1723,13 +1713,6 @@ table.o_qti_item_kprim {
 			background-color: #fafafa;
 			color: $o-qti-attempts-color;
 			font-size: 0.7em;
-			
-			&.o_assessmentitem_attempts_limited {
-				color: $o-qti-attempts-limited-color;
-			}
-			&.o_assessmentitem_attempts_nomore {
-				color: $o-qti-attempts-nomore-color;
-			}
 		}
 
 		.o_assessmentitem_marks {

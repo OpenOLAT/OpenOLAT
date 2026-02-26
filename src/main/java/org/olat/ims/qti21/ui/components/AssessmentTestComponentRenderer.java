@@ -64,6 +64,8 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedbackAccess;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
+import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
 import uk.ac.ed.ph.jqtiplus.state.EffectiveItemSessionControl;
@@ -242,10 +244,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		renderTestItemBody(renderer, sb, component, itemRefNode, ubu, translator, options);
 		
 		//controls
-		sb.append("<div class='o_button_group o_assessmentitem_controls'>");
+		sb.append("<div class='o_assessmentitem_controls'>");
 		
-		//submit button
+		final ItemProcessingContext itemProcessingContext = component.getItemProcessingContext(itemRefNode);
 		final ItemSessionState itemSessionState = component.getItemSessionState(itemRefNode.getKey());
+		renderAttempts(sb, itemProcessingContext, itemSessionState, translator);
+		
+		sb.append("<div class='o_button_group'>");
+		//submit button
 		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
@@ -290,8 +296,32 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			renderControl(sb, component, title, null, false, "o_sel_solution_hide",
 					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key));
 		}
-		sb.append("</div>");//end controls
+		sb.append("</div></div>");//end controls
 		sb.append("</div>");// end assessmentItem
+	}
+	
+	private void renderAttempts(StringOutput sb, ItemProcessingContext itemProcessingContext, ItemSessionState itemSessionState, Translator translator) {
+		//attempts
+		int numOfAttempts = itemSessionState.getNumAttempts();
+		int maxAttempts = 0;
+		if(itemProcessingContext instanceof ItemSessionController itemSessionController) {
+			maxAttempts = itemSessionController.getItemSessionControllerSettings().getMaxAttempts();
+		}		
+		if(maxAttempts > 0) {
+			sb.append("<div class='o_assessmentitem_attempts ");
+			if (maxAttempts - numOfAttempts > 0) {
+				sb.append("o_assessmentitem_attempts_limited");								
+			} else {
+				sb.append("o_assessmentitem_attempts_nomore");				
+			}
+			sb.append("'><i class='o_icon o_icon_info'> </i> ");
+			
+			int attemptsLeft = maxAttempts - numOfAttempts;
+			String i18nTitleKey = numOfAttempts > 1 ? "attemptsleft.long.plural" : "attemptsleft.long";
+			String title = translator.translate(i18nTitleKey, Integer.toString(attemptsLeft),
+					Integer.toString(numOfAttempts), Integer.toString(maxAttempts));
+			sb.append(title).append("</div>");
+		}
 	}
 	
 	private void renderSectionRubrics(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
@@ -767,10 +797,10 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
+	@Override
 	protected void renderItemStatusMessage(AssessmentRenderer renderer, String status, String i18nKey, StringOutput sb, Translator translator) {
 		String title = translator.translate(i18nKey);
-		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringHelper.escapeHtml(title))
-		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
+		sb.append("<span class=\"o_assessmentitem_status ").append(status).append("\"><span>").append(title).append("</span></span>");
 	}
 
 	

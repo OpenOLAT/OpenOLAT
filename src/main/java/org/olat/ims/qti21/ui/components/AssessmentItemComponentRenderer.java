@@ -220,8 +220,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		}
 
 		//controls
-		sb.append("<div class='o_button_group o_assessmentitem_controls'>");
+		sb.append("<div class='o_assessmentitem_controls'>");
 
+		sb.append("<div class='o_button_group'>");
 		renderShowSolutionButton(sb, component, itemSessionState, translator);
 		renderSubmitButton(renderer, sb, component, itemSessionState, ubu, translator);
 
@@ -267,7 +268,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
 		}
 		
-		sb.append("</div>");
+		sb.append("</div></div>");// end controls
 		
 		sb.append("</div>"); // end wrapper
 	}
