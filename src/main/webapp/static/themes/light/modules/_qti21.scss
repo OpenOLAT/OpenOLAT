@@ -264,6 +264,10 @@ span.o_qti_gaptext_score_alternative {
 .o_qti_item_body .extendedTextInteraction {
 	margin: 15px 0;
 
+	&.o_richtext_mce {
+		clear: both;
+	}
+	
 	textarea {
 		/* fix missing resize handle in Safe Exam Browser */
 		resize: vertical !important;
