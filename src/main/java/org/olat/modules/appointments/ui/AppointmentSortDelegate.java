@@ -44,7 +44,7 @@ public class AppointmentSortDelegate extends SortableFlexiTableModelDelegate<App
 		int columnIndex = getColumnIndex();
 		AppointmentCols column = AppointmentDataModel.COLS[columnIndex];
 		switch(column) {
-			case participants -> Collections.sort(rows, (r1, r2) -> r1.getNumberOfParticipations().compareTo(r2.getNumberOfParticipations()));
+			case participants -> Collections.sort(rows, (r1, r2) -> compareIntegers(r1.getNumberOfParticipations(), r2.getNumberOfParticipations()));
 			default -> super.sort(rows);
 		}
 	}

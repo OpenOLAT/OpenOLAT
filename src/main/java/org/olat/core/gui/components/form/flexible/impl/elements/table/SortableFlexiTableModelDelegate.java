@@ -179,6 +179,13 @@ public class SortableFlexiTableModelDelegate<T> {
 		return a.compareTo(b);
 	}
 	
+	protected final int compareIntegers(Integer a, Integer b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		return a.compareTo(b);
+	}
+	
 	protected final int compareLongs(Long a, Long b) {
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
