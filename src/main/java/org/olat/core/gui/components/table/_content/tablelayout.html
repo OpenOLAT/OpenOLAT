@@ -1,19 +1,6 @@
 <div class="o_table_layout $!tableConfig.getCustomCssClass() o_scrollbox">
 #if ($tableEmpty)
-	<div class="o_empty_state">
-		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon $tableEmptyIconCss"></i></div>
-		<div class="o_empty_msg">
-			$tableEmptyMessage
-		</div>
-		#if($tableEmptyHint)
-		<div class="o_empty_hint">
-			$tableEmptyHint
-		</div>		
-		#end
-		#if($r.available("tableEmptyNextActionLink"))
-		<div class="o_empty_action">$r.render("tableEmptyNextActionLink")</div>		
-		#end
-	</div>
+	$r.render("emptyState")
 #else
 	#if(($hasTableSearch && !$tableEmpty) || $tableConfig.isDisplayRowCount() || ($hasFilters && $filters.size() > 0) || $hasSorters || $tableConfig.isPreferencesOffered() || $tableConfig.isDownloadOffered())
 	<div class="row clearfix o_classic_table_toolbar">

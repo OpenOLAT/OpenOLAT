@@ -37,6 +37,8 @@ import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -135,6 +137,8 @@ public class TableController extends BasicController {
 
 	private VelocityContainer contentVc;
 
+	private EmptyState emptyState;
+
 	private Table table;
 
 	private Choice colsChoice;
@@ -154,8 +158,6 @@ public class TableController extends BasicController {
 	
 	private Link preferenceLink;
 	private Link downloadLink;
-	private Link tableEmptyNextActionLink;
-
 	
 	/**
 	 * Constructor for the table controller using the table filter.
@@ -200,7 +202,7 @@ public class TableController extends BasicController {
 	/**
 	 * Constructor for the table controller
 	 * 
-	 * @param tableConfig The table gui configuration determines the tables
+	 * @param tableConfigP The table gui configuration determines the tables
 	 *          behaviour, may be <code>null</code> to use default table config.
 	 * @param ureq The user request
 	 * @param wControl The window control
@@ -245,27 +247,29 @@ public class TableController extends BasicController {
 		}
 
 		// empty table message
+		emptyState = EmptyStateFactory.create("emptyState", contentVc, this);
+
 		String tableEmptyMessage = tableConfig.getTableEmptyMessage();
 		if (tableEmptyMessage == null) {
 			tableEmptyMessage = translate("default.tableEmptyMessage");
 		}
+		emptyState.setMessageTranslated(tableEmptyMessage);
+		
 		String tableEmptyIconCss = tableConfig.getTableEmptyIconCss();
 		if (tableEmptyIconCss == null) {
 			tableEmptyIconCss = TABLE_EMPTY_ICON;
 		}
-		contentVc.contextPut("tableEmptyMessage", tableEmptyMessage);
-		contentVc.contextPut("tableEmptyHint", tableConfig.getTableEmptyHint());
-		contentVc.contextPut("tableEmptyIconCss", tableEmptyIconCss);
-		
+		emptyState.setIconCss(tableEmptyIconCss);
+
+		emptyState.setHintTranslated(tableConfig.getTableEmptyHint());
+
 		// table empty next primary action link
 		if (tableConfig.getTableEmptyPrimaryAction() != null) {
-			tableEmptyNextActionLink = LinkFactory.createCustomLink("tableEmptyNextActionLink",
-					"tableEmptyNextActionLink", tableConfig.getTableEmptyPrimaryAction(), Link.BUTTON + Link.NONTRANSLATED, contentVc, this);
-			tableEmptyNextActionLink.setPrimary(true);
+			emptyState.setButtonTranslated(tableConfig.getTableEmptyPrimaryAction());
 			if (tableConfig.getTableEmptyPrimaryActionIconCss() != null) {
-				tableEmptyNextActionLink.setIconLeftCSS("o_icon o_icon-fw " + tableConfig.getTableEmptyPrimaryActionIconCss());
+				emptyState.setButtonLeftIconCss("o_icon o_icon-fw " + tableConfig.getTableEmptyPrimaryActionIconCss());
 			}
-		}		
+		}
 
 		contentVc.contextPut("tableConfig", tableConfig);
 		contentVc.contextPut(VC_VAR_HAS_TABLE_SEARCH, Boolean.FALSE);
@@ -350,7 +354,7 @@ public class TableController extends BasicController {
 		} else if (source == resetLink) {
 			table.setSearchString(null);
 			modelChanged();
-		} else if (source == tableEmptyNextActionLink) {
+		} else if (source == emptyState && event == EmptyState.EVENT) {
 			fireEvent(ureq, EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION);
 		}
 	}
