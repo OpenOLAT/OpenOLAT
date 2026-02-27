@@ -89,7 +89,7 @@
 		<activemq.artemis.version>2.44.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
-		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
+		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.31</qtiworks.version>
 		
 	    <!-- properties for testing and Q&A -->
