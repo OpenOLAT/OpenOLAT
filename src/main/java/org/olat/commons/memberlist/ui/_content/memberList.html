@@ -1,37 +1,36 @@
+<ul class="o_cmember_list list-unstyled">
 #foreach($member in $members)
-	<div class="o_cmember col-xs-12 col-sm-6 col-md-4 ">
-		<div class="clearfix">
-			<div class="o_portrait">
-				$r.render($member.getPortraitCompName())
-			</div>
-			<div class="o_cmember_info_wrapper">
-				#if($r.available($member.getChatComponentName()) && $r.visible($member.getChatComponentName()))
-					$r.render($member.getChatComponentName())
-				#end
-				$r.render($member.getIdLink().getComponent().getComponentName())
-				#if($r.available($member.getEmailComponentName()))
-					$r.render($member.getEmailComponentName())
-				#end
-				#set ($skipNextBR=false)
-				#foreach($userPropertyHandler in $userPropertyHandlers)
-					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
-						#set ($prop=$!{member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))})			
-						## $prop can contain value of last iteration because when null the value is not assigned to $prop - check again									
-						#if(${member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))} && $prop != "" && $prop != "-")
-							<div class="o_prop o_${userPropertyHandler.name}">$r.escapeHtml($prop)</div>
-						#end
-					#end					
-				#end
-				
-				#if($r.isNotNull($member.curriculumElementInfos))
-					<div class="o_prop o_curriculum_displayname">$member.curriculumDisplayName</div>
-					#if($r.isNotEmpty($member.curriculumRootElementIdentifier))
-						<div class="o_prop o_curriculum_root_el_identifier">$r.escapeHtml($member.curriculumRootElementIdentifier)</div>
-					#elseif($r.isNotEmpty($member.curriculumRootElementDisplayName))
-						<div class="o_prop o_curriculum_root_el_displayname">$r.escapeHtml($member.curriculumRootElementDisplayName)</div>
-					#end
-				#end
-			</div>
+	<li class="o_cmember">
+		<div class="o_portrait">
+			$r.render($member.getPortraitCompName())
 		</div>
-	</div>
+		<div class="o_cmember_info_wrapper">
+			#if($r.available($member.getChatComponentName()) && $r.visible($member.getChatComponentName()))
+				$r.render($member.getChatComponentName())
+			#end
+			$r.render($member.getIdLink().getComponent().getComponentName())
+			#if($r.available($member.getEmailComponentName()))
+				$r.render($member.getEmailComponentName())
+			#end
+			#foreach($userPropertyHandler in $userPropertyHandlers)
+				#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName")
+					#set ($prop=$!{member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))})
+					## $prop can contain value of last iteration because when null the value is not assigned to $prop - check again
+					#if(${member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))} && $prop != "" && $prop != "-")
+						<div class="o_prop o_${userPropertyHandler.name}">$r.escapeHtml($prop)</div>
+					#end
+				#end	
+			#end
+			
+			#if($r.isNotNull($member.curriculumElementInfos))
+				<div class="o_prop o_curriculum_displayname">$member.curriculumDisplayName</div>
+				#if($r.isNotEmpty($member.curriculumRootElementIdentifier))
+					<div class="o_prop o_curriculum_root_el_identifier">$r.escapeHtml($member.curriculumRootElementIdentifier)</div>
+				#elseif($r.isNotEmpty($member.curriculumRootElementDisplayName))
+					<div class="o_prop o_curriculum_root_el_displayname">$r.escapeHtml($member.curriculumRootElementDisplayName)</div>
+				#end
+			#end
+			</div>
+	</li>
 #end
+</ul>

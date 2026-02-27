@@ -7,7 +7,6 @@
 			</div>
 			<div class="o_cmember_info_wrapper">
 				<strong>$r.escapeHtml($member.fullName)</strong>
-				#set ($skipNextBR=false)
 				#foreach($userPropertyHandler in $userPropertyPrintHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
 						#set ($prop=$!{member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))})			

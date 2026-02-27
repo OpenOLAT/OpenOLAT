@@ -1078,39 +1078,43 @@
 
 /* member list course element */
 .o_cmembers {
-	.o_cmember {
-		margin: $padding-base-horizontal 0;
-		display: table;
-		.o_portrait {
-			padding-right: $padding-large-vertical;		
-			display: table-cell;
-			vertical-align: top;
-			min-width: 60px;
-			img {
-				width: 50px;
-				height: 50px;
+	.o_cmember_list {
+		margin-top: $padding-base-horizontal + 10px;
+		
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 2*$padding-base-horizontal;
+		align-items: start;
+		.o_cmember {
+			display: flex;
+			gap: $padding-large-vertical;
+			align-items: center;
+			.o_portrait {
+				align-self: start;
+				img {
+					width: 50px;
+					height: 50px;
+				}
+			}
+			.o_cmember_info_wrapper {
+				.o_mail {
+					margin-left: $padding-base-vertical;	
+				}
+				color: $text-muted;
+			}
+			
+			.o_curriculum_displayname, .o_curriculum_root_el_identifier, .o_curriculum_root_el_displayname {
+				font-size: 12px;
 			}
 		}
-		.o_cmember_info_wrapper {
-			display: table-cell;
-			vertical-align: middle;
-			.o_mail {
-				margin-left: $padding-base-vertical;					
-			}
-			color: $text-muted;
-		}
 		
-		.o_curriculum_displayname, .o_curriculum_root_el_identifier, .o_curriculum_root_el_displayname {
-			font-size: 12px;
+		.o_cmember a.o_mail {
+			display: none;
 		}
-	}
-	
-	.o_cmember a.o_mail {
-		display: none;
-	}
-		
-	.o_cmember:hover a.o_mail {
-		display: inline;
+			
+		.o_cmember:hover a.o_mail {
+			display: inline;
+		}
 	}
 }
 
