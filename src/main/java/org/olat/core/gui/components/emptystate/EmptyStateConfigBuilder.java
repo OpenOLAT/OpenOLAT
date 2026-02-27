@@ -39,6 +39,7 @@ public class EmptyStateConfigBuilder {
 	private String[] descI18nArgs;
 	private String descTranslated;
 	private String buttonI18nKey;
+	private String buttonTranslated;
 	private String secondaryButtonI18nKey;
 	
 	EmptyStateConfigBuilder() {
@@ -105,6 +106,11 @@ public class EmptyStateConfigBuilder {
 		return this;
 	}
 	
+	public EmptyStateConfigBuilder withButtonTranslated(String buttonTranslated) {
+		this.buttonTranslated = buttonTranslated;
+		return this;
+	}
+	
 	public EmptyStateConfigBuilder withSecondaryButtonI18nKey(String secondaryButtonI18nKey) {
 		this.secondaryButtonI18nKey = secondaryButtonI18nKey;
 		return this;
@@ -113,7 +119,7 @@ public class EmptyStateConfigBuilder {
 	public EmptyStateConfig build() {
 		return new EmptyStateConfigImpl(iconCss, indicatorIconCss, messageI18nKey, messageI18nArgs, messageTranslated,
 				hintI18nKey, hintI18nArgs, hintTranslated, descI18nKey, descI18nArgs, descTranslated, buttonI18nKey,
-				secondaryButtonI18nKey);
+				buttonTranslated, secondaryButtonI18nKey);
 	}
 
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
@@ -130,12 +136,14 @@ public class EmptyStateConfigBuilder {
 		private final String[] descI18nArgs;
 		private final String descTranslated;
 		private final String buttonI18nKey;
+		private final String buttonTranslated;
 		private final String secondaryButtonI18nKey;
 
 		public EmptyStateConfigImpl(String iconCss, String indicatorIconCss, String messageI18nKey,
 									String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
 									String hintTranslated, String descI18nKey, String[] descI18nArgs,
-									String descTranslated, String buttonI18nKey, String secondaryButtonI18nKey) {
+									String descTranslated, String buttonI18nKey, String buttonTranslated, 
+									String secondaryButtonI18nKey) {
 			this.iconCss = iconCss;
 			this.indicatorIconCss = indicatorIconCss;
 			this.messageI18nKey = messageI18nKey;
@@ -148,6 +156,7 @@ public class EmptyStateConfigBuilder {
 			this.descI18nArgs = descI18nArgs;
 			this.descTranslated = descTranslated;
 			this.buttonI18nKey = buttonI18nKey;
+			this.buttonTranslated = buttonTranslated;
 			this.secondaryButtonI18nKey = secondaryButtonI18nKey;
 		}
 
@@ -206,6 +215,10 @@ public class EmptyStateConfigBuilder {
 		@Override
 		public String getButtonI18nKey() {
 			return buttonI18nKey;
+		}
+
+		public String getButtonTranslated() {
+			return buttonTranslated;
 		}
 
 		@Override

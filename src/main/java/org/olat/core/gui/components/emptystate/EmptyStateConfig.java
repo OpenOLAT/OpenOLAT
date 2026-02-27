@@ -71,6 +71,8 @@ public interface EmptyStateConfig {
 
 	public String getButtonI18nKey();
 	
+	public String getButtonTranslated();
+	
 	public String getSecondaryButtonI18nKey();
 
 }

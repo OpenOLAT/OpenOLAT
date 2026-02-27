@@ -59,6 +59,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String[] descI18nArgs;
 	private String descTranslated;
 	private String buttonI18nKey;
+	private String buttonTranslated;
 	private String secondaryButtonI18nKey;
 	private Link button;
 	private Link secondaryButton;
@@ -190,6 +191,15 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 
 	public void setButtonI18nKey(String buttonI18nKey) {
 		this.buttonI18nKey = buttonI18nKey;
+		setDirty(true);
+	}
+
+	public String getButtonTranslated() {
+		return buttonTranslated;
+	}
+
+	public void setButtonTranslated(String buttonTranslated) {
+		this.buttonTranslated = buttonTranslated;
 		setDirty(true);
 	}
 

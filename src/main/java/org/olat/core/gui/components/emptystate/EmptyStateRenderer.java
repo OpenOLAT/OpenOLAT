@@ -21,6 +21,7 @@ package org.olat.core.gui.components.emptystate;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -42,22 +43,6 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		EmptyState emptyState = (EmptyState)source;
 		
-		sb.append("<div class='o_empty_state");
-		if (StringHelper.containsNonWhitespace(emptyState.getElementCssClass())) {
-			sb.append(" ").append(emptyState.getElementCssClass());
-		}
-		sb.append("'>");
-		
-		String indicatorIconCss = StringHelper.containsNonWhitespace(emptyState.getIndicatorIconCss())
-				? emptyState.getIndicatorIconCss()
-				: "o_icon_empty_indicator";
-		sb.append("<div class='o_empty_visual'><i class='o_icon ").append(indicatorIconCss).append("'></i>");
-		String iconCss = StringHelper.containsNonWhitespace(emptyState.getIconCss())
-				? emptyState.getIconCss()
-				: "o_icon_empty_objects";
-		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
-		sb.append("</div>");
-	
 		String message = null;
 		if (StringHelper.containsNonWhitespace(emptyState.getMessageTranslated())) {
 			message = emptyState.getMessageTranslated();
@@ -66,37 +51,109 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		} else {
 			Util.createPackageTranslator(EmptyState.class, translator.getLocale()).translate("default.message");
 		}
-		sb.append("<div class='o_empty_msg'>").append(message).append("</div>");
 
+		String hint = null;
 		if (StringHelper.containsNonWhitespace(emptyState.getHintTranslated())) {
-			sb.append("<div class='o_empty_hint'>").append(emptyState.getHintTranslated()).append("</div>");
+			hint = emptyState.getHintTranslated();
 		} else if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
-			sb.append("<div class='o_empty_hint'>").append(translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs())).append("</div>");
+			hint = translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs());
 		}
 
+		String desc = null;
 		if (StringHelper.containsNonWhitespace(emptyState.getDescTranslated())) {
-			sb.append("<small class=\"text-muted\">").append(emptyState.getDescTranslated()).append("</small>");
+			desc = emptyState.getDescTranslated();
 		} else if (StringHelper.containsNonWhitespace(emptyState.getDescI18nKey())) {
-			sb.append("<small class=\"text-muted\">").append(translator.translate(emptyState.getDescI18nKey(), emptyState.getDescI18nArgs())).append("</small>");
+			desc = translator.translate(emptyState.getDescI18nKey(), emptyState.getDescI18nArgs());
 		}
 
-		if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey()) || StringHelper.containsNonWhitespace(emptyState.getSecondaryButtonI18nKey())) {
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withIndicatorIconCss(emptyState.getIndicatorIconCss())
+				.withIconCss(emptyState.getIconCss())
+				.withMessageTranslated(message)
+				.withHintTranslated(hint)
+				.withDescTranslated(desc)
+				.withButtonI18nKey(emptyState.getButtonI18nKey())
+				.withButtonTranslated(emptyState.getButtonTranslated())
+				.withSecondaryButtonI18nKey(emptyState.getSecondaryButtonI18nKey())
+				.build();
+		renderEmptyState(renderer, sb, translator, emptyState.getElementCssClass(), emptyStateConfig, 
+				emptyState.getButton(), emptyState.getSecondaryButton(), args);
+	}
+	
+	/**
+	 * Renders an empty state UI element based on the provided configuration.
+	 *
+	 * @param renderer The renderer used to render the UI buttons and actions.
+	 * @param sb The StringOutput to append the rendered HTML output.
+	 * @param translator Used to translate i18n keys into localized text.
+	 * @param elementCssClass Optional CSS class to be added to the root element of the empty state.
+	 * @param emptyStateConfig The configuration object defining the content and layout of the empty state.
+	 * @param button The primary action button to be rendered in the empty state, if applicable.
+	 * @param secondaryButton The secondary action button to be rendered in the empty state, if applicable.
+	 * @param args Optional arguments passed to the renderer for processing.
+	 */
+	public static void renderEmptyState(Renderer renderer, StringOutput sb, Translator translator,
+										String elementCssClass, EmptyStateConfig emptyStateConfig,
+										Link button, Link secondaryButton, String[] args) {
+		String indicatorIconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIndicatorIconCss()) ? 
+				emptyStateConfig.getIndicatorIconCss() : "o_icon_empty_indicator";
+		String iconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIconCss()) ? 
+				emptyStateConfig.getIconCss() : "o_icon_empty_objects";
+
+		// empty state element
+		sb.append("<div class='o_empty_state");
+		if (StringHelper.containsNonWhitespace(elementCssClass)) {
+			sb.append(" ").append(elementCssClass);
+		}
+		sb.append("'>");
+		
+		// icon
+		sb.append("<div class='o_empty_visual'><i class='o_icon ").append(indicatorIconCss).append("'></i>");
+		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
+		sb.append("</div>");
+
+		// message
+		sb.append("<div class='o_empty_msg'>").append(emptyStateConfig.getMessageTranslated()).append("</div>");
+
+		// hint
+		if (StringHelper.containsNonWhitespace(emptyStateConfig.getHintTranslated())) {
+			sb.append("<div class='o_empty_hint'>").append(emptyStateConfig.getHintTranslated()).append("</div>");
+		}
+
+		// description
+		if (StringHelper.containsNonWhitespace(emptyStateConfig.getDescTranslated())) {
+			sb.append("<small class='text-mutedx'>").append(emptyStateConfig.getDescTranslated()).append("</small>");
+		}
+
+		String buttonCustomDisplayText = null;
+		if (StringHelper.containsNonWhitespace(emptyStateConfig.getButtonI18nKey())) {
+			buttonCustomDisplayText = translator.translate(emptyStateConfig.getButtonI18nKey());
+		} else if (StringHelper.containsNonWhitespace(emptyStateConfig.getButtonTranslated())) {
+			buttonCustomDisplayText = emptyStateConfig.getButtonTranslated();
+		}
+		
+		String secondaryButtonCustomDisplayText = null;
+		if (StringHelper.containsNonWhitespace(emptyStateConfig.getSecondaryButtonI18nKey())) {
+			secondaryButtonCustomDisplayText = translator.translate(emptyStateConfig.getSecondaryButtonI18nKey());
+		}
+
+		if (StringHelper.containsNonWhitespace(buttonCustomDisplayText) ||
+				StringHelper.containsNonWhitespace(secondaryButtonCustomDisplayText)) {
 			sb.append("<div class='o_empty_action'>");
-			if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey())) {
-				String customDisplayText = translator.translate(emptyState.getButtonI18nKey());
-				emptyState.getButton().setCustomDisplayText(customDisplayText);
-				renderer.render(emptyState.getButton(), sb, args);
+			if (button != null && StringHelper.containsNonWhitespace(buttonCustomDisplayText)) {
+				button.setCustomDisplayText(buttonCustomDisplayText);
+				renderer.render(button, sb, args);
 			}
-			
-			if (StringHelper.containsNonWhitespace(emptyState.getSecondaryButtonI18nKey())) {
+
+			if (secondaryButton != null && StringHelper.containsNonWhitespace(secondaryButtonCustomDisplayText)) {
 				sb.append(" ");
-				String customDisplayText = translator.translate(emptyState.getSecondaryButtonI18nKey());
-				emptyState.getSecondaryButton().setCustomDisplayText(customDisplayText);
-				renderer.render(emptyState.getSecondaryButton(), sb, args);
+				secondaryButton.setCustomDisplayText(secondaryButtonCustomDisplayText);
+				renderer.render(secondaryButton, sb, args);
 			}
 			sb.append("</div>");
 		}
-		
+
+		// close empty state element
 		sb.append("</div>");
 	}
 	
