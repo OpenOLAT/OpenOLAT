@@ -2349,16 +2349,15 @@
 		<!-- end Paypal -->
 
 		<!-- AI API -->
-   		<dependency>
-			<groupId>io.github.sashirestela</groupId>
-			<artifactId>simple-openai</artifactId>
-			<version>3.22.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-simple</artifactId>
-				</exclusion>
-			</exclusions>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-open-ai</artifactId>
+			<version>1.11.0</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-anthropic</artifactId>
+			<version>1.11.0</version>
 		</dependency>
 		<!-- end AI API -->
 

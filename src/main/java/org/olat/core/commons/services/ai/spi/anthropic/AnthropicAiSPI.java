@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.ai.spi.openAI;
+package org.olat.core.commons.services.ai.spi.anthropic;
 
 import java.util.List;
 import java.util.Locale;
@@ -44,33 +44,33 @@ import org.springframework.stereotype.Service;
 
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.anthropic.AnthropicChatModel;
+import dev.langchain4j.model.anthropic.AnthropicModelCatalog;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
-import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.model.openai.OpenAiModelCatalog;
 
 /**
  *
- * AI service implementation based on OpenAI services
+ * AI service implementation based on Anthropic Claude services
  *
- * Initial date: 22.05.2024<br>
+ * Initial date: 19.02.2026<br>
  *
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
 @Service
-public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI {
-	private static final Logger log = Tracing.createLoggerFor(OpenAiSPI.class);
-	private static final String SPI_NAME = "OpenAI";
-	private static final String SPI_ID = "OpenAI";
+public class AnthropicAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI {
+	private static final Logger log = Tracing.createLoggerFor(AnthropicAiSPI.class);
+	private static final String SPI_NAME = "Anthropic Claude";
+	private static final String SPI_ID = "Anthropic";
 
-	private static final String OPENAI_API_KEY = "openai.api.key";
-	private static final String OPENAI_ENABLED = "openai.enabled";
+	private static final String ANTHROPIC_API_KEY = "anthropic.api.key";
+	private static final String ANTHROPIC_ENABLED = "anthropic.enabled";
 
-	@Value("${ai.openai.api.key:}")
+	@Value("${ai.anthropic.api.key:}")
 	private String apiKey;
 
-	@Value("${ai.openai.enabled:false}")
+	@Value("${ai.anthropic.enabled:false}")
 	private boolean enabledDefault;
 
 	private boolean enabled;
@@ -84,13 +84,13 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	AiPromptHelper aiPromptHelper;
 
 	@Autowired
-	public OpenAiSPI(CoordinatorManager coordinatorManager) {
+	public AnthropicAiSPI(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
 	}
 
 	@Override
 	public void init() {
-		setBooleanPropertyDefault(OPENAI_ENABLED, enabledDefault);
+		setBooleanPropertyDefault(ANTHROPIC_ENABLED, enabledDefault);
 		updateProperties();
 	}
 
@@ -100,17 +100,18 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	}
 
 	private void updateProperties() {
-		apiKey = getStringPropertyValue(OPENAI_API_KEY, apiKey);
-		enabled = getBooleanPropertyValue(OPENAI_ENABLED);
+		apiKey = getStringPropertyValue(ANTHROPIC_API_KEY, apiKey);
+		enabled = getBooleanPropertyValue(ANTHROPIC_ENABLED);
 		rebuildModel();
 	}
 
 	private void rebuildModel() {
 		if (StringHelper.containsNonWhitespace(apiKey) && StringHelper.containsNonWhitespace(mcGeneratorModel)) {
-			model = OpenAiChatModel.builder()
+			model = AnthropicChatModel.builder()
 					.apiKey(apiKey)
 					.modelName(mcGeneratorModel)
-					.maxCompletionTokens(4000)
+					.temperature(0.2)
+					.maxTokens(4000)
 					.build();
 		} else {
 			model = null;
@@ -118,18 +119,18 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	}
 
 	/**
-	 * @return The OpenAI API Key
+	 * @return The Anthropic API Key
 	 */
 	public String getApiKey() {
 		return apiKey;
 	}
 
 	/**
-	 * @param apiKey The OpenAI API Key
+	 * @param apiKey The Anthropic API Key
 	 */
 	public void setApiKey(String apiKey) {
 		this.apiKey = apiKey;
-		setStringProperty(OPENAI_API_KEY, apiKey, true);
+		setStringProperty(ANTHROPIC_API_KEY, apiKey, true);
 		rebuildModel();
 	}
 
@@ -156,22 +157,22 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	@Override
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-		setBooleanProperty(OPENAI_ENABLED, enabled, true);
+		setBooleanProperty(ANTHROPIC_ENABLED, enabled, true);
 	}
 
 	@Override
 	public String getAdminTitleI18nKey() {
-		return "ai.openai.title";
+		return "ai.anthropic.title";
 	}
 
 	@Override
 	public String getAdminDescI18nKey() {
-		return "ai.openai.desc";
+		return "ai.anthropic.desc";
 	}
 
 	@Override
 	public String getAdminApiKeyI18nKey() {
-		return "ai.openai.apikey";
+		return "ai.anthropic.apikey";
 	}
 
 	@Override
@@ -198,7 +199,7 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	}
 
 	/**
-	 * Verify that the given API key is accepted by the OpenAI API.
+	 * Verify that the given API key is accepted by the Anthropic API.
 	 * On success returns the list of available model names.
 	 * On failure throws an exception whose message contains the provider's error details.
 	 *
@@ -207,7 +208,7 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	 * @throws Exception if the API key is rejected or the API is unreachable
 	 */
 	public List<String> verifyApiKey(String apiKey) throws Exception {
-		return OpenAiModelCatalog.builder()
+		return AnthropicModelCatalog.builder()
 				.apiKey(apiKey)
 				.build()
 				.listModels()
@@ -225,7 +226,7 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 		try {
 			return verifyApiKey(apiKey);
 		} catch (Exception e) {
-			log.warn("Could not fetch available models from OpenAI API", e);
+			log.warn("Could not fetch available models from Anthropic API", e);
 			return List.of();
 		}
 	}
@@ -242,7 +243,6 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 
 			//TODO: check input length
 			//TODO: split into multiple queries
-			//TODO: use embeddings etc
 
 			SystemMessage systemMessage = aiPromptHelper.createQuestionSystemMessage(locale);
 			UserMessage userMessage = aiPromptHelper.createChoiceQuestionUserMessage(input, number, 2, 3, locale);
@@ -251,13 +251,13 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 			String result = chatResponse.aiMessage().text();
 
 			if (log.isDebugEnabled()) {
-				log.debug("OpenAI chat response for MC question:: " + result);
+				log.debug("Anthropic messages response for MC question:: " + result);
 			}
 
 			response = aiPromptHelper.parseQuestionResult(result);
 
 		} catch (Exception e) {
-			log.warn("Error while creating an MC question via AI service", e);
+			log.warn("Error while creating an MC question via Anthropic AI service", e);
 			response.setError(e.getMessage());
 		}
 		return response;

@@ -1,6 +1,6 @@
 /**
  * <a href="https://www.openolat.org">
- * OpenOLAT - Online Learning and Training</a><br>
+ * OpenOlat - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
@@ -19,32 +19,45 @@
  */
 package org.olat.core.commons.services.ai;
 
-import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * 
- * AI service API for different AI services
- * 
+ *
+ * Base AI service provider interface. Implement this interface to register an
+ * AI service provider. To support specific features, also implement the
+ * corresponding feature interfaces (e.g. AiMCQuestionGeneratorSPI).
+ *
  * Initial date: 22.05.2024<br>
- * 
+ *
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
 public interface AiSPI {
-	
+
 	/**
 	 * @return The technical identifier of the SPI
 	 */
 	public String getId();
 
 	/**
-	 * @return The human readable identifier / name of the SPI, e.g the prouduct name
+	 * @return The human readable identifier / name of the SPI, e.g the product name
 	 */
 	public String getName();
-	
+
+	/**
+	 * @return true: this SPI is enabled by the admin; false: disabled
+	 */
+	public boolean isEnabled();
+
+	/**
+	 * Enable or disable this SPI. Stores the state persistently.
+	 *
+	 * @param enabled true to enable, false to disable
+	 */
+	public void setEnabled(boolean enabled);
+
 	/**
 	 * Factory method to create an admin interface to configure the SPI
 	 * @param ureq
@@ -52,28 +65,5 @@ public interface AiSPI {
 	 * @return
 	 */
 	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
-
-	
-	/**
-	 * @return true: this SPI can be used to generate questions; false: the SPI can
-	 *         not be used to generate questions
-	 */
-	public boolean isQuestionGenerationEnabled();
-
-	/**
-	 * @return The LLM used for generating questions
-	 */
-	public String getQuestionGenerationModel();
-
-	
-	/**
-	 * Generative method to create multiple choice items from a given text input
-	 * 
-	 * @param input  The original input text. Make sure it is not longer than your
-	 *               model supports
-	 * @param number the number of questions that shall be generated
-	 * @return
-	 */
-	public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number);
 
 }

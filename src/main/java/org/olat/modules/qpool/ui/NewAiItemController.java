@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
 import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
 import org.olat.core.commons.services.ai.model.AiMCQuestionData;
@@ -101,8 +102,8 @@ public class NewAiItemController extends FormBasicController {
 	private QuestionPoolLicenseHandler licenseHandler;
 
 	@Autowired
-	private AiSPI aiSPI;
-	
+	private AiModule aiModule;
+
 	public NewAiItemController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -140,19 +141,19 @@ public class NewAiItemController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String input = contentEl.getValue();
-		
+		AiMCQuestionGeneratorSPI generator = aiModule.getMCQuestionGenerator();
 		int numberQuestions = Math.max(1, Math.round(input.length() / 500));
-		AiMCQuestionsResponse response = aiSPI.generateMCQuestionsResponse(input, numberQuestions);
-		
+		AiMCQuestionsResponse response = generator.generateMCQuestionsResponse(input, numberQuestions);
+
 		if (response.isSuccess()) {
 			// create all items in the document and fire event with item list to parent
 			List<QuestionItem> questionItems = new ArrayList<>();
 
 			for (AiMCQuestionData questionData : response.getQuestions()) {
-				QuestionItem item = doCreateMCItem(questionData);
+				QuestionItem item = doCreateMCItem(questionData, generator);
 				if (item != null) {
-					questionItems.add(item);					
-				}				
+					questionItems.add(item);
+				}
 			}
 			if (questionItems.size() > 0) {
 				fireEvent(ureq, new AiQuestionItemsCreatedEvent(questionItems));								
@@ -172,7 +173,7 @@ public class NewAiItemController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private QuestionItem doCreateMCItem(AiMCQuestionData itemData) {
+	private QuestionItem doCreateMCItem(AiMCQuestionData itemData, AiMCQuestionGeneratorSPI generator) {
 		// 1) Create basic item using the builder in RAM
 		String title = itemData.getTitle();
 		String question = itemData.getQuestion();
@@ -253,8 +254,8 @@ public class NewAiItemController extends FormBasicController {
 			}
 		}
 		// Meta: used AI service and AI model
-		metaItem.setEditor("OpenOlat.AI.QTI12.Generator." + aiSPI.getId());
-		metaItem.setEditorVersion(aiSPI.getQuestionGenerationModel());
+		metaItem.setEditor("OpenOlat.AI.QTI12.Generator." + aiModule.getMCGeneratorSpiId());
+		metaItem.setEditorVersion(generator.getMCGeneratorModel());
 		
 		// 3) Persist item in question pool using the Excel import SPI
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);

@@ -1,6 +1,6 @@
 /**
  * <a href="https://www.openolat.org">
- * OpenOLAT - Online Learning and Training</a><br>
+ * OpenOlat - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>

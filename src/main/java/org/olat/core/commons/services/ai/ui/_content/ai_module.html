@@ -1,4 +1,9 @@
-$r.render("spiChooserCtr")
-#if($r.available("spiConfigCtr"))
-	$r.render("spiConfigCtr")
+$r.render("providersForm")
+#foreach($spiConfigCtrlName in $spiConfigCtrlNames)
+	#if($r.available($spiConfigCtrlName))
+		$r.render($spiConfigCtrlName)
+	#end
+#end
+#if($r.available("featuresForm"))
+	$r.render("featuresForm")
 #end

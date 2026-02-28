@@ -243,7 +243,7 @@ public class QuestionListController extends AbstractItemListController implement
 				newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
 				newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");			
 			}
-			if (aiModule.isAiEnabled() && aiModule.getAiProvider().isQuestionGenerationEnabled()) {
+			if (aiModule.isMCQuestionGeneratorEnabled()) {
 				newAiItem = uifactory.addFormLink("new.ai.item", formLayout, Link.BUTTON);
 				newAiItem.setIconLeftCSS("o_icon o_icon-fw o_icon_wizard");
 			}
