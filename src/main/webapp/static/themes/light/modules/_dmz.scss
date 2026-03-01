@@ -40,17 +40,7 @@ body.o_dmz {
 			background-position: $o-login-form-bg-position-left $o-login-form-bg-position-top;
 			background-repeat: no-repeat;
 		}
-						
-		/* IE 9 fallback for gradient */
-		@if $o-login-form-align == left {
-			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=1 );
-		}
-		@else if $o-login-form-align == right {
-			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=1 );
-		} 
-		@else if $o-login-form-align == center {
-			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 );
-		} 
+								
 	}
 	
 	#o_toplink {

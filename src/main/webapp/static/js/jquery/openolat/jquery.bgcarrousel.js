@@ -102,7 +102,13 @@
 		// and plays the zoom→fade animation. The inactive layer (z-index -1) sits
 		// underneath and is preloaded with the next image while the active layer
 		// is still animating. After the fade the layers are swapped.
-		var layerStyle = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;';
+		// will-change promotes each layer to its own compositor layer in Firefox and
+		// Chrome. Without this hint Firefox runs transform/opacity animations on the
+		// main thread, which causes UI blocking because SVG backgrounds cannot be
+		// cached as static GPU textures (Firefox treats them as potentially dynamic).
+		// With will-change the SVG is rasterised once per layer creation; subsequent
+		// transform and opacity transitions run entirely on the compositor thread.
+		var layerStyle = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; will-change: transform, opacity;';
 		this.layerA = $("<div style='" + layerStyle + " z-index: 0'></div>");
 		this.layerB = $("<div style='" + layerStyle + " z-index: -1'></div>");
 		container.append(this.layerB).append(this.layerA);
@@ -125,6 +131,26 @@
 	}
 
 
+	// Resolve an easing name to a value the Web Animations API accepts.
+	// Supports standard CSS values ('linear', 'ease', 'ease-in-out', 'cubic-bezier(…)')
+	// and jQuery Transit aliases ('easeInCubic', 'snap', …) via $.cssEase when available.
+	BgCarrousel.prototype._easing = function(name) {
+		if ($.cssEase && $.cssEase[name]) return $.cssEase[name];
+		return name || 'linear';
+	}
+
+
+	// Cancel all running Web Animations on a DOM element and reset its visual
+	// state so it is ready for the next animation cycle.
+	BgCarrousel.prototype._resetLayer = function(el) {
+		if (el.getAnimations) {
+			el.getAnimations().forEach(function(a) { a.cancel(); });
+		}
+		el.style.transform = '';
+		el.style.opacity = '1';
+	}
+
+
 	// Load the next image (by pos) into the inactive layer and reset its state
 	// so it is ready to become the active layer after the current fade.
 	BgCarrousel.prototype._preloadNext = function() {
@@ -134,25 +160,30 @@
 		}
 		var nextBg = this.bgcss.replace(this.initialImage, this.settings.images[this.pos]);
 		this.inactiveLayer.css('background', nextBg);
-		// Reset scale and opacity instantly so the layer is clean when it becomes active
-		this.inactiveLayer.transition({ scale: 1, opacity: 1, duration: 0 });
+		this._resetLayer(this.inactiveLayer[0]);
 	}
 
 
 	// Step 1: zoom the active layer. When done, trigger the fade.
+	// Uses the Web Animations API instead of jQuery Transit to avoid the
+	// synchronous offsetWidth layout flush that blocks the main thread in Firefox.
 	BgCarrousel.prototype._zoom = function() {
 		var self = this;
-		// Ensure the active layer starts from a clean state
-		self.activeLayer.transition({ scale: 1, opacity: 1, duration: 0 });
+		var el = self.activeLayer[0];
+		self._resetLayer(el);
 
 		if (self.settings.durationshow > 100) {
-			self.activeLayer.transition({
-				scale: self.settings.scale,
+			var anim = el.animate([
+				{ transform: 'scale(1)' },
+				{ transform: 'scale(' + self.settings.scale + ')' }
+			], {
 				duration: self.settings.durationshow,
-				easing: self.settings.scaleease
-			}, function() {
-				self._fade();
+				easing: self._easing(self.settings.scaleease),
+				fill: 'forwards'
 			});
+			anim.onfinish = function() {
+				self._fade();
+			};
 		} else {
 			self._fade();
 		}
@@ -162,17 +193,22 @@
 	// Step 2: fade out the active layer. When done, switch to the next image.
 	BgCarrousel.prototype._fade = function() {
 		var self = this;
+		var el = self.activeLayer[0];
 
 		if (self.settings.durationout > 100) {
-			self.activeLayer.transition({
-				opacity: 0,
+			var anim = el.animate([
+				{ opacity: 1 },
+				{ opacity: 0 }
+			], {
 				duration: self.settings.durationout,
-				easing: self.settings.easeout
-			}, function() {
-				self._switchToNext();
+				easing: self._easing(self.settings.easeout),
+				fill: 'forwards'
 			});
+			anim.onfinish = function() {
+				self._switchToNext();
+			};
 		} else {
-			self.activeLayer.css('opacity', 0);
+			el.style.opacity = '0';
 			self._switchToNext();
 		}
 	}
@@ -180,6 +216,8 @@
 
 	// Step 3: swap layers, preload the image after next, start zooming the new active layer.
 	BgCarrousel.prototype._switchToNext = function() {
+		var self = this;
+
 		// Swap active and inactive references
 		var temp          = this.activeLayer;
 		this.activeLayer   = this.inactiveLayer;
@@ -189,11 +227,17 @@
 		this.activeLayer.css('z-index', 0);
 		this.inactiveLayer.css('z-index', -1);
 
-		// Preload the image after this one on the now-inactive layer
-		this._preloadNext();
-
-		// Start the zoom on the newly active layer
+		// Start the zoom on the newly active layer immediately so the user
+		// sees a smooth animation start without waiting for the next image to
+		// be rasterised.
 		this._zoom();
+
+		// Defer preloading the next image to the next animation frame. This
+		// separates the expensive SVG rasterisation (triggered by setting the
+		// background) from the zoom start, avoiding a stutter at the transition.
+		requestAnimationFrame(function() {
+			self._preloadNext();
+		});
 	}
 
 

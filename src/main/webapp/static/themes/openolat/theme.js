@@ -1,4 +1,4 @@
-/**wallpaper-1-fluid-waves.svg
+/**
  *  OpenOLAT theme JS extensions as jQuery module
  *  
  *  @dependencies jQuery
@@ -41,22 +41,22 @@
 			this.dmzCarrousel.initCarrousel({
 				query: "#o_body.o_dmz #o_bg", 
 				images: [
-						'sunrise-surge.svg',
-						'deep-surge.svg',
-						'tahoe-landscape.svg',
-						'sonoma-mesh.svg',
-						'jaguar-starburst.svg',
-						'tiger-streak.svg',						
-						'violet-lime-teal.svg',
-						'amber-rose-teal.svg',
-						'sky-emerald-peach.svg',
-						'indigo-mint-sweep.svg',
-						'coral-lavender-teal.svg',
-						'arctic-sapphire.svg',						
-						'solar.svg',
-						'bop.svg',
-						'firelicked.svg',
-						'bright-flow.svg'						
+						'sunrise-surge.jpg',
+						'deep-surge.jpg',
+						'tahoe-landscape.jpg',
+						'sonoma-mesh.jpg',
+						'jaguar-starburst.jpg',
+						'tiger-streak.jpg',						
+						'violet-lime-teal.jpg',
+						'amber-rose-teal.jpg',
+						'sky-emerald-peach.jpg',
+						'indigo-mint-sweep.jpg',
+						'coral-lavender-teal.jpg',
+						'arctic-sapphire.jpg',						
+						'solar.jpg',
+						'bop.jpg',
+						'firelicked.jpg',
+						'bright-flow.jpg'						
 						],
 				shuffle: true,			// true: shuffle image order on initialization
 				shuffleFirst: false,		// true: shuffle also the first image (only relevant when shuffle=true)
