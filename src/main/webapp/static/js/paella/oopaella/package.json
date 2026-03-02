@@ -1,6 +1,6 @@
 {
 	"name": "@frentix/oopaella",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"description": "Paella player for OpenOlat",
 	"main": "src/index.js",
 	"scripts": {
@@ -13,17 +13,20 @@
 		"@babel/core": "^7.23.2",
 		"@babel/preset-env": "^7.23.2",
 		"babel-loader": "^8.2.2",
-		"copy-webpack-plugin": "^7.0.0",
-		"css-loader": "^5.0.1",
-		"html-webpack-plugin": "^5.5.0",
-		"source-map-loader": "^3.0.1",
+		"copy-webpack-plugin": "^13.0.1",
+		"css-loader": "^7.1.4",
+		"html-webpack-plugin": "^4.5.2",
+		"source-map-loader": "^1.1.3",
 		"style-loader": "^2.0.0",
-		"webpack": "^5.76.2",
+		"webpack": "^5.105.3",
 		"webpack-cli": "^4.9.1",
-		"webpack-dev-server": "^5.2.2"
+		"webpack-dev-server": "^5.2.3"
 	},
 	"dependencies": {
 		"paella-basic-plugins": "^1.23.0",
 		"paella-core": "^1.23.1"
+	},
+	"overrides": {
+		"serialize-javascript": "^7.0.3"
 	}
 }
