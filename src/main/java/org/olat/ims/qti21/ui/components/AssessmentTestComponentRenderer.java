@@ -317,7 +317,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("'><i class='o_icon o_icon_info'> </i> ");
 			
 			int attemptsLeft = maxAttempts - numOfAttempts;
-			String i18nTitleKey = attemptsLeft > 1 ? "attemptsleft.long.plural" : "attemptsleft.long";
+			String i18nTitleKey;
+			if(attemptsLeft == 0) {
+				i18nTitleKey = "attemptsleft.long.zero";
+			} else if(attemptsLeft == 1) {
+				i18nTitleKey = "attemptsleft.long.singular";
+			} else {
+				i18nTitleKey = "attemptsleft.long.plural";
+			}
 			String title = translator.translate(i18nTitleKey, Integer.toString(attemptsLeft),
 					Integer.toString(numOfAttempts), Integer.toString(maxAttempts));
 			sb.append(title).append("</div>");

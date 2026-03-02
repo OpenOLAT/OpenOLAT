@@ -297,7 +297,14 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 				sb.append("o_assessmentitem_attempts_nomore");				
 			}
 			int attemptsLeft = maxAttempts - numOfAttempts;
-			String i18nTitleKey = attemptsLeft > 1 ? "attemptsleft.plural" : "attemptsleft";
+			String i18nTitleKey;
+			if(attemptsLeft == 0) {
+				i18nTitleKey = "attemptsleft.plural";
+			} else if(attemptsLeft == 1) {
+				i18nTitleKey = "attemptsleft.singular";
+			} else {
+				i18nTitleKey = "attemptsleft.plural";
+			}
 			String title = translator.translate(i18nTitleKey, Integer.toString(attemptsLeft));
 			sb.append("' title=\"").append(StringHelper.escapeHtml(title)).append("\">");
 			sb.append(numOfAttempts).append(" / ").append(Integer.toString(maxAttempts));
