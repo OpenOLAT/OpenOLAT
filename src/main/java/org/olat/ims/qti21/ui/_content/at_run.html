@@ -123,22 +123,22 @@ jQuery().ready(function() {
 		docked : true			
 	};
 	
-	var o_showMenu = function(duration) {
+	const o_showMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 333 : duration;
 		if (!menuState.open) {
 			jQuery('#o_main_left_content').show();
-			var l = jQuery('#o_main_left');
+			const l = jQuery('#o_main_left');
 			l.transition({'x': 0, 'y' : 0, 'left': 0}, duration, function() {
 				menuState.open = true;
 			});
 		} 
 	};
-	var o_hideMenu = function(duration) {
+	const o_hideMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 333 : duration;
 		if (!menuState.docked && menuState.open) {
-			var l = jQuery('#o_main_left');
+			const l = jQuery('#o_main_left');
 			jQuery('#o_main_left_content').hide();
-			var mh = 0;
+			let mh = 0;
 			try {// no error for beautify
 				if(jQuery('#o_qti_run_title').length == 1) {
 					mh = mh - jQuery('#o_qti_run_title').height();
@@ -153,16 +153,17 @@ jQuery().ready(function() {
 		} 
 	};
 	
-	var o_undockMenu = function(duration) {
+	const o_undockMenu = function(duration) {
 		if (menuState.docked) {
-			var left = jQuery('#o_main_left');
-			var offset = 0;
+			const left = jQuery('#o_main_left');
+			let offset = 0;
 			try {	
 				offset = left.offset().top;
 				offset -= jQuery('#o_navbar_wrapper').outerHeight(false);
 			} catch (e) {}
 
 			jQuery('#o_main_left_toggle').show();
+			jQuery('#o_main').addClass('o_hide_main_left');
 			left.css({position: 'absolute'})
 				.addClass('o_offcanvas')
 				.transition({'y': '-' + offset}, duration, function() {
@@ -174,20 +175,21 @@ jQuery().ready(function() {
 		} 
 	};
 	
-	var o_dockMenu = function(duration) {
+	const o_dockMenu = function(duration) {
 		o_showMenu();
 		if (!menuState.docked) {
 			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
 				jQuery('#o_main_left').css({position: 'relative'})
 					.removeClass('o_offcanvas');
 				jQuery('#o_main_left_toggle').hide();
+				jQuery('#o_main').removeClass("o_hide_main_left");
 				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
 				menuState.docked = true;
 			})			
 		} 
 	};
 	
-	var o_responsiveMenu = function() {
+	const o_responsiveMenu = function() {
 		if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
 			// same breakpoint as bootstrap screen-md, opacity detect IE8
 			o_undockMenu(333);
