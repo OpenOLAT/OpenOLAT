@@ -853,19 +853,20 @@ body>li.o_assessmentitem_order_item  {
 }
 
 .o_assessmentitem_controls {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
 	background: $o-qti-item-controls-bg;
 	border: 1px solid $o-qti-item-controls-border-color;
 	border-radius: 0 0 $o-qti-item-controls-border-radius $o-qti-item-controls-border-radius;
 	margin-top: 0;
 	margin-bottom: $padding-large-horizontal;
 	padding: $padding-small-vertical $padding-small-horizontal;
-	text-align: center;
 	
 	button, a {
 		margin-bottom: 0;
 	}
 	.o_assessmentitem_attempts {
-		margin: 2px 0 5px 0;
+		margin: 6px 0;
 	}
 	.o_button_group {
 		margin: 0;
@@ -918,6 +919,17 @@ body>li.o_assessmentitem_order_item  {
 	.o_sel_skip_question span:before, .o_sel_back_question span:before, .o_sel_retry_question span:before {
 		padding-right: 0.5em;
 		margin-bottom: 0;
+	}
+}
+
+@media (max-width: $screen-xs-max) { 
+	.o_assessmentitem_controls {
+		grid-template-columns: 1fr;
+		
+		.o_assessmentitem_attempts {
+			margin: 2px 0 5px 0;
+			text-align: center;
+		}
 	}
 }
 
