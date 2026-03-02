@@ -208,7 +208,7 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 		File tmpFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID() + ".xml");
 		try(InputStream in = Files.newInputStream(inputFile);
 				Writer out = Files.newBufferedWriter(tmpFile.toPath(), StandardCharsets.UTF_8)) {
-			XMLOutputFactory xof = XMLOutputFactory.newInstance();
+			XMLOutputFactory xof = XMLFactories.newXMLOutputFactory();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 			SAXParser saxParser = XMLFactories.newSAXParser();
 			DefaultHandler myHandler = provider.create(xtw);

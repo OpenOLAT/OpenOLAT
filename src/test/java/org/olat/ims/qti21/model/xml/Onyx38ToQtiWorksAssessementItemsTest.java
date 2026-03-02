@@ -107,7 +107,7 @@ public class Onyx38ToQtiWorksAssessementItemsTest {
 		File outputFile = new File(tmpDir, "text.xml");
 		try(InputStream in = Files.newInputStream(xmlFile.toPath());
 				Writer out = Files.newBufferedWriter(outputFile.toPath(), StandardCharsets.UTF_8)) {
-			XMLOutputFactory xof = XMLOutputFactory.newInstance();
+			XMLOutputFactory xof = XMLFactories.newXMLOutputFactory();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 			SAXParser saxParser = XMLFactories.newSAXParser();
 			DefaultHandler2 myHandler = new Onyx38ToQtiWorksHandler(xtw);

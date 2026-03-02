@@ -24,10 +24,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 
 import org.xml.sax.SAXException;
+
+import com.ctc.wstx.stax.WstxOutputFactory;
 
 /**
  * A factory to return XML related factories and parsers with
@@ -59,6 +62,13 @@ public class XMLFactories {
 		tFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
 		tFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, ""); // Compliant
 		return tFactory;
+	}
+	
+	public static final XMLOutputFactory newXMLOutputFactory() {
+		// Returns the Woodstox factory because it is used by Jackson and previous of OpenOlat.
+		// It prevents some issues with unnecessary namespaces written by the standard Stax
+		// implementation of the JDK
+		return new WstxOutputFactory();
 	}
 	
 	public static final SAXParser newSAXParser()

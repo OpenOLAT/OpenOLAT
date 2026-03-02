@@ -28,7 +28,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.OutputKeys;
@@ -131,7 +130,7 @@ public class OpenXMLUtils {
 	
 	public static final XMLStreamWriter createStreamWriter(ZipOutputStream out) {
 		try {
-			return XMLOutputFactory.newInstance().createXMLStreamWriter(new ShieldOutputStream(out), "UTF-8");
+			return XMLFactories.newXMLOutputFactory().createXMLStreamWriter(new ShieldOutputStream(out), "UTF-8");
 		} catch (XMLStreamException | FactoryConfigurationError e) {
 			log.error("", e);
 			return null;

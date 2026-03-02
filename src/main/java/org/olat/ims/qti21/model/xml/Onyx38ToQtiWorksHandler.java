@@ -282,7 +282,9 @@ public class Onyx38ToQtiWorksHandler extends DefaultHandler2 {
 					}
 				}
 				
-				
+				if(length < 0) {
+					length = 0;
+				}
 				xtw.writeCharacters(ch, start, length);
 			} else if(rubricBlock) {
 				rubricCharacterBuffer.append(ch, start, length);

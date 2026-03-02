@@ -236,7 +236,7 @@ public class QTI21ImportProcessor {
 	private void convertXmlFile(Path inputFile, Path outputFile, QTI21Infos infos) {
 		try(InputStream in = Files.newInputStream(inputFile);
 				Writer out = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {
-			XMLOutputFactory xof = XMLOutputFactory.newInstance();
+			XMLOutputFactory xof = XMLFactories.newXMLOutputFactory();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 			SAXParser saxParser = XMLFactories.newSAXParser();
 			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, infos);
