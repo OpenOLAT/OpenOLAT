@@ -739,8 +739,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(), element.numOfPending(),
 				participantsAvailability, toolsLink, resourcesLink, structureLink);
 		
-		boolean editable = secCallback.canEditCurriculumElement(element.curriculumElement());
-		row.setSelectable(editable);
+		boolean viewable = secCallback.canViewCurriculumElement(element.curriculumElement());
+		row.setSelectable(viewable);
 		toolsLink.setUserObject(row);
 		if(structureLink != null) {
 			structureLink.setUserObject(row);
@@ -754,28 +754,28 @@ public class CurriculumComposerController extends FormBasicController implements
 		String curriculumPath = CurriculumHelper.getCurriculumBusinessPath(row.getCurriculumKey());
 		row.setCurriculumUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(curriculumPath));
 		
-		if(row.isCalendarsEnabled() && editable) {
+		if(row.isCalendarsEnabled() && viewable) {
 			FormLink calendarsLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "", null, null, Link.LINK | Link.NONTRANSLATED);
 			calendarsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_calendar");
 			calendarsLink.setTitle(translate("calendars"));
 			row.setCalendarsLink(calendarsLink);
 			calendarsLink.setUserObject(row);
 		}
-		if(row.isLecturesEnabled() && editable) {
+		if(row.isLecturesEnabled() && viewable) {
 			FormLink lecturesLink = uifactory.addFormLink("lecs_" + (++counter), "lectures", "", null, null, Link.LINK | Link.NONTRANSLATED);
 			lecturesLink.setIconLeftCSS("o_icon o_icon-lg o_icon_lecture");
 			lecturesLink.setTitle(translate("lectures"));
 			row.setLecturesLink(lecturesLink);
 			lecturesLink.setUserObject(row);
 		}
-		if(qualityModule.isEnabled() && qualityModule.isPreviewEnabled() && editable) {
+		if(qualityModule.isEnabled() && qualityModule.isPreviewEnabled() && viewable) {
 			FormLink qualityPreviewLink = uifactory.addFormLink("qp_" + (++counter), "quality.preview", "", null, null, Link.LINK | Link.NONTRANSLATED);
 			qualityPreviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_preview");
 			qualityPreviewLink.setTitle(translate("quality.preview"));
 			row.setQualityPreviewLink(qualityPreviewLink);
 			qualityPreviewLink.setUserObject(row);
 		}
-		if(row.isLearningProgressEnabled() && editable) {
+		if(row.isLearningProgressEnabled() && viewable) {
 			FormLink learningProgressLink = uifactory.addFormLink("lp_" + (++counter), "learning.progress", "", null, null, Link.LINK | Link.NONTRANSLATED);
 			learningProgressLink.setIconLeftCSS("o_icon o_icon-lg o_icon_progress");
 			learningProgressLink.setTitle(translate("learning.progress"));
