@@ -854,7 +854,7 @@ body>li.o_assessmentitem_order_item  {
 
 .o_assessmentitem_controls {
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-columns: 1fr;
 	background: $o-qti-item-controls-bg;
 	border: 1px solid $o-qti-item-controls-border-color;
 	border-radius: 0 0 $o-qti-item-controls-border-radius $o-qti-item-controls-border-radius;
@@ -922,8 +922,12 @@ body>li.o_assessmentitem_order_item  {
 	}
 }
 
+.o_assessmentitem_controls:has(.o_assessmentitem_attempts) {
+	grid-template-columns: 1fr 1fr 1fr;
+}
+
 @media (max-width: $screen-xs-max) { 
-	.o_assessmentitem_controls {
+	.o_assessmentitem_controls:has(.o_assessmentitem_attempts) {
 		grid-template-columns: 1fr;
 		
 		.o_assessmentitem_attempts {
