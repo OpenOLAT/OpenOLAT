@@ -285,7 +285,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "identity.name", "author", dbInstance.getDbVendor());
 			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "identity.name", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(sb, "user.email", "author", dbInstance.getDbVendor());
 			sb.append(" )) or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "author", dbInstance.getDbVendor());
 			sb.append(" )");
