@@ -808,7 +808,7 @@ public class RichTextConfiguration implements Disposable {
 			CustomLinkTreeModel toolLinkTreeModel, String[] supportedImageSuffixes, String[] supportedMediaSuffixes,
 			String[] supportedFlashPlayerSuffixes) {
 		// Add dom ID variable using prototype curry method
-		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".bind(null, '" + domID + "')");
 		setNonQuotedConfigValue("block_unsupported_drop", "false");
 		
 		linkBrowserImageSuffixes = supportedImageSuffixes;
@@ -1111,7 +1111,7 @@ public class RichTextConfiguration implements Disposable {
 	}
 	
 	public void setLinkBrowserCustomLinkTreeModel(CustomLinkTreeModel model) {
-		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".bind(null, '" + domID + "')");
 		setNonQuotedConfigValue("block_unsupported_drop", "false");
 		linkBrowserCustomTreeModel = model;
 	}
@@ -1121,7 +1121,7 @@ public class RichTextConfiguration implements Disposable {
 	}
 	
 	public void setToolLinkTreeModel(CustomLinkTreeModel model) {
-		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".bind(null, '" + domID + "')");
 		setNonQuotedConfigValue("block_unsupported_drop", "false");
 		toolLinkTreeModel = model;
 	}

@@ -7,17 +7,17 @@
 OPOL = {};
 
 //used to mark form dirty and warn user to save first.
-var o2c=0;
-var o2cExclusions=new Array();
+let o2c=0;
+let o2cExclusions=[];
 // o_info is a global object that contains global variables
 o_info.linkbusy = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
 // o_info.drake is supervised and linked to .o_drake DOM element
-o_info.drakes = new Array();
+o_info.drakes = [];
 
 // o_info.extraFormData is a storage location for appending extra form data to a form submit.
-o_info.extraFormData = new Object();
+o_info.extraFormData = {};
 
 /**
  * The BLoader object can be used to :
@@ -27,13 +27,13 @@ o_info.extraFormData = new Object();
  *
  * 03.04.2009 gnaegi@frentix.com 
  */
-var BLoader = {
+const BLoader = {
 	// List of js files loaded via AJAX call.
-	_ajaxLoadedJS : new Array(),
-		
+	_ajaxLoadedJS : [],
+
 	// Internal mehod to check if a JS file has already been loaded on the page
 	_isAlreadyLoadedJS: function(jsURL) {
-		var notLoaded = true;
+		let notLoaded = true;
 		// first check for scrips loaded via HTML head
 		jQuery('head script[src]').each(function(s,t) {
 			if (jQuery(t).attr('src').indexOf(jsURL) != -1) {
@@ -41,7 +41,7 @@ var BLoader = {
 			}
 		});
 		// second check for script loaded via ajax call
-		if (jQuery.inArray(jsURL, this._ajaxLoadedJS) != -1) notLoaded = false;
+		if (this._ajaxLoadedJS.includes(jsURL)) notLoaded = false;
 		return !notLoaded;
 	},
 		
@@ -72,104 +72,41 @@ var BLoader = {
 	
 	// Load a CSS file from the given URL. The linkid represents the DOM id that is used to identify this CSS file
 	loadCSS : function (cssURL, linkid, loadAfterTheme) {
-		var doc = window.document;
 		try {
-			if(doc.createStyleSheet) { // IE
-				// double check: server side should do so, but to make sure that we don't have duplicate styles
-				var sheets = doc.styleSheets;
-				var cnt = 0;
-				var pos = 0;
-				for (var i = 0; i < sheets.length; i++) {
-					var sh = sheets[i];
-					var h = sh.href; 
-					if (h == cssURL) {
-						cnt++;
-						if (sh.disabled) {
-							// enable a previously disabled stylesheet (ie cannot remove sheets? -> we had to disable them)
-							sh.disabled = false;
-							return;
-						} else {
-							if (o_info.debug) o_logwarn("BLoader::loadCSS: style: "+cssURL+" already in document and not disabled! (duplicate add)");
-							return;
-						}
-					}
-					// add theme position, theme has to move one down
-					if (sh.id == 'o_theme_css') pos = i;
-				}
-				if (cnt > 1 && o_info.debug) o_logwarn("BLoader::loadCSS: apply styles: num of stylesheets found was not 0 or 1:"+cnt);
+			const el = jQuery('#' + linkid);
+			if (el && el.length > 0) {
+				if (o_info.debug) o_logwarn("BLoader::loadCSS: stylesheet already found in doc when trying to add:"+cssURL+", with id "+linkid);
+			} else {
+				const newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" href="' + cssURL+ '">');
 				if (loadAfterTheme) {
-					// add at the end
-					pos = sheets.length;
-				}
-				// H: stylesheet not yet inserted -> insert				
-				doc.createStyleSheet(cssURL, pos);
-			} else { // mozilla
-				// double check: first try to remove the <link rel="stylesheet"...> tag, using the id.
-				var el = jQuery('#' +linkid);
-				if (el && el.length > 0) {
-					if (o_info.debug) o_logwarn("BLoader::loadCSS: stylesheet already found in doc when trying to add:"+cssURL+", with id "+linkid);
+					newSt.insertBefore(jQuery('#o_fontSize_css'));
 				} else {
-					// create the new stylesheet and convince the browser to load the url using @import with protocol 'data'
-					//var styles = '@import url("'+cssURL+'");';
-					//var newSt = new Element('link', {rel : 'stylesheet', id : linkid, href : 'data:text/css,'+escape(styles) });
-					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" href="' + cssURL+ '">');
-					if (loadAfterTheme) {
-						newSt.insertBefore(jQuery('#o_fontSize_css'));
-					} else {
-						newSt.insertBefore(jQuery('#o_theme_css'));
-					}
+					newSt.insertBefore(jQuery('#o_theme_css'));
 				}
 			}
 		} catch(e){
-			if(window.console)  console.log(e);
-			if (o_info.debug) { // add webbrowser console log
+			if(window.console) console.log(e);
+			if (o_info.debug) {
 				o_logerr('BLoader::loadCSS: Error when loading CSS from URL::' + cssURL);
 			}
-		}				
+		}
 	},
 
 	// Unload a CSS file from the given URL. The linkid represents the DOM id that is used to identify this CSS file
 	unLoadCSS : function (cssURL, linkid) {
-		var doc = window.document;
 		try {
-			if(doc.createStyleSheet) { // IE
-				var sheets = doc.styleSheets;
-				var cnt = 0;
-				// calculate relative style url because IE does keep only a 
-				// relative URL when the stylesheet is loaded from a relative URL
-				var relCssURL = cssURL;
-				// calculate base url: protocol, domain and port https://your.domain:8080
-				var baseURL = window.location.href.substring(0, window.location.href.indexOf("/", 8)); 
-				if (cssURL.indexOf(baseURL) == 0) {
-					//remove the base url form the style url
-					relCssURL = cssURL.substring(baseURL.length);
-				}
-				for (var i = 0; i < sheets.length; i++) {
-					var h = sheets[i].href;
-					if (h == cssURL || h == relCssURL) {
-						cnt++;
-						if (!sheets[i].disabled) {
-							sheets[i].disabled = true; // = null;
-						} else {
-							if (o_info.debug) o_logwarn("stylesheet: when removing: matching url, but already disabled! url:"+h);
-						}
-					}
-				}
-				if (cnt != 1 && o_info.debug) o_logwarn("stylesheet: when removeing: num of stylesheets found was not 1:"+cnt);
-			} else { // mozilla
-				var el = jQuery('#' +linkid);
-				if (el) {
-					el.href = ""; // fix unload problem in safari
-					el.remove();
-				} else if (o_info.debug) {
-					o_logwarn("no link with id found to remove, id:"+linkid+", url "+cssURL);
-				}
+			const el = jQuery('#' + linkid);
+			if (el) {
+				el.href = ""; // fix unload problem in safari
+				el.remove();
+			} else if (o_info.debug) {
+				o_logwarn("no link with id found to remove, id:"+linkid+", url "+cssURL);
 			}
 		} catch(e){
-			if (o_info.debug) { // add webbrowser console log
+			if (o_info.debug) {
 				o_logerr('BLoader::unLoadCSS: Error when unloading CSS from URL::' + cssURL);
 			}
-		}				
+		}
 	}
 };
 
@@ -181,7 +118,7 @@ var BLoader = {
  *
  * 18.06.2009 gnaegi@frentix.com 
  */
-var BFormatter = {
+const BFormatter = {
 	// process element with given dom id using MathJax
 	formatLatexFormulas : function(domId) {
 		try {
@@ -202,11 +139,11 @@ var BFormatter = {
 	// fix this overflow problem.
 	alignTableColumns : function(tableArray) {
 		try {
-			var cellWidths = new Array();
+			const cellWidths = [];
 			// find all widest cells
 			jQuery(tableArray).each(function() {
-				for(var j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
-					var cell = jQuery(this)[0].rows[0].cells[j];
+				for(let j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+					const cell = jQuery(this)[0].rows[0].cells[j];
 					if(!cellWidths[j] || cellWidths[j] < cell.clientWidth) {
 						cellWidths[j] = cell.clientWidth;
 					}
@@ -214,7 +151,7 @@ var BFormatter = {
 			});
 			// set same width to columns of all tables
 			jQuery(tableArray).each(function() {
-				for(var j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+				for(let j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
 					jQuery(this)[0].rows[0].cells[j].style.width = cellWidths[j]+'px';
 				}
 			});
@@ -224,7 +161,7 @@ var BFormatter = {
 	},
 	// Format bytes in a human readable format
 	formatBytes : function(size) {
-	    var i = Math.floor( Math.log(size) / Math.log(1024) );
+	    const i = Math.floor( Math.log(size) / Math.log(1024) );
 	    return ( size / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 	}
 };
@@ -236,7 +173,7 @@ function o_init() {
 		o_getMainWin().o_afterserver();
 		// initialize the business path and social media
 		if(window.location.href && window.location.href != null && window.location.href.indexOf('%3A') < 0) {
-			var url = window.location.href;
+			let url = window.location.href;
 			if(url != null && !(url.lastIndexOf("http", 0) === 0) && !(url.lastIndexOf("https", 0) === 0)) {
 				url = o_info.serverUri + url;
 			}
@@ -300,12 +237,12 @@ function o_afterserver(responseData) {
 	
 	try {
 		if(responseData) {
-			var cmdcnt = responseData["cmdcnt"];
+			const cmdcnt = responseData["cmdcnt"];
 			if (cmdcnt > 0) {
-				var cs = responseData["cmds"];
-				for (var i=0; i<cmdcnt; i++) {
-					var acmd = cs[i];
-					var co = acmd["cmd"];
+				const cs = responseData["cmds"];
+				for (let i=0; i<cmdcnt; i++) {
+					const acmd = cs[i];
+					const co = acmd["cmd"];
 					if(co == 10) {
 						o2c = 1;
 						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
@@ -323,7 +260,7 @@ function o2cl() {
 		if (o_info.linkbusy) {
 			return false;
 		} else {
-			var doreq = (!isFlexiFormDirty() || confirm(o_info.dirty_form));
+			const doreq = (!isFlexiFormDirty() || confirm(o_info.dirty_form));
 			if (doreq) o_beforeserver();
 			return doreq;
 		}
@@ -369,83 +306,15 @@ function removeBusyAfterDownload(e,target,options){
 	o_afterserver();
 }
 
-Array.prototype.search = function(s,q){
-  var len = this.length;
-  for(var i=0; i<len; i++){
-    if(this[i].constructor == Array){
-      if(this[i].search(s,q)){
-        return true;
-      }
-     } else {
-       if(q){
-         if(this[i].indexOf(s) != -1){
-           return true;
-         }
-      } else {
-        if(this[i]==s){
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
-if(!Function.prototype.curry) {
-	Function.prototype.curry = function() {
-	    if (arguments.length<1) {
-	        return this; //nothing to curry with - return function
-	    }
-	    var __method = this;
-	    var args = Array.prototype.slice.call(arguments);
-	    return function() {
-	        return __method.apply(this, args.concat(Array.prototype.slice.call(arguments)));
-	    }
-	}
-}
-
-if(!Array.prototype.indexOf) {
-	Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {
-		"use strict";
-		if (this == null) {
-			throw new TypeError();
-        }
-        var t = Object(this);
-        var len = t.length >>> 0;
-        if (len === 0) {
-            return -1;
-        }
-        var n = 0;
-        if (arguments.length > 1) {
-            n = Number(arguments[1]);
-            if (n != n) { // shortcut for verifying if it's NaN
-                n = 0;
-            } else if (n != 0 && n != Infinity && n != -Infinity) {
-                n = (n > 0 || -1) * Math.floor(Math.abs(n));
-            }
-        }
-        if (n >= len) {
-            return -1;
-        }
-        var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
-        for (; k < len; k++) {
-            if (k in t && t[k] === searchElement) {
-                return k;
-            }
-        }
-        return -1;
-	}
-}
-
 function o_postInvoke(r, newWindow) {
-	var cmdcnt = r["cmdcnt"];
+	const cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
-		var cs = r["cmds"];
-		for (var i=0; i<cmdcnt; i++) {
-			var acmd = cs[i];
-			var co = acmd["cmd"];
+		const cs = r["cmds"];
+		for (let i=0; i<cmdcnt; i++) {
+			const acmd = cs[i];
+			const co = acmd["cmd"];
 			if(co == 8) {
-				var url = acmd["cda"].nwrurl;
+				const url = acmd["cda"].nwrurl;
 				if(url == "close-window") {
 					if(newWindow == null) {
 						try {
@@ -869,7 +738,7 @@ function o_avideo(command, parameters) {
 }
 
 // main interpreter for ajax mode
-var o_debug_trid = 0;
+let o_debug_trid = 0;
 function o_ainvoke(r) {
 
 	// commands
@@ -953,26 +822,17 @@ function o_ainvoke(r) {
 									destroyRunningVideos(videos);
 								}
 								
-								if(civis) { // needed only for ie 6/7 bug where an empty div requires space on screen
-									newc.css('display','');//.style.display="";//reset?
+								if(civis) {
+									newc.css('display','');
 								} else {
-									newc.css('display','none'); //newc.style.display="none";
+									newc.css('display','none');
 								}
-								
+
 								if(replaceElement || !withWrapper) {
-									// replace entire DOM element 
-									newc.replaceWith(hfrag);	
+									// replace entire DOM element
+									newc.replaceWith(hfrag);
 								} else {
-									try{
-										newc.empty().html(hfrag);
-										//check if the operation is a success especially for IE8
-										if(hfrag.length > 0 && newc.get(0).innerHTML == "") {
-											newc.get(0).innerHTML = hfrag;
-										}
-									} catch(e) {
-										if(window.console) console.log(e);
-										if(window.console) console.log('Fragment',hfrag);
-									}
+									newc.empty().html(hfrag);
 								}
 								newc = null;
 
@@ -1039,7 +899,7 @@ function o_ainvoke(r) {
 							// 3.1) load js file
 							let url = ce["url"];
 							let enc = ce["enc"];
-							if (jQuery.type(url) === "string") BLoader.loadJS(url, enc, true);
+							if (typeof url === "string") BLoader.loadJS(url, enc, true);
 							if (o_info.debug) o_log("c7: add js: "+url);
 						}	
 						break;
@@ -1160,9 +1020,9 @@ function setFormDirty(formId) {
 	o2c=1;
 	// fetch the form and the forms submit button is identified via the olat 
 	// form submit name
-	var myForm = document.getElementById(formId);
+	const myForm = document.getElementById(formId);
 	if (myForm != null) {
-		var mySubmit = myForm.olat_fosm_0;
+		let mySubmit = myForm.olat_fosm_0;
 		if(mySubmit == null){
 			mySubmit = myForm.olat_fosm;
 		}
@@ -1173,7 +1033,7 @@ function setFormDirty(formId) {
 
 function o_downloadUrl(filename, url) {
 	// Create a link and set the URL using `createObjectURL`
-	var link = document.createElement("a");
+	const link = document.createElement("a");
 	link.style.display = "none";
 	link.href = new URL(url);
 	link.download = filename;
@@ -1192,20 +1052,20 @@ function o_downloadUrl(filename, url) {
 
 //Pop-up window for context-sensitive help
 function contextHelpWindow(URI) {
-	var helpWindow = window.open(URI, "HelpWindow", "height=760, width=940, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
+	const helpWindow = window.open(URI, "HelpWindow", "height=760, width=940, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
 	helpWindow.focus();
 }
 
 function o_openPopUp(url, windowname, width, height, menubar) {
 	// generic window popup function
-	var attributes = "height=" + height + ", width=" + width + ", resizable=yes, scrollbars=yes, left=100, top=100, ";
+	let attributes = "height=" + height + ", width=" + width + ", resizable=yes, scrollbars=yes, left=100, top=100, ";
 	if (menubar) {
 		attributes += "location=yes, menubar=yes, status=yes, toolbar=yes";
 	} else {
 		attributes += "location=no, menubar=no,status=no,toolbar=no";
 	}
 
-	var win;
+	let win;
 	try {
 		win = window.open(url, windowname, attributes);
 	} catch(e) {
@@ -1219,7 +1079,7 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 }
 
 function o_openTab(url) {
-	var win = window.open(url, '_blank');
+	const win = window.open(url, '_blank');
 	win.focus();
 	if (o_info.linkbusy) {
 		o_afterserver();
@@ -1610,7 +1470,7 @@ function formInputFileSize(fileInputElement) {
 			// missing input element parameter or element is not a file input
 			return -1;
 		}
-		var file = fileInputElement.files[0];
+		const file = fileInputElement.files[0];
 		if (!file) {
 			// no file selected!
 			return -1;
@@ -1656,7 +1516,7 @@ function gototool(toolname) {
 
 function o_viewportHeight() {
 	// based on prototype library
-	var prototypeViewPortHeight = jQuery(window).height()
+	const prototypeViewPortHeight = jQuery(window).height()
 	if (prototypeViewPortHeight > 0) {
 		return prototypeViewPortHeight;
 	} else {
@@ -1671,9 +1531,9 @@ function o_viewportHeight() {
  *  margin, border and padding of the main columns.
  */
 OPOL.getMainColumnsMaxHeight =  function(){
-	var mainDomElement = jQuery('#o_main');
-	if (mainDomElement != 'undefined' && mainDomElement != null) { 
-		var mainHeight = mainDomElement.height();
+	const mainDomElement = jQuery('#o_main');
+	if (mainDomElement != 'undefined' && mainDomElement != null) {
+		const mainHeight = mainDomElement.height();
 		if (mainHeight > 0) {
 			return mainHeight;
 		} 
@@ -1687,42 +1547,42 @@ OPOL.getMainColumnsMaxHeight =  function(){
  */
 OPOL.adjustContentHeightForAbsoluteElement = function(itemDomSelector) {
 	try {
-		var itemsDom = jQuery(itemDomSelector);
+		let itemsDom = jQuery(itemDomSelector);
 		if(itemsDom.length == 0) {
 			// Element not found in DOM
 			return;
 		}
 		itemsDom = jQuery(itemsDom[0]);
-		var mainDom = itemsDom.closest('#o_main_center_content_inner');
+		let mainDom = itemsDom.closest('#o_main_center_content_inner');
 		if(mainDom == null) {
 			// Not within center column, nothing to adjust
 			return;
 		}
 		// Current available height
 		mainDom = jQuery(mainDom);
-		var mainOffsetTop = 0;
-		var mainOffset = mainDom.offset();
+		let mainOffsetTop = 0;
+		const mainOffset = mainDom.offset();
 		if(mainOffset) {
 			mainOffsetTop = mainOffset.top;
 		}
-		var mainHeight = mainDom.outerHeight(true);
-		var availableHeight = mainOffsetTop + mainHeight;
-		
-		// Calculate minimum required height based on the position of the previous DOM element 
+		const mainHeight = mainDom.outerHeight(true);
+		const availableHeight = mainOffsetTop + mainHeight;
+
+		// Calculate minimum required height based on the position of the previous DOM element
 		// (e.g. the pull-down button). Absolute positioned element have not offset
-		var prevDom = itemsDom.prev();
-		if (prevDom.length == 0) { 
+		const prevDom = itemsDom.prev();
+		if (prevDom.length == 0) {
 			// No previous element, don't know what to do
 			return;
 		}
-		var prevOffset = prevDom.offset();
-		var prevHeight = prevDom.outerHeight(true);
-		var itemsHeight = itemsDom.outerHeight(true);
-		var requiredHeight = prevOffset.top + prevHeight + itemsHeight;
+		const prevOffset = prevDom.offset();
+		const prevHeight = prevDom.outerHeight(true);
+		const itemsHeight = itemsDom.outerHeight(true);
+		const requiredHeight = prevOffset.top + prevHeight + itemsHeight;
 		// Check if entire element fits into main element, if not enlarge
-		var missingHeight = (requiredHeight - availableHeight);
+		const missingHeight = (requiredHeight - availableHeight);
 		if (missingHeight > 0) {
-			var newHeight = (mainHeight + missingHeight) + 'px';
+			const newHeight = (mainHeight + missingHeight) + 'px';
 			mainDom.css('min-height', newHeight);
 		}			
 	} catch (e) {
@@ -1769,7 +1629,7 @@ function o_scrollTop() {
 
 function o_scrollTopAndFocus(focusArray) {
 	try {
-		var focused = false;
+		let focused = false;
 		jQuery('html, body').animate({ scrollTop : 0 }, 300, "swing", function() {
 			if(!focused) {
 				o_ffSetFocusArray(focusArray);
@@ -1792,9 +1652,9 @@ function o_popover(id, contentId, loc) {
     	container: 'body',
     	content: function() { return jQuery('#' + contentId).clone().html(); }
 	}).on('shown.bs.popover', function () {
-		var clickListener = function (e) {
+		const clickListener = function (e) {
 			jQuery('#' + id).popover('hide');
-			jQuery('body').unbind('click', clickListener);
+			jQuery('body').off('click', clickListener);
 		};
 		setTimeout(function() {
 			jQuery('body').on('click', clickListener);
@@ -1804,8 +1664,8 @@ function o_popover(id, contentId, loc) {
 
 function o_popoverWithTitle(id, contentId, title, loc) {
 	if(typeof(loc)==='undefined') loc = 'bottom';
-	
-	var popover = jQuery('#' + id).popover({
+
+	const popover = jQuery('#' + id).popover({
     	placement : loc,
     	html: true,
     	sanitize: false,
@@ -1815,9 +1675,9 @@ function o_popoverWithTitle(id, contentId, title, loc) {
     	content: function() { return jQuery('#' + contentId).clone().html(); }
 	});
 	popover.on('shown.bs.popover', function () {
-		var clickListener = function (e) {
+		const clickListener = function (e) {
 			jQuery('#' + id).popover('hide');
-			jQuery('body').unbind('click', clickListener);
+			jQuery('body').off('click', clickListener);
 		};
 		setTimeout(function() {
 			jQuery('body').on('click', clickListener);
@@ -1828,7 +1688,7 @@ function o_popoverWithTitle(id, contentId, title, loc) {
 
 function o_shareLinkPopup(id, text, loc) {
 	if(typeof(loc)==='undefined') loc = 'top';
-	var elem = jQuery('#' + id);
+	const elem = jQuery('#' + id);
 	elem.popover({
     	placement : loc,
     	html: true,
@@ -1837,10 +1697,10 @@ function o_shareLinkPopup(id, text, loc) {
     	container: 'body',
     	content: text
 	}).on('shown.bs.popover', function () {
-		var clickListener = function (e) {	
-			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) { 
+		const clickListener = function (e) {
+			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
 				jQuery('#' + id).popover('hide');
-				jQuery('body').unbind('click', clickListener);
+				jQuery('body').off('click', clickListener);
 			}
 		};
 		setTimeout(function() {
@@ -1869,7 +1729,7 @@ function o_QRCodePopup(id, text, loc, containerSelector) {
 		if (!o_info.qr || typeof o_info.qr !== 'object') {
 			o_info.qr = {};
 		}
-		o_info.qr[id] = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
+		o_info.qr[id] = o_QRCode(id + '_pop', (typeof text === 'function' ? text() : text));
 		const clickListener = function (e) {
 			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
 				elem.popover('hide');
@@ -1877,7 +1737,7 @@ function o_QRCodePopup(id, text, loc, containerSelector) {
 				if (popover && popover.inState) {
 					popover.inState.click = false; // simulate hide by click
 				}
-				jQuery('body').unbind('click', clickListener);
+				jQuery('body').off('click', clickListener);
 			}
 		};
 		setTimeout(function() {
@@ -1910,18 +1770,18 @@ function o_QRCode(id, text) {
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible
 	// (fg)
-	var theIframe = jQuery('#' + iframeId);
+	const theIframe = jQuery('#' + iframeId);
 	if (theIframe != 'undefined' && theIframe != null) {
-		var colsHeight = OPOL.getMainColumnsMaxHeight() - 110;
-		var potentialHeight = o_viewportHeight() - 100;// remove some padding etc.
+		const colsHeight = OPOL.getMainColumnsMaxHeight() - 110;
+		let potentialHeight = o_viewportHeight() - 100;// remove some padding etc.
 		potentialHeight = potentialHeight - theIframe.offset().top;
 		// resize now
-		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight);
+		const height = (potentialHeight > colsHeight ? potentialHeight : colsHeight);
 		theIframe.height(height);			
 	}
 }
 // for gui debug mode
-var o_debu_oldcn, o_debu_oldtt;
+let o_debu_oldcn, o_debu_oldtt;
 
 function o_debu_show(cn, tt) {
 	if (o_debu_oldcn){
@@ -1940,7 +1800,7 @@ function o_debu_hide(cn, tt) {
 }
 
 function o_dbg_mark(elid) {
-	var el = jQuery('#' + elid);
+	const el = jQuery('#' + elid);
 	if (el) {
 		el.css('background-color','#FCFCB8');
 		el.css('border','3px solid #00F'); 
@@ -1948,7 +1808,7 @@ function o_dbg_mark(elid) {
 }
 
 function o_dbg_unmark(elid) {
-	var el = jQuery('#' + elid);
+	const el = jQuery('#' + elid);
 	if (el) {
 		el.css('border',''); 
 		el.css('background-color','');
@@ -1960,18 +1820,18 @@ function o_clearConsole() {
  o_log(null);
 }
 
-var o_log_all = "";
+let o_log_all = "";
 function o_log(str) {
 	if (str) {	
 		o_log_all = "\n"+o_debug_trid+"> "+str + o_log_all;
 		o_log_all = o_log_all.substr(0,4000);
 	}
-	var logc = jQuery("#o_debug_cons");
+	const logc = jQuery("#o_debug_cons");
 	if (logc) {
 		if (o_log_all.length == 4000) o_log_all = o_log_all +"\n... (stripped: to long)... ";
 		logc.value = o_log_all;
 	}
-	if(!jQuery.type(window.console) === "undefined"){
+	if(typeof window.console !== "undefined"){
 		//firebug log window
 		window.console.log(str);
 	}
@@ -1987,8 +1847,8 @@ function o_logwarn(str) {
 
 
 function showerror(e) {
-	var r = "";
-    for (var p in e) r += p + ": " + e[p] + "\n";
+	let r = "";
+    for (const p in e) r += p + ": " + e[p] + "\n";
     return "error detail:\n"+r;
 }
 
@@ -2133,66 +1993,57 @@ function o_XHRSubmit(formNam) {
 	let form = jQuery('#' + formNam);
 	let enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
-		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr())) && !('ActiveXObject' in window)) {
-			if(typeof tinymce !== 'undefined') {
-				tinymce.triggerSave(true,true);
-			}
-
-			let htmlForm = form[0];
-
-			// Send files via XHR and show upload progress
-			let formData = new FormData(htmlForm);
-
-			for (let i = 0; i < htmlForm.elements.length; i++) {
-				let formElement = htmlForm.elements[i];
-				if (formElement.attributes['data-extra-form-data']) {
-					let id = formElement.attributes['id'].value;
-					let name = formElement.attributes['name'].value;
-					let extraFormDataValue = o_getExtraMultipartFormData(name);
-					if (extraFormDataValue) {
-						formData.append(id, extraFormDataValue);
-						o_deleteExtraMultipartFormData(id);
-					}
-				}
-			}
-
-			const targetUrl = form.attr("action");
-			jQuery.ajax(targetUrl,{
-				xhr: function() {
-					const xhr = new window.XMLHttpRequest();						
-					xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
-					xhr.upload.addEventListener("progress", o_XHRProgress, false);
-					xhr.upload.addEventListener("loadend", o_XHRLoadend, false);
-					return xhr;
-			    },
-				type:'POST',
-				data: formData,
-				cache: false,
-				contentType: false,
-				enctype: 'multipart/form-data',
-			    processData: false,
-				dataType: 'json',
-				success: function(returnedData, textStatus, jqXHR) {
-					o_onXHRSuccess(returnedData, textStatus, jqXHR);
-					if(newWindow !== "undefined" && newWindow != null) {
-						o_postInvoke(returnedData, newWindow);
-					} else {
-						o_postInvoke(returnedData, thisWindow);
-					}
-				},
-				error: function(jqXHR, textStatus, errorThrown) {
-					o_onXHRError(jqXHR, textStatus, errorThrown, currentlyDirty);
-				}
-			});
-			return false;
-		} else {
-			// iframe fallback for very old browsers without upload progress. Subject to be removed in future OO releses
-			var iframeName = "openolat-submit-" + ("" + Math.random()).substr(2);
-			var iframe = o_createIFrame(iframeName);
-			document.body.appendChild(iframe);
-			form.attr('target', iframe.name);
-			return true;
+		if(typeof tinymce !== 'undefined') {
+			tinymce.triggerSave(true,true);
 		}
+
+		let htmlForm = form[0];
+
+		// Send files via XHR and show upload progress
+		let formData = new FormData(htmlForm);
+
+		for (let i = 0; i < htmlForm.elements.length; i++) {
+			let formElement = htmlForm.elements[i];
+			if (formElement.attributes['data-extra-form-data']) {
+				let id = formElement.attributes['id'].value;
+				let name = formElement.attributes['name'].value;
+				let extraFormDataValue = o_getExtraMultipartFormData(name);
+				if (extraFormDataValue) {
+					formData.append(id, extraFormDataValue);
+					o_deleteExtraMultipartFormData(id);
+				}
+			}
+		}
+
+		const targetUrl = form.attr("action");
+		jQuery.ajax(targetUrl,{
+			xhr: function() {
+				const xhr = new window.XMLHttpRequest();
+				xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
+				xhr.upload.addEventListener("progress", o_XHRProgress, false);
+				xhr.upload.addEventListener("loadend", o_XHRLoadend, false);
+				return xhr;
+		    },
+			type:'POST',
+			data: formData,
+			cache: false,
+			contentType: false,
+			enctype: 'multipart/form-data',
+		    processData: false,
+			dataType: 'json',
+			success: function(returnedData, textStatus, jqXHR) {
+				o_onXHRSuccess(returnedData, textStatus, jqXHR);
+				if(newWindow !== "undefined" && newWindow != null) {
+					o_postInvoke(returnedData, newWindow);
+				} else {
+					o_postInvoke(returnedData, thisWindow);
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				o_onXHRError(jqXHR, textStatus, errorThrown, currentlyDirty);
+			}
+		});
+		return false;
 	} else {
 		// Normal non-multipart forms
 		let data = form.serializeArray();
@@ -2200,7 +2051,7 @@ function o_XHRSubmit(formNam) {
 			const argLength = arguments.length;
 			for(let i=1; i<argLength; i=i+2) {
 				if(argLength > i+1) {
-					let argData = new Object();
+					const argData = {};
 					argData["name"] = arguments[i];
 					argData["value"] = arguments[i+1];
 					data[data.length] = argData;
@@ -2279,7 +2130,7 @@ function o_onXHRSuccess (data, textStatus, jqXHR) {
 }
 
 function o_createIFrame(iframeName) {
-	var $iframe = jQuery('<iframe name="'+iframeName+'" id="'+iframeName+'" src="about:blank" style="position: absolute; top: -9999px; left: -9999px;"></iframe>');
+	const $iframe = jQuery('<iframe name="'+iframeName+'" id="'+iframeName+'" src="about:blank" style="position: absolute; top: -9999px; left: -9999px;"></iframe>');
 	return $iframe[0];
 }
 
@@ -2454,10 +2305,10 @@ function o_XHRWikiEvent(link) {
 }
 
 function o_XHRScormEvent(targetUrl) {
-	var data = new Object();
+	const data = {};
 	if(arguments.length > 1) {
-		var argLength = arguments.length;
-		for(var i=1; i<argLength; i=i+2) {
+		const argLength = arguments.length;
+		for(let i=1; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
 			}
@@ -2651,7 +2502,7 @@ function o_pushState(historyPointId, title, url) {
 }
 
 function o_toggleMark(el) {
-	var current = jQuery('i', el).attr('class');
+	const current = jQuery('i', el).attr('class');
 	if(current.indexOf('o_icon_bookmark_add') >= 0) {
 		jQuery('i', el).removeClass('o_icon_bookmark_add').addClass('o_icon_bookmark');
 	} else {
@@ -2674,7 +2525,7 @@ function registerDrake(drake) {
 
 function destroyDrakes() {
 	if(o_info.drakes !== "undefined" && o_info.drakes != null && o_info.drakes.length > 0) {
-		for(var i=o_info.drakes.length; i-->0; ) {
+		for(let i=o_info.drakes.length; i-->0; ) {
 			try {
 				o_info.drakes[i].destroy();
 			} catch(e) {
@@ -2728,14 +2579,14 @@ function destroyRunningVideos(videos) {
 //try to mimic the FileUtils.normalizeFilename method
 function o_normalizeFilename(filename) {
 	filename = filename.replace(/\s/g, "_")
-	var replaceByUnderscore = [ "/", ",", ":", "(", ")" ];
-	for(var i=replaceByUnderscore.length; i-->0; ) {
+	const replaceByUnderscore = [ "/", ",", ":", "(", ")" ];
+	for(let i=replaceByUnderscore.length; i-->0; ) {
 		filename = filename.split(replaceByUnderscore[i]).join("_");
 	}
 
-	var beautifyGermanUnicode = [ "\u00C4", "\u00D6", "\u00DC", "\u00E4", "\u00F6", "\u00E6", "\u00FC", "\u00DF", "\u00F8", "\u2205" ],
+	const beautifyGermanUnicode = [ "\u00C4", "\u00D6", "\u00DC", "\u00E4", "\u00F6", "\u00E6", "\u00FC", "\u00DF", "\u00F8", "\u2205" ],
 		beautifyGermanReplacement = [ "Ae", "Oe",     "Ue",     "ae",     "oe",     "ae",     "ue",     "ss",     "o",      "o" ];
-	for(var i=beautifyGermanUnicode.length; i-->0; ) {
+	for(let i=beautifyGermanUnicode.length; i-->0; ) {
 		filename = filename.split(beautifyGermanUnicode[i]).join(beautifyGermanReplacement[i]);
 	}
 
@@ -2760,7 +2611,7 @@ function setFlexiFormDirtyByListener(e){
 
 function setFlexiFormDirty(formId, hideMessage){
 	jQuery('#'+formId).each(function() {
-		var submitId = jQuery(this).data('FlexiSubmit');
+		const submitId = jQuery(this).data('FlexiSubmit');
 		if(submitId != null) {
 			jQuery('#'+submitId).addClass('btn o_button_dirty');
 			o2c = (hideMessage ? 0 : 1);
@@ -2770,7 +2621,7 @@ function setFlexiFormDirty(formId, hideMessage){
 
 function isFlexiFormDirty() {
 	if(o2c == 1) {
-		for (var i=0; i<o2cExclusions.length; i++) {
+		for (let i=0; i<o2cExclusions.length; i++) {
 	        if(document.getElementById(o2cExclusions[i]) != null) {
 	        	return false;
 	        }
@@ -2781,7 +2632,7 @@ function isFlexiFormDirty() {
 }
 
 function addFormDirtyExclusion(elementId) {
-	for (var i=0; i<o2cExclusions.length; i++) {
+	for (let i=0; i<o2cExclusions.length; i++) {
         if (o2cExclusions[i] === elementId) {
             return;
         }
@@ -2804,8 +2655,8 @@ function o_ffRegisterSubmit(formId, submElmId){
 
 function o_ffSetFocusArray(focusArray) {
 	if(focusArray) {
-		for(var i=0;i<focusArray.length; i++) {
-			var f = focusArray[i];
+		for(let i=0;i<focusArray.length; i++) {
+			const f = focusArray[i];
 			if(o_ffSetFocus(f.type, f.formName, f.formItemId)) {
 				return;
 			}
@@ -2889,8 +2740,8 @@ function o_ffSetFocus(type, formId, formItemId) {
 	let autofocusEl = jQuery("#" + formId + " input[autofocus]");
 	let errItem = jQuery('#' + formId + ' .has-error .form-control');
 	
-	var candidateFormItemId = "";
-	if (errItem.length > 0) { 
+	let candidateFormItemId = "";
+	if (errItem.length > 0) {
 		candidateFormItemId = errItem[0].getAttribute("id");
 	} else if (formItemId) {
 		candidateFormItemId = formItemId;
@@ -2901,7 +2752,7 @@ function o_ffSetFocus(type, formId, formItemId) {
 	}
 
 	// 4) Now set focus
-	var focused = false;
+	let focused = false;
 	if (candidateFormItemId != "" && isElementVisible(candidateFormItemId)) {
 		let candidateEl = jQuery("#" + candidateFormItemId);
 		let numOfModals = jQuery(".modal.show").length + jQuery(".popover").length;
@@ -2946,16 +2797,16 @@ function dismissInfoBox(uuid) {
 */
 function showInfoBox(title, content) {
 	// Factory method to create message box
-	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
-	var info = '<div id="' + uuid
+	const uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
+	const info = '<div id="' + uuid
 	     + '" class="o_alert_info"><div class="alert alert-info clearfix o_sel_info_message"><a class="o_alert_close o_sel_info_close" href="javascript:;" onclick="dismissInfoBox(\'' + uuid + '\')"><i class="o_icon o_icon_close"> </i></a><h3><i class="o_icon o_icon_info"> </i> '
 		 + title + '</h3><p>' + content + '</p></div></div>';
     jQuery('#o_messages').prepend(info);
     // Hide message automatically based on content length
-    var time = (content.length > 150) ? 10000 : ((content.length > 70) ? 8000 : 6000);
+    const time = (content.length > 150) ? 10000 : ((content.length > 70) ? 8000 : 6000);
 
     // Callback to remove after reading
-    var cleanup = function() {
+    const cleanup = function() {
     	jQuery('#' + uuid)
     		.transition({top : '-100%'}, 333, function() {
     			jQuery('#' + uuid).remove();
@@ -3038,7 +2889,7 @@ function o_guiCloseModal(selector) {
 }
 
 function o_extraTinyDirty(editor) {
-	var dirty = editor.isDirty();
+	const dirty = editor.isDirty();
 	function o_extraTinyDirtyToggle(elm) {
 		if(dirty) {
 			o2c=1;
@@ -3069,7 +2920,7 @@ function o_debounce(func, timeout = 300){
  * For flexi tables 
  */
  function o_ffTableToggleRowCheck(rowId, cssClass) {
- 	var rowEl = jQuery('#' + rowId);
+ 	const rowEl = jQuery('#' + rowId);
  	if(jQuery('#' + rowId + " .o_singleselect").length > 0) {
  		rowEl.closest("table.table").find("tr." + cssClass).each(function(index, el) {
  			jQuery(el).removeClass(cssClass);
@@ -3080,9 +2931,9 @@ function o_debounce(func, timeout = 300){
  
  function o_ffTableToggleRowListener(rowId, cssClass) {
   	o_ffTableToggleRowCheck(rowId, cssClass);
-  	var checkEl = jQuery('#' + rowId + ">td.o_multiselect>input");
+  	const checkEl = jQuery('#' + rowId + ">td.o_multiselect>input");
  	if(checkEl.length > 0) {
- 		var checked = jQuery('#' + rowId).hasClass(cssClass);
+ 		const checked = jQuery('#' + rowId).hasClass(cssClass);
  		checkEl.get(0).checked = checked;
  	}
   }
@@ -3091,15 +2942,14 @@ function o_debounce(func, timeout = 300){
  * For standard tables
  */
 function o_table_toggleCheck(ref, checked) {
-	var tb_checkboxes = document.forms[ref].elements["tb_ms"];
-	var len = tb_checkboxes.length;
+	const tb_checkboxes = document.forms[ref].elements["tb_ms"];
+	const len = tb_checkboxes.length;
 	if (typeof(len) == 'undefined') {
 		tb_checkboxes.checked = checked;
 	}
 	else {
-		var rows = jQuery('#' + ref + ' tbody tr');
-		var i;
-		for (i=0; i < len; i++) {
+		const rows = jQuery('#' + ref + ' tbody tr');
+		for (let i=0; i < len; i++) {
 			tb_checkboxes[i].checked=checked;
 			jQuery(rows[i]).toggleClass('o_row_selected', checked);
 		}
@@ -3115,7 +2965,7 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
 			}
 			
 			// show / hide only if batch buttons are present
-			var toolbarEl = jQuery(el).prev('.o_table_toolbar');
+			const toolbarEl = jQuery(el).prev('.o_table_toolbar');
 			if(toolbarEl.length > 0 && el.querySelector("a.btn") != null) {
 				if (showSelectAll) {
 					toolbarEl.addClass("o_table_batch_hide").removeClass("o_table_batch_show");
@@ -3127,13 +2977,13 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
 		
 		jQuery('#' + dispatchId + '_mscount').text(selectedEntriesInfo);
 	
-		var selectAllEl = jQuery('#' + dispatchId + '_sm');
+		let selectAllEl = jQuery('#' + dispatchId + '_sm');
 		if (selectAllEl.length == 0) {
 			// if the select all menu is not there, try with select all link
 			selectAllEl = jQuery('#' + dispatchId + '_sa');
 		}
-		var deselectAllEl = jQuery('#' + dispatchId + '_dsa');
-		var deselectMixedEl = jQuery('#' + dispatchId + '_dsm');
+		const deselectAllEl = jQuery('#' + dispatchId + '_dsa');
+		const deselectMixedEl = jQuery('#' + dispatchId + '_dsm');
 		
 		if (!selectAllEl || !deselectAllEl || !deselectMixedEl) {
 			// abort, not found the necessary DOM elements
@@ -3165,10 +3015,10 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
  */
 function o_initScrollableOverflowIndicator(domId) {
 	// keep outside the listener function scope to lookup only once and not for every scroll event 
-	var scrollableWrapperEl = jQuery('#' + domId);
-	var scrollableEl = jQuery('#' + domId + ' .o_scrollable');
-	var leftVisible = false;	// keep state to prevent dom queries
-	var rightVisible = false;
+	const scrollableWrapperEl = jQuery('#' + domId);
+	const scrollableEl = jQuery('#' + domId + ' .o_scrollable');
+	let leftVisible = false;	// keep state to prevent dom queries
+	let rightVisible = false;
 	
 	// add right scroll indicator if the element has overflow
 	if (scrollableEl.prop('scrollWidth') > scrollableEl.width()) {
@@ -3204,16 +3054,16 @@ function o_initScrollableOverflowIndicator(domId) {
 	});
 }
 function o_initScrollableVerticalOverflowIndicator(domId) {
-	var scrollableEl = jQuery('#' + domId + ' .o_scrollable_vertical');
+	const scrollableEl = jQuery('#' + domId + ' .o_scrollable_vertical');
 	if (!scrollableEl.length) {
 		return;
 	}
-	var topVisible = true;
-	var bottomVisible = false;
-	
+	let topVisible = true;
+	let bottomVisible = false;
+
 	function onScroll() {
-		var topVisibleNew = true;
-		var bottomVisibleNew = true;
+		let topVisibleNew = true;
+		let bottomVisibleNew = true;
 		
 		if (scrollableEl.scrollTop() == 0) {
 			topVisibleNew = false;
@@ -3259,18 +3109,18 @@ function onTreeStopDrag(event, ui) {
 }
 
 function onTreeDrop(event, ui) {
-	var dragEl = jQuery(ui.draggable[0]);
-	var el = jQuery(this);
+	const dragEl = jQuery(ui.draggable[0]);
+	const el = jQuery(this);
 	el.css({position:'', width:''});
-	var url =  el.droppable('option','endUrl');
+	let url =  el.droppable('option','endUrl');
 	if(url.lastIndexOf('/') == (url.length - 1)) {
 		url = url.substring(0,url.length-1);
 	}
-	var dragId = dragEl.attr('id')
-	var targetId = dragId.substring(2, dragId.length);
+	const dragId = dragEl.attr('id')
+	const targetId = dragId.substring(2, dragId.length);
 	url += '%3Atnidle%3A' + targetId;
 
-	var droppableId = el.attr('id');
+	const droppableId = el.attr('id');
 	if(droppableId.indexOf('ds') == 0) {
 		url += '%3Asne%3Ayes';
 	} else if(droppableId.indexOf('dt') == 0) {
@@ -3287,20 +3137,20 @@ function treeAcceptDrop(el) {
 }
 
 function treeAcceptDrop_notWithChildren(el) {
-	var accept = false;
-	
-	var dragEl = jQuery(el);
-	var dragElId = dragEl.attr('id');
+	let accept = false;
+
+	const dragEl = jQuery(el);
+	const dragElId = dragEl.attr('id');
 	if(dragElId != undefined && (dragElId.indexOf('dd') == 0 ||
 		dragElId.indexOf('ds') == 0 || dragElId.indexOf('dt') == 0 ||
 		dragElId.indexOf('da') == 0 || dragElId.indexOf('row') == 0)) {
 
-		var dropEl = jQuery(this)
-		var dropElId = dropEl.attr('id');//dropped
-		var dragNodeId = dragElId.substring(2, dragElId.length);
-		var dropId = dropElId.substring(2, dropElId.length);
+		const dropEl = jQuery(this)
+		const dropElId = dropEl.attr('id');//dropped
+		const dragNodeId = dragElId.substring(2, dragElId.length);
+		const dropId = dropElId.substring(2, dropElId.length);
 		if(dragNodeId != dropId) {
-			var containerEl = jQuery('#dd' + dragNodeId).parents('li');
+			const containerEl = jQuery('#dd' + dragNodeId).parents('li');
 			if(containerEl.length > 0 && jQuery(containerEl.get(0)).find('#dd' + dropId).length == 0) {
 				accept = true;
 			}
@@ -3323,12 +3173,12 @@ function treeNode_isDragNode(elId) {
  * For checkbox
  */
 function o_choice_toggleCheck(ref, checked) {
-	var checkboxes = document.forms[ref].elements;
-	var len = checkboxes.length;
+	const checkboxes = document.forms[ref].elements;
+	const len = checkboxes.length;
 	if (typeof(len) == 'undefined') {
 		checkboxes.checked = checked;
 	} else {
-		for (var i=0; i < len; i++) {
+		for (let i=0; i < len; i++) {
 			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'o_checkbox' && checkboxes[i].getAttribute('disabled') != 'disabled') {
 				checkboxes[i].checked=checked;
 			}
@@ -3340,9 +3190,9 @@ function o_choice_toggleCheck(ref, checked) {
  * For briefcase
  */
 function b_briefcase_isChecked(ref, warning_text) {
-	var myElement = document.getElementById(ref);
-	var numselected = 0;
-	for (var i=0; myElement.elements[i]; i++) {
+	const myElement = document.getElementById(ref);
+	let numselected = 0;
+	for (let i=0; myElement.elements[i]; i++) {
 		if (myElement.elements[i].type == 'checkbox' && myElement.elements[i].name == 'paths' && myElement.elements[i].checked) {
 			numselected++;
 		}
@@ -3355,9 +3205,9 @@ function b_briefcase_isChecked(ref, warning_text) {
 	return true;
 }
 function b_briefcase_toggleCheck(ref, checked) {
-	var myElement = document.getElementById(ref);
-	var len = myElement.elements.length;
-	for (var i=0; i < len; i++) {
+	const myElement = document.getElementById(ref);
+	const len = myElement.elements.length;
+	for (let i=0; i < len; i++) {
 		if (myElement.elements[i].name=='paths') {
 			myElement.elements[i].checked=checked;
 		}
@@ -3365,9 +3215,9 @@ function b_briefcase_toggleCheck(ref, checked) {
 }
 
 function o_copyToClipboard(selector) {
-	var els = jQuery(selector);
-	var copyText = "";
-	for(var i=0; i<els.length; i++) {
+	const els = jQuery(selector);
+	let copyText = "";
+	for(let i=0; i<els.length; i++) {
 		copyText += jQuery(els.get(i)).text() + "\n";
 	}
 	navigator.clipboard.writeText(copyText);
@@ -3378,19 +3228,19 @@ function o_copyToClipboard(selector) {
  */
 function o_doPrint() {
 	// When we have an iframe, issue print command on iframe directly
-	var iframes =  jQuery('div.o_iframedisplay iframe');
+	const iframes =  jQuery('div.o_iframedisplay iframe');
 	if (iframes.length > 0) {
 		try {
-			var iframe = iframes[0];
+			let iframe = iframes[0];
 			frames[iframe.name].focus();
 			frames[iframe.name].print();
 			return;
 		} catch (e) {
 			// When iframe content renames the window, the method above does not work.
 			// We use best guess code to find the target iframe in the window frames list
-			for (i=0; frames.length > i; i++) {
+			for (let i=0; frames.length > i; i++) {
 				iframe = frames[i];
-				var domFrame = document.getElementsByName(iframe.name)[0];
+				const domFrame = document.getElementsByName(iframe.name)[0];
 				if (domFrame && domFrame.getAttribute('class') == 'ext-shim') continue; // skip ext shim iframe
 				// Buest guess is that this is our renamed target iframe			
 				if (iframe.name != '') {
@@ -3429,7 +3279,7 @@ function o_doEscapeDispatch(event) {
 	}
 	
 	// Check if we are in a lightbox
-	var lightbox = jQuery('.basicLightbox');
+	const lightbox = jQuery('.basicLightbox');
 	if (lightbox.length > 0) {
 		event.stopPropagation();
 		lightbox[0].click();
@@ -3437,10 +3287,10 @@ function o_doEscapeDispatch(event) {
 	}
 	
 	// Check if we are in a multilayered OpenOlat dialog, callout or modal dialog
-	var lastDialog = jQuery('.o_layered_panel, .o_ltop_modal_panel, .ui-dialog').last();
+	const lastDialog = jQuery('.o_layered_panel, .o_ltop_modal_panel, .ui-dialog').last();
 	if (lastDialog.length > 0) {
 		// execute the close button if available
-		var closeElem = lastDialog.find('.close, .ui-dialog-titlebar-close');
+		const closeElem = lastDialog.find('.close, .ui-dialog-titlebar-close');
 		if (closeElem.length > 0) {
 			event.stopPropagation();
 			closeElem.click();
@@ -3449,7 +3299,7 @@ function o_doEscapeDispatch(event) {
 	// note: we have no control over tinymce windows, they handle the ESC independently
 	}
 	// Check if the right side personal menu canvas is open
-	var offCanvas = jQuery('#o_offcanvas_right');
+	const offCanvas = jQuery('#o_offcanvas_right');
 	if (offCanvas.is(":visible")) {
 		window.OPOL.navbar.hideRight();
 		return;
@@ -3468,8 +3318,8 @@ function o_animateRadialProgress(radialProgessDomSelector, percent) {
 		// Set progress on wrapper in case the animation does not work
 		jQuery(radialProgessDomSelector).attr('data-progress', percent);
 		// animate the progress bar
-		var radialBarEl = document.querySelector(radialProgessDomSelector + ' svg .radial-bar');		 
-		var anim = radialBarEl.animate(
+		const radialBarEl = document.querySelector(radialProgessDomSelector + ' svg .radial-bar');
+		const anim = radialBarEl.animate(
 			[{
 			 strokeDasharray: '0 100'
 	        },{
@@ -3498,7 +3348,7 @@ function b_hideExtMessageBox() {
  * global variables or OLAT managed variables. To use it, uncomment
  * lines in o_ainvoke()
  */
-var BDebugger = {
+const BDebugger = {
 	_lastDOMCount : 0,
 	_lastObjCount : 0,
 	_knownGlobalOLATObjects : ["o_afterserver","o_getMainWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_debug_trid","o_log_all"],
@@ -3507,33 +3357,33 @@ var BDebugger = {
 		return document.getElementsByTagName('*').length;
 	},
 	_countGlobalObjects : function() {
-			var objCount=0; 
-			for (var prop in window) {
+			let objCount=0;
+			for (const prop in window) {
 				objCount++;
 			} 
 			return objCount;
 	},
 	
 	logDOMCount : function() {
-		var self = BDebugger;
-		var DOMCount=self._countDOMElements();
-		var diff = DOMCount - self._lastDOMCount;
+		const self = BDebugger;
+		const DOMCount=self._countDOMElements();
+		const diff = DOMCount - self._lastDOMCount;
 		console.log( (diff > 0 ? "+" : "") + diff + " \t" + DOMCount + " \tDOM element count after DOM replacement");
 		self._lastDOMCount = DOMCount;
 	},
 
 	logGlobalObjCount : function() {	
-		var self = BDebugger;
-		var objCount = self._countGlobalObjects();
-		var diff = objCount - self._lastObjCount;
+		const self = BDebugger;
+		const objCount = self._countGlobalObjects();
+		const diff = objCount - self._lastObjCount;
 		console.log( (diff > 0 ? "+" : "") + diff + " \t" + objCount + " \tGlobal object count after DOM replacement");
 		self._lastObjCount = objCount;
 	},
 	
 	logGlobalOLATObjects : function() {
-		var self = BDebugger;
-		var OLATObjects = new Array();
-		for (var prop in window) {
+		const self = BDebugger;
+		const OLATObjects = [];
+		for (const prop in window) {
 			if (prop.indexOf("o_") == 0 && self._knownGlobalOLATObjects.indexOf(prop) == -1) {
 				OLATObjects.push(prop);
 			}
@@ -3547,7 +3397,7 @@ var BDebugger = {
 	}
 }
 
-var OOEdusharing = {
+const OOEdusharing = {
 		
 	start: function() {
 		if (o_info.edusharing_enabled) {
@@ -3558,7 +3408,7 @@ var OOEdusharing = {
 	},
 		
 	replaceWithSpinner: function(node, width, height) {
-		var spinnerHtml = "<div class='BGlossarIgnore' style='";
+		let spinnerHtml = "<div class='BGlossarIgnore' style='";
 		if (width > 0) {
 			spinnerHtml += "width:" + width + "px;";
 		}
@@ -3571,20 +3421,20 @@ var OOEdusharing = {
 		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner3'></div></div>";
 		spinnerHtml += "</div>";
 		
-		var spinner = jQuery(spinnerHtml);
+		const spinner = jQuery(spinnerHtml);
 		node.before(spinner);
 		node.remove();
 		return spinner;
 	},
-	
+
 	replaceGoTo: function(html, identifier) {
-		var url = o_info.uriprefix.replace("auth", "edusharing") + "goto?identifier=" + identifier;
+		const url = o_info.uriprefix.replace("auth", "edusharing") + "goto?identifier=" + identifier;
 		html = html.replace("{{{LMS_INLINE_HELPER_SCRIPT}}}", url)
 		return html;
 	},
 	
 	replaceWithRendered: function(node, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame) {
-		var url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
+		let url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
 		if (version >= 0) {
 			url = url + "&version=" + version;
 		}
@@ -3595,7 +3445,7 @@ var OOEdusharing = {
 			url = url + "&height=" + height;
 		}
 		
-		var containerHtml = "<div class='o_edusharing_container BGlossarIgnore";
+		let containerHtml = "<div class='o_edusharing_container BGlossarIgnore";
 		if (typeof esClass != 'undefined') {
 			containerHtml += " " + esClass;
 		}
@@ -3611,15 +3461,15 @@ var OOEdusharing = {
 		containerHtml += "'>";
 		containerHtml += "</div>";
 		
-		var container = jQuery(containerHtml);
-		
+		const container = jQuery(containerHtml);
+
 		jQuery.ajax({
 			type: "GET",
 			url: url,
 			dataType : 'html',
 			success : function(data){
-				var goToData = OOEdusharing.replaceGoTo(data, identifier);
-				var esNode = container.append(goToData);
+				const goToData = OOEdusharing.replaceGoTo(data, identifier);
+				const esNode = container.append(goToData);
 				node.replaceWith(esNode);
 				OPOL.adjustContentHeightForAbsoluteElement('.o_edusharing_container .edusharing_metadata_wrapper');
 			},
@@ -3634,15 +3484,15 @@ var OOEdusharing = {
 	},
 		
 	replace: function(node, isIFrame) {
-		var identifier = node.data("es_identifier");
-		var version = node.data("es_version");
-		var width = node.attr("width");
-		var height = node.attr("height");
-		var esClass = node.attr('class');
-		var showLicense = node.data("es_show_license");
-		var showInfos = node.data("es_show_infos");
-		
-		var spinner = OOEdusharing.replaceWithSpinner(node, width, height);
+		const identifier = node.data("es_identifier");
+		const version = node.data("es_version");
+		const width = node.attr("width");
+		const height = node.attr("height");
+		const esClass = node.attr('class');
+		const showLicense = node.data("es_show_license");
+		const showInfos = node.data("es_show_infos");
+
+		const spinner = OOEdusharing.replaceWithSpinner(node, width, height);
 		OOEdusharing.replaceWithRendered(spinner, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame);
 	},
 	
@@ -3650,25 +3500,25 @@ var OOEdusharing = {
 	 * Replace the edu-sharing nodes with the real resources from the edu-sharing rendering service.
 	 */
 	render: function() {
-		var esNodes = jQuery("[data-es_identifier]");
+		const esNodes = jQuery("[data-es_identifier]");
 		esNodes.addClass("BGlossarIgnore");
 		if (esNodes.length > 0) {
 			esNodes.each(function() {
-				var node = jQuery( this );
+				const node = jQuery( this );
 				OOEdusharing.replace(node, false);
 			});
 		}
 		// Handle inside internal iFrames as well
-		var iFrames = jQuery(".o_iframe_rel");
+		const iFrames = jQuery(".o_iframe_rel");
 		if (iFrames.length > 0) {
 			iFrames.each(function() {
-				var iFrame = jQuery( this );
+				const iFrame = jQuery( this );
 				iFrame.on('load', function(){
 					iFrame.contents().on('click', OOEdusharing.toggleMetadata);
-					var iFrameEsNodes = iFrame.contents().find("[data-es_identifier]");
+					const iFrameEsNodes = iFrame.contents().find("[data-es_identifier]");
 					if (iFrameEsNodes.length > 0) {
 						iFrameEsNodes.each(function() {
-							var iFrameEsNode = jQuery( this );
+							const iFrameEsNode = jQuery( this );
 							OOEdusharing.replace(iFrameEsNode, true);
 						});
 					}
@@ -3686,8 +3536,8 @@ var OOEdusharing = {
 			//clicked inside ".edusharing_metadata" - do nothing
 		} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
 			jQuery(".edusharing_metadata").hide();
-			var toggle_button = jQuery(e.target);
-			var metadata = toggle_button.parent().find(".edusharing_metadata");
+			const toggle_button = jQuery(e.target);
+			const metadata = toggle_button.parent().find(".edusharing_metadata");
 			if (metadata.hasClass('open')) {
 				metadata.toggleClass('open');
 				metadata.hide();
