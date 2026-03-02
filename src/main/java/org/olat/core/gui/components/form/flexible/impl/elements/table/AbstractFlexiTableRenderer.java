@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
@@ -167,27 +169,29 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 
 	protected void renderEmptyState(Renderer renderer, StringOutput sb, URLBuilder ubu, Translator translator,
 		RenderResult renderResult, FlexiTableElementImpl ftE) {
-		String emptyMessageKey = ftE.getEmtpyTableMessageKey();
-		String emptyMessageIconCss = ftE.getEmtpyTableIconCss();
-		String emptyMessageHintKey = ftE.getEmptyTableHintKey();
-		String[] emptyMessageArgs = ftE.getEmtpyTableMessageArgs();
-		sb.append("<div class=\"o_empty_state\"");
-		
-		String wrapperSelector = ftE.getWrapperSelector();
-		if (wrapperSelector != null) {
-			sb.append(" id=\"").append(wrapperSelector).append("\"");
+		String message = getMessage(ftE, translator);
+		String hint = getHint(ftE, translator);
+		EmptyStateRenderer.ButtonRenderer buttonRenderer = ftE.getEmptyTablePrimaryActionButton() != null ? 
+				() -> renderFormItem(renderer, sb, ftE.getEmptyTablePrimaryActionButton(), ubu, translator, renderResult, null) : null;
+
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withWrapperSelector(ftE.getWrapperSelector())
+				.withIconCss(ftE.getEmtpyTableIconCss())
+				.withMessageTranslated(message)
+				.withHintTranslated(hint)
+				.build();
+		EmptyStateRenderer.renderEmptyState(sb, null, emptyStateConfig, buttonRenderer, null);
+	}
+	
+	private String getMessage(FlexiTableElementImpl ftE, Translator translator) {
+		return translator.translate(ftE.getEmtpyTableMessageKey(), ftE.getEmtpyTableMessageArgs());
+	}
+	
+	private String getHint(FlexiTableElementImpl ftE, Translator translator) {
+		if (ftE.getEmptyTableHintKey() != null) {
+			return translator.translate(ftE.getEmptyTableHintKey(), ftE.getEmtpyTableMessageArgs());
 		}
-		sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon ").append(emptyMessageIconCss).append("'></i></div>")
-			.append("<div class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey, emptyMessageArgs)).append("</div>");			
-		if (emptyMessageHintKey != null) {
-			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey, emptyMessageArgs)).append("</div>");
-		}			
-		if (ftE.getEmptyTablePrimaryActionButton() != null) {
-			sb.append("<div class=\"o_empty_action\">");			
-			renderFormItem(renderer, sb, ftE.getEmptyTablePrimaryActionButton(), ubu, translator, renderResult, null);
-			sb.append("</div> ");				
-		}
-		sb.append("</div>");
+		return null;
 	}
 	
 	protected boolean hasFooter(FlexiTableElementImpl ftE) {

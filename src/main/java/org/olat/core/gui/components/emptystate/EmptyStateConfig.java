@@ -31,6 +31,8 @@ public interface EmptyStateConfig {
 		return new EmptyStateConfigBuilder();
 	}
 
+	public String getWrapperSelector();
+	
 	public String getIconCss();
 
 	public String getIndicatorIconCss();

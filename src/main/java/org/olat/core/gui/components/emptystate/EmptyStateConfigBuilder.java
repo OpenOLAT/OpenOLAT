@@ -27,6 +27,7 @@ package org.olat.core.gui.components.emptystate;
  */
 public class EmptyStateConfigBuilder {
 	
+	private String wrapperSelector;
 	private String iconCss;
 	private String indicatorIconCss;
 	private String messageI18nKey;
@@ -46,6 +47,11 @@ public class EmptyStateConfigBuilder {
 		//
 	}
 	
+	public EmptyStateConfigBuilder withWrapperSelector(String wrapperSelector) {
+		this.wrapperSelector = wrapperSelector;
+		return this;
+	}
+
 	public EmptyStateConfigBuilder withIconCss(String iconCss) {
 		this.iconCss = iconCss;
 		return this;
@@ -117,13 +123,14 @@ public class EmptyStateConfigBuilder {
 	}
 	
 	public EmptyStateConfig build() {
-		return new EmptyStateConfigImpl(iconCss, indicatorIconCss, messageI18nKey, messageI18nArgs, messageTranslated,
+		return new EmptyStateConfigImpl(wrapperSelector, iconCss, indicatorIconCss, messageI18nKey, messageI18nArgs, messageTranslated,
 				hintI18nKey, hintI18nArgs, hintTranslated, descI18nKey, descI18nArgs, descTranslated, buttonI18nKey,
 				buttonTranslated, secondaryButtonI18nKey);
 	}
 
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
 
+		private final String wrapperSelector;
 		private final String iconCss;
 		private final String indicatorIconCss;
 		private final String messageI18nKey;
@@ -139,11 +146,12 @@ public class EmptyStateConfigBuilder {
 		private final String buttonTranslated;
 		private final String secondaryButtonI18nKey;
 
-		public EmptyStateConfigImpl(String iconCss, String indicatorIconCss, String messageI18nKey,
+		public EmptyStateConfigImpl(String wrapperSelector, String iconCss, String indicatorIconCss, String messageI18nKey,
 									String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
 									String hintTranslated, String descI18nKey, String[] descI18nArgs,
 									String descTranslated, String buttonI18nKey, String buttonTranslated, 
 									String secondaryButtonI18nKey) {
+			this.wrapperSelector = wrapperSelector;
 			this.iconCss = iconCss;
 			this.indicatorIconCss = indicatorIconCss;
 			this.messageI18nKey = messageI18nKey;
@@ -158,6 +166,11 @@ public class EmptyStateConfigBuilder {
 			this.buttonI18nKey = buttonI18nKey;
 			this.buttonTranslated = buttonTranslated;
 			this.secondaryButtonI18nKey = secondaryButtonI18nKey;
+		}
+
+		@Override
+		public String getWrapperSelector() {
+			return wrapperSelector;
 		}
 
 		@Override
@@ -200,14 +213,17 @@ public class EmptyStateConfigBuilder {
 			return hintTranslated;
 		}
 
+		@Override
 		public String getDescI18nKey() {
 			return descI18nKey;
 		}
 
+		@Override
 		public String[] getDescI18nArgs() {
 			return descI18nArgs;
 		}
 
+		@Override
 		public String getDescTranslated() {
 			return descTranslated;
 		}
@@ -217,6 +233,7 @@ public class EmptyStateConfigBuilder {
 			return buttonI18nKey;
 		}
 
+		@Override
 		public String getButtonTranslated() {
 			return buttonTranslated;
 		}
