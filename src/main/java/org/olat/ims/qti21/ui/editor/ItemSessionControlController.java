@@ -184,35 +184,29 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	
 	private void updateWarningMaxAttempts() {
 		boolean needWarning = false;
-		
 		MaxAttemptsStatistics statistics = MaxAttemptsStatistics.calculate(part);
-		if(statistics.getNumOfItems() != 0 && statistics.getNumOfItems() == statistics.getNumOfItemsWithoutInherited()) {
-			String itemMsg = translate("warning.item.session.control.attempts.all.items.defined");
-			maxAttemptsWarningLayout.contextPut("itemMsg", itemMsg);
+		if(statistics.getNumOfItemsWithoutInherited() > 0 &&  statistics.getNumOfSectionsWithoutInherited() > 0) {
+			updateWarningMaxAttempts("warning.item.session.control.attempts.sections.items");
 			needWarning = true;
 		} else if(statistics.getNumOfItemsWithoutInherited() > 0) {
-			String itemMsg = translate("warning.item.session.control.attempts.items.defined");
-			maxAttemptsWarningLayout.contextPut("itemMsg", itemMsg);
+			updateWarningMaxAttempts("warning.item.session.control.attempts.items");
+			needWarning = true;
+		} else if(statistics.getNumOfSectionsWithoutInherited() > 0) {
+			updateWarningMaxAttempts("warning.item.session.control.attempts.sections");
 			needWarning = true;
 		} else {
 			maxAttemptsWarningLayout.contextRemove("itemMsg");
 		}
 
-		if(statistics.getNumOfSubSections() != 0 && statistics.getNumOfSubSections() == statistics.getNumOfSectionsWithoutInherited()) {
-			String sectionMsg = translate("warning.item.session.control.attempts.all.sections.defined");
-			maxAttemptsWarningLayout.contextPut("sectionMsg", sectionMsg);
-			needWarning = true;
-		} else if(statistics.getNumOfSectionsWithoutInherited() > 0) {
-			String sectionMsg = translate("warning.item.session.control.attempts.sections.defined");
-			maxAttemptsWarningLayout.contextPut("sectionMsg", sectionMsg);
-			needWarning = true;
-		} else {
-			maxAttemptsWarningLayout.contextRemove("sectionMsg");
-		}
-
 		boolean warningVisible = limitAttemptsEl.isSelected(0) && needWarning;
 		inheritMaxAttemptsButton.setVisible(warningVisible);
 		maxAttemptsWarningLayout.setVisible(warningVisible);
+	}
+	
+	private void updateWarningMaxAttempts(String i18nVariant) {
+		String variant = translate(i18nVariant);
+		String msg = translate("warning.item.session.control.attempts.sub.defined", variant);
+		maxAttemptsWarningLayout.contextPut("msg", msg);
 	}
 
 	@Override

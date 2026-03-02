@@ -873,7 +873,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_suspend { @include o-add-icon('pause');}
 .o_icon_qti_close_results { @include o-add-icon('window-close');}
 .o_icon_qti_hint { @include o-add-icon('question-circle');}
-.o_icon_qti_summary_notAnswered { @include o-add-icon('circle'); color: $o-qti-status-notAnswered-color;}
+.o_icon_qti_summary_notAnswered { @include o-add-icon('circle', false); color: $o-qti-status-notAnswered-color;}
+.o_icon_qti_sumarry_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
 .o_icon_qti_summary_ended { @include o-add-icon('times-circle'); color: $brand-danger;}
 .o_icon_qti_summary_correct { @include o-add-icon('check-circle'); color: $brand-success;}
 .o_icon_qti_signature { @include o-add-icon('file-code');}

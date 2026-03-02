@@ -186,6 +186,8 @@
 						<i class="o_icon o_icon-lg o_icon_qti_summary_correct" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.correct")"> </i>
 					#elseif(${subResults.isEnded()})
 						<i class="o_icon o_icon-lg o_icon_qti_summary_ended" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.false")"> </i>
+					#elseif(${subResults.isNotPresented()})
+						<i class="o_icon o_icon-lg o_icon_qti_sumarry_notPresented" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.not.presented")"> </i>
 					#else
 						<i class="o_icon o_icon-lg o_icon_qti_summary_notAnswered" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.noanswer")"> </i>
 					#end
@@ -196,8 +198,6 @@
 		#end
 		#end
 	</tbody></table>
-	
-	
 	
 	</div>	
 	</div> ## END left column / o_qti_metainfo_listing

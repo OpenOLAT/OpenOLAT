@@ -972,6 +972,10 @@ public class AssessmentResultController extends FormBasicController {
 			return sessionStatus == SessionStatus.FINAL &&
 					(maxScore != null && score != null && Math.abs(maxScore.doubleValue() - score.doubleValue()) < 0.0001);
 		}
+		
+		public boolean isNotPresented() {
+			return sessionStatus == SessionStatus.INITIAL;
+		}
 
 		public int getNumberOfQuestions() {
 			return numberOfQuestions;
