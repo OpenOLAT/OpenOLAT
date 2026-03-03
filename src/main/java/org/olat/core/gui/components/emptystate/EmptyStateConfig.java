@@ -77,4 +77,5 @@ public interface EmptyStateConfig {
 	
 	public String getSecondaryButtonI18nKey();
 
+	public EmptyStateVariant getVariant();
 }

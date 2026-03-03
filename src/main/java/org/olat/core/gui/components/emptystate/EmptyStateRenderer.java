@@ -132,11 +132,6 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 										String elementCssClass, EmptyStateConfig emptyStateConfig,
 										ButtonRenderer buttonRenderer,
 										ButtonRenderer secondaryButtonRenderer) {
-		String indicatorIconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIndicatorIconCss()) ? 
-				emptyStateConfig.getIndicatorIconCss() : "o_icon_empty_indicator";
-		String iconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIconCss()) ? 
-				emptyStateConfig.getIconCss() : "o_icon_empty_objects";
-
 		sb.append("<div class='o_empty_state");
 		if (StringHelper.containsNonWhitespace(elementCssClass)) {
 			sb.append(" ").append(elementCssClass);
@@ -147,10 +142,11 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(">");
 		
-		// icon
-		sb.append("<div class='o_empty_visual'><i class='o_icon ").append(indicatorIconCss).append("'></i>");
-		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
-		sb.append("</div>");
+		switch (emptyStateConfig.getVariant()) {
+			case standard -> renderStandardIcon(sb, emptyStateConfig);
+			case combined -> renderCombinedIcon(sb, emptyStateConfig);
+			default -> {}
+		}
 
 		// message
 		sb.append("<div class='o_empty_msg'>").append(emptyStateConfig.getMessageTranslated()).append("</div>");
@@ -178,6 +174,28 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 
+		sb.append("</div>");
+	}
+
+	private static void renderCombinedIcon(StringOutput sb, EmptyStateConfig emptyStateConfig) {
+		String indicatorIconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIndicatorIconCss()) ?
+				emptyStateConfig.getIndicatorIconCss() : "o_icon_empty_indicator";
+		String iconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIconCss()) ?
+				emptyStateConfig.getIconCss() : "o_icon_empty_objects";
+		
+		sb.append("<div class='o_empty_visual'><i class='o_icon ").append(indicatorIconCss).append("'></i>");
+		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
+		sb.append("</div>");
+	}
+
+	private static void renderStandardIcon(StringOutput sb, EmptyStateConfig emptyStateConfig) {
+		String iconCss = StringHelper.containsNonWhitespace(emptyStateConfig.getIconCss()) ?
+				emptyStateConfig.getIconCss() : "o_icon_empty_objects";
+		
+		sb.append("<div class='o_empty_standard'>");
+		sb.append("<div class='o_empty_circle'>");
+		sb.append("<i class='o_icon ").append(iconCss).append("'></i>");
+		sb.append("</div>");
 		sb.append("</div>");
 	}
 }

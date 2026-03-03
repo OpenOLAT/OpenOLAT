@@ -42,11 +42,17 @@ public class EmptyStateConfigBuilder {
 	private String buttonI18nKey;
 	private String buttonTranslated;
 	private String secondaryButtonI18nKey;
+	private EmptyStateVariant variant = EmptyStateVariant.standard;
 	
 	EmptyStateConfigBuilder() {
 		//
 	}
 	
+	public EmptyStateConfigBuilder withVariant(EmptyStateVariant variant) {
+		this.variant = variant;
+		return this;
+	}
+
 	public EmptyStateConfigBuilder withWrapperSelector(String wrapperSelector) {
 		this.wrapperSelector = wrapperSelector;
 		return this;
@@ -123,9 +129,9 @@ public class EmptyStateConfigBuilder {
 	}
 	
 	public EmptyStateConfig build() {
-		return new EmptyStateConfigImpl(wrapperSelector, iconCss, indicatorIconCss, messageI18nKey, messageI18nArgs, messageTranslated,
-				hintI18nKey, hintI18nArgs, hintTranslated, descI18nKey, descI18nArgs, descTranslated, buttonI18nKey,
-				buttonTranslated, secondaryButtonI18nKey);
+		return new EmptyStateConfigImpl(variant, wrapperSelector, iconCss, indicatorIconCss, messageI18nKey, 
+				messageI18nArgs, messageTranslated, hintI18nKey, hintI18nArgs, hintTranslated, descI18nKey, 
+				descI18nArgs, descTranslated, buttonI18nKey, buttonTranslated, secondaryButtonI18nKey);
 	}
 
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
@@ -145,12 +151,14 @@ public class EmptyStateConfigBuilder {
 		private final String buttonI18nKey;
 		private final String buttonTranslated;
 		private final String secondaryButtonI18nKey;
-
-		public EmptyStateConfigImpl(String wrapperSelector, String iconCss, String indicatorIconCss, String messageI18nKey,
+		private final EmptyStateVariant variant;
+		
+		public EmptyStateConfigImpl(EmptyStateVariant variant, String wrapperSelector, String iconCss, String indicatorIconCss, String messageI18nKey,
 									String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
 									String hintTranslated, String descI18nKey, String[] descI18nArgs,
-									String descTranslated, String buttonI18nKey, String buttonTranslated, 
+									String descTranslated, String buttonI18nKey, String buttonTranslated,
 									String secondaryButtonI18nKey) {
+			this.variant = variant;
 			this.wrapperSelector = wrapperSelector;
 			this.iconCss = iconCss;
 			this.indicatorIconCss = indicatorIconCss;
@@ -241,6 +249,11 @@ public class EmptyStateConfigBuilder {
 		@Override
 		public String getSecondaryButtonI18nKey() {
 			return secondaryButtonI18nKey;
+		}
+		
+		@Override
+		public EmptyStateVariant getVariant() {
+			return variant;
 		}
 	}
 }
