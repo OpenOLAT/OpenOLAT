@@ -19,11 +19,19 @@
  */
 package org.olat.upgrade;
 
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.model.CertificationProgramLogImpl;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -48,6 +56,7 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 	private static final String MIGRATE_CERTIFICATION_LOG_ACTION = "MIGRATE CERTIFICATION LOG ACTION";
 	private static final String MIGRATE_CERTIFICATION_LOG_PROGRAM = "MIGRATE CERTIFICATION LOG PROGRAM";
 	private static final String MIGRATE_CERTIFICATION_LOG_IDENTITY = "MIGRATE CERTIFICATION LOG IDENTITY";
+	private static final String MIGRATE_AI_MODULE_CONFIG = "MIGRATE AI MODULE CONFIG";
 
 	@Autowired
 	private DB dbInstance;
@@ -55,7 +64,8 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 	private CurriculumService curriculumService;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
-	
+	@Autowired
+	private AiModule aiModule;	
 	@Override
 	public String getVersion() {
 		return VERSION;
@@ -75,6 +85,7 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 		allOk &= migrateCertificationLogAction(upgradeManager, uhd);
 		allOk &= migrateCertificationLogProgram(upgradeManager, uhd);
 		allOk &= migrateCertificationLogIdentity(upgradeManager, uhd);
+		allOk &= migrateAiModuleConfig(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -236,10 +247,50 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 				select curEl from curriculumelement as curEl
 				where curEl.parent.key is not null and curEl.implementation.key is null
 				order by curEl.key""";
-		
+
 		return dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setFirstResult(0)
 				.setMaxResults(maxResults)
 				.getResultList();
+	}
+
+	/**
+	 * Migrate legacy AI module config: Before the refactoring there was only one
+	 * SPI (OpenAI) and the model was stored directly in the OpenAiSPI properties
+	 * as "openai.chat.model". The new architecture stores the per-feature SPI and
+	 * model in the AiModule properties.
+	 */
+	private boolean migrateAiModuleConfig(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_AI_MODULE_CONFIG)) {
+			try {
+				// Only migrate if not already configured
+				if (!StringHelper.containsNonWhitespace(aiModule.getMCGeneratorSpiId())) {
+					String userDataDirectory = WebappHelper.getUserDataRoot();
+					Path openAiPropsPath = Paths.get(userDataDirectory, "system", "configuration",
+							"org.olat.core.commons.services.ai.spi.openAI.OpenAiSPI.properties");
+					if (Files.exists(openAiPropsPath)) {
+						Properties openAiProps = new Properties();
+						try (FileInputStream input = new FileInputStream(openAiPropsPath.toFile())) {
+							openAiProps.load(input);
+						}
+
+						String oldModel = openAiProps.getProperty("openai.chat.model");
+						String oldEnabled = openAiProps.getProperty("openai.enabled");
+
+						if (StringHelper.containsNonWhitespace(oldModel) && "true".equals(oldEnabled)) {
+							aiModule.setMCQuestionGeneratorConfig("OpenAI", oldModel);
+							log.info("AI module config migrated: spi=OpenAI, model={}", oldModel);
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_AI_MODULE_CONFIG, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
 	}
 }
