@@ -271,7 +271,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 		customItemFlc.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(customItemFlc.getFormItemComponent(), this);
-		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list");
 		tableEl.setSearchEnabled(true);
 
 		if (feedRss.isInternal() && feedSecCallback.mayCreateItems()) {
@@ -287,6 +286,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		loadModel();
 		initFilterTabs(ureq);
 		initFilters();
+		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list");
 
 		if (!itemRows.isEmpty()) {
 			loadTimelineTagsToggle(ureq);
@@ -389,10 +389,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
-		if (!feedRss.isInternal() || (!feedSecCallback.mayEditItems() && !feedSecCallback.mayCreateItems())) {
-			return;
-		}
-		
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
 		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("filter.all"),
@@ -400,13 +396,15 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		FlexiFiltersTab myItemsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("owned", translate("filter.my.entries"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.OWNED, "owned")));
-		tabs.add(myItemsTab);
+		if (feedRss.isInternal() && (feedSecCallback.mayEditItems() || feedSecCallback.mayCreateItems())) {
+			FlexiFiltersTab myItemsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("owned", translate("filter.my.entries"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.OWNED, "owned")));
+			tabs.add(myItemsTab);
 
-		FlexiFiltersTab draftTab = FlexiFiltersTabFactory.tabWithImplicitFilters("drafts", translate("filter.drafts"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.STATUS, FeedItemStatusEnum.draft.name())));
-		tabs.add(draftTab);
+			FlexiFiltersTab draftTab = FlexiFiltersTabFactory.tabWithImplicitFilters("drafts", translate("filter.drafts"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.STATUS, FeedItemStatusEnum.draft.name())));
+			tabs.add(draftTab);
+		}
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, allTab);
@@ -450,7 +448,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			filters.add(statusFilter);
 		}
 		
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 		tableEl.expandFilters(false);
 	}
 
