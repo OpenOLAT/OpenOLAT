@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.openolat.org)",
+	  "Bash(grep:*)",
+	  "mcp__youtrack__get_current_user",
+	  "mcp__youtrack__get_issue",
+	  "mcp__youtrack__find_projects"
+    ]
+  }
+}
