@@ -413,7 +413,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 
-		if (tableEl.getSelectedFilterTab().getId().equals("all") && feedRss.isInternal()) {
+		if (feedRss.isInternal()) {
 			SelectionValues myEntriesValues = new SelectionValues();
 			myEntriesValues.add((SelectionValues.entry("owned", translate("table.filter.my.entries"))));
 			FlexiTableOneClickSelectionFilter myEntriesFilter = new FlexiTableOneClickSelectionFilter(translate("table.filter.my.entries"),
