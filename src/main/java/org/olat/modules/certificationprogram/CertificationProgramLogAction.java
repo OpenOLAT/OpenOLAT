@@ -37,6 +37,8 @@ public enum CertificationProgramLogAction {
 	revoke_certificate,
 	issue_certificate,
 	expire_certificate,
+	renew_certificate,
+	renew_certificate_manually,
 	
 	//
 	add_owner,

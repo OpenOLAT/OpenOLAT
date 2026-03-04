@@ -49,7 +49,7 @@ public interface CertificationCoordinator {
 			RequestMode requestMode, Date referenceDate, Identity doer);
 	
 	Certificate generateCertificate(Identity identity, CertificationProgram certificationProgram, Date issuedDate, RequestMode requestMode,
-			CertificationProgramMailType notificationType, Identity actor);
+			CertificationProgramMailType notificationType, CertificationProgramLogAction logAction, Identity actor);
 	
 	Certificate revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
 	

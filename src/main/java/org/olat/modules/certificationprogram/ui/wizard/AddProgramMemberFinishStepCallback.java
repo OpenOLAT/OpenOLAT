@@ -69,8 +69,8 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 		List<Identity> userToCertifyList = membersContext.getIdentitiesToCertify();
 		CertificationProgram certificationProgram = membersContext.getProgram();
 		for(Identity userToCertify:userToCertifyList) {
-			Certificate certificate = certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate,
-					RequestMode.COACH, CertificationProgramMailType.certificate_issued, ureq.getIdentity());
+			Certificate certificate = certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate, RequestMode.COACH,
+					CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, ureq.getIdentity());
 			String val = issuedDate == null ? null : Formatter.formatDatetime(issuedDate);
 			certificationProgramService.log(certificate, certificationProgram, CertificationProgramLogAction.add_membership_manually,
 					null, null, "certified", val, null, null, ureq.getIdentity());

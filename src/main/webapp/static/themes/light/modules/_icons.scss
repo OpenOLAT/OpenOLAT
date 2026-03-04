@@ -41,6 +41,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_assignment { @include o-add-icon('bolt'); color: $o-portfolio-assignment-color;}
 .o_icon_attempts { @include o-add-icon('rotate-left');}
 .o_icon_accept { @include o-add-icon('check'); color: $brand-success;}
+.o_icon_activity_log { @include o-add-icon('scroll'); }
 .o_icon_add { @include o-add-icon('plus-circle');}
 .o_icon_add_member { @include o-add-icon('user-plus');}
 .o_icon_add_search { @include o-add-icon('search-plus');}

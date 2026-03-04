@@ -114,7 +114,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			if(certificate == null) {
 				//First certificate is free (paid by the course fee)
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
-				generateCertificate(identity, certificationProgram, null, requestMode, CertificationProgramMailType.certificate_issued, doer);
+				generateCertificate(identity, certificationProgram, null, requestMode,
+						CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, doer);
 				certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.add_membership,
 						null, null, "certified", null, null, null, doer);
 				
@@ -163,12 +164,25 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				? CertificationProgramMailType.certificate_issued
 				: CertificationProgramMailType.certificate_renewed;
 		CertificationStatus currentStatus = certificate == null ? null : CertificationStatus.evaluate(certificate, referenceDate);
-		Certificate newCertificate = generateCertificate(identity, certificationProgram, null, requestMode, mailType, doer);
+		
+		boolean addMembership = (certificate == null || !certificate.isLast());
+		CertificationProgramLogAction logAction;
+		if(addMembership) {
+			logAction = CertificationProgramLogAction.issue_certificate;
+		} else if(requestMode == RequestMode.COACH) {
+			logAction = CertificationProgramLogAction.renew_certificate_manually;
+		} else {
+			logAction = CertificationProgramLogAction.renew_certificate;
+		}
+		Certificate newCertificate = generateCertificate(identity, certificationProgram, null, requestMode,
+				mailType, logAction, doer);
 
-		CertificationProgramLogAction action = CertificationProgramLogAction.add_membership;
-		String beforeStatus = currentStatus == null ? null : currentStatus.name();
-		certificationProgramLogDao.createLog(newCertificate, certificationProgram, action,
-				beforeStatus, null, "certified", null, null, null, doer);
+		if(addMembership) {
+			CertificationProgramLogAction action = CertificationProgramLogAction.add_membership;
+			String beforeStatus = currentStatus == null ? null : currentStatus.name();
+			certificationProgramLogDao.createLog(newCertificate, certificationProgram, action,
+					beforeStatus, null, "certified", null, null, null, doer);
+		}
 		dbInstance.commit();// Prevent deadlock with MySQL
 
 		return true;
@@ -264,7 +278,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	
 	@Override
 	public Certificate generateCertificate(Identity identity, CertificationProgram certificationProgram, Date issuedDate,
-			RequestMode requestMode, CertificationProgramMailType notificationType, Identity actor) {
+			RequestMode requestMode, CertificationProgramMailType notificationType,CertificationProgramLogAction logAction, Identity actor) {
 		// Archive the last certificate
 		certificatesDao.removeLastFlag(identity, certificationProgram);
 		dbInstance.commit();
@@ -287,7 +301,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
 		
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);
-		certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.issue_certificate,
+		certificationProgramLogDao.createLog(certificate, certificationProgram, logAction,
 				null, null, CertificationStatus.VALID.name(), null, null, null, actor);
 		dbInstance.commit();// Prevent deadlock with MySQL
 		

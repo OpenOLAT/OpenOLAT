@@ -153,6 +153,9 @@ public class CertificationProgramLogController extends FormBasicController {
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(4);
 		
+		tabAll = FlexiFiltersTabFactory.tab(TAB_ID_ALL, translate("tab.all"), TabSelectionBehavior.reloadData);
+		tabs.add(tabAll);
+		
 		LocalDateTime today = DateUtils.setTime(LocalDateTime.now(), 0, 0, 0);
 		tabLast7Days = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_LAST_7_DAYS, translate("tab.last.7.days"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_DATE, new LocalDateRange(today.minusDays(7), today.plusDays(1)))));
@@ -165,9 +168,6 @@ public class CertificationProgramLogController extends FormBasicController {
 		tabLast12Month = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_LAST_12_MONTH, translate("tab.last.12.month"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_DATE, new LocalDateRange(today.minusYears(1), today.plusDays(1)))));
 		tabs.add(tabLast12Month);
-
-		tabAll = FlexiFiltersTabFactory.tab(TAB_ID_ALL, translate("tab.all"), TabSelectionBehavior.reloadData);
-		tabs.add(tabAll);
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, tabLast7Days);
@@ -309,9 +309,9 @@ public class CertificationProgramLogController extends FormBasicController {
 			case reminder_reset_content, notification_reset_content -> List.of(createMessageContentRow(auditLog, translate("content.customized"), translate("default.template")));
 			case reminder_change_content, notification_change_content -> List.of(createMessageContentRow(auditLog, null, null));
 			// Certificates
-			case revoke_certificate, issue_certificate, expire_certificate, remove_membership -> List.of(createCertificateStatusRow(auditLog));
-			case add_membership, add_membership_manually -> List.of(createCertificateStatusRow(auditLog));
-			
+			case revoke_certificate, issue_certificate, expire_certificate, 
+				renew_certificate, renew_certificate_manually,
+				remove_membership, add_membership, add_membership_manually -> List.of(createCertificateStatusRow(auditLog));
 			default -> List.of();
 		};
 	}
@@ -425,19 +425,19 @@ public class CertificationProgramLogController extends FormBasicController {
 			
 			String certificateCustom1Before = beforeConfiguration.getCertificateCustom1();
 			String certificateCustom1After = afterConfiguration.getCertificateCustom1();
-			if(!Objects.equals(certificateCustom1Before, certificateCustom1After)) {
+			if(!stringEquals(certificateCustom1Before, certificateCustom1After)) {
 				rows.add(createCertificationProgramConfigurationRow(auditLog,
 						translate("certification.program.certificate"), translate("certificate.custom1"), certificateCustom1Before, certificateCustom1After));	
 			}
 			String certificateCustom2Before = beforeConfiguration.getCertificateCustom2();
 			String certificateCustom2After = afterConfiguration.getCertificateCustom2();
-			if(!Objects.equals(certificateCustom2Before, certificateCustom2After)) {
+			if(!stringEquals(certificateCustom2Before, certificateCustom2After)) {
 				rows.add(createCertificationProgramConfigurationRow(auditLog,
 						translate("certification.program.certificate"), translate("certificate.custom2"), certificateCustom2Before, certificateCustom2After));	
 			}
 			String certificateCustom3Before = beforeConfiguration.getCertificateCustom3();
 			String certificateCustom3After = afterConfiguration.getCertificateCustom3();
-			if(!Objects.equals(certificateCustom3Before, certificateCustom3After)) {
+			if(!stringEquals(certificateCustom3Before, certificateCustom3After)) {
 				rows.add(createCertificationProgramConfigurationRow(auditLog,
 						translate("certification.program.certificate"), translate("certificate.custom3"), certificateCustom3Before, certificateCustom3After));	
 			}
@@ -445,8 +445,8 @@ public class CertificationProgramLogController extends FormBasicController {
 			CertificateTemplate templateBefore = beforeConfiguration.getTemplate();
 			CertificateTemplate templateAfter = afterConfiguration.getTemplate();
 			if(!Objects.equals(templateBefore, templateAfter)) {
-				rows.add(createCertificationProgramConfigurationRow(auditLog,
-						translate("certification.program.certificate"), translate("certificate.pdf.template"), toString(templateBefore), toString(templateAfter)));	
+				rows.add(createCertificationProgramConfigurationActivityRow(auditLog, translate("certification.program.certificate"), 
+						translate("activity.message.replace.template"), toString(templateBefore), toString(templateAfter)));	
 			}
 			
 		} catch (Exception e) {
@@ -456,7 +456,12 @@ public class CertificationProgramLogController extends FormBasicController {
 	}
 	
 	private CertificationProgramLogRow createCertificationProgramConfigurationRow(CertificationProgramLog auditLog,
-			String object, String attribute, String before, String after) {
+			String object, String attribute, String before, String after) {	
+		return createCertificationProgramConfigurationActivityRow(auditLog, object, getActivity(auditLog, attribute), before, after);
+	}
+	
+	private CertificationProgramLogRow createCertificationProgramConfigurationActivityRow(CertificationProgramLog auditLog,
+			String object, String activity, String before, String after) {
 		
 		String actor = auditLog.getDoer() == null
 				? null
@@ -466,7 +471,7 @@ public class CertificationProgramLogController extends FormBasicController {
 				: auditLog.getDoer().getKey();
 
 		CertificationProgramLogRow row = new CertificationProgramLogRow(auditLog, CertificationProgramActivityLogContext.setting,
-				object, null, getActivity(auditLog, attribute), actor, actorKey);
+				object, null, activity, actor, actorKey);
 		row.setOriginalValue(before);
 		row.setNewValue(after);
 		return row;
@@ -494,6 +499,12 @@ public class CertificationProgramLogController extends FormBasicController {
 			if(!Objects.equals(durationBefore, durationAfter)) {
 				rows.add(createReminderConfigurationRow(auditLog, translate("reminder.time"), toString(durationBefore), toString(durationAfter)));
 			}
+			
+			boolean creditBalanceTooLowBefore = beforeConfiguration.isCreditBalanceTooLow();
+			boolean creditBalanceTooLowAfter = afterConfiguration.isCreditBalanceTooLow();
+			if(creditBalanceTooLowBefore != creditBalanceTooLowAfter) {
+				rows.add(createReminderConfigurationRow(auditLog, translate("reminder.conditions.balance.too.low"), toString(creditBalanceTooLowBefore), toString(creditBalanceTooLowAfter)));
+			}
 		} catch (Exception e) {
 			logError("", e);
 		}
@@ -517,7 +528,14 @@ public class CertificationProgramLogController extends FormBasicController {
 	}
 	
 	private String toString(boolean val) {
-		return val ? translate("on") : translate("off");
+		return val ? translate("notification.status.active") : translate("notification.status.inactive");
+	}
+	
+	private boolean stringEquals(String s1, String s2) {
+		return (s1 == null && s2 == null)
+				|| (s1 != null && s1.equals(s2))
+				|| (s1 == null && s2 != null && s2.length() == 0)
+				|| (s2 == null && s1 != null && s1.length() == 0);
 	}
 	
 	private CertificationProgramLogRow createReminderConfigurationRow(CertificationProgramLog auditLog, String attribute, String before, String after) {

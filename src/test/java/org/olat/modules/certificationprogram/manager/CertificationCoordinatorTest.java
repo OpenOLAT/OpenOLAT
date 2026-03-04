@@ -40,6 +40,7 @@ import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
@@ -735,7 +736,8 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("10.0"), null, "Give away", wallet, participant, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
-		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH, CertificationProgramMailType.certificate_issued, actor);
+		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH,
+				CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, actor);
 		Assert.assertNotNull(certificate);
 		waitMessageAreConsumed();// Wait certificate is generated
 		
@@ -904,7 +906,8 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		program = certificationProgramService.updateCertificationProgram(program);
 		dbInstance.commit();
 		
-		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH, CertificationProgramMailType.certificate_issued, actor);
+		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH,
+				CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, actor);
 		waitMessageAreConsumed();// Wait certificate is generated
 		Assert.assertNotNull(certificate);
 		
