@@ -286,7 +286,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		loadModel();
 		initFilterTabs(ureq);
 		initFilters();
-		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list-" + feedRss.getKey());
 
 		if (!itemRows.isEmpty()) {
 			loadTimelineTagsToggle(ureq);
@@ -391,7 +391,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("filter.all"),
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("all"),
 				TabSelectionBehavior.clear, List.of());
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);

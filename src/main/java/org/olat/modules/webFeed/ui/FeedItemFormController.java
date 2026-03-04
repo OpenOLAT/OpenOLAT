@@ -123,7 +123,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 		title.setElementCssClass("o_sel_feed_title");
 		title.setMandatory(true);
 		title.setFocus(true);
-		title.setNotEmptyCheck("feed.form.field.is_mandatory");
+		title.setNotEmptyCheck("form.legende.mandatory");
 
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), feedTags);
 
@@ -154,7 +154,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 		file.setLabel("feed.item.file.label", null);
 		file.setExampleKey("feed.form.file.type.explain", null);
 		if (hasMandatoryMedia()) {
-			file.setMandatory(true, "feed.item.file.mandatory");
+			file.setMandatory(true, "form.legende.mandatory");
 		} else {
 			file.setDeleteEnabled(true);
 		}
