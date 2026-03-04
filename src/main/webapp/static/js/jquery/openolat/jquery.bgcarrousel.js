@@ -56,6 +56,10 @@
 
 		// Query not defined? - stop right there
     	if (this.settings.query == null || this.settings.images.length == 0) return;
+
+		// container not available - stop right there
+		var container = $(this.settings.query);
+		if (container == null || container.length == 0) return;
     	
     	// Only one image - stop
     	if (this.settings.images.length <= 1) return;
@@ -80,7 +84,6 @@
     		}
     	}
 
-		var container = $(this.settings.query);
 		// Read the full background shorthand (works in Chrome/Safari) and keep it
 		// for later use as template when constructing the next-image backgrounds.
 		this.bgcss = container.css("background"); 
