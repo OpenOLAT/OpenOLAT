@@ -314,7 +314,13 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(sendRecoveryKeyCtrl == source || sendPasswordLinkCtrl == source) {
+		} else if(sendRecoveryKeyCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(sendPasswordLinkCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				updateUI(ureq);
+			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
