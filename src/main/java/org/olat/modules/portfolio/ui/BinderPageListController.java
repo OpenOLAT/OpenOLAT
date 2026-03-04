@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -69,13 +70,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.Page;
-import org.olat.modules.ceditor.manager.PageSearchOptions;
-import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.CategoryToElement;
 import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.manager.PageSearchOptions;
+import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -696,7 +697,7 @@ public class BinderPageListController extends AbstractPageListController {
 		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback,
-				binder, false, preSelectedSection, true, null);
+				binder, false, preSelectedSection, true, null, getPublishingInformations());
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
@@ -778,6 +779,11 @@ public class BinderPageListController extends AbstractPageListController {
 			doEditAssignment(ureq, row);
 		}
 		return null;
+	}
+	
+	@Override
+	protected PublishingInformations getPublishingInformations() {
+		return portfolioService.getBinderPublishingInformations(binder);
 	}
 	
 	private void doImportExistingEntry(UserRequest ureq, Section currentSection) {

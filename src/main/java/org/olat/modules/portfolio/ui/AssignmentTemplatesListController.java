@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -74,7 +75,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 
 	private Binder binder;
 	private int counter = 0;
-	private BinderSecurityCallback secCallback;
+	private final BinderSecurityCallback secCallback;
 	
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl; 
@@ -191,8 +192,9 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	private void doCreateNewPage(UserRequest ureq) {
 		if(guardModalController(newPageCtrl)) return;
 		
+		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback,
-				binder, false, (Section)null, true, null);
+				binder, false, (Section)null, true, null, publishingInfos);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
@@ -203,8 +205,10 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	
 	private void doCreateNewPage(UserRequest ureq, Assignment assignment) {
 		if(guardModalController(newPageCtrl)) return;
-		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, assignment, true);
+
+		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, assignment,
+				true, publishingInfos);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

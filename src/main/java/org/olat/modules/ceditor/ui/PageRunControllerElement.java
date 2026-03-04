@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
+import org.olat.modules.ceditor.ControllerDelegateElement;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ValidatingController;
 
@@ -36,9 +37,9 @@ import org.olat.modules.ceditor.ValidatingController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRunControllerElement implements PageRunElement, ControllerEventListener, Disposable {
+public class PageRunControllerElement implements PageRunElement, ControllerDelegateElement, ControllerEventListener, Disposable {
 	
-	private Controller controller;
+	private final Controller controller;
 	
 	public PageRunControllerElement(Controller controller) {
 		this.controller = controller;
@@ -56,6 +57,11 @@ public class PageRunControllerElement implements PageRunElement, ControllerEvent
 		if(controller instanceof ControllerEventListener) {
 			((ControllerEventListener)controller).dispatchEvent(ureq, source, event);
 		}
+	}
+	
+	@Override
+	public Controller getController() {
+		return controller;
 	}
 
 	@Override

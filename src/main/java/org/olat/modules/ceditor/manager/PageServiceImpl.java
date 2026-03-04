@@ -746,7 +746,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 				chiefCtrl.addBodyCssClass("o_print_a4_144");
 				chiefCtrl.addCurrentCustomCSSToView(CustomCSS.printA4And144dpi());
 				return new PageRunController(uureq, wwControl, null,
-						BinderSecurityCallbackFactory.getReadOnlyCallback(), page, pageSettings, false);
+						BinderSecurityCallbackFactory.getReadOnlyCallback(), page, pageSettings, null, false);
 			};
 			PdfOutputOptions outputOptions = PdfOutputOptions.valueOf(MediaType.screen, Margin.NONE, new PageRange(1, 1));
 			pdfService.convert(identity, creator, wControl, outputOptions, out);

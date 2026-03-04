@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -345,7 +346,9 @@ public class SharedPagesController extends FormBasicController implements Activa
 		
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.full(null), false);
+		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage,
+				PageSettings.full(null), publishingInfos, false);
 		listenTo(pageCtrl);
 		
 		if(row.getIdentityKey() != null) {

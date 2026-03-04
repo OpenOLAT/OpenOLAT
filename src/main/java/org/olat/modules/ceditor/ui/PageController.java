@@ -28,14 +28,16 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.ceditor.ControllerDelegateElement;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.ui.component.PageFragmentsComponent;
 import org.olat.modules.ceditor.ui.model.PageFragment;
 
@@ -72,6 +74,12 @@ public class PageController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		fireEvent(ureq, event);
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void doDispose() {
@@ -96,6 +104,10 @@ public class PageController extends BasicController {
 				PageRunElement runElement = handler.getContent(ureq, getWindowControl(), element, renderingHints);
 				String cmpId = "cpt-" + (++counter);
 				fragments.add(new PageFragment(handler.getType(), cmpId, runElement, element));
+				
+				if(runElement instanceof ControllerDelegateElement delegate) {
+					listenTo(delegate.getController());
+				}
 			}
 		}
 		fragmentsCmp.setFragments(fragments);

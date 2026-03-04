@@ -92,8 +92,9 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 		Publisher publisher = subscriber.getPublisher();
+		Date latestNews = publisher.getLatestNewsDate();
 		Binder binder = binderDao.loadByKey(publisher.getResId());
-		if (isInkoveValid(binder, compareDate, publisher)) {
+		if (isInkoveValid(binder, compareDate, publisher) && compareDate.before(latestNews)) {
 			BinderSecurityCallback secCallback = null;
 			Identity identity = subscriber.getIdentity();
 			if(binderDao.isMember(binder, identity, ContentRoles.owner.name())) {

@@ -78,7 +78,7 @@ public class CoursePageRunController extends BasicController {
 			PageSettings settings = canEdit ? PageSettings.reduced(courseEntry, linkTreeModel, toolLinkTreeModel, false, false)
 					: PageSettings.noHeader(courseEntry);
 			settings.setSubIdent(courseNode.getIdent());
-			PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, false);
+			PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, null, false);
 			listenTo(pageCtrl);
 			mainVC.put("page", pageCtrl.getInitialComponent());
 			

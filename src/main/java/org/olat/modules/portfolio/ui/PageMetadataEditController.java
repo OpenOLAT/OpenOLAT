@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -134,6 +137,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private Binder currentBinder;
 	private Section currentSection;
 	private final BinderSecurityCallback secCallback;
+	private final PublishingInformations publishingInformations;
 	private Page pageDelegate;
 
 	private int counter;
@@ -149,11 +153,15 @@ public class PageMetadataEditController extends FormBasicController {
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private PageService pageService;
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	@Autowired
 	private ContentEditorFileStorage portfolioFileStorage;
 	@Autowired
@@ -162,13 +170,15 @@ public class PageMetadataEditController extends FormBasicController {
 	private TaxonomyService taxonomyService;
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
-			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection, Page pageDelegate) {
+			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection, Page pageDelegate,
+			PublishingInformations publishingInformations) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
 		this.pageDelegate = pageDelegate;
+		this.publishingInformations = publishingInformations;
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
@@ -197,11 +207,13 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
-			Binder currentBinder, boolean chooseBinder, Assignment assignmentTemplate, boolean chooseSection) {
+			Binder currentBinder, boolean chooseBinder, Assignment assignmentTemplate, boolean chooseSection,
+			PublishingInformations publishingInformations) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.currentBinder = currentBinder;
 		currentSection = null;
+		this.publishingInformations = publishingInformations;
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
@@ -217,12 +229,13 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection,
-			Page page, boolean editTitleAndSummary) {
+			Page page, PublishingInformations publishingInformations, boolean editTitleAndSummary) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 		this.page = page;
 		this.editTitleAndSummary = editTitleAndSummary;
+		this.publishingInformations = publishingInformations;
 		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		
 		this.currentBinder = currentBinder;
@@ -733,8 +746,13 @@ public class PageMetadataEditController extends FormBasicController {
 				}
 			}
 		}
-
+		
+		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
+		
+		if(publishingInformations != null) {
+			notificationsManager.markPublisherNews(publishingInformations.context(), null, false);
+		}
 	}
 	
 	private void saveDocuments(Page thePage, Assignment assignmentTemplate) {

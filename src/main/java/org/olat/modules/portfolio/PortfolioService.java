@@ -26,6 +26,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -706,4 +709,11 @@ public interface PortfolioService {
 	 * @return Page
 	 */
 	public Page linkPageBody(Page newPage, Page existingPage);
+	
+	
+	public SubscriptionContext getSubscriptionContext(BinderRef binder);
+	
+	public PublisherData getPublisherData(BinderRef binder);
+
+	public PublishingInformations getBinderPublishingInformations(BinderRef binder);
 }

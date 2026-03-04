@@ -34,6 +34,7 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -1053,10 +1054,15 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
+		PublishingInformations publishingInfos = getPublishingInformations();
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, publishingInfos, commentSecCallback);
 		listenTo(commentsCtrl);
 
 		commentsCtrl.scrollToCommentsArea();
+	}
+	
+	protected PublishingInformations getPublishingInformations() {
+		return null;
 	}
 	
 	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row, boolean newElement) {
@@ -1113,7 +1119,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		
 		boolean openInEditMode = newElement || (secCallback.canEditPage(reloadedPage)
 				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.full(null), openInEditMode);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage,
+				PageSettings.full(null), getPublishingInformations(), openInEditMode);
 		listenTo(pageCtrl);
 		
 		if(reloadedPage.getSection() != null) {
