@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -48,6 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class SubscriberDAOTest extends OlatTestCase {
+	
+	private static final Logger log = Tracing.createLoggerFor(SubscriberDAOTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -152,13 +156,14 @@ public class SubscriberDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Subscriber subscriber = notificationsManager.subscribe(id, publisher);
 		subscriber.setLatestEmailed(DateUtils.addDays(new Date(), -2));
-		notificationsManager.mergeSubscriber(subscriber);
+		subscriber = notificationsManager.mergeSubscriber(subscriber);
 		dbInstance.commitAndCloseSession();
 		
 		Date date = new Date();
 		Date maxCompareDate = notificationsManager.getDefaultCompareDate();
 		Date defaultCompareDate = notificationsManager.getCompareDateFromInterval("daily");
-		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 1000);
+		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 10000);
+		log.info("getIdentityWithNews subscribers found: {}", subscribers.size());
 		Assertions.assertThat(subscribers)
 			.containsAnyOf(subscriber);
 	}
@@ -178,9 +183,9 @@ public class SubscriberDAOTest extends OlatTestCase {
 		Subscriber subscriber1 = notificationsManager.subscribe(id1, publisher);
 		Subscriber subscriber2 = notificationsManager.subscribe(id2, publisher);
 		subscriber1.setLatestEmailed(DateUtils.addDays(new Date(), -2));
-		notificationsManager.mergeSubscriber(subscriber1);
+		subscriber1 = notificationsManager.mergeSubscriber(subscriber1);
 		subscriber2.setLatestEmailed(DateUtils.addDays(new Date(), -2));
-		notificationsManager.mergeSubscriber(subscriber2);
+		subscriber2 = notificationsManager.mergeSubscriber(subscriber2);
 		
 		Date lastMail = DateUtils.addDays(new Date(), -2);
 		subscriptionMailDao.create(id1, lastMail, null);
@@ -190,7 +195,8 @@ public class SubscriberDAOTest extends OlatTestCase {
 		Date date = new Date();
 		Date maxCompareDate = notificationsManager.getDefaultCompareDate();
 		Date defaultCompareDate = notificationsManager.getCompareDateFromInterval("daily");
-		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 1000);
+		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 10000);
+		log.info("getIdentityWithNewsNextMail subscribers found: {}", subscribers.size());
 		Assertions.assertThat(subscribers)
 			.containsAnyOf(subscriber1)
 			.doesNotContain(subscriber2);
@@ -214,18 +220,19 @@ public class SubscriberDAOTest extends OlatTestCase {
 		
 		Subscriber subscriber = notificationsManager.subscribe(id, publisher);
 		subscriber.setLatestEmailed(DateUtils.addDays(new Date(), -15));
-		notificationsManager.mergeSubscriber(subscriber);
+		subscriber = notificationsManager.mergeSubscriber(subscriber);
 		
 		Subscriber subscriberRef = notificationsManager.subscribe(idRef, publisher);
 		subscriberRef.setLatestEmailed(DateUtils.addDays(new Date(), -15));
-		notificationsManager.mergeSubscriber(subscriberRef);
+		subscriberRef = notificationsManager.mergeSubscriber(subscriberRef);
 		
 		dbInstance.commitAndCloseSession();
 		
 		Date date = new Date();
 		Date maxCompareDate = notificationsManager.getDefaultCompareDate();
 		Date defaultCompareDate = notificationsManager.getCompareDateFromInterval("daily");
-		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 1000);
+		List<Subscriber> subscribers = subscriberDao.getIdentityWithNews(date, defaultCompareDate, maxCompareDate, 0, 10000);
+		log.info("getIdentityWithNeverNews subscribers found: {}", subscribers.size());
 		Assertions.assertThat(subscribers)
 			.containsAnyOf(subscriberRef)
 			.doesNotContain(subscriber);
