@@ -51,6 +51,7 @@ public class CatalogCurriculumElementStructuredHeaderConfig extends CatalogCurri
 		
 		participantsAvailability = PARTICIPANTS_AVAILABILITY_NUM;
 		initOpenBookOffers();
+		initLeave();
 	}
 	
 	private void initOpenBookOffers() {
@@ -58,6 +59,7 @@ public class CatalogCurriculumElementStructuredHeaderConfig extends CatalogCurri
 		if (memberships.size() == 1) {
 			CurriculumElementMembership membership = memberships.get(0);
 			if (membership.isParticipant()) {
+				isParticipant = true;
 				openWithStatusCheck();
 				if (openAvailable && openEnabled) {
 					return;
@@ -82,6 +84,7 @@ public class CatalogCurriculumElementStructuredHeaderConfig extends CatalogCurri
 		searchParams.setIdentities(List.of(identity));
 		List<ResourceReservation> reservations =  CoreSpringFactory.getImpl(ACReservationDAO.class).loadReservations(searchParams);
 		if (!reservations.isEmpty()) {
+			isReservationAvailable = true;
 			openDisabledConfirmationPending();
 			return;
 		}

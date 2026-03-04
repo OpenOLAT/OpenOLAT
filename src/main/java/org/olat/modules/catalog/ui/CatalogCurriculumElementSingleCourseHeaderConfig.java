@@ -19,13 +19,11 @@
  */
 package org.olat.modules.catalog.ui;
 
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
@@ -35,11 +33,8 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
-import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
@@ -58,8 +53,6 @@ public class CatalogCurriculumElementSingleCourseHeaderConfig extends CatalogCur
 	private final RepositoryEntry repositoryEntry;
 	private final Roles roles;
 	private RepositoryEntrySecurity reSecurity;
-	private boolean isParticipant = false;
-	private boolean isReservationAvailable = false;
 	
 	public CatalogCurriculumElementSingleCourseHeaderConfig(CurriculumElement curriculumElement,
 			RepositoryEntry repositoryEntry, Identity identity, Roles roles) {
@@ -166,30 +159,6 @@ public class CatalogCurriculumElementSingleCourseHeaderConfig extends CatalogCur
 		}
 	}
 
-	private void initLeave() {
-		// Leave not allowed if not a participant
-		if (!isParticipant && !isReservationAvailable) {
-			return;
-		}
-		
-		// Leave only allowed before start
-		if (curriculumElement.getBeginDate() == null || DateUtils.getStartOfDay(curriculumElement.getBeginDate()).before(new Date())) {
-			return;
-		}
-		
-		List<Order> orders = acService.findOrders(identity, curriculumElement.getResource(),
-				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
-		if (orders.isEmpty()) {
-			return;
-		}
-		
-		leaveAvailable = true;
-		Price cancellationFee = acService.getCancellationFee(curriculumElement.getResource(), curriculumElement.getBeginDate(), orders);
-		if (cancellationFee != null) {
-			leaveWithCancellationFee = true;
-		}
-	}
-	
 	private void openWithStatusCheck(RepositoryEntry repositoryEntry, RepositoryEntryStatusEnum[] statusArray) {
 		if (RepositoryEntryStatusEnum.isInArray(repositoryEntry.getEntryStatus(), statusArray)) {
 			openEnabled();

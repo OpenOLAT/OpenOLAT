@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.invoice.ui;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -72,6 +73,8 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private final Identity bookedIdentity;
 	private BillingAddress billingAddress;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
@@ -214,6 +217,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 					order.setComment(commentEl.getValue());
 				}
 				order = acService.updateOrder(order);
+				dbInstance.intermediateCommit();
 			}
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
 		} else {

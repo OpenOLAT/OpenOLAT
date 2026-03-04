@@ -19,14 +19,19 @@
  */
 package org.olat.modules.catalog.ui;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 
@@ -39,6 +44,8 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 	protected final CurriculumElement curriculumElement;
 	protected final CurriculumService curriculumService;
 	protected final ACService acService;
+	protected boolean isParticipant = false;
+	protected boolean isReservationAvailable = false;
 
 	public CatalogCurriculumElementBasicHeaderConfig(CurriculumService curriculumService, ACService acService,
 			CurriculumElement curriculumElement, Identity identity) {
@@ -51,6 +58,28 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 	protected ParticipantsAvailabilityNum loadParticipantsAvailabilityNum() {
 		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(curriculumElement), true).get(curriculumElement.getKey());
 		return acService.getParticipantsAvailability(curriculumElement.getMaxParticipants(), numParticipants, false);
+	}
+
+	protected void initLeave() {
+		if (!isParticipant && !isReservationAvailable) {
+			return;
+		}
+
+		if (curriculumElement.getBeginDate() == null || DateUtils.getStartOfDay(curriculumElement.getBeginDate()).before(new Date())) {
+			return;
+		}
+
+		List<Order> orders = acService.findOrders(identity, curriculumElement.getResource(),
+				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		if (orders.isEmpty()) {
+			return;
+		}
+
+		leaveAvailable = true;
+		Price cancellationFee = acService.getCancellationFee(curriculumElement.getResource(), curriculumElement.getBeginDate(), orders);
+		if (cancellationFee != null) {
+			leaveWithCancellationFee = true;
+		}
 	}
 
 }
