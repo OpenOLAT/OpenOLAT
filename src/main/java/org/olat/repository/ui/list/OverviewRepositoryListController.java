@@ -34,8 +34,8 @@ import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeEvent;
 import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.scope.ScopeSelection;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
@@ -91,9 +91,9 @@ public class OverviewRepositoryListController extends BasicController implements
 	private final List<Scope> scopes;
 	private final VelocityContainer mainVC;
 	private ScopeSelection scopesSelection;
-	private BreadcrumbedStackedPanel entriesStackPanel;
-	private BreadcrumbedStackedPanel inPreparationStackPanel;
-	private BreadcrumbedStackedPanel implementationsListStackPanel;
+	private TooledStackedPanel entriesStackPanel;
+	private TooledStackedPanel inPreparationStackPanel;
+	private TooledStackedPanel implementationsListStackPanel;
 	
 	private Controller currentCtrl;
 	private RepositoryEntryListController entriesCtrl;
@@ -384,7 +384,8 @@ public class OverviewRepositoryListController extends BasicController implements
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			entriesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+			entriesStackPanel = new TooledStackedPanel("mystack", getTranslator(), this);
+			entriesStackPanel.setToolbarEnabled(false);
 			RepositoryEntryListConfig config = new RepositoryEntryListConfig(true, true, true,
 					new RepositoryEntryListPresets(false, true, true, true, true, true));
 			entriesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, config, "my", entriesStackPanel);
@@ -402,7 +403,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	
 	private ImplementationsListController doOpenImplementationsList(UserRequest ureq) {
 		if(implementationsListCtrl == null) {
-			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
+			implementationsListStackPanel = new TooledStackedPanel("myliststack", getTranslator(), this);
+			implementationsListStackPanel.setToolbarEnabled(false);
 
 			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(),
 					implementationsListStackPanel, asRoles, false, null, false, false);
@@ -422,7 +424,8 @@ public class OverviewRepositoryListController extends BasicController implements
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("InPreparation", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			inPreparationStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+			inPreparationStackPanel = new TooledStackedPanel("mystack", getTranslator(), this);
+			inPreparationStackPanel.setToolbarEnabled(false);
 			inPreparationCtrl = new InPreparationListController(ureq, bwControl, inPreparationStackPanel);
 			inPreparationStackPanel.pushController(translate("search.preparation"), inPreparationCtrl);
 			listenTo(inPreparationCtrl);
