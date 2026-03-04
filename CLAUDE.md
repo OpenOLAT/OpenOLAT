@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-OpenOlat is a web-based LMS (Learning Management System) built with Java 17+, Jakarta EE, Spring 6, Hibernate 6, and Apache Velocity. It uses a **server-centric** UI architecture — all state lives on the server, the browser receives HTML fragments via AJAX. There is no client-side framework.
+OpenOlat is a web-based LMS (Learning Management System) built with Java 17+, Jakarta EE, Spring 7, Hibernate 7, and Apache Velocity. It uses a **server-centric** UI architecture — all state lives on the server, the browser receives HTML fragments via AJAX. There is no client-side framework.
 
 - **License:** Apache 2.0, developed by frentix GmbH, Zurich, Switzerland
 - **Naming:** Always write "OpenOlat" in prose (not "OpenOLAT")
