@@ -61,6 +61,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -115,6 +117,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 	private CloseableModalController cmc;
 	private ReferencesController referencesCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
+	private ConfirmationController confirmRemoveElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CurriculumElementListController curriculumElementListController;
 	
@@ -306,6 +309,14 @@ implements Activateable2, FlexiTableComponentDelegate {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmRemoveElementCtrl == source) {
+			if(event == FormEvent.DONE_EVENT
+					&& confirmRemoveElementCtrl.getUserObject() instanceof CurriculumElementRow row) {
+				doRemoveCurriculumElement(row);
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -314,10 +325,12 @@ implements Activateable2, FlexiTableComponentDelegate {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(curriculumElementListController);
+		removeAsListenerAndDispose(confirmRemoveElementCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		curriculumElementListController = null;
+		confirmRemoveElementCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -393,6 +406,26 @@ implements Activateable2, FlexiTableComponentDelegate {
 		flc.add(detailsCtrl.getInitialFormItem());
 	}
 	
+	private void doConfirmRemoveCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		String message = translate("confirm.remove.implementation", row.getDisplayName());
+		
+		confirmRemoveElementCtrl = new ConfirmationController(ureq, getWindowControl(), message, null,
+				translate("remove"), ButtonType.submitPrimary, translate("cancel"), true);
+		confirmRemoveElementCtrl.setUserObject(row);
+		listenTo(confirmRemoveElementCtrl);
+		
+		String title = translate("confirm.remove.implementation.title", row.getDisplayName());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRemoveElementCtrl.getInitialComponent(),
+				true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doRemoveCurriculumElement(CurriculumElementRow row) {
+		CurriculumElement element = row.getCurriculumElement();
+		certificationProgramService.removeCurriculumElementToCertificationProgram(element);
+	}
+	
 	private void doCloseCurriculumElementDetails(CurriculumElementRow row) {
 		if(row.getDetailsController() == null) return;
 		removeAsListenerAndDispose(row.getDetailsController());
@@ -435,8 +468,13 @@ implements Activateable2, FlexiTableComponentDelegate {
 	
 	private class ToolsController extends BasicController {
 		
+		private Link removeElementLink;
+		
+		private final CurriculumElementRow elementRow;
+		
 		public ToolsController(UserRequest ureq, WindowControl wControl, CurriculumElementRow elementRow) {
 			super(ureq, wControl);
+			this.elementRow = elementRow;
 			
 			VelocityContainer mainVC = createVelocityContainer("tool_elements");
 			
@@ -447,13 +485,18 @@ implements Activateable2, FlexiTableComponentDelegate {
 			openCourseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_content_popup");
 			openCourseLink.setName(translate("open.new.tab"));
 			mainVC.put("open.element", openCourseLink);
-
+			
+			removeElementLink = LinkFactory.createLink("remove.element", "remove.element", "remove", "remove", getTranslator(), mainVC, this, Link.LINK);
+			removeElementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_remove");
 			putInitialPanel(mainVC);
 		}
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
+			if(removeElementLink == source) {
+				doConfirmRemoveCurriculumElement(ureq, elementRow);
+			}
 		}
 	}
 }
