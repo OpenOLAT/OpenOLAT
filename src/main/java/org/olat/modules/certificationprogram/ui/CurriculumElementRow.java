@@ -85,6 +85,10 @@ public class CurriculumElementRow implements CurriculumElementRef {
 		return curriculumElement.getEndDate();
 	}
 	
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
+	}
+	
 	public Long getCurriculumKey() {
 		return curriculum.getKey();
 	}
