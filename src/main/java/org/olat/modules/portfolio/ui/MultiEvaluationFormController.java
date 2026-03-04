@@ -74,6 +74,7 @@ import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormReportController;
 import org.olat.modules.forms.ui.LegendNameGenerator;
+import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.user.UserManager;
@@ -282,6 +283,9 @@ public class MultiEvaluationFormController extends BasicController {
 						segmentView.setVisible(true);
 					}
 				}
+				fireEvent(ureq, event);
+			} else if(event instanceof ProgressEvent progressEvent) {
+				fireEvent(ureq, progressEvent);
 			}
 		}
 		super.event(ureq, source, event);

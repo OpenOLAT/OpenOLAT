@@ -112,6 +112,7 @@ import org.olat.modules.ceditor.ui.event.ImportEvent;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.MediaCenterChooserController;
+import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
@@ -504,6 +505,10 @@ public class PageRunController extends BasicController implements TooledControll
 				doEditPage(ureq);
 			} else if(event instanceof EditPageMetadataEvent) {
 				doEditMetadata(ureq);
+			}
+		} else if(pageCtrl == source) {
+			if(event == Event.DONE_EVENT ||event instanceof ProgressEvent) {
+				markAsNews();
 			}
 		} else if(confirmPublishCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
