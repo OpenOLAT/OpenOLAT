@@ -750,10 +750,6 @@ public class RepositoryManager {
 					canLaunch = status == RepositoryEntryStatusEnum.published
 							|| status == RepositoryEntryStatusEnum.closed;
 				}
-				
-				if(!canLaunch && re.isPublicVisible() && !roles.isInviteeOnly()) {
-					canLaunch = acService.isAccessible(re, identity, Boolean.FALSE, false, null, false).isAccessible();
-				}
 			}
 
 			if (isAdministrator || isLearnRessourceManager || isAuthor){

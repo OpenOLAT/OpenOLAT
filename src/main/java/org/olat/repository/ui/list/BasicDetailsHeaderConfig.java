@@ -17,12 +17,11 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.catalog.ui;
+package org.olat.repository.ui.list;
 
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -35,6 +34,7 @@ import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvai
 public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 
 	protected final Identity identity;
+	protected String guestStartUrl;
 	protected ParticipantsAvailabilityNum participantsAvailability;
 	protected boolean openAvailable = false;
 	protected boolean openEnabled = false;
@@ -86,6 +86,11 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	@Override
 	public Identity getBookedIdentity() {
 		return identity;
+	}
+
+	@Override
+	public String getGuestStartUrl() {
+		return guestStartUrl;
 	}
 
 	@Override
@@ -176,6 +181,12 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	@Override
 	public boolean isAdministrativOpenEnabled() {
 		return administrativOpenAvailable;
+	}
+
+	public void hideOpenButtons() {
+		openAvailable = false;
+		bookAvailable = false;
+		administrativOpenAvailable = false;
 	}
 
 }

@@ -39,6 +39,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.curriculum.ui.CurriculumElementListConfig;
 import org.olat.modules.curriculum.ui.CurriculumElementListController;
 import org.olat.repository.RepositoryService;
@@ -57,7 +58,7 @@ public class ImplementationController extends BasicController {
 	
 	private final CurriculumElement rootElement;
 	
-	private ImplementationCurriculumElementInfosController infosCtrl;
+	private CurriculumElementInfosController infosCtrl;
 	private final ImplementationHeaderController headerCtrl;
 	private final CurriculumElementListController elementListCtrl;
 	
@@ -81,7 +82,7 @@ public class ImplementationController extends BasicController {
 		listenTo(headerCtrl);
 		mainVC.put("elementHeader", headerCtrl.getInitialComponent());
 		
-		CurriculumElementListConfig config = CurriculumElementListConfig.config(false, asRoles);
+		CurriculumElementListConfig config = CurriculumElementListConfig.config(false, true, asRoles);
 		elementListCtrl = new CurriculumElementListController(ureq, wControl, stackPanel,
 				getIdentity(), curriculum, rootElement, secCallback, config);
 		listenTo(elementListCtrl);
@@ -101,10 +102,6 @@ public class ImplementationController extends BasicController {
 				fireEvent(ureq, event);
 			} else if(event instanceof ImplementationEvent) {
 				doOpenDetails(ureq, rootElement);
-			}
-		} else if (source == infosCtrl) {
-			if (event == Event.DONE_EVENT) {
-				stackPanel.popUpToController(this);
 			}
 		} else if(elementListCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
@@ -126,7 +123,7 @@ public class ImplementationController extends BasicController {
 		OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		
-		infosCtrl = new ImplementationCurriculumElementInfosController(ureq, bwControl, curriculumElement, null, getIdentity());
+		infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, null, new BasicDetailsHeaderConfig(getIdentity()));
 		listenTo(infosCtrl);
 		addToHistory(ureq, infosCtrl);
 		

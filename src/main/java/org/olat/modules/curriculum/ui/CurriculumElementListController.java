@@ -80,6 +80,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
+import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -102,6 +103,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.OLATResource;
@@ -437,7 +439,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		FormLink startLink = null;
 		List<PriceMethod> types = new ArrayList<>();
 		if (isMember || resourcesOpenAccess.contains(row.getOlatResource())) {
-			startLink = uifactory.addFormLink("start_" + (++counter), "start", "start", null, null, Link.LINK);
+			startLink = uifactory.addFormLink("start_" + (++counter), "start", "open", null, null, Link.LINK);
 			startLink.setElementCssClass("o_start btn-block");
 			startLink.setCustomEnabledLinkCSS("o_start btn-block");
 			startLink.setIconRightCSS("o_icon o_icon_start");
@@ -490,15 +492,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		FormLink detailsLink = uifactory.addFormLink("details_" + (++counter), "details", "details", null, null, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("o_details");
 		detailsLink.setUserObject(row);
-		Long repoEntryKey = row.getRepositoryEntryKey();
-		String detailsUrl = null;
-		if(repoEntryKey != null) {
-			String businessPath = "[RepositoryEntry:" + repoEntryKey + "][Infos:0]";
-			detailsUrl = BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathString(businessPath);
-			detailsLink.setUrl(detailsUrl);
-		}
-		row.setDetailsLink(detailsLink, detailsUrl);
+		row.setDetailsLink(detailsLink, null);
 	}
 	
 	private void forgeMarkLink(CurriculumElementWithViewsRow row) {
@@ -684,29 +678,31 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 	
 	private void doOpenDetails(UserRequest ureq, CurriculumElementWithViewsRow row) {
-		// to be more consistent: course members see info page within the course, non-course members see it outside the course
-		if (row.isMember()) {
-			doOpen(ureq, row, "[Infos:0]");
-		} else {
-			removeAsListenerAndDispose(detailsCtrl);
-			
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		removeAsListenerAndDispose(detailsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
-			Long repoEntryKey = row.getRepositoryEntryKey();
-			RepositoryEntry entry = repositoryService.loadByKey(repoEntryKey);
-			if (repoEntryKey == null) {
-				showInfo("curriculum.element.empty");				
-			} else if(entry == null) {
-				showWarning("repositoryentry.not.existing");
+		Long repoEntryKey = row.getRepositoryEntryKey();
+		RepositoryEntry entry = repositoryService.loadByKey(repoEntryKey);
+		if (repoEntryKey == null) {
+			showInfo("curriculum.element.empty");
+		} else if(entry == null) {
+			showWarning("repositoryentry.not.existing");
+		} else {
+			BasicDetailsHeaderConfig infoConfig = null;
+			if (config.enhancedInfoHeader()) {
+				infoConfig = new CatalogRepositoryEntryHeaderConfig(entry, assessedIdentity, Roles.userRoles(), false);
+				infoConfig.hideOpenButtons();
 			} else {
-				detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
-				listenTo(detailsCtrl);
-				addToHistory(ureq, detailsCtrl);
-				
-				String displayName = row.getRepositoryEntryDisplayName();
-				stackPanel.pushController(displayName, detailsCtrl);	
+				infoConfig = new BasicDetailsHeaderConfig(assessedIdentity);
 			}
+			detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, infoConfig, false);
+			listenTo(detailsCtrl);
+			addToHistory(ureq, detailsCtrl);
+			
+			String displayName = row.getRepositoryEntryDisplayName();
+			stackPanel.pushController(displayName, detailsCtrl);	
 		}
 	}
 	

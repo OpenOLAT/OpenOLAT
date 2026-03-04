@@ -80,6 +80,11 @@ public class PreviewCurriculumElementHeaderConfig implements DetailsHeaderConfig
 	}
 
 	@Override
+	public String getGuestStartUrl() {
+		return null;
+	}
+
+	@Override
 	public boolean isOpenAvailable() {
 		return accessResult.isAccessible();
 	}

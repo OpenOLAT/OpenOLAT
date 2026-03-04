@@ -32,19 +32,25 @@ import org.olat.basesecurity.GroupRoles;
 public class CurriculumElementListConfig {
 	
 	private boolean preparationWarning;
+	private boolean enhancedInfoHeader;
 	private List<GroupRoles> asRoles;
 	
-	private CurriculumElementListConfig(boolean preparationWarning, List<GroupRoles> asRoles) {
+	private CurriculumElementListConfig(boolean preparationWarning, boolean enhancedInfoHeader, List<GroupRoles> asRoles) {
 		this.preparationWarning = preparationWarning;
+		this.enhancedInfoHeader = enhancedInfoHeader;
 		this.asRoles = asRoles;
 	}
 	
-	public static final CurriculumElementListConfig config(boolean preparationWarning, List<GroupRoles> asRoles) {
-		return new CurriculumElementListConfig(preparationWarning, asRoles);
+	public static final CurriculumElementListConfig config(boolean preparationWarning, boolean enhancedInfoHeader, List<GroupRoles> asRoles) {
+		return new CurriculumElementListConfig(preparationWarning, enhancedInfoHeader, asRoles);
 	}
 	
 	public boolean preparationWarning() {
 		return preparationWarning;
+	}
+	
+	public boolean enhancedInfoHeader() {
+		return enhancedInfoHeader;
 	}
 
 	public boolean participantsOnly() {

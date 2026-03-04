@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 

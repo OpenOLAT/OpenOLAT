@@ -5,7 +5,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,30 +17,32 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
+package org.olat.repository.ui.list;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
 
 /**
- * 
- * Initial date: 18 mars 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ * Initial date: Mar 3, 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumElementRuntimeDetailsController extends CurriculumElementInfosController {
-	
-	public CurriculumElementRuntimeDetailsController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			RepositoryEntry entry, Identity bookedIdentity) {
-		super(ureq, wControl, element, entry, bookedIdentity, null);
+public class GuestHeaderConfig extends BasicDetailsHeaderConfig {
+
+	public GuestHeaderConfig(RepositoryEntry entry, Identity identity) {
+		super(identity);
+		
+		if (entry.isPublicVisible()) {
+			AccessResult acResult = CoreSpringFactory.getImpl(ACService.class)
+					.isAccessible(entry, identity, Boolean.FALSE, true, null, false);
+			if (acResult.isAccessible()) {
+				openEnabled();
+			}
+		}
 	}
-	
-	@Override
-	protected void doStart(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
+
 }

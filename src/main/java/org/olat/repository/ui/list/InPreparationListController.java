@@ -78,9 +78,11 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementSingleCourseHeaderConfig;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementStructuredHeaderConfig;
+import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryInfosController;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -512,20 +514,27 @@ public class InPreparationListController extends FormBasicController implements 
 	private void doOpenDetails(UserRequest ureq, InPreparationRow row) {
 		if (row.getCurriculumElementKey() != null) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row::getCurriculumElementKey);
-			CurriculumElementType type = curriculumElement.getType();
 			RepositoryEntry entry = row.getRepositoryEntryKey() != null
 					? repositoryService.loadByKey(row.getRepositoryEntryKey())
 					: null;
-			// Show single course implementation in implementation info, course info otherwise
-			if(entry != null && (type == null || type.getMaxRepositoryEntryRelations() == -1 || !type.isSingleElement())) {
-				doOpenDetails(ureq, entry);
-			} else {
-				doOpenDetails(ureq, curriculumElement, entry);
-			}
+			doOpenDetails(ureq, curriculumElement, entry);
 		} else if (row.getRepositoryEntryKey() != null) {
 			RepositoryEntry entry = repositoryService.loadByKey(row.getRepositoryEntryKey());
-			doOpenDetails(ureq, entry);
+			CurriculumElement singleCourseImplementation = isInSingleCourseImplementation(() -> row.getRepositoryEntryKey());
+			if (singleCourseImplementation != null) {
+				doOpenDetails(ureq, singleCourseImplementation, entry);
+			} else {
+				doOpenDetails(ureq, entry);
+			}
 		} 
+	}
+	
+	private CurriculumElement isInSingleCourseImplementation(RepositoryEntryRef entry) {
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		if(elements.size() == 1 && elements.get(0).isSingleCourseImplementation()) {
+			return elements.get(0);
+		}
+		return null;
 	}
 	
 	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
@@ -535,7 +544,9 @@ public class InPreparationListController extends FormBasicController implements 
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry);
+			CatalogRepositoryEntryHeaderConfig config = new CatalogRepositoryEntryHeaderConfig(entry, getIdentity(),
+					ureq.getUserSession().getRoles(), false);
+			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry, config);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -554,7 +565,15 @@ public class InPreparationListController extends FormBasicController implements 
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, getIdentity(), null);
+			DetailsHeaderConfig config = null;
+			if (curriculumElement.isSingleCourseImplementation()) {
+				config = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry, getIdentity(),
+						ureq.getUserSession().getRoles());
+			} else {
+				config = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, getIdentity());
+			}
+			
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			

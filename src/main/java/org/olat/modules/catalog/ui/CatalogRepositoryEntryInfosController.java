@@ -44,10 +44,6 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	@Autowired
 	protected ACService acService;
-	
-	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, null);
-	}
 
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, DetailsHeaderConfig config) {
 		super(ureq, wControl, entry, false, false, config);

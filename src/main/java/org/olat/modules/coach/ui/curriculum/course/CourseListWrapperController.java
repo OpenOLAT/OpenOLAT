@@ -83,7 +83,7 @@ public class CourseListWrapperController extends BasicController implements Acti
 			CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
 			List<CurriculumRef> curriculumRefs, Object statEntry) {
 		super(ureq, wControl);
-
+		
 		this.stackPanel = stackPanel;
 		this.mentee = mentee;
 		this.curriculumSecurityCallback = curriculumSecurityCallback;

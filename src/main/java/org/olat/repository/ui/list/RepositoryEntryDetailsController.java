@@ -109,7 +109,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			mainVC.put("header", resourceInfoHeaderCtrl.getInitialComponent());
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, true);
 		} else {
-			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, closeTabOnLeave, config);
+			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, closeTabOnLeave, config);
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, guestOnly);

@@ -301,7 +301,7 @@ public class CatalogRepositoryEntryHeaderConfigTest extends OlatTestCase {
 	}
 	
 	private DetailsHeaderConfig sut(RepositoryEntry repositoryEntry, Identity identity) {
-		return new CatalogRepositoryEntryHeaderConfig(repositoryEntry, identity, Roles.userRoles());
+		return new CatalogRepositoryEntryHeaderConfig(repositoryEntry, identity, Roles.userRoles(), true);
 	}
 
 	private RepositoryEntry createRepositoryEntry(RepositoryEntryStatusEnum status) {

@@ -86,22 +86,17 @@ public class CurriculumElementInfosController extends BasicController {
 	private LectureService lectureService;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			RepositoryEntry entry, Identity bookedIdentity, DetailsHeaderConfig headerConfig) {
+			RepositoryEntry entry, DetailsHeaderConfig headerConfig) {
 		super(ureq, wControl, Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale()));
 		// The translator is explicitly set so that it is also available in the subclasses.
 		this.element = element;
 		this.entry = entry;
+		bookedIdentity = headerConfig.getBookedIdentity();
 		
 		// Reset the velocity root, so that the children find the template
 		setVelocityRoot(Util.getPackageVelocityRoot(CurriculumElementInfosController.class));
 		mainVC = createVelocityContainer("curriculum_element_infos");
 		putInitialPanel(mainVC);
-		
-		this.bookedIdentity = bookedIdentity != null ? bookedIdentity : getIdentity();
-		boolean isMember = false;
-		if (this.bookedIdentity != null) {
-			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(this.bookedIdentity)).isEmpty();
-		}
 		
 		List<LectureBlock> lectureBlocks = List.of();
 		if (lectureModule.isEnabled()) {
@@ -111,14 +106,8 @@ public class CurriculumElementInfosController extends BasicController {
 			lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
 		}
 		
-		
-		
 		// Header
-		if (headerConfig != null) {
-			headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), headerConfig, element);
-		} else {
-			headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, entry, this.bookedIdentity, isMember);
-		}
+		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), headerConfig, element);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
@@ -220,7 +209,7 @@ public class CurriculumElementInfosController extends BasicController {
 	}
 	
 	protected void doStart(UserRequest ureq) {
-		// Reload membership, mayne auto-booked
+		// Reload membership, maybe auto-booked
 		if (bookedIdentity == null && !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity)).isEmpty()) {
 			return;
 		}

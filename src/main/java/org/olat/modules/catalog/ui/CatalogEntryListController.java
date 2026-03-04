@@ -143,7 +143,9 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
+import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
+import org.olat.repository.ui.list.GuestHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -1019,10 +1021,14 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			DetailsHeaderConfig config = null;
-			if (!searchParams.isGuestOnly() && !searchParams.isWebPublish()) {
+			DetailsHeaderConfig config;
+			if (searchParams.isGuestOnly()) {
+				config = new GuestHeaderConfig(entry, searchParams.getMember());
+			} else if (searchParams.isWebPublish()) {
+				config = new WebPublishHeaderConfig(entry);
+			} else {
 				Roles roles = getIdentity() != null && getIdentity().equals(searchParams.getMember())? ureq.getUserSession().getRoles(): Roles.userRoles();
-				config = new CatalogRepositoryEntryHeaderConfig(entry, searchParams.getMember(), roles);
+				config = new CatalogRepositoryEntryHeaderConfig(entry, searchParams.getMember(), roles, true);
 			}
 			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry, config);
 			listenTo(infosCtrl);
@@ -1033,6 +1039,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			String windowTitle = translate("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();
 		}
@@ -1046,15 +1053,19 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			RepositoryEntry entry = getSingleCourse(curriculumElement);
 			DetailsHeaderConfig config = null;
-			if (!searchParams.isGuestOnly() && !searchParams.isWebPublish()) {
-				if (curriculumElement.isSingleCourseImplementation()) {
-					Roles roles = getIdentity() != null && getIdentity().equals(searchParams.getMember())? ureq.getUserSession().getRoles(): Roles.userRoles();
-					config = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry, searchParams.getMember(), roles);
-				} else {
-					config = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, searchParams.getMember());
-				}
+			if (searchParams.isWebPublish()) {
+				config = new WebPublishHeaderConfig(curriculumElement);
+			} else if (searchParams.isGuestOnly()) {
+				// Should not occur since only courses are accessible for guests
+				config = new BasicDetailsHeaderConfig(getIdentity());
+			} else if (curriculumElement.isSingleCourseImplementation()) {
+				// If book on behalf act only with user role.
+				Roles roles = getIdentity() != null && getIdentity().equals(searchParams.getMember())? ureq.getUserSession().getRoles(): Roles.userRoles();
+				config = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry, searchParams.getMember(), roles);
+			} else {
+				config = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, searchParams.getMember());
 			}
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, searchParams.getMember(), config);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			

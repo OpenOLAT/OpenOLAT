@@ -93,6 +93,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.catalog.ui.BookedEvent;
+import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.LifecycleModule;
@@ -547,7 +548,7 @@ public class RepositoryEntryListController extends FormBasicController
 			// Need to stay in the list and not try to open the course
 			// because it's a return path for PayPal after a successful
 			// payment
-			doOpenDetailsInList(ureq, row);
+			doOpenDetails(ureq, row);
 		}
 	}
 
@@ -559,37 +560,33 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
 		if(source instanceof RatingFormItem ratingItem) {
-			RepositoryEntryRow row = (RepositoryEntryRow)ratingItem.getUserObject();
-			doOpenDetails(ureq, row, "[Ratings:0]");
+			if (ratingItem.getUserObject() instanceof RepositoryEntryRow row) {
+				doOpenDetails(ureq, row);
+			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			
-			if("mark".equals(cmd)) {
-				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				boolean marked = doMark(ureq, row);
-				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark" : "o_icon o_icon_bookmark_add");
-				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
-				link.getComponent().setDirty(true);
-				row.setMarked(marked);
-			} else if ("start".equals(cmd)){
-				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpen(ureq, row, null);
-			} else if ("details".equals(cmd)){
-				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row, null);
-			} else if ("select".equals(cmd)) {
-				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				if (row.isMember()) {
-					doOpen(ureq, row, null);					
-				} else {
-					doOpenDetails(ureq, row, null);
+			if (link.getUserObject() instanceof RepositoryEntryRow row) {
+				if("mark".equals(cmd)) {
+					boolean marked = doMark(ureq, row);
+					link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark" : "o_icon o_icon_bookmark_add");
+					link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+					link.getComponent().setDirty(true);
+					row.setMarked(marked);
+				} else if ("start".equals(cmd)){
+					doOpen(ureq, row, null);
+				} else if ("details".equals(cmd)){
+					doOpenDetails(ureq, row);
+				} else if ("select".equals(cmd)) {
+					if (row.isMember()) {
+						doOpen(ureq, row, null);	
+					} else {
+						doOpenDetails(ureq, row);
+					}
+				} else if ("comments".equals(cmd)){
+					doOpenDetails(ureq, row);
+				} else if ("levels".equals(cmd)){
+					doOpenDetails(ureq, row);
 				}
-			} else if ("comments".equals(cmd)){
-				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row, "[Comments:0]");
-			} else if ("levels".equals(cmd)){
-				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row, "[Taxonomy:0]");
 			}
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
@@ -599,7 +596,7 @@ public class RepositoryEntryListController extends FormBasicController
 					if (row.isMember()) {
 						doOpen(ureq, row, null);					
 					} else {
-						doOpenDetails(ureq, row, null);
+						doOpenDetails(ureq, row);
 					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
@@ -648,7 +645,7 @@ public class RepositoryEntryListController extends FormBasicController
 								if (row.isMember()) {
 									doOpen(ureq, row, null);					
 								} else {
-									doOpenDetails(ureq, row, null);
+									doOpenDetails(ureq, row);
 								}
 							}
 						}
@@ -746,21 +743,8 @@ public class RepositoryEntryListController extends FormBasicController
 			showError("cif.error.corrupted");
 		}
 	}
-	
-	protected void doOpenDetails(UserRequest ureq, RepositoryEntryRow row, String additionalBusinessPath) {
-		// to be more consistent: course members see info page within the course, non-course members see it outside the course
-		if (row.isMember()) {
-			String path = "[Infos:0]";
-			if(StringHelper.containsNonWhitespace(additionalBusinessPath)) {
-				path += additionalBusinessPath;
-			}
-			doOpen(ureq, row, path);
-		} else {
-			doOpenDetailsInList(ureq, row);
-		}
-	}
 
-	private void doOpenDetailsInList(UserRequest ureq, RepositoryEntryRow row) {
+	private void doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {
 		doCloseDetails(false);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", row.getKey());
@@ -770,7 +754,13 @@ public class RepositoryEntryListController extends FormBasicController
 		if(entry == null) {
 			showWarning("repositoryentry.not.existing");
 		} else {
-			detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
+			DetailsHeaderConfig config;
+			if (ureq.getUserSession().getRoles().isGuestOnly()) {
+				config = new GuestHeaderConfig(entry, getIdentity());
+			} else {
+				config = new CatalogRepositoryEntryHeaderConfig(entry, getIdentity(), ureq.getUserSession().getRoles(), false);
+			}
+			detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, config, false);
 			listenTo(detailsCtrl);
 			addToHistory(ureq, detailsCtrl);
 			

@@ -94,6 +94,7 @@ import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -576,7 +577,7 @@ public class CurriculumElementListController extends FormBasicController impleme
             } else if (entry == null) {
                 showWarning("repositoryentry.not.existing");
             } else {
-                detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
+                detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, new BasicDetailsHeaderConfig(getIdentity()), false);
                 listenTo(detailsCtrl);
                 addToHistory(ureq, detailsCtrl);
 

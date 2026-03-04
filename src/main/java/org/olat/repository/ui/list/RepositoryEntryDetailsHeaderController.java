@@ -19,9 +19,6 @@
  */
 package org.olat.repository.ui.list;
 
-import java.util.List;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -29,9 +26,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Identity;
-import org.olat.core.id.OrganisationRef;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
@@ -43,16 +37,10 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.ui.AccessDeniedFactory;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
-import org.olat.repository.ui.AccessDeniedFactory.AccessDeniedMessage;
 import org.olat.repository.ui.RepositoyUIFactory;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.ResourceReservation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,7 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeaderController {
 
 	private final RepositoryEntry entry;
-	private final boolean isMember;
 	private final boolean closeTabOnLeave;
 	
 	private DialogBoxController leaveDialogBox;
@@ -77,10 +64,9 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	private BusinessGroupService businessGroupService;
 
 	public RepositoryEntryDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isMember, boolean closeTabOnLeave, DetailsHeaderConfig config) {
+			boolean closeTabOnLeave, DetailsHeaderConfig config) {
 		super(ureq, wControl, config);
 		this.entry = entry;
-		this.isMember = isMember;
 		this.closeTabOnLeave = closeTabOnLeave;
 		
 		init(ureq);
@@ -150,116 +136,6 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Override
 	protected String getLeaveText(boolean withFee) {
 		return translate("sign.out");
-	}
-
-	@Override
-	protected boolean isPreview() {
-		return false;
-	}
-	
-	@Override
-	protected void initAccess(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles() == null) {
-			initOffers(ureq, false, Boolean.TRUE);
-			return;
-		}
-		
-		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
-		boolean guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		boolean inviteeOnly  = ureq.getUserSession().getRoles().isInviteeOnly();
-		
-		if (!guestOnly && reSecurity.isParticipant() && repositoryService.isParticipantAllowedToLeave(entry)) {
-			startCtrl.getLeaveLink().setVisible(true);
-		}
-		
-		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
-			startCtrl.getInitialComponent().setVisible(true);
-		} else {
-			if (reSecurity.canLaunch()) {
-				startCtrl.getInitialComponent().setVisible(true);
-			} else if (isMember && acService.isAccessRefusedByStatus(entry, getIdentity())) {
-				startCtrl.getInitialComponent().setVisible(true);
-				startCtrl.getStartLink().setEnabled(false);
-				
-				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage();
-				setWarning(translate(accessDeniedMessage.messageI18nKey()), translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
-			} else if (isMember || reSecurity.isMasterCoach()) {
-				startCtrl.getInitialComponent().setVisible(true);
-				startCtrl.getStartLink().setEnabled(false);
-				
-				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage();
-				setWarning(translate(accessDeniedMessage.messageI18nKey()), translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
-			} else if(inviteeOnly) {
-				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
-			} else if (!isMember && entry.isPublicVisible()) {
-				ResourceReservation reservation = acService.getReservation(getIdentity(), entry.getOlatResource());
-				if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())
-						|| reservation != null) {
-					if(acService.canReservationBeSkipped(getIdentity(), reservation)) {
-						// Has cancelled the payment process and start it again
-						initOffers(ureq, guestOnly, null);
-					} else {
-						startCtrl.getInitialComponent().setVisible(true);
-						startCtrl.getStartLink().setEnabled(false);
-						showInfoMessage(translate("access.denied.not.accepted.yet"));
-					}
-				} else {
-					initOffers(ureq, guestOnly, null);
-				}
-			} else if (guestOnly) {
-				showAccessDenied(AccessDeniedFactory.createNoGuestAccess(ureq, getWindowControl()));
-			} else if (!AccessDeniedFactory.isNotInAuthorOrganisation(entry, ureq.getUserSession().getRoles())) {
-				showAccessDenied(AccessDeniedFactory.createNotInAuthorOrganisation(ureq, getWindowControl(), getIdentity()));
-			} else if (!reSecurity.isMember()) {
-				showAccessDenied(AccessDeniedFactory.createNotMember(ureq, getWindowControl(), entry));
-			} else {
-				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
-			}
-		}
-	}
-
-	private void initOffers(UserRequest ureq, boolean guestOnly, Boolean webPublish) {
-		if (webPublish != null && webPublish.booleanValue()) {
-			boolean created = showGuestStartLink();
-			if (created) {
-				return;
-			}
-		}
-		
-		AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, webPublish, false);
-		if (acResult.isAccessible()) {
-			startCtrl.getInitialComponent().setVisible(true);
-		} else if (!acResult.getAvailableMethods().isEmpty()) {
-			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-				startCtrl.getInitialComponent().setVisible(true);
-				startCtrl.setAutoBooking(true);
-			} else {
-				showOffers(ureq, acResult.getAvailableMethods(), false, webPublish != null && webPublish, getIdentity());
-			}
-		} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
-			showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
-		} else {
-			showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
-		}
-	}
-	
-	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
-		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
-		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
-	}
-	
-	private boolean showGuestStartLink() {
-		if (acService.isGuestAccessible(entry, true)) {
-			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
-			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath) + "?guest=true";
-			
-			startCtrl.getInitialComponent().setVisible(true);
-			startCtrl.getStartLink().setVisible(false);
-			startCtrl.getGuestStartLink().setVisible(true);
-			startCtrl.getGuestStartLink().setUrl(url);
-			return true;
-		}
-		return false;
 	}
 	
 	@Override

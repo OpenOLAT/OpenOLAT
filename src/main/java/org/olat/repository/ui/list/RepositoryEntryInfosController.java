@@ -23,11 +23,14 @@ import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.DTab;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -42,8 +45,8 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 	private final boolean inRuntime;
 
 	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean inRuntime) {
-		super(ureq, wControl, entry, false, true, null);
+			DetailsHeaderConfig config, boolean inRuntime) {
+		super(ureq, wControl, entry, false, true, config);
 		this.inRuntime = inRuntime;
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
@@ -56,6 +59,20 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
 			try {
+				// Close the tab if open so that the user rights are reloaded.
+				OLATResourceable ores = OLATResourceManager.getInstance().findResourceable(
+						getEntry().getOlatResource().getResourceableId(),
+						getEntry().getOlatResource().getResourceableTypeName());
+				if (ores != null) {
+					OLATResourceable reOres = OresHelper.clone(getEntry());
+					DTabs dtabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+					if( dtabs != null) {
+						DTab dt = dtabs.getDTab(reOres);
+						if (dt != null) {
+							dtabs.removeDTab(ureq, dt);
+						}
+					}
+				}
 				String businessPath = "[RepositoryEntry:" + getEntry().getKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			} catch (CorruptedCourseException e) {

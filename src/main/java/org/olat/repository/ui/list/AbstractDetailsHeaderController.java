@@ -121,11 +121,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			mainVC.contextPut("educationalType", educationalType);
 		}
 		
-		if (config != null) {
-			initByConfig(ureq);
-		} else {
-			initAccess(ureq);
-		}
+		initByConfig(ureq);
 	}
 	
 	protected abstract String getIconCssClass();
@@ -141,15 +137,20 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract String getPendingMessageElementName();
 	protected abstract String getLeaveText(boolean withFee);
 	
-	protected abstract boolean isPreview();
-	protected abstract void initAccess(UserRequest ureq);
 	protected abstract String getStartLinkText();
 	protected abstract boolean tryAutoBooking(UserRequest ureq);
 	protected abstract Long getResourceKey();
 	
-
-
 	private void initByConfig(UserRequest ureq) {
+		// Guest start
+		if (StringHelper.containsNonWhitespace(config.getGuestStartUrl())) {
+			startCtrl.getInitialComponent().setVisible(true);
+			startCtrl.getStartLink().setVisible(false);
+			startCtrl.getGuestStartLink().setVisible(true);
+			startCtrl.getGuestStartLink().setUrl(config.getGuestStartUrl());
+			return;
+		}
+
 		// Start
 		startCtrl.getStartLink().setVisible(config.isOpenAvailable());
 		startCtrl.getStartLink().setEnabled(config.isOpenEnabled());
@@ -219,7 +220,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			return;
 		}
 		
-		offersCtrl = new OffersController(ureq, getWindowControl(), bookedIdentity, offers, webPublish, false, isPreview());
+		offersCtrl = new OffersController(ureq, getWindowControl(), bookedIdentity, offers, webPublish, false, config.isOffersPreview());
 		listenTo(offersCtrl);
 		mainVC.put("offers", offersCtrl.getInitialComponent());
 	}

@@ -35,8 +35,10 @@ public interface DetailsHeaderConfig {
 	
 	Identity getBookedIdentity();
 	
+	String getGuestStartUrl();
+
 	boolean isOpenAvailable();
-	
+
 	boolean isOpenEnabled();
 	
 	boolean isBookAvailable();

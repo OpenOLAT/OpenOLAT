@@ -37,9 +37,12 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.accesscontrol.Offer;
 
@@ -67,13 +70,24 @@ public class AccessDeniedFactory {
 		return new AccessDeniedMessage("access.denied.preparation", "access.denied.preparation.hint", null);
 	}
 	
-	public static Controller createRepositoryEntryStatusNotPublished(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		// The controller (header) checks the conditions again.
-		return new RepositoryEntryInfosController(ureq, wControl, entry, true);
+	public static Controller createRepositoryEntryStatusNotPublished(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, RepositoryEntry entry, boolean participant) {
+		if (curriculumElement != null) {
+			NotPublishedYetConfig config = new NotPublishedYetConfig(null, ureq.getIdentity(), participant);
+			return new CurriculumElementInfosController(ureq, wControl, curriculumElement, null, config);
+		}
+		NotPublishedYetConfig config = new NotPublishedYetConfig(entry, ureq.getIdentity(), participant);
+		return new RepositoryEntryInfosController(ureq, wControl, entry, config, true);
 	}
 
-	public static Controller createBookingPending(UserRequest ureq, WindowControl wControl) {
-		return new AccessDeniedController(ureq, wControl, "access.denied.pending", "access.denied.pending.hint", null);
+	public static Controller createBookingPending(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, RepositoryEntry entry, boolean participant) {
+		if (curriculumElement != null) {
+			AccessPendingConfig config = new AccessPendingConfig(null, ureq.getIdentity(), participant);
+			return new CurriculumElementInfosController(ureq, wControl, curriculumElement, null, config);
+		}
+		AccessPendingConfig config = new AccessPendingConfig(entry, ureq.getIdentity(), participant);
+		return new RepositoryEntryInfosController(ureq, wControl, entry, config, true);
 	}
 
 	public static Controller createNotMember(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
@@ -153,5 +167,29 @@ public class AccessDeniedFactory {
 	}
 	
 	public record AccessDeniedMessage(String messageI18nKey, String hintI18nKey, String[] hintArgs) {}
+	
+	private final static class NotPublishedYetConfig extends BasicDetailsHeaderConfig {
+
+		public NotPublishedYetConfig(RepositoryEntry repositoryEntry, Identity identity, boolean participant) {
+			super(identity);
+			notPublishedYetMessage = true;
+			if (repositoryEntry != null && participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
+				leaveAvailable = true;
+			}
+		}
+		
+	}
+	
+	private final static class AccessPendingConfig extends BasicDetailsHeaderConfig {
+
+		public AccessPendingConfig(RepositoryEntry repositoryEntry, Identity identity, boolean participant) {
+			super(identity);
+			confirmationPendingMessage = true;
+			if (repositoryEntry != null &&  participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
+				leaveAvailable = true;
+			}
+		}
+		
+	}
 
 }

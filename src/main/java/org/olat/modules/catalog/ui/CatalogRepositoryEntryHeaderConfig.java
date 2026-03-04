@@ -27,6 +27,7 @@ import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
@@ -45,10 +46,12 @@ public class CatalogRepositoryEntryHeaderConfig extends BasicDetailsHeaderConfig
 	
 	private final RepositoryEntry repositoryEntry;
 	private final RepositoryEntrySecurity reSecurity;
+	private final boolean withOwnerCoachMessage;
 	
-	public CatalogRepositoryEntryHeaderConfig(RepositoryEntry repositoryEntry, Identity identity, Roles roles) {
+	public CatalogRepositoryEntryHeaderConfig(RepositoryEntry repositoryEntry, Identity identity, Roles roles, boolean withOwnerCoachMessage) {
 		super(identity);
 		this.repositoryEntry = repositoryEntry;
+		this.withOwnerCoachMessage = withOwnerCoachMessage;
 		participantsAvailability = PARTICIPANTS_AVAILABILITY_NUM;
 		
 		reSecurity = CoreSpringFactory.getImpl(RepositoryManager.class).isAllowed(identity, roles, repositoryEntry);
@@ -77,7 +80,9 @@ public class CatalogRepositoryEntryHeaderConfig extends BasicDetailsHeaderConfig
 				openWithStatusCheck(repositoryEntry, RepositoryEntryStatusEnum.preparationToClosed());
 			}
 			
-			ownerCoachMessage = openAvailableBefore != openAvailable || openEnabledBefore != openEnabled;
+			if (withOwnerCoachMessage) {
+				ownerCoachMessage = openAvailableBefore != openAvailable || openEnabledBefore != openEnabled;
+			}
 		}
 		
 		if (openAvailable) {

@@ -19,7 +19,6 @@
  */
 package org.olat.course.site;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.Invitation;
@@ -42,10 +41,14 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.UserSession;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
+import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -53,9 +56,16 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.AccessDeniedFactory;
+import org.olat.repository.ui.list.DetailsHeaderConfig;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 
 /**
  * <h3>Description:</h3>
@@ -115,19 +125,60 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			reSecurity = rm.isAllowed(ureq, re);
 		}
 
+		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		if (!reSecurity.canLaunch()) {
 			if(re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				return AccessDeniedFactory.createRepositoryStatusClosed(ureq, wControl);
 			} else if (reSecurity.isMember() && CoreSpringFactory.getImpl(ACService.class).isAccessRefusedByStatus(re, usess.getIdentity())) {
-				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re);
+				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, curriculumElement, re, reSecurity.isParticipant());
 			} else if (reSecurity.isMember() || reSecurity.isMasterCoach()) {
-				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re);
-			} else if (isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
-				reSecurity = rm.isAllowed(ureq, re);
-			} else if (roles.isGuestOnly()) {
+				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, curriculumElement, re, reSecurity.isParticipant());
+			}
+		}
+		
+		ACService acService = CoreSpringFactory.getImpl(ACService.class);
+		if (!reSecurity.canLaunch() && !reSecurity.isMember() && !roles.isInviteeOnly() && !roles.isGuestOnly()) {
+			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(re);
+			List<OLATResource> resources = curriculumElements.stream().map(CurriculumElement::getResource).toList();
+			SearchReservationParameters searchParams = new SearchReservationParameters(resources);
+			searchParams.setIdentities(List.of(ureq.getIdentity()));
+			List<ResourceReservation> reservations = acService.getReservations(searchParams);
+			if (!reservations.isEmpty()) {
+				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				return AccessDeniedFactory.createBookingPending(ureq, wControl, curriculumElement, re, reSecurity.isParticipant());
+			}
+		}
+		
+		if (!reSecurity.canLaunch() && !reSecurity.isMember() && !roles.isInviteeOnly() && re.isPublicVisible()
+				&& re.getRuntimeType() == RepositoryEntryRuntimeType.standalone) {
+			if (acService.isAccessToResourcePending(re.getOlatResource(), ureq.getIdentity())) {
+				return AccessDeniedFactory.createBookingPending(ureq, wControl, null, re, reSecurity.isParticipant());
+			}
+			AccessResult acResult = acService.isAccessible(re, ureq.getIdentity(), Boolean.FALSE, roles.isGuestOnly(), null, false);
+			if (!acResult.isAccessible()) {
+				if (!acResult.getAvailableMethods().isEmpty()) {
+					boolean autoBooked = tryAutoBooking(ureq, acService, acResult);
+					if (autoBooked) {
+						reSecurity = rm.isAllowed(ureq, re);
+					} else {
+						DetailsHeaderConfig config = new CatalogRepositoryEntryHeaderConfig(re, ureq.getIdentity(), roles, true);
+						return new RepositoryEntryInfosController(ureq, wControl, re, config, false);
+					}
+				} else {
+					List<? extends OrganisationRef> offerOrganisations = acService.getOfferOrganisations(ureq.getIdentity());
+					List<Offer> offersNotInRange = acService.getOffers(re, true, false, null, true, null, offerOrganisations);
+					if (!offersNotInRange.isEmpty()) {
+						return AccessDeniedFactory.createOfferNotNow(ureq, wControl, offersNotInRange);
+					}
+				}
+			}
+		}
+		
+		if (!reSecurity.canLaunch()) {
+			 if (roles.isGuestOnly()) {
 				return AccessDeniedFactory.createNoGuestAccess(ureq, wControl);
-			} else if (!getOffersNowNotInRange(re, ureq.getIdentity(), roles).isEmpty()) {
-				return AccessDeniedFactory.createOfferNotNow(ureq, wControl, getOffersNowNotInRange(re, ureq.getIdentity(), roles));
 			} else if (AccessDeniedFactory.isNotInAuthorOrganisation(re, roles)) {
 				return AccessDeniedFactory.createNotInAuthorOrganisation(ureq, wControl, ureq.getIdentity());
 			} else if (!reSecurity.isMember()) {
@@ -171,20 +222,25 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return hasInvitation;
 	}
 	
-	private boolean isPublicVisible(RepositoryEntry re, RepositoryEntrySecurity reSecurity, Identity identity, Roles roles) {
-		if (re.isPublicVisible() && !roles.isInviteeOnly()) {
-			AccessResult accessResult = CoreSpringFactory.getImpl(ACService.class).isAccessible(re, identity, reSecurity.isMember(), roles.isGuestOnly(), null, true);
-			return accessResult.isAccessible() || !accessResult.getAvailableMethods().isEmpty();
+	private boolean tryAutoBooking(UserRequest ureq, ACService acService, AccessResult acResult) {
+		if(acResult.getAvailableMethods().size() == 1) {
+			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
+			if(offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
+				acResult = acService.accessResource(ureq.getIdentity(), offerAccess, OrderStatus.PAYED, null, ureq.getIdentity());
+				 if(acResult.isAccessible()) {
+					 return true;
+				 }
+			}
 		}
 		return false;
 	}
 	
-	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity, Roles roles) {
-		if (re.isPublicVisible() && !roles.isInviteeOnly()) {
-			List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
-			return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
+	private CurriculumElement isInSingleCourseImplementation(CurriculumService curriculumService, RepositoryEntry entry) {
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		if(elements.size() == 1 && elements.get(0).isSingleCourseImplementation()) {
+			return elements.get(0);
 		}
-		return Collections.emptyList();
+		return null;
 	}
 
 	@Override
