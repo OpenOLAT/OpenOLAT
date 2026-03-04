@@ -428,7 +428,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 	
 	private void doRemoveCurriculumElement(CurriculumElementRow row) {
 		CurriculumElement element = row.getCurriculumElement();
-		certificationProgramService.removeCurriculumElementToCertificationProgram(element);
+		certificationProgramService.removeCurriculumElementToCertificationProgram(element, getIdentity());
 	}
 	
 	private void doCloseCurriculumElementDetails(CurriculumElementRow row) {
