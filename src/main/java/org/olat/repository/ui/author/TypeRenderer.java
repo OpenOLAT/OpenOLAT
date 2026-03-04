@@ -49,21 +49,33 @@ public class TypeRenderer implements FlexiCellRenderer {
 
 		String type = null;
 		if (cellValue instanceof RepositoryEntryShort repositoryEntry) { // add image and typename code
-			type = repositoryEntry.getResourceType();
+			type = NewControllerFactory.translateResourceableTypeName(
+					repositoryEntry.getResourceType(),
+					translator.getLocale());
 		} else if(cellValue instanceof RepositoryEntry repositoryEntry) {
-			type = repositoryEntry.getOlatResource().getResourceableTypeName();
+			type = NewControllerFactory.translateResourceableTypeName(
+					repositoryEntry.getOlatResource().getResourceableTypeName(),
+					translator.getLocale());
 		} else if(cellValue instanceof RepositoryEntryRow repositoryEntryRow) {
-			type = repositoryEntryRow.getOLATResourceable().getResourceableTypeName();
+			type = NewControllerFactory.translateResourceableTypeName(
+					repositoryEntryRow.getOLATResourceable().getResourceableTypeName(),
+					translator.getLocale());
 		} else if(cellValue instanceof CatalogEntryRow catalogEntryRow) {
-			type = catalogEntryRow.getOlatResource().getResourceableTypeName();
+			type = NewControllerFactory.translateResourceableTypeName(
+					catalogEntryRow.getOlatResource().getResourceableTypeName(),
+					translator.getLocale());
 		} else if(cellValue instanceof InPreparationRow inPreparationRow) {
-			type = inPreparationRow.getOlatResource().getResourceableTypeName();
+			if(inPreparationRow.getCurriculumElementKey() != null) {
+				type = inPreparationRow.getCurriculumElementDisplayName();
+			} else {
+				type = NewControllerFactory.translateResourceableTypeName(
+						inPreparationRow.getOlatResource().getResourceableTypeName(),
+						translator.getLocale());
+			}
 		}
 		
-		if(type == null) {
+		if (!StringHelper.containsNonWhitespace(type)) {
 			type = translator.translate("cif.type.na");
-		} else {
-			type = NewControllerFactory.translateResourceableTypeName(type, translator.getLocale());
 		}
 		type = StringHelper.escapeHtml(type);
 		
@@ -91,7 +103,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 			status = re.getRepositoryEntryStatus();
 		} else if(cellValue instanceof InPreparationRow re) {
 			if(re.getCurriculumElementKey() != null) {
-				cssClass = "o_icon_curriculum_element";
+				cssClass = "o_icon_curriculum_implementations";
 				status = RepositoryEntryStatusEnum.preparation;
 			} else {
 				cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());

@@ -46,10 +46,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryEntryMyImplementationsQueries {
 	
-	public static final List<CurriculumElementStatus> VISIBLE_STATUS = List.of(CurriculumElementStatus.preparation,
-				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
-				CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
-				CurriculumElementStatus.finished);
+	public static final List<CurriculumElementStatus> STATUS_WITH_PREPARATION = List.of(
+			CurriculumElementStatus.preparation, CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+			CurriculumElementStatus.active, CurriculumElementStatus.cancelled, CurriculumElementStatus.finished);
+	public static final List<CurriculumElementStatus> STATUS_WITHOUT_PREPARATION = List.of(
+			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active,
+			CurriculumElementStatus.cancelled, CurriculumElementStatus.finished);
 	
 	@Autowired
 	private DB dbInstance;
@@ -58,17 +60,23 @@ public class RepositoryEntryMyImplementationsQueries {
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	
-	public boolean hasImplementations(IdentityRef identity, boolean participantsOnly) {
-		List<GroupRoles> roles = participantsOnly
-				? List.of(GroupRoles.participant)
-				: List.of(GroupRoles.participant, GroupRoles.coach);
-		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, roles, null);
-		return elements != null && !elements.isEmpty() && elements.get(0) != null;
+	public boolean hasImplementations(IdentityRef identity, List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, roles, status);
+		if (elements != null && !elements.isEmpty()) {
+			return true;
+		}
+		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, 1, roles, status);
+		if (subMemberImplementations != null && !subMemberImplementations.isEmpty()) {
+			return true;
+		}
+		return false;
 	}
 
 	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly,
 			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
 		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, roles, status);
+		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, -1, roles, status);
+		elements.addAll(subMemberImplementations);
 
 		List<CurriculumElement> implementations;
 		if(elements.isEmpty()) {
@@ -98,38 +106,26 @@ public class RepositoryEntryMyImplementationsQueries {
 		return implementations;
 	}
 	
-	public List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
-			List<GroupRoles> roles, List<CurriculumElementStatus> searchStatus) {
+	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
+			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
 		String query = """
 			select el from curriculumelement el
-			left join el.type curElementType
-			where el.status in (:status)
-			and (
-			  el.parent.key is not null
-			 or
-			  curElementType.maxRepositoryEntryRelations=-1
-			 or
-			  curElementType.singleElement=false
-			) and (
-			  exists (select membership.key from bgroupmember as membership
-			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
-			  and membership.role in (:roles)
-			 )
-			 or exists (select reservation.key from resourcereservation as reservation
-			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
-			))""";
+			 inner join fetch el.type curElementType
+			 inner join el.group as baseGroup
+			 inner join baseGroup.members as membership
+			 where el.status in :status
+			   and membership.identity.key=:identityKey
+			   and membership.role in :roles
+			   and el.parent.key is null
+			   and (curElementType.maxRepositoryEntryRelations=-1
+			        or curElementType.singleElement=false
+			       )
+			""";
 		
-		List<String> status = searchStatus != null
-				? searchStatus.stream().map(CurriculumElementStatus::name).toList()
-				: VISIBLE_STATUS.stream().map(CurriculumElementStatus::name).toList();
-		List<String> rolesList = roles.stream()
-				.map(GroupRoles::name)
-				.toList();
-	
 		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
-				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", rolesList);
+				.setParameter("roles", roles.stream().map(GroupRoles::name).toList())
+				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList());
 		if(maxResults > 0) {
 			elements = elements
 					.setFirstResult(firstResult)
@@ -138,7 +134,40 @@ public class RepositoryEntryMyImplementationsQueries {
 		return elements.getResultList();
 	}
 	
-	public List<Curriculum> getCurriculums(IdentityRef identity, List<GroupRoles> roles, List<CurriculumElementStatus> searchStatus) {
+	private List<CurriculumElement> loadSubMemberImplementations(IdentityRef identity, int firstResult, int maxResults,
+			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+		String query = """
+			select implementation from curriculumelement el
+			 inner join el.group as baseGroup
+			 inner join baseGroup.members as membership
+			 inner join el.implementation as implementation
+			 inner join fetch implementation.type implementationElementType
+			 inner join implementation.group as implementationGroup
+			 where implementation.status in :status
+			   and membership.identity.key=:identityKey
+			   and membership.role in :roles
+			   and el.parent.key is not null
+			   and (implementationElementType.maxRepositoryEntryRelations=-1
+			        or implementationElementType.singleElement=false
+			       )
+			   and not exists (select membership.key from bgroupmember as implementationMembership
+		                        where implementationGroup.key=implementationMembership.group.key and implementationMembership.identity.key=:identityKey
+		                          and implementationMembership.role in :roles)
+			""";
+		
+		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roles.stream().map(GroupRoles::name).toList())
+				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList());
+		if(maxResults > 0) {
+			elements = elements
+					.setFirstResult(firstResult)
+					.setMaxResults(maxResults);
+		}
+		return elements.getResultList();
+	}
+	
+	public List<Curriculum> getCurriculums(IdentityRef identity, List<GroupRoles> roles, List<CurriculumElementStatus> status) {
 		String query = """
 			select distinct cur from curriculumelement el
 			left join el.type curElementType
@@ -155,21 +184,13 @@ public class RepositoryEntryMyImplementationsQueries {
 			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
 			  and membership.role in (:roles)
 			 )
-			 or exists (select reservation.key from resourcereservation as reservation
-			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
-			))""";
-		
-		List<String> status = searchStatus != null
-				? searchStatus.stream().map(CurriculumElementStatus::name).toList()
-				: VISIBLE_STATUS.stream().map(CurriculumElementStatus::name).toList();
-		List<String> rolesList = roles.stream()
-				.map(GroupRoles::name)
-				.toList();
+			)""";
+
 	
 		return dbInstance.getCurrentEntityManager().createQuery(query, Curriculum.class)
-				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", rolesList)
+				.setParameter("roles", roles.stream().map(GroupRoles::name).toList())
+				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList())
 				.getResultList();
 	}
 	

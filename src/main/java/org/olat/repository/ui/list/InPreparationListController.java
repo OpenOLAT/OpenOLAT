@@ -288,7 +288,7 @@ public class InPreparationListController extends FormBasicController implements 
 		
 		List<CurriculumElementInPreparation> elements = inPreparationQueries.searchCurriculumElementsInPreparation(getIdentity());
 		List<CurriculumElement> elementsRefs = elements.stream()
-				.map(c -> c.element()).toList();
+				.map(CurriculumElementInPreparation::element).toList();
 		Map<Long,VFSThumbnailInfos> elementThumbnails = curriculumElementImageMapper.getThumbnails(elementsRefs);
 		Set<Long> entriesKeys = new HashSet<>();
 		for(CurriculumElementInPreparation element:elements) {
@@ -575,12 +575,13 @@ public class InPreparationListController extends FormBasicController implements 
 	private boolean doMark(UserRequest ureq, InPreparationRow row) {
 		String businessPath;
 		OLATResourceable item;
-		if(row.getRepositoryEntryKey() != null) {
-			item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepositoryEntryKey());
-			businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
-		} else if(row.getCurriculumElementKey() != null) {
+		// Order is important so that single course implementation (instead of the course) is marked.
+		if(row.getCurriculumElementKey() != null) {
 			item = OresHelper.createOLATResourceableInstance("CurriculumElement", row.getCurriculumElementKey());
 			businessPath = "[MyCoursesSite:0][CurriculumElement:" + item.getResourceableId() + "]";
+		} else if(row.getRepositoryEntryKey() != null) {
+			item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepositoryEntryKey());
+			businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
 		} else {
 			return false;
 		}

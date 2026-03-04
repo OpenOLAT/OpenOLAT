@@ -61,6 +61,7 @@ public class InPreparationRow {
 	private String thumbnailRelPath;
 	private final OLATResource olatResource;
 	private final RepositoryEntryEducationalType educationalType;
+	private String curriculumElementDisplayName;
 	
 	private boolean marked;
 
@@ -117,6 +118,9 @@ public class InPreparationRow {
 		location = element.getLocation();
 		educationalType = element.getEducationalType();
 		olatResource = element.getResource();
+		if (element.getType() != null) {
+			curriculumElementDisplayName = element.getType().getDisplayName();
+		}
 	}
 	
 	public Long getKey() {
@@ -217,6 +221,10 @@ public class InPreparationRow {
 	
 	public String getTranslatedTechnicalType() {
 		return translatedTechnicalType;
+	}
+
+	public String getCurriculumElementDisplayName() {
+		return curriculumElementDisplayName;
 	}
 
 	public void setTranslatedTechnicalType(String translatedTechnicalType) {

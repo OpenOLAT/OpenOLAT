@@ -19,6 +19,10 @@
  */
 package org.olat.repository.manager;
 
+import static org.olat.repository.manager.RepositoryEntryMyImplementationsQueries.STATUS_WITHOUT_PREPARATION;
+import static org.olat.test.JunitTestHelper.random;
+
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +32,7 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -40,6 +45,8 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementTypeDAO;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,12 +59,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 	
+	private static final String USER_PREFIX = random();
+	private static final List<CurriculumRoles> CE_PARTICIPANT = List.of(CurriculumRoles.participant);
 	private static final List<GroupRoles> PARTICIPANTS_ONLY = List.of(GroupRoles.participant);
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -68,20 +79,11 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
 	
 	@Test
-	public void searchImplementations() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-1");
-		dbInstance.commit();
-		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false, PARTICIPANTS_ONLY, null);
-		Assert.assertNotNull(list);
-	}
-	
-	@Test
 	public void searchImplementationsBookmarks() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, PARTICIPANTS_ONLY, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
 		Assert.assertNotNull(list);
 	}
 	
@@ -103,7 +105,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -126,7 +128,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -149,45 +151,9 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.isEmpty();
-	}
-	
-	@Test
-	public void searchImplementationStatus() {
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-5");
-		
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-impl-5", "Curriculum for implementation", "Curriculum", false,
-				JunitTestHelper.getDefaultOrganisation());
-		CurriculumElementType structuredType = curriculumElementTypeDao.createCurriculumElementType("typ-structred-cur-el-5", "Structured type", "", "");
-		structuredType.setAllowedAsRootElement(true);
-		structuredType.setMaxRepositoryEntryRelations(0);
-		structuredType.setSingleElement(false);
-		structuredType = curriculumElementTypeDao.update(structuredType);
-			
-		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-51", "51. Element",
-				CurriculumElementStatus.preparation, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		curriculumService.addMember(element1, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
-		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-52", "52. Element",
-				CurriculumElementStatus.active, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		curriculumService.addMember(element2, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
-		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-53", "53. Element",
-				CurriculumElementStatus.deleted, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		curriculumService.addMember(element3, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
-		dbInstance.commitAndCloseSession();
-
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
-		Assertions.assertThat(list)
-			.containsExactlyInAnyOrder(element1, element2);
-		
-		list = myImplementationsQueries.searchImplementations(participant, false, List.of(GroupRoles.participant),
-				List.of(CurriculumElementStatus.active, CurriculumElementStatus.confirmed));
-		Assertions.assertThat(list)
-			.containsExactlyInAnyOrder(element2);
 	}
 	
 	@Test
@@ -208,7 +174,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		boolean hasOneImplementation = myImplementationsQueries.hasImplementations(participant, true);
+		boolean hasOneImplementation = myImplementationsQueries.hasImplementations(participant, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
 		Assert.assertTrue(hasOneImplementation);
 	}
 	
@@ -230,8 +196,169 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<Curriculum> list = myImplementationsQueries.getCurriculums(participant, List.of(GroupRoles.participant), null);
+		List<Curriculum> list = myImplementationsQueries.getCurriculums(participant, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.containsExactly(curriculum);
 	}
+	
+	@Test
+	public void searchImplementations() {
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType singleCourseType = curriculumService.createCurriculumElementType(random(), "Single Course", null, null);
+		singleCourseType.setMaxRepositoryEntryRelations(1);
+		singleCourseType.setSingleElement(true);
+		singleCourseType = curriculumService.updateCurriculumElementType(singleCourseType);
+		CurriculumElementType structureType = curriculumService.createCurriculumElementType(random(), "Structure", null, null);
+		structureType.setMaxRepositoryEntryRelations(3);
+		structureType.setSingleElement(false);
+		structureType = curriculumService.updateCurriculumElementType(structureType);
+		
+		// No membership (and no reservation)
+		searchElement(curriculum, singleCourseType, CurriculumElementStatus.preparation, List.of(), false);
+		searchElement(curriculum, structureType, CurriculumElementStatus.preparation, List.of(), false);
+		
+		// Participant (Single course, no content)
+		searchElement(curriculum, singleCourseType, CurriculumElementStatus.preparation, CE_PARTICIPANT, false);
+		searchElement(curriculum, singleCourseType, CurriculumElementStatus.provisional, CE_PARTICIPANT, false);
+		searchElement(curriculum, singleCourseType, CurriculumElementStatus.confirmed, CE_PARTICIPANT, false);
+		searchElement(curriculum, singleCourseType, CurriculumElementStatus.cancelled, CE_PARTICIPANT, false);
+		searchElement(curriculum, singleCourseType, CurriculumElementStatus.finished, CE_PARTICIPANT, false);
+		
+		// Participant (Structure)
+		searchElement(curriculum, structureType, CurriculumElementStatus.preparation, CE_PARTICIPANT, false);
+		searchElement(curriculum, structureType, CurriculumElementStatus.provisional, CE_PARTICIPANT, true);
+		searchElement(curriculum, structureType, CurriculumElementStatus.confirmed, CE_PARTICIPANT, true);
+		searchElement(curriculum, structureType, CurriculumElementStatus.cancelled, CE_PARTICIPANT, true);
+		searchElement(curriculum, structureType, CurriculumElementStatus.finished, CE_PARTICIPANT, true);
+	}
+	
+	private void searchElement(Curriculum curriculum, CurriculumElementType elementType,
+			CurriculumElementStatus elementStatus, Collection<CurriculumRoles> roles,
+			boolean assertFound) {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
+		CurriculumElement element = create(curriculum, elementType, elementStatus,identity, roles, false);
+		
+		List<GroupRoles> groupRoles = roles.stream().map(CurriculumRoles::name).map(GroupRoles::valueOf).toList();
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, groupRoles, STATUS_WITHOUT_PREPARATION);
+		if (assertFound) {
+			Assertions.assertThat(implementations)
+				.contains(element);
+		} else {
+			Assertions.assertThat(implementations)
+				.doesNotContain(element);
+		}
+	}
+	
+	@Test
+	public void searchImplementations_reservations() {
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType structureType = curriculumService.createCurriculumElementType(random(), "Structure", null, null);
+		structureType.setMaxRepositoryEntryRelations(3);
+		structureType.setSingleElement(false);
+		structureType = curriculumService.updateCurriculumElementType(structureType);
+	
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
+		CurriculumElement element = create(curriculum, structureType, CurriculumElementStatus.confirmed, identity, List.of(), true);
+		
+		// Elements with reservation are display "in preparation"
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		Assertions.assertThat(implementations).doesNotContain(element);
+	}
+	
+	@Test
+	public void searchCurriculumElementsInPreparation_subElementMember() {
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType singleCourseType = curriculumService.createCurriculumElementType(random(), "Single Course", null, null);
+		singleCourseType.setMaxRepositoryEntryRelations(1);
+		singleCourseType.setSingleElement(true);
+		singleCourseType = curriculumService.updateCurriculumElementType(singleCourseType);
+		CurriculumElementType structureType = curriculumService.createCurriculumElementType(random(), "Structure", null, null);
+		structureType.setMaxRepositoryEntryRelations(3);
+		structureType.setSingleElement(false);
+		structureType = curriculumService.updateCurriculumElementType(structureType);
+		
+		// Participant: Single course must never have sub elements
+		searchElementSubMember(curriculum, singleCourseType, CurriculumElementStatus.confirmed, structureType, CurriculumElementStatus.active, false);
+		
+		// Participant: Structure type
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.preparation, structureType, CurriculumElementStatus.preparation, false);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.preparation, structureType, CurriculumElementStatus.provisional, false);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.preparation, structureType, CurriculumElementStatus.active, false);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.preparation, structureType, CurriculumElementStatus.cancelled, false);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.preparation, structureType, CurriculumElementStatus.finished, false);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.provisional, structureType, CurriculumElementStatus.preparation, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.provisional, structureType, CurriculumElementStatus.provisional, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.provisional, structureType, CurriculumElementStatus.active, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.provisional, structureType, CurriculumElementStatus.cancelled, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.provisional, structureType, CurriculumElementStatus.finished, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.confirmed, structureType, CurriculumElementStatus.preparation, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.confirmed, structureType, CurriculumElementStatus.provisional, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.confirmed, structureType, CurriculumElementStatus.active, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.confirmed, structureType, CurriculumElementStatus.cancelled, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.confirmed, structureType, CurriculumElementStatus.finished, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.cancelled, structureType, CurriculumElementStatus.preparation, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.cancelled, structureType, CurriculumElementStatus.provisional, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.cancelled, structureType, CurriculumElementStatus.active, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.cancelled, structureType, CurriculumElementStatus.cancelled, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.cancelled, structureType, CurriculumElementStatus.finished, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.finished, structureType, CurriculumElementStatus.preparation, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.finished, structureType, CurriculumElementStatus.provisional, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.finished, structureType, CurriculumElementStatus.active, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.finished, structureType, CurriculumElementStatus.cancelled, true);
+		searchElementSubMember(curriculum, structureType, CurriculumElementStatus.finished, structureType, CurriculumElementStatus.finished, true);
+	}
+	
+	private void searchElementSubMember(Curriculum curriculum, CurriculumElementType implementationType,
+			CurriculumElementStatus implementationStatus, CurriculumElementType elementType,
+			CurriculumElementStatus elementStatus, boolean assertFound) {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
+		CurriculumElements elements = create(curriculum, implementationType, implementationStatus, elementType, elementStatus, identity, false);
+		
+		List<GroupRoles> groupRoles = List.of(GroupRoles.participant);
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, groupRoles, STATUS_WITHOUT_PREPARATION);
+		if (assertFound) {
+			Assertions.assertThat(implementations)
+				.contains(elements.implementation())
+				.doesNotContain(elements.subElement());
+		} else {
+			Assertions.assertThat(implementations)
+				.doesNotContain(elements.implementation(), elements.subElement());
+		}
+	}
+	
+	private CurriculumElement create(Curriculum curriculum, CurriculumElementType elementType,
+			CurriculumElementStatus elementStatus, Identity identity, Collection<CurriculumRoles> elementRoles,
+			boolean elementReservation) {
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), elementStatus,
+				null, null, null, elementType, null, null, null, curriculum);
+		
+		for (CurriculumRoles role : elementRoles) {
+			curriculumService.addMember(curriculumElement, identity, role, identity);
+		}
+		
+		if (elementReservation) {
+			reservationDao.createReservation(identity, null, DateUtils.addDays(new Date(), 3),
+					ConfirmationByEnum.ADMINISTRATIVE_ROLE, curriculumElement.getResource());
+		}
+		
+		dbInstance.commitAndCloseSession();
+		
+		return curriculumElement;
+	}
+	
+	private CurriculumElements create(Curriculum curriculum, CurriculumElementType implementationType,
+			CurriculumElementStatus implementationStatus, CurriculumElementType elementType,
+			CurriculumElementStatus elementStatus, Identity identity,
+			boolean reservationAvailable) {
+		
+		CurriculumElement implementationElement = create(curriculum, implementationType, implementationStatus, identity, List.of(), false);
+		CurriculumElement subElement = create(curriculum, elementType, elementStatus,  identity, !reservationAvailable? CE_PARTICIPANT: List.of(), false);
+		curriculumService.moveCurriculumElement(subElement, implementationElement, null, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		return new CurriculumElements(implementationElement, subElement);
+	}
+	
+	private record CurriculumElements(CurriculumElement implementation, CurriculumElement subElement) {}
+	
 }

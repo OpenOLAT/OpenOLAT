@@ -357,7 +357,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		implementationsCtrl = new ImplementationsListController(ureq, bwControl, content,
 				List.of(GroupRoles.owner, GroupRoles.coach), true,
-				"manual_user/area_modules/Coaching_Educational_Products/");
+				"manual_user/area_modules/Coaching_Educational_Products/", true, true);
 		listenTo(implementationsCtrl);
 		content.pushController(translate("implementations.title"), implementationsCtrl);
 		return implementationsCtrl;

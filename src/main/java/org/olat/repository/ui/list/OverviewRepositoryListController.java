@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.list;
 
+import static org.olat.repository.manager.RepositoryEntryMyImplementationsQueries.STATUS_WITHOUT_PREPARATION;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,12 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OverviewRepositoryListController extends BasicController implements Activateable2, GenericEventListener {
-	
-	public static final List<CurriculumElementStatus> SCOPE_ELEMENT_STATUS = List.of(
-			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
-			CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
-			CurriculumElementStatus.finished);
-	
+		
 	private static final String CMD_MY_COURSES = "MyCourses";
 	private static final String CMD_IN_PREPARATION = "InPreparation";
 	private static final String CMD_IMPLEMENTATION = "Implementation";
@@ -190,14 +187,15 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		if(!guestOnly) {
 			if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
-				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true, asRoles, SCOPE_ELEMENT_STATUS);
+				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(),
+						true, asRoles, STATUS_WITHOUT_PREPARATION);
 				for(CurriculumElement implementation:implementations) {
 					String name = StringHelper.escapeHtml(implementation.getDisplayName());
 					String hint = scopeDatesHint(implementation);
 					scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
 						name, hint, "o_icon o_icon-fw o_icon_curriculum"));
 				}
-				if(!implementations.isEmpty() || myImplementationsQueries.hasImplementations(getIdentity(), participantsOnly)) {
+				if (!implementations.isEmpty() || myImplementationsQueries.hasImplementations(getIdentity(), asRoles, STATUS_WITHOUT_PREPARATION)) {
 					scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.implementations.list"),
 							null, "o_icon o_icon-fw o_icon_curriculum"));
 				}
@@ -407,7 +405,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
 
 			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(),
-					implementationsListStackPanel, asRoles, false, null);
+					implementationsListStackPanel, asRoles, false, null, false, false);
 			listenTo(implementationsListCtrl);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {
@@ -421,14 +419,6 @@ public class OverviewRepositoryListController extends BasicController implements
 	
 	private InPreparationListController doOpenInPreparation(UserRequest ureq) {
 		if(inPreparationCtrl == null) {
-			SearchMyRepositoryEntryViewParams searchParams
-				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-			searchParams.setMembershipMandatory(true);
-			searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.preparation });
-			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
-			searchParams.setOfferValidAt(new Date());
-			searchParams.setRuntimeTypes(new RepositoryEntryRuntimeType[] { RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone });
-			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("InPreparation", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());

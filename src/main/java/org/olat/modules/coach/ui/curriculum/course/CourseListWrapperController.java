@@ -97,7 +97,8 @@ public class CourseListWrapperController extends BasicController implements Acti
 		scopes.add(ScopeFactory.createScope(CMD_ALL_COURSES, translate("all.courses"), null, "o_icon o_icon-fw o_icon_curriculum"));
 		if(curriculumModule.isEnabled()) {
 			List<GroupRoles> asRoles = List.of(GroupRoles.coach, GroupRoles.participant);
-			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(mentee, true, asRoles, null);
+			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(mentee, true,
+					asRoles, RepositoryEntryMyImplementationsQueries.STATUS_WITHOUT_PREPARATION);
 			for(CurriculumElement implementation:implementations) {
 				String name = StringHelper.escapeHtml(implementation.getDisplayName());
 				String hint = scopeDatesHint(implementation);

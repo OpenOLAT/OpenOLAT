@@ -100,7 +100,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
@@ -328,7 +327,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		CurriculumElementStatus[] visibleStatus = RepositoryEntryMyImplementationsQueries.VISIBLE_STATUS.toArray(new CurriculumElementStatus[0]);
+		CurriculumElementStatus[] visibleStatus = ALL_STATUS.toArray(new CurriculumElementStatus[0]);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
 				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
 						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles(), false);

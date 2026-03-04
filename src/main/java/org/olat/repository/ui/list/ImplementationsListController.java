@@ -22,6 +22,7 @@ package org.olat.repository.ui.list;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
@@ -112,6 +113,9 @@ public class ImplementationsListController extends FormBasicController implement
 	private final boolean onlyParticipant;
 	private final boolean withTitle;
 	private final String helpUrl;
+	private final boolean showStatus;
+	private final boolean withPreparation;
+	private final List<CurriculumElementStatus> status;
 	
 	private ImplementationController implementationCtrl;
 
@@ -121,9 +125,9 @@ public class ImplementationsListController extends FormBasicController implement
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
-	
+
 	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			List<GroupRoles> asRoles, boolean withTitle, String helpUrl) {
+			List<GroupRoles> asRoles, boolean withTitle, String helpUrl, boolean showStatus, boolean withPreparation) {
 		super(ureq, wControl, "implementations");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(),
 				Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
@@ -131,10 +135,18 @@ public class ImplementationsListController extends FormBasicController implement
 		this.withTitle = withTitle;
 		this.helpUrl = helpUrl;
 		this.asRoles = asRoles;
+		this.showStatus = showStatus;
+		this.withPreparation = withPreparation;
 		onlyParticipant = asRoles.size() == 1 && asRoles.contains(GroupRoles.participant);
+		status = withPreparation
+				? RepositoryEntryMyImplementationsQueries.STATUS_WITH_PREPARATION
+				: RepositoryEntryMyImplementationsQueries.STATUS_WITHOUT_PREPARATION;
 		
 		initForm(ureq);
 		loadModel();
+		
+		initFilter();
+		initFilterPresets();
 		
 		if(tableModel.hasMarked()) {
 			tableEl.setSelectedFilterTab(ureq, favoriteTab);
@@ -170,16 +182,15 @@ public class ImplementationsListController extends FormBasicController implement
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleEnd,
 				new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!onlyParticipant, ImplementationsCols.elementStatus,
-				new CurriculumStatusCellRenderer(getTranslator())));
+		if (showStatus) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.elementStatus,
+					new CurriculumStatusCellRenderer(getTranslator())));
+		}
 		
 		tableModel = new ImplementationsListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setSearchEnabled(true);
-		
-		initFilter();
-		initFilterPresets();
 	}
 	
 	private void initFilter() {
@@ -190,7 +201,7 @@ public class ImplementationsListController extends FormBasicController implement
 		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
 				FILTER_MARKED, markedKeyValue, true));
 		
-		List<Curriculum> curriculums = loadCurriculumsForFilter();
+		Set<Curriculum> curriculums = tableModel.getObjects().stream().map(ImplementationRow::getCurriculum).collect(Collectors.toSet());
 		if(!curriculums.isEmpty()) {
 			SelectionValues curriculumValues = new SelectionValues();
 			for(Curriculum cur:curriculums) {
@@ -201,6 +212,7 @@ public class ImplementationsListController extends FormBasicController implement
 				}
 				curriculumValues.add(SelectionValues.entry(key, value));
 			}
+			curriculumValues.sort(SelectionValues.VALUE_ASC);
 			
 			FlexiTableMultiSelectionFilter curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
 					FILTER_CURRICULUM, curriculumValues, true);
@@ -208,7 +220,7 @@ public class ImplementationsListController extends FormBasicController implement
 		}
     	
 		SelectionValues statusValues = new SelectionValues();
-		if(!onlyParticipant) {
+		if(withPreparation) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
 		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
@@ -252,7 +264,8 @@ public class ImplementationsListController extends FormBasicController implement
 							List.of(CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
 									CurriculumElementStatus.active.name()))));
 			tabs.add(relevantTab);
-			
+		}
+		if (withPreparation) {
 			preparationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB_ID, translate("filter.preparation"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 							List.of(CurriculumElementStatus.preparation.name()))));
@@ -271,7 +284,7 @@ public class ImplementationsListController extends FormBasicController implement
 	private void loadModel() {
 		Set<Long> markedElementKeys = markManager.getMarkResourceIds(getIdentity(), "CurriculumElement", List.of());
 		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(),
-				false, asRoles, null);
+				false, asRoles, status);
 		List<ImplementationRow> rows = new ArrayList<>();
 		for(CurriculumElement implementation:implementations) {
 			boolean marked = markedElementKeys.contains(implementation.getKey());
@@ -294,10 +307,6 @@ public class ImplementationsListController extends FormBasicController implement
 	private void filterModel() {
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
-	}
-	
-	private List<Curriculum> loadCurriculumsForFilter() {
-		return myImplementationsQueries.getCurriculums(getIdentity(), asRoles, null);
 	}
 	
 	private void decoratedMarkLink(FormLink markLink, boolean marked) {
