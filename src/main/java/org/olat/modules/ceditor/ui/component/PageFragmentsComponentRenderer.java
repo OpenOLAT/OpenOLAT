@@ -96,7 +96,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 				.withIconCss("o_page_icon")
 				.withMessageTranslated(translator.translate("no.content"))
 				.build();
-		EmptyStateRenderer.renderEmptyState(sb, null, emptyStateConfig, null, null);
+		EmptyStateRenderer.renderEmptyState(sb, translator, null, emptyStateConfig, null, null);
 	}
 	
 	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Set<String> spacingElementIds, Map<String,

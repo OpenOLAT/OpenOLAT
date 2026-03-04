@@ -71,6 +71,10 @@ public interface EmptyStateConfig {
 	 */
 	public String getDescTranslated();
 
+	public String getHelpTranslated();
+	
+	public String getHelpPage();
+	
 	public String getButtonI18nKey();
 	
 	public String getButtonTranslated();

@@ -180,7 +180,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				.withMessageTranslated(message)
 				.withHintTranslated(hint)
 				.build();
-		EmptyStateRenderer.renderEmptyState(sb, null, emptyStateConfig, buttonRenderer, null);
+		EmptyStateRenderer.renderEmptyState(sb, translator, null, emptyStateConfig, buttonRenderer, null);
 	}
 	
 	private String getMessage(FlexiTableElementImpl ftE, Translator translator) {

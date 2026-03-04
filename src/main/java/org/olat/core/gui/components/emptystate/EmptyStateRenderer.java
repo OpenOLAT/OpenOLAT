@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.emptystate;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -58,8 +60,10 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 				.withMessageTranslated(message)
 				.withHintTranslated(hint)
 				.withDescTranslated(desc)
+				.withHelp(emptyState.getHelpTranslated(), emptyState.getHelpPage())
 				.build();
-		renderEmptyState(sb, emptyState.getElementCssClass(), emptyStateConfig, buttonRenderer, secondaryButtonRenderer);
+		renderEmptyState(sb, translator, emptyState.getElementCssClass(), emptyStateConfig, buttonRenderer, 
+				secondaryButtonRenderer);
 	}
 
 	private String getMessage(EmptyState emptyState, Translator translator) {
@@ -128,7 +132,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		return null;
 	}
 
-	public static void renderEmptyState(StringOutput sb,
+	public static void renderEmptyState(StringOutput sb, Translator translator,
 										String elementCssClass, EmptyStateConfig emptyStateConfig,
 										ButtonRenderer buttonRenderer,
 										ButtonRenderer secondaryButtonRenderer) {
@@ -159,6 +163,20 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		// description
 		if (StringHelper.containsNonWhitespace(emptyStateConfig.getDescTranslated())) {
 			sb.append("<small class='text-mutedx'>").append(emptyStateConfig.getDescTranslated()).append("</small>");
+		}
+		
+		if (StringHelper.containsNonWhitespace(emptyStateConfig.getHelpTranslated()) && 
+				StringHelper.containsNonWhitespace(emptyStateConfig.getHelpPage())) {
+			sb.append("<div>");
+			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+			String url = helpModule.getManualProvider().getURL(translator.getLocale(), emptyStateConfig.getHelpPage());
+			String linkText = emptyStateConfig.getHelpTranslated();
+			String title = translator.translate("help.button");
+			sb.append("<a href='").append(url).append("' target='_blank' title='").append(title).append("'>");
+			sb.append(linkText).append(" ");
+			sb.append("<i class='o_icon o_icon_help'></i>");
+			sb.append("</a>");
+			sb.append("</div>");
 		}
 
 		if (buttonRenderer != null || secondaryButtonRenderer != null) {

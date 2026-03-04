@@ -43,6 +43,8 @@ public class EmptyStateConfigBuilder {
 	private String buttonTranslated;
 	private String secondaryButtonI18nKey;
 	private EmptyStateVariant variant = EmptyStateVariant.standard;
+	private String helpTranslated;
+	private String helpPage;
 	
 	EmptyStateConfigBuilder() {
 		//
@@ -128,10 +130,17 @@ public class EmptyStateConfigBuilder {
 		return this;
 	}
 	
+	public EmptyStateConfigBuilder withHelp(String helpTranslated, String page) {
+		this.helpTranslated = helpTranslated;
+		this.helpPage = page;
+		return this;
+	}
+	
 	public EmptyStateConfig build() {
 		return new EmptyStateConfigImpl(variant, wrapperSelector, iconCss, indicatorIconCss, messageI18nKey, 
 				messageI18nArgs, messageTranslated, hintI18nKey, hintI18nArgs, hintTranslated, descI18nKey, 
-				descI18nArgs, descTranslated, buttonI18nKey, buttonTranslated, secondaryButtonI18nKey);
+				descI18nArgs, descTranslated, helpTranslated, helpPage, buttonI18nKey, buttonTranslated, 
+				secondaryButtonI18nKey);
 	}
 
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
@@ -148,6 +157,8 @@ public class EmptyStateConfigBuilder {
 		private final String descI18nKey;
 		private final String[] descI18nArgs;
 		private final String descTranslated;
+		private final String helpTranslated;
+		private final String helpPage;
 		private final String buttonI18nKey;
 		private final String buttonTranslated;
 		private final String secondaryButtonI18nKey;
@@ -156,7 +167,7 @@ public class EmptyStateConfigBuilder {
 		public EmptyStateConfigImpl(EmptyStateVariant variant, String wrapperSelector, String iconCss, String indicatorIconCss, String messageI18nKey,
 									String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
 									String hintTranslated, String descI18nKey, String[] descI18nArgs,
-									String descTranslated, String buttonI18nKey, String buttonTranslated,
+									String descTranslated, String helpTranslated, String helpPage, String buttonI18nKey, String buttonTranslated,
 									String secondaryButtonI18nKey) {
 			this.variant = variant;
 			this.wrapperSelector = wrapperSelector;
@@ -171,6 +182,8 @@ public class EmptyStateConfigBuilder {
 			this.descI18nKey = descI18nKey;
 			this.descI18nArgs = descI18nArgs;
 			this.descTranslated = descTranslated;
+			this.helpTranslated = helpTranslated;
+			this.helpPage = helpPage;
 			this.buttonI18nKey = buttonI18nKey;
 			this.buttonTranslated = buttonTranslated;
 			this.secondaryButtonI18nKey = secondaryButtonI18nKey;
@@ -234,6 +247,16 @@ public class EmptyStateConfigBuilder {
 		@Override
 		public String getDescTranslated() {
 			return descTranslated;
+		}
+		
+		@Override
+		public String getHelpTranslated() {
+			return helpTranslated;
+		}
+		
+		@Override
+		public String getHelpPage() {
+			return helpPage;
 		}
 
 		@Override

@@ -58,6 +58,8 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String descI18nKey;
 	private String[] descI18nArgs;
 	private String descTranslated;
+	private String helpTranslated;
+	private String helpPage;
 	private String buttonI18nKey;
 	private String buttonTranslated;
 	private String secondaryButtonI18nKey;
@@ -173,6 +175,22 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 
 	public void setDescTranslated(String descTranslated) {
 		this.descTranslated = descTranslated;
+	}
+	
+	public String getHelpTranslated() {
+		return helpTranslated;
+	}
+
+	public void setHelpTranslated(String helpTranslated) {
+		this.helpTranslated = helpTranslated;
+	}
+	
+	public String getHelpPage() {
+		return helpPage;
+	}
+
+	public void setHelpPage(String helpPage) {
+		this.helpPage = helpPage;
 	}
 
 	@Override

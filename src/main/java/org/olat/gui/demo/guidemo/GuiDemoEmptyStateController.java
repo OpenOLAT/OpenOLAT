@@ -21,6 +21,9 @@ package org.olat.gui.demo.guidemo;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,6 +41,16 @@ public class GuiDemoEmptyStateController extends BasicController {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("guidemo-empty-state");
+
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withIconCss("o_icon_globe")
+				.withMessageI18nKey("empty.state.message.nothing")
+				.withHintI18nKey("empty.state.hint.additional")
+				.withHelp(translate("empty.state.help.additional"), "release_notes/")
+				.build();
+		EmptyState emptyState = EmptyStateFactory.create("emptyState", mainVC, this, emptyStateConfig);
+		emptyState.setTranslator(getTranslator());
+		
 		putInitialPanel(mainVC);
 	}
 
