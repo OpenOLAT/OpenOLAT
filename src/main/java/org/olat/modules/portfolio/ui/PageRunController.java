@@ -32,6 +32,8 @@ import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityC
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
@@ -176,6 +178,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private boolean dirtyMarker = false;
 	private final boolean openInEditMode;
 	private final BinderSecurityCallback secCallback;
+	private final PublishingInformations publishingInfos;
 	
 	@Autowired
 	private PdfModule pdfModule;
@@ -186,18 +189,22 @@ public class PageRunController extends BasicController implements TooledControll
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private UserManager userManager;
+	private NotificationsManager notificationsManager;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Page page, PageSettings settings, boolean openEditMode) {
+			BinderSecurityCallback secCallback, Page page, PageSettings settings, PublishingInformations publishingInfos,
+			boolean openEditMode) {
 		super(ureq, wControl);
 		this.page = page;
 		this.settings = settings;
 		this.stackPanel = stackPanel;
+		this.publishingInfos = publishingInfos;
 		
 		this.secCallback = secCallback;
 		lockOres = OresHelper.createOLATResourceableInstance("Page", page.getKey());
@@ -370,7 +377,7 @@ public class PageRunController extends BasicController implements TooledControll
 					commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				}
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, null, true, false, true);
+				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, publishingInfos, true, false, true);
 				listenTo(commentsCtrl);
 			}
 			mainVC.put("comments", commentsCtrl.getInitialComponent());
@@ -432,6 +439,10 @@ public class PageRunController extends BasicController implements TooledControll
 			pageService.updateLog(page, getIdentity());
 			pageService.generatePreviewAsync(page, settings, getIdentity(), getWindowControl());
 			changes = 0;
+			
+			if(publishingInfos != null) {
+				notificationsManager.markPublisherNews(publishingInfos.context(), null, false);
+			}
 		}
 	}
 
@@ -624,6 +635,7 @@ public class PageRunController extends BasicController implements TooledControll
 		doRunPage(ureq);
 		mainVC.contextPut("isPersonalBinder", false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		markAsNews();
 	}
 	
 	private void doConfirmRevision(UserRequest ureq) {
@@ -638,6 +650,7 @@ public class PageRunController extends BasicController implements TooledControll
 		loadMeta(ureq);
 		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		markAsNews();
 	}
 	
 	private void doConfirmClose(UserRequest ureq) {
@@ -652,6 +665,7 @@ public class PageRunController extends BasicController implements TooledControll
 		loadMeta(ureq);
 		loadModel(ureq, true);
 		fireEvent(ureq, new ClosePageEvent());
+		markAsNews();
 	}
 	
 	private void doDone(UserRequest ureq) {
@@ -659,6 +673,7 @@ public class PageRunController extends BasicController implements TooledControll
 		loadMeta(ureq);
 		loadModel(ureq, true);
 		fireEvent(ureq, new DonePageEvent());
+		markAsNews();
 	}
 	
 	private void doConfirmDone(UserRequest ureq) {
@@ -687,6 +702,13 @@ public class PageRunController extends BasicController implements TooledControll
 		loadMeta(ureq);
 		loadModel(ureq, true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		markAsNews();
+	}
+	
+	private void markAsNews() {
+		if(publishingInfos != null) {
+			notificationsManager.markPublisherNews(publishingInfos.context(), null, false);
+		}
 	}
 	
 	private void doEditMetadata(UserRequest ureq) {
@@ -703,7 +725,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		boolean editMetadata = secCallback.canEditPageMetadata(page, assignments);
 		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback,
-				binder, editMetadata, section, editMetadata, page, editMetadata);
+				binder, editMetadata, section, editMetadata, page, publishingInfos, editMetadata);
 		listenTo(editMetadataCtrl);
 		
 		String title = translate("edit.page.metadata");
@@ -1051,7 +1073,7 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 	}
 	
-	public static class OtherArtefactsHandler implements PageElementHandler, InteractiveAddPageElementHandler {
+	public static class OtherArtefactsHandler implements InteractiveAddPageElementHandler {
 
 		@Override
 		public String getType() {

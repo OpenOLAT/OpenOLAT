@@ -196,7 +196,7 @@ public class PageContentConfigurationController extends BasicController {
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,
-				 secCallback, page, pageSettings, false);
+				 secCallback, page, pageSettings, null, false);
 		listenTo(pageCtrl);
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), pageCtrl, userCourseEnv, courseNode, "o_page_icon");
@@ -218,7 +218,7 @@ public class PageContentConfigurationController extends BasicController {
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,
-				 secCallback, page, pageSettings, true);
+				 secCallback, page, pageSettings, null, true);
 		listenTo(pageCtrl);
 		pageCtrl.initTools();
 		

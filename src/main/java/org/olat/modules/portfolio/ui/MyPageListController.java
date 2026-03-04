@@ -219,7 +219,7 @@ public class MyPageListController extends AbstractPageListController {
 		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback,
-				null, true, (Section)null, true, null);
+				null, true, (Section)null, true, null, null);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

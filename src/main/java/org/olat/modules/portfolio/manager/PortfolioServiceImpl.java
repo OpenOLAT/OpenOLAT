@@ -39,6 +39,9 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -1610,5 +1613,24 @@ public class PortfolioServiceImpl implements PortfolioService {
 			newPage.getSection().getBinder();
 		}
 		return newPage;
-	}	
+	}
+	
+	@Override
+	public SubscriptionContext getSubscriptionContext(BinderRef binder) {
+		return new SubscriptionContext(PortfolioNotificationsHandler.TYPE_NAME, binder.getKey(), PortfolioNotificationsHandler.TYPE_NAME);
+	}
+
+	@Override
+	public PublisherData getPublisherData(BinderRef binder) {
+		String businessPath = "[Binder:" + binder.getKey() + "]";
+		return new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
+	}
+
+	@Override
+	public PublishingInformations getBinderPublishingInformations(BinderRef binder) {
+		if(binder == null || binder.getKey() == null) return null;
+		SubscriptionContext context = getSubscriptionContext(binder);
+		PublisherData publisherData = getPublisherData(binder);
+		return new PublishingInformations(publisherData, context, null);
+	}
 }

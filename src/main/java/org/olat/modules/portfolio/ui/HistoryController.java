@@ -43,6 +43,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.PortfolioNotificationsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,9 +61,10 @@ public class HistoryController extends FormBasicController {
 	
 	private int counter;
 	private Binder binder;
-	private SubscriptionContext subsContext;
 	private final BinderSecurityCallback secCallback;
 	
+	@Autowired
+	private PortfolioService portfolioService;
 	@Autowired
 	private PortfolioNotificationsHandler notificationsHandler;
 	 
@@ -81,11 +83,9 @@ public class HistoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (!ureq.getUserSession().getRoles().isGuestOnly()) {			
-			subsContext = new SubscriptionContext(PortfolioNotificationsHandler.TYPE_NAME, binder.getKey(), PortfolioNotificationsHandler.TYPE_NAME);
-
-			String businessPath = "[Binder:" + binder.getKey() + "]";
-			PublisherData data = new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
+		if (!ureq.getUserSession().getRoles().isGuestOnly()) {
+			PublisherData data = portfolioService.getPublisherData(binder);	
+			SubscriptionContext subsContext = portfolioService.getSubscriptionContext(binder);
 			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
 			listenTo(cSubscriptionCtrl);
 			flc.put("subscription", cSubscriptionCtrl.getInitialComponent());

@@ -32,6 +32,7 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -67,11 +68,11 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
-import org.olat.modules.ceditor.Assignment;
-import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -747,7 +748,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, pageRow.getKey());
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
+		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, publishingInfos, commentSecCallback);
 		listenTo(commentsCtrl);
 		
 		commentsCtrl.scrollToCommentsArea();
@@ -806,7 +808,9 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doCreateNewEntry(UserRequest ureq, Section currentSection) {
 		if(guardModalController(newPageCtrl)) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, currentSection, true, null);
+		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, currentSection,
+				true, null, publishingInfos);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
@@ -833,8 +837,10 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private void doCreateNewEntryFrom(UserRequest ureq, Page page, Section currentSection) {
 		if(guardModalController(newPageCtrl)) return;
-		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, currentSection, true, page);
+
+		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, currentSection,
+				true, page, publishingInfos);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

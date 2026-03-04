@@ -21,6 +21,9 @@ package org.olat.modules.portfolio.ui;
 
 import java.util.Date;
 
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -61,7 +64,11 @@ public class SectionEditController extends FormBasicController {
 	private PortfolioImportEntriesContext wizardContext;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public SectionEditController(UserRequest ureq, WindowControl wControl, BinderRef binder, BinderSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -187,7 +194,13 @@ public class SectionEditController extends FormBasicController {
 				section = portfolioService.updateSection(reloadedSection);
 			}
 			
+			dbInstance.commit();
 			fireEvent(ureq, Event.DONE_EVENT);
+			
+			PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+			if(publishingInfos != null) {
+				notificationsManager.markPublisherNews(publishingInfos.context(), null, false);
+			}
 		} 
 	}
 	
