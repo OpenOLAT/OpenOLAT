@@ -112,6 +112,11 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 		return false;
 	}
 	
+	@Override
+	public boolean isEnabled(TreeNode node) {
+		return true;
+	}
+
 	public boolean isInParentLine(TreeNode node) {
 		for(INode iteratorNode=node; node.getParent() != null && iteratorNode != null; iteratorNode=iteratorNode.getParent()) {
 			if(iteratorNode instanceof TreeNode treeNode && isSource(treeNode)) {

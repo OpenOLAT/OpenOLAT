@@ -22,11 +22,17 @@ package org.olat.core.gui.components.tree;
 import static org.olat.core.gui.components.tree.MenuTreeEvent.DESELECT;
 import static org.olat.core.gui.components.tree.MenuTreeEvent.SELECT;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.tree.TreeHelper;
 
@@ -42,9 +48,9 @@ public class MenuTreeItem extends FormItemImpl {
 	private boolean noDirtyCheckOnClick = false;
 	private Set<String> visibleNodeIds = new HashSet<>();
 	
-	public MenuTreeItem(String name, ComponentEventListener listener) {
+	public MenuTreeItem(String name, ComponentEventListener listener, Translator translator) {
 		super(name);
-		treeCmp = new MenuTree(null, name + "_CMP", listener, this, getTranslator());
+		treeCmp = new MenuTree(null, name + "_CMP", listener, this, translator);
 	}
 
 	public boolean isNoDirtyCheckOnClick() {

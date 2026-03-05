@@ -110,7 +110,6 @@ public class MoveCurriculumElementController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		curriculumTreeEl = uifactory.addTreeMultiselect("elements", null, formLayout, curriculumModel, this);
-		curriculumTreeEl.setMultiSelect(false);
 		curriculumTreeEl.setRootVisible(true);
 		curriculumTreeEl.setInsertTool(true);
 

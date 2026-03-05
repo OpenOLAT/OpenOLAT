@@ -150,6 +150,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		boolean renderChildren = isRenderChildren(curSel, curRoot, selected, tree, openNodeIds)
 				|| hasInsertionPoint;
 		boolean lastTreeNode = lastLevelNode && !renderChildren;
+		boolean enabledNode = (tree.getTreeModel() instanceof InsertionTreeModel insertionTreeModel)
+				? insertionTreeModel.isEnabled(curRoot) || insertionTreeModel.isSource(curRoot)
+				: true;
 
 		renderInsertionPoint(target, Position.up, level, curRoot, ubu, flags, tree);
 
@@ -193,15 +196,20 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" o_dnd_item");
 		}
-		if (tree.isHighlightSelection()) {
-			if(selected) {
-				target.append(" active");
-			}
+		if (tree.isHighlightSelection() && selected) {
+			target.append(" active");
+		}
+		if(!enabledNode) {
+			target.append(" o_tree_item_disabled");
 		}
 		target.append("'>");
 		
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			appendDragAndDropElement(curRoot, tree, dndElements, ubu, flags);
+		}
+		
+		if(tree.getMenuTreeItem() != null && tree.isInsertToolEnabled()) {
+			renderInsertRadio(target, curRoot, selected, enabledNode, tree, ubu);
 		}
 
 		if(hasChildren || hasInsertionPoint) {
@@ -209,10 +217,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		// Render menu item as link, also for active elements
 		// mark active item as strong for accessibility reasons
-		renderLink(renderer, curRoot, level, selected, renderChildren, curSel, target, ubu, flags, tree);
+		renderLink(renderer, curRoot, level, selected, renderChildren, curSel, enabledNode, target, ubu, flags, tree);
 		
 		if(selected && tree.isInsertToolEnabled()) {
-			renderInsertCallout(target, curRoot, ubu, flags, tree);
+			renderInsertTools(target, curRoot, ubu, flags, tree);
 		}
 		target.append("</div>");
 		
@@ -260,11 +268,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			sb.append(" />");
 			if(intermediate) {
 				sb.append("<script>\n")
-				  .append("/* <![CDATA[ */\n")
+				  .append("\"use strict\";\n")
 				  .append("jQuery(function() {\n")
 				  .append("  jQuery('#").append(id).append("').prop('indeterminate', true);")
 				  .append("});\n")
-				  .append("/* ]]> */")
 				  .append("</script>\n");
 			}
 		}
@@ -315,7 +322,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 				openCloseTitle = tree.getTranslator().translate("level." + openCloseCss);
 				openCloseScreenReader = tree.getTranslator().translate("level." + openCloseCss + ".screenreader", StringHelper.escapeHtml(curRoot.getTitle()));
 			}
-			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree' title=\"")
+			target.append(" class='o_tree_open_close  o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree' title=\"")
 				.appendHtmlAttributeEscaped(openCloseTitle).append("\")></i><span class='sr-only'>").append(openCloseScreenReader).append("</span></a>");
 		} else if (level != 0 && chdCnt == 0) {
 			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
@@ -323,7 +330,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderLink(Renderer renderer, TreeNode curRoot, int level, boolean selected, boolean renderChildren, INode curSel,
-			StringOutput target, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+			boolean enabled, StringOutput target, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
 		int chdCnt = curRoot.getChildCount();
 		boolean iframePostEnabled = flags.isIframePostEnabled();
 		
@@ -364,11 +371,15 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 
 		// Build menu item URI
-		target.append("<a ");	
-		boolean dirtyCheck = tree.getMenuTreeItem() == null || !tree.getMenuTreeItem().isNoDirtyCheckOnClick();
-		ubu.buildHrefAndOnclick(target, null, null, iframePostEnabled, dirtyCheck, true, true,
-				new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
-				new NameValuePair(NODE_IDENT, curRoot.getIdent()));
+		target.append("<a ");
+		if(insertionSource || !enabled) {
+			target.append(" href='javascript:;' onclick='return false;' class='o_disabled disabled'");
+		} else {
+			boolean dirtyCheck = tree.getMenuTreeItem() == null || !tree.getMenuTreeItem().isNoDirtyCheckOnClick();
+			ubu.buildHrefAndOnclick(target, null, null, iframePostEnabled, dirtyCheck, true, true,
+					new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
+					new NameValuePair(NODE_IDENT, curRoot.getIdent()));
+		}
 		
 		// Add menu item title as alt hoover text
 		String alt = curRoot.getAltText();
@@ -420,40 +431,71 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
-	private void renderInsertCallout(StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+	private void renderInsertTools(StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
 		Position[] positionArr;
-		if(tree.getTreeModel() instanceof InsertionTreeModel) {
-			positionArr = ((InsertionTreeModel)tree.getTreeModel()).getInsertionPosition(node);
+		if(tree.getTreeModel() instanceof InsertionTreeModel insertionModel) {
+			positionArr = insertionModel.getInsertionPosition(node);
 		} else if(tree.getTreeModel().getRootNode() != node) {
 			positionArr = new Position[] { Position.under };
 		} else {
 			positionArr = new Position[] { Position.up, Position.down, Position.under };
 		}
-		if(positionArr.length > 0) {
-			sb.append("<div class='popover right show'>")
-			  .append("<div class='arrow'></div>")
-			  .append("<div class='popover-content btn-group'>");
 
-			if(Position.hasPosition(Position.up, positionArr)) {
-				renderInsertCalloutButton(COMMAND_TREENODE_INSERT_UP, "o_icon_node_before", sb, node, ubu, flags);
-			}
-			if(Position.hasPosition(Position.down, positionArr)) {
-				renderInsertCalloutButton(COMMAND_TREENODE_INSERT_DOWN, "o_icon_node_after", sb, node, ubu, flags);
-			}
-			if(Position.hasPosition(Position.under, positionArr)) {
-				renderInsertCalloutButton(COMMAND_TREENODE_INSERT_UNDER, "o_icon_node_under o_icon-rotate-180", sb, node, ubu, flags);
-			}
-			
-			sb.append("</div></div>");
-		}
+		sb.append("<div class='o_tree_move_controls'>");
+		renderInsertLink(COMMAND_TREENODE_INSERT_UP, Position.hasPosition(Position.up, positionArr),
+				"o_icon_node_before", "move.above", sb, node, tree, ubu, flags);
+		renderInsertLink(COMMAND_TREENODE_INSERT_DOWN, Position.hasPosition(Position.down, positionArr),
+				"o_icon_node_after", "move.below", sb, node, tree, ubu, flags);
+		renderInsertLink(COMMAND_TREENODE_INSERT_UNDER, Position.hasPosition(Position.under, positionArr),
+				"o_icon_node_under o_icon-rotate-180", "move.sub.element", sb, node, tree, ubu, flags);
+		sb.append("</div>");
 	}
 	
-	private void renderInsertCalloutButton(String cmd, String cssClass,  StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags) {
-		sb.append("<a class='btn btn-default small' ");
-		ubu.buildHrefAndOnclick(sb, flags.isIframePostEnabled(),
+	private void renderInsertLink(String cmd, boolean enabled, String cssClass, String i18nKey, StringOutput sb,
+			TreeNode node, MenuTree tree, URLBuilder ubu, AJAXFlags flags) {
+		sb.append("<a class='o_tree_control").append(" o_disabled  disabled", !enabled).append("' ");
+		if(enabled) {
+			ubu.buildHrefAndOnclick(sb, flags.isIframePostEnabled(),
 				new NameValuePair(COMMAND_ID, cmd),
 				new NameValuePair(NODE_IDENT, node.getIdent()));
-		sb.append("><i class='o_icon ").append(cssClass).append("'> </i></a>");
+		} else {
+			sb.append(" href='javascript:;' onclick='return false;'");
+		}
+		
+		String label = tree.getTranslator() == null
+				? ""
+				: tree.getTranslator().translate(i18nKey);
+		sb.append("><i class='o_icon ").append(cssClass).append("'> </i> <span>").append(label).append("</span></a>");
+	}
+	
+	private void renderInsertRadio(StringOutput sb, TreeNode node, boolean selected, boolean enabled, MenuTree tree, URLBuilder ubu) {
+		MenuTreeItem treeItem = tree.getMenuTreeItem();
+		if(treeItem != null) {
+			boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel insertionTreeModel)
+					&& insertionTreeModel.isSource(node);
+			boolean enabledInput = treeItem.isEnabled() && !insertionSource && !enabled;
+		
+			String groupingName = "tcb_ms";
+			String id = "cb" + node.getIdent();
+			sb.append("<input type='radio' id='").append(id).append("' ")
+			  .append(" name='").append(groupingName).append("'")
+			  .append(" value='").append(node.getIdent()).append("'");
+			if (selected) {
+				sb.append(" checked='checked' ");
+			}
+			if(insertionSource) {
+				sb.append(" class='o_hidden' aria-hidden='true\'");
+			}
+			if(enabledInput) {
+				sb.append(" onclick=\"");
+				ubu.buildXHREvent(sb, null, false, true, new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
+						new NameValuePair(NODE_IDENT, node.getIdent())).append(" return false;\"");
+			} else {
+				sb.append(" disabled='disabled' ");
+			}
+			sb.append(" />");
+
+		}
 	}
 	
 	private void renderChildren(Renderer renderer, StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds,
@@ -515,7 +557,6 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	private StringOutput appendDragAndDropScript(List<DndElement> elements, MenuTree tree, StringOutput sb) {
 		if(elements == null || elements.isEmpty()) return sb;
 		sb.append("<script>\n")
-		  .append("/* <![CDATA[ */\n")
 		  .append("jQuery(function() {\n");
 		
 		StringBuilder dragIds = new StringBuilder("[");
@@ -560,7 +601,6 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		
 		sb.append("});\n")
-		  .append("/* ]]> */")
 		  .append("</script>\n");
 		return sb;
 	}

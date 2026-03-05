@@ -46,6 +46,7 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.INodeFilter;
 
@@ -140,11 +141,11 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	 * @param name
 	 */
 	public MenuTree(String name, Translator trans) {
-		super(null, name, trans);
+		super(null, name, Util.createPackageTranslator(MenuTree.class, trans.getLocale(), trans));
 	}
 	
 	public MenuTree(String id, String name, Translator trans) {
-		super(id, name, trans);
+		super(id, name, Util.createPackageTranslator(MenuTree.class, trans.getLocale(), trans));
 	}
 	
 	/**
@@ -153,7 +154,7 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	 * @param eventListener
 	 */
 	public MenuTree(String id, String name, ComponentEventListener eventListener, Translator trans) {
-		super(id, name, trans);
+		super(id, name, Util.createPackageTranslator(MenuTree.class, trans.getLocale(), trans));
 		addListener(eventListener);
 	}
 	

@@ -34,7 +34,14 @@ public interface InsertionTreeModel {
 	 * @param node
 	 * @return
 	 */
-	public boolean isSource(TreeNode node);
+	boolean isSource(TreeNode node);
+	
+	/**
+	 * 
+	 * @param node
+	 * @return
+	 */
+	boolean isEnabled(TreeNode node);
 	
 	/**
 	 * Return the possible directions to insert a node around the
@@ -43,6 +50,6 @@ public interface InsertionTreeModel {
 	 * @param node
 	 * @return
 	 */
-	public InsertionPoint.Position[] getInsertionPosition(TreeNode node);
+	InsertionPoint.Position[] getInsertionPosition(TreeNode node);
 
 }

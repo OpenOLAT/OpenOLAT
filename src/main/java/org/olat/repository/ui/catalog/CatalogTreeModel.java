@@ -67,6 +67,11 @@ public class CatalogTreeModel extends GenericTreeModel implements InsertionTreeM
 	public boolean isSource(TreeNode node) {
 		return entryToMove == node.getUserObject();
 	}
+	
+	@Override
+	public boolean isEnabled(TreeNode node) {
+		return true;
+	}
 
 	@Override
 	public Position[] getInsertionPosition(TreeNode node) {

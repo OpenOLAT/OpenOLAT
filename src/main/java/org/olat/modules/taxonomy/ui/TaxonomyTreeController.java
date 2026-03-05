@@ -76,6 +76,11 @@ public class TaxonomyTreeController extends BasicController {
 		public boolean isSource(TreeNode node) {
 			return false;
 		}
+		
+		@Override
+		public boolean isEnabled(TreeNode node) {
+			return true;
+		}
 
 		@Override
 		public Position[] getInsertionPosition(TreeNode node) {

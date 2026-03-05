@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.CourseFactory;
@@ -197,7 +198,18 @@ public class MoveCopySubtreeController extends BasicController {
 
 		@Override
 		public boolean isSource(TreeNode node) {
-			return source == node;
+			for(INode parentNode=node; parentNode != null; parentNode=parentNode.getParent()) {
+				if(parentNode == source) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean isEnabled(TreeNode node) {
+			Position[] positions = getInsertionPosition(node);
+			return positions != null && positions.length > 0;
 		}
 
 		@Override

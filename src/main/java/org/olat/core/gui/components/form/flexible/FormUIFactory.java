@@ -404,7 +404,7 @@ public class FormUIFactory {
 	}
 	
 	public MenuTreeItem addTreeMultiselect(String name, String i18nLabel, FormItemContainer formLayout, TreeModel treemodel, ComponentEventListener listener){
-		MenuTreeItem mse = new MenuTreeItem(name, listener);
+		MenuTreeItem mse = new MenuTreeItem(name, listener, formLayout.getTranslator());
 		mse.setTreeModel(treemodel);
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);

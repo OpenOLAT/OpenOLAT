@@ -110,8 +110,12 @@ class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel
 	
 	@Override
 	public boolean isSource(TreeNode node) {
-		if(node instanceof GenericTreeNode gNode) {
-			return gNode.getUserObject() instanceof CurriculumElement &&  gNode.getUserObject().equals(source);
+		if(node instanceof GenericTreeNode gNode && gNode.getUserObject() instanceof CurriculumElement element) {
+			for(CurriculumElement parentElement=element; parentElement != null; parentElement=parentElement.getParent()) {
+				if(parentElement.equals(source)) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -131,6 +135,12 @@ class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel
 					&& element.getType() != null && element.getType().isSingleElement();
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean isEnabled(TreeNode node) {
+		Position[] positions = getInsertionPosition(node);
+		return positions != null && positions.length > 0;
 	}
 
 	@Override

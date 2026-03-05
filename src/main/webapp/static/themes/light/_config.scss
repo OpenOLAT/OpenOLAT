@@ -439,14 +439,19 @@ $o-tree-link-active-font-weight	: bold !default;
 $o-tree-link-active-parent-color 			: $o-tree-link-color !default;
 $o-tree-link-active-parent-hover-color 		: $o-tree-link-hover-color !default;
 $o-tree-link-active-parent-font-weight		: $o-tree-link-active-font-weight !default;
-$o-tree-font-size				: $font-size-base !default;
-$o-tree-padding-vertical		: 10px !default;
-$o-tree-padding-horizontal_root_visible	: 10px !default;
-$o-tree-padding-horizontal_root_hidden	: 20px !default;
-$o-tree-padding-steps-px 		: 15px !default;
-$o-tree-padding-left-steps-px 	: 2px !default;
-$o-tree-padding-opener-left-px 	: 1px !default;
-$o-tree-dnd-hover				: $brand-warning;
+$o-tree-font-size							: $font-size-base !default;
+$o-tree-padding-vertical					: 10px !default;
+$o-tree-padding-vertical-small				: 7px !default;
+$o-tree-padding-horizontal_root_visible		: 10px !default;
+$o-tree-padding-horizontal_root_hidden		: 20px !default;
+$o-tree-padding-steps-px 					: 15px !default;
+$o-tree-padding-left-steps-px 				: 2px !default;
+$o-tree-padding-opener-left-px 				: 1px !default;
+$o-tree-dnd-hover							: $brand-warning;
+$o-tree-insertion-disabled-color			: #777 !default;
+$o-tree-insertion-source-color				: #522D00 !default;
+$o-tree-insertion-source-bg					: #FFCF91 !default;
+$o-tree-insertion-source-border				: #FFDBAC !default;
 
 /* Tabbed pane component */
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;

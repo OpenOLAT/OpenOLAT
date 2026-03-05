@@ -332,8 +332,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_next_step { @include o-add-icon('angle-double-right');}
 .o_icon_next_page { @include o-add-icon('angle-double-right');}
 .o_icon_next_toolbar { @include o-add-icon('caret-right');}
-.o_icon_node_after { @include o-add-icon('long-arrow-down');}
-.o_icon_node_before { @include o-add-icon('long-arrow-up');}
+.o_icon_node_after { @include o-add-icon('chevron-down');}
+.o_icon_node_before { @include o-add-icon('chevron-up');}
 .o_icon_node_under { @include o-add-icon('mail-reply');}
 .o_icon_node_up_down { @include o-add-icon('arrows-v');}
 .o_icon_non_members { @include o-add-icon('person-circle-minus');}
