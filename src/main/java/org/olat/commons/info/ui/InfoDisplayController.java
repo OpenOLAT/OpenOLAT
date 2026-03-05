@@ -345,8 +345,7 @@ public class InfoDisplayController extends FormBasicController {
 		emptyState.setMessageI18nKey("display.no_messages");
 		if (secCallback.canAdd()) {
 			emptyState.setHintI18nKey("display.no_messages.hint");
-			emptyState.setButtonI18nKey("new_message");
-			emptyState.setButtonLeftIconCss("o_icon o_icon-fw o_icon_add o_sel_course_info_create_msg");
+			emptyState.setPrimaryButton("o_icon o_icon-fw o_icon_add o_sel_course_info_create_msg", "new_message", null);
 		}
 
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
@@ -414,7 +413,7 @@ public class InfoDisplayController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == emptyState && event == EmptyState.EVENT) {
+		if (source == emptyState && event instanceof EmptyState.PrimaryEvent) {
 			doCreateNewMessage(ureq);
 		}
 		super.event(ureq, source, event);

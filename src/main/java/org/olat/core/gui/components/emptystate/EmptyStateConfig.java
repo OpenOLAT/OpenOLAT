@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.emptystate;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 22 Apr 2021<br>
@@ -31,8 +33,6 @@ public interface EmptyStateConfig {
 		return new EmptyStateConfigBuilder();
 	}
 
-	public String getWrapperSelector();
-	
 	public String getIconCss();
 
 	public String getIndicatorIconCss();
@@ -75,11 +75,9 @@ public interface EmptyStateConfig {
 	
 	public String getHelpPage();
 	
-	public String getButtonI18nKey();
-	
-	public String getButtonTranslated();
-	
-	public String getSecondaryButtonI18nKey();
-
 	public EmptyStateVariant getVariant();
+
+	public EmptyStateButton getPrimaryButton();
+
+	public List<EmptyStateButton> getSecondaryButtons();
 }

@@ -42,20 +42,45 @@ public class GuiDemoEmptyStateController extends BasicController {
 
 		mainVC = createVelocityContainer("guidemo-empty-state");
 
+		initStandard1();
+		initStandard2();
+		
+		putInitialPanel(mainVC);
+	}
+
+	private void initStandard1() {
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withIconCss("o_icon_globe")
 				.withMessageI18nKey("empty.state.message.nothing")
 				.withHintI18nKey("empty.state.hint.additional")
 				.withHelp(translate("empty.state.help.additional"), "release_notes/")
+				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
+				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.1", null, "#1")
+				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.2", null,"#2")
+				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.3", null,"#4")
 				.build();
-		EmptyState emptyState = EmptyStateFactory.create("emptyState", mainVC, this, emptyStateConfig);
+		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard1", mainVC, this, emptyStateConfig);
 		emptyState.setTranslator(getTranslator());
-		
-		putInitialPanel(mainVC);
+	}
+
+	private void initStandard2() {
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withIconCss("o_icon_search")
+				.withMessageI18nKey("empty.state.message.learning")
+				.withHintI18nKey("empty.state.hint.modify")
+				.build();
+		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard2", mainVC, this, emptyStateConfig);
+		emptyState.setTranslator(getTranslator());
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source instanceof EmptyState) {
+			if (event instanceof EmptyState.PrimaryEvent) {
+				showInfo("empty.state.event.primary");
+			} else if (event instanceof EmptyState.SecondaryEvent secondaryEvent) {
+				showInfo("empty.state.event.secondary", secondaryEvent.getAction());
+			}
+		}
 	}
 }

@@ -265,10 +265,12 @@ public class TableController extends BasicController {
 
 		// table empty next primary action link
 		if (tableConfig.getTableEmptyPrimaryAction() != null) {
-			emptyState.setButtonTranslated(tableConfig.getTableEmptyPrimaryAction());
+			String translated = tableConfig.getTableEmptyPrimaryAction();
+			String iconCss = null;
 			if (tableConfig.getTableEmptyPrimaryActionIconCss() != null) {
-				emptyState.setButtonLeftIconCss("o_icon o_icon-fw " + tableConfig.getTableEmptyPrimaryActionIconCss());
+				iconCss = "o_icon o_icon-fw " + tableConfig.getTableEmptyPrimaryActionIconCss();
 			}
+			emptyState.setPrimaryButton(iconCss, null, translated);
 		}
 
 		contentVc.contextPut("tableConfig", tableConfig);
@@ -354,7 +356,7 @@ public class TableController extends BasicController {
 		} else if (source == resetLink) {
 			table.setSearchString(null);
 			modelChanged();
-		} else if (source == emptyState && event == EmptyState.EVENT) {
+		} else if (source == emptyState && event instanceof EmptyState.PrimaryEvent) {
 			fireEvent(ureq, EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION);
 		}
 	}

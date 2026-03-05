@@ -19,6 +19,9 @@
  */
 package org.olat.core.gui.components.emptystate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
  * Initial date: 22 Apr 2021<br>
@@ -27,7 +30,6 @@ package org.olat.core.gui.components.emptystate;
  */
 public class EmptyStateConfigBuilder {
 	
-	private String wrapperSelector;
 	private String iconCss;
 	private String indicatorIconCss;
 	private String messageI18nKey;
@@ -39,12 +41,11 @@ public class EmptyStateConfigBuilder {
 	private String descI18nKey;
 	private String[] descI18nArgs;
 	private String descTranslated;
-	private String buttonI18nKey;
-	private String buttonTranslated;
-	private String secondaryButtonI18nKey;
 	private EmptyStateVariant variant = EmptyStateVariant.standard;
 	private String helpTranslated;
 	private String helpPage;
+	private EmptyStateButton primaryButton;
+	private List<EmptyStateButton> secondaryButtons = new ArrayList<>();
 	
 	EmptyStateConfigBuilder() {
 		//
@@ -52,11 +53,6 @@ public class EmptyStateConfigBuilder {
 	
 	public EmptyStateConfigBuilder withVariant(EmptyStateVariant variant) {
 		this.variant = variant;
-		return this;
-	}
-
-	public EmptyStateConfigBuilder withWrapperSelector(String wrapperSelector) {
-		this.wrapperSelector = wrapperSelector;
 		return this;
 	}
 
@@ -115,37 +111,33 @@ public class EmptyStateConfigBuilder {
 		return this;
 	}
 	
-	public EmptyStateConfigBuilder withButtonI18nKey(String buttonI18nKey) {
-		this.buttonI18nKey = buttonI18nKey;
-		return this;
-	}
-	
-	public EmptyStateConfigBuilder withButtonTranslated(String buttonTranslated) {
-		this.buttonTranslated = buttonTranslated;
-		return this;
-	}
-	
-	public EmptyStateConfigBuilder withSecondaryButtonI18nKey(String secondaryButtonI18nKey) {
-		this.secondaryButtonI18nKey = secondaryButtonI18nKey;
-		return this;
-	}
-	
 	public EmptyStateConfigBuilder withHelp(String helpTranslated, String page) {
 		this.helpTranslated = helpTranslated;
 		this.helpPage = page;
 		return this;
 	}
 	
+	public EmptyStateConfigBuilder withPrimaryButton(String leftIcon, String i18nKey, String translated) {
+		primaryButton = new EmptyStateButton(leftIcon, i18nKey, translated, "primary");
+		return this;
+	}
+	
+	public EmptyStateConfigBuilder withSecondaryButton(String leftIcon, String i18nKey, String translated, String action) {
+		if (secondaryButtons.size() >= EmptyState.MAX_SECONDARY_BUTTONS) {
+			throw new AssertionError("Too many secondary buttons for empty state");
+		}
+		secondaryButtons.add(new EmptyStateButton(leftIcon, i18nKey, translated, action));
+		return this;
+	}
+	
 	public EmptyStateConfig build() {
-		return new EmptyStateConfigImpl(variant, wrapperSelector, iconCss, indicatorIconCss, messageI18nKey, 
+		return new EmptyStateConfigImpl(variant, iconCss, indicatorIconCss, messageI18nKey, 
 				messageI18nArgs, messageTranslated, hintI18nKey, hintI18nArgs, hintTranslated, descI18nKey, 
-				descI18nArgs, descTranslated, helpTranslated, helpPage, buttonI18nKey, buttonTranslated, 
-				secondaryButtonI18nKey);
+				descI18nArgs, descTranslated, helpTranslated, helpPage, primaryButton, secondaryButtons);
 	}
 
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
 
-		private final String wrapperSelector;
 		private final String iconCss;
 		private final String indicatorIconCss;
 		private final String messageI18nKey;
@@ -159,18 +151,16 @@ public class EmptyStateConfigBuilder {
 		private final String descTranslated;
 		private final String helpTranslated;
 		private final String helpPage;
-		private final String buttonI18nKey;
-		private final String buttonTranslated;
-		private final String secondaryButtonI18nKey;
 		private final EmptyStateVariant variant;
-		
-		public EmptyStateConfigImpl(EmptyStateVariant variant, String wrapperSelector, String iconCss, String indicatorIconCss, String messageI18nKey,
+		private final EmptyStateButton primaryButton;
+		private final List<EmptyStateButton> secondaryButtons;
+
+		public EmptyStateConfigImpl(EmptyStateVariant variant, String iconCss, String indicatorIconCss, String messageI18nKey,
 									String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
 									String hintTranslated, String descI18nKey, String[] descI18nArgs,
-									String descTranslated, String helpTranslated, String helpPage, String buttonI18nKey, String buttonTranslated,
-									String secondaryButtonI18nKey) {
+									String descTranslated, String helpTranslated, String helpPage, 
+									EmptyStateButton primaryButton, List<EmptyStateButton> secondaryButtons) {
 			this.variant = variant;
-			this.wrapperSelector = wrapperSelector;
 			this.iconCss = iconCss;
 			this.indicatorIconCss = indicatorIconCss;
 			this.messageI18nKey = messageI18nKey;
@@ -184,14 +174,8 @@ public class EmptyStateConfigBuilder {
 			this.descTranslated = descTranslated;
 			this.helpTranslated = helpTranslated;
 			this.helpPage = helpPage;
-			this.buttonI18nKey = buttonI18nKey;
-			this.buttonTranslated = buttonTranslated;
-			this.secondaryButtonI18nKey = secondaryButtonI18nKey;
-		}
-
-		@Override
-		public String getWrapperSelector() {
-			return wrapperSelector;
+			this.primaryButton = primaryButton;
+			this.secondaryButtons = secondaryButtons;
 		}
 
 		@Override
@@ -260,23 +244,18 @@ public class EmptyStateConfigBuilder {
 		}
 
 		@Override
-		public String getButtonI18nKey() {
-			return buttonI18nKey;
-		}
-
-		@Override
-		public String getButtonTranslated() {
-			return buttonTranslated;
-		}
-
-		@Override
-		public String getSecondaryButtonI18nKey() {
-			return secondaryButtonI18nKey;
-		}
-		
-		@Override
 		public EmptyStateVariant getVariant() {
 			return variant;
+		}
+
+		@Override
+		public EmptyStateButton getPrimaryButton() {
+			return primaryButton;
+		}
+
+		@Override
+		public List<EmptyStateButton> getSecondaryButtons() {
+			return secondaryButtons;
 		}
 	}
 }

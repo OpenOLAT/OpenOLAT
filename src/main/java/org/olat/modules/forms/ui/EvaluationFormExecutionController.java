@@ -335,7 +335,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == emptyState && event == EmptyState.EVENT) {
+		if (source == emptyState && event instanceof EmptyState.PrimaryEvent) {
 			fireEvent(ureq, event);
 		} else {
 			isRubricAssessment = source.getListenerInfo().contains(MSEvaluationBackController.class.getSimpleName());

@@ -49,14 +49,6 @@ public class EmptyStateItem extends FormItemImpl implements ComponentEventListen
 		component.setIconCss(iconCss);
 	}
 
-	public String getIndicatorIconCss() {
-		return component.getIndicatorIconCss();
-	}
-
-	public void setIndicatorIconCss(String indicatorIconCss) {
-		component.setIndicatorIconCss(indicatorIconCss);
-	}
-
 	public String getMessageI18nKey() {
 		return component.getMessageI18nKey();
 	}
@@ -64,15 +56,7 @@ public class EmptyStateItem extends FormItemImpl implements ComponentEventListen
 	public void setMessageI18nKey(String messageI18nKey) {
 		component.setMessageI18nKey(messageI18nKey);
 	}
-	
-	public void setButtonI18nKey(String buttonI18nKey) {
-		component.setButtonI18nKey(buttonI18nKey);
-	}
 
-	public void setButtonLeftIconCss(String buttonLeftIconCss) {
-		component.setButtonLeftIconCss(buttonLeftIconCss);
-	}
-	
 	@Override
 	protected Component getFormItemComponent() {
 		return component;
@@ -86,7 +70,7 @@ public class EmptyStateItem extends FormItemImpl implements ComponentEventListen
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if (source == component) {
-			if (event == EmptyState.EVENT) {
+			if (event instanceof EmptyState.PrimaryEvent) {
 				getRootForm().fireFormEvent(ureq, new EmptyStatePrimaryActionEvent(this));
 			}
 		}

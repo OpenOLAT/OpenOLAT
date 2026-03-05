@@ -56,10 +56,10 @@ public class WebCatalogTemporarilyDisabledController extends BasicController {
 		emptyState = EmptyStateFactory.create("empty", mainVC, this);
 		emptyState.setMessageI18nKey("web.catalog.temporarily.disabled.title");
 		emptyState.setHintI18nKey("web.catalog.temporarily.disabled.text");
-		emptyState.setButtonI18nKey("web.catalog.goto.login");
+		emptyState.setPrimaryButton(null, "web.catalog.goto.login", null);
 		emptyState.setIconCss("o_icon_catalog");
 		emptyState.setIndicatorIconCss("o_icon_none");
-		emptyState.getButton().setUrl(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault());
+		emptyState.getPrimaryButtonLink().setUrl(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault());
 		
 		if (catalogModule.hasHeaderBgImage()) {
 			String cacheId = "catalogHeaderBackgroundImage" + (catalogModule.hasHeaderBgImage() ? catalogModule.getHeaderBgImage().lastModified() : "");

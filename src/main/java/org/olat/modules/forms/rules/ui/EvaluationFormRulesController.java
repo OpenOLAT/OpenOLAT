@@ -99,7 +99,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 		emptyState.setIconCss("o_icon_branch");
 		emptyState.setMessageI18nKey("empty.state.message");
 		emptyState.setHintI18nKey("empty.state.hint");
-		emptyState.setButtonI18nKey("rule.add");
+		emptyState.setPrimaryButton(null, "rule.add", null);
 			
 		noRulesPossible = EmptyStateFactory.create("no.rules.possible", rulesCont.getFormItemComponent(), this);
 		noRulesPossible.setIconCss("o_icon_branch");
@@ -205,7 +205,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == emptyState && event == EmptyState.EVENT) {
+		if (source == emptyState && event instanceof EmptyState.PrimaryEvent) {
 			doAddRule(ureq);
 		}
 		super.event(ureq, source, event);

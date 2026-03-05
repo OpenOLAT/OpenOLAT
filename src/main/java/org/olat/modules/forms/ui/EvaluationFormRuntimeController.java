@@ -48,7 +48,7 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 		if (guardDeleted(ureq)) return;
 		
 		if (source == getRuntimeController()) {
-			if (event == EmptyState.EVENT) {
+			if (event instanceof EmptyState.PrimaryEvent) {
 				doEdit(ureq);
 			}
 		}

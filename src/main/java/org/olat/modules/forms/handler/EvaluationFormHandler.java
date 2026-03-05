@@ -303,7 +303,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 					DataStorage storage = evaluationFormManager.loadStorage(re);
 					EmptyStateConfig emptyStateConfig = EvaluationFormExecutionController.defaultEmptyState()
 							.withHintI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_HINT)
-							.withButtonI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_BUTTON)
+							.withPrimaryButton(null, EvaluationFormExecutionController.EMPTY_STATE_EDIT_BUTTON, null)
 							.build();
 					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage, null, emptyStateConfig);
 			});

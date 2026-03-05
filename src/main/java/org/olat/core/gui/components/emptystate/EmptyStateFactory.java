@@ -45,8 +45,8 @@ public class EmptyStateFactory {
 		emptyState.setDescTranslated(config.getDescTranslated());
 		emptyState.setHelpTranslated(config.getHelpTranslated());
 		emptyState.setHelpPage(config.getHelpPage());
-		emptyState.setButtonI18nKey(config.getButtonI18nKey());
-		emptyState.setSecondaryButtonI18nKey(config.getSecondaryButtonI18nKey());
+		emptyState.setPrimaryButton(config.getPrimaryButton());
+		emptyState.setSecondaryButtons(config.getSecondaryButtons());
 		return emptyState;
 	}
 	

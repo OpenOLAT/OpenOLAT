@@ -24,7 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateButtonRenderer;
+import org.olat.core.gui.components.emptystate.EmptyStateRenderConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -171,16 +172,17 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		RenderResult renderResult, FlexiTableElementImpl ftE) {
 		String message = getMessage(ftE, translator);
 		String hint = getHint(ftE, translator);
-		EmptyStateRenderer.ButtonRenderer buttonRenderer = ftE.getEmptyTablePrimaryActionButton() != null ? 
+		EmptyStateButtonRenderer buttonRenderer = ftE.getEmptyTablePrimaryActionButton() != null ? 
 				() -> renderFormItem(renderer, sb, ftE.getEmptyTablePrimaryActionButton(), ubu, translator, renderResult, null) : null;
 
-		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+		EmptyStateRenderConfig config = EmptyStateRenderConfig.builder()
 				.withWrapperSelector(ftE.getWrapperSelector())
 				.withIconCss(ftE.getEmtpyTableIconCss())
 				.withMessageTranslated(message)
 				.withHintTranslated(hint)
+				.withPrimaryButtonRenderer(buttonRenderer)
 				.build();
-		EmptyStateRenderer.renderEmptyState(sb, translator, null, emptyStateConfig, buttonRenderer, null);
+		EmptyStateRenderer.renderEmptyState(sb, translator, null, config);
 	}
 	
 	private String getMessage(FlexiTableElementImpl ftE, Translator translator) {

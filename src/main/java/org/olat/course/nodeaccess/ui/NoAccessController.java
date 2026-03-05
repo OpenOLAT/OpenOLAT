@@ -94,7 +94,7 @@ public class NoAccessController extends BasicController {
 		emptyState.setHintI18nKey("noTransOnlyParam");
 		emptyState.setHintI18nArgs(new String[] {NoAccessResolver.translate(getTranslator(), noAccessMessage, false)});
 		if (StringHelper.containsNonWhitespace(noAccessMessage.getGoToNodeIdent())) {
-			emptyState.setButtonI18nKey("no.access.goto.node");
+			emptyState.setPrimaryButton(null, "no.access.goto.node", null);
 		}
 		
 		putInitialPanel(mainVC);
@@ -143,7 +143,7 @@ public class NoAccessController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == emptyState && event == EmptyState.EVENT) {
+		if (source == emptyState && event instanceof EmptyState.PrimaryEvent) {
 			fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, noAccessMessage.getGoToNodeIdent()));
 		}
 	}

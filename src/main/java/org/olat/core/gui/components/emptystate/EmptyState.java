@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.emptystate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -41,9 +42,26 @@ import org.olat.core.util.CodeHelper;
  *
  */
 public class EmptyState extends AbstractComponent implements FormBaseComponent, ComponentCollection, ComponentEventListener {
+	public static final int MAX_SECONDARY_BUTTONS = 3;
 	
-	public static Event EVENT = new Event("empty-state");
-	public static Event SECONDARY_EVENT = new Event("secondary-empty-state");
+	public class PrimaryEvent extends Event {
+		public PrimaryEvent() {
+			super("empty-state-primary");
+		}
+	}
+
+	public class SecondaryEvent extends Event {
+		private final String action;
+
+		public SecondaryEvent(String action) {
+			super("empty-state-secondary-" + action);
+			this.action = action;
+		}
+
+		public String getAction() {
+			return action;
+		}
+	}
 	
 	private static final ComponentRenderer RENDERER = new EmptyStateRenderer();
 	
@@ -60,30 +78,26 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String descTranslated;
 	private String helpTranslated;
 	private String helpPage;
-	private String buttonI18nKey;
-	private String buttonTranslated;
-	private String secondaryButtonI18nKey;
-	private Link button;
-	private Link secondaryButton;
-	
-	private final EmptyStateItem emptyStateItem;
-	
-	EmptyState(String name) {
-		this(name, null);
-		
-		button = LinkFactory.createCustomLink("emptystate_" + CodeHelper.getRAMUniqueID(), "empty.state", "",
-				Link.BUTTON, null, this);
-		button.setDomReplacementWrapperRequired(false);
-		button.setPrimary(true);
-		
-		secondaryButton= LinkFactory.createCustomLink("secondaryemptystate_" + CodeHelper.getRAMUniqueID(), "secondary.empty.state", "",
-				Link.BUTTON, null, this);
-		secondaryButton.setDomReplacementWrapperRequired(false);
-	}
+	private final Link primaryButtonLink;
+	private final List<Link> secondaryButtonLinks = new ArrayList<>();
+	private EmptyStateButton primaryButton;
+	private List<EmptyStateButton> secondaryButtons;
 
-	EmptyState(String name, EmptyStateItem emptyStateItem) {
+	EmptyState(String name) {
 		super(name);
-		this.emptyStateItem = emptyStateItem;
+		
+		primaryButtonLink = LinkFactory.createCustomLink("emptystate_" + CodeHelper.getRAMUniqueID(), 
+				"empty.state.primary", "", Link.BUTTON, null, this);
+		primaryButtonLink.setDomReplacementWrapperRequired(false);
+		primaryButtonLink.setPrimary(true);
+		
+		for (int i = 0; i < MAX_SECONDARY_BUTTONS; i++) {
+			Link secondaryButtonLink = 
+					LinkFactory.createCustomLink("secondaryemptystate_" + CodeHelper.getRAMUniqueID(), 
+							"secondary.empty.state." + i, "", Link.BUTTON, null, this);
+			secondaryButtonLink.setDomReplacementWrapperRequired(false);
+			secondaryButtonLinks.add(secondaryButtonLink);
+		}
 	}
 
 	public String getIconCss() {
@@ -200,70 +214,47 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 
 	@Override
 	public FormItem getFormItem() {
-		return emptyStateItem;
+		return null;
 	}
 
-	public String getButtonI18nKey() {
-		return buttonI18nKey;
+	public Link getPrimaryButtonLink() {
+		return primaryButtonLink;
 	}
 
-	public void setButtonI18nKey(String buttonI18nKey) {
-		this.buttonI18nKey = buttonI18nKey;
-		setDirty(true);
-	}
-
-	public String getButtonTranslated() {
-		return buttonTranslated;
-	}
-
-	public void setButtonTranslated(String buttonTranslated) {
-		this.buttonTranslated = buttonTranslated;
-		setDirty(true);
-	}
-
-	public void setButtonLeftIconCss(String buttonLeftIconCss) {
-		this.button.setIconLeftCSS(buttonLeftIconCss);
-	}
-
-	public String getSecondaryButtonI18nKey() {
-		return secondaryButtonI18nKey;
-	}
-
-	public void setSecondaryButtonI18nKey(String secondaryButtonI18nKey) {
-		this.secondaryButtonI18nKey = secondaryButtonI18nKey;
-		setDirty(true);
-	}
-	
-	public Link getButton() {
-		return button;
-	}
-
-	public Link getSecondaryButton() {
-		return secondaryButton;
+	public List<Link> getSecondaryButtonLinks() {
+		return secondaryButtonLinks;
 	}
 
 	@Override
 	public Component getComponent(String name) {
-		if (name.equals(button.getComponentName())) {
-			return button;
+		if (name.equals(primaryButtonLink.getComponentName())) {
+			return primaryButtonLink;
 		}
-		if (name.equals(secondaryButton.getComponentName())) {
-			return secondaryButton;
+		for (Link link : secondaryButtonLinks) {
+			if (name.equals(link.getComponentName())) {
+				return link;
+			}
 		}
 		return null;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
-		return List.of(button, secondaryButton);
+		ArrayList<Component> components = new ArrayList<>();
+		components.add(primaryButtonLink);
+		components.addAll(secondaryButtonLinks);
+		return components;
 	}
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		if (source == button) {
-			fireEvent(ureq, EVENT);
-		} else if (source == secondaryButton) {
-			fireEvent(ureq, SECONDARY_EVENT);
+		if (source == primaryButtonLink) {
+			fireEvent(ureq, new PrimaryEvent());
+		} else if (source instanceof Link link) {
+			int index = secondaryButtonLinks.indexOf(link);
+			if (index >= 0) {
+				fireEvent(ureq, new SecondaryEvent(secondaryButtons.get(index).action()));
+			}
 		}
 	}
 
@@ -277,4 +268,26 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 		return RENDERER;
 	}
 
+	public void setPrimaryButton(EmptyStateButton primaryButton) {
+		this.primaryButton = primaryButton;
+		setDirty(true);
+	}
+	
+	public void setPrimaryButton(String iconCss, String i18nKey, String translated) {
+		this.primaryButton = new EmptyStateButton(iconCss, i18nKey, translated, "primary");
+		setDirty(true);
+	}
+
+	public EmptyStateButton getPrimaryButton() {
+		return primaryButton;
+	}
+
+	public void setSecondaryButtons(List<EmptyStateButton> secondaryButtons) {
+		this.secondaryButtons = secondaryButtons;
+		setDirty(true);
+	}
+
+	public List<EmptyStateButton> getSecondaryButtons() {
+		return secondaryButtons;
+	}
 }

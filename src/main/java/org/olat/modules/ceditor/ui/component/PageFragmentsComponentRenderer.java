@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateRenderConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -92,11 +92,11 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 	}
 
 	protected void renderEmptyState(StringOutput sb, Translator translator) {
-		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+		EmptyStateRenderConfig emptyStateRenderConfig = EmptyStateRenderConfig.builder()
 				.withIconCss("o_page_icon")
 				.withMessageTranslated(translator.translate("no.content"))
 				.build();
-		EmptyStateRenderer.renderEmptyState(sb, translator, null, emptyStateConfig, null, null);
+		EmptyStateRenderer.renderEmptyState(sb, translator, null, emptyStateRenderConfig);
 	}
 	
 	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Set<String> spacingElementIds, Map<String,
