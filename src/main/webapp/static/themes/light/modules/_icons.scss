@@ -58,6 +58,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_billing_address { @include o-add-icon('address-card');}
 .o_icon_bold { @include o-add-icon('bold');}
 .o_icon_bolt { @include o-add-icon('bolt');}
+.o_icon_bolt_lightning { @include o-add-icon('bolt-lightning');}
 .o_icon_bomb { @include o-add-icon('bomb');}
 .o_icon_booking { @include o-add-icon('shopping-cart');}
 .o_icon_bookmark { @include o-add-icon('bookmark'); color: $o-bookmark-color;}
