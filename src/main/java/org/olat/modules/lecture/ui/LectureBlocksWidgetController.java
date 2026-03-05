@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.CodeHelper;
@@ -137,8 +138,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 	@Override
 	protected String createShowAll(FormLayoutContainer widgetCont) {
-		showAllLink = uifactory.addFormLink("dashboard.widget.show.all", widgetCont);
-		showAllLink.setIconRightCSS("o_icon o_icon_start");
+		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		return showAllLink.getComponent().getComponentName();
 	}
 

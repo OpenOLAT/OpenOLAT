@@ -45,6 +45,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
@@ -175,7 +176,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 
 	@Override
 	protected String createShowAll(FormLayoutContainer widgetCont) {
-		showAllLink = createShowAllLink(widgetCont);
+		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		return showAllLink.getComponent().getComponentName();
 	}
 

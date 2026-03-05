@@ -26,7 +26,9 @@
 	<div class="o_dashboard_widget_space"></div>
 	#if($r.available($showAllComponentName) && $r.visible($showAllComponentName))
 		<div class="o_dashboard_widget_footer">
-			$r.render($showAllComponentName)
+			<div class="o_dashboard_widget_footer_buttons">
+				$r.render($showAllComponentName)
+			</div>
 		</div>
 	#end
 </div>

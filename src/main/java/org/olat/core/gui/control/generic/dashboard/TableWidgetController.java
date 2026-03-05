@@ -101,15 +101,6 @@ public abstract class TableWidgetController extends FormBasicController {
 		return staticRenderer;
 	}
 	
-	/**
-	 * Convenience method can be used by children if desired.
-	 */
-	public FormLink createShowAllLink(FormLayoutContainer widgetCont) {
-		FormLink toAllLink = uifactory.addFormLink("to.all.entries", widgetCont);
-		toAllLink.setIconRightCSS("o_icon o_icon_start");
-		return toAllLink;
-	}
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (prefsCtrl == source) {

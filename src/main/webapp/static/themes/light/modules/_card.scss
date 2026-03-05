@@ -299,11 +299,13 @@
 	
 	.o_dashboard_widget_footer {
 		margin: $o-dashboard-widget-base-margin;
-		
+
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
-		justify-content: center;
+
+		.o_dashboard_widget_footer_buttons {
+			margin-left: auto;
+		}
 	}
 }
 .o_dashboard_table_widget {

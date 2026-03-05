@@ -43,6 +43,7 @@ import org.olat.core.gui.components.indicators.IndicatorsFactory;
 import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -248,7 +249,7 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 
 	@Override
 	protected String createShowAll(FormLayoutContainer widgetCont) {
-		showAllLink = createShowAllLink(widgetCont);
+		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		setUrl(showAllLink, membersAreaBusinessPath + "[Active:0][All:0]");
 		return showAllLink.getComponent().getComponentName();
 	}

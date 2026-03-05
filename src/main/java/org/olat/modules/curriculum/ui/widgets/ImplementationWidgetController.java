@@ -57,6 +57,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.MaxHeightScrollableDelegate;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
@@ -252,7 +253,7 @@ public class ImplementationWidgetController extends TableWidgetController
 
 	@Override
 	protected String createShowAll(FormLayoutContainer widgetCont) {
-		showAllLink = createShowAllLink(widgetCont);
+		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		setUrl(showAllLink, "[Implementations:0][All:0]", curriculumBusinessPath + "[Implementations:0][All:0]");
 		return showAllLink.getComponent().getComponentName();
 	}
