@@ -218,6 +218,10 @@ ul.o_dropdown {
 		margin: 0.5em;
 	}
 	.o_empty_action {
+		display: flex;
+		flex-direction: row;
+		gap: 4px;
+		justify-content: center;
 		margin: 0.5em;
 	}
 	
