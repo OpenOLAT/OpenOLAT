@@ -118,7 +118,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 						CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, doer);
 				certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.add_membership,
 						null, null, "certified", null, null, null, doer);
-				
+				dbInstance.commit();// Prevent deadlock with MySQL
 				accepted = true;
 			} else {
 				accepted = processRecertificationRequest(identity, certificationProgram, lastCertificate, requestMode, referenceDate, doer);
