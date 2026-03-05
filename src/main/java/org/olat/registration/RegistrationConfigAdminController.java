@@ -139,6 +139,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		validityCont = FormLayoutContainer.createDefaultFormLayout("validityCont", getTranslator());
 		validityCont.setRootForm(mainForm);
 		validityCont.setFormTitle(translate("admin.registration.config.validity"));
+		validityCont.setFormInfo(translate("admin.registration.config.validity.hint"));
 		formLayout.add(validityCont);
 
 		validUntilGuiEl = uifactory.addTextElement("admin.registration.valid.until.gui", 20, registrationModule.getValidUntilMinutesGui().toString(), validityCont);
@@ -258,9 +259,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		boolean enableMain = registrationEl.isOn();
 		settingsContainer.setVisible(enableMain);
 		domainsContainer.setVisible(enableMain);
-		validityCont.setVisible(enableMain);
 		registrationLoginElement.setEnabled(enableMain);
-		submitBtn.setVisible(enableMain);
 		if (!orgEmailDomainEnabled) {
 			domainListElement.setVisible(domainRestrictionEl.isOn());
 		}
