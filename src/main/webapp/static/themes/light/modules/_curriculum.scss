@@ -155,55 +155,17 @@ fieldset.o_validation_result {
 		}
 	}
 
-	.o_curriculum_widget_numbers {
-		display: flex;
-		column-gap: 20px;
-		margin: 0px 15px;
-		
-		.o_curriculum_widget_number {
-			display: flex;
-			flex-direction: column-reverse;
-			
-			.o_curriculum_widget_value {
-				font-size: $o-widget-figure-value-font-size;
-				line-height: $o-widget-figure-value-font-size;
-				font-weight: normal;
-				padding: 0;
-				color: $o-curriculum-widget-color;
-			}
-			.o_curriculum_widget_label, label {
-				font-size: $o-widget-figure-desc-font-size;
-				font-weight: normal;
-				color: $o-curriculum-widget-color;
-			}
-		}
-	}
-	
-	.o_curriculum_widget_participants {
-		display: flex;
-		flex-wrap: wrap;
-		row-gap: 10px;
-	}
-	.o_curriculum_widget_numbers_wrapper {
-		margin-right: auto;
-	}
-	
-	.o_curriculum_widget_participants h4,
-	.o_curriculum_widget_other_roles h4 {
+	.o_curriculum_widget_course_staff h4 {
 			padding: 5px 15px;
 			margin: 5px 0;
 	}
-	
-	.o_curriculum_widget_chart_wrapper {
-		margin: 0px 15px;
-		display: grid;
-		grid-template-columns: 1fr;
-		grid-template-rows: 1fr auto auto;
-		justify-items: center;
-	}
-	
-	.o_curriculum_widget ~ .o_button_group .o_button_details {
-		margin-top: -2px;
+
+	.o_curriculum_widget_course_staff {
+		margin: $o-dashboard-widget-base-margin;
+		border: $o-curriculum-widget-card-border;
+		border-radius: $o-curriculum-widget-card-border-radius;
+		background-color: #fff;
+		padding: 5px 0;
 	}
 
 	.o_curriculum_course_card {
@@ -362,21 +324,24 @@ fieldset.o_validation_result {
 	.o_curriculum_widget_roles_portrait {
 		display: grid;
 		grid-template-columns: 33% 33% 33%;
+		justify-items: start;
 		column-gap: 10px;
 		padding: 5px 15px;
-		
+
 		@media (max-width: $screen-xs-max) {
 			grid-template-columns: 100%;
 		}
-		
+
+		> div {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
 		.o_curriculum_widget_role {
 			display: block;
 			padding: 7px 0;
 		}
-	}
-	
-	.o_curriculum_members_widget .o_curriculum_widget_participants {
-		padding-bottom: 15px;
 	}
 	
 	.o_curriculum_widget_members_status_overbooked {
@@ -384,6 +349,33 @@ fieldset.o_validation_result {
 	}
 	.o_curriculum_widget_members_status_fullybooked .o_icon:before,
 	.o_curriculum_widget_members_status_fewleft .o_icon:before {
+		color: $brand-warning;
+	}
+}
+.o_indicators_key {
+	.o_indicator_figure:has(.o_speedometer) {
+		height: auto;
+	}
+	.o_speedometer {
+		width: 160px;
+		height: 80px;
+		&:before {
+			border-width: 8px;
+		}
+		>span.o_speedometer_value {
+			font-size: $o-widget-figure-value-font-size;
+			line-height: 115px;
+		}
+		>span.o_speedometer_indicator:after {
+			border-width: 8px;
+		}
+	}
+}
+.o_members_widget_icon {
+	&.o_membership_status_active {
+		color: $brand-success;
+	}
+	&.o_membership_status_pending {
 		color: $brand-warning;
 	}
 }

@@ -1,32 +1,17 @@
 <div class="o_dashboard_widget o_bento_content">
 	<div class="o_dashboard_widget_header o_flex_first_grow_base">
 		<div class="o_dashboard_widget_title">
-			<h3>$r.translate("curriculum.members")</h3>
+			<h3><i class="o_icon o_icon_membersmanagement"> </i> $r.translate("curriculum.members")</h3>
 		</div>
 	</div>
-	
-	<div class="o_curriculum_widget_participants">
-		<div class="o_curriculum_widget_numbers_wrapper">
-			<h4>$r.translate("curriculum.element.participants")</h4>
-			<div class="o_curriculum_widget_numbers">
-				$r.render("num.of.active.participants", "nolayout")
-				$r.render("num.of.pending.participants", "nolayout")
-			</div>
-		</div>
-		<div class="o_curriculum_widget_chart_wrapper">
-			<div>
-				$r.render("participantsMeter")
-			</div>
-			<div>#if($r.isNotEmpty($minMax))
-				<span class="text-muted">$minMax</span>
-			#end</div>
-			<div>#if($r.isNotEmpty($availabilityMsg))
-				$availabilityMsg
-			#end</div>
-		</div>
+
+	<div class="o_dashboard_widget_indicators">
+		$r.render("participantsIndicators")
 	</div>
-	<div class="o_curriculum_widget_other_roles">
-		<h4>$r.translate("curriculum.element.other.roles")</h4>
+
+	#if($r.available("coaches") || $r.available("masterCoaches") || $r.available("owners"))
+	<div class="o_curriculum_widget_course_staff">
+		<h4>$r.translate("curriculum.element.course.staff")</h4>
 		<div class="o_curriculum_widget_roles_portrait">
 			#if($r.available("coaches"))
 			<div>
@@ -46,6 +31,7 @@
 				<span class="o_curriculum_widget_role">$r.render("course.owners")</span>
 			</div>
 			#end
-		</div>	
+		</div>
 	</div>
+	#end
 </div>

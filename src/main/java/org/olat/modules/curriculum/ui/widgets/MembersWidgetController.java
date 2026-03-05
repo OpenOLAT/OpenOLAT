@@ -22,13 +22,13 @@ package org.olat.modules.curriculum.ui.widgets;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.chart.SpeedometerElement;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.indicators.IndicatorsFactory;
+import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,7 +45,6 @@ import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumElementDetailsController;
-import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.resource.accesscontrol.ACService;
@@ -59,38 +58,39 @@ import org.olat.user.UsersPortraitsComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Initial date: 30 avr. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class MembersWidgetController extends FormBasicController {
-	
+
+	private IndicatorsItem participantsIndicatorsEl;
+	private FormLink participantsKeyLink;
+	private FormLink activeParticipantsLink;
+	private FormLink pendingParticipantsLink;
 	private FormLink ownersLink;
 	private FormLink coachesLink;
 	private FormLink masterCoachesLink;
-	private FormLink activeParticipantsLink;
-	private FormLink pendingParticipantsLink;
-	private SpeedometerElement speedometerEl;
 
 	private int counter = 0;
 	private boolean otherRolesInitialized = false;
 	private CurriculumElementInfos curriculumElementInfos;
-	
+
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private UserPortraitService userPortraitService;
-	
+
 	public MembersWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "members_widget", Util
 				.createPackageTranslator(CurriculumElementDetailsController.class, ureq.getLocale()));
 		curriculumElementInfos = loadInformations(curriculumElement);
 		initForm(ureq);
 	}
-	
+
 	private CurriculumElementInfos loadInformations(CurriculumElement curriculumElement) {
 		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElements(null, List.of(curriculumElement));
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
@@ -102,59 +102,93 @@ public class MembersWidgetController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String activeText = getText(translate("num.of.active.participants"), Long.toString(curriculumElementInfos.numOfParticipants()));
-		activeParticipantsLink = uifactory.addFormLink("num.of.active.participants", activeText, null, formLayout, Link.LINK | Link.NONTRANSLATED);
-		String pendingText = getText(translate("num.of.pending.participants"), Long.toString(curriculumElementInfos.numOfPending()));
-		pendingParticipantsLink = uifactory.addFormLink("num.of.pending.participants", pendingText, null, formLayout, Link.LINK | Link.NONTRANSLATED);
-		
-		speedometerEl = new SpeedometerElement("participantsMeter");
-		speedometerEl.setValueCssClass("o_speedometer_infos");
-		formLayout.add("participantsMeter", speedometerEl);
-		
+		participantsIndicatorsEl = IndicatorsFactory.createItem("participantsIndicators", formLayout);
+
+		participantsKeyLink = IndicatorsFactory.createIndicatorFormLink("participantsKey", "participants", "", "", formLayout);
+		activeParticipantsLink = IndicatorsFactory.createIndicatorFormLink("activeParticipants", "activeParticipants", "", "", formLayout);
+		pendingParticipantsLink = IndicatorsFactory.createIndicatorFormLink("pendingParticipants", "pendingParticipants", "", "", formLayout);
+
+		participantsIndicatorsEl.setKeyIndicator(participantsKeyLink);
+		participantsIndicatorsEl.setFocusIndicatorsItems(List.of(activeParticipantsLink, pendingParticipantsLink));
+
 		initOtherRoles(ureq);
-		
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			initAvailability(layoutCont);
-		}
+		updateParticipantsIndicator();
 	}
-	
-	private void initAvailability(FormLayoutContainer layoutCont) {
+
+	private void updateParticipantsIndicator() {
 		Long max = curriculumElementInfos.curriculumElement().getMaxParticipants();
 		Long min = curriculumElementInfos.curriculumElement().getMinParticipants();
-				
-		String range = CurriculumHelper.getParticipantRange(getTranslator(), curriculumElementInfos.curriculumElement(), false);
-			layoutCont.contextPut("minMax", range);
+		long numActive = curriculumElementInfos.numOfParticipants();
+		long numPending = curriculumElementInfos.numOfPending();
+		long total = numActive + numPending;
 
-		long num = curriculumElementInfos.numOfParticipants() + curriculumElementInfos.numOfPending();
-		speedometerEl.setValue(num);
-		if(max != null && max.longValue() > 0l) {
-			speedometerEl.setMaxValue(max.doubleValue());
-			
-			ParticipantsAvailabilityNum participantsAvailabilityNum = acService
-					.getParticipantsAvailability(curriculumElementInfos.curriculumElement().getMaxParticipants(), num, true);
-			String availability = getAvailabilityText(participantsAvailabilityNum);
-			layoutCont.contextPut("availabilityMsg", availability);
-			
-			String speedometerClass = "o_speedometer_success";
-			if(min != null && num < min.longValue()) {
-				speedometerClass = "o_speedometer_warning";
-			} else if(participantsAvailabilityNum.availability() == ParticipantsAvailability.overbooked) {
-				speedometerClass = "o_speedometer_danger";
-			}
-			speedometerEl.setValueCssClass(speedometerClass);
+		String figure;
+		String label = translate("curriculum.element.participants");
+		if (max != null && max > 0) {
+			ParticipantsAvailabilityNum availabilityNum = acService.getParticipantsAvailability(max, total, true);
+			figure = getSpeedometerHtml(total, max.doubleValue(), getSpeedometerCssClass(min, total, availabilityNum));
+			label = label + "<br>" + getParticipantsSubInfo(min, total, availabilityNum);
 		} else {
-			speedometerEl.setMaxValue(num);
-			speedometerEl.setValueCssClass("o_speedometer_success");
-			
-			String availability = translate(num <= 1 ? "filter.occupancy.status.seat" :"filter.occupancy.status.seats", Long.toString(num));
-			layoutCont.contextPut("availabilityMsg", availability);
+			figure = Long.toString(total);
+			if (min != null && min > 0 && total < min) {
+				label = label + "<br><span class='text-muted'>"
+						+ translate("participants.to.minimum", Long.toString(min - total)) + "</span>";
+			}
 		}
+
+		participantsKeyLink.setI18nKey(IndicatorsFactory.createLinkText(label, figure));
+
+		activeParticipantsLink.setI18nKey(IndicatorsFactory.createLinkText(
+				"<i class=\"o_icon o_members_widget_icon o_membership_status_active\"></i> " + translate("membership.active"),
+				Long.toString(numActive)));
+		pendingParticipantsLink.setI18nKey(IndicatorsFactory.createLinkText(
+				"<i class=\"o_icon o_members_widget_icon o_membership_status_pending\"></i> " + translate("membership.pending"),
+				Long.toString(numPending)));
 	}
-	
+
+	private String getSpeedometerCssClass(Long min, long total, ParticipantsAvailabilityNum availabilityNum) {
+		if (availabilityNum.availability() == ParticipantsAvailability.overbooked) {
+			return "o_speedometer_danger";
+		} else if (min != null && total < min) {
+			return "o_speedometer_warning";
+		}
+		return "o_speedometer_success";
+	}
+
+	private String getParticipantsSubInfo(Long min, long total, ParticipantsAvailabilityNum availabilityNum) {
+		ParticipantsAvailability availability = availabilityNum.availability();
+		if (availability == ParticipantsAvailability.fullyBooked || availability == ParticipantsAvailability.overbooked) {
+			return getAvailabilityText(availabilityNum);
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("<span class='text-muted'>");
+		sb.append(translate("filter.occupancy.status.free.num.seats", Long.toString(availabilityNum.numAvailable())));
+		if (min != null && min > 0 && total < min) {
+			sb.append(" / ");
+			sb.append(translate("participants.to.minimum", Long.toString(min - total)));
+		}
+		sb.append("</span>");
+		return sb.toString();
+	}
+
+	private String getSpeedometerHtml(long value, double maxValue, String cssClass) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<div class='o_speedometer ").append(cssClass).append("'>");
+		sb.append("<span class='o_speedometer_value'>").append(value).append("</span>");
+		if (maxValue > 0.0d && value > 0) {
+			double rotation = (value / maxValue) * 180;
+			double transposed = 180 - rotation;
+			sb.append("<span class='o_speedometer_indicator' style='--var-speed:-").append(Math.round(transposed)).append("deg;'></span>");
+		}
+		sb.append("</div>");
+		return sb.toString();
+	}
+
 	private String getAvailabilityText(ParticipantsAvailabilityNum availability) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<span class='o_curriculum_widget_members_status_").append(availability.availability().name().toLowerCase()).append("'>");
-		
+
 		String icon = switch(availability.availability()) {
 			case manyLeft -> null;
 			case fewLeft, fullyBooked -> "o_icon_warning";
@@ -163,7 +197,7 @@ public class MembersWidgetController extends FormBasicController {
 		if(icon != null) {
 			sb.append("<i class='o_icon o_icon-fw ").append(icon).append("'> </i> ");
 		}
-		
+
 		String text = switch(availability.availability()) {
 			case manyLeft -> translate("filter.occupancy.status.free.num.seats", Long.toString(availability.numAvailable()));
 			case fewLeft -> translate("filter.occupancy.status.free.few.num.seats", Long.toString(availability.numAvailable()));
@@ -174,19 +208,10 @@ public class MembersWidgetController extends FormBasicController {
 		sb.append("</span>");
 		return sb.toString();
 	}
-	
-	private String getText(String label, String value) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("<span class=\"o_curriculum_widget_number\">")
-		  .append("<label class=\"o_curriculum_widget_label\">").append(label).append("</label>")
-		  .append("<span class=\"o_curriculum_widget_value\">").append(value).append("</span>")
-		  .append("</span>");
-		return sb.toString();
-	}
-	
+
 	private void initOtherRoles(UserRequest ureq) {
 		if(otherRolesInitialized) return;// Only once
-		
+
 		SearchMemberParameters params = new SearchMemberParameters(curriculumElementInfos.curriculumElement());
 		params.setRoles(List.of(CurriculumRoles.coach, CurriculumRoles.mastercoach, CurriculumRoles.owner));
 		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
@@ -219,14 +244,14 @@ public class MembersWidgetController extends FormBasicController {
 		}
 		otherRolesInitialized = true;
 	}
-	
+
 	private List<Identity> getCurriculumMembers(List<CurriculumMember> members, CurriculumRoles role) {
 		return members.stream()
 				.filter(m -> role.name().equals(m.getRole()))
 				.map(CurriculumMember::getIdentity)
 				.toList();
 	}
-	
+
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, List<Identity> members, String role) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), members);
 		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent());
@@ -236,27 +261,24 @@ public class MembersWidgetController extends FormBasicController {
 		usersPortraitCmp.setUsers(portraitUsers);
 		return usersPortraitCmp;
 	}
-	
+
 	public void loadModel(UserRequest ureq) {
 		curriculumElementInfos = loadInformations(curriculumElementInfos.curriculumElement());
 		this.otherRolesInitialized = false;
 		initOtherRoles(ureq);
-		initAvailability(flc);
-		
-		String activeText = getText(translate("num.of.active.participants"), Long.toString(curriculumElementInfos.numOfParticipants()));
-		activeParticipantsLink.setI18nKey(activeText);
-		String pendingText = getText(translate("num.of.pending.participants"), Long.toString(curriculumElementInfos.numOfPending()));
-		pendingParticipantsLink.setI18nKey(pendingText);
+		updateParticipantsIndicator();
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(coachesLink == source) {
-			fireActivateActiveEvent(ureq, "Coach");	
+			fireActivateActiveEvent(ureq, "Coach");
 		} else if(masterCoachesLink == source) {
-			fireActivateActiveEvent(ureq, "MasterCoach");	
+			fireActivateActiveEvent(ureq, "MasterCoach");
 		} else if(ownersLink == source) {
-			fireActivateActiveEvent(ureq, "Owner");	
+			fireActivateActiveEvent(ureq, "Owner");
+		} else if(participantsKeyLink == source) {
+			fireActivateMembersEvent(ureq);
 		} else if(activeParticipantsLink == source) {
 			fireActivateActiveEvent(ureq, "Participant");
 		} else if(pendingParticipantsLink == source) {
@@ -264,14 +286,20 @@ public class MembersWidgetController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
+	private void fireActivateMembersEvent(UserRequest ureq) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS));
+		fireEvent(ureq, new ActivateEvent(entries));
+	}
+
 	private void fireActivatePendingEvent(UserRequest ureq, String filter) {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance()
 				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS),
 						OresHelper.createOLATResourceableType("Pending"), OresHelper.createOLATResourceableType(filter));
 		fireEvent(ureq, new ActivateEvent(entries));
 	}
-	
+
 	private void fireActivateActiveEvent(UserRequest ureq, String filter) {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance()
 				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS),
@@ -283,5 +311,5 @@ public class MembersWidgetController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
+
 }
