@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -288,7 +289,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		initFilters();
 		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list-" + feedRss.getKey());
 
-		if (!itemRows.isEmpty()) {
+		if (tableModel.getRowCount() > 0) {
 			loadTimelineTagsToggle(ureq);
 		}
 	}
@@ -330,6 +331,14 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		itemRows = new ArrayList<>();
 
 		loadFeedItems();
+		
+		List<Long> itemKeys = feedItemDTOList.stream()
+				.map(FeedItemDTO::item)
+				.map(Item::getKey).toList();
+		
+		List<FeedTag> feedTagsList = feedManager.getFeedTags(feedRss, itemKeys);
+		Map<Long, List<FeedTag>> feedTagsMap = feedTagsList.stream()
+				.collect(Collectors.groupingBy(tag -> tag.getFeedItem().getKey()));
 
 		for (FeedItemDTO feedItemDTO : feedItemDTOList) {
 			Long numOfComments = feedItemDTO.numOfComments();
@@ -342,8 +351,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			if (feedItemDTO.item().getDate() != null) {
 				DateComponentFactory.createDateComponentWithYear("dateComp." + feedItemDTO.item().getGuid(), feedItemDTO.item().getDate(), customItemFlc.getFormItemComponent());
 			}
-
-			List<FeedTag> feedTags = feedManager.getFeedTags(feedRss, List.of(feedItemDTO.item().getKey()));
+			
+			List<FeedTag> feedTags = feedTagsMap.get(feedItemDTO.item().getKey());
 			if (feedTags != null && !feedTags.isEmpty()) {
 				List<Tag> tags = feedTags.stream().map(FeedTag::getTag).toList();
 				row.setTagsDisplayNames(tags.stream().map(Tag::getDisplayName).toList());

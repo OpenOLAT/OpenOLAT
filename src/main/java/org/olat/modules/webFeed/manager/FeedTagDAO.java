@@ -19,12 +19,15 @@
  */
 package org.olat.modules.webFeed.manager;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -197,14 +200,24 @@ public class FeedTagDAO {
 
 		TypedQuery<FeedTag> query = dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), FeedTag.class);
-
 		if (searchParams.getFeedKey() != null) {
 			query.setParameter("feedKey", searchParams.getFeedKey());
 		}
-		if (searchParams.getFeedItemKeys() != null && !searchParams.getFeedItemKeys().isEmpty()) {
-			query.setParameter("feedItemKeys", searchParams.getFeedItemKeys());
-		}
 
-		return query.getResultList();
+		List<FeedTag> tags;
+		if (searchParams.getFeedItemKeys() != null && !searchParams.getFeedItemKeys().isEmpty()) {
+			tags = new ArrayList<>();
+			Collection<List<Long>> chunks = PersistenceHelper.chunks(new ArrayList<>(searchParams.getFeedItemKeys()), 3);
+			for(List<Long> chunk:chunks) {
+				query.setParameter("feedItemKeys", chunk);
+				List<FeedTag> chunkedTags = query.getResultList();
+				if(chunkedTags != null && !chunkedTags.isEmpty()) {
+					tags.addAll(chunkedTags);
+				}
+			}
+		} else {
+			tags = query.getResultList();
+		}
+		return tags;
 	}
 }
