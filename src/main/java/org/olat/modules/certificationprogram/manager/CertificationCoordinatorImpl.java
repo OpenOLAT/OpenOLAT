@@ -110,18 +110,18 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		boolean accepted = false;
 		certificationProgram = certificationProgramDao.loadCertificationProgram(certificationProgram.getKey());
 		if(certificationProgram != null && certificationProgram.getStatus() == CertificationProgramStatusEnum.active) {
-			Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram.getResource().getKey());
-			if(certificate == null) {
+			Certificate lastCertificate = certificatesDao.getLastCertificate(identity, certificationProgram.getResource().getKey());
+			if(lastCertificate == null) {
 				//First certificate is free (paid by the course fee)
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
-				generateCertificate(identity, certificationProgram, null, requestMode,
+				Certificate certificate = generateCertificate(identity, certificationProgram, null, requestMode,
 						CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, doer);
 				certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.add_membership,
 						null, null, "certified", null, null, null, doer);
 				
 				accepted = true;
 			} else {
-				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
+				accepted = processRecertificationRequest(identity, certificationProgram, lastCertificate, requestMode, referenceDate, doer);
 			}
 		}
 		return accepted;
@@ -321,6 +321,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			
 			certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.revoke_certificate,
 					currentStatus.name(), null, CertificationStatus.REVOKED.name(), null, null, null, actor);
+			
+			String membershipStatusBefore = CertificationStatus.VALID.equals(currentStatus) ? "certified" : currentStatus.name();
+			certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.remove_membership,
+					membershipStatusBefore, null, "removed", null, null, null, actor);
 		}
 		return certificate;
 	}

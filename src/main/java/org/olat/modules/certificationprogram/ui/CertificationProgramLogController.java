@@ -221,7 +221,7 @@ public class CertificationProgramLogController extends FormBasicController {
 
 		// Add memberships
 		appendActivityFilterValues(filter, CertificationProgramLogAction.add_membership, CertificationProgramLogAction.add_membership_manually,
-				CertificationProgramLogAction.change_membership, CertificationProgramLogAction.remove_membership);
+				CertificationProgramLogAction.remove_membership);
 		
 		// Reminder
 		appendActivityFilterValues(filter, CertificationProgramLogAction.reminder_change_status, CertificationProgramLogAction.reminder_create,

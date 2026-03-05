@@ -862,6 +862,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CertificationProgram certificationProgram = getUniqueActiveCertificationProgram(certificationPrograms);
 		if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 				&& certificationProgram != null) {
+			if(assessedIdentity != null && assessedIdentity.equals(doer)) {
+				doer = null;// If the user passed the course -> it's considered trigger indirectly by the system
+			}
 			certificationOrchestrator.processCertificationRequest(assessedIdentity, certificationProgram, RequestMode.COURSE, new Date(), doer);
 		}
 	}

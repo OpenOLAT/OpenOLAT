@@ -30,6 +30,9 @@ public enum CertificationProgramLogAction {
 	// 
 	add_membership,
 	add_membership_manually,
+	/**
+	 * @deprecated
+	 */
 	change_membership,
 	remove_membership,
 	
