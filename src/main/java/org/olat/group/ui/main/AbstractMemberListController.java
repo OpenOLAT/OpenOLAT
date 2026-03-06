@@ -149,6 +149,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	public static final String FILTER_TYPE = "filter.type";
 	
 	public static final String TABLE_ACTION_EDIT = "tbl_edit";
+	public static final String TABLE_ACTION_TOGGLE_DETAILS = "tbl_toggle_details";
 	public static final String TABLE_ACTION_MAIL = "tbl_mail";
 	public static final String TABLE_ACTION_REMOVE = "tbl_remove";
 	public static final String TABLE_ACTION_GRADUATE = "tbl_graduate";
@@ -476,8 +477,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			FlexiColumnModel col;
 			if(UserConstants.FIRSTNAME.equals(propName) || UserConstants.LASTNAME.equals(propName)) {
 				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
-						colPos, editAction, true, propName,
-						new StaticFlexiCellRenderer(editAction, new TextFlexiCellRenderer()));
+						colPos, TABLE_ACTION_TOGGLE_DETAILS, true, propName,
+						new StaticFlexiCellRenderer(TABLE_ACTION_TOGGLE_DETAILS, new TextFlexiCellRenderer()));
 			} else {
 				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
 			}
@@ -562,6 +563,14 @@ public abstract class AbstractMemberListController extends FormBasicController i
 					doIm(ureq, row);
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 					openEdit(ureq, row);
+				} else if(TABLE_ACTION_TOGGLE_DETAILS.equals(cmd)) {
+					if(row.getDetailsController() != null) {
+						doCloseDetails(row);
+						membersTable.collapseDetails(se.getIndex());
+					} else {
+						membersTable.expandDetails(se.getIndex());
+						doOpenDetails(ureq, row);
+					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				String cmd = event.getCommand();
