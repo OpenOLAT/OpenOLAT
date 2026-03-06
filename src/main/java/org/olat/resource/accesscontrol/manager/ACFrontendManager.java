@@ -269,6 +269,16 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 	
 	@Override
+	public boolean isOpenAccessible(RepositoryEntry entry, Identity identity) {
+		if (!entry.isPublicVisible() || !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), ACService.RESTATUS_ACTIVE_OPEN)) {
+			return false;
+		}
+		
+		List<OrganisationRef> offerOrganisations = getOfferOrganisations(identity);
+		return accessManager.isOpenAccessible(entry.getOlatResource(), null, offerOrganisations);
+	}
+	
+	@Override
 	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus) {
 		if (filterStatus && !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), ACService.RESTATUS_ACTIVE_GUEST)) {
 			return false;

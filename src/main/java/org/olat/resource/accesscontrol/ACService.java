@@ -97,6 +97,8 @@ public interface ACService {
 	public AccessResult isAccessible(CurriculumElement element, Identity forId, Boolean knowMember, boolean isGuest,
 			Boolean webPublish, boolean allowNonInteractiveAccess);
 	
+	public boolean isOpenAccessible(RepositoryEntry entry, Identity identity);
+	
 	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus);
 	
 	/**
