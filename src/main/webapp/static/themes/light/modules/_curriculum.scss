@@ -323,16 +323,12 @@ fieldset.o_validation_result {
 	}
 	
 	.o_curriculum_widget_roles_portrait {
-		display: grid;
-		grid-template-columns: 33% 33% 33%;
-		justify-items: start;
-		column-gap: 10px;
 		padding: 5px 15px;
-
-		@media (max-width: $screen-xs-max) {
-			grid-template-columns: 100%;
-		}
-
+		
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 30px;
+		
 		> div {
 			display: flex;
 			flex-direction: column;

@@ -9,7 +9,7 @@
 		$r.render("participantsIndicators")
 	</div>
 
-	#if($r.available("coaches") || $r.available("masterCoaches") || $r.available("owners"))
+	#if($r.available("coaches") || $r.available("masterCoaches") || $r.available("owners") || $r.available("elementOwners"))
 	<div class="o_curriculum_widget_course_staff">
 		<h4>$r.translate("curriculum.element.course.staff")</h4>
 		<div class="o_curriculum_widget_roles_portrait">
@@ -29,6 +29,12 @@
 			<div>
 				$r.render("owners")
 				<span class="o_curriculum_widget_role">$r.render("course.owners")</span>
+			</div>
+			#end
+			#if($r.available("elementOwners"))
+			<div>
+				$r.render("elementOwners")
+				<span class="o_curriculum_widget_role">$r.render("curriculum.element.owners")</span>
 			</div>
 			#end
 		</div>

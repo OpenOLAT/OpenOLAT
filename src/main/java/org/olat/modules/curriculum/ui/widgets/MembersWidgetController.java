@@ -70,6 +70,7 @@ public class MembersWidgetController extends FormBasicController {
 	private FormLink activeParticipantsLink;
 	private FormLink pendingParticipantsLink;
 	private FormLink ownersLink;
+	private FormLink elementOwnersLink;
 	private FormLink coachesLink;
 	private FormLink masterCoachesLink;
 
@@ -216,7 +217,7 @@ public class MembersWidgetController extends FormBasicController {
 		if(otherRolesInitialized) return;// Only once
 
 		SearchMemberParameters params = new SearchMemberParameters(curriculumElementInfos.curriculumElement());
-		params.setRoles(List.of(CurriculumRoles.coach, CurriculumRoles.mastercoach, CurriculumRoles.owner));
+		params.setRoles(List.of(CurriculumRoles.coach, CurriculumRoles.mastercoach, CurriculumRoles.owner, CurriculumRoles.curriculumelementowner));
 		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
 
 		List<Identity> coaches = getCurriculumMembers(members, CurriculumRoles.coach);
@@ -247,6 +248,16 @@ public class MembersWidgetController extends FormBasicController {
 			flc.put("owners", ownersCmp);
 		} else {
 			flc.remove("owners");
+		}
+
+		List<Identity> elementOwners = getCurriculumMembers(members, CurriculumRoles.curriculumelementowner);
+		if(!elementOwners.isEmpty()) {
+			elementOwnersLink = uifactory.addFormLink("curriculum.element.owners", "curriculum.element.owners", null, flc, Link.LINK);
+			elementOwnersLink.setUrl(getUrl("[Members:0][Active:0][" + CurriculumRoles.curriculumelementowner.name() + ":0]"));
+			UsersPortraitsComponent elementOwnersCmp = createUsersPortraits(ureq, elementOwners, "curriculum.element.owners");
+			flc.put("elementOwners", elementOwnersCmp);
+		} else {
+			flc.remove("elementOwners");
 		}
 		otherRolesInitialized = true;
 	}
@@ -288,6 +299,8 @@ public class MembersWidgetController extends FormBasicController {
 			fireActivateActiveEvent(ureq, "MasterCoach");
 		} else if(ownersLink == source) {
 			fireActivateActiveEvent(ureq, "Owner");
+		} else if(elementOwnersLink == source) {
+			fireActivateActiveEvent(ureq, "Curriculumelementowner");
 		} else if(participantsKeyLink == source) {
 			fireActivateMembersEvent(ureq);
 		} else if(activeParticipantsLink == source) {
