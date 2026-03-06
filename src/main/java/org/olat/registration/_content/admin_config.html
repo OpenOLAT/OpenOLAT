@@ -1,15 +1,25 @@
-$r.render("enableCont")
+<div class="form-group">
+    $r.render("enableCont")
+</div>
 #if($r.visible("settingsCont"))
+<div class="form-group">
     $r.render("settingsCont")
+</div>
 #end
 #if($r.visible("domainsCont"))
+<div class="form-group">
     $r.render("domainsCont")
     #if($r.available("table"))
-        $r.render("table")
+        <div class="form-group">
+            $r.render("table")
+        </div>
     #end
+</div>
 #end
 #if($r.visible("validityCont"))
+<div class="form-group">
     $r.render("validityCont")
+</div>
 #end
 
 #if($r.visible("settingsCont") || $r.visible("domainsCont") || $r.visible("validityCont"))
