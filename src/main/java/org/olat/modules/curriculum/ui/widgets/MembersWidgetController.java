@@ -105,8 +105,11 @@ public class MembersWidgetController extends FormBasicController {
 		participantsIndicatorsEl = IndicatorsFactory.createItem("participantsIndicators", formLayout);
 
 		participantsKeyLink = IndicatorsFactory.createIndicatorFormLink("participantsKey", "participants", "", "", formLayout);
+		participantsKeyLink.setUrl(getUrl("[Members:0]"));
 		activeParticipantsLink = IndicatorsFactory.createIndicatorFormLink("activeParticipants", "activeParticipants", "", "", formLayout);
+		activeParticipantsLink.setUrl(getUrl("[Members:0][Active:0][Participant:0]"));
 		pendingParticipantsLink = IndicatorsFactory.createIndicatorFormLink("pendingParticipants", "pendingParticipants", "", "", formLayout);
+		pendingParticipantsLink.setUrl(getUrl("[Members:0][Pending:0][All:0]"));
 
 		participantsIndicatorsEl.setKeyIndicator(participantsKeyLink);
 		participantsIndicatorsEl.setFocusIndicatorsItems(List.of(activeParticipantsLink, pendingParticipantsLink));
@@ -219,6 +222,7 @@ public class MembersWidgetController extends FormBasicController {
 		List<Identity> coaches = getCurriculumMembers(members, CurriculumRoles.coach);
 		if(!coaches.isEmpty()) {
 			coachesLink = uifactory.addFormLink("curriculum.element.coaches", "curriculum.element.coaches", null, flc, Link.LINK);
+			coachesLink.setUrl(getUrl("[Members:0][Active:0][Coach:0]"));
 			UsersPortraitsComponent coachesCmp = createUsersPortraits(ureq, coaches, "curriculum.element.coaches");
 			flc.put("coaches", coachesCmp);
 		} else {
@@ -228,6 +232,7 @@ public class MembersWidgetController extends FormBasicController {
 		List<Identity> masterCoaches = getCurriculumMembers(members, CurriculumRoles.mastercoach);
 		if(!masterCoaches.isEmpty()) {
 			masterCoachesLink = uifactory.addFormLink("curriculum.element.mastercoaches", "curriculum.element.mastercoaches", null, flc, Link.LINK);
+			masterCoachesLink.setUrl(getUrl("[Members:0][Active:0][MasterCoach:0]"));
 			UsersPortraitsComponent masterCoachesCmp = createUsersPortraits(ureq, masterCoaches, "curriculum.element.mastercoaches");
 			flc.put("masterCoaches", masterCoachesCmp);
 		} else {
@@ -237,12 +242,18 @@ public class MembersWidgetController extends FormBasicController {
 		List<Identity> owners = getCurriculumMembers(members, CurriculumRoles.owner);
 		if(!owners.isEmpty()) {
 			ownersLink = uifactory.addFormLink("course.owners", "role.owner", null, flc, Link.LINK);
+			ownersLink.setUrl(getUrl("[Members:0][Active:0][Owner:0]"));
 			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners, "role.owner");
 			flc.put("owners", ownersCmp);
 		} else {
 			flc.remove("owners");
 		}
 		otherRolesInitialized = true;
+	}
+
+	private String getUrl(String path) {
+		return BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(
+				"[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElementInfos.curriculumElement().getKey() + "]" + path);
 	}
 
 	private List<Identity> getCurriculumMembers(List<CurriculumMember> members, CurriculumRoles role) {

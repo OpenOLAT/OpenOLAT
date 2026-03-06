@@ -77,6 +77,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	public static final int TOOLENTRY_DEFAULT = 7;
 	public static final int TOOLENTRY_CLOSE = 8;
 
+	public static final String ARIA_ROLE_LINK = "link";
 	public static final String ARIA_ROLE_BUTTON = "button";
 
 	/**

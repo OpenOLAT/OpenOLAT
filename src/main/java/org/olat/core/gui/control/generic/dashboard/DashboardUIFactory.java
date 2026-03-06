@@ -37,12 +37,14 @@ public class DashboardUIFactory {
 	public static FormLink createShowAllLink(FormItemContainer formLayout) {
 		FormLink link = FormUIFactory.getInstance().addFormLink("show.all", "show.all", null, formLayout, Link.BUTTON);
 		link.setElementCssClass("o_button_primary_light");
+		link.getComponent().setAriaRole(Link.ARIA_ROLE_LINK);
 		return link;
 	}
 
 	public static FormLink createDetailsLink(FormItemContainer formLayout) {
 		FormLink link = FormUIFactory.getInstance().addFormLink("details", "dashboard.details", null, formLayout, Link.BUTTON);
 		link.setElementCssClass("o_button_primary_light");
+		link.getComponent().setAriaRole(Link.ARIA_ROLE_LINK);
 		return link;
 	}
 

@@ -127,6 +127,8 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		detailsLink = DashboardUIFactory.createDetailsLink(formLayout);
+		detailsLink.setUrl(BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(
+				"[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "][Resources:0]"));
 		flc.contextPut("detailsComponentName", detailsLink.getComponent().getComponentName());
 
 		emptyList = uifactory.addEmptyPanel("course.empty", null, formLayout);
