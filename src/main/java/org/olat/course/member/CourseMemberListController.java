@@ -26,15 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -247,33 +244,6 @@ public class CourseMemberListController extends AbstractMemberListController imp
 				openEdit(ureq, row);
 			}
 		}
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (membersTable == source) {
-			for (String parameterKey : ureq.getParameterSet()) {
-				if (parameterKey.startsWith(OriginCellRenderer.BUSINESS_GROUP_ACTION_PREFIX)) {
-					String businessGroupKey = parameterKey.substring(OriginCellRenderer.BUSINESS_GROUP_ACTION_PREFIX.length());
-				    doLaunchBusinessGroup(ureq, businessGroupKey);
-				}
-				if (parameterKey.startsWith(OriginCellRenderer.CURRICULUM_ELEMENT_ACTION_PREFIX)) {
-					String curriculumElementKey = parameterKey.substring(OriginCellRenderer.CURRICULUM_ELEMENT_ACTION_PREFIX.length());
-					doLaunchCurriculumElement(ureq, curriculumElementKey);
-				}
-			}
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	private void doLaunchBusinessGroup(UserRequest ureq, String businessGroupKey) {
-		String businessPath = "[BusinessGroup:" + businessGroupKey + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-
-	private void doLaunchCurriculumElement(UserRequest ureq, String curriculumElementKey) {
-		String businessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElementKey + "][Overview:0]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	@Override

@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -42,9 +41,6 @@ import org.olat.modules.curriculum.CurriculumElementShort;
  */
 public class OriginCellRenderer implements FlexiCellRenderer {
 
-	public static final String BUSINESS_GROUP_ACTION_PREFIX = "businessGroupAction_";
-	public static final String CURRICULUM_ELEMENT_ACTION_PREFIX = "curriculumElementAction_";
-	
 	public OriginCellRenderer() {
 	}
 
@@ -61,25 +57,23 @@ public class OriginCellRenderer implements FlexiCellRenderer {
 			}
 			
 			if (courseMembership.isBusinessGroupMember()) {
+				FlexiCellRenderer businessGroupRenderer = new BusinessGroupNameCellRenderer();
 				for (BusinessGroupShort businessGroup : memberRow.getGroups()) {
 					if (atLeastOneItem) {
 						target.append(", ");
 					}
-					String action = BUSINESS_GROUP_ACTION_PREFIX + businessGroup.getKey();
-					FlexiCellRenderer businessGroupRenderer = new StaticFlexiCellRenderer(action, new BusinessGroupNameCellRenderer());
 					businessGroupRenderer.render(renderer, target, businessGroup, row, source, ubu, translator);
 					atLeastOneItem = true;
 				}
 			}
 			
 			if (courseMembership.isCurriculumElementMember()) {
+				FlexiCellRenderer curriculumElementRenderer = new CurriculumElementCellRenderer();
 				Set<CurriculumElementShort> curriculumElementSet = new HashSet<>(memberRow.getCurriculumElements());
 				for (CurriculumElementShort curriculumElement : curriculumElementSet) {
 					if (atLeastOneItem) {
 						target.append(", ");
 					}
-					String action = CURRICULUM_ELEMENT_ACTION_PREFIX + curriculumElement.getKey();
-					FlexiCellRenderer curriculumElementRenderer = new StaticFlexiCellRenderer(action, new CurriculumElementCellRenderer());
 					curriculumElementRenderer.render(renderer, target, curriculumElement.getDisplayName(), row, source, ubu, translator);
 					atLeastOneItem = true;
 				}
