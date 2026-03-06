@@ -17,15 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.modules.curriculum.model;
+
+import java.util.Set;
 
 /**
- * Initial date: 2025-12-24<br>
+ * Initial date: 2026-03-06<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CurriculumCellRenderer extends CurriculumObjectNameCellRenderer {
-	public CurriculumCellRenderer() {
-		super("o_icon_curriculum");
-	}
+public record AccessibleCurriculumObjectKeys(Set<Long> curriculumElementKeys, Set<Long> curriculumKeys) {
 }

@@ -54,6 +54,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.TaughtBy;
+import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.AutomationImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -477,6 +478,67 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 			.isEmpty();
 	}
 	
+	@Test
+	public void loadAccessibleCurriculumKeysWithCurriculumOwner() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-acc-owner");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-acc-not-owner");
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		AccessibleCurriculumObjectKeys keys = curriculumElementDao.loadAccessibleCurriculumKeys(manager);
+		Assertions.assertThat(keys.curriculumElementKeys()).contains(element.getKey());
+		Assertions.assertThat(keys.curriculumKeys()).contains(curriculum.getKey());
+
+		AccessibleCurriculumObjectKeys notKeys = curriculumElementDao.loadAccessibleCurriculumKeys(notManager);
+		Assertions.assertThat(notKeys.curriculumElementKeys()).doesNotContain(element.getKey());
+		Assertions.assertThat(notKeys.curriculumKeys()).doesNotContain(curriculum.getKey());
+	}
+
+	@Test
+	public void loadAccessibleCurriculumKeysWithCurriculumElementOwner() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-acc-el-owner");
+		Identity notOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-acc-el-not-owner");
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner, owner);
+		dbInstance.commitAndCloseSession();
+
+		AccessibleCurriculumObjectKeys keys = curriculumElementDao.loadAccessibleCurriculumKeys(owner);
+		Assertions.assertThat(keys.curriculumElementKeys()).contains(element.getKey());
+		Assertions.assertThat(keys.curriculumKeys()).contains(curriculum.getKey());
+
+		AccessibleCurriculumObjectKeys notKeys = curriculumElementDao.loadAccessibleCurriculumKeys(notOwner);
+		Assertions.assertThat(notKeys.curriculumElementKeys()).doesNotContain(element.getKey());
+		Assertions.assertThat(notKeys.curriculumKeys()).doesNotContain(curriculum.getKey());
+	}
+
+	@Test
+	public void loadAccessibleCurriculumKeysWithCurriculumManager() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-acc-mgr");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-acc-not-mgr");
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null, manager);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager, manager);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		AccessibleCurriculumObjectKeys keys = curriculumElementDao.loadAccessibleCurriculumKeys(manager);
+		Assertions.assertThat(keys.curriculumElementKeys()).contains(element.getKey());
+		Assertions.assertThat(keys.curriculumKeys()).contains(curriculum.getKey());
+
+		AccessibleCurriculumObjectKeys notKeys = curriculumElementDao.loadAccessibleCurriculumKeys(notManager);
+		Assertions.assertThat(notKeys.curriculumElementKeys()).doesNotContain(element.getKey());
+		Assertions.assertThat(notKeys.curriculumKeys()).doesNotContain(curriculum.getKey());
+	}
+
 	@Test
 	public void countElementsRepositoryEntry() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);

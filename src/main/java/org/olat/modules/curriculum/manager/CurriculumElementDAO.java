@@ -61,6 +61,7 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.AutomationImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -615,7 +616,31 @@ public class CurriculumElementDAO {
 		}
 		return infos;
 	}
-	
+
+	public AccessibleCurriculumObjectKeys loadAccessibleCurriculumKeys(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select el.key, curriculum.key")
+		  .append(" from curriculumelement el")
+		  .append(" inner join el.curriculum curriculum")
+		  .append(" inner join el.group baseGroup")
+		  .append(" left join curriculum.organisation organis")
+		  .where().append(" el.status ").in(CurriculumElementStatus.notDeleted());
+		appendManagerAccess(sb);
+
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("managerKey", identity.getKey())
+				.getResultList();
+
+		Set<Long> curriculumElementKeys = new HashSet<>();
+		Set<Long> curriculumKeys = new HashSet<>();
+		for (Object[] row : rawObjects) {
+			curriculumElementKeys.add((Long) row[0]);
+			curriculumKeys.add((Long) row[1]);
+		}
+		return new AccessibleCurriculumObjectKeys(curriculumElementKeys, curriculumKeys);
+	}
+
 	/**
 	 * Need curriculum, organis of curriculum, baseGroup of curriculum element
 	 * and a parameter: managerKey.

@@ -107,6 +107,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
+import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
@@ -1006,6 +1007,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumElementInfosSearchParams searchParams) {
 		return curriculumElementDao.loadElementsWithInfos(searchParams);
+	}
+	
+	@Override
+	public AccessibleCurriculumObjectKeys getAccessibleCurriculumKeys(Identity identity) {
+		return curriculumElementDao.loadAccessibleCurriculumKeys(identity);
 	}
 
 	@Override

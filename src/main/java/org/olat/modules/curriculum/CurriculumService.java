@@ -37,6 +37,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -325,6 +326,16 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumElementInfosSearchParams searchParams);
 
+	/**
+	 * Retrieves the accessible curriculum object keys for the given identity. Curriculum objects are
+	 * curriculum elements and curriculum items themselves. It checks group membership at multiple levels of the 
+	 * curriculum hierarchy to determine whether a user with the given identity should be able to manage 
+	 * (or see) a given curriculum element.
+	 *
+	 * @param identity the identity for which accessible curriculum keys are to be retrieved
+	 * @return an instance of AccessibleCurriculumObjectKeys containing the keys accessible to the specified identity
+	 */
+	public AccessibleCurriculumObjectKeys getAccessibleCurriculumKeys(Identity identity);
 	
 	/**
 	 * Retrieve the children elements of the specified curriculum element. The method
