@@ -102,7 +102,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		softly.assertThat(sut.getParticipantsAvailabilityNum().numAvailable()).isGreaterThan(10000);
 		softly.assertThat(sut.isNotPublishedYetMessage()).isFalse();
 		softly.assertThat(sut.isNoContentYetMessage()).isFalse();
-		softly.assertThat(sut.isConfirmationPendingMessage()).isFalse();
+		softly.assertThat(sut.isParticipantConfirmationPending()).isFalse();
+		softly.assertThat(sut.isAdminConfirmationPendingMessage()).isFalse();
 		softly.assertThat(sut.isAvailabilityMessage()).isFalse();
 		softly.assertThat(sut.isOwnerCoachMessage()).isFalse();
 		softly.assertThat(sut.isAdministrativOpenAvailable()).isFalse();
@@ -136,7 +137,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		softly.assertThat(sut.getParticipantsAvailabilityNum().numAvailable()).isGreaterThan(10000);
 		softly.assertThat(sut.isNotPublishedYetMessage()).isFalse();
 		softly.assertThat(sut.isNoContentYetMessage()).isFalse();
-		softly.assertThat(sut.isConfirmationPendingMessage()).isFalse();
+		softly.assertThat(sut.isParticipantConfirmationPending()).isFalse();
+		softly.assertThat(sut.isAdminConfirmationPendingMessage()).isFalse();
 		softly.assertThat(sut.isAvailabilityMessage()).isFalse();
 		softly.assertThat(sut.isOwnerCoachMessage()).isFalse();
 		softly.assertThat(sut.isAdministrativOpenAvailable()).isFalse();
@@ -892,7 +894,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		}
 		softly.assertThat(sut.isNotPublishedYetMessage()).isEqualTo(notPublishedYetMessaage);
 		softly.assertThat(sut.isNoContentYetMessage()).isFalse();
-		softly.assertThat(sut.isConfirmationPendingMessage()).isEqualTo(confirmationPendingMessage);
+		softly.assertThat(sut.isParticipantConfirmationPending()).isFalse();
+		softly.assertThat(sut.isAdminConfirmationPendingMessage()).isEqualTo(confirmationPendingMessage);
 		softly.assertThat(sut.isOwnerCoachMessage()).isEqualTo(ownerCoachMessage);
 		softly.assertThat(sut.isAdministrativOpenAvailable()).isEqualTo(adminOpenAvailable);
 		softly.assertThat(sut.isAdministrativOpenEnabled()).isEqualTo(adminOpenAvailable);
@@ -929,7 +932,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		}
 		softly.assertThat(sut.isNotPublishedYetMessage()).isFalse();
 		softly.assertThat(sut.isNoContentYetMessage()).isEqualTo(noContentMessaage);
-		softly.assertThat(sut.isConfirmationPendingMessage()).isEqualTo(confirmationPendingMessage);
+		softly.assertThat(sut.isParticipantConfirmationPending()).isFalse();
+		softly.assertThat(sut.isAdminConfirmationPendingMessage()).isEqualTo(confirmationPendingMessage);
 		softly.assertThat(sut.isOwnerCoachMessage()).isEqualTo(ownerCoachMessage);
 		softly.assertThat(sut.isAdministrativOpenAvailable()).isFalse();
 		softly.assertThat(sut.isAdministrativOpenEnabled()).isFalse();

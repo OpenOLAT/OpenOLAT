@@ -35,9 +35,6 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
-import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.resource.accesscontrol.manager.ACReservationDAO;
-import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 
 /**
  * 
@@ -110,12 +107,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfig extends CatalogCur
 			return;
 		}
 		
-		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(curriculumElement.getResource()));
-		searchParams.setIdentities(List.of(identity));
-		List<ResourceReservation> reservations =  CoreSpringFactory.getImpl(ACReservationDAO.class).loadReservations(searchParams);
-		if (!reservations.isEmpty()) {
-			isReservationAvailable = true;
-			openDisabledConfirmationPending();
+		initReservations();
+		if (isReservationAvailable) {
 			return;
 		}
 		

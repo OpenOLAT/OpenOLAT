@@ -190,6 +190,8 @@ public class CurriculumElementInfosController extends BasicController {
 		if (source == headerCtrl) {
 			if (event == RepositoryEntryDetailsHeaderController.START_EVENT) {
 				doStart(ureq);
+			} else if (event == RepositoryEntryDetailsHeaderController.RESERVATION_CONFIRMATION_EVENT) {
+				doReservationConfirmed(ureq);
 			} else if (event instanceof BookEvent) {
 				fireEvent(ureq, event);
 			} else if (event == AccessEvent.ACCESS_OK_EVENT) {
@@ -226,4 +228,9 @@ public class CurriculumElementInfosController extends BasicController {
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
+	
+	protected void doReservationConfirmed(UserRequest ureq) {
+		fireEvent(ureq, new BookedEvent(entry));
+	}
+	
 }

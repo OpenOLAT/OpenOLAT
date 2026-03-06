@@ -38,8 +38,8 @@ import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -109,11 +109,6 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
-	protected boolean hasTeaser() {
-		return RepositoryEntryImageMapper.mapper900x600().hasTeaser(entry);
-	}
-
-	@Override
 	protected VFSLeaf getTeaserImage() {
 		return repositoryService.getIntroductionImage(entry);
 	}
@@ -150,8 +145,8 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
-	protected Long getResourceKey() {
-		return entry.getOlatResource().getKey();
+	protected OLATResource getResource() {
+		return entry.getOlatResource();
 	}
 	
 	@Override

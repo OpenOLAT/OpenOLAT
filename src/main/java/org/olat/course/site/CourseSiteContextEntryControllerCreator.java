@@ -140,16 +140,19 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		
 		ACService acService = CoreSpringFactory.getImpl(ACService.class);
 		if (!reSecurity.canLaunch() && !reSecurity.isMember() && !roles.isInviteeOnly() && !roles.isGuestOnly()) {
+			SearchReservationParameters searchParams;
 			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(re);
 			if (!curriculumElements.isEmpty()) {
 				List<OLATResource> resources = curriculumElements.stream().map(CurriculumElement::getResource).toList();
-				SearchReservationParameters searchParams = new SearchReservationParameters(resources);
-				searchParams.setIdentities(List.of(ureq.getIdentity()));
-				List<ResourceReservation> reservations = acService.getReservations(searchParams);
-				if (!reservations.isEmpty()) {
-					CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
-					return AccessDeniedFactory.createBookingPending(ureq, wControl, curriculumElement, re, reSecurity.isParticipant());
-				}
+				searchParams = new SearchReservationParameters(resources);
+			} else {
+				searchParams = new SearchReservationParameters(List.of(re.getOlatResource()));
+			}
+			searchParams.setIdentities(List.of(ureq.getIdentity()));
+			List<ResourceReservation> reservations = acService.getReservations(searchParams);
+			if (!reservations.isEmpty()) {
+				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				return AccessDeniedFactory.createReservationPending(ureq, wControl, curriculumElement, re, reservations, reSecurity.isParticipant());
 			}
 		}
 		

@@ -194,6 +194,9 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		if (source == headerCtrl) {
 			if (event == RepositoryEntryDetailsHeaderController.START_EVENT) {
 				doStart(ureq);
+			} else if (event == RepositoryEntryDetailsHeaderController.RESERVATION_CONFIRMATION_EVENT) {
+				doBooked(ureq);
+				fireEvent(ureq, new BookedEvent(entry));
 			} else if (event instanceof BookEvent) {
 				fireEvent(ureq, event);
 			} else if (event instanceof LeavingEvent) {

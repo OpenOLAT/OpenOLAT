@@ -38,10 +38,12 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,24 +57,22 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	
 	public static final Event START_EVENT = new Event("details.start");
 	public static final Event START_ADMIN_EVENT = new Event("details.start.admin");
+	public static final Event RESERVATION_CONFIRMATION_EVENT = new Event("reservation.confirmation");
 	public static final Event LEAVE_EVENT = new Event("details.leave");
 	
 	private VelocityContainer mainVC;
 
 	protected final HeaderStartController startCtrl;
-	protected OffersController offersCtrl;
+	private OffersController offersCtrl;
+	private AcceptPendingReservationController acceptPendingReservationCtrl;
 	
-	protected final DetailsHeaderConfig config;
+	private final DetailsHeaderConfig config;
 
 	@Autowired
 	protected RepositoryService repositoryService;
 	@Autowired
 	protected ACService acService;
 	
-	public AbstractDetailsHeaderController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
-
 	public AbstractDetailsHeaderController(UserRequest ureq, WindowControl wControl,
 			DetailsHeaderConfig config) {
 		super(ureq, wControl);
@@ -132,16 +132,21 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract String getTeaser();
 	protected abstract VFSLeaf getTeaserImage();
 	protected abstract VFSLeaf getTeaserMovie();
-	protected abstract boolean hasTeaser();
 	protected abstract RepositoryEntryEducationalType getEducationalType();
 	protected abstract String getPendingMessageElementName();
 	protected abstract String getLeaveText(boolean withFee);
 	
 	protected abstract String getStartLinkText();
 	protected abstract boolean tryAutoBooking(UserRequest ureq);
-	protected abstract Long getResourceKey();
+	protected abstract OLATResource getResource();
 	
 	private void initByConfig(UserRequest ureq) {
+		if (config.isParticipantConfirmationPending()) {
+			acceptPendingReservationCtrl = new AcceptPendingReservationController(ureq, getWindowControl());
+			listenTo(acceptPendingReservationCtrl);
+			mainVC.put("acceptPendingReservation", acceptPendingReservationCtrl.getInitialComponent());
+		}
+
 		// Guest start
 		if (StringHelper.containsNonWhitespace(config.getGuestStartUrl())) {
 			startCtrl.getInitialComponent().setVisible(true);
@@ -158,7 +163,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		if (config.isNoContentYetMessage() || config.isNotPublishedYetMessage()) {
 			// Same message if one of this two reasons
 			setWarning(translate("access.denied.preparation"), translate("access.denied.preparation.hint"));
-		} else if (config.isConfirmationPendingMessage()) {
+		} else if (config.isAdminConfirmationPendingMessage()) {
 			setWarning(translate("access.denied.preparation.element", StringHelper.escapeHtml(getPendingMessageElementName())),
 					translate("access.denied.preparation.hint"));
 		}
@@ -225,11 +230,6 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		mainVC.put("offers", offersCtrl.getInitialComponent());
 	}
 	
-	protected void showAccessDenied(Controller ctrl) {
-		listenTo(ctrl);
-		mainVC.put("access.refused", ctrl.getInitialComponent());
-	}
-	
 	protected void setWarning(String warning, String warningHint) {
 		mainVC.contextPut("warning", warning);
 		mainVC.contextPut("warningHint", warningHint);
@@ -246,7 +246,14 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == startCtrl) {
+		if (source == acceptPendingReservationCtrl) {
+			if (event == AcceptPendingReservationController.ACCEPT_EVENT) {
+				doAcceptReservation(ureq);
+			} else if (event == AcceptPendingReservationController.DECLINE_EVENT) {
+				doDeclineReservation(ureq);
+			}
+			fireEvent(ureq, RESERVATION_CONFIRMATION_EVENT);
+		} else if (source == startCtrl) {
 			if (event == START_EVENT) {
 				if (startCtrl.isAutoBooking()) {
 					doAutoBooking(ureq);
@@ -271,9 +278,23 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		//
 	}
 
+	private void doAcceptReservation(UserRequest ureq) {
+		ResourceReservation reservation = acService.getReservation(getIdentity(), getResource());
+		if (reservation != null) {
+			acService.acceptReservationToResource(getIdentity(), reservation);
+		}
+	}
+
+	private void doDeclineReservation(UserRequest ureq) {
+		ResourceReservation reservation = acService.getReservation(getIdentity(), getResource());
+		if (reservation != null) {
+			acService.removeReservation(getIdentity(), getIdentity(), reservation, null);
+		}
+	}
+
 	private void doAutoBooking(UserRequest ureq) {
 		if (getIdentity() == null) {
-			fireEvent(ureq, new BookEvent(getResourceKey()));
+			fireEvent(ureq, new BookEvent(getResource().getKey()));
 		} else {
 			boolean success = tryAutoBooking(ureq);
 			if (success) {

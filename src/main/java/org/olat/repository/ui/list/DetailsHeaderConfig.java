@@ -63,7 +63,9 @@ public interface DetailsHeaderConfig {
 	
 	boolean isNoContentYetMessage();
 	
-	boolean isConfirmationPendingMessage();
+	boolean isParticipantConfirmationPending();
+	
+	boolean isAdminConfirmationPendingMessage();
 	
 	boolean isAvailabilityMessage();
 	

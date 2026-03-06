@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -32,19 +33,28 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.DTab;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
+import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
+import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
@@ -80,6 +90,17 @@ public class AccessDeniedFactory {
 		return new RepositoryEntryInfosController(ureq, wControl, entry, config, true);
 	}
 
+	public static Controller createReservationPending(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, RepositoryEntry entry, List<ResourceReservation> reservations,
+			boolean participant) {
+		if (curriculumElement != null) {
+			ReservationPendingConfig config = new ReservationPendingConfig(null, ureq.getIdentity(), reservations, participant);
+			return new ReopenController(ureq, wControl, curriculumElement, entry, config);
+		}
+		ReservationPendingConfig config = new ReservationPendingConfig(entry, ureq.getIdentity(), reservations, participant);
+		return new RepositoryEntryInfosController(ureq, wControl, entry, config, false);
+	}
+
 	public static Controller createBookingPending(UserRequest ureq, WindowControl wControl,
 			CurriculumElement curriculumElement, RepositoryEntry entry, boolean participant) {
 		if (curriculumElement != null) {
@@ -87,7 +108,7 @@ public class AccessDeniedFactory {
 			return new CurriculumElementInfosController(ureq, wControl, curriculumElement, null, config);
 		}
 		AccessPendingConfig config = new AccessPendingConfig(entry, ureq.getIdentity(), participant);
-		return new RepositoryEntryInfosController(ureq, wControl, entry, config, true);
+		return new RepositoryEntryInfosController(ureq, wControl, entry, config, false);
 	}
 
 	public static Controller createNotMember(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
@@ -180,13 +201,85 @@ public class AccessDeniedFactory {
 		
 	}
 	
+	private final static class ReservationPendingConfig extends BasicDetailsHeaderConfig {
+
+		public ReservationPendingConfig(RepositoryEntry repositoryEntry, Identity identity, List<ResourceReservation> reservations, boolean participant) {
+			super(identity);
+			initReservations(reservations);
+			hideOpenButtons();
+			if (repositoryEntry != null &&  participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
+				leaveAvailable = true;
+			}
+		}
+		
+		private void initReservations(List<ResourceReservation> reservations) {
+			if (identity == null || openAvailable && openEnabled) {
+				return;
+			}
+			
+			boolean participantConfirmation = false;
+			boolean adminConfirmation = false;
+			for (ResourceReservation reservation : reservations) {
+				if (reservation.getConfirmableBy() == ConfirmationByEnum.PARTICIPANT) {
+					participantConfirmation = true;
+				} else {
+					adminConfirmation = true;
+				}
+			}
+			if (participantConfirmation) {
+				openDisabledParticipantConfirmationPending();
+			} else if (adminConfirmation) {
+				openDisabledAdminConfirmationPending();
+			}
+		}
+		
+	}
+
 	private final static class AccessPendingConfig extends BasicDetailsHeaderConfig {
 
 		public AccessPendingConfig(RepositoryEntry repositoryEntry, Identity identity, boolean participant) {
 			super(identity);
-			confirmationPendingMessage = true;
+			adminConfirmationPendingMessage = true;
 			if (repositoryEntry != null &&  participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
 				leaveAvailable = true;
+			}
+		}
+		
+	}
+	
+	private final static class ReopenController extends CurriculumElementInfosController {
+
+		private final RepositoryEntry entry;
+
+		public ReopenController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
+				RepositoryEntry entry, DetailsHeaderConfig headerConfig) {
+			super(ureq, wControl, element, entry, headerConfig);
+			this.entry = entry;
+		}
+		
+		
+		@Override
+		protected void doReservationConfirmed(UserRequest ureq) {
+			try {
+				// Close the tab if open so that the user rights are reloaded.
+				OLATResourceable ores = OLATResourceManager.getInstance().findResourceable(
+						entry.getOlatResource().getResourceableId(),
+						entry.getOlatResource().getResourceableTypeName());
+				if (ores != null) {
+					OLATResourceable reOres = OresHelper.clone(entry);
+					DTabs dtabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+					if( dtabs != null) {
+						DTab dt = dtabs.getDTab(reOres);
+						if (dt != null) {
+							dtabs.removeDTab(ureq, dt);
+						}
+					}
+				}
+				String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} catch (CorruptedCourseException e) {
+				logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
+				showError("cif.error.corrupted");
 			}
 		}
 		

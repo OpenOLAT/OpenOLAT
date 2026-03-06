@@ -43,10 +43,11 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	protected List<OfferAccess> availableMethods;
 	protected boolean notPublishedYetMessage = false;
 	protected boolean noContentYetMessage = false;
-	protected boolean confirmationPendingMessage = false;
+	protected boolean adminConfirmationPendingMessage = false;
 	protected boolean availabilityMessage = false;
 	protected boolean ownerCoachMessage = false;
 	protected boolean administrativOpenAvailable = false;
+	protected boolean participantConfirmationPending = false;
 	protected boolean leaveAvailable = false;
 	protected boolean leaveWithCancellationFee = false;
 
@@ -71,10 +72,16 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 		noContentYetMessage = true;
 	}
 
-	protected void openDisabledConfirmationPending() {
+	protected void openDisabledParticipantConfirmationPending() {
 		openAvailable = true;
 		openEnabled = false;
-		confirmationPendingMessage = true;
+		participantConfirmationPending = true;
+	}
+
+	protected void openDisabledAdminConfirmationPending() {
+		openAvailable = true;
+		openEnabled = false;
+		adminConfirmationPendingMessage = true;
 	}
 
 	protected void bookDisabledAvailability() {
@@ -159,8 +166,13 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	}
 
 	@Override
-	public boolean isConfirmationPendingMessage() {
-		return confirmationPendingMessage;
+	public boolean isParticipantConfirmationPending() {
+		return participantConfirmationPending;
+	}
+
+	@Override
+	public boolean isAdminConfirmationPendingMessage() {
+		return adminConfirmationPendingMessage;
 	}
 
 	@Override

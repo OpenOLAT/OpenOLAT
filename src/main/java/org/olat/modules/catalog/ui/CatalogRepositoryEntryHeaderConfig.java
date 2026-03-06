@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.ui;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -30,8 +32,11 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
+import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 
 /**
  * 
@@ -55,9 +60,10 @@ public class CatalogRepositoryEntryHeaderConfig extends BasicDetailsHeaderConfig
 		participantsAvailability = PARTICIPANTS_AVAILABILITY_NUM;
 		
 		reSecurity = CoreSpringFactory.getImpl(RepositoryManager.class).isAllowed(identity, roles, repositoryEntry);
-		
+
 		initOpenBookOffers();
 		initAdminAccess();
+		initReservations();
 		initLeave();
 	}
 
@@ -89,6 +95,11 @@ public class CatalogRepositoryEntryHeaderConfig extends BasicDetailsHeaderConfig
 			return;
 		}
 		
+		initReservations();
+		if (participantConfirmationPending || adminConfirmationPendingMessage) {
+			return;
+		}
+		
 		AccessResult acResult = CoreSpringFactory.getImpl(ACService.class).isAccessible(repositoryEntry, identity, Boolean.FALSE, false, null, false);
 		if (acResult.isAccessible()) {
 			openWithStatusCheck(repositoryEntry, RepositoryEntryStatusEnum.publishedAndClosed());
@@ -112,6 +123,29 @@ public class CatalogRepositoryEntryHeaderConfig extends BasicDetailsHeaderConfig
 		}
 	}
 	
+	private void initReservations() {
+		if (identity == null || openAvailable && openEnabled) {
+			return;
+		}
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(repositoryEntry.getOlatResource()));
+		searchParams.setIdentities(List.of(identity));
+		List<ResourceReservation> reservations = CoreSpringFactory.getImpl(ACService.class).getReservations(searchParams);
+		boolean participantConfirmation = false;
+		boolean adminConfirmation = false;
+		for (ResourceReservation reservation : reservations) {
+			if (reservation.getConfirmableBy() == ConfirmationByEnum.PARTICIPANT) {
+				participantConfirmation = true;
+			} else {
+				adminConfirmation = true;
+			}
+		}
+		if (participantConfirmation) {
+			openDisabledParticipantConfirmationPending();
+		} else if (adminConfirmation) {
+			openDisabledAdminConfirmationPending();
+		}
+	}
+
 	private void initLeave() {
 		if (reSecurity.isParticipant() && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
 			leaveAvailable = true;

@@ -165,7 +165,12 @@ public class PreviewCurriculumElementHeaderConfig implements DetailsHeaderConfig
 	}
 
 	@Override
-	public boolean isConfirmationPendingMessage() {
+	public boolean isParticipantConfirmationPending() {
+		return false;
+	}
+
+	@Override
+	public boolean isAdminConfirmationPendingMessage() {
 		return false;
 	}
 

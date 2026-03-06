@@ -28,10 +28,13 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 
 /**
  * 
@@ -58,6 +61,30 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 	protected ParticipantsAvailabilityNum loadParticipantsAvailabilityNum() {
 		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(curriculumElement), true).get(curriculumElement.getKey());
 		return acService.getParticipantsAvailability(curriculumElement.getMaxParticipants(), numParticipants, false);
+	}
+
+	protected void initReservations() {
+		if (identity == null) {
+			return;
+		}
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(curriculumElement.getResource()));
+		searchParams.setIdentities(List.of(identity));
+		List<ResourceReservation> reservations = acService.getReservations(searchParams);
+		boolean participantConfirmation = false;
+		boolean adminConfirmation = false;
+		for (ResourceReservation reservation : reservations) {
+			isReservationAvailable = true;
+			if (reservation.getConfirmableBy() == ConfirmationByEnum.PARTICIPANT) {
+				participantConfirmation = true;
+			} else {
+				adminConfirmation = true;
+			}
+		}
+		if (participantConfirmation) {
+			openDisabledParticipantConfirmationPending();
+		} else if (adminConfirmation) {
+			openDisabledAdminConfirmationPending();
+		}
 	}
 
 	protected void initLeave() {

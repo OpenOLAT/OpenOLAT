@@ -46,6 +46,7 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
@@ -109,11 +110,6 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	protected String getTeaser() {
 		return element.getTeaser();
 	}
-	
-	@Override
-	protected boolean hasTeaser() {
-		return CurriculumElementImageMapper.mapper900x600().hasTeaser(element);
-	}
 
 	@Override
 	protected VFSLeaf getTeaserImage() {
@@ -152,8 +148,8 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
-	protected Long getResourceKey() {
-		return element.getResource().getKey();
+	protected OLATResource getResource() {
+		return element.getResource();
 	}
 	
 	@Override

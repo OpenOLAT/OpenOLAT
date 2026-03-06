@@ -65,7 +65,10 @@
 				#end
 			</div>
 			
-			<div class="o_header_offers">
+			#if($r.available("acceptPendingReservation"))
+			$r.render("acceptPendingReservation")
+		#end
+		<div class="o_header_offers">
 				#if($r.available("offers") && $r.visible("offers"))
 					$r.render("offers")
 				#elseif($r.available("catalog.bookable"))
@@ -77,7 +80,4 @@
 			</div>
 		</div>
 	</div>
-	#if($r.available("access.refused"))
-		$r.render("access.refused")
-	#end
 </div>
