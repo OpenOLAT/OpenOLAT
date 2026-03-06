@@ -248,13 +248,22 @@ MyManager mgr = CoreSpringFactory.getImpl(MyManager.class);
 - Local overrides: `olat.local.properties`
 - Module pattern: extend `AbstractSpringModule` for feature toggles
 
-## i18n
+## i18n (Internationalization)
 
-- Files: `_i18n/LocalStrings_XX.properties` colocated with UI package
-- Fallback: `de_CH → de → en (default) → en (fallback)`
-- Overlay: clients customize via `{userData}/customizing/lang/overlay/[package]/_i18n/LocalStrings_XX.properties`
-- In templates: `$r.translate("key")`, `$r.translate("key", $arg1)`
-- In Java: `translate("key")` (in controllers), `Translator.translate("key")`
+- **Files:** `_i18n/LocalStrings_XX.properties` colocated with UI package (Java `.properties` format)
+- **Fallback chain:** `de_CH__customizing → de_CH → de__customizing → de → en__customizing → en (default) → en (fallback)`
+- **Overlay:** clients customize via `{userData}/customizing/lang/overlay/{package}/_i18n/LocalStrings_XX__customizing.properties`
+- **In templates:** `$r.translate("key")`, `$r.translate("key", $arg1)`
+- **In Java:** `translate("key")` (in controllers), `translate("key", new String[]{arg})`
+- **Cross-referencing translations:**
+  - Same-package: `$\:other.key` — references another key in the same `.properties` file
+  - Cross-package: `$org.olat.other.package:other.key` or `${org.olat.other.package:other.key}`
+  - Recursive resolution up to 10 levels deep
+- **Fallback bundles:** `org.olat.core` (core), `org.olat` (application) — checked when key not found in primary bundle
+- **Parameter substitution:** `{0}`, `{1}` etc. via `MessageFormat`. Escape single quotes as `''`
+- **Gender strategy:** `Benutzer{in}` → converted per locale config (star `*`, colon `:`, etc.)
+- **Core classes:** `I18nModule` (config), `I18nManager` (resolution/caching), `PackageTranslator` (per-controller)
+- **Glossary:** See `doc/openolat-glossary.md` for product-specific term definitions and `doc/openolat-glossary-translations.md` for canonical translations
 
 ## VFS (Virtual File System)
 
@@ -294,6 +303,54 @@ You do NOT need to manually dispose:
 - **Module toggles:** `AbstractSpringModule` with `isEnabled()` and persisted config
 - **Toolbar actions:** `toolbarPanel.addTool(link)` for create/export/import buttons
 - **Security callbacks:** Pass permission objects to controllers, don't check roles inline
+
+## Writing Upgrades (`org.olat.upgrade`)
+
+For data migrations between versions, create an upgrade class:
+
+```java
+public class OLATUpgrade_20_4_0 extends OLATUpgrade {
+    private static final String VERSION = "OLAT_20.4.0";
+    private static final String MIGRATE_DATA = "MIGRATE DATA";
+
+    @Autowired
+    private MyService myService;
+
+    @Override
+    public String getVersion() { return VERSION; }
+
+    @Override
+    public boolean doPostSystemInitUpgrade(UpgradeManager upgradeManager) {
+        UpgradeHistoryData uhd = upgradeManager.getUpgradesHistory(VERSION);
+        if (uhd == null) {
+            uhd = new UpgradeHistoryData();
+        } else if (uhd.isInstallationComplete()) {
+            return false;
+        }
+
+        boolean allOk = true;
+        allOk &= migrateData(upgradeManager, uhd);
+
+        uhd.setInstallationComplete(allOk);
+        upgradeManager.setUpgradesHistory(uhd, VERSION);
+        return allOk;
+    }
+
+    private boolean migrateData(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+        if (uhd.getBooleanDataValue(MIGRATE_DATA)) {
+            return true;  // Already done
+        }
+        // ... migration logic, use @Autowired services ...
+        uhd.setBooleanDataValue(MIGRATE_DATA, true);
+        upgradeManager.setUpgradesHistory(uhd, VERSION);
+        return true;
+    }
+}
+```
+
+Register in `org/olat/upgrade/_spring/upgradeContext.xml` (append to the list). For SQL schema changes, add ALTER scripts to `/database/mysql/` and `/database/postgresql/` and register in `databaseUpgradeContext.xml`.
+
+**Important:** Upgrades run *after* all modules are initialized. Changes to `AbstractSpringModule` configs may need module re-initialization since the module's `init()` has already executed.
 
 ## Testing
 

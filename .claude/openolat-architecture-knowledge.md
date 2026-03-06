@@ -125,13 +125,43 @@ All file access through VFS, never direct filesystem. `bcroot/` is the physical 
 - Config: `olat.properties` (defaults) + `olat.local.properties` (overrides)
 - Feature toggles: extend `AbstractSpringModule`
 
-## 12. i18n
+## 12. i18n (Internationalization)
 
-- Files: `_i18n/LocalStrings_XX.properties` colocated with UI package
-- Fallback: requested locale → language-only → default → fallback
-- Overlay: `{userData}/customizing/lang/overlay/[package]/_i18n/` (checked first at every step)
-- Cross-package: `${org.olat.other.package:key}` syntax
-- In Java: `translate("key")`, in templates: `$r.translate("key")`
+**Core classes:** `I18nModule` (config, language discovery), `I18nManager` (resolution, caching, property loading), `PackageTranslator` (per-controller translator).
+
+**Files:** `_i18n/LocalStrings_XX.properties` colocated with UI package. Java `.properties` format (key=value, `#` comments, `\:` escapes colons).
+
+**Resolution order** (per locale, with overlay checked first at each step):
+1. Overlay of requested locale (e.g. `de__customizing`)
+2. Requested locale (`de_CH`)
+3. Fallback to language-only variant (`de_CH` → `de`)
+4. Fallback to country-only variant
+5. Overlay of default locale
+6. Default locale (configurable, typically `en`)
+7. Overlay of fallback locale
+8. Fallback locale (hardcoded `en`)
+9. Error / `NO_TRANSLATION_ERROR_PREFIX`
+
+**Overlay:** `{userData}/customizing/lang/overlay/{package}/_i18n/LocalStrings_XX__customizing.properties` — customer-specific overrides, checked first at every resolution step.
+
+**Cross-referencing translations (key → key):**
+- **Same-package:** `$\:other.key` — resolves `other.key` from the same `.properties` file
+- **Cross-package:** `$org.olat.other.package:other.key` or `${org.olat.other.package:other.key}` — resolves from a different package
+- Resolution is recursive (up to 10 levels), handled by `resolveValuesInternalKeys()` using regex pattern `\$\{?([package]):([key])\}?`
+- Resolved at load time when caching is enabled; at access time otherwise
+
+**Fallback bundles:** `org.olat.core` (core fallback), `org.olat` (application fallback) — checked by `PackageTranslator` when key not found in primary bundle.
+
+**Parameter substitution:** `{0}`, `{1}` etc. — processed by `java.text.MessageFormat`. Single quotes must be escaped as `''`.
+
+**Gender strategy:** Written as `Benutzer{in}` in `.properties` files, converted at runtime to configured style per locale (star `*`, colon `:`, middleDot, slash, etc.). Configured via `I18nModule.GenderStrategy`.
+
+**In Java:** `translate("key")` (in controllers), `translate("key", new String[]{arg})` with args.
+**In templates:** `$r.translate("key")`, `$r.translate("key", $arg)`.
+
+**Caching:** Controlled by `localization.cache` property. Production: on. Dev: off for live reloading. Cluster-aware via EventBus (`I18nReInitializeCachesEvent`).
+
+**Stats:** ~382 i18n files, ~29,000 English keys, 36 language variants. ~2,000 existing cross-references (851 same-package, 1,171 cross-package).
 
 ## 13. Theming
 
@@ -170,7 +200,22 @@ Serializable path like `[RepositoryEntry:123][CourseNode:456]` for bookmarks, de
 - `registerMapper()` (non-cacheable), `registerCacheableMapper()` (stable URL, browser-cacheable)
 - Auto-cleanup on controller dispose and session end
 
-## 20. Key Conventions
+## 20. Upgrade Infrastructure (`org.olat.upgrade`)
+
+Two-phase migration system for version upgrades:
+
+1. **Database schema upgrades** — `DatabaseUpgradeManager` runs SQL ALTER scripts (`/database/{dialect}/alter_*.sql`) early during Spring init, before modules start.
+2. **Post-system-init upgrades** — `UpgradeManager` listens for `FrameworkStartedEvent`, then runs data migrations in a background thread via `TaskExecutorManager`. Can `@Autowired` any service.
+
+Key classes: `OLATUpgrade` (base class), `UpgradeHistoryData` (persistent state), `UpgradesDefinitions` (ordered list in Spring XML). Registration in `org/olat/upgrade/_spring/upgradeContext.xml`. Naming: `OLATUpgrade_XX_Y_Z`, version constant `OLAT_XX.Y.Z`.
+
+**Important:** Post-init upgrades run *after* all modules are initialized. Changes to `AbstractSpringModule` configs may need module re-initialization — the module's `init()` has already run with the old config.
+
+Pattern: idempotent sub-tasks tracked via `UpgradeHistoryData.setBooleanDataValue()`. Cluster-safe: only singleton node runs upgrades (`UpgradeManagerDummy` on other nodes).
+
+State persisted in `olatdata/system/installed_upgrades.xml` and `installed_database_upgrades.xml`.
+
+## 21. Key Conventions
 
 - Always use `listenTo()` for child controllers
 - Always `removeAsListenerAndDispose()` before replacing controllers

@@ -42,6 +42,7 @@ The documentation can be found at [https://docs.openolat.org](https://docs.openo
 
 ### Technical documentation
  * [Installation guide for production](https://docs.openolat.org/manual_admin/installation/installGuide/)
+ * [Architecture reference](doc/openolat-architecture.html)
  * [Developer cookbook manual](https://docs.openolat.org/manual_dev/)
  * [Installation guide for developers](#developers)
 

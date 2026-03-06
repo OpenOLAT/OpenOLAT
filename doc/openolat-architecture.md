@@ -1412,10 +1412,33 @@ Key = class (namespace) + string key. Values serialized via XStream, stored in `
 
 ## 22. Internationalization (i18n)
 
-Translation files follow the colocated resource pattern: each UI package contains an `_i18n/` directory with `LocalStrings_XX.properties` files. The `I18nManager` resolves keys through a locale fallback chain:
+### Core Architecture
+
+**Core classes:**
+- `I18nModule` (`org.olat.core.util.i18n`) — Spring module, manages language discovery, configuration, overlay/locale setup, gender strategies
+- `I18nManager` — Singleton service for key resolution, property loading, caching, recursive reference resolution
+- `PackageTranslator` (`org.olat.core.gui.translator`) — Per-controller translator bound to a specific package and locale, with fallback chain to `org.olat.core` and `org.olat` bundles
+
+Translation files follow the colocated resource pattern: each UI package contains an `_i18n/` directory with `LocalStrings_XX.properties` files (Java `.properties` format: `key=value`, `#` comments, `\:` escapes colons).
+
+**Statistics:** ~382 i18n bundles, ~29,000 English keys, 36 language variants.
+
+### Locale Resolution Order
+
+The `I18nManager.getLocalizedString()` method resolves translations through this fallback chain (overlay is checked first at every step):
 
 ```
-de_CH_variant → de_CH → de → default locale (en) → fallback locale (en) → ERROR
+a) Overlay of requested locale (e.g. de_CH__customizing)
+b) Requested locale (de_CH)
+c) Overlay of locale without variant (de__customizing, if locale had variant)
+d) Locale without variant (de)
+e) Overlay of locale without country (if locale had country)
+f) Locale without country
+g) Overlay of default locale (en__customizing)
+h) Default locale (en, configurable)
+i) Overlay of fallback locale
+j) Fallback locale (en, hardcoded)
+k) Error: NO_TRANSLATION_ERROR_PREFIX
 ```
 
 ### Overlay Mechanism (Client Customization)
@@ -1423,28 +1446,76 @@ de_CH_variant → de_CH → de → default locale (en) → fallback locale (en) 
 The **overlay** system allows clients to customize any translation key without modifying source code. Overlay files go in:
 
 ```
-{userData}/customizing/lang/overlay/{package}/_i18n/LocalStrings_XX.properties
+{userData}/customizing/lang/overlay/{package}/_i18n/LocalStrings_XX__customizing.properties
 ```
 
-The overlay is checked **first** at every step of the fallback chain. A client can override any translation — product name, button label, help text — by placing a single properties file in the overlay directory.
+The overlay is checked **first** at every step of the fallback chain. A client can override any translation — product name, button label, help text — by placing a single properties file in the overlay directory. The overlay name `customizing` is configured in `I18nModule`.
 
-### Recursive Key Resolution
+### Recursive Key Resolution (Cross-Referencing)
 
-Values can reference other keys: `${org.olat.package:key}` is resolved at runtime to avoid duplication.
+Translation values can reference other translation keys using two syntaxes:
+
+1. **Same-package reference:** `$\:other.key` — resolves `other.key` from the same `.properties` file
+2. **Cross-package reference:** `$org.olat.other.package:other.key` or `${org.olat.other.package:other.key}` — resolves from a different package
+
+Resolution is recursive up to 10 levels (guarded by `recursionLevel` counter). The regex pattern used: `\$\{?([package]):([key])\}?` (see `resolvingKeyPattern` in `I18nManager`).
+
+When caching is enabled, references are resolved at property load time and cached. When caching is disabled (dev mode), resolution happens at access time. A `referencingBundlesIndex` tracks which bundles reference which keys for cache invalidation.
+
+Currently ~851 same-package and ~1,171 cross-package references are in use across the codebase.
+
+### Fallback Bundle Chain
+
+`PackageTranslator` first looks in its primary bundle, then falls back to:
+- `org.olat.core` (core fallback bundle) — common framework translations
+- `org.olat` (application fallback bundle) — common application translations
+
+### Parameter Substitution
+
+Uses `java.text.MessageFormat`: `{0}`, `{1}` etc. Single quotes have special meaning in MessageFormat and must be escaped as `''`.
+
+```properties
+greeting=Hello {0}, welcome to {1}!
+```
+
+### Gender Strategy
+
+For languages with gendered nouns (especially German), a second gender word ending is written in curly brackets:
+
+```properties
+user.label=Benutzer{in}
+```
+
+At runtime, `I18nManager.applyGenderStrategy()` converts this based on the configured `GenderStrategy` per locale:
+- `star`: `Benutzer*in` (default)
+- `colon`: `Benutzer:in`
+- `middleDot`: `Benutzer⸱in`
+- `slash`: `Benutzer/in`
+- `slashDash`: `Benutzer/-in`
+- `camelCase`: `BenutzerIn`
+
+### Caching
+
+Controlled by `localization.cache` property (default: `true`). Cluster-aware: `I18nReInitializeCachesEvent` fired via EventBus to flush caches on all nodes. Dev mode disables caching for live property file reloading.
 
 ### Usage
 
 ```java
-// In controllers:
+// In controllers (BasicController/FormBasicController):
 String text = translate("my.key");
 String withParams = translate("greeting", new String[]{ identity.getName() });
 
 // In Velocity templates:
 $r.translate("my.key")
 $r.translate("greeting", $userName)
+
+// Direct I18nManager access (rare, for services):
+I18nManager.getInstance().getLocalizedString(bundleName, key, args, locale, true, true);
 ```
 
-Translators can be chained across packages for shared translations.
+### Glossary
+
+See `doc/openolat-glossary.md` for a glossary of product-specific terms and `doc/openolat-glossary-translations.md` for canonical translations across languages.
 
 ---
 
