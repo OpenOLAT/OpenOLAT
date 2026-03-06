@@ -44,7 +44,7 @@ import org.olat.modules.curriculum.CurriculumElementShort;
  */
 public class OriginCellRenderer implements FlexiCellRenderer {
 
-	private static final int MAX_ITEMS = 2;
+	private static final int MAX_ITEMS = 5;
 
 	private final String openDetailsAction;
 
@@ -67,6 +67,7 @@ public class OriginCellRenderer implements FlexiCellRenderer {
 			target.append("<div class='o_origin_cell'>");
 			
 			if (courseMembership.isRepositoryEntryMember()) {
+				target.append("<i class='o_icon o_CourseModule_icon'> </i> ");
 				target.append(translator.translate("course"));
 				renderedItems++;
 			}
