@@ -145,16 +145,6 @@ fieldset.o_validation_result {
 
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
-	.o_curriculum_widget_cards {
-		padding: 0 15px 15px 15px;
-	
-		.o_table_flexi.o_rendertype_custom .o_table_row.row {
-			padding: 0;
-			margin: 0;
-			width: 100%;
-		}
-	}
-
 	.o_curriculum_widget_course_staff h4 {
 			padding: 5px 15px;
 			margin: 5px 0;
@@ -168,6 +158,15 @@ fieldset.o_validation_result {
 		padding: 5px 0;
 	}
 
+	.o_curriculum_course_cards {
+		margin: 0 $o-dashboard-widget-base-margin;
+		.o_table_flexi.o_rendertype_custom .o_table_row.row {
+			padding: 0;
+			margin: 0;
+			width: 100%;
+		}
+	
+	}
 	.o_curriculum_course_card {
 		display: grid;
 		grid-template-columns: 120px 1fr auto;
@@ -256,6 +255,7 @@ fieldset.o_validation_result {
 	}
 	
 	.o_curriculum_offer_cards {
+		margin: 0 $o-dashboard-widget-base-margin;
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 		gap: 10px;
@@ -265,6 +265,7 @@ fieldset.o_validation_result {
 		}
 	}
 	.o_curriculum_widget_catalog_cards {
+		margin: 0 $o-dashboard-widget-base-margin $o-dashboard-widget-base-margin $o-dashboard-widget-base-margin;
 		display: grid;
 		gap: 10px;
 			

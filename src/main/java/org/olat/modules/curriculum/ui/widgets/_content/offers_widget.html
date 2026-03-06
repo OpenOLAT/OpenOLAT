@@ -5,7 +5,7 @@
 		</div>
 	</div>
 	
-	<div class="o_curriculum_widget_cards o_curriculum_widget_catalog_cards">
+	<div class="o_curriculum_widget_catalog_cards">
 		#if($externalCatalogCss)
 			<div class="o_curriculum_widget_catalog_card o_labeled_light $externalCatalogCss">
 				<div><i class="o_icon o_icon-fw o_icon_catalog_extern"> </i> $r.translate("access.status.extern")</div>
@@ -17,7 +17,7 @@
 			<div><i class="o_icon o_icon-fw $internalCatalogIconCss"> </i> $internalCatalogLabelName</div>
 		</div>
 	</div>
-	<div class="o_curriculum_widget_cards o_curriculum_offer_cards">
+	<div class="o_curriculum_offer_cards">
 		<div class="o_curriculum_offer_card">
 			<h4 class="o_flex_first_grow">
 				<div>$r.translate("curriculum.offers.offers")</div>
@@ -46,4 +46,12 @@
 			</div>
 		#end
 	</div>
+	<div class="o_dashboard_widget_space"></div>
+	#if($r.available($detailsComponentName) && $r.visible($detailsComponentName))
+		<div class="o_dashboard_widget_footer">
+			<div class="o_dashboard_widget_footer_buttons">
+				$r.render($detailsComponentName)
+			</div>
+		</div>
+	#end
 </div>

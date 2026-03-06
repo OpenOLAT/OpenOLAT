@@ -49,7 +49,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -57,6 +59,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.ConfirmInstantiateTemplateController;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetDataModel.EntriesCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -74,6 +77,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_INSTANTIATE = "instantiate";
 	
+	private FormLink detailsLink;
 	private EmptyPanelItem emptyList;
 	private FlexiTableElement entriesTableEl;
 	private CoursesWidgetDataModel entriesTableModel;
@@ -93,12 +97,14 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	
 	public CoursesWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "courses_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(DashboardUIFactory.class, getLocale(), getTranslator()));
+		
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 
 		this.secCallback = secCallback;
 		this.curriculumElement = curriculumElement;
-		
+
 		initForm(ureq);
 		loadModel();
 	}
@@ -120,6 +126,9 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		detailsLink = DashboardUIFactory.createDetailsLink(formLayout);
+		flc.contextPut("detailsComponentName", detailsLink.getComponent().getComponentName());
+
 		emptyList = uifactory.addEmptyPanel("course.empty", null, formLayout);
 		emptyList.setTitle(translate("curriculum.no.course.assigned.title"));
 		emptyList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
@@ -215,7 +224,9 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink link) {
+		if (source == detailsLink) {
+			doOpenDetails(ureq);
+		} else if(source instanceof FormLink link) {
 			if(CMD_OPEN.equals(link.getCmd())
 					&& link.getUserObject() instanceof CourseWidgetRow row) {
 				doOpen(ureq, row);
@@ -237,6 +248,11 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		//
 	}
 	
+	private void doOpenDetails(UserRequest ureq) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString("[Resources:0]");
+		fireEvent(ureq, new ActivateEvent(entries));
+	}
+
 	private void doOpen(UserRequest ureq, CourseWidgetRow row) {
 		doOpen(ureq, row.getKey());
 	}

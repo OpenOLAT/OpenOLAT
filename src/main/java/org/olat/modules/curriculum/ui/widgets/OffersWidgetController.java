@@ -26,10 +26,16 @@ import java.util.Objects;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -37,6 +43,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumElementCatalogStatusEvaluator;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
@@ -54,8 +61,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OffersWidgetController extends FormBasicController {
 	
+	private FormLink detailsLink;
+
 	private CurriculumElement curriculumElement;
-	
+
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -69,6 +78,7 @@ public class OffersWidgetController extends FormBasicController {
 		super(ureq, wControl, "offers_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(OfferCatalogInfo.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(DashboardUIFactory.class, getLocale(), getTranslator()));
 		this.curriculumElement = curriculumElement;
 		initForm(ureq);
 		loadModel();
@@ -76,7 +86,8 @@ public class OffersWidgetController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
+		detailsLink = DashboardUIFactory.createDetailsLink(formLayout);
+		flc.contextPut("detailsComponentName", detailsLink.getComponent().getComponentName());
 	}
 
 	public void loadModel() {
@@ -198,8 +209,21 @@ public class OffersWidgetController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == detailsLink) {
+			doOpenDetails(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doOpenDetails(UserRequest ureq) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString("[Offers:0]");
+		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	
 }

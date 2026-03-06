@@ -1,11 +1,19 @@
 <div class="o_dashboard_widget o_bento_content">
 	<div class="o_dashboard_widget_header o_flex_first_grow_base">
 		<div class="o_dashboard_widget_title">
-			<h3>$r.translate("tab.resources")</h3>
+			<h3><i class="o_icon o_CourseModule_icon"> </i> $r.translate("tab.resources")</h3>
 		</div>
 	</div>
-	<div class="o_curriculum_widget_cards">
+	<div class="o_curriculum_course_cards">
 		$r.render("course.empty")
 		$r.render("entriesTable")
 	</div>
+	<div class="o_dashboard_widget_space"></div>
+	#if($r.available($detailsComponentName) && $r.visible($detailsComponentName))
+		<div class="o_dashboard_widget_footer">
+			<div class="o_dashboard_widget_footer_buttons">
+				$r.render($detailsComponentName)
+			</div>
+		</div>
+	#end
 </div>

@@ -40,4 +40,10 @@ public class DashboardUIFactory {
 		return link;
 	}
 
+	public static FormLink createDetailsLink(FormItemContainer formLayout) {
+		FormLink link = FormUIFactory.getInstance().addFormLink("details", "dashboard.details", null, formLayout, Link.BUTTON);
+		link.setElementCssClass("o_button_primary_light");
+		return link;
+	}
+
 }
