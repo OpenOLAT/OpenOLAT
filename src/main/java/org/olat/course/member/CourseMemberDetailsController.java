@@ -273,6 +273,7 @@ public class CourseMemberDetailsController extends FormBasicController {
 	}
 
 	private void doLaunchGroup(UserRequest ureq, Long groupKey) {
+		ureq.getUserSession().putEntry("wild_card_" + groupKey, Boolean.TRUE);
 		String businessPath = "[BusinessGroup:" + groupKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
