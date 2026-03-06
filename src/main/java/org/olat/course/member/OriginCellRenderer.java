@@ -20,10 +20,13 @@
 package org.olat.course.member;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -41,44 +44,68 @@ import org.olat.modules.curriculum.CurriculumElementShort;
  */
 public class OriginCellRenderer implements FlexiCellRenderer {
 
-	public OriginCellRenderer() {
+	private static final int MAX_ITEMS = 2;
+
+	private final String openDetailsAction;
+
+	public OriginCellRenderer(String openDetailsAction) {
+		this.openDetailsAction = openDetailsAction;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof MemberRow memberRow) {
 			CourseMembership courseMembership = memberRow.getMembership();
-			boolean atLeastOneItem = false;
+			Set<CurriculumElementShort> curriculumElements = new HashSet<>(memberRow.getCurriculumElements() != null ? 
+					memberRow.getCurriculumElements() : List.of());
+
+			int totalItems = (courseMembership.isRepositoryEntryMember() ? 1 : 0)
+					+ (courseMembership.isBusinessGroupMember() ? memberRow.getGroups().size() : 0)
+					+ (courseMembership.isCurriculumElementMember() ? curriculumElements.size() : 0);
+
+			int renderedItems = 0;
 			target.append("<div class='o_origin_cell'>");
 			
 			if (courseMembership.isRepositoryEntryMember()) {
 				target.append(translator.translate("course"));
-				atLeastOneItem = true;
+				renderedItems++;
 			}
 			
 			if (courseMembership.isBusinessGroupMember()) {
 				FlexiCellRenderer businessGroupRenderer = new BusinessGroupNameCellRenderer();
 				for (BusinessGroupShort businessGroup : memberRow.getGroups()) {
-					if (atLeastOneItem) {
+					if (renderedItems >= MAX_ITEMS) {
+						break;
+					}
+					if (renderedItems > 0) {
 						target.append(", ");
 					}
 					businessGroupRenderer.render(renderer, target, businessGroup, row, source, ubu, translator);
-					atLeastOneItem = true;
+					renderedItems++;
 				}
 			}
-			
+
 			if (courseMembership.isCurriculumElementMember()) {
 				FlexiCellRenderer curriculumElementRenderer = new CurriculumElementCellRenderer();
-				Set<CurriculumElementShort> curriculumElementSet = new HashSet<>(memberRow.getCurriculumElements());
-				for (CurriculumElementShort curriculumElement : curriculumElementSet) {
-					if (atLeastOneItem) {
+				for (CurriculumElementShort curriculumElement : curriculumElements) {
+					if (renderedItems >= MAX_ITEMS) {
+						break;
+					}
+					if (renderedItems > 0) {
 						target.append(", ");
 					}
 					curriculumElementRenderer.render(renderer, target, curriculumElement.getDisplayName(), row, source, ubu, translator);
-					atLeastOneItem = true;
+					renderedItems++;
 				}
 			}
-			
+
+			if (totalItems > MAX_ITEMS) {
+				int remaining = totalItems - MAX_ITEMS;
+				target.append(" ");
+				new StaticFlexiCellRenderer(openDetailsAction, new TextFlexiCellRenderer())
+						.render(renderer, target, "+" + remaining, row, source, ubu, translator);
+			}
+
 			target.append("</div>");
 		}
 	}

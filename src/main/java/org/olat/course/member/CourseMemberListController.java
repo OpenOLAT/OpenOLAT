@@ -97,7 +97,8 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	
 	@Override
 	protected void initOriginColumn(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberListTableModel.Cols.origin, new OriginCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberListTableModel.Cols.origin, 
+				new OriginCellRenderer(TABLE_ACTION_TOGGLE_DETAILS)));
 	}
 
 	@Override
