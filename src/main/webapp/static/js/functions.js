@@ -12,7 +12,7 @@ let o2cExclusions=[];
 // o_info is a global object that contains global variables
 o_info.linkbusy = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
-o_info.debug = true;
+o_info.debug = false;
 // o_info.drake is supervised and linked to .o_drake DOM element
 o_info.drakes = [];
 
