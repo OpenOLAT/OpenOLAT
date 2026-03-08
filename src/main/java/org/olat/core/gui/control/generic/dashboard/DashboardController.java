@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
 public class DashboardController extends BasicController {
+
+	private static final Logger log = Tracing.createLoggerFor(DashboardController.class);
 
 	private final StackedPanel mainPanel;
 	private final VelocityContainer mainVC;
@@ -91,6 +95,8 @@ public class DashboardController extends BasicController {
 			// load from the users preferences and system defaults
 			enabledWidgetNames = loadEnabledNames(ureq);
 			systemDefaultEnabledWidgetNames = loadSystemDefaultEnabledNames();
+			log.debug("Dashboard '{}' initialized: personal={}, systemDefault={}", dashboardId,
+					enabledWidgetNames != null, systemDefaultEnabledWidgetNames != null);
 		}
 
 		mainVC.contextPut("hasWidgets", Boolean.FALSE);
@@ -121,6 +127,7 @@ public class DashboardController extends BasicController {
 		mainVC.put(name, ctrl.getInitialComponent());
 		applyConfiguration();
 		mainVC.contextPut("hasWidgets", Boolean.TRUE);
+		log.debug("Widget '{}' added to dashboard '{}', enabled: {}", name, dashboardId, enabledWidgets.size());
 	}
 
 	@Override

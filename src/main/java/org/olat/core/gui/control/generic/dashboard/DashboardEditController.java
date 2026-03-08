@@ -22,6 +22,7 @@ package org.olat.core.gui.control.generic.dashboard;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -34,24 +35,61 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dashboard.DashboardController.Widget;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Edit controller for dashboard editing. Shows proxy widgets with
- * drag & drop reordering (Dragula), remove/add actions, and save/cancel/reset.
- * Fires {@link Event#CHANGED_EVENT} after saving or resetting,
- * {@link Event#CANCELLED_EVENT} on cancel.
+ * Edit controller for dashboard widget configuration. Created by
+ * {@link DashboardController#doEdit(UserRequest)} when the user clicks
+ * "Edit dashboard". Replaces the dashboard view in the stacked panel
+ * and fires an event when the user is done.
+ * <p>
+ * The edit view is split into two sections:
+ * <ul>
+ *   <li><b>Enabled widgets</b> — shown in a Dragula-enabled container
+ *       that supports drag &amp; drop reordering. Each widget has a
+ *       remove button.</li>
+ *   <li><b>Disabled widgets</b> — shown below with "Add" buttons to
+ *       move them back into the enabled section.</li>
+ * </ul>
+ * <p>
+ * Actions:
+ * <ul>
+ *   <li><b>Save</b> — persists the current widget order as personal
+ *       preferences in {@code GuiPreferences}.</li>
+ *   <li><b>Cancel</b> — discards all changes.</li>
+ *   <li><b>Reset</b> — deletes the personal preferences, reverting to
+ *       the system default or all-widgets fallback.</li>
+ * </ul>
+ * <p>
+ * System administrators see an additional ellipsis menu with:
+ * <ul>
+ *   <li><b>Save as system default</b> — stores the current widget
+ *       configuration as the system-wide default via
+ *       {@link DashboardSystemDefaultsManager}.</li>
+ *   <li><b>Reset system default</b> — deletes the system-wide default.</li>
+ * </ul>
+ * Changes to the system default are audit-logged at INFO level with
+ * the identity key of the administrator.
+ * <p>
+ * Fires {@link Event#CHANGED_EVENT} after save, reset, or system default
+ * changes. Fires {@link Event#CANCELLED_EVENT} on cancel.
  *
  * Initial date: Mar 07, 2026<br>
  * @author gnaegi, https://www.frentix.com
  */
 public class DashboardEditController extends BasicController {
 
+	private static final Logger log = Tracing.createLoggerFor(DashboardEditController.class);
+
+	/** JavaScript command sent by Dragula when a widget is dropped at a new position. */
 	private static final String CMD_DROP_WIDGET = "drop-widget";
+	/** JavaScript command sent when the "Add" button on a disabled widget is clicked. */
 	private static final String CMD_ADD_WIDGET = "add-widget";
+	/** JavaScript command sent when the remove button on an enabled widget is clicked. */
 	private static final String CMD_REMOVE_WIDGET = "remove-widget";
 
 	private final VelocityContainer mainVC;
@@ -66,6 +104,13 @@ public class DashboardEditController extends BasicController {
 	@Autowired
 	private DashboardSystemDefaultsManager dashboardSystemDefaultsManager;
 
+	/**
+	 * @param ureq            the user request
+	 * @param wControl        the window control
+	 * @param dashboardId     unique dashboard identifier used as storage key
+	 * @param enabledWidgets  currently enabled widgets in display order
+	 * @param disabledWidgets currently disabled (hidden) widgets
+	 */
 	DashboardEditController(UserRequest ureq, WindowControl wControl,
 			String dashboardId, List<Widget> enabledWidgets, List<Widget> disabledWidgets) {
 		super(ureq, wControl);
@@ -128,32 +173,55 @@ public class DashboardEditController extends BasicController {
 		}
 	}
 
+	/**
+	 * Save the current widget configuration as personal preferences.
+	 */
 	private void doSave(UserRequest ureq) {
 		DashboardPrefs prefs = buildCurrentPrefs();
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		guiPrefs.putAndSave(DashboardController.class, dashboardId, prefs);
+		log.debug("Dashboard '{}' personal preferences saved: {}", dashboardId, prefs.getEnabledWidgets());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
+	/**
+	 * Delete the personal preferences, reverting to system default or all widgets.
+	 */
 	private void doReset(UserRequest ureq) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		guiPrefs.putAndSave(DashboardController.class, dashboardId, null);
+		log.debug("Dashboard '{}' personal preferences reset", dashboardId);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
+	/**
+	 * Save the current widget configuration as the system-wide default.
+	 * Audit-logged at INFO level.
+	 */
 	private void doSaveSystemDefault(UserRequest ureq) {
 		DashboardPrefs prefs = buildCurrentPrefs();
 		dashboardSystemDefaultsManager.saveSystemDefault(dashboardId, prefs);
+		log.info("Dashboard '{}' system default saved by identity::{} with widgets: {}",
+				dashboardId, getIdentity().getKey(), prefs.getEnabledWidgets());
 		showInfo("dashboard.system.default.saved");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
+	/**
+	 * Delete the system-wide default configuration. Audit-logged at INFO level.
+	 */
 	private void doResetSystemDefault(UserRequest ureq) {
 		dashboardSystemDefaultsManager.deleteSystemDefault(dashboardId);
+		log.info("Dashboard '{}' system default reset by identity::{}",
+				dashboardId, getIdentity().getKey());
 		showInfo("dashboard.system.default.deleted");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
+	/**
+	 * Build a {@link DashboardPrefs} from the current enabled widgets list
+	 * in the Velocity context.
+	 */
 	private DashboardPrefs buildCurrentPrefs() {
 		@SuppressWarnings("unchecked")
 		List<Widget> enabled = (List<Widget>) mainVC.getContext().get("enabledWidgets");
@@ -166,6 +234,10 @@ public class DashboardEditController extends BasicController {
 		return new DashboardPrefs(names);
 	}
 
+	/**
+	 * Handle Dragula drop event: reorder the dragged widget before the sibling.
+	 * Parameters {@code "dragged"} and {@code "sibling"} are sent from JavaScript.
+	 */
 	private void doDropWidget(UserRequest ureq) {
 		String draggedName = ureq.getParameter("dragged");
 		String siblingName = ureq.getParameter("sibling");
@@ -195,9 +267,14 @@ public class DashboardEditController extends BasicController {
 		} else {
 			enabled.add(dragged);
 		}
+		log.debug("Dashboard '{}' widget '{}' reordered (before: '{}')", dashboardId, draggedName, siblingName);
 		mainVC.setDirty(true);
 	}
 
+	/**
+	 * Move a widget from the disabled list to the enabled list.
+	 * Parameter {@code "widget"} is sent from JavaScript.
+	 */
 	private void doAddWidget(UserRequest ureq) {
 		String widgetName = ureq.getParameter("widget");
 		if (!StringHelper.containsNonWhitespace(widgetName)) return;
@@ -219,9 +296,14 @@ public class DashboardEditController extends BasicController {
 
 		disabled.remove(toAdd);
 		enabled.add(toAdd);
+		log.debug("Dashboard '{}' widget '{}' added", dashboardId, widgetName);
 		mainVC.setDirty(true);
 	}
 
+	/**
+	 * Move a widget from the enabled list to the disabled list.
+	 * Parameter {@code "widget"} is sent from JavaScript.
+	 */
 	private void doRemoveWidget(UserRequest ureq) {
 		String widgetName = ureq.getParameter("widget");
 		if (!StringHelper.containsNonWhitespace(widgetName)) return;
@@ -243,6 +325,7 @@ public class DashboardEditController extends BasicController {
 
 		enabled.remove(toRemove);
 		disabled.add(toRemove);
+		log.debug("Dashboard '{}' widget '{}' removed", dashboardId, widgetName);
 		mainVC.setDirty(true);
 	}
 }
