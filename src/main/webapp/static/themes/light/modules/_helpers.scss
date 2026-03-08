@@ -783,3 +783,32 @@
 		display: block;
 	}
 }
+
+/* Skeleton placeholder mimicking content */
+.o_skeleton {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding-top: 10px;
+	border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.o_skeleton_bar {
+	height: 12px;
+	border-radius: 6px;
+	background-color: rgba(0,0,0,0.06);
+
+	&.o_skeleton_bar_full {
+		width: 100%;
+	}
+	&.o_skeleton_bar_long {
+		width: 80%;
+	}
+	&.o_skeleton_bar_medium {
+		width: 55%;
+	}
+	&.o_skeleton_bar_short {
+		width: 35%;
+	}
+}
+

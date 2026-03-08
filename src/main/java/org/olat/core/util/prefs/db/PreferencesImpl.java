@@ -45,6 +45,7 @@ public class PreferencesImpl implements Preferences {
 	static {
 		XStreamHelper.allowDefaultPackage(xstream);
 		xstream.ignoreUnknownElements();
+		xstream.autodetectAnnotations(true);
 	}
 
 	private final GuiPreferenceService guiPreferenceService;

@@ -1,0 +1,90 @@
+$r.render("dragula")
+<div class="o_dashboard_edit">
+	<h3>$r.translate("dashboard.enabled.widgets")</h3>
+	<div class="o_dashboard_edit_active_area">
+		<div id="o_dashboard_enabled" class="o_bento o_dashboard_edit_list o_drake">
+				#foreach($widget in $enabledWidgets)
+					<div class="o_bento_box $widget.getCss() o_dashboard_edit_item" data-widget-name="$widget.getName()">
+						<div class="o_dashboard_widget o_bento_content o_dashboard_edit_item_inner">
+							<div class="o_dashboard_edit_header">
+								<span class="o_dashboard_edit_title">$!widget.getTitle()</span>
+								<a href="javascript:;" onclick="${r.openJavaScriptCommand('remove-widget')}, 'widget', '$widget.getName()'); return false;"
+								   class="o_dashboard_edit_remove" title="$r.translate('dashboard.remove')">
+									<i class="o_icon o_icon_trash"></i>
+								</a>
+							</div>
+							<div class="o_dashboard_edit_drag_zone">
+								<div class="o_dashboard_edit_drag_label">
+									<i class="o_icon o_icon_move"></i>
+									<span>$r.translate("dashboard.drag")</span>
+								</div>
+							</div>
+							<div class="o_skeleton">
+								<div class="o_skeleton_bar o_skeleton_bar_short"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_full"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_long"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_full"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_medium"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_full"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_long"></div>
+								<div class="o_skeleton_bar o_skeleton_bar_short"></div>
+							</div>
+						</div>
+					</div>
+				#end
+			</div>
+	</div>
+	<div class="o_dashboard_edit_buttons">
+		$r.render("dashboard.reset")
+		$r.render("dashboard.save")
+		$r.render("dashboard.cancel")
+	</div>
+	#if($disabledWidgets && $disabledWidgets.size() > 0)
+	<div class="o_dashboard_edit_section">
+		<h3>$r.translate("dashboard.disabled.widgets")</h3>
+		<div class="o_bento o_dashboard_edit_list o_dashboard_disabled_list">
+			#foreach($widget in $disabledWidgets)
+				<div class="o_bento_box $widget.getCss() o_dashboard_edit_item o_dashboard_edit_item_disabled" data-widget-name="$widget.getName()">
+					<div class="o_dashboard_widget o_bento_content o_dashboard_edit_item_inner">
+						<div class="o_dashboard_edit_header">
+							<span class="o_dashboard_edit_title">$!widget.getTitle()</span>
+						</div>
+						<div class="o_dashboard_edit_drag_zone">
+							<a href="javascript:;" onclick="${r.openJavaScriptCommand('add-widget')}, 'widget', '$widget.getName()'); return false;"
+							   class="btn o_button_ghost" title="$r.translate('dashboard.add')">
+								<i class="o_icon o_icon_add"></i> $r.translate("dashboard.add")
+							</a>
+						</div>
+						<div class="o_skeleton">
+							<div class="o_skeleton_bar o_skeleton_bar_short"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_full"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_long"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_full"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_medium"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_full"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_long"></div>
+							<div class="o_skeleton_bar o_skeleton_bar_short"></div>
+						</div>
+					</div>
+				</div>
+			#end
+		</div>
+	</div>
+	#end
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	destroyDrakes();
+	var container = jQuery('#o_dashboard_enabled').get(0);
+	if (container) {
+		var drake = dragula([container], {
+		}).on('drop', function(el, target, source, sibling) {
+			var draggedName = el.getAttribute('data-widget-name');
+			var siblingName = sibling ? sibling.getAttribute('data-widget-name') : '';
+			${r.openJavaScriptCommand('drop-widget')}, 'dragged', draggedName, 'sibling', siblingName);
+		});
+		registerDrake(drake);
+	}
+});
+</script>

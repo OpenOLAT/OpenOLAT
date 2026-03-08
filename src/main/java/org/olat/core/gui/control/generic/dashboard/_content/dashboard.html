@@ -1,6 +1,6 @@
 <div class="o_dashboard o_bento_container #if($r.isNotEmpty($dashboardCss))$dashboardCss#end">
 	<div class="o_bento">
-		#foreach($widget in $widgets)
+		#foreach($widget in $enabledWidgets)
 			#if($r.visible($widget.getName()))
 				<div class="o_bento_box $widget.getCss()">
 					$r.render($widget.getName())
@@ -8,4 +8,9 @@
 			#end
 		#end
 	</div>
+	#if($r.available("dashboard.edit") && $r.visible("dashboard.edit"))
+	<div class="o_dashboard_edit_link">
+		$r.render("dashboard.edit")
+	</div>
+	#end
 </div>

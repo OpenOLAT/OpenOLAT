@@ -394,3 +394,156 @@
 	background-color: $o-dashboard-widget-table-bg-color;
 }
 
+/* Dashboard edit button */
+.o_dashboard_edit_link {
+	margin-top: 50px;
+	text-align: center;
+}
+
+/* Dashboard edit mode */
+.o_dashboard_edit {
+	max-width: min($o-page-width-max, 100%);
+
+	.o_dashboard_edit_active_area {
+		border: 1px solid rgba($input-border-focus, 0.4);
+		background-color: rgba($input-border-focus, 0.03);
+		border-radius: $o-dashboard-widget-border-radius;
+		padding: 20px;
+		margin-bottom: 1.5em;
+	}
+
+	.o_dashboard_edit_section {
+		margin-bottom: 1.5em;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	.o_dashboard_edit_list {
+		min-height: 40px;
+	}
+
+	.o_dashboard_edit_item {
+		transition: filter 0.15s ease;
+
+		&:hover,
+		&.gu-mirror {
+			filter: brightness(0.95);
+		}
+		&.gu-mirror {
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+		}
+		&.gu-transit {
+			.o_dashboard_edit_item_inner {
+				visibility: hidden;
+			}
+			border: 2px dashed rgba($input-border-focus, 0.5);
+			background-color: rgba($input-border-focus, 0.05);
+			border-radius: $o-dashboard-widget-border-radius;
+		}
+	}
+
+	.o_dashboard_edit_item_inner {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		padding: 15px;
+		min-height: 300px;
+		cursor: grab;
+
+		&:active {
+			cursor: grabbing;
+		}
+	}
+
+	.o_dashboard_edit_item_disabled {
+		.o_dashboard_edit_item_inner {
+			cursor: default;
+
+			&:active {
+				cursor: default;
+			}
+		}
+
+		.o_dashboard_edit_header,
+		.o_skeleton {
+			opacity: 0.6;
+		}
+
+		.o_dashboard_edit_drag_zone {
+			pointer-events: auto;
+		}
+
+		&:hover {
+			filter: brightness(0.97);
+		}
+	}
+
+	.o_dashboard_edit_header {
+		display: flex;
+		align-items: center;
+		position: relative;
+		z-index: 2;
+	}
+
+	.o_dashboard_edit_drag_zone {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	.o_dashboard_edit_drag_label {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		color: $text-color;
+
+		.o_icon {
+			font-size: 2.4em;
+		}
+		span {
+			font-size: 0.85em;
+			font-weight: 500;
+		}
+	}
+
+	.o_dashboard_edit_title {
+		flex: 1;
+		font-weight: 500;
+
+		h3 {
+			font-size: $o-dashboard-widget-title-font-size;
+			margin: 0;
+		}
+	}
+
+	.o_dashboard_edit_remove {
+		margin-left: 12px;
+		white-space: nowrap;
+		color: $link-color;
+		font-size: 2em;
+
+		&:hover {
+			color: $link-hover-color;
+		}
+	}
+
+	.o_dashboard_edit_buttons {
+		margin-top: 1.5em;
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		justify-content: flex-end;
+	}
+}
+

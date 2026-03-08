@@ -44,7 +44,7 @@ import org.olat.core.util.Util;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public abstract class TableWidgetController extends FormBasicController {
+public abstract class TableWidgetController extends FormBasicController implements DashboardWidget {
 	
 	public static final String CMD_ROW_CLICKED = "row.clicked";
 	
@@ -83,6 +83,11 @@ public abstract class TableWidgetController extends FormBasicController {
 	protected abstract String createIndicators(FormLayoutContainer widgetCont);
 	protected abstract String createTable(FormLayoutContainer widgetCont);
 	protected abstract String createShowAll(FormLayoutContainer widgetCont);
+
+	@Override
+	public String getWidgetTitle() {
+		return getTitle();
+	}
 	
 	/**
 	 * @param widgetCont 

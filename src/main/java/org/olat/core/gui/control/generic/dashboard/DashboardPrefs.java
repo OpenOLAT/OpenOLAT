@@ -1,0 +1,55 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
+package org.olat.core.gui.control.generic.dashboard;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
+/**
+ * User preferences for a dashboard, stored as XML in GuiPreferences.
+ * Contains the ordered list of enabled widget names.
+ * The XStream alias is auto-detected via annotation.
+ *
+ * Initial date: Mar 06, 2026<br>
+ * @author gnaegi, gn@frentix.com, https://www.frentix.com
+ */
+@XStreamAlias("DashboardPrefs")
+public class DashboardPrefs {
+
+	private List<String> enabledWidgets;
+
+	public DashboardPrefs() {
+		this.enabledWidgets = new ArrayList<>();
+	}
+
+	public DashboardPrefs(List<String> enabledWidgets) {
+		this.enabledWidgets = new ArrayList<>(enabledWidgets);
+	}
+
+	public List<String> getEnabledWidgets() {
+		return enabledWidgets;
+	}
+
+	public void setEnabledWidgets(List<String> enabledWidgets) {
+		this.enabledWidgets = enabledWidgets;
+	}
+}

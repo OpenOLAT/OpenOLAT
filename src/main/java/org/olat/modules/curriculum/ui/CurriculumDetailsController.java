@@ -266,20 +266,20 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		removeAsListenerAndDispose(implementationWidgetCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		
-		overviewCtrl = new DashboardController(ureq, getWindowControl());
+		overviewCtrl = new DashboardController(ureq, getWindowControl(), this.getClass().getName());
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		
 		implementationWidgetCtrl = new ImplementationWidgetController(ureq, getWindowControl(), curriculum, secCallback);
 		listenTo(implementationWidgetCtrl);
-		overviewCtrl.addWidget("implementations", implementationWidgetCtrl, BentoBoxSize.box_4_1);
-		
+		overviewCtrl.addWidget("implementations", translate("curriculum.implementations"), implementationWidgetCtrl, BentoBoxSize.box_4_1);
+
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl(),
 					curriculum);
 			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
-			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
+			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 		return overviewCtrl;
 	}

@@ -599,32 +599,32 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
-		overviewCtrl = new DashboardController(ureq, subControl);
+		overviewCtrl = new DashboardController(ureq, subControl, this.getClass().getName());
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		
 		membersWidgetCtrl = new MembersWidgetController(ureq, getWindowControl(), curriculumElement);
 		listenTo(membersWidgetCtrl);
-		overviewCtrl.addWidget("members", membersWidgetCtrl, BentoBoxSize.box_4_1);
+		overviewCtrl.addWidget("members", translate("curriculum.members"), membersWidgetCtrl, BentoBoxSize.box_4_1);
 
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl(),
 					curriculumElement);
 			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
-			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
+			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 
 		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
 		listenTo(coursesWidgetCtrl);
-		overviewCtrl.addWidget("courses", coursesWidgetCtrl, BentoBoxSize.box_4_1);
+		overviewCtrl.addWidget("courses", translate("tab.resources"), coursesWidgetCtrl, BentoBoxSize.box_4_1);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
 		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
 				&& secCallback.canViewCatalogSettings(curriculumElement)) {
 			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(offersWidgetCtrl);
-			overviewCtrl.addWidget("offers", offersWidgetCtrl, BentoBoxSize.box_4_1);
+			overviewCtrl.addWidget("offers", translate("curriculum.offers"), offersWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 		
 		return overviewCtrl;

@@ -158,7 +158,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	}
 	
 	private void initDashboard(UserRequest ureq) {
-		overviewCtrl = new DashboardController(ureq, getWindowControl());
+		overviewCtrl = new DashboardController(ureq, getWindowControl(), this.getClass().getName());
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		
@@ -166,7 +166,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl());
 			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
-			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
+			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 		
 		mainVC.put("dashboard", overviewCtrl.getInitialComponent());
