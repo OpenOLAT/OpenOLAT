@@ -545,5 +545,14 @@
 		align-items: center;
 		justify-content: flex-end;
 	}
+
+	@media (max-width: $screen-xs-max) {
+		.o_dashboard_edit_item_inner {
+			min-height: auto;
+		}
+		.o_skeleton {
+			display: none;
+		}
+	}
 }
 

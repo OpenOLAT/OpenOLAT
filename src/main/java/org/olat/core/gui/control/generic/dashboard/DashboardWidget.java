@@ -26,7 +26,7 @@ package org.olat.core.gui.control.generic.dashboard;
  * when no explicit title is passed to addWidget().
  *
  * Initial date: Mar 07, 2026<br>
- * @author gnaegi, gn@frentix.com, https://www.frentix.com
+ * @author gnaegi https://www.frentix.com
  */
 public interface DashboardWidget {
 

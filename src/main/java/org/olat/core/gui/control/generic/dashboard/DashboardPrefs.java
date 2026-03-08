@@ -22,17 +22,13 @@ package org.olat.core.gui.control.generic.dashboard;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * User preferences for a dashboard, stored as XML in GuiPreferences.
  * Contains the ordered list of enabled widget names.
- * The XStream alias is auto-detected via annotation.
  *
  * Initial date: Mar 06, 2026<br>
- * @author gnaegi, gn@frentix.com, https://www.frentix.com
+ * @author gnaegi, https://www.frentix.com
  */
-@XStreamAlias("DashboardPrefs")
 public class DashboardPrefs {
 
 	private List<String> enabledWidgets;

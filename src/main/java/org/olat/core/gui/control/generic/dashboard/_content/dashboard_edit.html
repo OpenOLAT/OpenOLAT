@@ -1,7 +1,7 @@
 $r.render("dragula")
 <div class="o_dashboard_edit">
 	<h3>$r.translate("dashboard.enabled.widgets")</h3>
-	<div class="o_dashboard_edit_active_area">
+	<div class="o_dashboard_edit_active_area o_bento_container">
 		<div id="o_dashboard_enabled" class="o_bento o_dashboard_edit_list o_drake">
 				#foreach($widget in $enabledWidgets)
 					<div class="o_bento_box $widget.getCss() o_dashboard_edit_item" data-widget-name="$widget.getName()">
@@ -38,6 +38,9 @@ $r.render("dragula")
 		$r.render("dashboard.reset")
 		$r.render("dashboard.save")
 		$r.render("dashboard.cancel")
+		#if($r.available("adminMenu"))
+			$r.render("adminMenu")
+		#end
 	</div>
 	#if($disabledWidgets && $disabledWidgets.size() > 0)
 	<div class="o_dashboard_edit_section">

@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Dashboard controller that renders widgets in a Bento grid layout.
@@ -55,10 +56,14 @@ public class DashboardController extends BasicController {
 	private final String dashboardId;
 	private final List<Widget> allWidgets = new ArrayList<>();
 	private List<String> enabledWidgetNames = null;
+	private List<String> systemDefaultEnabledWidgetNames = null;
 	private final List<Widget> enabledWidgets = new ArrayList<>();
 	private final Map<String, Widget> widgetsByName = new HashMap<>();
 
 	private DashboardEditController editCtrl;
+
+	@Autowired
+	private DashboardSystemDefaultsManager dashboardSystemDefaultsManager;
 
 	/**
 	 * Creates a dashboard without edit support (backward compatible).
@@ -83,10 +88,12 @@ public class DashboardController extends BasicController {
 			editLink = LinkFactory.createButton("dashboard.edit", mainVC, this);
 			editLink.setGhost(true);
 			editLink.setIconLeftCSS("o_icon o_icon_edit");
-			// load from the users preferences
+			// load from the users preferences and system defaults
 			enabledWidgetNames = loadEnabledNames(ureq);
-		}		
-		
+			systemDefaultEnabledWidgetNames = loadSystemDefaultEnabledNames();
+		}
+
+		mainVC.contextPut("hasWidgets", Boolean.FALSE);
 		mainVC.contextPut("enabledWidgets", enabledWidgets);
 		mainPanel = putInitialPanel(mainVC);
 	}
@@ -113,6 +120,7 @@ public class DashboardController extends BasicController {
 		widgetsByName.put(name, widget);
 		mainVC.put(name, ctrl.getInitialComponent());
 		applyConfiguration();
+		mainVC.contextPut("hasWidgets", Boolean.TRUE);
 	}
 
 	@Override
@@ -142,16 +150,30 @@ public class DashboardController extends BasicController {
 		return null;
 	}
 
+	private List<String> loadSystemDefaultEnabledNames() {
+		if (dashboardId == null) return null;
+		DashboardPrefs prefs = dashboardSystemDefaultsManager.loadSystemDefault(dashboardId);
+		if (prefs != null) {
+			return prefs.getEnabledWidgets();
+		}
+		return null;
+	}
+
 	private void reloadAndApplyConfiguration(UserRequest ureq) {
-		// clear the current configuration and rebuild from user gui prefs
-		enabledWidgetNames = loadEnabledNames(ureq);		
+		enabledWidgetNames = loadEnabledNames(ureq);
+		systemDefaultEnabledWidgetNames = loadSystemDefaultEnabledNames();
 		applyConfiguration();
 	}
 
 	private void applyConfiguration() {
 		enabledWidgets.clear();
-		if (enabledWidgetNames != null) {
-			for (String name : enabledWidgetNames) {
+		// Cascade: personal > system default > all widgets
+		List<String> effectiveNames = enabledWidgetNames;
+		if (effectiveNames == null) {
+			effectiveNames = systemDefaultEnabledWidgetNames;
+		}
+		if (effectiveNames != null) {
+			for (String name : effectiveNames) {
 				Widget w = widgetsByName.get(name);
 				if (w != null) {
 					enabledWidgets.add(w);
@@ -165,16 +187,20 @@ public class DashboardController extends BasicController {
 	private void doEdit(UserRequest ureq) {
 		cleanUpEdit();
 
-		List<String> enabledNames = loadEnabledNames(ureq);
+		// Cascade: personal > system default > all widgets
+		List<String> effectiveNames = loadEnabledNames(ureq);
+		if (effectiveNames == null) {
+			effectiveNames = loadSystemDefaultEnabledNames();
+		}
 		List<Widget> enabled = new ArrayList<>();
 		List<Widget> disabled = new ArrayList<>();
-		if (enabledNames != null) {
-			for (String name : enabledNames) {
+		if (effectiveNames != null) {
+			for (String name : effectiveNames) {
 				Widget w = widgetsByName.get(name);
 				if (w != null) enabled.add(w);
 			}
 			for (Widget w : allWidgets) {
-				if (!enabledNames.contains(w.getName())) {
+				if (!effectiveNames.contains(w.getName())) {
 					disabled.add(w);
 				}
 			}

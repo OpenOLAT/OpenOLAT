@@ -9,25 +9,30 @@ Developer documentation for the OpenOlat bento-grid dashboard infrastructure.
 The dashboard framework provides a reusable, user-configurable widget container
 rendered as a CSS Grid bento layout. Widgets can be added by any module.
 When editing is enabled, users can reorder, hide, and restore widgets via
-drag & drop. Widget configuration is persisted per user in `GuiPreferences`.
+drag & drop. Widget configuration follows a three-tier cascade:
+personal preferences > system defaults > all widgets.
 
 Key features:
 
 - Bento grid layout with configurable widget sizes (1x1 up to 4x4)
 - Optional edit mode with Dragula.js drag & drop
+- Three-tier configuration cascade: personal > system default > all widgets
 - Per-user preferences stored via XStream in `GuiPreferences`
+- System default configuration stored in the `o_property` table via `PropertyManager`
+- Admin tools for managing system default configurations (system administrators only)
 - Automatic title detection from controllers implementing `DashboardWidget`
 - Abstract `TableWidgetController` base class for table-based widgets
 
 ## 2. Class Diagram
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 430" font-family="'SF Mono','Cascadia Code','Fira Code','Consolas',monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 440" font-family="'SF Mono','Cascadia Code','Fira Code','Consolas',monospace">
   <style>
     .box { stroke-width: 1.2; rx: 4; ry: 4; }
     .box-class    { fill: #f1f5f9; stroke: #475569; }
     .box-iface    { fill: #ecfdf5; stroke: #16a34a; }
     .box-enum     { fill: #fffbeb; stroke: #ca8a04; }
     .box-abstract { fill: #eff6ff; stroke: #2563eb; }
+    .box-service  { fill: #fef3c7; stroke: #d97706; }
     .cls-title  { font-size: 13px; font-weight: 700; fill: #1e293b; }
     .cls-stereo { font-size: 10px; font-style: italic; fill: #64748b; }
     .cls-text   { font-size: 10.5px; fill: #334155; }
@@ -55,7 +60,7 @@ Key features:
   <line class="sep" x1="10" y1="92" x2="320" y2="92"/>
   <text class="cls-text" x="18" y="108">+ addWidget(name, title, ctrl, size)</text>
   <text class="cls-text" x="18" y="123">+ setDashboardCss(css)</text>
-  <text class="cls-text" x="18" y="138">- doEdit(ureq)</text>
+  <text class="cls-text" x="18" y="138">- applyConfiguration()</text>
 
   <!-- DashboardPrefs -->
   <rect class="box box-class" x="575" y="8" width="255" height="52"/>
@@ -70,39 +75,49 @@ Key features:
   <line class="sep" x1="575" y1="119" x2="830" y2="119"/>
   <text class="cls-text" x="583" y="135">box_{cols}_{rows} &#8594; getCss()</text>
 
+  <!-- DashboardSystemDefaultsManager -->
+  <rect class="box box-service" x="600" y="168" width="250" height="92"/>
+  <text class="cls-stereo" x="725" y="184" text-anchor="middle">&#171;service&#187;</text>
+  <text class="cls-title" x="725" y="200" text-anchor="middle" style="font-size:10.5px">DashboardSystemDefaultsManager</text>
+  <line class="sep" x1="600" y1="207" x2="850" y2="207"/>
+  <text class="cls-text" x="608" y="222">+ loadSystemDefault(id)</text>
+  <text class="cls-text" x="608" y="237">+ saveSystemDefault(id, prefs)</text>
+  <text class="cls-text" x="608" y="252">+ deleteSystemDefault(id)</text>
+
   <!-- DashboardEditController -->
-  <rect class="box box-class" x="10" y="200" width="310" height="84"/>
+  <rect class="box box-class" x="10" y="200" width="310" height="100"/>
   <text class="cls-title" x="165" y="220" text-anchor="middle">DashboardEditController</text>
   <line class="sep" x1="10" y1="228" x2="320" y2="228"/>
   <text class="cls-text" x="18" y="244">Drag &amp; drop reordering (Dragula.js)</text>
   <text class="cls-text" x="18" y="259">Add / Remove / Reorder widgets</text>
-  <text class="cls-text" x="18" y="274">&#8594; CHANGED_EVENT | CANCELLED_EVENT</text>
+  <text class="cls-text" x="18" y="274">Admin: save / reset system defaults</text>
+  <text class="cls-text" x="18" y="289">&#8594; CHANGED_EVENT | CANCELLED_EVENT</text>
 
   <!-- Widget (inner class) -->
-  <rect class="box box-class" x="365" y="200" width="195" height="92"/>
-  <text class="cls-stereo" x="462" y="215" text-anchor="middle">&#171;inner class&#187;</text>
-  <text class="cls-title" x="462" y="231" text-anchor="middle">Widget</text>
-  <line class="sep" x1="365" y1="238" x2="560" y2="238"/>
-  <text class="cls-text" x="373" y="254">name : String</text>
-  <text class="cls-text" x="373" y="269">title : String</text>
-  <text class="cls-text" x="373" y="284">css : String</text>
+  <rect class="box box-class" x="365" y="210" width="195" height="92"/>
+  <text class="cls-stereo" x="462" y="225" text-anchor="middle">&#171;inner class&#187;</text>
+  <text class="cls-title" x="462" y="241" text-anchor="middle">Widget</text>
+  <line class="sep" x1="365" y1="248" x2="560" y2="248"/>
+  <text class="cls-text" x="373" y="264">name : String</text>
+  <text class="cls-text" x="373" y="279">title : String</text>
+  <text class="cls-text" x="373" y="294">css : String</text>
 
   <!-- DashboardWidget (interface) -->
-  <rect class="box box-iface" x="365" y="338" width="195" height="56"/>
-  <text class="cls-stereo" x="462" y="354" text-anchor="middle">&#171;interface&#187;</text>
-  <text class="cls-title" x="462" y="370" text-anchor="middle">DashboardWidget</text>
-  <line class="sep" x1="365" y1="377" x2="560" y2="377"/>
-  <text class="cls-text" x="373" y="390">+ getWidgetTitle() : String</text>
+  <rect class="box box-iface" x="365" y="348" width="195" height="56"/>
+  <text class="cls-stereo" x="462" y="364" text-anchor="middle">&#171;interface&#187;</text>
+  <text class="cls-title" x="462" y="380" text-anchor="middle">DashboardWidget</text>
+  <line class="sep" x1="365" y1="387" x2="560" y2="387"/>
+  <text class="cls-text" x="373" y="400">+ getWidgetTitle() : String</text>
 
   <!-- TableWidgetController (abstract) -->
-  <rect class="box box-abstract" x="600" y="310" width="250" height="108"/>
-  <text class="cls-stereo" x="725" y="326" text-anchor="middle">&#171;abstract&#187;</text>
-  <text class="cls-title" x="725" y="342" text-anchor="middle">TableWidgetController</text>
-  <line class="sep" x1="600" y1="349" x2="850" y2="349"/>
-  <text class="cls-text" x="608" y="364"># getTitle() : String</text>
-  <text class="cls-text" x="608" y="379"># createTable(cont)</text>
-  <text class="cls-text" x="608" y="394"># createShowAll(cont)</text>
-  <text class="cls-text" x="608" y="409">+ getWidgetTitle() : String</text>
+  <rect class="box box-abstract" x="600" y="320" width="250" height="108"/>
+  <text class="cls-stereo" x="725" y="336" text-anchor="middle">&#171;abstract&#187;</text>
+  <text class="cls-title" x="725" y="352" text-anchor="middle">TableWidgetController</text>
+  <line class="sep" x1="600" y1="359" x2="850" y2="359"/>
+  <text class="cls-text" x="608" y="374"># getTitle() : String</text>
+  <text class="cls-text" x="608" y="389"># createTable(cont)</text>
+  <text class="cls-text" x="608" y="404"># createShowAll(cont)</text>
+  <text class="cls-text" x="608" y="419">+ getWidgetTitle() : String</text>
 
   <!-- Arrows -->
   <line class="arr arr-dash" x1="320" y1="30" x2="575" y2="30" marker-end="url(#ah)"/>
@@ -111,28 +126,38 @@ Key features:
   <line class="arr arr-dash" x1="320" y1="112" x2="575" y2="112" marker-end="url(#ah)"/>
   <text class="arr-lbl" x="448" y="105" text-anchor="middle">uses</text>
 
+  <line class="arr arr-dash" x1="320" y1="140" x2="600" y2="210" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="440" y="162">autowires</text>
+
   <line class="arr arr-dash" x1="100" y1="150" x2="100" y2="200" marker-end="url(#ah)"/>
   <text class="arr-lbl" x="112" y="180">creates</text>
 
   <polygon points="320,128 312,121 304,128 312,135" fill="#64748b"/>
-  <line class="arr" x1="320" y1="128" x2="462" y2="200" marker-end="url(#ah)"/>
-  <text class="arr-lbl" x="385" y="152">contains</text>
+  <line class="arr" x1="320" y1="128" x2="462" y2="210" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="385" y="158">contains</text>
 
-  <line class="arr" x1="320" y1="250" x2="365" y2="250" marker-end="url(#ah)"/>
-  <text class="arr-lbl" x="342" y="243" text-anchor="middle">uses</text>
+  <line class="arr" x1="320" y1="260" x2="365" y2="260" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="342" y="253" text-anchor="middle">uses</text>
 
-  <line class="arr arr-dash" x1="600" y1="366" x2="560" y2="366" marker-end="url(#oh)"/>
-  <text class="arr-lbl" x="580" y="358" text-anchor="middle">implements</text>
+  <path class="arr arr-dash" d="M 250,300 L 250,310 L 725,310 L 725,260" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="480" y="306">autowires</text>
+
+  <line class="arr arr-dash" x1="725" y1="168" x2="710" y2="60" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="733" y="118">reads / writes</text>
+
+  <line class="arr arr-dash" x1="600" y1="376" x2="560" y2="376" marker-end="url(#oh)"/>
+  <text class="arr-lbl" x="580" y="368" text-anchor="middle">implements</text>
 </svg>
 
 ### Roles of each class
 
 | Class | Responsibility |
 |-------|---------------|
-| `DashboardController` | Main controller. Renders the bento grid, manages widget registration, loads user preferences, and opens edit mode. |
-| `DashboardEditController` | Edit-mode controller. Drag & drop reordering via Dragula.js, add/remove actions, save/cancel/reset. Fires `CHANGED_EVENT` or `CANCELLED_EVENT`. |
+| `DashboardController` | Main controller. Renders the bento grid, manages widget registration, loads both personal and system default preferences, applies the configuration cascade, and opens edit mode. |
+| `DashboardEditController` | Edit-mode controller. Drag & drop reordering via Dragula.js, add/remove actions, save/cancel/reset. For system admins, also shows an ellipsis menu with "Save as system default" and "Reset system default". Fires `CHANGED_EVENT` or `CANCELLED_EVENT`. |
+| `DashboardSystemDefaultsManager` | Spring `@Service` managing system-wide default configurations. Stores `DashboardPrefs` as XStream XML in the `o_property` table via `PropertyManager` (null identity/group/resource for system-level storage). |
 | `Widget` | Static inner class of `DashboardController`. View model holding the widget's `name`, `title`, and `css` class. |
-| `DashboardPrefs` | POJO stored in `GuiPreferences` via XStream. Contains the ordered list of enabled widget names. Declares its own `@XStreamAlias` for decoupled serialization. |
+| `DashboardPrefs` | POJO used for both personal preferences (`GuiPreferences`) and system defaults (`o_property`). Contains the ordered list of enabled widget names. Serialized via XStream using the fully qualified class name. |
 | `BentoBoxSize` | Enum defining widget sizes as CSS classes (e.g. `box_4_1` = 4 columns, 1 row). |
 | `DashboardWidget` | Optional interface. Controllers implementing it provide a title via `getWidgetTitle()`. |
 | `TableWidgetController` | Abstract base class for widgets displaying a FlexiTable with indicators and "Show all" link. Implements `DashboardWidget`. |
@@ -162,7 +187,8 @@ listenTo(dashboard);
 putInitialPanel(dashboard.getInitialComponent());
 ```
 
-> **Note:** The `dashboardId` is used as the key for `GuiPreferences`.
+> **Note:** The `dashboardId` is used as the key for both `GuiPreferences` (personal)
+> and `o_property` (system default).
 > Use a stable string that does not change across versions. Guest users never see the edit button.
 
 ## 4. Adding Widgets
@@ -313,32 +339,67 @@ public class CourseWidgetController extends TableWidgetController {
 2. The main panel swaps from the dashboard view to the `DashboardEditController` component
 3. Edit view shows active widgets (reorderable via drag & drop) and available widgets (with "Add" buttons)
 4. User clicks **Save** -> preferences are written to `GuiPreferences` -> `CHANGED_EVENT` is fired
-5. User clicks **Reset** -> preferences are deleted (reverts to defaults) -> `CHANGED_EVENT` is fired
+5. User clicks **Reset** -> personal preferences are deleted (reverts to system default or all widgets) -> `CHANGED_EVENT` is fired
 6. User clicks **Cancel** -> `CANCELLED_EVENT` is fired, no changes saved
 7. `DashboardController` receives the event, swaps the panel back, and reloads the configuration
 
-### Preference storage
+### Configuration cascade
+
+The dashboard uses a three-tier configuration cascade to determine which widgets are shown and in what order:
+
+1. **Personal preferences** -- Per-user configuration stored in `GuiPreferences`. If present, this takes priority.
+2. **System default** -- System-wide default configuration stored in the `o_property` table via `DashboardSystemDefaultsManager`. Used when no personal preferences exist.
+3. **All widgets** -- Fallback: all registered widgets are shown in registration order. Used when neither personal nor system default configuration exists.
+
+The cascade is applied in `DashboardController.applyConfiguration()` and `DashboardController.doEdit()`. Both methods check personal preferences first, fall back to system defaults, and finally show all widgets if neither is configured.
+
+### Personal preference storage
 
 User preferences are stored as `DashboardPrefs` objects in `GuiPreferences`,
-serialized via XStream. The `DashboardPrefs` class declares its own alias using the
-`@XStreamAlias("DashboardPrefs")` annotation, which is auto-detected by
-`PreferencesImpl` (via `xstream.autodetectAnnotations(true)`).
-This produces clean XML without package names:
+serialized via XStream using the fully qualified class name. Example XML:
 
 ```xml
-<DashboardPrefs>
+<org.olat.core.gui.control.generic.dashboard.DashboardPrefs>
   <enabledWidgets>
     <string>courses</string>
     <string>lectureBlocks</string>
   </enabledWidgets>
-</DashboardPrefs>
+</org.olat.core.gui.control.generic.dashboard.DashboardPrefs>
 ```
 
-### Default behavior
+### System default storage
 
-- When no preferences are stored, **all widgets are shown** in registration order (the default).
-- Default settings are **never persisted** -- only explicit user changes are saved.
-- Resetting **deletes** the stored preferences (stores `null`), reverting to defaults.
+System defaults are managed by `DashboardSystemDefaultsManager`, a Spring `@Service`.
+It stores `DashboardPrefs` as XStream-serialized XML in the `o_property` table using
+`PropertyManager` with `null` identity, group, and resource (system-level storage).
+The property category is `dashboard.system.default` and the property name is the `dashboardId`.
+
+Both `PreferencesImpl` (for personal preferences) and `DashboardSystemDefaultsManager`
+(for system defaults) use their own `XStream` instances with `XStreamHelper.allowDefaultPackage()`.
+No alias is registered — both serialize using the fully qualified class name, keeping
+serialization consistent across the two storage backends.
+
+### Admin tools in edit mode
+
+When a system administrator opens the edit mode, an ellipsis menu (...) is rendered
+next to the Cancel button. This menu provides two additional actions:
+
+- **Save as system default** -- Saves the current widget configuration (as shown in the
+  edit view) as the system-wide default. Other users without personal preferences will
+  see this configuration.
+- **Reset system default** -- Deletes the system default configuration. Users without
+  personal preferences will fall back to seeing all widgets in registration order.
+
+The admin menu is only rendered when `ureq.getUserSession().getRoles().isSystemAdmin()`
+returns `true`. It uses `DropdownUIFactory.createMoreDropdown()` for the ellipsis button
+and `LinkFactory.createToolLink()` for the menu items.
+
+### Default behavior summary
+
+- When no personal preferences are stored and a **system default** exists, the system default configuration is used.
+- When neither personal preferences nor system defaults exist, **all widgets are shown** in registration order.
+- Personal preferences are **never auto-created** -- only explicit user saves are persisted.
+- Resetting personal preferences **deletes** the stored preferences (stores `null`), falling back to the system default or all widgets.
 
 ## 7. BentoBoxSize Reference
 
@@ -366,10 +427,26 @@ spans half the width and 2 rows -- suitable for chart or summary widgets.
 | Template | Purpose |
 |----------|---------|
 | `dashboard.html` | Main view. Iterates over `$enabledWidgets` and renders each widget in a bento box. Edit button conditionally shown. |
-| `dashboard_edit.html` | Edit view. Dragula-enabled container for active widgets, disabled widgets with "Add" buttons. Uses `$r.openJavaScriptCommand()` for AJAX events. |
+| `dashboard_edit.html` | Edit view. Dragula-enabled container for active widgets, disabled widgets with "Add" buttons. Uses `$r.openJavaScriptCommand()` for AJAX events. For system admins, renders the admin ellipsis menu (`adminMenu`) next to the action buttons. |
 | `widget_table.html` | Standard layout for `TableWidgetController` subclasses. Renders title, indicators, table, empty state, and footer. |
 
-## 9. Complete Example
+## 9. Spring Configuration
+
+The `DashboardSystemDefaultsManager` is a Spring `@Service`. The package
+`org.olat.core.gui.control.generic.dashboard` is included in the component scan
+configured in `mainCorecontext.xml`:
+
+```xml
+<!-- src/main/java/org/olat/core/_spring/mainCorecontext.xml -->
+<context:component-scan base-package="...org.olat.core.gui.control.generic.dashboard,..." />
+```
+
+Both `DashboardController` and `DashboardEditController` inject the service via
+`@Autowired`. This works because OpenOlat's `DefaultController` calls
+`CoreSpringFactory.autowireObject(this)` during construction, enabling dependency
+injection in controller classes.
+
+## 10. Complete Example
 
 ```java
 public class CoachDashboardController extends BasicController {
@@ -417,7 +494,7 @@ public class CoachDashboardController extends BasicController {
 }
 ```
 
-## 10. i18n Keys
+## 11. i18n Keys
 
 The dashboard framework uses the following i18n keys in its own
 `_i18n/LocalStrings_*.properties`:
@@ -433,3 +510,7 @@ The dashboard framework uses the following i18n keys in its own
 | `dashboard.add` | "Add" button on disabled widgets |
 | `dashboard.remove` | Remove tooltip on enabled widgets |
 | `dashboard.drag` | Drag handle label |
+| `dashboard.system.default.save` | "Save as system default" admin action |
+| `dashboard.system.default.reset` | "Reset system default" admin action |
+| `dashboard.system.default.saved` | Info message after saving system default |
+| `dashboard.system.default.deleted` | Info message after resetting system default |

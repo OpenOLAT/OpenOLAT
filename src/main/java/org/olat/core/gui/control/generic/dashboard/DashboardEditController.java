@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -35,6 +37,7 @@ import org.olat.core.gui.control.generic.dashboard.DashboardController.Widget;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Edit controller for dashboard editing. Shows proxy widgets with
@@ -43,7 +46,7 @@ import org.olat.core.util.prefs.Preferences;
  * {@link Event#CANCELLED_EVENT} on cancel.
  *
  * Initial date: Mar 07, 2026<br>
- * @author gnaegi, gn@frentix.com, https://www.frentix.com
+ * @author gnaegi, https://www.frentix.com
  */
 public class DashboardEditController extends BasicController {
 
@@ -55,8 +58,13 @@ public class DashboardEditController extends BasicController {
 	private final Link saveLink;
 	private final Link cancelLink;
 	private final Link resetLink;
+	private Link saveSystemDefaultLink;
+	private Link resetSystemDefaultLink;
 
 	private final String dashboardId;
+
+	@Autowired
+	private DashboardSystemDefaultsManager dashboardSystemDefaultsManager;
 
 	DashboardEditController(UserRequest ureq, WindowControl wControl,
 			String dashboardId, List<Widget> enabledWidgets, List<Widget> disabledWidgets) {
@@ -81,6 +89,21 @@ public class DashboardEditController extends BasicController {
 		resetLink = LinkFactory.createButton("dashboard.reset", mainVC, this);
 		resetLink.setGhost(true);
 
+		if (ureq.getUserSession().getRoles().isSystemAdmin()) {
+			Dropdown adminDropdown = DropdownUIFactory.createMoreDropdown("adminMenu", getTranslator());
+			adminDropdown.setButton(true);
+			adminDropdown.setEmbbeded(true);
+			mainVC.put("adminMenu", adminDropdown);
+
+			saveSystemDefaultLink = LinkFactory.createToolLink("dashboard.system.default.save",
+					translate("dashboard.system.default.save"), this, "o_icon o_icon_save");
+			adminDropdown.addComponent(saveSystemDefaultLink);
+
+			resetSystemDefaultLink = LinkFactory.createToolLink("dashboard.system.default.reset",
+					translate("dashboard.system.default.reset"), this, "o_icon o_icon_delete_item");
+			adminDropdown.addComponent(resetSystemDefaultLink);
+		}
+
 		putInitialPanel(mainVC);
 	}
 
@@ -92,6 +115,10 @@ public class DashboardEditController extends BasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == resetLink) {
 			doReset(ureq);
+		} else if (source == saveSystemDefaultLink) {
+			doSaveSystemDefault(ureq);
+		} else if (source == resetSystemDefaultLink) {
+			doResetSystemDefault(ureq);
 		} else if (CMD_DROP_WIDGET.equals(event.getCommand())) {
 			doDropWidget(ureq);
 		} else if (CMD_ADD_WIDGET.equals(event.getCommand())) {
@@ -111,6 +138,19 @@ public class DashboardEditController extends BasicController {
 	private void doReset(UserRequest ureq) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		guiPrefs.putAndSave(DashboardController.class, dashboardId, null);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private void doSaveSystemDefault(UserRequest ureq) {
+		DashboardPrefs prefs = buildCurrentPrefs();
+		dashboardSystemDefaultsManager.saveSystemDefault(dashboardId, prefs);
+		showInfo("dashboard.system.default.saved");
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private void doResetSystemDefault(UserRequest ureq) {
+		dashboardSystemDefaultsManager.deleteSystemDefault(dashboardId);
+		showInfo("dashboard.system.default.deleted");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
