@@ -37,6 +37,8 @@ public class GuiDemoEmptyStateController extends BasicController {
 
 	VelocityContainer mainVC;
 
+	private GuiDemoEmptyStateFormController emptyStateFormCtrl;
+
 	public GuiDemoEmptyStateController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
@@ -44,7 +46,8 @@ public class GuiDemoEmptyStateController extends BasicController {
 
 		initStandard1();
 		initStandard2();
-		
+		initStandardForm3(ureq);
+
 		putInitialPanel(mainVC);
 	}
 
@@ -57,10 +60,16 @@ public class GuiDemoEmptyStateController extends BasicController {
 				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
 				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.1", null, "#1")
 				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.2", null,"#2")
-				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.3", null,"#4")
+				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.3", null,"#3")
 				.build();
 		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard1", mainVC, this, emptyStateConfig);
 		emptyState.setTranslator(getTranslator());
+	}
+
+	private void initStandardForm3(UserRequest ureq) {
+		emptyStateFormCtrl = new GuiDemoEmptyStateFormController(ureq, getWindowControl());
+		listenTo(emptyStateFormCtrl);
+		mainVC.put("emptyStateForm", emptyStateFormCtrl.getInitialComponent());
 	}
 
 	private void initStandard2() {
