@@ -46,9 +46,8 @@ public class OriginCoursePlannerTableModel extends DefaultFlexiTableDataModel<Or
 	private Object getValueAt(OriginCoursePlannerRow row, int col) {
 		return switch (COLS[col]) {
 			case role -> row.role();
-			case element -> row;
+			case element, product -> row;
 			case extRef -> row.elementIdentifier();
-			case product -> row;
 			case created -> row.created();
 		};
 	}

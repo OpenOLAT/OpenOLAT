@@ -45,7 +45,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
-import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.UserCourseInformations;
@@ -82,7 +81,6 @@ public class CourseMemberDetailsController extends FormBasicController {
 	private final RepositoryEntry repoEntry;
 	private final UserCourseInformations courseInfos;
 	private final MemberListSecurityCallback secCallback;
-	private final boolean hasCurriculumAccess;
 	private FormLink editMembershipButton;
 	private OriginCourseTableModel originCourseTableModel;
 	private FlexiTableElement originCourseTable;
@@ -115,9 +113,6 @@ public class CourseMemberDetailsController extends FormBasicController {
 		this.repoEntry = repositoryService.loadByKey(repoEntryKey);
 		this.courseInfos = userCourseInfosMgr.getUserCourseInformations(repoEntry.getOlatResource(), identity);
 		this.secCallback = secCallback;
-		Roles currentUserRoles = ureq.getUserSession().getRoles();
-		this.hasCurriculumAccess = CurriculumHelper.isMoreThanCurriculumManager(currentUserRoles)
-				|| currentUserRoles.isCurriculumManager();
 		initForm(ureq);
 		reloadModel();
 	}
@@ -220,24 +215,14 @@ public class CourseMemberDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.role, originRoleCellRenderer));
-		AccessibleCurriculumObjectKeys accessibleCurriculumObjectKeys = hasCurriculumAccess ? curriculumService.getAccessibleCurriculumKeys(getIdentity()) : null;
-		if (hasCurriculumAccess) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element.i18nHeaderKey(),
-					OriginCoursePlannerTableModel.Cols.element.ordinal(), LAUNCH_CURRICULUM_ELEMENT,
-					new DynamicCurriculumElementCellRenderer(LAUNCH_CURRICULUM_ELEMENT, new CurriculumElementCellRenderer(), accessibleCurriculumObjectKeys.curriculumElementKeys())));
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element,
-					new CurriculumElementCellRenderer()));
-		}
+		AccessibleCurriculumObjectKeys accessibleCurriculumObjectKeys = curriculumService.getAccessibleCurriculumKeys(getIdentity());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element.i18nHeaderKey(),
+				OriginCoursePlannerTableModel.Cols.element.ordinal(), LAUNCH_CURRICULUM_ELEMENT,
+				new DynamicCurriculumElementCellRenderer(LAUNCH_CURRICULUM_ELEMENT, new CurriculumElementCellRenderer(), accessibleCurriculumObjectKeys.curriculumElementKeys())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.extRef));
-		if (hasCurriculumAccess) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.product.i18nHeaderKey(),
-					OriginCoursePlannerTableModel.Cols.product.ordinal(), LAUNCH_CURRICULUM,
-					new DynamicCurriculumCellRenderer(LAUNCH_CURRICULUM, new CurriculumCellRenderer(), accessibleCurriculumObjectKeys.curriculumKeys())));
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.product,
-					new CurriculumCellRenderer()));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.product.i18nHeaderKey(),
+				OriginCoursePlannerTableModel.Cols.product.ordinal(), LAUNCH_CURRICULUM,
+				new DynamicCurriculumCellRenderer(LAUNCH_CURRICULUM, new CurriculumCellRenderer(), accessibleCurriculumObjectKeys.curriculumKeys())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.created));
 		originCoursePlannerTableModel = new OriginCoursePlannerTableModel(columnsModel);
 		originCoursePlannerTable = uifactory.addTableElement(getWindowControl(), "originCoursePlannerTable", originCoursePlannerTableModel, 
