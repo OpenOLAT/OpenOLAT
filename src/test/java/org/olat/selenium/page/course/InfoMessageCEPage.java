@@ -48,7 +48,7 @@ public class InfoMessageCEPage {
 	 * @return This page
 	 */
 	public InfoMessageCEPage createMessage() {
-		By createBy = By.className("o_sel_course_info_create_msg");
+		By createBy = By.cssSelector(".o_empty_state .o_empty_action>.btn.btn-primary");
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);
