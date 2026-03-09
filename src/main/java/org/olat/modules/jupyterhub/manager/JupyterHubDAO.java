@@ -77,7 +77,9 @@ public class JupyterHubDAO {
 				" (select count(deployment.key) from jupyterdeployment as deployment" +
 				" where deployment.jupyterHub.key = hub.key" +
 				" ) as numberOfApplications " +
-				"from jupyterhub as hub order by hub.status asc, hub.name asc";
+				"from jupyterhub as hub " +
+				"left join fetch hub.ltiTool " +
+				"order by hub.status asc, hub.name asc";
 		return dbInstance
 				.getCurrentEntityManager()
 				.createQuery(queryString, Object[].class)
