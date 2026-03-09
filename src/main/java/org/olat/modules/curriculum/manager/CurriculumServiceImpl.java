@@ -298,7 +298,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 	@Override
 	public List<Curriculum> getCurriculumsByIdentifier(String identifier, CurriculumStatus status) {
-		return curriculumDao.loadByIdentifier(identifier, status);
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			return curriculumDao.loadByIdentifier(identifier, status);
+		}
+		return new ArrayList<>(1);
 	}
 
 	@Override

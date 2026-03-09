@@ -61,6 +61,8 @@ public class EditCurriculumController extends FormBasicController {
 	
 	private static final String GUIPREF_KEY_CURRICULUM_ORG = "curriculum.organisation";
 
+	public static final int MAX_LENGTH = 64;
+	
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
@@ -117,7 +119,7 @@ public class EditCurriculumController extends FormBasicController {
 		}
 
 		String displayName = curriculum == null ? "" : curriculum.getDisplayName();
-		displayNameEl = uifactory.addTextElement("curriculum.display.name", "curriculum.display.name", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("curriculum.display.name", "curriculum.display.name", MAX_LENGTH, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum(curriculum));
 		displayNameEl.setElementCssClass("o_sel_curriculum_displayname");
 		displayNameEl.setMandatory(true);
@@ -126,7 +128,7 @@ public class EditCurriculumController extends FormBasicController {
 		}
 		
 		String identifier = curriculum == null ? "" : curriculum.getIdentifier();
-		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", 255, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", MAX_LENGTH, identifier, formLayout);
 		identifierEl.setElementCssClass("o_sel_curriculum_identifier");
 		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum(curriculum));
 		identifierEl.setMandatory(true);
@@ -209,8 +211,8 @@ public class EditCurriculumController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		allOk &= validateTextElement(displayNameEl, 64, true);
-		allOk &= validateTextElement(identifierEl, 64, true);
+		allOk &= validateTextElement(displayNameEl, MAX_LENGTH, true);
+		allOk &= validateTextElement(identifierEl, MAX_LENGTH, true);
 		allOk &= validateOrg();
 		
 		return allOk;

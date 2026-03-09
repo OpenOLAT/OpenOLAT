@@ -53,6 +53,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
+import org.olat.modules.curriculum.ui.EditCurriculumController;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
@@ -361,7 +362,7 @@ public class ImportCurriculumsValidator {
 			importedRow.addChanged(column, importedRow.getCurriculumElement().getDisplayName(), importedRow.getDisplayName(), ImportCurriculumsCols.displayName);
 		}
 		
-		validateIdentifier(importedRow);
+		validateIdentifier(importedRow, 255);
 		
 		// Level only for element
 		if(importedRow.type() == CurriculumExportType.ELEM) {
@@ -504,7 +505,7 @@ public class ImportCurriculumsValidator {
 		validateLevel(importedRow);
 
 		// Identifier
-		validateIdentifier(importedRow);
+		validateIdentifier(importedRow, 255);
 		
 		// Identifier matches a repository entry
 		if(entry == null) {
@@ -583,7 +584,7 @@ public class ImportCurriculumsValidator {
 			importedRow.addChanged(column, importedRow.getLectureBlock().getTitle(), importedRow.getDisplayName(), ImportCurriculumsCols.displayName);
 		}
 		
-		validateIdentifier(importedRow);
+		validateIdentifier(importedRow, 255);
 
 		// Reference to course
 		String referenceColumn = translate(ImportCurriculumsCols.referenceIdentifier.i18nHeaderKey());
@@ -652,19 +653,19 @@ public class ImportCurriculumsValidator {
 	private void validateCurriculumRow(ImportedRow importedRow) {
 		// Display name / title
 		if(validateMandatory(importedRow, importedRow.getDisplayName(), ImportCurriculumsCols.displayName)
-				&& validateTruncateLength(importedRow, importedRow.getDisplayName(), 255, ImportCurriculumsCols.displayName)
+				&& validateTruncateLength(importedRow, importedRow.getDisplayName(), EditCurriculumController.MAX_LENGTH, ImportCurriculumsCols.displayName)
 				&& !importedRow.isNew()) {
 			String column = translate(ImportCurriculumsCols.displayName.i18nHeaderKey());
 			importedRow.addChanged(column, importedRow.getCurriculum().getDisplayName(), importedRow.getDisplayName(), ImportCurriculumsCols.displayName);
 		}
 		
-		validateIdentifier(importedRow);
+		validateIdentifier(importedRow, EditCurriculumController.MAX_LENGTH);
 		
 		// Absences
 		if(validateMandatory(importedRow, importedRow.getAbsences(), ImportCurriculumsCols.absences)
 				&& validateOnOff(importedRow, ImportCurriculumsCols.absences, importedRow.getAbsences())
 				&& !importedRow.isNew()) {
-			changes(importedRow, importedRow.getCurriculum().isLecturesEnabled(), "ON".equalsIgnoreCase(importedRow.getAbsences()), ImportCurriculumsCols.absences);
+			changes(importedRow, toExcelFormat(importedRow.getCurriculum().isLecturesEnabled()), importedRow.getAbsences(), ImportCurriculumsCols.absences);
 		}
 
 		// Description
@@ -677,11 +678,13 @@ public class ImportCurriculumsValidator {
 		if(validateMandatory(importedRow, importedRow.getOrganisationIdentifier(), ImportCurriculumsCols.organisationIdentifier)) {
 			String organisationColumn = translate(ImportCurriculumsCols.organisationIdentifier.i18nHeaderKey());
 			if(importedRow.getOrganisation() == null) {
-				String placeholder = StringHelper.containsNonWhitespace(importedRow.getOrganisationIdentifier())
-						? null
-						: translate("error.no.value");
-				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
-						placeholder, translate("error.value.required"));
+				if(StringHelper.containsNonWhitespace(importedRow.getOrganisationIdentifier())) {
+					importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+							null, translator.translate("error.not.exist", importedRow.getOrganisationIdentifier()));	
+				} else {
+					importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+							translate("error.no.value"), translate("error.value.required"));
+				}
 			} else if(!hasOrganisationPermission(importedRow.getOrganisation())) {
 				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
 						null, translate("error.permissions"));
@@ -770,10 +773,10 @@ public class ImportCurriculumsValidator {
 		}
 	}
 	
-	private boolean validateIdentifier(ImportedRow importedRow) {
+	private boolean validateIdentifier(ImportedRow importedRow, int maxLength) {
 		// Identifier / external ref.
 		boolean allOk = validateMandatory(importedRow, importedRow.getIdentifier(), ImportCurriculumsCols.identifier);
-		allOk &= validateLength(importedRow, importedRow.getIdentifier(), 255, ImportCurriculumsCols.identifier);
+		allOk &= validateLength(importedRow, importedRow.getIdentifier(), maxLength, ImportCurriculumsCols.identifier);
 		return allOk;
 	}
 	
@@ -1034,6 +1037,13 @@ public class ImportCurriculumsValidator {
 		return errors.stream()
 					.map(d -> d.getText(translator.getLocale()))
 					.collect(Collectors.joining("; "));
+	}
+	
+	private String toExcelFormat(boolean val) {
+		if(val) {
+			return "ON";
+		}
+		return "OFF";
 	}
 	
 	private String toExcelFormat(Enum<?> val) {

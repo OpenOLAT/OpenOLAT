@@ -30,6 +30,7 @@ import java.util.Objects;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 
 /**
@@ -121,6 +122,19 @@ public class AbstractImportRow {
 			validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
 				.setChanged(currentValue, newValue);
 		}
+	}
+	
+	public void addChanged(String column, String currentValue, String newValue, ImportCurriculumsCols col) {
+		if(!equalsString(currentValue, newValue)) {
+			validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
+				.setChanged(currentValue, newValue);
+		}
+	}
+	private boolean equalsString(String s1, String s2) {
+		if(!StringHelper.containsNonWhitespace(s1) && !StringHelper.containsNonWhitespace(s2)) {
+			return true;
+		}
+		return s1 != null && s2 != null && s1.equals(s2);
 	}
 	
 	public boolean hasValidationError(ImportCurriculumsCols col) {

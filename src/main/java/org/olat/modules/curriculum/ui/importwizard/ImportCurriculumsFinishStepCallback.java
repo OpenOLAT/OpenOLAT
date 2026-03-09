@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
+import org.olat.modules.curriculum.ui.EditCurriculumController;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -242,8 +243,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	private void createCurriculum(ImportedRow importedRow) {
-		String identifier = Formatter.truncateOnly(importedRow.getIdentifier(), 255);
-		String displayName = Formatter.truncateOnly(importedRow.getDisplayName(), 255);
+		String identifier = Formatter.truncateOnly(importedRow.getIdentifier(), EditCurriculumController.MAX_LENGTH);
+		String displayName = Formatter.truncateOnly(importedRow.getDisplayName(), EditCurriculumController.MAX_LENGTH);
 		String description = importedRow.getDescription();
 		
 		Organisation organisation = importedRow.getOrganisation();
@@ -266,7 +267,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	private void updateCurriculum(Curriculum curriculum, ImportedRow importedRow) {
 		String title = importedRow.getDisplayName();
 		if(StringHelper.containsNonWhitespace(title)) {
-			curriculum.setDisplayName(Formatter.truncateOnly(title, 255));
+			curriculum.setDisplayName(Formatter.truncateOnly(title, EditCurriculumController.MAX_LENGTH));
 		}
 		
 		String description = importedRow.getDescription();

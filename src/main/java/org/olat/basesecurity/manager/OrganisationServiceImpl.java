@@ -172,7 +172,10 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public List<Organisation> findOrganisationByIdentifier(String identifier) {
-		return organisationDao.loadByIdentifier(identifier);
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			return organisationDao.loadByIdentifier(identifier);
+		}
+		return new ArrayList<>(1);
 	}
 
 	@Override

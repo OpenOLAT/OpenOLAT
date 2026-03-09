@@ -486,7 +486,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 
 	private Organisation loadOrganisation(String organisationIdentifier) {
 		Organisation organisation = organisationMap.get(organisationIdentifier);
-		if(organisation == null) {
+		if(organisation == null && StringHelper.containsNonWhitespace(organisationIdentifier)) {
 			List<Organisation> organisations = organisationService.findOrganisationByIdentifier(organisationIdentifier);
 			if(organisations.size() == 1) {
 				organisation = organisations.get(0);
