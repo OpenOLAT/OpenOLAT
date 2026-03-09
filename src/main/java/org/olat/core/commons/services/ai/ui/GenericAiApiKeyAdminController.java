@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,11 +45,11 @@ import org.olat.core.util.StringHelper;
  * <p>
  * Behaviour:
  * <ul>
- *   <li>No key stored → empty field + warning</li>
- *   <li>Key stored → PLACEHOLDER shown; "Check API key" button visible</li>
- *   <li>Save with PLACEHOLDER unchanged → no-op</li>
- *   <li>Save with new non-empty value → verify against provider, then store</li>
- *   <li>Save with empty value → remove stored key</li>
+ *   <li>No key stored &rarr; empty field + warning</li>
+ *   <li>Key stored &rarr; PLACEHOLDER shown; "Check API key" button visible</li>
+ *   <li>Save with PLACEHOLDER unchanged &rarr; no-op</li>
+ *   <li>Save with new non-empty value &rarr; verify against provider, then store</li>
+ *   <li>Save with empty value &rarr; remove stored key</li>
  * </ul>
  *
  * Initial date: 28.02.2026<br>
@@ -56,16 +57,21 @@ import org.olat.core.util.StringHelper;
  * @author gnaegi@frentix.com, https://www.frentix.com
  */
 public class GenericAiApiKeyAdminController extends FormBasicController {
+	public static final Event DELETE_EVENT = new Event("delete-spi");
+
 	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
 	private static final int KEY_MAXLENGTH = 512;
 
+	private FormToggle enabledToggle;
 	private TextElement apiKeyEl;
 	private FormLink checkKeyLink;
+	private FormLink deleteLink;
 
 	// Set by validateFormLogic when a new key passes API verification; consumed by formOK
 	private List<String> verifiedModels;
 
 	private final AiApiKeySPI spi;
+	private final AiSPI aiSpi;
 	private final String spiName;
 
 	/**
@@ -76,7 +82,8 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 	public GenericAiApiKeyAdminController(UserRequest ureq, WindowControl wControl, AiApiKeySPI spi) {
 		super(ureq, wControl);
 		this.spi = spi;
-		this.spiName = (spi instanceof AiSPI aiSpi) ? aiSpi.getName() : spi.getClass().getSimpleName();
+		this.aiSpi = (spi instanceof AiSPI s) ? s : null;
+		this.spiName = aiSpi != null ? aiSpi.getName() : spi.getClass().getSimpleName();
 		initForm(ureq);
 	}
 
@@ -84,6 +91,18 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle(spi.getAdminTitleI18nKey());
 		setFormDescription(spi.getAdminDescI18nKey());
+
+		// Enable/disable toggle
+		if (aiSpi != null) {
+			enabledToggle = uifactory.addToggleButton("enabled", "ai.spi.enabled",
+					translate("on"), translate("off"), formLayout);
+			enabledToggle.addActionListener(FormEvent.ONCHANGE);
+			if (aiSpi.isEnabled()) {
+				enabledToggle.toggleOn();
+			} else {
+				enabledToggle.toggleOff();
+			}
+		}
 
 		boolean hasKey = StringHelper.containsNonWhitespace(spi.getApiKey());
 		apiKeyEl = uifactory.addPasswordElement("apikey", spi.getAdminApiKeyI18nKey(), KEY_MAXLENGTH,
@@ -99,12 +118,20 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 		checkKeyLink.setGhost(true);
 		checkKeyLink.getComponent().setSuppressDirtyFormWarning(true);
 		checkKeyLink.setVisible(hasKey);
+		deleteLink = uifactory.addFormLink("ai.delete.config", buttonsCont, Link.BUTTON);
+		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == checkKeyLink) {
 			doCheckStoredKey();
+		} else if (source == enabledToggle && aiSpi != null) {
+			aiSpi.setEnabled(enabledToggle.isOn());
+			logAudit("AI provider " + spiName + " enabled: " + enabledToggle.isOn());
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if (source == deleteLink) {
+			fireEvent(ureq, DELETE_EVENT);
 		}
 	}
 
@@ -154,7 +181,7 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 		}
 
 		spi.setApiKey(val);
-		logAudit(spiName + " API key has been updated. New value::", val.length() > 7 ? val.substring(0, 6) + "..." : "(empty)");
+		logAudit(spiName + " API key has been updated");
 
 		if (verifiedModels != null) {
 			apiKeyEl.setValue(PLACEHOLDER);

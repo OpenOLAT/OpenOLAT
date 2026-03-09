@@ -19,9 +19,11 @@
  */
 package org.olat.core.commons.services.ai;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.ai.spi.generic.GenericAiSPI;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -45,8 +47,12 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_MC_GENERATOR_SPI = "ai.feature.mc-question-generator.spi";
 	private static final String AI_MC_GENERATOR_MODEL = "ai.feature.mc-question-generator.model";
 
-	// List of all available SPI implementations
-	private List<AiSPI> aiProviders;
+	// List of all Spring-registered SPI implementations (OpenAI, Anthropic)
+	private List<AiSPI> springProviders;
+
+	// Generic SPI factory for user-created instances
+	@Autowired
+	private GenericAiSPI genericAiSPI;
 
 	// Per-feature configuration
 	private String mcGeneratorSpiId;
@@ -93,7 +99,7 @@ public class AiModule extends AbstractSpringModule {
 		if (!StringHelper.containsNonWhitespace(mcGeneratorSpiId)) {
 			return false;
 		}
-		for (AiSPI spi : aiProviders) {
+		for (AiSPI spi : getAiProviders()) {
 			if (spi.getId().equals(mcGeneratorSpiId) && spi.isEnabled() && spi instanceof AiMCQuestionGeneratorSPI) {
 				return true;
 			}
@@ -111,7 +117,7 @@ public class AiModule extends AbstractSpringModule {
 		if (!StringHelper.containsNonWhitespace(mcGeneratorSpiId)) {
 			return null;
 		}
-		for (AiSPI spi : aiProviders) {
+		for (AiSPI spi : getAiProviders()) {
 			if (spi.getId().equals(mcGeneratorSpiId) && spi.isEnabled() && spi instanceof AiMCQuestionGeneratorSPI) {
 				AiMCQuestionGeneratorSPI generator = (AiMCQuestionGeneratorSPI) spi;
 				generator.setMCGeneratorModel(mcGeneratorModel);
@@ -155,25 +161,42 @@ public class AiModule extends AbstractSpringModule {
 	 * @return List of enabled SPIs implementing the feature
 	 */
 	public List<AiSPI> getEnabledSPIsFor(Class<?> featureClass) {
-		return aiProviders.stream()
+		return getAiProviders().stream()
 				.filter(spi -> spi.isEnabled() && featureClass.isInstance(spi))
 				.collect(Collectors.toList());
 	}
 
 	/**
-	 * Set the list of available AI service implementations (injected by Spring)
+	 * Set the list of Spring-registered AI service implementations (injected by Spring)
 	 * @param aiSPIs
 	 */
 	@Autowired
-	public void setAiProviders(List<AiSPI> aiSPIs) {
-		this.aiProviders = aiSPIs;
+	public void setSpringProviders(List<AiSPI> aiSPIs) {
+		this.springProviders = aiSPIs;
 	}
 
 	/**
-	 * Get all available AI service implementations
-	 * @return
+	 * Get all available AI service implementations including generic instances.
+	 * @return Combined list of Spring-registered SPIs and generic instances
 	 */
 	public List<AiSPI> getAiProviders() {
-		return aiProviders;
+		List<AiSPI> all = new ArrayList<>(springProviders);
+		all.addAll(genericAiSPI.getInstances());
+		return all;
+	}
+
+	/**
+	 * Get only the Spring-registered providers (OpenAI, Anthropic) without generic instances.
+	 * @return List of Spring-registered SPIs
+	 */
+	public List<AiSPI> getSpringProviders() {
+		return springProviders;
+	}
+
+	/**
+	 * @return The generic SPI factory
+	 */
+	public GenericAiSPI getGenericAiSPI() {
+		return genericAiSPI;
 	}
 }
