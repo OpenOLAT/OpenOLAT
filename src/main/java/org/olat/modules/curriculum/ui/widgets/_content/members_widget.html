@@ -9,32 +9,28 @@
 		$r.render("participantsIndicators")
 	</div>
 
-	#if($r.available("coaches") || $r.available("masterCoaches") || $r.available("owners") || $r.available("elementOwners"))
+	#if($r.available("curriculum.element.coaches") || $r.available("curriculum.element.mastercoaches") || $r.available("course.owners") || $r.available("curriculum.element.owners"))
 	<div class="o_curriculum_widget_course_staff">
 		<h4>$r.translate("curriculum.element.course.staff")</h4>
 		<div class="o_curriculum_widget_roles_portrait">
-			#if($r.available("coaches"))
+			#if($r.available("curriculum.element.coaches"))
 			<div>
-				$r.render("coaches")
-				<span class="o_curriculum_widget_role">$r.render("curriculum.element.coaches")</span>
+				$r.render("curriculum.element.coaches")
 			</div>
 			#end
-			#if($r.available("masterCoaches"))
+			#if($r.available("curriculum.element.mastercoaches"))
 			<div>
-				$r.render("masterCoaches")
-				<span class="o_curriculum_widget_role">$r.render("curriculum.element.mastercoaches")</span>
+				$r.render("curriculum.element.mastercoaches")
 			</div>
 			#end
-			#if($r.available("owners"))
+			#if($r.available("course.owners"))
 			<div>
-				$r.render("owners")
-				<span class="o_curriculum_widget_role">$r.render("course.owners")</span>
+				$r.render("course.owners")
 			</div>
 			#end
-			#if($r.available("elementOwners"))
+			#if($r.available("curriculum.element.owners"))
 			<div>
-				$r.render("elementOwners")
-				<span class="o_curriculum_widget_role">$r.render("curriculum.element.owners")</span>
+				$r.render("curriculum.element.owners")
 			</div>
 			#end
 		</div>

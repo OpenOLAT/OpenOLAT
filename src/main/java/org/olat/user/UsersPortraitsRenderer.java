@@ -27,6 +27,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UsersPortraitsComponent.PortraitItemsTag;
 import org.olat.user.UsersPortraitsComponent.PortraitLayout;
 
 /**
@@ -48,7 +49,16 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 		sb.append("o_users_portraits_vertical_displayname ", PortraitLayout.verticalPortraitsDisplayName == opc.getPortraitLayout());
 		sb.append(getSizeCssClass(opc.getSize()));
 		sb.append("\">");
-		sb.append("<ul class=\"list-unstyled\"");
+		boolean useDiv = opc.getPortraitItemsTag() == PortraitItemsTag.div;
+		String itemsTag = useDiv ? "div" : "ul";
+		String itemTag = useDiv ? "div" : "li";
+
+		sb.append("<").append(itemsTag);
+		sb.append(" class=\"o_users_portraits_items");
+		if (!useDiv) {
+			sb.append(" list-unstyled");
+		}
+		sb.append("\"");
 		if (StringHelper.containsNonWhitespace(opc.getAriaLabel())) {
 			sb.append(" aria-label=\"").append(opc.getAriaLabel()).append("\"");
 		}
@@ -57,17 +67,17 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 		int numUsersNotVisible = opc.getUserComps().size() - numUsersVisible;
 		for (int i = 0; i < numUsersVisible; i++) {
 			UserPortraitComponent userPortraitComp = opc.getUserComps().get(i);
-			sb.append("<li class=\"o_portrait_user\">");
+			sb.append("<").append(itemTag).append(" class=\"o_portrait_user\">");
 			userPortraitComp.getHTMLRendererSingleton().render(renderer, sb, userPortraitComp, ubu, translator, renderResult, args);
 			if (PortraitLayout.verticalPortraitsDisplayName == opc.getPortraitLayout()) {
 				sb.append("<div class=\"o_displayname\">");
 				sb.append(StringHelper.escapeHtml(userPortraitComp.getPortraitUser().getDisplayName()));
 				sb.append("</div>");
 			}
-			sb.append("</li>");
+			sb.append("</").append(itemTag).append(">");
 		}
 
-		sb.append("</ul>");
+		sb.append("</").append(itemsTag).append(">");
 		if (numUsersNotVisible > 0) {
 			sb.append("<span class=\"o_portrait_user_not_visible\">");
 			sb.append("+").append(numUsersNotVisible);

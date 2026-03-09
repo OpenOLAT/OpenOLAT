@@ -42,6 +42,7 @@ public class UsersPortraitsComponent extends AbstractComponent {
 	private String ariaLabel;
 	private PortraitSize size = PortraitSize.medium;
 	private PortraitLayout layout = PortraitLayout.overlappingPortraits;
+	private PortraitItemsTag itemsTag = PortraitItemsTag.ul;
 	private int maxUsersVisible = 10;
 	private List<UserPortraitComponent> userComps;
 
@@ -89,6 +90,15 @@ public class UsersPortraitsComponent extends AbstractComponent {
 		this.layout = layout;
 	}
 
+	public PortraitItemsTag getPortraitItemsTag() {
+		return itemsTag;
+	}
+
+	public void setPortraitItemsTag(PortraitItemsTag itemsTag) {
+		this.itemsTag = itemsTag;
+		setDirty(true);
+	}
+
 	public int getMaxUsersVisible() {
 		return maxUsersVisible;
 	}
@@ -118,5 +128,7 @@ public class UsersPortraitsComponent extends AbstractComponent {
 	}
 
 	public enum PortraitLayout { overlappingPortraits, verticalPortraitsDisplayName }
+
+	public enum PortraitItemsTag { ul, div }
 
 }

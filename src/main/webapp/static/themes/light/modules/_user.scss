@@ -161,7 +161,7 @@
 	&.o_users_portraits_overlapping_portraits {
 		display: flex;
 		align-items: center;
-		ul {
+		.o_users_portraits_items {
 			margin-bottom: 0;
 			display: flex;
 			.o_portrait_user {
@@ -184,7 +184,7 @@
 		}
 	}
 	&.o_users_portraits_vertical_displayname {
-		ul {
+		.o_users_portraits_items {
 			display: flex;
 			flex-direction: column;
 			gap: 5px;

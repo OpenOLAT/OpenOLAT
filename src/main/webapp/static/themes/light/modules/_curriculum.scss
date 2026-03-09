@@ -324,12 +324,12 @@ fieldset.o_validation_result {
 	
 	.o_curriculum_widget_roles_portrait {
 		padding: 5px 15px;
-		
+
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px 30px;
-		
-		> div {
+
+		.o_curriculum_widget_role_portrait_group {
 			display: flex;
 			flex-direction: column;
 			align-items: center;

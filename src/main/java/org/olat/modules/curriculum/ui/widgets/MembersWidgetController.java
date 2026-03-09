@@ -22,6 +22,10 @@ package org.olat.modules.curriculum.ui.widgets;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -32,9 +36,15 @@ import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.RenderResult;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -55,6 +65,7 @@ import org.olat.user.PortraitUser;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
+import org.olat.user.UsersPortraitsComponent.PortraitItemsTag;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -224,40 +235,44 @@ public class MembersWidgetController extends FormBasicController {
 		if(!coaches.isEmpty()) {
 			coachesLink = uifactory.addFormLink("curriculum.element.coaches", "curriculum.element.coaches", null, flc, Link.LINK);
 			coachesLink.setUrl(getUrl("[Members:0][Active:0][Coach:0]"));
-			UsersPortraitsComponent coachesCmp = createUsersPortraits(ureq, coaches, "curriculum.element.coaches");
-			flc.put("coaches", coachesCmp);
-		} else {
-			flc.remove("coaches");
+			UsersPortraitsComponent coachesCmp = createUsersPortraits(ureq, coaches);
+			coachesLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, coachesCmp, translate("search.role.coach")));
+		} else if(coachesLink != null) {
+			flc.remove(coachesLink);
+			coachesLink = null;
 		}
 
 		List<Identity> masterCoaches = getCurriculumMembers(members, CurriculumRoles.mastercoach);
 		if(!masterCoaches.isEmpty()) {
 			masterCoachesLink = uifactory.addFormLink("curriculum.element.mastercoaches", "curriculum.element.mastercoaches", null, flc, Link.LINK);
 			masterCoachesLink.setUrl(getUrl("[Members:0][Active:0][MasterCoach:0]"));
-			UsersPortraitsComponent masterCoachesCmp = createUsersPortraits(ureq, masterCoaches, "curriculum.element.mastercoaches");
-			flc.put("masterCoaches", masterCoachesCmp);
-		} else {
-			flc.remove("masterCoaches");
+			UsersPortraitsComponent masterCoachesCmp = createUsersPortraits(ureq, masterCoaches);
+			masterCoachesLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, masterCoachesCmp, translate("search.role.mastercoach")));
+		} else if(masterCoachesLink != null) {
+			flc.remove(masterCoachesLink);
+			masterCoachesLink = null;
 		}
 
 		List<Identity> owners = getCurriculumMembers(members, CurriculumRoles.owner);
 		if(!owners.isEmpty()) {
-			ownersLink = uifactory.addFormLink("course.owners", "role.owner", null, flc, Link.LINK);
+			ownersLink = uifactory.addFormLink("course.owners", "search.role.course.owner", null, flc, Link.LINK);
 			ownersLink.setUrl(getUrl("[Members:0][Active:0][Owner:0]"));
-			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners, "role.owner");
-			flc.put("owners", ownersCmp);
-		} else {
-			flc.remove("owners");
+			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners);
+			ownersLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, ownersCmp, translate("search.role.course.owner")));
+		} else if(ownersLink != null) {
+			flc.remove(ownersLink);
+			ownersLink = null;
 		}
 
 		List<Identity> elementOwners = getCurriculumMembers(members, CurriculumRoles.curriculumelementowner);
 		if(!elementOwners.isEmpty()) {
 			elementOwnersLink = uifactory.addFormLink("curriculum.element.owners", "curriculum.element.owners", null, flc, Link.LINK);
 			elementOwnersLink.setUrl(getUrl("[Members:0][Active:0][" + CurriculumRoles.curriculumelementowner.name() + ":0]"));
-			UsersPortraitsComponent elementOwnersCmp = createUsersPortraits(ureq, elementOwners, "curriculum.element.owners");
-			flc.put("elementOwners", elementOwnersCmp);
-		} else {
-			flc.remove("elementOwners");
+			UsersPortraitsComponent elementOwnersCmp = createUsersPortraits(ureq, elementOwners);
+			elementOwnersLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, elementOwnersCmp, translate("search.role.owner")));
+		} else if(elementOwnersLink != null) {
+			flc.remove(elementOwnersLink);
+			elementOwnersLink = null;
 		}
 		otherRolesInitialized = true;
 	}
@@ -274,12 +289,12 @@ public class MembersWidgetController extends FormBasicController {
 				.toList();
 	}
 
-	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, List<Identity> members, String role) {
+	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, List<Identity> members) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), members);
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent());
-		usersPortraitCmp.setAriaLabel(translate(role));
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, null);
 		usersPortraitCmp.setSize(PortraitSize.medium);
 		usersPortraitCmp.setMaxUsersVisible(5);
+		usersPortraitCmp.setPortraitItemsTag(PortraitItemsTag.div); // Html tag "ul" not allowed inside "a"
 		usersPortraitCmp.setUsers(portraitUsers);
 		return usersPortraitCmp;
 	}
@@ -334,6 +349,54 @@ public class MembersWidgetController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private static class StaffRoleComponent extends AbstractComponent {
+
+		private static final ComponentRenderer RENDERER = new StaffRoleRenderer();
+
+		private final UsersPortraitsComponent portraitsCmp;
+		private final String label;
+
+		StaffRoleComponent(String name, UsersPortraitsComponent portraitsCmp, String label) {
+			super(name);
+			this.portraitsCmp = portraitsCmp;
+			this.label = label;
+		}
+
+		UsersPortraitsComponent getPortraitsCmp() {
+			return portraitsCmp;
+		}
+
+		String getLabel() {
+			return label;
+		}
+
+		@Override
+		public ComponentRenderer getHTMLRendererSingleton() {
+			return RENDERER;
+		}
+
+		@Override
+		protected void doDispatchRequest(UserRequest ureq) {
+			//
+		}
+	}
+
+	private static class StaffRoleRenderer extends DefaultComponentRenderer {
+
+		@Override
+		public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+				Translator translator, RenderResult renderResult, String[] args) {
+			StaffRoleComponent cmp = (StaffRoleComponent) source;
+			sb.append("<div class=\"o_curriculum_widget_role_portrait_group\">");
+			renderer.render(cmp.getPortraitsCmp(), sb, args);
+			cmp.getPortraitsCmp().setDirty(false);
+			sb.append("<span class=\"o_curriculum_widget_role\">")
+			  .append(StringHelper.escapeHtml(cmp.getLabel()))
+			  .append("</span>");
+			sb.append("</div>");
+		}
 	}
 
 }
