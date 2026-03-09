@@ -221,6 +221,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	public static final String PASSED_TAB_ID = "Passed";
 	public static final String FAILED_TAB_ID = "Failed";
 	public static final String ALL_TAB_ID = "All";
+	public static final String RELEVANT_TAB_ID = "Relevant";
 
 	private int counter = 0;
 	protected final CourseNode courseNode;
@@ -237,6 +238,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private GradeSystemType gradeSystemType;
 
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab relevantTab;
 	private FlexiFiltersTab toReviewTab;
 	private FlexiFiltersTab toReleaseTab;
 	private FlexiFiltersTab assignedToMeTab;
@@ -471,6 +473,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 		allTab.setElementCssClass("o_sel_assessment_all");
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
+
+		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member)));
+			relevantTab.setElementCssClass("o_sel_assessment_relevant");
+			relevantTab.setFiltersExpanded(true);
+			tabs.add(relevantTab);
+		}
 		
 		if(assessmentConfig.hasStatus() && (Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode())) {
 			toReviewTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_REVIEW_TAB_ID, translate("filter.to.review"),
@@ -505,12 +515,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
 			});
 		}
-		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
-			tabs.forEach(tab -> {
-				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
-			});
-		}
-		
 		if(assessmentConfig.hasCoachAssignment()) {
 			assignedToMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TO_ME_TAB_ID, translate("filter.assigned.to.me"),
 					TabSelectionBehavior.clear, List.of(
@@ -522,6 +526,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
+	protected FlexiFiltersTab getDefaultTab() {
+		return relevantTab != null ? relevantTab : allTab;
+	}
+
 	protected void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
@@ -1275,7 +1283,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if(tab != null) {
 				tableEl.setSelectedFilterTab(ureq, tab);
 			} else {
-				tableEl.setSelectedFilterTab(ureq, allTab);
+				tableEl.setSelectedFilterTab(ureq, getDefaultTab());
 			}
 			
 			List<FlexiTableExtendedFilter> filters = tableEl.getExtendedFilters();
@@ -1283,7 +1291,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			tableEl.setFilters(true, filters, false, false);
 			tableEl.expandFilters(listState.isFiltersExpanded());
 		} else {
-			tableEl.setSelectedFilterTab(ureq, allTab);
+			tableEl.setSelectedFilterTab(ureq, getDefaultTab());
 		}
 
 		reload(ureq);
