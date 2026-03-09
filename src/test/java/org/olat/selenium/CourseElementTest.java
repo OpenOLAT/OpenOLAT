@@ -1117,7 +1117,7 @@ public class CourseElementTest extends Deployments {
 			.assertWithTitleSelected(infoNodeTitle);
 		//set a message
 		infoMsgConfig
-			.createMessage()
+			.createFirstMessageFromEmptyTable()
 			.setMessage("Information 0", "A very important info", false)
 			.next()
 			.finish()

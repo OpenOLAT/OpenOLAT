@@ -43,12 +43,20 @@ public class InfoMessageCEPage {
 	}
 	
 	/**
-	 * Open the wizard to create a new message.
+	 * Open the wizard to create a new message from the empty state
 	 * 
 	 * @return This page
 	 */
-	public InfoMessageCEPage createMessage() {
+	public InfoMessageCEPage createFirstMessageFromEmptyTable() {
 		By createBy = By.cssSelector(".o_empty_state .o_empty_action>.btn.btn-primary");
+		browser.findElement(createBy).click();
+		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
+		return this;
+	}
+	
+	public InfoMessageCEPage createMessage() {
+		By createBy = By.className("o_sel_course_info_create_msg");
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);

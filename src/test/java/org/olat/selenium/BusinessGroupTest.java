@@ -192,7 +192,7 @@ public class BusinessGroupTest extends Deployments {
 		//check the news
 		group
 			.openNews()
-			.createMessage()
+			.createFirstMessageFromEmptyTable()
 			.setMessage("Information 0", "A very important info", false)
 			.next()
 			.finish()
