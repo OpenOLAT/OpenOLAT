@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -90,15 +91,15 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -3);
 		
-		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime(), true);
 		
 		boolean hasTeacher1 = false;
 		boolean hasTeacher2 = false;
 		for(LectureBlockToTeacher remind:toRemind) {
-			if(remind.getLectureBlock().equals(lectureBlock)) {
-				if(remind.getTeacher().equals(teacher1)) {
+			if(remind.lectureBlock().equals(lectureBlock)) {
+				if(remind.teacher().equals(teacher1)) {
 					hasTeacher1 = true;
-				} else if(remind.getTeacher().equals(teacher2)) {
+				} else if(remind.teacher().equals(teacher2)) {
 					hasTeacher2 = true;
 				}
 			}
@@ -144,19 +145,19 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -3);
 		
-		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime(), true);
 		
 		boolean hasBlock = false;
 		boolean hasBlockOpen = false;
 		boolean hasOtherBlock = false;
 		for(LectureBlockToTeacher remind:toRemind) {
-			if(remind.getLectureBlock().equals(lectureBlock)) {
+			if(remind.lectureBlock().equals(lectureBlock)) {
 				hasBlock = true;
-			} else if(remind.getLectureBlock().equals(lectureBlockOpen)) {
+			} else if(remind.lectureBlock().equals(lectureBlockOpen)) {
 				hasBlockOpen = true;
-			} else if(remind.getLectureBlock().equals(lectureBlockAutoClosed)
-					|| remind.getLectureBlock().equals(lectureBlockClosed)
-					|| remind.getLectureBlock().equals(lectureBlockCancelled)) {
+			} else if(remind.lectureBlock().equals(lectureBlockAutoClosed)
+					|| remind.lectureBlock().equals(lectureBlockClosed)
+					|| remind.lectureBlock().equals(lectureBlockCancelled)) {
 				hasOtherBlock = true;
 			}
 		}
@@ -185,20 +186,74 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -3);
-		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime(), true);
 		
 		boolean hasBlock1 = false;
 		boolean hasBlock2 = false;
 		for(LectureBlockToTeacher remind:toRemind) {
-			if(remind.getLectureBlock().equals(lectureBlock1)) {
+			if(remind.lectureBlock().equals(lectureBlock1)) {
 				hasBlock1 = true;
-			} else if(remind.getLectureBlock().equals(lectureBlock2)) {
+			} else if(remind.lectureBlock().equals(lectureBlock2)) {
 				hasBlock2 = true;
 			}
 		}
 		
 		Assert.assertFalse(hasBlock1);
 		Assert.assertTrue(hasBlock2);
+	}
+	
+	@Test
+	public void loadLectureBlockToNotRemind() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-14");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-15");
+		LectureBlock lectureBlock1 = createMinimalLectureBlock(5, Boolean.FALSE);
+		LectureBlock lectureBlock2 = createMinimalLectureBlock(5, Boolean.TRUE);
+		
+		RepositoryEntry entryBlock1 = lectureBlock1.getEntry();
+		RepositoryEntry entryBlock2 = lectureBlock2.getEntry();
+		repositoryManager.setStatus(entryBlock1, RepositoryEntryStatusEnum.published);
+		repositoryManager.setStatus(entryBlock2, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		
+		lectureService.addTeacher(lectureBlock1, teacher1);
+		lectureService.addTeacher(lectureBlock2, teacher2);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -3);
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime(), true);
+		
+		Assertions.assertThat(toRemind)
+			.map(LectureBlockToTeacher::lectureBlock)
+			.doesNotContain(lectureBlock1)
+			.containsAnyOf(lectureBlock2);
+	}
+	
+	@Test
+	public void loadLectureBlockToNotRemindDefaultRollCallDisabled() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-16");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-17");
+		LectureBlock lectureBlock1 = createMinimalLectureBlock(5, null);
+		LectureBlock lectureBlock2 = createMinimalLectureBlock(5, Boolean.TRUE);
+		
+		RepositoryEntry entryBlock1 = lectureBlock1.getEntry();
+		RepositoryEntry entryBlock2 = lectureBlock2.getEntry();
+		repositoryManager.setStatus(entryBlock1, RepositoryEntryStatusEnum.published);
+		repositoryManager.setStatus(entryBlock2, RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		
+		lectureService.addTeacher(lectureBlock1, teacher1);
+		lectureService.addTeacher(lectureBlock2, teacher2);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -3);
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime(), false);
+		
+		Assertions.assertThat(toRemind)
+			.map(LectureBlockToTeacher::lectureBlock)
+			.doesNotContain(lectureBlock1)
+			.containsAnyOf(lectureBlock2);
 	}
 	
 	@Test
@@ -217,12 +272,12 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -3);
-		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime(), true);
 		
 		boolean hasId = false;
 		for(LectureBlockToTeacher remind:toRemind) {
-			if(remind.getLectureBlock().equals(lectureBlock)) {
-				if(remind.getTeacher().equals(id)) {
+			if(remind.lectureBlock().equals(lectureBlock)) {
+				if(remind.teacher().equals(id)) {
 					hasId = true;
 				}
 			}
@@ -232,10 +287,15 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 	}
 	
 	private LectureBlock createMinimalLectureBlock(int dayInThePast) {
+		return createMinimalLectureBlock(dayInThePast, null);
+	}
+
+	private LectureBlock createMinimalLectureBlock(int dayInThePast, Boolean rollCallEnabled) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		config.setLectureEnabled(true);
+		config.setRollCallEnabled(rollCallEnabled);
 		lectureService.updateRepositoryEntryLectureConfiguration(config);
 		dbInstance.commit();
 		
