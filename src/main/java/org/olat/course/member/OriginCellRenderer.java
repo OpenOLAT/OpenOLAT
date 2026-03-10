@@ -44,7 +44,7 @@ import org.olat.modules.curriculum.CurriculumElementShort;
  */
 public class OriginCellRenderer implements FlexiCellRenderer {
 
-	private static final int MAX_ITEMS = 5;
+	private static final int MAX_ITEMS = 2;
 
 	private final String openDetailsAction;
 
