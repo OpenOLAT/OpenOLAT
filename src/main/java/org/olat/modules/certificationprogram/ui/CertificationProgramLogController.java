@@ -237,10 +237,8 @@ public class CertificationProgramLogController extends FormBasicController {
 		// Implementation
 		appendActivityFilterValues(filter, CertificationProgramLogAction.add_implementation, CertificationProgramLogAction.remove_implementation);
 		// Certification program configuration
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.edit_certification_program.name(),
-				translate("activity.message.edit_certification_program.filter")));
-		filter.add(SelectionValues.entry(CertificationProgramLogAction.edit_certification_program_organisations.name(),
-				translate("activity.message.edit_certification_program_organisations.filter")));
+		appendActivityFilterValues(filter, CertificationProgramLogAction.edit_certification_program,
+				CertificationProgramLogAction.edit_certification_program_organisations);
 	
 		return filter;
 	}

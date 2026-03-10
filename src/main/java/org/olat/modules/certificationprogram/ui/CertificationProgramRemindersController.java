@@ -351,7 +351,9 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 	private void doDelete(CertificationProgramNotificationRow row) {
 		CertificationProgramMailConfiguration configuration = certificationProgramService.getMailConfiguration(row.getKey());
 		configuration.setStatus(CertificationProgramMailConfigurationStatus.deleted);
-		certificationProgramService.updateMailConfiguration(configuration);
+		configuration = certificationProgramService.updateMailConfiguration(configuration);
+		certificationProgramService.log(null, certificationProgram, CertificationProgramLogAction.reminder_delete,
+				null, null, null, null, configuration, null, getIdentity());
 		dbInstance.commit();
 		loadModel();
 	}
