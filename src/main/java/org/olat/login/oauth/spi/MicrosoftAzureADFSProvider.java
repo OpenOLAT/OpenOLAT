@@ -111,11 +111,6 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	}
 
 	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
-
-	@Override
 	public OAuth20Service getScribeProvider() {
 		ServiceBuilder serviceBuilder = new ServiceBuilder(oauthModule.getAzureAdfsApiKey());
 		if(StringHelper.containsNonWhitespace(oauthModule.getAzureAdfsApiSecret())) {

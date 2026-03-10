@@ -105,11 +105,6 @@ public class KeycloakProvider implements OAuthSPI {
 	}
 	
 	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
-	
-	@Override
 	public String getIconCSS() {
 		return "o_icon o_icon_provider_keycloak";
 	}

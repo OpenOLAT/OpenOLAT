@@ -51,7 +51,6 @@ import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthMapping;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.spi.GenericOAuth2Provider;
-import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,7 +64,6 @@ public class OAuthAdminController extends FormBasicController {
 	private static final String[] keys = new String[]{ "on" };
 	private static final String[] values = new String[] { "" };
 	
-	private FormLink addProviderLink;
 	private FormLink addDiscoveryLink;
 	private FormLink addOAuth20ProviderLink;
 
@@ -112,12 +110,6 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement keycloakContextEl;
 	private TextElement keycloakRealmEl;
 	
-	private MultipleSelectionElement openIdConnectIFDefaultEl;
-	private TextElement openIdConnectIFApiKeyEl;
-	private TextElement openIdConnectIFApiSecretEl;
-	private TextElement openIdConnectIFIssuerEl;
-	private TextElement openIdConnectIFAuthorizationEndPointEl;
-	
 	private FormLayoutContainer additionalProvidersCont;
 
 	private CloseableModalController cmc;
@@ -125,7 +117,6 @@ public class OAuthAdminController extends FormBasicController {
 	private AddConfigurableController addConfigCtrl;
 	private OAuthMappingEditController editMappingCtrl;
 	private AddDiscoveryURLController addDiscoveryUrlCtrl;
-	private AddOpenIDConnectIFFullConfigurableController addIfConfigCtrl;
 	
 	private int counter = 0;
 	private final List<OAuthSPI> allConfigurableSpis;
@@ -182,9 +173,8 @@ public class OAuthAdminController extends FormBasicController {
 			case "keycloak": container = initKeycloakForm(formLayout); break;
 			case "switcheduid": container = initSwitchEduIDForm(formLayout); break;
 			case "datenlotsen": container = initDatenlotsenForm(formLayout); break;
-			case "OpenIDConnect": container = initOpenIDConnectForm(formLayout); break;
 			default: {
-				if(!(spi instanceof GenericOAuth2Provider) && !(spi instanceof OpenIdConnectFullConfigurableProvider)) {
+				if(!(spi instanceof GenericOAuth2Provider)) {
 					getLogger().error("Cannot find container for provider: {}", spiName);
 				}
 			}
@@ -238,10 +228,6 @@ public class OAuthAdminController extends FormBasicController {
 		addDiscoveryLink = uifactory.addFormLink("add.discovery.url", addCont, Link.LINK);
 		addDiscoveryLink.setIconLeftCSS("o_icon o_icon-fw o_icon o_icon_provider_oauth");
 		addDropdown.addElement(addDiscoveryLink);
-		
-		addProviderLink = uifactory.addFormLink("add.openidconnect.custom", addCont, Link.LINK);
-		addProviderLink.setIconLeftCSS("o_icon o_icon-fw o_icon o_icon_provider_openid");
-		addDropdown.addElement(addProviderLink);
 	}
 	
 	private String providerI18nKey(OAuthSPI spi) {
@@ -476,40 +462,6 @@ public class OAuthAdminController extends FormBasicController {
 		return datenlotsenCont;
 	}
 	
-	private FormLayoutContainer initOpenIDConnectForm(FormItemContainer formLayout) {
-		FormLayoutContainer openIdConnectIFCont = FormLayoutContainer.createDefaultFormLayout("openidconnectif", getTranslator());
-		openIdConnectIFCont.setFormTitle(translate("openidconnectif.admin.title"));
-		openIdConnectIFCont.setFormTitleIconCss("o_icon o_icon_provider_openid");
-		openIdConnectIFCont.setVisible(oauthModule.isOpenIdConnectIFEnabled());
-		openIdConnectIFCont.setRootForm(mainForm);
-		formLayout.add(openIdConnectIFCont);
-
-		openIdConnectIFDefaultEl = uifactory.addCheckboxesHorizontal("openidconnectif.default.enabled", openIdConnectIFCont, keys, values);
-		if(oauthModule.isOpenIdConnectIFRootEnabled()) {
-			openIdConnectIFDefaultEl.select(keys[0], true);
-		}
-
-		String openIdConnectIFApiKey = oauthModule.getOpenIdConnectIFApiKey();
-		openIdConnectIFApiKeyEl = uifactory.addTextElement("openidconnectif.id", "openidconnectif.api.id", 256, openIdConnectIFApiKey, openIdConnectIFCont);
-		String openIdConnectIFApiSecret = oauthModule.getOpenIdConnectIFApiSecret();
-		openIdConnectIFApiKeyEl.setMandatory(true);
-		openIdConnectIFApiSecretEl = uifactory.addTextElement("openidconnectif.secret", "openidconnectif.api.secret", 256, openIdConnectIFApiSecret, openIdConnectIFCont);
-		openIdConnectIFApiSecretEl.setMandatory(true);
-		
-		String openIdConnectIFIssuer = oauthModule.getOpenIdConnectIFIssuer();
-		openIdConnectIFIssuerEl = uifactory.addTextElement("openidconnectif.issuer", "openidconnectif.issuer",
-				256, openIdConnectIFIssuer, openIdConnectIFCont);
-		openIdConnectIFIssuerEl.setExampleKey("openidconnectif.issuer.example", null);
-		openIdConnectIFIssuerEl.setMandatory(true);
-		
-		String openIdConnectIFAuthorizationEndPoint = oauthModule.getOpenIdConnectIFAuthorizationEndPoint();
-		openIdConnectIFAuthorizationEndPointEl = uifactory.addTextElement("openidconnectif.authorization.endpoint", "openidconnectif.authorization.endpoint",
-				256, openIdConnectIFAuthorizationEndPoint, openIdConnectIFCont);
-		openIdConnectIFAuthorizationEndPointEl.setExampleKey("openidconnectif.authorization.endpoint.example", null);
-		openIdConnectIFAuthorizationEndPointEl.setMandatory(true);
-		return openIdConnectIFCont;
-	}
-	
 	private void initCustomProviders(FormItemContainer formLayout) {
 		// remove old ones
 		for(ProviderWrapper providerWrapper:providerWrappers) {
@@ -520,21 +472,11 @@ public class OAuthAdminController extends FormBasicController {
 		providerWrappers.clear();
 		List<OAuthSPI> configurableSpies = oauthModule.getAllConfigurableSPIs();
 		for(OAuthSPI configurableSpi:configurableSpies) {
-			if(configurableSpi instanceof OpenIdConnectFullConfigurableProvider) {
-				ConfigurableProviderWrapper wrapper =
-						initOpenIDConnectIFFullConfigurableProviders(formLayout, (OpenIdConnectFullConfigurableProvider)configurableSpi);
-				providerWrappers.add(wrapper);
-			} else if(configurableSpi instanceof GenericOAuth2Provider) {
+			if(configurableSpi instanceof GenericOAuth2Provider) {
 				GenericOAuth2ProviderWrapper wrapper = initGenericOAuth2Providers(formLayout, (GenericOAuth2Provider)configurableSpi);
 				providerWrappers.add(wrapper);
 			}
 		}
-	}
-
-	private ConfigurableProviderWrapper initOpenIDConnectIFFullConfigurableProviders(FormItemContainer formLayout, OpenIdConnectFullConfigurableProvider provider) {
-		ConfigurableProviderWrapper wrapper = new ConfigurableProviderWrapper(provider);
-		wrapper.initForm(formLayout);
-		return wrapper;
 	}
 	
 	private GenericOAuth2ProviderWrapper initGenericOAuth2Providers(FormItemContainer formLayout, GenericOAuth2Provider provider) {
@@ -552,9 +494,7 @@ public class OAuthAdminController extends FormBasicController {
 		}
 		
 		for(ProviderWrapper wrapper:providerWrappers) {
-			if(wrapper instanceof ConfigurableProviderWrapper) {
-				allOk &= ((ConfigurableProviderWrapper)wrapper).validateFormLogic();
-			} else if(wrapper instanceof GenericOAuth2ProviderWrapper) {
+			if(wrapper instanceof GenericOAuth2ProviderWrapper) {
 				allOk &= ((GenericOAuth2ProviderWrapper)wrapper).validateFormLogic();
 			}
 		}
@@ -604,8 +544,6 @@ public class OAuthAdminController extends FormBasicController {
 		if(userCreationEl == source) {
 			skipDisclaimerEl.setVisible(userCreationEl.isAtLeastSelected(1));
 			skipRegistrationEl.setVisible(userCreationEl.isAtLeastSelected(1));
-		} else if(addProviderLink == source) {
-			doAddOpenIDConnectIFCustom(ureq);
 		} else if(addDiscoveryLink == source) {
 			doAddDiscovery(ureq);
 		} else if(addOAuth20ProviderLink == source) {
@@ -646,9 +584,7 @@ public class OAuthAdminController extends FormBasicController {
 		}
 		
 		for(ProviderWrapper wrapper:providerWrappers) {
-			if(wrapper instanceof ConfigurableProviderWrapper) {
-				((ConfigurableProviderWrapper)wrapper).commit();
-			} else if(wrapper instanceof GenericOAuth2ProviderWrapper) {
+			if(wrapper instanceof GenericOAuth2ProviderWrapper) {
 				((GenericOAuth2ProviderWrapper)wrapper).commit();
 			}
 		}
@@ -667,7 +603,6 @@ public class OAuthAdminController extends FormBasicController {
 			case "keycloak": commitKeycloak(enabled); break;
 			case "switcheduid": commitSwitchEduID(enabled); break;
 			case "datenlotsen": commitDatenlotsen(enabled); break;
-			case "OpenIDConnect": commitOpenIdConnectIF(enabled); break;
 			default: {
 				getLogger().error("Cannot save provider: {}", spiName);
 			}
@@ -806,27 +741,9 @@ public class OAuthAdminController extends FormBasicController {
 		}
 	}
 	
-	private void commitOpenIdConnectIF(boolean enabled) {
-		if(enabled) {
-			oauthModule.setOpenIdConnectIFEnabled(true);
-			oauthModule.setOpenIdConnectIFApiKey(openIdConnectIFApiKeyEl.getValue());
-			oauthModule.setOpenIdConnectIFApiSecret(openIdConnectIFApiSecretEl.getValue());
-			oauthModule.setOpenIdConnectIFRootEnabled(openIdConnectIFDefaultEl.isAtLeastSelected(1));
-			oauthModule.setOpenIdConnectIFIssuer(openIdConnectIFIssuerEl.getValue());
-			oauthModule.setOpenIdConnectIFAuthorizationEndPoint(openIdConnectIFAuthorizationEndPointEl.getValue());
-		} else {
-			oauthModule.setOpenIdConnectIFEnabled(false);
-			oauthModule.setOpenIdConnectIFApiKey("");
-			oauthModule.setOpenIdConnectIFApiSecret("");
-			oauthModule.setOpenIdConnectIFRootEnabled(false);
-			oauthModule.setOpenIdConnectIFIssuer("");
-			oauthModule.setOpenIdConnectIFAuthorizationEndPoint("");
-		}
-	}
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(addIfConfigCtrl == source || addConfigCtrl == source || editMappingCtrl == source) {
+		if(addConfigCtrl == source || editMappingCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				initCustomProviders(additionalProvidersCont);
 			}
@@ -851,25 +768,13 @@ public class OAuthAdminController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(addDiscoveryUrlCtrl);
-		removeAsListenerAndDispose(addIfConfigCtrl);
 		removeAsListenerAndDispose(editMappingCtrl);
 		removeAsListenerAndDispose(addConfigCtrl);
 		removeAsListenerAndDispose(cmc);
 		addDiscoveryUrlCtrl = null;
 		editMappingCtrl = null;
-		addIfConfigCtrl = null;
 		addConfigCtrl = null;
 		cmc = null;
-	}
-
-	private void doAddOpenIDConnectIFCustom(UserRequest ureq) {
-		addIfConfigCtrl = new AddOpenIDConnectIFFullConfigurableController(ureq, getWindowControl());
-		listenTo(addIfConfigCtrl);
-
-		String title = translate("add.openidconnect.custom");
-		cmc = new CloseableModalController(getWindowControl(), null, addIfConfigCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
 	}
 	
 	private void doAddConfiguration(UserRequest ureq, JSONObject configuration) {
@@ -908,10 +813,7 @@ public class OAuthAdminController extends FormBasicController {
 	}
 	
 	private void doDelete(OAuthSPI spi) {
-		if(spi instanceof OpenIdConnectFullConfigurableProvider) {
-			oauthModule.removeAdditionalOpenIDConnectIF(spi.getProviderName());
-			initCustomProviders(additionalProvidersCont);
-		} else if(spi instanceof GenericOAuth2Provider) {
+		if(spi instanceof GenericOAuth2Provider) {
 			oauthModule.removeGenericOAuth(spi.getProviderName());
 			initCustomProviders(additionalProvidersCont);
 		} else {
@@ -1109,84 +1011,6 @@ public class OAuthAdminController extends FormBasicController {
 				oauthModule.setGenericOAuth(name, displayName, rootEnabled, issuer, authorizationEndPoint, tokenEndPoint, userInfoEndPoint,
 						responseType, scopes, scopesInAuthorizationUrlOnly, apiKey, apiSecret);
 			}
-		}
-	}
-	
-	public class ConfigurableProviderWrapper extends ProviderWrapper {
-		
-		private FormLayoutContainer openIdConnectIFCont;
-		
-		private MultipleSelectionElement openIdConnectIFConfEl;
-		private TextElement openIdConnectIFConfName;
-		private TextElement openIdConnectIFConfDisplayName;
-		private TextElement openIdConnectIFConfApiKeyEl;
-		private TextElement openIdConnectIFConfApiSecretEl;
-		private TextElement openIdConnectIFConfIssuerEl;
-		private TextElement openIdConnectIFConfAuthorizationEndPointEl;
-		
-		public ConfigurableProviderWrapper(OpenIdConnectFullConfigurableProvider spi) {
-			super(spi, null);
-		}
-
-		public void initForm(FormItemContainer container) {
-			counter++;
-			
-			OpenIdConnectFullConfigurableProvider spi = (OpenIdConnectFullConfigurableProvider)getProvider();
-			openIdConnectIFCont = FormLayoutContainer.createDefaultFormLayout("openidconnectif." + counter, getTranslator());
-			openIdConnectIFCont.setFormTitle(translate("openidconnectif.admin.custom.title", spi.getProviderName()));
-			openIdConnectIFCont.setFormTitleIconCss("o_icon o_icon_provider_openid");
-			openIdConnectIFCont.setRootForm(mainForm);
-			container.add(openIdConnectIFCont);
-			openIdConnectIFConfEl = uifactory.addCheckboxesHorizontal("openidconnectif." + counter + ".default.enabled", "openidconnectif.default.enabled", openIdConnectIFCont, keys, values);
-			if(spi.isRootEnabled()) {
-				openIdConnectIFConfEl.select(keys[0], true);
-			}
-			
-			String providerName = spi.getProviderName();
-			openIdConnectIFConfName = uifactory.addTextElement("openidconnectif." + counter + ".name", "openidconnectif.name", 256, providerName, openIdConnectIFCont);
-			openIdConnectIFConfName.setEnabled(false);
-			
-			String displayName = spi.getDisplayName();
-			openIdConnectIFConfDisplayName = uifactory.addTextElement("openidconnectif." + counter + ".displayname", "openidconnectif.displayname", 256, displayName, openIdConnectIFCont);
-			openIdConnectIFConfDisplayName.setMandatory(true);
-			
-			String apiKey = spi.getAppKey();
-			openIdConnectIFConfApiKeyEl = uifactory.addTextElement("openidconnectif." + counter + ".id", "openidconnectif.api.id", 256, apiKey, openIdConnectIFCont);
-			openIdConnectIFConfApiKeyEl.setMandatory(true);
-			String apiSecret = spi.getAppSecret();
-			openIdConnectIFConfApiSecretEl = uifactory.addTextElement("openidconnectif." + counter + ".secret", "openidconnectif.api.secret", 256, apiSecret, openIdConnectIFCont);
-			openIdConnectIFConfApiSecretEl.setMandatory(true);
-			String issuer = spi.getIssuer();
-			openIdConnectIFConfIssuerEl = uifactory.addTextElement("openidconnectif." + counter + ".issuer", "openidconnectif.issuer", 256, issuer, openIdConnectIFCont);
-			openIdConnectIFConfIssuerEl.setExampleKey("openidconnectif.issuer.example", null);
-			openIdConnectIFConfIssuerEl.setMandatory(true);
-			String endPoint = spi.getEndPoint();
-			openIdConnectIFConfAuthorizationEndPointEl = uifactory.addTextElement("openidconnectif." + counter + ".authorization.endpoint", "openidconnectif.authorization.endpoint", 256, endPoint, openIdConnectIFCont);
-			openIdConnectIFConfAuthorizationEndPointEl.setExampleKey("openidconnectif.authorization.endpoint.example", null);
-			openIdConnectIFConfAuthorizationEndPointEl.setMandatory(true);
-
-			FormLink deleteButton  = uifactory.addFormLink("delete." + counter, "disable", "disable", null, openIdConnectIFCont, Link.BUTTON);
-			deleteButton.setUserObject(getProvider());
-			setProviderContainer(openIdConnectIFCont);
-		}
-
-		protected boolean validateFormLogic() {
-			boolean allOk = true;
-			
-			allOk &= mandatory(openIdConnectIFConfName, openIdConnectIFConfDisplayName, openIdConnectIFConfApiKeyEl, openIdConnectIFConfApiSecretEl,
-					openIdConnectIFConfIssuerEl, openIdConnectIFConfAuthorizationEndPointEl);
-			
-			return allOk;
-		}
-		
-		protected void commit() {
-			String displayName = openIdConnectIFConfDisplayName.getValue();
-			String issuer = openIdConnectIFConfIssuerEl.getValue();
-			String endPoint = openIdConnectIFConfAuthorizationEndPointEl.getValue();
-			String apiKey = openIdConnectIFConfApiKeyEl.getValue();
-			String apiSecret = openIdConnectIFConfApiSecretEl.getValue();
-			boolean rootEnabled = openIdConnectIFConfEl.isAtLeastSelected(1);
-			oauthModule.setAdditionalOpenIDConnectIF(getProvider().getProviderName(), displayName, rootEnabled, issuer, endPoint, apiKey, apiSecret);
 		}
 	}
 }

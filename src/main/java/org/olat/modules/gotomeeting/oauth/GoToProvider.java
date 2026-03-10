@@ -80,12 +80,6 @@ public class GoToProvider implements OAuthSPI {
 		return "o_icon o_gotomeeting_icon";
 	}
 
-
-	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
-
 	@Override
 	public OAuthUser getUser(OAuthService service, Token accessToken) {
 		return null;

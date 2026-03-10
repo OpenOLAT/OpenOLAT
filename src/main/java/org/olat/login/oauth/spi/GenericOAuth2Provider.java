@@ -116,11 +116,6 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 	public void setEditable(boolean isEditable) {
 		this.isEditable = isEditable;
 	}
-	
-	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
 
 	@Override
 	public OAuthService getScribeProvider() {

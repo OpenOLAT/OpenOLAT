@@ -66,11 +66,6 @@ public class DatenlotsenProvider implements OAuthSPI {
 	public boolean isEditable() {
 		return true;
 	}
-	
-	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
 
 	@Override
 	public OAuthService getScribeProvider() {
