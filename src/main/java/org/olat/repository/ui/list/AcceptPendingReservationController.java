@@ -48,10 +48,10 @@ public class AcceptPendingReservationController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("accept_pending_reservation");
 
 		acceptLink = LinkFactory.createButton("accept.pending.reservation.accept", mainVC, this);
-		acceptLink.setIconLeftCSS("o_icon o_icon_check");
+		acceptLink.setIconLeftCSS("o_icon o_icon-fw o_icon_accepted");
 
 		declineLink = LinkFactory.createButton("accept.pending.reservation.decline", mainVC, this);
-		declineLink.setIconLeftCSS("o_icon o_icon_decline");
+		declineLink.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
 		declineLink.setPrimary(true);
 		declineLink.setElementCssClass("btn-danger");
 

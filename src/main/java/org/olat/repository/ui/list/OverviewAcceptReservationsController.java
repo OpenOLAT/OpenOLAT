@@ -238,7 +238,7 @@ public class OverviewAcceptReservationsController extends BasicController {
 		String acceptText = translate("accept.pending.reservation.accept");
 		Link acceptLink = LinkFactory.createCustomLink("accept_" + key, CMD_ACCEPT, "accept_" + key, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		acceptLink.setCustomDisplayText(acceptText);
-		acceptLink.setIconLeftCSS("o_icon o_icon_check");
+		acceptLink.setIconLeftCSS("o_icon o_icon-fw o_icon_accepted");
 		acceptLink.setLabelCSS("o_label_text");
 		acceptLink.setTitle(acceptText);
 		acceptLink.setUserObject(row);
@@ -247,7 +247,7 @@ public class OverviewAcceptReservationsController extends BasicController {
 		String declineText = translate("accept.pending.reservation.decline");
 		Link declineLink = LinkFactory.createCustomLink("decline_" + key, CMD_DECLINE, "decline_" + key, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		declineLink.setCustomDisplayText(declineText);
-		declineLink.setIconLeftCSS("o_icon o_icon_decline");
+		declineLink.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
 		declineLink.setLabelCSS("o_label_text");
 		declineLink.setTitle(declineText);
 		declineLink.setPrimary(true);
