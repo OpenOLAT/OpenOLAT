@@ -316,7 +316,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		}
 
 		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
-			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("bookings"), uureq -> {
+			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("tab.bookings"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
 				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canViewPendingCourseBookings());
 				listenTo(userOrderController);
@@ -375,14 +375,14 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		}
 
 		if (roleSecurityCallback.canEditProfile() && !roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles()) {
-			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
+			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("tab.profile"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
 				profileAndHomePageEditController =  new ProfileAndHomePageEditController(uureq, bwControl, mentee, roleSecurityCallback.isAdministrativeUser());
 				listenTo(profileAndHomePageEditController);
 				return profileAndHomePageEditController.getInitialComponent();
 			});
 		} else if (roleSecurityCallback.canViewProfile()) {
-			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
+			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("tab.profile"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
 				profileAndHomePageEditController =  new ProfileAndHomePageEditController(uureq, bwControl, mentee, 
 						roleSecurityCallback.isAdministrativeUser(), true);
