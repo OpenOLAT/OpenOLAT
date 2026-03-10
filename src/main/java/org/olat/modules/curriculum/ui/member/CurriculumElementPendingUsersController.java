@@ -152,7 +152,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			tableEl.addBatchButton(declineBatchButton);
 		}
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-pending-members-v1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-pending-members-v2");
 	}
 
 	@Override

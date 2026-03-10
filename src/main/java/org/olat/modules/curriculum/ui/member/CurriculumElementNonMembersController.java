@@ -93,7 +93,7 @@ public class CurriculumElementNonMembersController extends AbstractMembersContro
 	protected void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
 		super.initTableForm(formLayout, ureq);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v2");
 	}
 
 	@Override

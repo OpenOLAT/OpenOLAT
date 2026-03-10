@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.admin.user.UserSearchController;
-import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -71,7 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumUserManagementController extends FormBasicController {
 
 	public static final int USER_PROPS_OFFSET = 500;
-	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
+	public static final String usageIdentifyer = AbstractMembersController.usageIdentifyer;
 	
 	private FlexiTableElement tableEl;
 	private FormLink addOwnerButton;
@@ -130,7 +129,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v3");
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v4");
 		
 		if(!membersManaged && secCallback.canManagerCurriculumUsers()) {
 			addOwnerButton = uifactory.addFormLink("add.curriculumowner", formLayout, Link.BUTTON);

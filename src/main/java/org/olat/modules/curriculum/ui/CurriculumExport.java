@@ -41,6 +41,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -152,10 +153,19 @@ public class CurriculumExport {
 	}
 	
 	private void createWorkbook(OutputStream out) {
-		List<String> sheetNames = List.of(translator.translate("export.products"),
-				translator.translate("export.implementations"), translator.translate("export.members"),
-				translator.translate("export.users"), translator.translate("export.informations"));
-		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 5, sheetNames)) {
+		final boolean hasUsername = userPropertyHandlers.stream()
+				.anyMatch(handler -> UserConstants.NICKNAME.equals(handler.getName()));
+		
+		List<String> sheetNames = new ArrayList<>();
+		sheetNames.add(translator.translate("export.products"));
+		sheetNames.add(translator.translate("export.implementations"));
+		if(hasUsername) {
+			sheetNames.add(translator.translate("export.members"));
+			sheetNames.add(translator.translate("export.users"));
+		}
+		sheetNames.add(translator.translate("export.informations"));
+
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, sheetNames.size(), sheetNames)) {
 			// Curriculums / products
 			OpenXMLWorksheet curriculumsSheet = workbook.nextWorksheet();
 			addCurriculumsHeader(workbook, curriculumsSheet);
@@ -169,14 +179,16 @@ public class CurriculumExport {
 			} else {
 				elements = addImplementationsContent(workbook, implementationsSheet);
 			}
-			// Members
-			OpenXMLWorksheet membershipsSheet = workbook.nextWorksheet();
-			addMembershipsHeader(workbook, membershipsSheet);
-			Set<Member> users = addMemberships(elements, workbook, membershipsSheet);
-			// Users
-			OpenXMLWorksheet usersSheet = workbook.nextWorksheet();
-			addUsersHeader(workbook, usersSheet);
-			addUsers(users, workbook, usersSheet);
+			if(hasUsername) {
+				// Members
+				OpenXMLWorksheet membershipsSheet = workbook.nextWorksheet();
+				addMembershipsHeader(workbook, membershipsSheet);
+				Set<Member> users = addMemberships(elements, workbook, membershipsSheet);
+				// Users
+				OpenXMLWorksheet usersSheet = workbook.nextWorksheet();
+				addUsersHeader(workbook, usersSheet);
+				addUsers(users, workbook, usersSheet);
+			}
 			// Informations
 			OpenXMLWorksheet infosSheet = workbook.nextWorksheet();
 			addInformations(workbook, infosSheet);

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -95,7 +94,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractMembersController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 	
 	public static final int USER_PROPS_OFFSET = 500;
-	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
+	public static final String usageIdentifyer = CurriculumElementMemberUsersController.class.getCanonicalName();
 	
 	protected static final String TOGGLE_DETAILS_CMD = "toggle-details";
 

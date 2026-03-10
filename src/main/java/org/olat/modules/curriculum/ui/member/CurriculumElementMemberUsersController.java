@@ -164,7 +164,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			tableEl.addBatchButton(removeBatchButton);
 		}
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v3");
 	}
 	
 	@Override
