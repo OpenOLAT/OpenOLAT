@@ -54,6 +54,7 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.EditCurriculumController;
+import org.olat.modules.curriculum.ui.EditCurriculumElementMetadataController;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
@@ -356,13 +357,14 @@ public class ImportCurriculumsValidator {
 		
 		// Display name / title
 		if(validateMandatory(importedRow, importedRow.getDisplayName(), ImportCurriculumsCols.displayName)
-				&& validateTruncateLength(importedRow, importedRow.getDisplayName(), 255, ImportCurriculumsCols.displayName)
+				&& validateTruncateLength(importedRow, importedRow.getDisplayName(), EditCurriculumElementMetadataController.DISPLAY_NAME_MAX_LENGTH,
+						ImportCurriculumsCols.displayName)
 				&& !importedRow.isNew()) {
 			String column = translate(ImportCurriculumsCols.displayName.i18nHeaderKey());
 			importedRow.addChanged(column, importedRow.getCurriculumElement().getDisplayName(), importedRow.getDisplayName(), ImportCurriculumsCols.displayName);
 		}
 		
-		validateIdentifier(importedRow, 255);
+		validateIdentifier(importedRow, EditCurriculumElementMetadataController.IDENTIFIER_MAX_LENGTH);
 		
 		// Level only for element
 		if(importedRow.type() == CurriculumExportType.ELEM) {

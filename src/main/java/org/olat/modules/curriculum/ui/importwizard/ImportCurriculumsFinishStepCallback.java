@@ -58,6 +58,7 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.EditCurriculumController;
+import org.olat.modules.curriculum.ui.EditCurriculumElementMetadataController;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -357,6 +358,9 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	private CurriculumElement updateCurriculumElement(CurriculumElement element, ImportedRow importedRow) {
+		element.setDisplayName(Formatter.truncateOnly(importedRow.getDisplayName(),
+				EditCurriculumElementMetadataController.DISPLAY_NAME_MAX_LENGTH));
+		
 		if(StringHelper.containsNonWhitespace(importedRow.getElementStatus())) {
 			((CurriculumElementImpl)element).setElementStatus(toStatus(importedRow.getElementStatus()));
 		}

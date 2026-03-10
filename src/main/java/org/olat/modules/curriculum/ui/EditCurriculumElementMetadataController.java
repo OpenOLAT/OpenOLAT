@@ -77,6 +77,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
  */
 public class EditCurriculumElementMetadataController extends FormBasicController {
 	
+	public static int DISPLAY_NAME_MAX_LENGTH = 110;
+	public static int IDENTIFIER_MAX_LENGTH = 255;
+	
 	private TextElement displayNameEl;
 	private TextElement identifierEl;
 	private SingleSelection curriculumEl;
@@ -184,7 +187,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		boolean canEdit = element == null || secCallback.canEditCurriculumElementSettings(element);
 		
 		String displayName = element == null ? "" : element.getDisplayName();
-		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.display.name", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.display.name", DISPLAY_NAME_MAX_LENGTH, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
 		displayNameEl.setElementCssClass("o_sel_curriculum_element_displayname");
 		displayNameEl.setMandatory(true);
@@ -193,7 +196,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		
 		String identifier = element == null ? "" : element.getIdentifier();
-		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", IDENTIFIER_MAX_LENGTH, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
 		identifierEl.setElementCssClass("o_sel_curriculum_element_identifier");
 		identifierEl.setInlineValidationOn(true);
@@ -309,8 +312,8 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		allOk &= CurriculumHelper.validateTextElement(displayNameEl, true, 110);
-		allOk &= CurriculumHelper.validateTextElement(identifierEl, true, 255);
+		allOk &= CurriculumHelper.validateTextElement(displayNameEl, true, DISPLAY_NAME_MAX_LENGTH);
+		allOk &= CurriculumHelper.validateTextElement(identifierEl, true, IDENTIFIER_MAX_LENGTH);
 		
 		curriculumElementTypeEl.clearError();
 		if(!curriculumElementTypeEl.isOneSelected()) {
