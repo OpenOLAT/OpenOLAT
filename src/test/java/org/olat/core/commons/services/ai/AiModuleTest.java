@@ -24,16 +24,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
-import org.olat.core.util.coordinate.Coordinator;
-import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Unit tests for {@link AiModule} business logic.
@@ -45,7 +42,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
  *
  * @author gnaegi@frentix.com, https://www.frentix.com
  */
-public class AiModuleTest {
+public class AiModuleTest extends OlatTestCase {
 
 	/** Minimal AiSPI that is NOT an AiMCQuestionGeneratorSPI */
 	private static class SimpleAiSpi implements AiSPI {
@@ -81,17 +78,8 @@ public class AiModuleTest {
 		@Override public List<String> getAvailableMCGeneratorModels() { return List.of(); }
 	}
 
+	@Autowired
 	private AiModule module;
-
-	@Before
-	public void setUp() throws Exception {
-		// Minimal mock of CoordinatorManager so AbstractSpringModule constructor does not NPE
-		CoordinatorManager coordinatorManager = mock(CoordinatorManager.class);
-		Coordinator coordinator = mock(Coordinator.class);
-		when(coordinatorManager.getCoordinator()).thenReturn(coordinator);
-
-		module = new AiModule(coordinatorManager);
-	}
 
 	/** Set mcGeneratorSpiId and mcGeneratorModel via the module's config method,
 	 *  bypassing property persistence by directly manipulating fields via reflection. */
@@ -209,6 +197,7 @@ public class AiModuleTest {
 		setConfig("Claude", "claude-3-5-sonnet");
 
 		AiMCQuestionGeneratorSPI generator = module.getMCQuestionGenerator();
+		assertNotNull(generator);
 		// Verify the model was injected
 		assertEquals("claude-3-5-sonnet", spi.getMCGeneratorModel());
 	}
