@@ -19,9 +19,11 @@
  */
 package org.olat.repository.ui.list;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -68,11 +74,14 @@ public class OverviewAcceptReservationsController extends BasicController {
 
 	private final List<OverviewReservationRow> rows;
 	private final MapperKey mapperThumbnailKey;
+	private final MapperKey ceMapperKey;
 
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private MapperService mapperService;
 
@@ -88,11 +97,14 @@ public class OverviewAcceptReservationsController extends BasicController {
 		infoPanel.setInformations(mainVC);
 		infoPanel.setPersistedStatusId(ureq, "overview-accept-reservations-v1");
 
-		RepositoryEntryImageMapper mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
-		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
+		RepositoryEntryImageMapper reImageMapper = RepositoryEntryImageMapper.mapper210x140();
+		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, reImageMapper);
+
+		CurriculumElementImageMapper ceImageMapper = CurriculumElementImageMapper.mapper210x140();
+		ceMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, ceImageMapper);
 
 		rows = new ArrayList<>();
-		loadReservations(mapperThumbnail);
+		loadReservations(reImageMapper, ceImageMapper);
 		updateUI();
 
 		putInitialPanel(infoPanel);
@@ -102,7 +114,7 @@ public class OverviewAcceptReservationsController extends BasicController {
 		return !rows.isEmpty();
 	}
 
-	private void loadReservations(RepositoryEntryImageMapper imageMapper) {
+	private void loadReservations(RepositoryEntryImageMapper reImageMapper, CurriculumElementImageMapper ceImageMapper) {
 		List<ResourceReservation> reservations = acService.getReservations(getIdentity());
 
 		List<ResourceReservation> participantReservations = reservations.stream()
@@ -112,28 +124,63 @@ public class OverviewAcceptReservationsController extends BasicController {
 			return;
 		}
 
-		List<Long> resourceKeys = participantReservations.stream()
-				.map(r -> r.getResource().getKey())
+		List<ResourceReservation> ceReservations = participantReservations.stream()
+				.filter(r -> "CurriculumElement".equals(r.getResource().getResourceableTypeName()))
 				.toList();
-		Map<Long, RepositoryEntry> resourceKeyToEntry = repositoryService.loadByResourceKeys(resourceKeys).stream()
-				.collect(Collectors.toMap(e -> e.getOlatResource().getKey(), Function.identity(), (a, b) -> a));
+		List<ResourceReservation> reReservations = participantReservations.stream()
+				.filter(r -> !"CurriculumElement".equals(r.getResource().getResourceableTypeName()))
+				.toList();
 
-		List<RepositoryEntry> repoEntries = new ArrayList<>();
-		for (ResourceReservation reservation : participantReservations) {
-			RepositoryEntry entry = resourceKeyToEntry.get(reservation.getResource().getKey());
-			if (entry != null) {
-				repoEntries.add(entry);
+		if (!reReservations.isEmpty()) {
+			List<Long> resourceKeys = reReservations.stream()
+					.map(r -> r.getResource().getKey())
+					.toList();
+			Map<Long, RepositoryEntry> resourceKeyToEntry = repositoryService.loadByResourceKeys(resourceKeys).stream()
+					.collect(Collectors.toMap(e -> e.getOlatResource().getKey(), Function.identity(), (a, b) -> a));
+
+			List<RepositoryEntry> repoEntries = new ArrayList<>();
+			for (ResourceReservation reservation : reReservations) {
+				RepositoryEntry entry = resourceKeyToEntry.get(reservation.getResource().getKey());
+				if (entry != null) {
+					repoEntries.add(entry);
+				}
+			}
+
+			Map<Long, VFSThumbnailInfos> repoThumbnails = reImageMapper.getRepositoryThumbnails(repoEntries);
+
+			for (ResourceReservation reservation : reReservations) {
+				RepositoryEntry entry = resourceKeyToEntry.get(reservation.getResource().getKey());
+				if (entry != null) {
+					addRepositoryEntryRow(reservation, entry, repoThumbnails);
+				}
 			}
 		}
 
-		Map<Long, VFSThumbnailInfos> repoThumbnails = imageMapper.getRepositoryThumbnails(repoEntries);
+		if (!ceReservations.isEmpty()) {
+			List<CurriculumElementRefImpl> elementRefs = ceReservations.stream()
+					.map(r -> new CurriculumElementRefImpl(r.getResource().getResourceableId()))
+					.toList();
+			Map<Long, CurriculumElement> resourceKeyToElement = curriculumService.getCurriculumElements(elementRefs).stream()
+					.collect(Collectors.toMap(e -> e.getResource().getKey(), Function.identity(), (a, b) -> a));
 
-		for (ResourceReservation reservation : participantReservations) {
-			RepositoryEntry entry = resourceKeyToEntry.get(reservation.getResource().getKey());
-			if (entry != null) {
-				addRepositoryEntryRow(reservation, entry, repoThumbnails);
+			List<CurriculumElement> elements = new ArrayList<>(resourceKeyToElement.values());
+			Map<Long, VFSThumbnailInfos> ceThumbnails = ceImageMapper.getThumbnails(elements);
+			Map<Long, Set<RepositoryEntry>> entriesByElementKey = curriculumService.getCurriculumElementKeyToRepositoryEntries(elements);
+			Set<Long> elementKeysWithChildren = elements.stream()
+					.filter(e -> curriculumService.hasCurriculumElementChildren(e))
+					.map(CurriculumElement::getKey)
+					.collect(Collectors.toSet());
+
+			for (ResourceReservation reservation : ceReservations) {
+				CurriculumElement element = resourceKeyToElement.get(reservation.getResource().getKey());
+				if (element != null) {
+					addCurriculumElementRow(reservation, element, ceThumbnails, entriesByElementKey, elementKeysWithChildren);
+				}
 			}
 		}
+
+		Collator collator = Collator.getInstance(getLocale());
+		rows.sort((a, b) -> collator.compare(a.getDisplayName(), b.getDisplayName()));
 	}
 
 	private void addRepositoryEntryRow(ResourceReservation reservation, RepositoryEntry entry,
@@ -149,7 +196,28 @@ public class OverviewAcceptReservationsController extends BasicController {
 
 		OverviewReservationRow row = new OverviewReservationRow(reservation, entry.getDisplayname(),
 				entry.getExternalRef(), translatedType, entry.getDescription(), thumbUrl,
-				detailsAvailable, entry.getKey());
+				detailsAvailable, entry.getKey(), null);
+		addRowLinks(row);
+		rows.add(row);
+	}
+
+	private void addCurriculumElementRow(ResourceReservation reservation, CurriculumElement element,
+			Map<Long, VFSThumbnailInfos> thumbnails, Map<Long, Set<RepositoryEntry>> entriesByElementKey,
+			Set<Long> elementKeysWithChildren) {
+		String translatedType = element.getType() != null ? element.getType().getDisplayName() : null;
+
+		VFSThumbnailInfos thumb = thumbnails.get(element.getKey());
+		String thumbUrl = thumb != null
+				? CurriculumElementImageMapper.getImageURL(ceMapperKey.getUrl(), thumb.metadata(), thumb.thumbnailMetadata())
+				: null;
+
+		boolean detailsAvailable = StringHelper.containsNonWhitespace(element.getDescription())
+				|| elementKeysWithChildren.contains(element.getKey())
+				|| !entriesByElementKey.getOrDefault(element.getKey(), Set.of()).isEmpty();
+
+		OverviewReservationRow row = new OverviewReservationRow(reservation, element.getDisplayName(),
+				element.getIdentifier(), translatedType, element.getDescription(), thumbUrl,
+				detailsAvailable, null, element.getKey());
 		addRowLinks(row);
 		rows.add(row);
 	}

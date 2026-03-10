@@ -1,29 +1,31 @@
 <div class="o_lightbox_modal_form o_overview_reservation_detail">
-	<div class="o_overview_reservation_card">
-		<div class="o_row_course">
-			<div class="o_course">
-				<div class="o_visual">
-					#if($thumbnailUrl)
-						<img src="$thumbnailUrl" alt="" />
-					#else
-						<div class="o_visual_not_available"></div>
-					#end
-				</div>
-				<div class="o_meta">
-					#if($r.isNotEmpty($externalRef) || $r.isNotEmpty($translatedType))
-						<div class="o_ext_ref">
-							#if($r.isNotEmpty($externalRef))
-								<span class="o_external_ref">$r.escapeHtml($externalRef)</span>
-								#if($r.isNotEmpty($translatedType))
-									<span class="o_spacer">&middot;</span>
+	<div class="o_overview_reservation_cards o_overview_reservation_detail_header">
+		<div class="o_overview_reservation_card">
+			<div class="o_row_course">
+				<div class="o_course">
+					<div class="o_visual">
+						#if($thumbnailUrl)
+							<img src="$thumbnailUrl" alt="" />
+						#else
+							<div class="o_visual_not_available"></div>
+						#end
+					</div>
+					<div class="o_meta">
+						#if($r.isNotEmpty($externalRef) || $r.isNotEmpty($translatedType))
+							<div class="o_ext_ref">
+								#if($r.isNotEmpty($externalRef))
+									<span class="o_external_ref">$r.escapeHtml($externalRef)</span>
+									#if($r.isNotEmpty($translatedType))
+										<span class="o_spacer">&middot;</span>
+									#end
 								#end
-							#end
-							#if($r.isNotEmpty($translatedType))
-								<span class="o_technical_type">$r.escapeHtml($translatedType)</span>
-							#end
-						</div>
-					#end
-					<h4 class="o_title o_nowrap">$r.escapeHtml($title)</h4>
+								#if($r.isNotEmpty($translatedType))
+									<span class="o_technical_type">$r.escapeHtml($translatedType)</span>
+								#end
+							</div>
+						#end
+						<h4 class="o_title o_nowrap">$r.escapeHtml($title)</h4>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -32,5 +34,74 @@
 		<hr />
 		<h4>$r.translate("overview.reservation.detail.description")</h4>
 		<p>$r.xssScan($description)</p>
+	#end
+	#if($curriculumElementRows)
+		<h4 class="o_block_top">$r.translate("overview.reservation.detail.memberships")</h4>
+		<div class="o_overview_reservation_cards">
+			#foreach($ceRow in $curriculumElementRows)
+				#if($r.isNotEmpty($ceRow.displayName))
+					<div class="o_overview_reservation_card">
+						<div class="o_row_course">
+							<div class="o_course">
+								<div class="o_visual">
+									#if($ceRow.thumbnailUrl)
+										<img src="$ceRow.thumbnailUrl" alt="" />
+									#else
+										<div class="o_visual_not_available"></div>
+									#end
+								</div>
+								<div class="o_meta">
+									#if($r.isNotEmpty($ceRow.externalRef) || $r.isNotEmpty($ceRow.translatedType))
+										<div class="o_ext_ref">
+											#if($r.isNotEmpty($ceRow.externalRef))
+												<span class="o_external_ref">$r.escapeHtml($ceRow.externalRef)</span>
+												#if($r.isNotEmpty($ceRow.translatedType))
+													<span class="o_spacer">&middot;</span>
+												#end
+											#end
+											#if($r.isNotEmpty($ceRow.translatedType))
+												<span class="o_technical_type">$r.escapeHtml($ceRow.translatedType)</span>
+											#end
+										</div>
+									#end
+									<h4 class="o_title o_nowrap">$r.escapeHtml($ceRow.displayName)</h4>
+								</div>
+							</div>
+						</div>
+					</div>
+				#end
+				#foreach($child in $ceRow.children)
+					<div class="o_overview_reservation_card">
+						<div class="o_row_course">
+							<div class="o_course">
+								<div class="o_visual">
+									#if($child.thumbnailUrl)
+										<img src="$child.thumbnailUrl" alt="" />
+									#else
+										<div class="o_visual_not_available"></div>
+									#end
+								</div>
+								<div class="o_meta">
+									#if($r.isNotEmpty($child.externalRef) || $r.isNotEmpty($child.translatedType))
+										<div class="o_ext_ref">
+											#if($r.isNotEmpty($child.externalRef))
+												<span class="o_external_ref">$r.escapeHtml($child.externalRef)</span>
+												#if($r.isNotEmpty($child.translatedType))
+													<span class="o_spacer">&middot;</span>
+												#end
+											#end
+											#if($r.isNotEmpty($child.translatedType))
+												<span class="o_technical_type">$r.escapeHtml($child.translatedType)</span>
+											#end
+										</div>
+									#end
+									<h4 class="o_title o_nowrap">$r.escapeHtml($child.displayName)</h4>
+								</div>
+							</div>
+						</div>
+					</div>
+				#end
+			#end
+		</div>
 	#end
 </div>

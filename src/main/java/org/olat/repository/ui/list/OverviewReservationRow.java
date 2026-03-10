@@ -36,6 +36,7 @@ public class OverviewReservationRow {
 	private final String thumbnailRelPath;
 	private final boolean detailsAvailable;
 	private final Long repositoryEntryKey;
+	private final Long curriculumElementKey;
 
 	private Link detailsLink;
 	private Link acceptLink;
@@ -44,6 +45,13 @@ public class OverviewReservationRow {
 	public OverviewReservationRow(ResourceReservation reservation, String displayName, String externalRef,
 			String translatedType, String description, String thumbnailRelPath, boolean detailsAvailable,
 			Long repositoryEntryKey) {
+		this(reservation, displayName, externalRef, translatedType, description, thumbnailRelPath, detailsAvailable,
+				repositoryEntryKey, null);
+	}
+
+	public OverviewReservationRow(ResourceReservation reservation, String displayName, String externalRef,
+			String translatedType, String description, String thumbnailRelPath, boolean detailsAvailable,
+			Long repositoryEntryKey, Long curriculumElementKey) {
 		this.reservation = reservation;
 		this.displayName = displayName;
 		this.externalRef = externalRef;
@@ -52,6 +60,7 @@ public class OverviewReservationRow {
 		this.thumbnailRelPath = thumbnailRelPath;
 		this.detailsAvailable = detailsAvailable;
 		this.repositoryEntryKey = repositoryEntryKey;
+		this.curriculumElementKey = curriculumElementKey;
 	}
 
 	public ResourceReservation getReservation() {
@@ -92,6 +101,10 @@ public class OverviewReservationRow {
 
 	public Long getRepositoryEntryKey() {
 		return repositoryEntryKey;
+	}
+
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
 	}
 
 	public Link getDetailsLink() {
