@@ -51,10 +51,6 @@ import org.olat.login.LoginModule;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthSession;
 import org.olat.login.oauth.model.OAuthUser;
-import org.olat.login.oauth.spi.OpenIDVerifier;
-import org.olat.login.oauth.spi.OpenIdConnectApi.OpenIdConnectService;
-import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableApi.OpenIdConnectFullConfigurableService;
-import org.olat.login.oauth.ui.JSRedirectWindowController;
 import org.olat.login.oauth.ui.OAuthAuthenticationController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
@@ -134,20 +130,6 @@ public class OAuthDispatcher implements Dispatcher {
 				log.info(Tracing.M_AUDIT, "OAuth Login failed, no provider in request");
 				DispatcherModule.redirectToDefaultDispatcher(response);
 				return;
-			} else if(provider.isImplicitWorkflow()) {
-				String idToken = ureq.getParameter("id_token");
-				if(idToken == null) {
-					redirectImplicitWorkflow(ureq);
-					return;
-				} else if(service instanceof OpenIdConnectFullConfigurableService configurableService) {
-					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, oauthSession);
-					accessToken = configurableService.getAccessToken(verifier);
-				} else if(service instanceof OpenIdConnectService connectService) {
-					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, oauthSession);
-					accessToken = connectService.getAccessToken(verifier);
-				} else {
-					return;
-				}
 			} else if(service instanceof OAuth10aService oauth10aService
 					&& oauthSession.requestToken() instanceof OAuth1RequestToken oauth1RequestToken) {
 				String requestVerifier = request.getParameter("oauth_verifier"); 
@@ -284,11 +266,6 @@ public class OAuthDispatcher implements Dispatcher {
 		sb.append("<!DOCTYPE html>\n<html><head><title>Reload</title>");
 		sb.append("<script>window.location.replace(\"").append(redirectUrl).append("\");</script></head><body></body></html>");
 		ServletUtil.serveStringResource(ureq.getHttpResp(), sb.toString());
-	}
-	
-	private void redirectImplicitWorkflow(UserRequest ureq) {
-		ChiefController msgcc = new JSRedirectWindowController(ureq);
-		msgcc.getWindow().dispatchRequest(ureq, true);
 	}
 	
 	private void login(OAuthUser infos, OAuthRegistration registration) {

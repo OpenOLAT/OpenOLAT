@@ -83,11 +83,6 @@ public class ADFSProvider implements OAuthSPI {
 	}
 
 	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
-
-	@Override
 	public OAuthService getScribeProvider() {
 		ServiceBuilder serviceBuilder = new ServiceBuilder(oauthModule.getAdfsApiKey());
 		if(StringHelper.containsNonWhitespace(oauthModule.getAdfsApiSecret())) {

@@ -94,11 +94,6 @@ public class PantherProvider implements OAuthUserCreator {
 	}
 
 	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
-
-	@Override
 	public OAuthService getScribeProvider() {
 		return new ServiceBuilder(getAppKey())
                 .apiSecret(getAppSecret())

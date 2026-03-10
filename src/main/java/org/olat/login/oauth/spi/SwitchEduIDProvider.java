@@ -86,11 +86,6 @@ public class SwitchEduIDProvider implements OAuthSPI {
 	public boolean isTestEnvironment() {
 		return test;
 	}
-	
-	@Override
-	public boolean isImplicitWorkflow() {
-		return false;
-	}
 
 	@Override
 	public OAuthService getScribeProvider() {
