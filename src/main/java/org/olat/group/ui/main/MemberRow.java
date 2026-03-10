@@ -29,6 +29,8 @@ import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.MemberView;
 import org.olat.modules.curriculum.CurriculumElementShort;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -49,6 +51,8 @@ public class MemberRow extends UserPropertiesRow {
 	private String onlineStatus;
 	private FormLink toolsLink;
 	private FormLink chatLink;
+	private PortraitUser portraitUser;
+	private UserPortraitComponent portraitComponent;
 
 	private FormBasicController detailsController;
 
@@ -148,6 +152,22 @@ public class MemberRow extends UserPropertiesRow {
 
 	public void setDetailsController(FormBasicController detailsController) {
 		this.detailsController = detailsController;
+	}
+
+	public PortraitUser getPortraitUser() {
+		return portraitUser;
+	}
+
+	public void setPortraitUser(PortraitUser portraitUser) {
+		this.portraitUser = portraitUser;
+	}
+
+	public UserPortraitComponent getPortraitComponent() {
+		return portraitComponent;
+	}
+
+	public void setPortraitComponent(UserPortraitComponent portraitComponent) {
+		this.portraitComponent = portraitComponent;
 	}
 
 	public String getDetailsControllerName() {

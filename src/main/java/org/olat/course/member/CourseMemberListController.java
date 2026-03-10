@@ -58,6 +58,11 @@ import org.olat.modules.curriculum.CurriculumElementShort;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.user.PortraitSize;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,6 +79,8 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	public CourseMemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry repoEntry, MemberListSecurityCallback secCallback, SearchMembersParams searchParams, String infos) {
@@ -96,9 +103,36 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	}
 	
 	@Override
+	protected void initPortraitColumn(FlexiTableColumnModel columnsModel) {
+		DefaultFlexiColumnModel portraitCol = new DefaultFlexiColumnModel(MemberListTableModel.Cols.userPortrait);
+		portraitCol.setExportable(false);
+		portraitCol.setIconHeader("o_icon o_ac_guest_icon");
+		portraitCol.setHeaderTooltip(translate("table.header.user.portrait"));
+		columnsModel.addFlexiColumnModel(portraitCol);
+	}
+
+	@Override
 	protected void initOriginColumn(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberListTableModel.Cols.origin, 
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberListTableModel.Cols.origin,
 				new OriginCellRenderer(TABLE_ACTION_TOGGLE_DETAILS)));
+	}
+
+	@Override
+	protected void forgePortrait(MemberRow row, Identity identity) {
+		String portraitId = "portrait_" + row.getIdentityKey();
+		Component comp = membersTable.getComponent().getComponent(portraitId);
+		if (comp instanceof UserPortraitComponent userPortraitComp) {
+			row.setPortraitUser(userPortraitComp.getPortraitUser());
+			row.setPortraitComponent(userPortraitComp);
+		} else {
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			row.setPortraitUser(portraitUser);
+			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(portraitId, membersTable, getLocale());
+			userPortraitComp.setPortraitUser(portraitUser);
+			userPortraitComp.setDisplayPresence(true);
+			userPortraitComp.setSize(PortraitSize.small);
+			row.setPortraitComponent(userPortraitComp);
+		}
 	}
 
 	@Override

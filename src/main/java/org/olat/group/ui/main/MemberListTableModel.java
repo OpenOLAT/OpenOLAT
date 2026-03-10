@@ -105,6 +105,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 					return curriculumElementInfos == null ? null : curriculumElementInfos.getRootElementDisplayName();
 				}
 				case tools: return row.getToolsLink();
+				case userPortrait: return row.getPortraitComponent();
 				default: return "ERROR";
 			}
 		}
@@ -167,7 +168,8 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		curriculumDisplayName("table.header.curriculum"),
 		rootCurriculumElementIdentifier("table.header.curriculum.root.identifier"),
 		rootCurriculumElementDisplayName("table.header.curriculum.root.displayname"),
-		identityStatus("table.header.identity.status");
+		identityStatus("table.header.identity.status"),
+		userPortrait("table.header.user.portrait");
 		
 		private final String i18n;
 		

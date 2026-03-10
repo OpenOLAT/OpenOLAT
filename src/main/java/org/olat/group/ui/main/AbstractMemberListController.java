@@ -461,8 +461,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	private SortKey initColumns(FlexiTableColumnModel columnsModel) {
 		SortKey defaultSortKey = null;
-		String editAction = secCallback.isReadonly() ? null : TABLE_ACTION_EDIT;
 		
+		initPortraitColumn(columnsModel);
+
 		initChatColumn(columnsModel);
 
 		initStatusColumn(columnsModel);
@@ -504,6 +505,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		return defaultSortKey;
+	}
+
+	protected void initPortraitColumn(FlexiTableColumnModel columnsModel) {
+		// override to add a portrait column
 	}
 
 	protected void initChatColumn(FlexiTableColumnModel columnsModel) {
@@ -1142,6 +1147,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 			memberList.add(member);
 			forgeLinks(member);
+			forgePortrait(member, memberView.getIdentity());
 			keyToMemberMap.put(identityKey, member);
 		}
 		
@@ -1180,6 +1186,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		return memberListModel.getObjects().stream().filter(m -> m.getMembership().isBusinessGroupParticipant()).count();
 	}
 	
+	protected void forgePortrait(MemberRow row, Identity identity) {
+		// override to forge a portrait component for the row
+	}
+
 	protected void forgeLinks(MemberRow row) {
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
