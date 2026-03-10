@@ -1486,10 +1486,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			Date endDate = cal.getTime();
 
 			boolean reminderEnabled = lectureModule.isRollCallReminderEnabled();
-			List<LectureBlockToTeacher> toRemindList = lectureBlockReminderDao.getLectureBlockTeachersToReminder(endDate);
+			boolean rollCallDefaultEnabled = lectureModule.isRollCallDefaultEnabled();
+			List<LectureBlockToTeacher> toRemindList = lectureBlockReminderDao
+					.getLectureBlockTeachersToReminder(endDate, rollCallDefaultEnabled);
 			for(LectureBlockToTeacher toRemind:toRemindList) {
-				Identity teacher = toRemind.getTeacher();
-				LectureBlock lectureBlock = toRemind.getLectureBlock();
+				Identity teacher = toRemind.teacher();
+				LectureBlock lectureBlock = toRemind.lectureBlock();
 				if(reminderEnabled) {
 					sendReminder(teacher, lectureBlock);
 				} else {

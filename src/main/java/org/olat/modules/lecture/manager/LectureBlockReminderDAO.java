@@ -19,7 +19,6 @@
  */
 package org.olat.modules.lecture.manager;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -47,6 +46,7 @@ public class LectureBlockReminderDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	
 	public LectureBlockReminderImpl createReminder(LectureBlock lectureBlock, Identity teacher, String status) {
 		LectureBlockReminderImpl reminder = new LectureBlockReminderImpl();
 		reminder.setCreationDate(new Date());
@@ -57,16 +57,19 @@ public class LectureBlockReminderDAO {
 		return reminder;
 	}
 	
-	public List<LectureBlockToTeacher> getLectureBlockTeachersToReminder(Date date) {
+	public List<LectureBlockToTeacher> getLectureBlockTeachersToReminder(Date date, boolean rollCallDefaultEnabled) {
 		QueryBuilder sb = new QueryBuilder(512);
-		sb.append("select block, teacher from lectureblock block")
+		sb.append("select new LectureBlockToTeacher(block, teacher) from lectureblock block")
 		  .append(" inner join fetch block.entry re")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity teacher")
 		  .append(" inner join fetch teacher.user teacherUser")
 		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
-		  .append(" where config.lectureEnabled=true and block.endDate<:date and not exists (")
+		  .append(" where config.lectureEnabled=true")
+		  // Null is here the default from administration settings
+		  .append(" and (config.rollCallEnabled=true").append(" or config.rollCallEnabled is null", rollCallDefaultEnabled).append(")")
+		  .append(" and block.endDate<:date and not exists (")
 		  .append("   select reminder.key from lecturereminder reminder")
 		  .append("   where block.key=reminder.lectureBlock.key and teacher.key=reminder.identity.key")
 		  .append(" ) and block.statusString<>'").append(LectureBlockStatus.cancelled.name()).append("'")
@@ -74,17 +77,10 @@ public class LectureBlockReminderDAO {
 		  .append(" and block.rollCallStatusString not in ('").append(LectureRollCallStatus.closed.name()).append("','")
 		  .append(LectureRollCallStatus.autoclosed.name()).append("','").append(LectureRollCallStatus.reopen.name()).append("')");
 		
-		List<Object[]> raws = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Object[].class)
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), LectureBlockToTeacher.class)
 			.setParameter("date", date)
 			.getResultList();
-		List<LectureBlockToTeacher> blockToTeachers = new ArrayList<>(raws.size());
-		for(Object[] raw:raws) {
-			LectureBlock lectureBlock = (LectureBlock)raw[0];
-			Identity teacher = (Identity)raw[1];
-			blockToTeachers.add(new LectureBlockToTeacher(teacher, lectureBlock));
-		}
-		return blockToTeachers;
 	}
 	
 	public int deleteReminders(Identity identity) {
