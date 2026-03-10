@@ -110,7 +110,7 @@ public class AiModuleTest {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_noSpiIdConfigured_returnsFalse() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
 		setConfig(null, null);
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
@@ -118,7 +118,7 @@ public class AiModuleTest {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_spiIdNotMatchingAnyProvider_returnsFalse() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
 		setConfig("Claude", "gpt-4o");
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
@@ -126,7 +126,7 @@ public class AiModuleTest {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_matchingSpiButDisabled_returnsFalse() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", false)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", false)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
@@ -135,7 +135,7 @@ public class AiModuleTest {
 	@Test
 	public void isMCQuestionGeneratorEnabled_spiDoesNotImplementMCInterface_returnsFalse() throws Exception {
 		// SPI with matching ID and enabled, but NOT an AiMCQuestionGeneratorSPI
-		module.setAiProviders(List.of(new SimpleAiSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
@@ -143,7 +143,7 @@ public class AiModuleTest {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_allConditionsMet_returnsTrue() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertTrue(module.isMCQuestionGeneratorEnabled());
@@ -151,7 +151,7 @@ public class AiModuleTest {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_multipleProviders_onlyMatchingCounts() throws Exception {
-		module.setAiProviders(List.of(
+		module.setSpringProviders(List.of(
 				new MCGeneratorSpi("OpenAI", true),
 				new MCGeneratorSpi("Claude", false)
 		));
@@ -166,7 +166,7 @@ public class AiModuleTest {
 
 	@Test
 	public void isAiEnabled_delegatesToMCQuestionGeneratorEnabled() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertEquals(module.isMCQuestionGeneratorEnabled(), module.isAiEnabled());
@@ -177,7 +177,7 @@ public class AiModuleTest {
 
 	@Test
 	public void getMCQuestionGenerator_noSpiIdConfigured_returnsNull() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
 		setConfig(null, null);
 
 		assertNull(module.getMCQuestionGenerator());
@@ -185,7 +185,7 @@ public class AiModuleTest {
 
 	@Test
 	public void getMCQuestionGenerator_spiDisabled_returnsNull() throws Exception {
-		module.setAiProviders(List.of(new MCGeneratorSpi("OpenAI", false)));
+		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", false)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertNull(module.getMCQuestionGenerator());
@@ -194,7 +194,7 @@ public class AiModuleTest {
 	@Test
 	public void getMCQuestionGenerator_properlyConfigured_returnsGeneratorWithModelSet() throws Exception {
 		MCGeneratorSpi spi = new MCGeneratorSpi("OpenAI", true);
-		module.setAiProviders(List.of(spi));
+		module.setSpringProviders(List.of(spi));
 		setConfig("OpenAI", "gpt-4o");
 
 		AiMCQuestionGeneratorSPI generator = module.getMCQuestionGenerator();
@@ -205,7 +205,7 @@ public class AiModuleTest {
 	@Test
 	public void getMCQuestionGenerator_setsModelOnSpiBeforeReturning() throws Exception {
 		MCGeneratorSpi spi = new MCGeneratorSpi("Claude", true);
-		module.setAiProviders(List.of(spi));
+		module.setSpringProviders(List.of(spi));
 		setConfig("Claude", "claude-3-5-sonnet");
 
 		AiMCQuestionGeneratorSPI generator = module.getMCQuestionGenerator();
@@ -221,7 +221,7 @@ public class AiModuleTest {
 		MCGeneratorSpi enabledMC = new MCGeneratorSpi("OpenAI", true);
 		MCGeneratorSpi disabledMC = new MCGeneratorSpi("Claude", false);
 		SimpleAiSpi enabledSimple = new SimpleAiSpi("Other", true);
-		module.setAiProviders(List.of(enabledMC, disabledMC, enabledSimple));
+		module.setSpringProviders(List.of(enabledMC, disabledMC, enabledSimple));
 
 		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
 		assertEquals(1, result.size());
@@ -230,7 +230,7 @@ public class AiModuleTest {
 
 	@Test
 	public void getEnabledSPIsFor_noMatchingProviders_returnsEmptyList() {
-		module.setAiProviders(List.of(new SimpleAiSpi("Other", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("Other", true)));
 
 		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
 		assertTrue(result.isEmpty());
@@ -238,7 +238,7 @@ public class AiModuleTest {
 
 	@Test
 	public void getEnabledSPIsFor_allDisabled_returnsEmptyList() {
-		module.setAiProviders(List.of(
+		module.setSpringProviders(List.of(
 				new MCGeneratorSpi("OpenAI", false),
 				new MCGeneratorSpi("Claude", false)
 		));
@@ -249,7 +249,7 @@ public class AiModuleTest {
 
 	@Test
 	public void getEnabledSPIsFor_multipleEnabledProviders_returnsAll() {
-		module.setAiProviders(List.of(
+		module.setSpringProviders(List.of(
 				new MCGeneratorSpi("OpenAI", true),
 				new MCGeneratorSpi("Claude", true)
 		));
