@@ -155,6 +155,13 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 		String organisationIdentifier = getString(r, col++);
 		LocalDateTime creationDate = getDateTime(r, col++);
 		String password = getString(r, col++);
+		
+		if(numOfHandlers > 3
+				&& !StringHelper.containsNonWhitespace(identityProps[0])
+				&& !StringHelper.containsNonWhitespace(identityProps[1])
+				&& !StringHelper.containsNonWhitespace(identityProps[2])) {
+			return null;
+		}
 
 		return new ImportedUserRow(r.getRowNum(), identityProps, organisationIdentifier, password, creationDate);
 	}
