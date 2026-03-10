@@ -1,0 +1,41 @@
+<p>$text</p>
+<div class="o_overview_reservation_cards">
+	#foreach($row in $rows)
+		<div class="o_overview_reservation_card">
+			<div class="o_row_course">
+				<div class="o_course">
+					<div class="o_visual">
+						#if($row.isThumbnailAvailable())
+							<img src="${row.getThumbnailRelPath()}" alt="" />
+						#else
+							<div class="o_visual_not_available"></div>
+						#end
+					</div>
+					<div class="o_meta">
+						#if($r.isNotEmpty($row.externalRef) || $r.isNotEmpty($row.translatedType))
+							<div class="o_ext_ref">
+								#if($r.isNotEmpty($row.externalRef))
+									<span class="o_external_ref">$r.escapeHtml($row.externalRef)</span>
+									#if($r.isNotEmpty($row.translatedType))
+										<span class="o_spacer">&middot;</span>
+									#end
+								#end
+								#if($r.isNotEmpty($row.translatedType))
+									<span class="o_technical_type">$r.escapeHtml($row.translatedType)</span>
+								#end
+							</div>
+						#end
+						<h4 class="o_title o_nowrap">$r.escapeHtml($row.displayName)</h4>
+					</div>
+				</div>
+			</div>
+			<div class="o_row_actions">
+				#if($row.getDetailsLinkName())
+					$r.render($row.getDetailsLinkName())
+				#end
+				$r.render($row.getAcceptLinkName())
+				$r.render($row.getDeclineLinkName())
+			</div>
+		</div>
+	#end
+</div>

@@ -96,6 +96,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private TooledStackedPanel implementationsListStackPanel;
 	
 	private Controller currentCtrl;
+	private OverviewAcceptReservationsController acceptReservationsCtrl;
 	private RepositoryEntryListController entriesCtrl;
 	private InPreparationListController inPreparationCtrl;
 	private ImplementationsListController implementationsListCtrl;
@@ -142,6 +143,9 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(showCoachingToolHint()) {
 			loadCoachingToolHint(ureq);
 		}
+		if(!guestOnly) {
+			loadAcceptReservations(ureq);
+		}
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
@@ -179,7 +183,15 @@ public class OverviewRepositoryListController extends BasicController implements
 		}
 		return false;
 	}
-	
+
+	private void loadAcceptReservations(UserRequest ureq) {
+		acceptReservationsCtrl = new OverviewAcceptReservationsController(ureq, getWindowControl());
+		listenTo(acceptReservationsCtrl);
+		if (acceptReservationsCtrl.hasReservations()) {
+			mainVC.put("acceptReservations", acceptReservationsCtrl.getInitialComponent());
+		}
+	}
+
 	private void loadScopes() {
 		scopes.clear();
 		scopes.add(ScopeFactory.createScope(CMD_MY_COURSES, translate("search.mycourses.student"),
@@ -334,7 +346,11 @@ public class OverviewRepositoryListController extends BasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(implementationsListCtrl == source) {
+		if(source == acceptReservationsCtrl) {
+			if(event == OverviewAcceptReservationsController.RESERVATION_CHANGED_EVENT) {
+				entriesDirty = true;
+			}
+		} else if(implementationsListCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				loadScopes();
 			}

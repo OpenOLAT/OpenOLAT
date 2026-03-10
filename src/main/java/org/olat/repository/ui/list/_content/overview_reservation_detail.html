@@ -1,0 +1,36 @@
+<div class="o_lightbox_modal_form o_overview_reservation_detail">
+	<div class="o_overview_reservation_card">
+		<div class="o_row_course">
+			<div class="o_course">
+				<div class="o_visual">
+					#if($thumbnailUrl)
+						<img src="$thumbnailUrl" alt="" />
+					#else
+						<div class="o_visual_not_available"></div>
+					#end
+				</div>
+				<div class="o_meta">
+					#if($r.isNotEmpty($externalRef) || $r.isNotEmpty($translatedType))
+						<div class="o_ext_ref">
+							#if($r.isNotEmpty($externalRef))
+								<span class="o_external_ref">$r.escapeHtml($externalRef)</span>
+								#if($r.isNotEmpty($translatedType))
+									<span class="o_spacer">&middot;</span>
+								#end
+							#end
+							#if($r.isNotEmpty($translatedType))
+								<span class="o_technical_type">$r.escapeHtml($translatedType)</span>
+							#end
+						</div>
+					#end
+					<h4 class="o_title o_nowrap">$r.escapeHtml($title)</h4>
+				</div>
+			</div>
+		</div>
+	</div>
+	#if($r.isNotEmpty($description))
+		<hr />
+		<h4>$r.translate("overview.reservation.detail.description")</h4>
+		<p>$r.xssScan($description)</p>
+	#end
+</div>

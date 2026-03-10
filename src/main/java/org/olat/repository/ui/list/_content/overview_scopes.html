@@ -3,6 +3,9 @@
 	#if($r.available("coachingToolHint"))
 		$r.render("coachingToolHint")
 	#end
+	#if($r.available("acceptReservations") && $r.visible("acceptReservations"))
+		$r.render("acceptReservations")
+	#end
 	#if($r.visible("scopes"))
 		$r.render("scopes")
 		<div class="o_segments_content clearfix">

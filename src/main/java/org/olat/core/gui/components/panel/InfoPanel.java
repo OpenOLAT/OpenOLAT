@@ -19,10 +19,13 @@
  */
 package org.olat.core.gui.components.panel;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
@@ -32,12 +35,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InfoPanel extends AbstractComponent {
+public class InfoPanel extends AbstractComponent implements ComponentCollection {
 	
 	private static final InfoPanelRenderer RENDERER = new InfoPanelRenderer();
 	
 	private String title;
 	private String informations;
+	private Component informationsCmp;
 	private String persistedStatusId;
 	private String status;
 	
@@ -74,7 +78,16 @@ public class InfoPanel extends AbstractComponent {
 		this.informations = informations;
 		setDirty(true);
 	}
-	
+
+	public Component getInformationsCmp() {
+		return informationsCmp;
+	}
+
+	public void setInformations(Component informationsCmp) {
+		this.informationsCmp = informationsCmp;
+		setDirty(true);
+	}
+
 	public boolean isCollapsed() {
 		return "collapsed".equals(status);
 	}
@@ -90,6 +103,25 @@ public class InfoPanel extends AbstractComponent {
 			ureq.getUserSession().getGuiPreferences().putAndSave(InfoPanel.class, persistedStatusId, cmd);
 			status = cmd;
 		}
+	}
+
+	@Override
+	public Component getComponent(String name) {
+		if (informationsCmp != null && informationsCmp.getComponentName().equals(name)) {
+			return informationsCmp;
+		}
+		if (informationsCmp instanceof ComponentCollection collection) {
+			return collection.getComponent(name);
+		}
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		if (informationsCmp != null) {
+			return List.of(informationsCmp);
+		}
+		return List.of();
 	}
 
 	@Override
