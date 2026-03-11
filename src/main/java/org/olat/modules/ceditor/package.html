@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Editor Architecture — OpenOlat</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --content-bg: #ffffff;
+  --text: #1a1a2e;
+  --heading: #136669;
+  --heading-dark: #16797c;
+  --link: #16797c;
+  --link-hover: #1f999c;
+  --code-bg: #f6f8fa;
+  --code-border: #e2e8f0;
+  --code-color: #7c3aed;
+  --pre-bg: #1e1e2e;
+  --pre-text: #cdd6f4;
+  --table-header: #f8fafc;
+  --table-border: #e2e8f0;
+  --table-alt: #fafbfc;
+  --border: #e2e8f0;
+  --nav-width: 260px;
+  --nav-bg: #ffffff;
+  --aside-bg: #fff7ed;
+  --aside-border: #f97316;
+  --info-bg: #eff6ff;
+  --info-border: #3b82f6;
+  --diagram-bg: #ffffff;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+h2[id] { scroll-margin-top: 1rem; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+.doc-header {
+  background: linear-gradient(135deg, #16797c 0%, #1f999c 65%, #23adb1 100%);
+  color: white;
+  padding: 28px 48px 32px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.header-logo { display: flex; align-items: center; gap: 11px; }
+.header-logo-text { font-size: 16px; font-weight: 700; color: white; line-height: 1; letter-spacing: 0.1px; }
+.header-doc-type { font-size: 10.5px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
+.header-rule { height: 1px; background: rgba(255,255,255,0.2); margin-bottom: 16px; }
+.doc-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; border: none; margin: 0; padding: 0; color: white; }
+.doc-header .subtitle { margin-top: 5px; color: rgba(255,255,255,0.82); font-size: 13px; }
+.doc-header .meta { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.doc-header .meta span { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); border-radius: 4px; padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.92); }
+.header-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; }
+.header-nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 2px 0; transition: color 0.15s; }
+.header-nav a:hover { color: white; text-decoration: underline; }
+.header-nav a.active { color: white; font-weight: 600; }
+.header-nav .sep { color: rgba(255,255,255,0.35); font-size: 11px; }
+.page-layout { display: flex; min-height: 100vh; }
+.side-nav {
+  width: var(--nav-width); min-width: var(--nav-width);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border); background: var(--nav-bg);
+  padding: 1.2rem 0; font-size: 12px; scrollbar-width: thin;
+}
+.side-nav::-webkit-scrollbar { width: 4px; }
+.side-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.side-nav .nav-title { font-size: 13px; font-weight: 700; color: var(--heading); padding: 0 1rem 0.6rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+.side-nav .nav-group { padding: 0.5rem 0 0.2rem; }
+.side-nav .nav-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; padding: 0.3rem 1rem; }
+.side-nav a { display: block; padding: 3px 1rem 3px 1.2rem; color: #475569; text-decoration: none; border-left: 3px solid transparent; transition: all 0.15s; line-height: 1.5; }
+.side-nav a:hover { color: var(--link-hover); background: rgba(22,121,124,0.06); }
+.side-nav a.active { color: var(--link); border-left-color: var(--heading); background: rgba(22,121,124,0.08); font-weight: 600; }
+.main-content { flex: 1; max-width: 960px; padding: 40px 32px 80px; min-width: 0; }
+h2 { font-size: 18px; font-weight: 700; color: var(--heading); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin: 48px 0 20px; }
+h3 { font-size: 14px; font-weight: 600; color: #334155; margin: 20px 0 10px; }
+h4 { font-size: 13px; font-weight: 600; color: #475569; margin: 16px 0 6px; }
+p { margin: 8px 0; font-size: 14px; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--link-hover); }
+ul, ol { margin: 6px 0 12px 1.8rem; }
+li { margin: 3px 0; }
+code { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 12px; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: 1px 5px; color: var(--code-color); }
+pre { background: var(--pre-bg); color: var(--pre-text); border-radius: 10px; padding: 16px 20px; overflow-x: auto; margin: 10px 0 16px; line-height: 1.7; font-size: 12.5px; box-shadow: var(--shadow); }
+pre code { background: none; border: none; padding: 0; font-size: inherit; color: inherit; }
+.kw { color: #ff7b72; } .str { color: #a6e3a1; } .cmt { color: #6c7086; font-style: italic; } .typ { color: #89b4fa; } .num { color: #89b4fa; } .ann { color: #cba6f7; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0 16px; background: var(--content-bg); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+th { background: var(--table-header); padding: 8px 14px; text-align: left; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+.aside { background: var(--aside-bg); border-left: 4px solid var(--aside-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #7c2d12; }
+.aside strong { color: #92400e; }
+.info { background: var(--info-bg); border-left: 4px solid var(--info-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #1e3a5f; }
+.info strong { color: #1e40af; }
+.diagram-box { background: var(--diagram-bg); border-radius: 12px; padding: 32px; margin: 16px 0 20px; text-align: center; overflow-x: auto; box-shadow: var(--shadow); }
+.diagram-box svg { max-width: 100%; height: auto; }
+.diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
+hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+@media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
+@media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <div class="header-top">
+    <div class="header-logo" style="text-decoration:none">
+      <div>
+        <div class="header-logo-text">OpenOlat</div>
+        <div class="header-doc-type">Module Documentation</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="../../../../../../../doc/openolat-architecture.html">Architecture</a>
+      <span class="sep">|</span>
+      <a href="#" class="active">Content Editor</a>
+    </nav>
+  </div>
+  <div class="header-rule"></div>
+  <h1>Content Editor Architecture</h1>
+  <div class="subtitle">Comprehensive reference for the ceditor component-based page editor module</div>
+  <div class="meta">
+    <span>Java 17+</span>
+    <span>Jakarta EE</span>
+    <span>OpenOlat Module</span>
+    <span>~201 Java Files</span>
+  </div>
+</header>
+
+<div class="page-layout">
+<nav class="side-nav">
+  <div class="nav-title">Content Editor</div>
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a href="#overview">Overview</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Core Model</div>
+    <a href="#domain-model">Domain Model</a>
+    <a href="#persistence">Persistence</a>
+    <a href="#settings">Settings</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Patterns</div>
+    <a href="#handler-pattern">Handler Pattern</a>
+    <a href="#provider-pattern">Provider Pattern</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">UI Framework</div>
+    <a href="#rendering-pipeline">Rendering Pipeline</a>
+    <a href="#event-system">Event System</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Infrastructure</div>
+    <a href="#service-layer">Service Layer</a>
+    <a href="#container-system">Container System</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#element-types">Element Types</a>
+    <a href="#new-element-guide">New Element Guide</a>
+    <a href="#client-side">Client-Side</a>
+    <a href="#configuration">Configuration</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+<!-- ===== OVERVIEW ===== -->
+<h2 id="overview">Overview</h2>
+<p>The <code>ceditor</code> package implements a <strong>server-centric, component-based content editor</strong> for OpenOlat. Pages consist of ordered <code>PagePart</code> elements stored via single-table JPA inheritance. Each element type is managed by a <code>PageElementHandler</code> that provides view, editor, and inspector controllers.</p>
+
+<h3>Usage Contexts</h3>
+<ul>
+  <li><strong>Portfolio pages</strong> &mdash; via <code>PageRunController</code> in <code>org.olat.modules.portfolio.ui</code></li>
+  <li><strong>Evaluation forms</strong> &mdash; via <code>EvaluationFormEditorController</code> in <code>org.olat.modules.forms.ui</code></li>
+</ul>
+
+<h3>Package Structure</h3>
+<table>
+  <tr><th>Directory</th><th>Files</th><th>Purpose</th></tr>
+  <tr><td><code>ceditor/</code> (root)</td><td>~39</td><td>Core interfaces, enums, markers</td></tr>
+  <tr><td><code>handler/</code></td><td>12</td><td>PageElementHandler implementations</td></tr>
+  <tr><td><code>manager/</code></td><td>12</td><td>DAOs, services, file storage, XStream</td></tr>
+  <tr><td><code>model/</code></td><td>~49</td><td>POJOs, settings, value objects</td></tr>
+  <tr><td><code>model/jpa/</code></td><td>24</td><td>JPA entity classes</td></tr>
+  <tr><td><code>ui/</code></td><td>~52</td><td>Controllers, run components, factories</td></tr>
+  <tr><td><code>ui/component/</code></td><td>16</td><td>Custom components and renderers</td></tr>
+  <tr><td><code>ui/event/</code></td><td>27</td><td>Event classes for AJAX communication</td></tr>
+</table>
+
+<div class="aside"><strong>Key Principle:</strong> All state lives on the server. The browser receives HTML fragments via AJAX. There is no client-side framework &mdash; drag-and-drop uses the lightweight <code>dragula.js</code> library.</div>
+
+<!-- ===== DOMAIN MODEL ===== -->
+<h2 id="domain-model">Domain Model</h2>
+
+<p>The core domain is built on a small set of interfaces.</p>
+
+<h3>PageElement (Base Interface)</h3>
+<pre><code><span class="kw">public interface</span> <span class="typ">PageElement</span> {
+    <span class="typ">String</span> <span class="kw">getId</span>();
+    <span class="typ">String</span> <span class="kw">getType</span>();
+}</code></pre>
+<p>Minimal contract &mdash; every element has an ID and a type string (e.g. <code>"htitle"</code>, <code>"htmlparagraph"</code>, <code>"container"</code>).</p>
+
+<h3>PagePart (Persistent Element)</h3>
+<pre><code><span class="kw">public interface</span> <span class="typ">PagePart</span> <span class="kw">extends</span> <span class="typ">PageElement</span> {
+    <span class="typ">Long</span>     getKey();
+    <span class="typ">String</span>   getContent();
+    <span class="kw">void</span>     setContent(<span class="typ">String</span> content);
+    <span class="typ">String</span>   getLayoutOptions();
+    <span class="kw">void</span>     setLayoutOptions(<span class="typ">String</span> options);
+    <span class="typ">String</span>   getStoragePath();
+    <span class="kw">void</span>     setStoragePath(<span class="typ">String</span> storagePath);
+    <span class="typ">Flow</span>     getPartFlow();
+    <span class="kw">void</span>     setPartFlow(<span class="typ">Flow</span> flow);
+    <span class="typ">PagePart</span> copy();
+    <span class="kw">boolean</span>  afterCopy(<span class="typ">PagePart</span> oldPart);
+    <span class="kw">void</span>     beforeDelete();
+}</code></pre>
+
+<h3>RenderingHints</h3>
+<pre><code><span class="kw">public interface</span> <span class="typ">RenderingHints</span> {
+    <span class="kw">boolean</span> isToPdf();
+    <span class="kw">boolean</span> isOnePage();
+    <span class="kw">boolean</span> isExtendedMetadata();
+    <span class="kw">boolean</span> isEditable();
+}</code></pre>
+
+<h3>PageElementCategory</h3>
+<p>Enum: <code>text</code>, <code>questionType</code>, <code>organisational</code>, <code>media</code>, <code>knowledge</code>, <code>other</code>, <code>content</code>, <code>layout</code>.</p>
+
+<!-- DIAGRAM 1: Class Hierarchy -->
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 420" width="750" height="420">
+  <!-- PageElement -->
+  <rect x="280" y="10" width="180" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="370" y="32" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#0284c7" font-weight="600">&laquo;interface&raquo;</text>
+  <text x="370" y="48" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#1e293b" font-weight="700">PageElement</text>
+  <!-- PagePart -->
+  <rect x="180" y="100" width="180" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="270" y="122" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#0284c7" font-weight="600">&laquo;interface&raquo;</text>
+  <text x="270" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#1e293b" font-weight="700">PagePart</text>
+  <line x1="300" y1="100" x2="350" y2="60" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- ContainerElement -->
+  <rect x="400" y="100" width="180" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="490" y="122" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#0284c7" font-weight="600">&laquo;interface&raquo;</text>
+  <text x="490" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#1e293b" font-weight="700">ContainerElement</text>
+  <line x1="460" y1="100" x2="400" y2="60" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- AbstractPart -->
+  <rect x="180" y="190" width="180" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="270" y="212" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#d97706" font-weight="600">&laquo;abstract&raquo;</text>
+  <text x="270" y="228" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#1e293b" font-weight="700">AbstractPart</text>
+  <line x1="270" y1="190" x2="270" y2="150" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- Concrete parts fan -->
+  <rect x="20" y="280" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="75" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">TitlePart</text>
+  <line x1="100" y1="280" x2="230" y2="240" stroke="#64748b" stroke-width="1"/>
+  <rect x="140" y="280" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="195" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">ParagraphPart</text>
+  <line x1="195" y1="280" x2="255" y2="240" stroke="#64748b" stroke-width="1"/>
+  <rect x="260" y="280" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="315" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">TablePart</text>
+  <line x1="300" y1="280" x2="280" y2="240" stroke="#64748b" stroke-width="1"/>
+  <rect x="380" y="280" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="435" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">CodePart</text>
+  <line x1="400" y1="280" x2="300" y2="240" stroke="#64748b" stroke-width="1"/>
+  <rect x="500" y="280" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="555" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">MediaPart</text>
+  <line x1="520" y1="280" x2="310" y2="240" stroke="#64748b" stroke-width="1"/>
+  <rect x="20" y="326" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="75" y="348" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">ContainerPart</text>
+  <line x1="100" y1="326" x2="230" y2="240" stroke="#64748b" stroke-width="1" stroke-dasharray="4"/>
+  <rect x="140" y="326" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="195" y="348" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">MathPart</text>
+  <rect x="260" y="326" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="315" y="348" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">SpacerPart</text>
+  <rect x="380" y="326" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="435" y="348" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">QuizPart</text>
+  <rect x="500" y="326" width="110" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="555" y="348" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">GalleryPart</text>
+  <text x="375" y="395" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#64748b">+ HTMLPart, EvaluationFormPart, ImageComparisonPart</text>
+  <!-- PageElementHandler (right side) -->
+  <rect x="560" y="10" width="180" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="650" y="32" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#0284c7" font-weight="600">&laquo;interface&raquo;</text>
+  <text x="650" y="48" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#1e293b" font-weight="700">PageElementHandler</text>
+  <!-- Mixin interfaces -->
+  <rect x="560" y="80" width="180" height="30" rx="4" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="650" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">SimpleAddPageElementHandler</text>
+  <rect x="560" y="116" width="180" height="30" rx="4" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="650" y="136" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">InteractiveAddPageElementHandler</text>
+  <rect x="560" y="152" width="180" height="30" rx="4" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="650" y="172" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">CloneElementHandler</text>
+  <rect x="560" y="188" width="180" height="30" rx="4" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="650" y="208" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">PageElementStore&lt;U&gt;</text>
+  <!-- arrowhead def -->
+  <defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64748b"/></marker></defs>
+</svg>
+<div class="diagram-caption">Figure 1: Core interface hierarchy &mdash; PageElement, PagePart, and PageElementHandler with mixin interfaces</div>
+</div>
+
+<!-- ===== PERSISTENCE ===== -->
+<h2 id="persistence">Persistence</h2>
+
+<h3>Database Tables</h3>
+<table>
+  <tr><th>Table</th><th>Entity</th><th>Purpose</th></tr>
+  <tr><td><code>o_ce_page</code></td><td><code>PageImpl</code></td><td>Page metadata (title, summary, status, preview image)</td></tr>
+  <tr><td><code>o_ce_page_body</code></td><td><code>PageBodyImpl</code></td><td>Content container (holds ordered part list, usage count)</td></tr>
+  <tr><td><code>o_ce_page_part</code></td><td><code>AbstractPart</code></td><td>All page parts (single-table inheritance)</td></tr>
+  <tr><td><code>o_ce_page_reference</code></td><td><code>PageReferenceImpl</code></td><td>External references to RepositoryEntry</td></tr>
+  <tr><td><code>o_ce_audit_log</code></td><td><code>ContentAuditLogImpl</code></td><td>Change tracking / audit trail</td></tr>
+  <tr><td><code>o_pf_category</code></td><td><code>CategoryImpl</code></td><td>Category definitions</td></tr>
+</table>
+
+<h3>AbstractPart &mdash; Single-Table Inheritance</h3>
+<pre><code><span class="ann">@Entity</span>(name=<span class="str">"cepagepart"</span>)
+<span class="ann">@Table</span>(name=<span class="str">"o_ce_page_part"</span>)
+<span class="ann">@DiscriminatorColumn</span>
+<span class="kw">public abstract class</span> <span class="typ">AbstractPart</span> <span class="kw">implements</span> <span class="typ">PagePart</span> {
+    <span class="ann">@Id</span> <span class="ann">@GeneratedValue</span>(strategy = IDENTITY)
+    <span class="kw">private</span> <span class="typ">Long</span> key;
+
+    <span class="ann">@Column</span>(name=<span class="str">"p_content"</span>)    <span class="cmt">// HTML or structured data</span>
+    <span class="kw">private</span> <span class="typ">String</span> content;
+
+    <span class="ann">@Column</span>(name=<span class="str">"p_layout_options"</span>) <span class="cmt">// XStream XML settings</span>
+    <span class="kw">private</span> <span class="typ">String</span> layoutOptions;
+
+    <span class="ann">@Column</span>(name=<span class="str">"pos"</span>, updatable=<span class="kw">false</span>) <span class="cmt">// ordering (read-only)</span>
+    <span class="kw">private</span> <span class="kw">long</span> pos;
+
+    <span class="ann">@ManyToOne</span>(targetEntity=<span class="typ">PageBodyImpl</span>.class)
+    <span class="ann">@JoinColumn</span>(name=<span class="str">"fk_page_body_id"</span>)
+    <span class="kw">private</span> <span class="typ">PageBody</span> body;
+}</code></pre>
+
+<h3>Concrete Part Entities (13 types)</h3>
+<table>
+  <tr><th>Entity Name</th><th>Type String</th><th>Discriminator</th></tr>
+  <tr><td><code>TitlePart</code></td><td><code>"htitle"</code></td><td>cetitlepart</td></tr>
+  <tr><td><code>ParagraphPart</code></td><td><code>"htmlparagraph"</code></td><td>ceparagraphpart</td></tr>
+  <tr><td><code>HTMLPart</code></td><td><code>"htmlraw"</code></td><td>cehtmlpart</td></tr>
+  <tr><td><code>SpacerPart</code></td><td><code>"hr"</code></td><td>ceseparatorpart</td></tr>
+  <tr><td><code>ContainerPart</code></td><td><code>"container"</code></td><td>cecontainerpart</td></tr>
+  <tr><td><code>TablePart</code></td><td><code>"table"</code></td><td>cetablepart</td></tr>
+  <tr><td><code>MediaPart</code></td><td>dynamic</td><td>cemediapart</td></tr>
+  <tr><td><code>GalleryPart</code></td><td><code>"gallery"</code></td><td>cegallerypart</td></tr>
+  <tr><td><code>ImageComparisonPart</code></td><td><code>"imagecomparison"</code></td><td>ceimagecomparisonpart</td></tr>
+  <tr><td><code>CodePart</code></td><td><code>"code"</code></td><td>cecodepart</td></tr>
+  <tr><td><code>MathPart</code></td><td><code>"math"</code></td><td>cemathpart</td></tr>
+  <tr><td><code>QuizPart</code></td><td><code>"quiz"</code></td><td>cequizpart</td></tr>
+  <tr><td><code>EvaluationFormPart</code></td><td><code>"evaluationform"</code></td><td>ceformpart</td></tr>
+</table>
+
+<div class="aside"><strong>Ordering:</strong> <code>PageBodyImpl</code> uses <code>@OneToMany</code> with <code>@OrderColumn(name="pos")</code> to maintain element order. The <code>pos</code> column in <code>AbstractPart</code> is read-only (<code>insertable=false, updatable=false</code>) &mdash; ordering is managed entirely by the JPA collection.</div>
+
+<!-- DIAGRAM 2: Entity Model -->
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 280" width="700" height="280">
+  <rect x="20" y="20" width="140" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="90" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#16a34a" font-weight="600">o_ce_page</text>
+  <text x="90" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="700">PageImpl</text>
+  <rect x="250" y="20" width="160" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="330" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#16a34a" font-weight="600">o_ce_page_body</text>
+  <text x="330" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="700">PageBodyImpl</text>
+  <line x1="160" y1="45" x2="250" y2="45" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <text x="205" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">1:1</text>
+  <rect x="490" y="20" width="180" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="580" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#d97706" font-weight="600">o_ce_page_part</text>
+  <text x="580" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="700">AbstractPart</text>
+  <line x1="410" y1="45" x2="490" y2="45" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <text x="450" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">1:N ordered</text>
+  <!-- Fan of concrete parts -->
+  <rect x="30" y="120" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="77" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">TitlePart</text>
+  <rect x="135" y="120" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="182" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">ParagraphPart</text>
+  <rect x="240" y="120" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="287" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">HTMLPart</text>
+  <rect x="345" y="120" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="392" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">TablePart</text>
+  <rect x="450" y="120" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="497" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">CodePart</text>
+  <rect x="555" y="120" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="602" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">MediaPart</text>
+  <rect x="30" y="158" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="77" y="176" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">ContainerPart</text>
+  <rect x="135" y="158" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="182" y="176" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">MathPart</text>
+  <rect x="240" y="158" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="287" y="176" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">SpacerPart</text>
+  <rect x="345" y="158" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="392" y="176" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">QuizPart</text>
+  <rect x="450" y="158" width="95" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="497" y="176" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">GalleryPart</text>
+  <rect x="555" y="158" width="110" height="28" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="610" y="176" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#1e293b">EvalFormPart</text>
+  <line x1="580" y1="70" x2="350" y2="115" stroke="#64748b" stroke-width="1" stroke-dasharray="3"/>
+  <text x="350" y="102" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#64748b" font-style="italic">single-table inheritance via @DiscriminatorColumn</text>
+  <!-- Legend -->
+  <rect x="20" y="220" width="16" height="12" rx="2" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="42" y="230" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">Entity</text>
+  <rect x="100" y="220" width="16" height="12" rx="2" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="122" y="230" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">Abstract</text>
+  <rect x="180" y="220" width="16" height="12" rx="2" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="202" y="230" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">Concrete Part</text>
+</svg>
+<div class="diagram-caption">Figure 2: JPA entity model &mdash; Page &rarr; PageBody &rarr; PagePart with 13 concrete subtypes</div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<h2 id="settings">Settings Serialization</h2>
+
+<p><code>ContentEditorXStream</code> provides a secure XStream instance with explicit type permissions. It implements the <strong>dual storage pattern</strong>:</p>
+<ul>
+  <li><code>content</code> column &mdash; HTML text or structured data (e.g. <code>TableContent</code> as XML)</li>
+  <li><code>layoutOptions</code> column &mdash; XStream XML for settings objects</li>
+</ul>
+
+<h3>Settings Classes</h3>
+<table>
+  <tr><th>Class</th><th>Used By</th><th>Key Properties</th></tr>
+  <tr><td><code>TitleSettings</code></td><td>TitlePart</td><td>size (1-6), layoutSettings</td></tr>
+  <tr><td><code>CodeSettings</code></td><td>CodePart</td><td>codeLanguage (29 values), lineNumbersEnabled</td></tr>
+  <tr><td><code>TableSettings</code></td><td>TablePart</td><td>rowHeaders, columnHeaders, striped, bordered</td></tr>
+  <tr><td><code>TableContent</code></td><td>TablePart (content)</td><td>numOfRows, numOfColumns, rows with cells</td></tr>
+  <tr><td><code>ContainerSettings</code></td><td>ContainerPart</td><td>numOfColumns, ContainerLayout, columns</td></tr>
+  <tr><td><code>ImageSettings</code></td><td>MediaPart</td><td>alignment, size, style, title</td></tr>
+  <tr><td><code>BlockLayoutSettings</code></td><td>All elements</td><td>spacing (predefined/zero/compact/normal/large/custom)</td></tr>
+  <tr><td><code>AlertBoxSettings</code></td><td>All elements</td><td>showAlertBox, type (note/info/tip/warning/...), title, icon</td></tr>
+</table>
+
+<pre><code><span class="cmt">// Serialize settings to XML</span>
+<span class="typ">String</span> xml = <span class="typ">ContentEditorXStream</span>.toXml(settings);
+part.setLayoutOptions(xml);
+
+<span class="cmt">// Deserialize settings from XML</span>
+<span class="typ">TitleSettings</span> ts = <span class="typ">ContentEditorXStream</span>.fromXml(part.getLayoutOptions(), <span class="typ">TitleSettings</span>.class);</code></pre>
+
+<!-- ===== HANDLER PATTERN ===== -->
+<h2 id="handler-pattern">Handler Pattern</h2>
+
+<h3>PageElementHandler Interface</h3>
+<pre><code><span class="kw">public interface</span> <span class="typ">PageElementHandler</span> {
+    <span class="typ">String</span>                          getType();
+    <span class="typ">String</span>                          getIconCssClass();
+    <span class="typ">PageElementCategory</span>             getCategory();
+    <span class="kw">int</span>                             getSortOrder();
+    <span class="typ">PageRunElement</span>                  getContent(ureq, wControl, element, hints);
+    <span class="typ">Controller</span>                      getEditor(ureq, wControl, element);
+    <span class="typ">PageElementInspectorController</span>  getInspector(ureq, wControl, element);
+}</code></pre>
+
+<p>Each handler provides a <strong>triad</strong>: view component (<code>getContent</code>), inline editor (<code>getEditor</code>), and side-panel inspector (<code>getInspector</code>).</p>
+
+<h3>Mixin Interfaces</h3>
+<table>
+  <tr><th>Interface</th><th>Method</th><th>Purpose</th></tr>
+  <tr><td><code>SimpleAddPageElementHandler</code></td><td><code>createPageElement(Locale)</code></td><td>Synchronous factory for new elements</td></tr>
+  <tr><td><code>InteractiveAddPageElementHandler</code></td><td><code>getAddPageElementController(...)</code></td><td>Wizard-based creation (e.g. image upload)</td></tr>
+  <tr><td><code>CloneElementHandler</code></td><td><code>clonePageElement(PageElement)</code></td><td>Deep copy of an element</td></tr>
+  <tr><td><code>PageElementStore&lt;U&gt;</code></td><td><code>savePageElement(U)</code></td><td>Persist via <code>PageService.updatePart()</code></td></tr>
+  <tr><td><code>PageLayoutHandler</code></td><td><code>getLayout()</code></td><td>Container-specific layout info</td></tr>
+</table>
+
+<h3>Canonical Example: TitlePageElementHandler</h3>
+<pre><code><span class="kw">public class</span> <span class="typ">TitlePageElementHandler</span> <span class="kw">implements</span>
+        <span class="typ">PageElementHandler</span>, <span class="typ">PageElementStore</span>&lt;<span class="typ">TitleElement</span>&gt;,
+        <span class="typ">SimpleAddPageElementHandler</span>, <span class="typ">CloneElementHandler</span> {
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElement</span> createPageElement(<span class="typ">Locale</span> locale) {
+        <span class="typ">TitlePart</span> title = <span class="kw">new</span> <span class="typ">TitlePart</span>();
+        <span class="typ">TitleSettings</span> settings = <span class="kw">new</span> <span class="typ">TitleSettings</span>();
+        settings.setSize(<span class="num">3</span>);
+        settings.setLayoutSettings(<span class="typ">BlockLayoutSettings</span>.getPredefined());
+        title.setTitleSettings(settings);
+        <span class="kw">return</span> title;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageRunElement</span> getContent(...) {
+        <span class="typ">String</span> htmlContent = <span class="typ">TitleElement</span>.toHtml(content, settings);
+        <span class="typ">TextComponent</span> cmp = <span class="typ">TextFactory</span>.createTextComponentFromString(...);
+        <span class="kw">return new</span> <span class="typ">TextRunComponent</span>(cmp, <span class="kw">false</span>);
+    }
+}</code></pre>
+
+<h3>Complete Handler Table</h3>
+<table>
+  <tr><th>Handler</th><th>Type</th><th>Category</th><th>Creation</th></tr>
+  <tr><td><code>TitlePageElementHandler</code></td><td><code>htitle</code></td><td>text</td><td>Simple</td></tr>
+  <tr><td><code>ParagraphPageElementHandler</code></td><td><code>htmlparagraph</code></td><td>text</td><td>Simple</td></tr>
+  <tr><td><code>HTMLRawPageElementHandler</code></td><td><code>htmlraw</code></td><td>text</td><td>Simple</td></tr>
+  <tr><td><code>SpacerElementHandler</code></td><td><code>hr</code></td><td>layout</td><td>Simple</td></tr>
+  <tr><td><code>ContainerHandler</code></td><td><code>container</code></td><td>layout</td><td>Simple</td></tr>
+  <tr><td><code>TablePageElementHandler</code></td><td><code>table</code></td><td>text</td><td>Simple</td></tr>
+  <tr><td><code>ImageHandler</code></td><td><code>image</code></td><td>media</td><td>Interactive</td></tr>
+  <tr><td><code>GalleryElementHandler</code></td><td><code>gallery</code></td><td>media</td><td>Interactive</td></tr>
+  <tr><td><code>ImageComparisonElementHandler</code></td><td><code>imagecomparison</code></td><td>media</td><td>Interactive</td></tr>
+  <tr><td><code>CodeElementHandler</code></td><td><code>code</code></td><td>text</td><td>Simple</td></tr>
+  <tr><td><code>MathPageElementHandler</code></td><td><code>math</code></td><td>text</td><td>Simple</td></tr>
+  <tr><td><code>QuizElementHandler</code></td><td><code>quiz</code></td><td>knowledge</td><td>Simple</td></tr>
+  <tr><td><code>EvaluationFormHandler</code></td><td><code>evaluationform</code></td><td>organisational</td><td>Interactive</td></tr>
+</table>
+
+<!-- ===== PROVIDER PATTERN ===== -->
+<h2 id="provider-pattern">Provider Pattern</h2>
+
+<h3>PageEditorProvider SPI</h3>
+<pre><code><span class="kw">public interface</span> <span class="typ">PageProvider</span> {
+    <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElement</span>&gt; getElements();
+    <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElementHandler</span>&gt; getAvailableHandlers();
+}
+
+<span class="kw">public interface</span> <span class="typ">PageEditorProvider</span> <span class="kw">extends</span> <span class="typ">PageProvider</span> {
+    <span class="typ">PageElement</span> appendPageElement(<span class="typ">PageElement</span> element);
+    <span class="typ">PageElement</span> appendPageElementAt(<span class="typ">PageElement</span> element, <span class="kw">int</span> index);
+    <span class="kw">void</span> removePageElement(<span class="typ">PageElement</span> element);
+    <span class="kw">void</span> movePageElement(<span class="typ">PageElement</span> toMove, <span class="typ">PageElement</span> sibling, <span class="kw">boolean</span> after);
+    <span class="typ">String</span> getImportButtonKey();
+    <span class="cmt">// ... more methods</span>
+}</code></pre>
+
+<h3>Implementations</h3>
+<table>
+  <tr><th>Implementation</th><th>Location</th><th>Context</th></tr>
+  <tr><td><code>PortfolioPageEditorProvider</code></td><td>Inner class in <code>PageRunController</code></td><td>Portfolio page editing</td></tr>
+  <tr><td><code>FormPageEditorProvider</code></td><td>Inner class in <code>EvaluationFormEditorController</code></td><td>Form building</td></tr>
+</table>
+
+<!-- DIAGRAM 5: Provider SPI -->
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240">
+  <rect x="200" y="10" width="200" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="300" y="32" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#0284c7" font-weight="600">&laquo;interface&raquo;</text>
+  <text x="300" y="48" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#1e293b" font-weight="700">PageEditorProvider</text>
+  <rect x="20" y="100" width="220" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="130" y="118" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#16a34a">portfolio.ui.PageRunController</text>
+  <text x="130" y="134" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="600">PortfolioPageEditorProvider</text>
+  <rect x="360" y="100" width="220" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="470" y="118" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#16a34a">forms.ui.EvaluationFormEditorCtrl</text>
+  <text x="470" y="134" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="600">FormPageEditorProvider</text>
+  <line x1="150" y1="100" x2="270" y2="60" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="100" x2="330" y2="60" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+  <rect x="175" y="180" width="250" height="44" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="300" y="200" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="700">PageEditorV2Controller</text>
+  <text x="300" y="215" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">uses provider for element CRUD</text>
+  <line x1="300" y1="60" x2="300" y2="180" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6" marker-end="url(#arrowhead)"/>
+</svg>
+<div class="diagram-caption">Figure 3: Provider SPI &mdash; PageEditorProvider decouples the editor from specific persistence contexts</div>
+</div>
+
+<!-- ===== RENDERING PIPELINE ===== -->
+<h2 id="rendering-pipeline">Rendering Pipeline</h2>
+
+<h3>PageEditorV2Controller</h3>
+<p>The central <code>BasicController</code> that orchestrates the entire editor experience (~1073 lines).</p>
+<ul>
+  <li><code>loadModel()</code> &mdash; Loads elements from provider, creates fragment components, resolves container nesting</li>
+  <li><code>createFragmentComponent()</code> &mdash; Calls handler's <code>getContent()</code>, <code>getEditor()</code>, <code>getInspector()</code> for each element</li>
+</ul>
+
+<h3>Component Hierarchy</h3>
+<table>
+  <tr><th>Component</th><th>Role</th></tr>
+  <tr><td><code>ContentEditorComponent</code></td><td>Root container. Manages fragment list, includes Dragula JS</td></tr>
+  <tr><td><code>ContentEditorFragment</code></td><td>Interface. <code>getElementId()</code>, <code>isEditMode()</code>, <code>setEditMode()</code></td></tr>
+  <tr><td><code>ContentEditorFragmentComponent</code></td><td>Leaf elements. Holds viewPart + editorPart + inspectorPart</td></tr>
+  <tr><td><code>ContentEditorContainerComponent</code></td><td>Layout containers. Manages child fragments across columns</td></tr>
+  <tr><td><code>InspectorPanelComponent</code></td><td>Wraps inspector controller in side panel</td></tr>
+</table>
+
+<!-- DIAGRAM 3: Rendering Pipeline -->
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 300" width="750" height="300">
+  <!-- Controller -->
+  <rect x="20" y="20" width="200" height="44" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="120" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#d97706">Controller</text>
+  <text x="120" y="54" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="700">PageEditorV2Controller</text>
+  <!-- loadModel -->
+  <rect x="270" y="20" width="130" height="44" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="335" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#9333ea">method</text>
+  <text x="335" y="54" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="600">loadModel()</text>
+  <line x1="220" y1="42" x2="270" y2="42" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- createFragment -->
+  <rect x="450" y="20" width="170" height="44" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="535" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#9333ea">per element</text>
+  <text x="535" y="54" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="600">createFragmentComponent()</text>
+  <line x1="400" y1="42" x2="450" y2="42" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- Handler triad -->
+  <rect x="450" y="100" width="130" height="34" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="515" y="122" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">handler.getContent()</text>
+  <rect x="590" y="100" width="130" height="34" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="655" y="122" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">handler.getEditor()</text>
+  <rect x="520" y="145" width="140" height="34" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="590" y="167" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">handler.getInspector()</text>
+  <line x1="535" y1="64" x2="515" y2="100" stroke="#64748b" stroke-width="1"/>
+  <line x1="535" y1="64" x2="655" y2="100" stroke="#64748b" stroke-width="1"/>
+  <line x1="535" y1="64" x2="590" y2="145" stroke="#64748b" stroke-width="1"/>
+  <!-- Result components -->
+  <rect x="20" y="120" width="220" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="130" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0284c7">root component</text>
+  <text x="130" y="154" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#1e293b" font-weight="700">ContentEditorComponent</text>
+  <line x1="120" y1="64" x2="120" y2="120" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- Fragment and Container -->
+  <rect x="20" y="200" width="200" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="120" y="218" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0284c7">leaf element</text>
+  <text x="120" y="234" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="600">ContentEditorFragmentComponent</text>
+  <rect x="250" y="200" width="200" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="350" y="218" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0284c7">container</text>
+  <text x="350" y="234" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="600">ContentEditorContainerComponent</text>
+  <line x1="100" y1="164" x2="100" y2="200" stroke="#64748b" stroke-width="1" marker-end="url(#arrowhead)"/>
+  <line x1="150" y1="164" x2="320" y2="200" stroke="#64748b" stroke-width="1" marker-end="url(#arrowhead)"/>
+  <!-- view/edit/inspect inside fragment -->
+  <rect x="20" y="260" width="60" height="24" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="50" y="276" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#1e293b">view</text>
+  <rect x="90" y="260" width="60" height="24" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="120" y="276" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#1e293b">editor</text>
+  <rect x="160" y="260" width="60" height="24" rx="3" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="190" y="276" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#1e293b">inspector</text>
+  <line x1="120" y1="244" x2="120" y2="260" stroke="#64748b" stroke-width="0.8"/>
+</svg>
+<div class="diagram-caption">Figure 4: Rendering pipeline &mdash; from controller through handler triad to component tree</div>
+</div>
+
+<!-- ===== EVENT SYSTEM ===== -->
+<h2 id="event-system">Event System</h2>
+
+<p>The editor uses 27 custom event types for AJAX communication between components, editors, inspectors, and the main controller.</p>
+
+<h3>Event Categories</h3>
+<table>
+  <tr><th>Category</th><th>Events</th></tr>
+  <tr><td>Lifecycle</td><td><code>AddElementEvent</code>, <code>ChangePartEvent</code>, <code>CloneElementEvent</code>, <code>DeleteElementEvent</code>, <code>SaveElementEvent</code>, <code>ImportEvent</code></td></tr>
+  <tr><td>Edit Mode</td><td><code>EditElementEvent</code>, <code>EditFragmentEvent</code>, <code>CloseElementsEvent</code>, <code>ClosePartEvent</code></td></tr>
+  <tr><td>Inspector</td><td><code>CloseInspectorEvent</code>, <code>CloseInspectorsEvent</code>, <code>OpenRulesEvent</code></td></tr>
+  <tr><td>Position</td><td><code>MoveUpElementEvent</code>, <code>MoveDownElementEvent</code></td></tr>
+  <tr><td>Add / Layout</td><td><code>OpenAddElementEvent</code>, <code>OpenAddLayoutEvent</code></td></tr>
+  <tr><td>Drag &amp; Drop</td><td><code>DropToEditorEvent</code>, <code>DropToPageElementEvent</code>, <code>DropFragmentEvent</code>, <code>DropCanceledEvent</code></td></tr>
+  <tr><td>Container</td><td><code>ContainerColumnEvent</code>, <code>ContainerRuleLinkEvent</code></td></tr>
+</table>
+
+<!-- DIAGRAM 4: Event Flow -->
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 180" width="700" height="180">
+  <rect x="10" y="40" width="100" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="60" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0284c7">Browser</text>
+  <text x="60" y="74" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="600">AJAX click/drag</text>
+  <rect x="140" y="40" width="120" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="200" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#16a34a">Component</text>
+  <text x="200" y="74" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="600">doDispatchRequest</text>
+  <rect x="290" y="40" width="100" height="44" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+  <text x="340" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#9333ea">Event</text>
+  <text x="340" y="74" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="600">fireEvent()</text>
+  <rect x="420" y="40" width="140" height="44" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="490" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#d97706">Controller</text>
+  <text x="490" y="74" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="700">V2Controller.event()</text>
+  <rect x="590" y="40" width="100" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="640" y="58" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#16a34a">Provider</text>
+  <text x="640" y="74" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b" font-weight="600">CRUD mutation</text>
+  <line x1="110" y1="62" x2="140" y2="62" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <line x1="260" y1="62" x2="290" y2="62" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <line x1="390" y1="62" x2="420" y2="62" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <line x1="560" y1="62" x2="590" y2="62" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <!-- Return path -->
+  <rect x="300" y="120" width="200" height="34" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="400" y="142" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1e293b">Event.CHANGED_EVENT &rarr; parent</text>
+  <line x1="490" y1="84" x2="400" y2="120" stroke="#64748b" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+</svg>
+<div class="diagram-caption">Figure 5: Event flow &mdash; browser AJAX through component dispatch to controller and provider mutation</div>
+</div>
+
+<!-- ===== SERVICE LAYER ===== -->
+<h2 id="service-layer">Service Layer</h2>
+
+<h3>PageService (Interface)</h3>
+<pre><code><span class="kw">public interface</span> <span class="typ">PageService</span> {
+    <span class="typ">Page</span> getPageByKey(<span class="typ">Long</span> key);
+    <span class="typ">Page</span> updatePage(<span class="typ">Page</span> page);
+    <span class="typ">Page</span> copyPage(<span class="typ">Identity</span> owner, <span class="typ">Page</span> page);
+    <span class="typ">Page</span> importPage(<span class="typ">Identity</span> owner, <span class="typ">Identity</span> mediasOwner, <span class="typ">Page</span> page, <span class="typ">ZipFile</span> storage);
+
+    &lt;<span class="typ">U</span> <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; <span class="typ">U</span> appendNewPagePart(<span class="typ">Page</span> page, <span class="typ">U</span> part);
+    &lt;<span class="typ">U</span> <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; <span class="typ">U</span> appendNewPagePartAt(<span class="typ">Page</span> page, <span class="typ">U</span> part, <span class="kw">int</span> index);
+    &lt;<span class="typ">U</span> <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; <span class="typ">U</span> updatePart(<span class="typ">U</span> part);
+    <span class="kw">void</span> removePagePart(<span class="typ">Page</span> page, <span class="typ">PagePart</span> part);
+
+    <span class="typ">List</span>&lt;<span class="typ">PagePart</span>&gt; getPageParts(<span class="typ">Page</span> page);
+}</code></pre>
+
+<h3>Key Service Classes</h3>
+<table>
+  <tr><th>Class</th><th>Role</th></tr>
+  <tr><td><code>PageServiceImpl</code></td><td>Spring <code>@Service</code> implementing PageService</td></tr>
+  <tr><td><code>PageDAO</code></td><td>JPA operations on pages, bodies, parts</td></tr>
+  <tr><td><code>ContentEditorFileStorage</code></td><td>File storage under <code>bcroot/portfolio/</code></td></tr>
+  <tr><td><code>PageImportExportHelper</code></td><td>ZIP-based page import/export</td></tr>
+  <tr><td><code>ContentEditorXStream</code></td><td>Settings serialization (secure XStream)</td></tr>
+  <tr><td><code>PageXStream</code></td><td>Page serialization for export</td></tr>
+</table>
+
+<!-- ===== CONTAINER SYSTEM ===== -->
+<h2 id="container-system">Container System</h2>
+
+<h3>ContainerLayout Enum (12 Layouts)</h3>
+<table>
+  <tr><th>Layout</th><th>CSS Class</th><th>Blocks</th><th>Status</th></tr>
+  <tr><td><code>block_1col</code></td><td>o_container_block_1_cols</td><td>1</td><td>active</td></tr>
+  <tr><td><code>block_2cols</code></td><td>o_container_block_2_cols</td><td>2</td><td>active</td></tr>
+  <tr><td><code>block_3cols</code></td><td>o_container_block_3_cols</td><td>3</td><td>active</td></tr>
+  <tr><td><code>block_4cols</code></td><td>o_container_block_4_cols</td><td>4</td><td>deprecated</td></tr>
+  <tr><td><code>block_5cols</code></td><td>o_container_block_5_cols</td><td>5</td><td>deprecated</td></tr>
+  <tr><td><code>block_6cols</code></td><td>o_container_block_6_cols</td><td>6</td><td>active</td></tr>
+  <tr><td><code>block_3rows</code></td><td>o_container_block_3_rows</td><td>3</td><td>active</td></tr>
+  <tr><td><code>block_2_1rows</code></td><td>o_container_block_2_1_rows</td><td>3</td><td>active</td></tr>
+  <tr><td><code>block_1_3rows</code></td><td>o_container_block_1_3_rows</td><td>4</td><td>active</td></tr>
+  <tr><td><code>block_1_1lcols</code></td><td>o_container_block_1_1l_cols</td><td>2</td><td>active</td></tr>
+  <tr><td><code>block_1_2rows</code></td><td>o_container_block_1_2_rows</td><td>3</td><td>active</td></tr>
+  <tr><td><code>block_1_2cols</code></td><td>o_container_block_1_2_cols</td><td>3</td><td>active</td></tr>
+</table>
+
+<p><code>ContainerSettings</code> stores column definitions. Each <code>ContainerColumn</code> holds a list of element IDs referencing child <code>PagePart</code>s. Containers can nest other containers &mdash; flattened in the DB but nested in the component tree during <code>loadModel()</code>.</p>
+
+<!-- ===== ELEMENT TYPES ===== -->
+<h2 id="element-types">Element Type Reference</h2>
+
+<h3>Creating Elements Programmatically</h3>
+
+<h4>Title</h4>
+<pre><code><span class="typ">TitlePart</span> title = <span class="kw">new</span> <span class="typ">TitlePart</span>();
+title.setContent(<span class="str">"My Heading"</span>);
+<span class="typ">TitleSettings</span> ts = <span class="kw">new</span> <span class="typ">TitleSettings</span>();
+ts.setSize(<span class="num">2</span>); <span class="cmt">// h2</span>
+ts.setLayoutSettings(<span class="typ">BlockLayoutSettings</span>.getPredefined());
+title.setTitleSettings(ts);
+pageService.appendNewPagePart(page, title);</code></pre>
+
+<h4>Paragraph</h4>
+<pre><code><span class="typ">ParagraphPart</span> p = <span class="kw">new</span> <span class="typ">ParagraphPart</span>();
+p.setContent(<span class="str">"&lt;p&gt;Text with &lt;strong&gt;bold&lt;/strong&gt; and &lt;em&gt;italic&lt;/em&gt;&lt;/p&gt;"</span>);
+pageService.appendNewPagePart(page, p);</code></pre>
+
+<h4>Table</h4>
+<pre><code><span class="typ">TablePart</span> tablePart = <span class="kw">new</span> <span class="typ">TablePart</span>();
+<span class="typ">TableContent</span> tc = <span class="kw">new</span> <span class="typ">TableContent</span>(<span class="num">3</span>, <span class="num">2</span>);
+tc.addContent(<span class="num">0</span>, <span class="num">0</span>, <span class="str">"Header 1"</span>);
+tc.addContent(<span class="num">0</span>, <span class="num">1</span>, <span class="str">"Header 2"</span>);
+tc.addContent(<span class="num">1</span>, <span class="num">0</span>, <span class="str">"Cell A"</span>);
+tc.addContent(<span class="num">1</span>, <span class="num">1</span>, <span class="str">"Cell B"</span>);
+tablePart.setContent(<span class="typ">ContentEditorXStream</span>.toXml(tc));
+<span class="typ">TableSettings</span> settings = <span class="kw">new</span> <span class="typ">TableSettings</span>();
+settings.setColumnHeaders(<span class="kw">true</span>);
+settings.setBordered(<span class="kw">true</span>);
+tablePart.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(settings));
+pageService.appendNewPagePart(page, tablePart);</code></pre>
+
+<h4>Code</h4>
+<pre><code><span class="typ">CodePart</span> codePart = <span class="kw">new</span> <span class="typ">CodePart</span>();
+codePart.setContent(<span class="str">"public class Hello { }"</span>);
+<span class="typ">CodeSettings</span> cs = <span class="kw">new</span> <span class="typ">CodeSettings</span>();
+cs.setCodeLanguage(<span class="typ">CodeLanguage</span>.java);
+codePart.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(cs));
+pageService.appendNewPagePart(page, codePart);</code></pre>
+
+<h4>Image (via Media Center)</h4>
+<pre><code><span class="typ">Media</span> media = imageHandler.createMedia(
+    <span class="str">"photo"</span>, <span class="str">"description"</span>, <span class="str">"alt text"</span>,
+    file, <span class="str">"photo.png"</span>, <span class="kw">null</span>, author, <span class="typ">MediaLog.Action</span>.UPLOAD);
+<span class="typ">MediaPart</span> mediaPart = <span class="typ">MediaPart</span>.valueOf(author, media);
+pageService.appendNewPagePart(page, mediaPart);</code></pre>
+
+<!-- ===== NEW ELEMENT GUIDE ===== -->
+<h2 id="new-element-guide">Adding a New Element Type</h2>
+
+<ol>
+  <li><strong>Model interface</strong> in <code>model/</code> &mdash; extend <code>PageElement</code> or suitable sub-interface</li>
+  <li><strong>JPA entity</strong> in <code>model/jpa/</code> &mdash; extend <code>AbstractPart</code>, override <code>getType()</code>, implement <code>copy()</code></li>
+  <li><strong>Register in <code>persistence.xml</code></strong> &mdash; add <code>&lt;class&gt;</code> entry</li>
+  <li><strong>Settings class</strong> in <code>model/</code> (if needed) &mdash; register in <code>ContentEditorXStream</code></li>
+  <li><strong>Handler</strong> in <code>handler/</code> &mdash; implement <code>PageElementHandler</code> + appropriate mixins</li>
+  <li><strong>Editor controller</strong> in <code>ui/</code> &mdash; implement <code>PageElementEditorController</code></li>
+  <li><strong>Inspector controller</strong> in <code>ui/</code> &mdash; extend <code>PageElementInspectorController</code></li>
+  <li><strong>Run component</strong> in <code>ui/</code> &mdash; implement <code>PageRunElement</code></li>
+  <li><strong>i18n keys</strong> in <code>ui/_i18n/</code></li>
+  <li><strong>Register handler</strong> in provider implementations (<code>PageRunController</code>, <code>EvaluationFormEditorController</code>)</li>
+</ol>
+
+<div class="aside"><strong>Tip:</strong> Use <code>TitlePageElementHandler</code> as the canonical reference implementation. It demonstrates the full handler pattern including <code>SimpleAddPageElementHandler</code>, <code>CloneElementHandler</code>, and <code>PageElementStore&lt;TitleElement&gt;</code>.</div>
+
+<!-- ===== CLIENT SIDE ===== -->
+<h2 id="client-side">Client-Side Integration</h2>
+
+<p>The editor relies on two JavaScript libraries:</p>
+<ul>
+  <li><code>jquery.contenteditor.v3.js</code> &mdash; jQuery plugin for element selection, AJAX command dispatch</li>
+  <li><code>dragula.js</code> &mdash; Lightweight drag-and-drop library for element reordering</li>
+</ul>
+
+<p>Commands dispatched from browser via AJAX: <code>edit_fragment</code>, <code>save_element</code>, <code>clone_element</code>, <code>delete_element</code>, <code>move_up</code>, <code>move_down</code>, <code>drop_fragment</code>, <code>add_element_above</code>, <code>add_element_below</code>, <code>add_to_container</code>.</p>
+
+<!-- ===== CONFIGURATION ===== -->
+<h2 id="configuration">Configuration</h2>
+
+<p><code>ContentEditorModule</code> (Spring module) exposes these properties:</p>
+<table>
+  <tr><th>Property</th><th>Purpose</th></tr>
+  <tr><td><code>ceditor.image.styles</code></td><td>Available CSS styles for images</td></tr>
+  <tr><td><code>ceditor.image.title.styles</code></td><td>Available styles for image titles</td></tr>
+  <tr><td><code>ceditor.table.styles</code></td><td>Available CSS styles for tables</td></tr>
+</table>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.side-nav a[href^="#"]');
+  var sections = [];
+  links.forEach(function(link) {
+    var id = link.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if (el) sections.push({ link: link, el: el });
+  });
+  function update() {
+    var scrollY = window.scrollY || window.pageYOffset;
+    var active = sections[0];
+    for (var i = 0; i < sections.length; i++) {
+      if (sections[i].el.offsetTop - 60 <= scrollY) active = sections[i];
+    }
+    links.forEach(function(l) { l.classList.remove('active'); });
+    if (active) active.link.classList.add('active');
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) { requestAnimationFrame(function() { update(); ticking = false; }); ticking = true; }
+  });
+  update();
+  links.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      var id = this.getAttribute('href').slice(1);
+      history.pushState(null, '', '#' + id);
+    });
+  });
+})();
+</script>
+</body>
+</html>
