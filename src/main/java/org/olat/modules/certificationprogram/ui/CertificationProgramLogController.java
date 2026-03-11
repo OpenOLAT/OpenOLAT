@@ -204,7 +204,7 @@ public class CertificationProgramLogController extends FormBasicController {
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.user"), FILTER_USER, usersPK, true));
 		
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	private SelectionValuesSupplier getActivityFilterValues() {
@@ -289,8 +289,9 @@ public class CertificationProgramLogController extends FormBasicController {
 		return switch(auditLog.getAction()) {
 			// Sent mails
 			case send_notification_certificate_issued, send_notification_certificate_renewed,
-				send_notification_certificate_expired, send_notification_certificate_revoked, send_notification_program_removed,
-				send_reminder_upcoming, send_reminder_overdue -> List.of(createRow(auditLog, CertificationProgramActivityLogContext.message, getMemberObject(auditLog), getActivity(auditLog)));
+				send_notification_certificate_expired, send_notification_certificate_revoked,
+				send_notification_program_removed -> List.of(createRow(auditLog, CertificationProgramActivityLogContext.message, getMemberObject(auditLog), getActivity(auditLog)));
+			case send_reminder_upcoming, send_reminder_overdue -> List.of(createSentReminderRow(auditLog, CertificationProgramActivityLogContext.message, getMemberObject(auditLog), getActivity(auditLog)));
 			// Manage owners
 			case add_owner, remove_owner -> List.of(createRow(auditLog, CertificationProgramActivityLogContext.owner, getIdentityObject(auditLog), getActivity(auditLog)));
 			// Manage implementations
@@ -568,6 +569,15 @@ public class CertificationProgramLogController extends FormBasicController {
 				? null
 				: auditLog.getIdentity().getKey();
 		return new CertificationProgramLogRow(auditLog, context, object, memberKey, activity, actor, actorKey);
+	}
+	
+	private CertificationProgramLogRow createSentReminderRow(CertificationProgramLog auditLog, CertificationProgramActivityLogContext context, String object, String activity) {
+		CertificationProgramLogRow row = createRow(auditLog, context, object, activity);
+		String reminderName = auditLog.getMailConfiguration() != null
+				? auditLog.getMailConfiguration().getTitle()
+				: null;
+		row.setNewValue(reminderName);
+		return row;
 	}
 	
 	private CertificationProgramLogRow createMessageContentRow(CertificationProgramLog auditLog, String before, String after) {
