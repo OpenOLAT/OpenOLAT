@@ -1512,6 +1512,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
 					GroupMembershipStatus.reservation, false, null, null, actor, note);
 			dbInstance.commit();
+			CurriculumElementMembershipEvent event = CurriculumElementMembershipEvent.reservationAdded(element, member, role);
+			sendDeferredEvents(List.of(event));
 		}
 	}
 

@@ -34,6 +34,7 @@ public class CurriculumElementMembershipEvent extends MultiUserEvent {
 	
 	public static final String MEMBER_ADDED = "curriculum.element.member.added.event";
 	public static final String MEMBER_REMOVED = "curriculum.element.member.removed.event";
+	public static final String MEMBER_RESERVATION_ADDED = "curriculum.element.member.reservation.added.event";
 
 	private final Long curriculumElementKey;
 	private final Long identityKey;
@@ -50,6 +51,10 @@ public class CurriculumElementMembershipEvent extends MultiUserEvent {
 		return new CurriculumElementMembershipEvent(MEMBER_ADDED, element, identity, role);
 	}
 	
+	public static CurriculumElementMembershipEvent reservationAdded(CurriculumElementRef element, IdentityRef identity, CurriculumRoles role) {
+		return new CurriculumElementMembershipEvent(MEMBER_RESERVATION_ADDED, element, identity, role);
+	}
+
 	public static CurriculumElementMembershipEvent identityRemoved(CurriculumElementRef element, IdentityRef identity) {
 		return new CurriculumElementMembershipEvent(MEMBER_REMOVED, element, identity, null);
 	}
