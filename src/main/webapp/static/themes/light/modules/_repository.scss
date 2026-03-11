@@ -892,3 +892,110 @@ form { .o_form { .o_radio_cards_wrapper {
 		}
 	}
 }
+
+.o_ac_reservation_card {
+	container-type: inline-size;
+	display: flex;
+	width: 100%;
+	align-items: center;
+	padding: 8px 12px;
+	gap: 12px;
+	border: 1px solid $o-coursesite-rowelem-border;
+	border-radius: $border-radius-base;
+	background-color: $body-bg;
+	margin-bottom: 5px;
+
+	.o_ac_reservation_item {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+
+		.o_ac_reservation_visual {
+			height: 50px;
+			width: 75px;
+			flex-shrink: 0;
+			overflow: hidden;
+
+			img {
+				width: 100%;
+				height: auto;
+			}
+
+			.o_ac_reservation_visual_placeholder {
+				width: 100%;
+				height: 100%;
+				background: $o-not-available-bg;
+				background-repeat: no-repeat;
+				background-position: 50% 50%;
+				background-size: contain;
+			}
+		}
+
+		.o_ac_reservation_meta {
+			min-width: 0;
+			display: flex;
+			flex-direction: column;
+
+			.o_ac_reservation_ref {
+				color: $text-muted;
+				font-size: 10px;
+				line-height: 12px;
+				height: 12px;
+				@include text-overflow();
+			}
+
+			.o_title {
+				line-height: 1.2;
+				font-size: 18px;
+				margin: 0;
+				@include text-overflow();
+			}
+		}
+
+		> .o_icon {
+			flex-shrink: 0;
+			color: $text-muted;
+		}
+
+		> .o_title {
+			line-height: 1.2;
+			font-size: 18px;
+			margin: 0;
+			@include text-overflow();
+		}
+	}
+
+	.o_ac_reservation_actions {
+		flex-shrink: 0;
+		display: flex;
+		gap: 5px;
+		align-items: center;
+	}
+	
+	// On mobile, hide button labels visually but keep them accessible to screen
+	// readers. @extend %sr-only cannot be used inside @media queries in SASS,
+	// so the sr-only properties are inlined here.
+	@media (max-width: $screen-xs-max) {
+		.o_ac_reservation_actions .o_label_text {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			border: 0;
+		}
+	}
+}
+
+.o_ac_reservation_detail {
+	.o_ac_reservation_detail_header {
+		.o_ac_reservation_card {
+			border: none;
+		}
+	}
+}

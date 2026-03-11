@@ -39,7 +39,7 @@ import org.olat.core.id.context.StateEntry;
  */
 public class BusinessGroupListWrapperController extends BasicController implements Activateable2 {
 	
-	private PendingEnrollmentController pendingEnrollmentController;
+	private GroupAcceptReservationsController groupAcceptReservationsCtrl;
 	private BusinessGroupListController businessGroupListController;
 	
 	private VelocityContainer wrapper;
@@ -49,15 +49,15 @@ public class BusinessGroupListWrapperController extends BasicController implemen
 		
 		wrapper = createVelocityContainer("group_list_wrapper");
 		
-		pendingEnrollmentController = new PendingEnrollmentController(ureq, wControl, false);
-		listenTo(pendingEnrollmentController);
+		groupAcceptReservationsCtrl = new GroupAcceptReservationsController(ureq, wControl);
+		listenTo(groupAcceptReservationsCtrl);
+		if (groupAcceptReservationsCtrl.hasReservations()) {
+			wrapper.put("groupAcceptReservations", groupAcceptReservationsCtrl.getInitialComponent());
+		}
 		
-		// enhance 
 		businessGroupListController = new BusinessGroupListController(ureq, wControl, "my");
 		listenTo(businessGroupListController);
 		
-		wrapper.contextPut("enrollmentsAvailable", Boolean.valueOf(pendingEnrollmentController.isEnrollmentAvailable()));
-		wrapper.put("pendingEnrollments", pendingEnrollmentController.getInitialComponent());
 		wrapper.put("myGroups", businessGroupListController.getInitialComponent());
 
 		putInitialPanel(wrapper);
@@ -79,16 +79,16 @@ public class BusinessGroupListWrapperController extends BasicController implemen
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		fireEvent(ureq, event);		
+		fireEvent(ureq, event);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == pendingEnrollmentController) {
+		if (source == groupAcceptReservationsCtrl) {
 			businessGroupListController.reloadModel();
 			
-			if (event.equals(Event.DONE_EVENT)) {
-				wrapper.contextPut("enrollmentsAvailable", false);
+			if (!groupAcceptReservationsCtrl.hasReservations()) {
+				wrapper.remove(groupAcceptReservationsCtrl.getInitialComponent());
 			}
 		}
 	}

@@ -1,0 +1,18 @@
+<p>$text</p>
+<div class="o_ac_reservation_cards">
+	#foreach($row in $rows)
+		<div class="o_ac_reservation_card">
+			<div class="o_ac_reservation_item">
+				<i class="o_icon o_icon-lg o_icon_group"> </i>
+				<h4 class="o_title o_nowrap">$r.escapeHtml($row.displayName)</h4>
+			</div>
+			<div class="o_ac_reservation_actions">
+				#if($row.getDetailsLinkName())
+					$r.render($row.getDetailsLinkName())
+				#end
+				$r.render($row.getAcceptLinkName())
+				$r.render($row.getDeclineLinkName())
+			</div>
+		</div>
+	#end
+</div>
