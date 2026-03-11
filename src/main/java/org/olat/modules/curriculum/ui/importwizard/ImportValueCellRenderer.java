@@ -138,7 +138,7 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 				renderCellValue(target, cellValue);
 			}
 		} else if(obj instanceof AbstractImportRow importedRow) {
-			CurriculumImportedValue val = importedRow.getValidation(col);
+			CurriculumImportedValue val = importedRow.getValidationByImportance(col);
 			if(val != null) {
 				renderValue(target, cellValue, row, val, source);
 			} else {
