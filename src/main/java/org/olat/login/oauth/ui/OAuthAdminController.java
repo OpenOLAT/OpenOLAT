@@ -791,7 +791,7 @@ public class OAuthAdminController extends FormBasicController {
 		addDiscoveryUrlCtrl = new AddDiscoveryURLController(ureq, getWindowControl());
 		listenTo(addDiscoveryUrlCtrl);
 
-		String title = translate("add.openidconnect.custom");
+		String title = translate("add.discovery.url");
 		cmc = new CloseableModalController(getWindowControl(), null, addDiscoveryUrlCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
