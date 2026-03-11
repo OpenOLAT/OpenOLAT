@@ -51,9 +51,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
 
 		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
-		if (ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
-			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);			
-		
+		if (ftE.getTableDataModel().getRowCount() == 0 && ftE.getEmptyStateConfig() != null) {
+			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);
 		} else {
 			//render wrapper
 			String wrapperCss = null;

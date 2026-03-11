@@ -68,8 +68,12 @@ public class GuiDemoEmptyStateFormController extends FormBasicController {
 		tableModel.setObjects(List.of());
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "itemPriceTable", tableModel, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("empty.state.table.message", null, "o_icon_empty_objects",
-				"empty.state.button.primary.action", "o_icon_bolt_lightning", false);
+		EmptyStateConfig config = EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.state.table.message")
+				.withIconCss("o_icon_empty_objects")
+				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
+				.build();
+		tableEl.setEmptyStateConfig(config, false);
 
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}

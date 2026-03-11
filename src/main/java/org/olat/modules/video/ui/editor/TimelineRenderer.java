@@ -82,7 +82,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
 		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
 
-		if (ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
+		if (ftE.getTableDataModel().getRowCount() == 0 && ftE.getEmptyStateConfig() != null) {
 			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);
 		} else {
 			// render wrapper

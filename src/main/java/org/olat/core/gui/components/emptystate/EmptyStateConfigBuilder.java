@@ -22,6 +22,8 @@ package org.olat.core.gui.components.emptystate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 22 Apr 2021<br>
@@ -118,7 +120,9 @@ public class EmptyStateConfigBuilder {
 	}
 	
 	public EmptyStateConfigBuilder withPrimaryButton(String leftIcon, String i18nKey, String translated) {
-		primaryButton = new EmptyStateButton(leftIcon, i18nKey, translated, "primary");
+		if (StringHelper.containsNonWhitespace(i18nKey) ||  StringHelper.containsNonWhitespace(translated)) {
+			primaryButton = new EmptyStateButton(leftIcon, i18nKey, translated, "primary");
+		}
 		return this;
 	}
 	
@@ -126,7 +130,9 @@ public class EmptyStateConfigBuilder {
 		if (secondaryButtons.size() >= EmptyState.MAX_SECONDARY_BUTTONS) {
 			throw new AssertionError("Too many secondary buttons for empty state");
 		}
-		secondaryButtons.add(new EmptyStateButton(leftIcon, i18nKey, translated, action));
+		if (StringHelper.containsNonWhitespace(i18nKey) || StringHelper.containsNonWhitespace(translated)) {
+			secondaryButtons.add(new EmptyStateButton(leftIcon, i18nKey, translated, action));
+		}
 		return this;
 	}
 	
