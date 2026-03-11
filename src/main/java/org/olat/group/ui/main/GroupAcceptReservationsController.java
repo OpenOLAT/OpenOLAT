@@ -68,13 +68,14 @@ public class GroupAcceptReservationsController extends BasicController {
 	private ACService acService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-
-	public GroupAcceptReservationsController(UserRequest ureq, WindowControl wControl) {
+	
+	public GroupAcceptReservationsController(UserRequest ureq, WindowControl wControl, boolean collapsible) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("group_accept_reservations");
 
 		infoPanel = new InfoPanel("infoPanel");
+		infoPanel.setCollapsible(collapsible);
 		infoPanel.setElementCssClass("o_warning_with_icon");
 		infoPanel.setTitle(translate("group.reservation.title"));
 		infoPanel.setInformations(mainVC);

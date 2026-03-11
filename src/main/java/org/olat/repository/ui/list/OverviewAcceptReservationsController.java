@@ -85,13 +85,14 @@ public class OverviewAcceptReservationsController extends BasicController {
 	@Autowired
 	private MapperService mapperService;
 
-	public OverviewAcceptReservationsController(UserRequest ureq, WindowControl wControl) {
+	public OverviewAcceptReservationsController(UserRequest ureq, WindowControl wControl, boolean collapsible) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		mainVC = createVelocityContainer("overview_accept_reservations");
 
 		infoPanel = new InfoPanel("infoPanel");
+		infoPanel.setCollapsible(collapsible);
 		infoPanel.setElementCssClass("o_warning_with_icon");
 		infoPanel.setTitle(translate("overview.reservation.title"));
 		infoPanel.setInformations(mainVC);

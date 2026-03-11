@@ -185,7 +185,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 
 	private void loadAcceptReservations(UserRequest ureq) {
-		acceptReservationsCtrl = new OverviewAcceptReservationsController(ureq, getWindowControl());
+		acceptReservationsCtrl = new OverviewAcceptReservationsController(ureq, getWindowControl(), true);
 		listenTo(acceptReservationsCtrl);
 		if (acceptReservationsCtrl.hasReservations()) {
 			mainVC.put("acceptReservations", acceptReservationsCtrl.getInitialComponent());

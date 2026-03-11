@@ -5,15 +5,23 @@
 	<div class="sr-only"><a href="#" class="close" onClick="$r.javaScriptCommand('lightbox-closed');">$r.translate("close.dialog")</a></div>
 </div>
 <script>
+	'use strict';
 	if (typeof $lightboxId === 'undefined') {
 		var $lightboxId = basicLightbox.create(document.querySelector("#$id"), {
 			className: "o_lightbox_close_border $customClass",
 			onShow: () => {
 				## set modal hint for screenreaders
 				${lightboxId}.element().querySelector( '.basicLightbox__placeholder').setAttribute("aria-modal", true);
-				},
+				## move lightbox into topmost open dialog (top layer) if present to display it in front of the dialog
+				setTimeout(function() {
+					const openDialogs = Array.from(document.querySelectorAll('dialog[open]'));
+					if (openDialogs.length > 0) {
+						openDialogs[openDialogs.length - 1].appendChild(${lightboxId}.element());
+					}
+				}, 0);
+			},
 			onClose: () => { $r.openJavaScriptCommand("lightbox-closed", false, true)); }
 		});
-		$lightboxId .show();
+		${lightboxId}.show();
 	}
 </script>
