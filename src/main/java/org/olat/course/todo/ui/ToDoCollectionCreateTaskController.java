@@ -87,7 +87,7 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void formNext(UserRequest ureq) {
 		context.setTitle(toDoTaskEditForm.getTitle());
 		context.setDescription(toDoTaskEditForm.getDescription());
 		context.setStatus(toDoTaskEditForm.getStatus());
@@ -98,6 +98,11 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 		context.setTagDisplayNames(toDoTaskEditForm.getTagDisplayNames());
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 }

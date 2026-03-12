@@ -528,7 +528,7 @@ public class MemberSearchController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		tableEl.clearError();
-		if(tableEl.getMultiSelectedIndex().isEmpty()) {
+		if(config.tableValidation().getAsBoolean() && tableEl.getMultiSelectedIndex().isEmpty()) {
 			tableEl.setErrorKey("error.atleastone");
 			allOk &= false;
 		}
@@ -566,4 +566,5 @@ public class MemberSearchController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
 }
