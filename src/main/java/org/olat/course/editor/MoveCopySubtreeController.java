@@ -83,6 +83,7 @@ public class MoveCopySubtreeController extends BasicController {
 
 		insertTree = new MenuTree(null, "copy_node_selection", this, getTranslator());
 		insertTree.enableInsertTool(true);
+		
 		insertModel = new InsertTreeModel(course.getEditorTreeModel().getRootNode(), moveCopyFrom);
 		insertTree.setTreeModel(insertModel);		
 		

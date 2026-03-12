@@ -208,7 +208,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			appendDragAndDropElement(curRoot, tree, dndElements, ubu, flags);
 		}
 		
-		if(tree.getMenuTreeItem() != null && tree.isInsertToolEnabled()) {
+		if(tree.isInsertToolEnabled()) {
 			renderInsertRadio(target, curRoot, selected, enabledNode, tree, ubu);
 		}
 
@@ -453,7 +453,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	
 	private void renderInsertLink(String cmd, boolean enabled, String cssClass, String i18nKey, StringOutput sb,
 			TreeNode node, MenuTree tree, URLBuilder ubu, AJAXFlags flags) {
-		sb.append("<a class='o_tree_control").append(" o_disabled  disabled", !enabled).append("' ");
+		sb.append("<a class='btn o_button_ghost o_tree_control").append(" o_disabled  disabled", !enabled).append("' ");
 		if(enabled) {
 			ubu.buildHrefAndOnclick(sb, flags.isIframePostEnabled(),
 				new NameValuePair(COMMAND_ID, cmd),
@@ -469,33 +469,29 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderInsertRadio(StringOutput sb, TreeNode node, boolean selected, boolean enabled, MenuTree tree, URLBuilder ubu) {
-		MenuTreeItem treeItem = tree.getMenuTreeItem();
-		if(treeItem != null) {
-			boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel insertionTreeModel)
-					&& insertionTreeModel.isSource(node);
-			boolean enabledInput = treeItem.isEnabled() && !insertionSource && !enabled;
-		
-			String groupingName = "tcb_ms";
-			String id = "cb" + node.getIdent();
-			sb.append("<input type='radio' id='").append(id).append("' ")
-			  .append(" name='").append(groupingName).append("'")
-			  .append(" value='").append(node.getIdent()).append("'");
-			if (selected) {
-				sb.append(" checked='checked' ");
-			}
-			if(insertionSource) {
-				sb.append(" class='o_hidden' aria-hidden='true\'");
-			}
-			if(enabledInput) {
-				sb.append(" onclick=\"");
-				ubu.buildXHREvent(sb, null, false, true, new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
-						new NameValuePair(NODE_IDENT, node.getIdent())).append(" return false;\"");
-			} else {
-				sb.append(" disabled='disabled' ");
-			}
-			sb.append(" />");
-
+		boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel insertionTreeModel)
+				&& insertionTreeModel.isSource(node);
+		boolean enabledInput = tree.isEnabled() && !insertionSource && enabled;
+	
+		String groupingName = "tcb_ms";
+		String id = "cb" + node.getIdent();
+		sb.append("<input type='radio' id='").append(id).append("' ")
+		  .append(" name='").append(groupingName).append("'")
+		  .append(" value='").append(node.getIdent()).append("'");
+		if (selected) {
+			sb.append(" checked='checked' ");
 		}
+		if(insertionSource) {
+			sb.append(" class='o_hidden' aria-hidden='true\'");
+		}
+		if(enabledInput) {
+			sb.append(" onclick=\"");
+			ubu.buildXHREvent(sb, null, false, true, new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
+					new NameValuePair(NODE_IDENT, node.getIdent())).append(" return false;\"");
+		} else {
+			sb.append(" disabled='disabled' ");
+		}
+		sb.append(" />");
 	}
 	
 	private void renderChildren(Renderer renderer, StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds,

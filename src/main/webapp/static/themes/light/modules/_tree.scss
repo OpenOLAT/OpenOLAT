@@ -218,11 +218,6 @@
 			background-color: $o-radio-card-bg-checked;
 		}
 		
-		div>.o_tree_link, div>.o_tree_move_controls {
-			padding-top: $o-tree-padding-vertical-small;
-			padding-bottom: $o-tree-padding-vertical-small;
-		}
-		
 		input[type=radio] {
 			position:absolute;
 			top: $o-tree-padding-vertical-small;
@@ -275,8 +270,14 @@
 		@for $i from 0 through 11 {
 			div span.o_tree_l#{$i}  {
 				display:block;
-				padding: $o-tree-padding-vertical-small 2px $o-tree-padding-vertical-small ($o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px) + 18px); 
-				z-index:8; 
+				padding: 0 2px 0 ($o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px) + 18px); 
+				z-index:8;
+				
+				>a {
+					padding: 7px 0 7px 0;
+					display: inline-block;
+					width: 100%;
+				}
 			}
 		}
 	}
