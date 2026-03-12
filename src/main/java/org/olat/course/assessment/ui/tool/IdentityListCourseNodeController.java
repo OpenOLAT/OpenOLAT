@@ -222,6 +222,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	public static final String FAILED_TAB_ID = "Failed";
 	public static final String ALL_TAB_ID = "All";
 	public static final String RELEVANT_TAB_ID = "Relevant";
+	public static final String EXCLUDED_TAB_ID = "Excluded";
 
 	private int counter = 0;
 	protected final CourseNode courseNode;
@@ -239,6 +240,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab excludedTab;
 	private FlexiFiltersTab toReviewTab;
 	private FlexiFiltersTab toReleaseTab;
 	private FlexiFiltersTab assignedToMeTab;
@@ -523,6 +525,15 @@ public class IdentityListCourseNodeController extends FormBasicController
 				}
 			});
 		}
+		if (learningPath) {
+			excludedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXCLUDED_TAB_ID, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.excluded.name()))));
+			excludedTab.setElementCssClass("o_sel_assessment_excluded");
+			excludedTab.setFiltersExpanded(true);
+			tabs.add(excludedTab);
+		}
+
 		if(assessmentConfig.hasCoachAssignment()) {
 			assignedToMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TO_ME_TAB_ID, translate("filter.assigned.to.me"),
 					TabSelectionBehavior.clear, List.of(
