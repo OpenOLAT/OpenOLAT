@@ -211,31 +211,40 @@ public class CertificationProgramLogController extends FormBasicController {
 		SelectionValues filter = new SelectionValues();
 		
 		// Certificates
-		appendActivityFilterValues(filter, CertificationProgramLogAction.revoke_certificate, CertificationProgramLogAction.issue_certificate,
-				CertificationProgramLogAction.expire_certificate);
-		
-		// Notifications sent
-		appendActivityFilterValues(filter, CertificationProgramLogAction.send_notification_certificate_issued, CertificationProgramLogAction.send_notification_certificate_expired,
-				CertificationProgramLogAction.send_notification_certificate_revoked, CertificationProgramLogAction.send_notification_program_removed,
-				CertificationProgramLogAction.send_reminder_upcoming, CertificationProgramLogAction.send_reminder_overdue);
-
-		// Add memberships
-		appendActivityFilterValues(filter, CertificationProgramLogAction.add_membership, CertificationProgramLogAction.add_membership_manually,
+		appendActivityFilterValues(filter, CertificationProgramLogAction.issue_certificate,
+				CertificationProgramLogAction.expire_certificate,
+				CertificationProgramLogAction.revoke_certificate);
+		// Memberships
+		appendActivityFilterValues(filter, CertificationProgramLogAction.add_membership,
+				CertificationProgramLogAction.add_membership_manually,
 				CertificationProgramLogAction.remove_membership);
-		
-		// Reminder
-		appendActivityFilterValues(filter, CertificationProgramLogAction.reminder_change_status, CertificationProgramLogAction.reminder_create,
-				CertificationProgramLogAction.reminder_delete);
+		// Notifications
+		appendActivityFilterValues(filter, CertificationProgramLogAction.send_notification_certificate_issued,
+				CertificationProgramLogAction.send_notification_certificate_expired,
+				CertificationProgramLogAction.send_notification_certificate_revoked,
+				CertificationProgramLogAction.send_notification_program_removed,
+				CertificationProgramLogAction.send_reminder_upcoming,
+				CertificationProgramLogAction.send_reminder_overdue);
+		appendActivityFilterValues(filter, CertificationProgramLogAction.notification_change_status,
+				CertificationProgramLogAction.notification_change_content,
+				CertificationProgramLogAction.notification_customize_content,
+				CertificationProgramLogAction.notification_reset_content);
+		// Reminders
+		appendActivityFilterValues(filter, CertificationProgramLogAction.reminder_create,
+				CertificationProgramLogAction.reminder_change_status);
 		filter.add(SelectionValues.entry(CertificationProgramLogAction.reminder_edit.name(),
 				translate("activity.message.reminder_edit.filter")));
-		appendActivityFilterValues(filter, CertificationProgramLogAction.reminder_change_content, CertificationProgramLogAction.reminder_customize_content,
-				CertificationProgramLogAction.reminder_reset_content, CertificationProgramLogAction.notification_change_status,
-				CertificationProgramLogAction.notification_change_content, CertificationProgramLogAction.notification_customize_content,
-				CertificationProgramLogAction.notification_reset_content);
-		// Owner
-		appendActivityFilterValues(filter, CertificationProgramLogAction.add_owner, CertificationProgramLogAction.remove_owner);
+		appendActivityFilterValues(filter, 
+				CertificationProgramLogAction.reminder_change_content,
+				CertificationProgramLogAction.reminder_customize_content,
+				CertificationProgramLogAction.reminder_reset_content,
+				CertificationProgramLogAction.reminder_delete);
 		// Implementation
-		appendActivityFilterValues(filter, CertificationProgramLogAction.add_implementation, CertificationProgramLogAction.remove_implementation);
+		appendActivityFilterValues(filter, CertificationProgramLogAction.add_implementation,
+				CertificationProgramLogAction.remove_implementation);
+		// Owner
+		appendActivityFilterValues(filter, CertificationProgramLogAction.add_owner,
+				CertificationProgramLogAction.remove_owner);
 		// Certification program configuration
 		appendActivityFilterValues(filter, CertificationProgramLogAction.edit_certification_program,
 				CertificationProgramLogAction.edit_certification_program_organisations);
