@@ -141,6 +141,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private EmptyStateConfig emptyStateConfig;
 	private FormLink emptyStatePrimaryButton;
+	private final List<FormLink> emptyStateSecondaryButtons = new ArrayList<>();
 	private boolean alwaysShowSearchFields = true;
 	
 	private VelocityContainer rowRenderer;
@@ -367,7 +368,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public FormLink getEmptyStatePrimaryButton() {
 		return emptyStatePrimaryButton;
 	}
-	
+
+	public List<FormLink> getEmptyStateSecondaryButtons() {
+		return emptyStateSecondaryButtons;
+	}
+
 	@Override
 	public boolean isBordered() {
 		return bordered;
@@ -1319,6 +1324,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doExport(ureq);
 		} else if (emptyStatePrimaryButton != null && emptyStatePrimaryButton.getFormDispatchId().equals(dispatchuri)) {
 			getRootForm().fireFormEvent(ureq, new FlexiTableEmptyNextPrimaryActionEvent(this));
+		} else if (fireSecondaryButtonEvent(ureq, dispatchuri)) {
+			// fired already
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			selectAll();
 		} else if(dispatchuri != null && select != null && select.equals("checkpage")) {
@@ -1371,7 +1378,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//do select
 		}
 	}
-	
+
+	private boolean fireSecondaryButtonEvent(UserRequest ureq, String dispatchuri) {
+		for (FormLink button : emptyStateSecondaryButtons) {
+			if (button.getFormDispatchId().equals(dispatchuri)) {
+				getRootForm().fireFormEvent(ureq, new FlexiTableEmptySecondaryActionEvent(this, button.getCmd()));
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean matchDispatchUri(String dispatchUri) {
 		return dispatchUri!= null && (
 				dispatchUri.equals(component.getFormDispatchId())
@@ -2562,6 +2579,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(classicTypeButton);
 		rootFormAvailable(externalTypeButton);
 		rootFormAvailable(emptyStatePrimaryButton);
+		for (FormLink button : emptyStateSecondaryButtons) {
+			rootFormAvailable(button);
+		}
 		if(components != null) {
 			for(FormItem item:components.values()) {
 				rootFormAvailable(item);
@@ -2660,9 +2680,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	private void syncButtonComponents() {
+		String dispatchId = component.getDispatchID();
 		if (emptyStateConfig.getPrimaryButton() != null) {
 			EmptyStateButton primaryButton = emptyStateConfig.getPrimaryButton();
-			String dispatchId = component.getDispatchID();
 			emptyStatePrimaryButton = new FormLinkImpl(dispatchId + "_emptyStatePrimaryButton", 
 					"emptyStatePrimaryButton", primaryButton.i18nKey(), Link.BUTTON);
 			emptyStatePrimaryButton.setTranslator(translator);
@@ -2670,7 +2690,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if (primaryButton.leftIcon() != null) {
 				emptyStatePrimaryButton.setIconLeftCSS("o_icon o_icon-fw " + primaryButton.leftIcon());
 			}
-			emptyStatePrimaryButton.setTitle(primaryButton.i18nKey());
 			components.put("emtpyStatePrimaryButton", emptyStatePrimaryButton);
 			if (getRootForm() != null) {
 				rootFormAvailable(emptyStatePrimaryButton);
@@ -2678,6 +2697,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 		} else if (emptyStatePrimaryButton != null) {
 			emptyStatePrimaryButton = null;
+		}
+		
+		emptyStateSecondaryButtons.clear();
+		for (EmptyStateButton secondaryButton : emptyStateConfig.getSecondaryButtons()) {
+			FormLink secondaryButtonLink = new FormLinkImpl(
+					dispatchId + "_emptyStateSecondaryButton_" + secondaryButton.action(), 
+					secondaryButton.action(), secondaryButton.i18nKey(), Link.BUTTON);
+			secondaryButtonLink.setTranslator(translator);
+			if (secondaryButton.leftIcon() != null) {
+				secondaryButtonLink.setIconLeftCSS("o_icon o_icon-fw " + secondaryButton.leftIcon());
+			}
+			emptyStateSecondaryButtons.add(secondaryButtonLink);
+			components.put("emptyStateSecondaryButton_" + secondaryButton.action(), secondaryButtonLink);
+			if (getRootForm() != null) {
+				rootFormAvailable(secondaryButtonLink);
+			}
 		}
 	}
 

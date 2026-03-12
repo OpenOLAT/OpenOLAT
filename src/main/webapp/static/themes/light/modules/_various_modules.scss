@@ -164,6 +164,39 @@ ul.o_dropdown {
 	border: $o-empty-border-color;
 	border-radius: $o-empty-border-radius;
 	
+	.o_empty_small {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 10px;
+		
+		.o_empty_circle {
+			width: 80px;
+			height: 80px;
+			border-radius: 50%;
+			background-color: $o-brand-box-bg;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			.o_icon {
+				font-size: 36px;
+				color: $o-brand-text;
+			}
+		}
+		
+		.o_empty_text {
+			display: flex;
+			flex-direction: column;
+			align-items: start;
+			gap: 4px;
+			
+			.o_empty_msg, .o_empty_hint, .o_empty_action {
+				margin: 0;
+			}
+		}
+	}
+	
 	.o_empty_standard {
 		display: flex;
 		flex-direction: column;
@@ -215,14 +248,20 @@ ul.o_dropdown {
 		font-weight: 500;
 	}
 	.o_empty_hint {
+		display: flex;
+		justify-content: center;
 		margin: 0.5em;
+		
+		.o_empty_hint_text {
+			text-align: left;
+		}
 	}
 	.o_empty_action {
 		display: flex;
 		flex-direction: row;
 		gap: 4px;
 		justify-content: center;
-		margin: 0.5em;
+		margin: 1em 0.5em 0.5em 0.5em;
 	}
 	
 	@media (max-width: $screen-xs-max) { 

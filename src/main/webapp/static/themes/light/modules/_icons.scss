@@ -517,6 +517,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_sort_amount_asc { @include o-add-icon('sort-amount-asc');}
 .o_icon_sort_amount_desc { @include o-add-icon('sort-amount-desc');}
 .o_icon_sort_menu { @include o-add-icon('sort-amount-asc');}
+.o_icon_square_rss { @include o-add-icon('square-rss');}
 .o_icon_star { @include o-add-icon('star');}
 .o_icon_start { @include o-add-icon('chevron-right');}
 .o_icon_status_available { @include o-add-icon('circle'); color: $o-im-status-available-color;}

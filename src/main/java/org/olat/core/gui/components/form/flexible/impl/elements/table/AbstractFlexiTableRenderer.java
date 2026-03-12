@@ -27,10 +27,12 @@ import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.emptystate.EmptyStateButtonRenderer;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateRenderConfigBuilder;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -178,14 +180,19 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		EmptyStateButtonRenderer buttonRenderer = ftE.getEmptyStatePrimaryButton() != null ? 
 				() -> renderFormItem(renderer, sb, ftE.getEmptyStatePrimaryButton(), ubu, translator, renderResult, null) : null;
 
-		EmptyStateRenderConfig renderConfig = EmptyStateRenderConfig.builder()
+		EmptyStateRenderConfigBuilder renderConfigBuilder = EmptyStateRenderConfig.builder()
 				.withWrapperSelector(ftE.getWrapperSelector())
 				.withIconCss(config.getIconCss())
 				.withMessageTranslated(message)
+				.withHelp(config.getHelpTranslated(), config.getHelpPage())
 				.withHintTranslated(hint)
-				.withPrimaryButtonRenderer(buttonRenderer)
-				.build();
-		EmptyStateRenderer.renderEmptyState(sb, translator, null, renderConfig);
+				.withPrimaryButtonRenderer(buttonRenderer);
+		for (FormLink secondaryButton : ftE.getEmptyStateSecondaryButtons()) {
+			EmptyStateButtonRenderer secondaryButtonRenderer = 
+					() -> renderFormItem(renderer, sb, secondaryButton, ubu, translator, renderResult, null);
+			renderConfigBuilder.withSecondaryButtonRenderer(secondaryButtonRenderer);
+		}
+		EmptyStateRenderer.renderEmptyState(sb, translator, null, renderConfigBuilder.build());
 	}
 	
 	private String getMessage(EmptyStateConfig config, Translator translator) {

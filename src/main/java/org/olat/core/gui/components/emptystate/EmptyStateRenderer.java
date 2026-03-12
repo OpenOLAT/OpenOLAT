@@ -50,6 +50,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		String desc = getDesc(emptyState, translator);
 
 		EmptyStateRenderConfigBuilder builder = EmptyStateRenderConfig.builder()
+				.withVariant(emptyState.getVariant())
 				.withIndicatorIconCss(emptyState.getIndicatorIconCss())
 				.withIconCss(emptyState.getIconCss())
 				.withMessageTranslated(message)
@@ -99,6 +100,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		}
 		builder.withPrimaryButtonRenderer(() -> {
 			emptyState.getPrimaryButtonLink().setCustomDisplayText(buttonText);
+			emptyState.getPrimaryButtonLink().setIconLeftCSS(getButtonLeftIcon(emptyState.getPrimaryButton()));
 			renderer.render(emptyState.getPrimaryButtonLink(), sb, args);
 		});
 	}
@@ -119,6 +121,17 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		}
 		return null;
 	}
+	
+	private String getButtonLeftIcon(EmptyStateButton button) {
+		String leftIcon = button.leftIcon();
+		if (StringHelper.containsNonWhitespace(leftIcon)) {
+			if (!leftIcon.startsWith("o_icon ")) {
+				leftIcon = "o_icon o_icon-fw " + leftIcon;
+			}
+			return leftIcon;
+		}
+		return null;
+	}
 
 	private void addSecondaryButtonRenderers(EmptyStateRenderConfigBuilder builder, Renderer renderer, StringOutput sb, 
 											 EmptyState emptyState, Translator translator, String[] args) {
@@ -131,9 +144,11 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			if (!StringHelper.containsNonWhitespace(text)) {
 				continue;
 			}
+			String leftIcon = getButtonLeftIcon(secondaryButton);
 			Link link = emptyState.getSecondaryButtonLinks().get(i);
+			link.setCustomDisplayText(text);
+			link.setIconLeftCSS(leftIcon);
 			builder.withSecondaryButtonRenderer(() -> {
-				link.setCustomDisplayText(text);
 				renderer.render(link, sb, args);
 			});
 		}
@@ -152,8 +167,9 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		sb.append(">");
 		
 		switch (config.getVariant()) {
-			case standard -> renderStandardIcon(sb, config);
-			case combined -> renderCombinedIcon(sb, config);
+			case standard -> renderStandardVariantIcon(sb, config);
+			case combined -> renderCombinedVariantIcon(sb, config);
+			case small -> renderSmallVariantOpen(sb, config);
 			default -> {}
 		}
 
@@ -162,7 +178,11 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 		// hint
 		if (StringHelper.containsNonWhitespace(config.getHintTranslated())) {
-			sb.append("<div class='o_empty_hint'>").append(config.getHintTranslated()).append("</div>");
+			sb.append("<div class='o_empty_hint'>");
+			sb.append("<div class='o_empty_hint_text'>");
+			sb.append(config.getHintTranslated());
+			sb.append("</div>");
+			sb.append("</div>");
 		}
 
 		// description
@@ -198,10 +218,15 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 
+		switch (config.getVariant()) {
+			case small -> renderSmallVariantClose(sb, config);
+			default -> {}
+		}
+
 		sb.append("</div>");
 	}
 
-	private static void renderCombinedIcon(StringOutput sb, EmptyStateRenderConfig config) {
+	private static void renderCombinedVariantIcon(StringOutput sb, EmptyStateRenderConfig config) {
 		String indicatorIconCss = StringHelper.containsNonWhitespace(config.getIndicatorIconCss()) ?
 				config.getIndicatorIconCss() : "o_icon_empty_indicator";
 		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
@@ -212,7 +237,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 	}
 
-	private static void renderStandardIcon(StringOutput sb, EmptyStateRenderConfig config) {
+	private static void renderStandardVariantIcon(StringOutput sb, EmptyStateRenderConfig config) {
 		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
 				config.getIconCss() : "o_icon_empty_objects";
 		
@@ -221,5 +246,21 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		sb.append("<i class='o_icon ").append(iconCss).append("'></i>");
 		sb.append("</div>");
 		sb.append("</div>");
+	}
+
+	private static void renderSmallVariantOpen(StringOutput sb, EmptyStateRenderConfig config) {
+		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
+				config.getIconCss() : "o_icon_empty_objects";
+
+		sb.append("<div class='o_empty_small'>");
+		sb.append("<div class='o_empty_circle'>");
+		sb.append("<i class='o_icon ").append(iconCss).append("'></i>");
+		sb.append("</div>");
+		sb.append("<div class='o_empty_text'>");
+	}
+	
+	private static void renderSmallVariantClose(StringOutput sb, EmptyStateRenderConfig config) {
+		sb.append("</div>"); // o_empty_text
+		sb.append("</div>"); // o_empty_small
 	}
 }

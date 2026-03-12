@@ -32,6 +32,7 @@ public class EmptyStateFactory {
 
 	public static EmptyState create(String name, VelocityContainer vc, ComponentEventListener listener, EmptyStateConfig config) {
 		EmptyState emptyState = create(name, vc, listener);
+		emptyState.setVariant(config.getVariant());
 		emptyState.setIconCss(config.getIconCss());
 		emptyState.setIndicatorIconCss(config.getIndicatorIconCss());
 		emptyState.setMessageI18nKey(config.getMessageI18nKey());

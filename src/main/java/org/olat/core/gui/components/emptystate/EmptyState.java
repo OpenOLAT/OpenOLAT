@@ -43,7 +43,7 @@ import org.olat.core.util.CodeHelper;
  */
 public class EmptyState extends AbstractComponent implements FormBaseComponent, ComponentCollection, ComponentEventListener {
 	public static final int MAX_SECONDARY_BUTTONS = 3;
-	
+
 	public class PrimaryEvent extends Event {
 		public PrimaryEvent() {
 			super("empty-state-primary");
@@ -65,6 +65,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	
 	private static final ComponentRenderer RENDERER = new EmptyStateRenderer();
 	
+	private EmptyStateVariant variant;
 	private String iconCss;
 	private String indicatorIconCss;
 	private String messageI18nKey;
@@ -98,6 +99,14 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 			secondaryButtonLink.setDomReplacementWrapperRequired(false);
 			secondaryButtonLinks.add(secondaryButtonLink);
 		}
+	}
+
+	public EmptyStateVariant getVariant() {
+		return variant;
+	}
+
+	public void setVariant(EmptyStateVariant variant) {
+		this.variant = variant;
 	}
 
 	public String getIconCss() {

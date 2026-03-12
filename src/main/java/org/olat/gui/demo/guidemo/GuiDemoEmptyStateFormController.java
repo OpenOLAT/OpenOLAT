@@ -25,14 +25,18 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptySecondaryActionEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -52,10 +56,10 @@ public class GuiDemoEmptyStateFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
-				.withIconCss("o_icon_empty_objects")
+				.withIconCss("o_icon_qual_preview")
 				.withMessageI18nKey("empty.state.form.message")
 				.withHintI18nKey("empty.state.hint.additional")
-				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
+				.withHelp(translate("empty.state.help.additional"), "release_notes/")
 				.build();
 		EmptyState emptyState = EmptyStateFactory.create("emptyStateInForm", flc.getFormItemComponent(), this, emptyStateConfig);
 		emptyState.setTranslator(getTranslator());
@@ -70,12 +74,28 @@ public class GuiDemoEmptyStateFormController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "itemPriceTable", tableModel, getTranslator(), formLayout);
 		EmptyStateConfig config = EmptyStateConfig.builder()
 				.withMessageI18nKey("empty.state.table.message")
-				.withIconCss("o_icon_empty_objects")
-				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
+				.withIconCss("o_icon_square_rss")
+				.withHintI18nKey("empty.state.table.hint")
+				.withHelp(translate("empty.state.help.additional"), "release_notes/")
+				.withPrimaryButton("o_icon_search", "select", null)
+				.withSecondaryButton("o_icon_add", "create", null, "create")
+				.withSecondaryButton("o_icon_link", "link", null, "link")
 				.build();
 		tableEl.setEmptyStateConfig(config, false);
 
 		uifactory.addFormSubmitButton("submit", formLayout);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				showInfo("empty.state.event.primary");
+			} else if (event instanceof FlexiTableEmptySecondaryActionEvent actionEvent) {
+				showInfo("empty.state.event.secondary", actionEvent.getAction());
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
