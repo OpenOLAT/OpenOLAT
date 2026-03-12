@@ -475,8 +475,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tabs.add(allTab);
 
 		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+			List<FlexiTableFilterValue> relevantImplicitFilters = new ArrayList<>();
+			relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
+			if (learningPath) {
+				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+			}
 			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member)));
+					TabSelectionBehavior.nothing, relevantImplicitFilters);
 			relevantTab.setElementCssClass("o_sel_assessment_relevant");
 			relevantTab.setFiltersExpanded(true);
 			tabs.add(relevantTab);
@@ -511,8 +517,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		if (learningPath) {
 			tabs.forEach(tab -> {
-				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION, 
-						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+				if (tab != relevantTab) {
+					tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+				}
 			});
 		}
 		if(assessmentConfig.hasCoachAssignment()) {
