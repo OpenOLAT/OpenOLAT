@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.NullOrder;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.certificationprogram.ui.CertificationProgramRecertificationTableModel.RecertificationCols;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDays;
@@ -61,7 +62,7 @@ public class CertificationProgramRecertificationTableSortDelegate extends Sortab
 		@Override
 		public int compare(CertificationProgramRecertificationRow o1, CertificationProgramRecertificationRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsAlwaysLast(o1, o2);
+				return compareNullObjects(o1, o2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			
 			Date c1 = o1.getCertificationDate();
@@ -82,13 +83,13 @@ public class CertificationProgramRecertificationTableSortDelegate extends Sortab
 		@Override
 		public int compare(CertificationProgramRecertificationRow o1, CertificationProgramRecertificationRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsAlwaysLast(o1, o2);
+				return compareNullObjects(o1, o2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			
 			CertificationStatus c1 = o1.getCertificationStatus();
 			CertificationStatus c2 = o2.getCertificationStatus();
 			if(c1 == null || c2 == null) {
-				return compareNullObjectsAlwaysLast(c1, c2);
+				return compareNullObjects(c1, c2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			return c1.compareTo(c2);
 		}
@@ -99,13 +100,13 @@ public class CertificationProgramRecertificationTableSortDelegate extends Sortab
 		@Override
 		public int compare(CertificationProgramRecertificationRow o1, CertificationProgramRecertificationRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsAlwaysLast(o1, o2);
+				return compareNullObjects(o1, o2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			
 			NextRecertificationInDays n1 = o1.getNextRecertification();
 			NextRecertificationInDays n2 = o2.getNextRecertification();
 			if(n1 == null || n2 == null) {
-				return compareNullObjectsAlwaysLast(n1, n2);
+				return compareNullObjects(n1, n2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			
 			int c = compareLongs(n1.days(), n2.days());

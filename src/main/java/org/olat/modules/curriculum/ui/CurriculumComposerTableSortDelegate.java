@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.NullOrder;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
@@ -86,19 +87,19 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 		@Override
 		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsAlwaysLast(o1, o2);
+				return compareNullObjects(o1, o2, NullOrder.NULLS_ALWAYS_LAST);
 			}
-			
+
 			ParticipantsAvailabilityNum an1 = o1.getParticipantsAvailabilityNum();
 			ParticipantsAvailabilityNum an2 = o2.getParticipantsAvailabilityNum();
 			if (an1 == null || an2 == null) {
-				return compareNullObjectsAlwaysLast(an1, an2);
+				return compareNullObjects(an1, an2, NullOrder.NULLS_ALWAYS_LAST);
 			}
-			
+
 			ParticipantsAvailability a1 = an1.availability();
 			ParticipantsAvailability a2 = an2.availability();
 			if (a1 == null || a2 == null) {
-				return compareNullObjectsAlwaysLast(a1, a2);
+				return compareNullObjects(a1, a2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			
 			int c = Integer.compare(a1.ordinal(), a2.ordinal());

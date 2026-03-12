@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.function.Function;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.util.StringHelper;
 
 /**
  * Replicate the same mechanism as in the TableController but
@@ -135,72 +136,84 @@ public class SortableFlexiTableModelDelegate<T> {
 	}
 	
 	protected final int compareString(final String a, final String b) {
-		return compareString(a, b, true);
+		return compareString(a, b, NullOrder.NULLS_ALWAYS_LAST);
 	}
-	
-	protected final int compareString(final String a, final String b, boolean nullFirst) {
+
+	protected final int compareString(final String aVal, final String bVal, NullOrder nullOrder) {
+		String a = StringHelper.nullIfBlank(aVal);
+		String b = StringHelper.nullIfBlank(bVal);
 		if (a == null || b == null) {
-			return nullFirst? compareNullObjects(a, b): compareNullObjects(b, a);
+			return compareNullObjects(a, b, nullOrder);
 		}
 		return collator == null ? a.compareTo(b) : collator.compare(a, b);
 	}
 
 	protected final int compareBooleans(final Boolean a, final Boolean b) {
-		if (a == null || b == null) {
-			return compareNullObjects(a, b);
-		}
-		
-		boolean ba = a.booleanValue();
-		boolean bb = b.booleanValue();
-		return compareBooleans(ba, bb);
+		return compareBooleans(a, b, NullOrder.NULLS_ALWAYS_LAST);
 	}
-	
+
+	protected final int compareBooleans(final Boolean a, final Boolean b, NullOrder nullOrder) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b, nullOrder);
+		}
+		return compareBooleans(a.booleanValue(), b.booleanValue());
+	}
+
 	protected final int compareBooleans(final boolean a, final boolean b) {
 		return a? (b? 0: -1):(b? 1: 0);
 	}
-	
+
 	protected final int compareDateAndTimestamps(Date a, Date b) {
-		return compareDateAndTimestamps(a, b, true);
+		return compareDateAndTimestamps(a, b, NullOrder.NULLS_ALWAYS_LAST);
 	}
-	
-	protected final int compareDateAndTimestamps(Date a, Date b, boolean nullFirst) {
+
+	protected final int compareDateAndTimestamps(Date a, Date b, NullOrder nullOrder) {
 		if (a == null || b == null) {
-			return nullFirst? compareNullObjects(a, b): compareNullObjects(b, a);
+			return compareNullObjects(a, b, nullOrder);
 		}
-		
-		if (a instanceof Timestamp) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
-			if(b instanceof Timestamp) {
-				return ((Timestamp)a).compareTo((Timestamp)b);
-			} else {
-				Timestamp ta = (Timestamp)a;
-				Date aAsDate = new Date(ta.getTime());
-				return aAsDate.compareTo(b);
+
+		if (a instanceof Timestamp timestampA) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
+			if(b instanceof Timestamp timestampB) {
+				return timestampA.compareTo(timestampB);
 			}
-		} else if (b instanceof Timestamp) {
-			Timestamp tb = (Timestamp)b;
-			Date bAsDate = new Date(tb.getTime());
+			Date aAsDate = new Date(timestampA.getTime());
+			return aAsDate.compareTo(b);
+		} else if (b instanceof Timestamp timestampB) {
+			Date bAsDate = new Date( timestampB.getTime());
 			return a.compareTo(bAsDate);
 		}
 		return a.compareTo(b);
 	}
-	
+
 	protected final int compareIntegers(Integer a, Integer b) {
+		return compareIntegers(a, b, NullOrder.NULLS_ALWAYS_LAST);
+	}
+
+	protected final int compareIntegers(Integer a, Integer b, NullOrder nullOrder) {
 		if (a == null || b == null) {
-			return compareNullObjects(a, b);
+			return compareNullObjects(a, b, nullOrder);
 		}
 		return a.compareTo(b);
 	}
-	
+
 	protected final int compareLongs(Long a, Long b) {
+		return compareLongs(a, b, NullOrder.NULLS_ALWAYS_LAST);
+	}
+
+	protected final int compareLongs(Long a, Long b, NullOrder nullOrder) {
 		if (a == null || b == null) {
-			return compareNullObjects(a, b);
+			return compareNullObjects(a, b, nullOrder);
 		}
 		return a.compareTo(b);
 	}
-	
+
 	protected final int compareBigDecimal(BigDecimal a, BigDecimal b) {
+		return compareBigDecimal(a, b, NullOrder.NULLS_ALWAYS_LAST);
+	}
+
+	protected final int compareBigDecimal(BigDecimal a, BigDecimal b, NullOrder nullOrder) {
 		if (a == null || b == null) {
-			return compareNullObjects(a, b);
+			return compareNullObjects(a, b, nullOrder);
 		}
 		return a.compareTo(b);
 	}
@@ -219,13 +232,13 @@ public class SortableFlexiTableModelDelegate<T> {
 		return ba? (bb? 0: -1):(bb? 1: 0);
 	}
 	
-	public final int compareNullObjectsAlwaysLast(final Object a, final Object b) {
-		boolean ba = (a == null);
-		boolean bb = (b == null);
-		if(asc) {
-			return ba? (bb? 0: 1):(bb? -1: 0);
-		}
-		return ba? (bb? 0: -1):(bb? 1: 0);
+	protected final int compareNullObjects(final Object a, final Object b, NullOrder nullOrder) {
+		return switch (nullOrder) {
+			case NULLS_FIRST -> compareNullObjects(a, b);
+			case NULLS_LAST -> compareNullObjects(b, a);
+			case NULLS_ALWAYS_FIRST -> asc ? compareNullObjects(a, b) : compareNullObjects(b, a);
+			case NULLS_ALWAYS_LAST -> asc ? compareNullObjects(b, a) : compareNullObjects(a, b);
+		};
 	}
 	
 	public class ReverseComparator implements Comparator<T> {
@@ -250,13 +263,13 @@ public class SortableFlexiTableModelDelegate<T> {
 			Object val2 = tableModel.getValueAt(t2, columnIndex);
 			
 			if (val1 == null || val2 == null) {
-				return compareNullObjects(val1, val2);
+				return compareNullObjects(val1, val2, NullOrder.NULLS_ALWAYS_LAST);
 			}
-			if (val1 instanceof String && val2 instanceof String) {
-				return collator.compare(val1, val2);
+			if (val1 instanceof String string1 && val2 instanceof String string2) {
+				return compareString(string1, string2);
 			}
-			if(val1 instanceof Date && val2 instanceof Date) {
-				return compareDateAndTimestamps((Date)val1, (Date)val2);
+			if(val1 instanceof Date date1 && val2 instanceof Date date2) {
+				return compareDateAndTimestamps(date1, date2);
 			}
 			if (val1 instanceof Comparable c1 && val2 instanceof Comparable c2) {
 				@SuppressWarnings("unchecked")
@@ -278,12 +291,12 @@ public class SortableFlexiTableModelDelegate<T> {
 		@Override
 		public int compare(T row1, T row2) {
 			if (row1 == null || row2 == null) {
-				return compareNullObjectsAlwaysLast(row1, row2);
+				return compareNullObjects(row1, row2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			Date d1 = dateExtractor.apply(row1);
-			Date d2 =  dateExtractor.apply(row2);
+			Date d2 = dateExtractor.apply(row2);
 			if (d1 == null || d2 == null) {
-				return compareNullObjectsAlwaysLast(d1, d2);
+				return compareNullObjects(d1, d2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			return compareDateAndTimestamps(d1, d2);
 		}
