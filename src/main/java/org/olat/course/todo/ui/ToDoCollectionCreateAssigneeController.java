@@ -91,7 +91,8 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		
 		GroupRoles searchAs = context.isCoach() ? GroupRoles.coach : GroupRoles.owner;
 		MemberSearchConfig config = MemberSearchConfig.defaultConfig(context.getRepositoryEntry(), searchAs, "to-do-assignees-v1.0")
-				.showSelectButton(false);
+				.showSelectButton(false)
+				.tableValidation(() -> !KEY_ALL.equals(selectionEl.getSelectedKey()));
 		if (context.getAssigneeKeys() != null) {
 			config = config.preselectedIdentitiesKeys(context.getAssigneeKeys());
 		}
@@ -99,8 +100,6 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		listenTo(memberSearchController);
 		memberSearchController.getInitialFormItem().setFormLayout("0_12");
 		membersCont.add(memberSearchController.getInitialFormItem());
-		
-		
 	}
 	
 	private void updateUI() {
@@ -114,9 +113,9 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
+	
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void formNext(UserRequest ureq) {
 		context.setAssigneesSelected(selectionEl.isKeySelected(KEY_SELECTION));
 		if (membersCont.isVisible()) {
 			List<Long> selectedIdentities = memberSearchController.getSelectedIdentities()
@@ -125,6 +124,19 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		}
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	@Override
+	public void back() {
+		// Remove, as the validation errors prevented the next button in the last controller.
+		removeAsListenerAndDispose(memberSearchController);
+		memberSearchController = null;
+		super.back();
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 }

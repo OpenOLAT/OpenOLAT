@@ -104,7 +104,8 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 		RepositoryEntry courseEntry = repositoryService.loadByKey(toDoTaskCollection.getOriginId());
 		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, searchAs, "to-do-assignees-v1.0")
 				.showSelectButton(false)
-				.identitiesList(participantsWithoutToDoTask);
+				.identitiesList(participantsWithoutToDoTask)
+				.tableValidation(() -> !KEY_ALL.equals(selectionEl.getSelectedKey()));
 		memberSearchController = new MemberSearchController(ureq, getWindowControl(), mainForm, config);
 		listenTo(memberSearchController);
 		memberSearchController.getInitialFormItem().setFormLayout("0_12");
@@ -132,7 +133,7 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
 	}
-
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (KEY_ALL.equals(selectionEl.getSelectedKey())) {
