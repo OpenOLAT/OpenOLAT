@@ -65,7 +65,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	
 	private static final ComponentRenderer RENDERER = new EmptyStateRenderer();
 	
-	private EmptyStateVariant variant;
+	private EmptyStateVariant variant = EmptyStateVariant.standard;
 	private String iconCss;
 	private String indicatorIconCss;
 	private String messageI18nKey;
