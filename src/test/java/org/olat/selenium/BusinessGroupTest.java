@@ -431,7 +431,7 @@ public class BusinessGroupTest extends Deployments {
 		participantLoginPage
 			.loginAs(participant.getLogin(), participant.getPassword())
 			.assertOnMembershipConfirmation()
-			.confirmMembership();
+			.confirmSingleMembership();
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
 		participantNavBar
 			.openGroups(participantBrowser)
@@ -443,7 +443,7 @@ public class BusinessGroupTest extends Deployments {
 		new LoginPage(reiBrowser)
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.assertOnMembershipConfirmation()
-			.confirmMembership();
+			.confirmSingleMembership();
 		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
 		reiNavBar
 			.openGroups(reiBrowser)
