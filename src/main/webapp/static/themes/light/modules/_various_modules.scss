@@ -168,7 +168,7 @@ ul.o_dropdown {
 		display: flex;
 		flex-direction: row;
 		justify-content: center;
-		gap: 10px;
+		gap: 20px;
 		
 		.o_empty_circle {
 			width: 80px;
@@ -191,8 +191,12 @@ ul.o_dropdown {
 			align-items: start;
 			gap: 4px;
 			
-			.o_empty_msg, .o_empty_hint, .o_empty_action {
+			.o_empty_msg, .o_empty_hint {
 				margin: 0;
+			}
+			
+			.o_empty_action {
+				margin: 1em 0 0 0;
 			}
 		}
 	}

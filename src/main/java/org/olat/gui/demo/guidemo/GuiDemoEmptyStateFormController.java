@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -46,16 +47,21 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class GuiDemoEmptyStateFormController extends FormBasicController {
 
+	private final EmptyStateVariant variant;
 	private FlexiTableElement tableEl;
 
-	public GuiDemoEmptyStateFormController(UserRequest ureq, WindowControl wControl) {
+	public GuiDemoEmptyStateFormController(UserRequest ureq, WindowControl wControl, EmptyStateVariant variant) {
 		super(ureq, wControl, "guidemo-empty-state-form");
+		this.variant = variant;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("variant", variant.name());
+
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withVariant(variant)
 				.withIconCss("o_icon_qual_preview")
 				.withMessageI18nKey("empty.state.form.message")
 				.withHintI18nKey("empty.state.hint.additional")
@@ -73,6 +79,7 @@ public class GuiDemoEmptyStateFormController extends FormBasicController {
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "itemPriceTable", tableModel, getTranslator(), formLayout);
 		EmptyStateConfig config = EmptyStateConfig.builder()
+				.withVariant(variant)
 				.withMessageI18nKey("empty.state.table.message")
 				.withIconCss("o_icon_square_rss")
 				.withHintI18nKey("empty.state.table.hint")
@@ -82,8 +89,6 @@ public class GuiDemoEmptyStateFormController extends FormBasicController {
 				.withSecondaryButton("o_icon_link", "link", null, "link")
 				.build();
 		tableEl.setEmptyStateConfig(config, false);
-
-		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 
 	@Override

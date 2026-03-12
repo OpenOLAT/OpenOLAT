@@ -166,7 +166,9 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(">");
 		
-		switch (config.getVariant()) {
+		EmptyStateVariant variant = config.getVariant() != null ? config.getVariant() : EmptyStateVariant.standard;
+
+		switch (variant) {
 			case standard -> renderStandardVariantIcon(sb, config);
 			case combined -> renderCombinedVariantIcon(sb, config);
 			case small -> renderSmallVariantOpen(sb, config);
@@ -218,7 +220,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 
-		switch (config.getVariant()) {
+		switch (variant) {
 			case small -> renderSmallVariantClose(sb, config);
 			default -> {}
 		}

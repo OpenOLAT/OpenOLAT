@@ -181,6 +181,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				() -> renderFormItem(renderer, sb, ftE.getEmptyStatePrimaryButton(), ubu, translator, renderResult, null) : null;
 
 		EmptyStateRenderConfigBuilder renderConfigBuilder = EmptyStateRenderConfig.builder()
+				.withVariant(config.getVariant())
 				.withWrapperSelector(ftE.getWrapperSelector())
 				.withIconCss(config.getIconCss())
 				.withMessageTranslated(message)
