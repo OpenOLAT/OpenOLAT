@@ -322,7 +322,6 @@ public class SearchMyRepositoryEntryViewParams {
 		lifecycleSoftkey,
 		lifecycleStart,
 		lifecycleEnd,
-		type,
 		custom
 	}
 	

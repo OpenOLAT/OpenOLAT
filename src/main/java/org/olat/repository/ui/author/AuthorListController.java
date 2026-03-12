@@ -528,7 +528,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
 		columnModelList.add(markColumn);
 		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
-				Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
+				Cols.type.i18nKey(), Cols.type.ordinal(), false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		DefaultFlexiColumnModel technicalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.technicalType.i18nKey(), Cols.technicalType.ordinal(),
 				true, OrderBy.technicalType.name());

@@ -767,13 +767,13 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case author:
-					sb.append(" order by lower(v.authors)");
-					appendAsc(sb, asc).append(" nulls last, v.key asc");
+					sb.append(" order by case when v.authors = '' then null else lower(v.authors) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case location:
-					sb.append(" order by lower(v.location)");
-					appendAsc(sb, asc).append(" nulls last, v.key asc");
-					break;	
+					sb.append(" order by case when v.location = '' then null else lower(v.location) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
 				case creationDate:
 					sb.append(" order by v.creationDate ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc, v.key asc");
@@ -809,12 +809,12 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc).append(", v.key asc");	
 					break;
 				case externalRef:
-					sb.append(" order by lower(v.externalRef)");
-					appendAsc(sb, asc).append(", v.key asc");
+					sb.append(" order by case when v.externalRef = '' then null else lower(v.externalRef) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case externalId:
-					sb.append(" order by lower(v.externalId)");
-					appendAsc(sb, asc).append(", v.key asc");
+					sb.append(" order by case when v.externalId = '' then null else lower(v.externalId) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleLabel:
 					sb.append(" order by case when lifecycle.privateCycle = false then lifecycle.label end ");
@@ -833,10 +833,6 @@ public class RepositoryEntryMyCourseQueries {
 				case lifecycleEnd:
 					sb.append(" order by lifecycle.validTo ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
-					break;
-				case type:
-					sb.append(" order by res.resName ");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc, v.key asc");
 					break;
 				case custom: 
 					if (params.getParentEntry() != null) {

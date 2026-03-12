@@ -373,13 +373,11 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public enum OrderBy {
 		key,
-		favorit,	
-		type,
+		favorit,
 		technicalType,
 		displayname,
 		authors,
 		author,
-		license,
 		location,
 		access,
 		ac,

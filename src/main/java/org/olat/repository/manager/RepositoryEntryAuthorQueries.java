@@ -624,29 +624,25 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" order by marks desc, lower(v.displayname) desc");
 					}
 					break;
-				case type:
-					sb.append(" order by res.resName");
-					appendAsc(sb, asc);
-					break;
 				case technicalType:
 					sb.append(" order by lower(v.technicalType)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(" nulls last");
 					break;
 				case displayname:
 					sb.append(" order by lower(v.displayname)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(" nulls last");
 					break;
 				case authors:
-					sb.append(" order by lower(v.authors)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					sb.append(" order by case when v.authors = '' then null else lower(v.authors) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case author:
-					sb.append(" order by lower(v.initialAuthor)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					sb.append(" order by case when v.initialAuthor = '' then null else lower(v.initialAuthor) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case location:
-					sb.append(" order by lower(v.location)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					sb.append(" order by case when v.location = '' then null else lower(v.location) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case guests:
 					sb.append(" order by v.guests");
@@ -657,10 +653,15 @@ public class RepositoryEntryAuthorQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case access:
+					sb.append(" order by case");
+					for (RepositoryEntryStatusEnum status : RepositoryEntryStatusEnum.values()) {
+						sb.append(" when v.status = '").append(status.name()).append("' then ").append(status.ordinal());
+					}
+					sb.append(" end");
 					if(asc) {
-						sb.append(" order by v.status asc, lower(v.displayname) asc");
+						sb.append(" asc, lower(v.displayname) asc");
 					} else {
-						sb.append(" order by v.status desc, lower(v.displayname) desc");
+						sb.append(" desc, lower(v.displayname) desc");
 					}
 					break;
 				case ac:
@@ -684,15 +685,15 @@ public class RepositoryEntryAuthorQueries {
 					break;
 				case lastUsage:
 					sb.append(" order by v.statistics.lastUsage ");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case externalId:
-					sb.append(" order by lower(v.externalId)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					sb.append(" order by case when v.externalId = '' then null else lower(v.externalId) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case externalRef:
-					sb.append(" order by lower(v.externalRef)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					sb.append(" order by case when v.externalRef = '' then null else lower(v.externalRef) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleLabel:
 					sb.append(" order by case when lifecycle.privateCycle = false then lifecycle.label end ");
@@ -731,10 +732,6 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" lectureConfig.lectureEnabled").appendAsc(asc).append(" nulls last");
 					}
 					sb.append(", lower(v.displayname) asc");
-					break;
-				case license:
-					sb.append(" order by v.key");
-					appendAsc(sb, asc);
 					break;
 			}
 		}
