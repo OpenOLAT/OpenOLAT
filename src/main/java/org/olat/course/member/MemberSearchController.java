@@ -529,7 +529,7 @@ public class MemberSearchController extends FormBasicController {
 		
 		tableEl.clearError();
 		if(config.tableValidation().getAsBoolean() && tableEl.getMultiSelectedIndex().isEmpty()) {
-			tableEl.setErrorKey("error.atleastone");
+			tableEl.setErrorKey("error.atleastone.member");
 			allOk &= false;
 		}
 		
