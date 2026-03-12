@@ -379,6 +379,24 @@ Renders stacked/layered content. LayeredPanel adds `o_layer_0`, `o_layer_1` clas
 
 ```html
 <div class="o_table_wrapper o_table_flexi">
+  <!-- Filter pills (FlexiFiltersComponentRenderer) -->
+  <div class="o_table_filters_wrapper o_expanded">
+    <div class="o_table_filters_row">
+      <ul class="nav nav-pills o_table_filters">
+        <li role="presentation">
+          <a href="#" class="btn btn-default o_table_filter o_filter_active" role="button">
+            <span>Type: Course</span> <i class="o_icon o_icon-fw o_icon_caret"></i>
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#" class="btn btn-default o_table_filter" role="button">
+            <span>Status</span> <i class="o_icon o_icon-fw o_icon_caret"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
   <!-- Search/filter bar -->
   <div class="o_table_toolbar">
     <div class="o_table_search form-inline">...</div>
@@ -386,7 +404,7 @@ Renders stacked/layered content. LayeredPanel adds `o_layer_0`, `o_layer_1` clas
     <ul class="o_table_tabs nav nav-tabs">...</ul>
   </div>
 
-  <!-- Scrollable table wrapper -->
+  <!-- Scrollable table wrapper (AbstractFlexiTableRenderer) -->
   <div class="o_scrollable_wrapper">
     <div class="o_scrollable">
       <table class="table [table-striped] [table-condensed] [table-bordered]">
@@ -415,6 +433,12 @@ Renders stacked/layered content. LayeredPanel adds `o_layer_0`, `o_layer_1` clas
   </div>
 </div>
 ```
+
+> **Filter button details:** `FlexiFiltersComponentRenderer` renders each filter as
+> `<a class="btn btn-default o_table_filter">` with the caret icon `<i class="o_icon o_icon-fw o_icon_caret">`.
+> The active state class `o_filter_active` is placed on the `<a>` element (NOT on the `<li>`).
+> Filter buttons are styled via `@include button-variant()` with `$o-table-filter-color/bg/border` and
+> `$o-table-filter-active-color/bg/border` variables defined in `_config.scss`.
 
 #### Tree (Menu Navigation)
 ```html
@@ -540,10 +564,19 @@ Renders stacked/layered content. LayeredPanel adds `o_layer_0`, `o_layer_1` clas
 
 // OpenOlat custom buttons
 .btn.o_button_ghost         // Transparent background, link-colored
-.btn.o_button_mega          // Large button with icon + title + subtitle
+.btn.o_button_mega          // Large button with icon + title + subtitle (see below)
 .btn.o_button_primary_light // Primary outline variant
 .btn.o_button_call_to_action // Large, wide CTA button
 .btn.o_button_dirty         // Warning-colored (unsaved changes)
+
+// Mega buttons: grid container + flex button with icon, headline, description
+// Used in course element selection screens (e.g., course Planner)
+.o_mega_buttons             // CSS Grid container (auto-fill, responsive 1-9 columns)
+  > li > button.btn.o_button_mega   // 55px height, flex row layout
+    > i.o_icon                      // Left icon
+    > span                          // Text container
+      > div.o_mega_headline         // Bold title
+      > div                         // Description text
 
 // Button groups
 .o_button_group       { text-align: center; }
@@ -569,6 +602,14 @@ Renders stacked/layered content. LayeredPanel adds `o_layer_0`, `o_layer_1` clas
 // Inline message lines
 .o_warning_line  { background: $o-labeled-orange-mega-bg-color; color: $o-labeled-orange-mega-color; }
 .o_error_line    { background: $o-labeled-red-mega-bg-color; color: $o-labeled-red-mega-color; }
+
+// Form field errors (SimpleFormErrorText renderer)
+// Rendered as a BLOCK <div>, not a <span>:
+//   <div class="form-group">
+//     <label>...</label>
+//     <input class="form-control">
+//     <div class="o_error">Error message text</div>   ← block element, below the field
+//   </div>
 ```
 
 ### 5.6 Labeled Color System
@@ -586,6 +627,26 @@ OpenOlat defines a semantic color system with 8 base colors, each having 3 varia
 | Grey | | White on `#595959` | Grey on white | `#342c24` on `#F6F6F6` |
 
 Variables: `$o-labeled-{color}-{variant}-{property}` where variant = (none)/light/mega and property = color/bg-color/border-color.
+
+### 5.7 Widgets & Dashboard
+
+```scss
+// Widget grid container (auto-fill, responsive columns)
+.o_widgets { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: ...; }
+
+// Individual widget card
+.o_widget {
+  min-width: ...; min-height: ...; display: flex; flex-direction: column;
+  border: 1px solid ...; border-radius: ...;
+  > .o_widget_header   // Title area
+  > .o_widget_content  // Main content area
+}
+
+// Widget types: o_figure_widget (number + label), o_text_widget (text block), o_table_widget (mini table)
+
+// Dashboard variants (Home page)
+.o_dashboard_widget > .o_dashboard_widget_header + .o_dashboard_widget_content + .o_dashboard_widget_footer
+```
 
 ---
 

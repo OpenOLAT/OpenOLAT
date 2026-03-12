@@ -14,6 +14,8 @@ For detailed frontend documentation, read: `doc/openolat-frontend.md`
 
 For visual documentation with SVG diagrams, open: `doc/openolat-frontend.html`
 
+For live rendered component examples with theme switching, open: `doc/component-library/index.html`
+
 ## Technology Stack
 
 - **Bootstrap 3.4.1** (SASS) — grid, buttons, forms, navs, modals
@@ -101,8 +103,8 @@ Variables: `$o-labeled-{color}-{variant}-{property}` where variant = (none)/ligh
 ## Component DOM Patterns
 
 **FlexiTable:** Full structure (each part optional):
-`.o_table_tabs` → `.o_table_filters_wrapper` → `.o_table_toolbar` (search + tools) → `.o_table_batch_buttons` → `.o_table_wrapper.o_table_flexi` (CLASSIC: `.o_scrollable_wrapper > table.table`; CUSTOM: `.o_table_body > .o_table_row`) → `.o_table_pagination`.
-Toggle: `.o_sel_table` / `.o_sel_custom` buttons.
+`.o_table_tabs` → `.o_table_filters_wrapper.o_expanded > .o_table_filters_row > ul.nav.nav-pills.o_table_filters > li > a.btn.btn-default.o_table_filter[.o_filter_active]` → `.o_table_toolbar` (search + tools) → `.o_table_batch_buttons` → `.o_table_wrapper.o_table_flexi` (CLASSIC: `.o_scrollable_wrapper > .o_scrollable > table.table`; CUSTOM: `.o_table_body > .o_table_row`) → `.o_table_pagination`.
+Filter buttons: active state `o_filter_active` goes on the `<a>`, NOT the `<li>`. Caret: `<i class="o_icon o_icon-fw o_icon_caret">`. Toggle: `.o_sel_table` / `.o_sel_custom`.
 
 **Tree Menu:** `.o_tree > ul > li > div` with level classes `.o_tree_l{0-11}` for indentation
 
@@ -112,7 +114,11 @@ Toggle: `.o_sel_table` / `.o_sel_custom` buttons.
 
 **Tabs:** `.o_tabbed_pane > ul.nav.nav-tabs + .o_tabbed_pane_content`
 
-**Form Elements:** All wrapped in `.form-group` with Bootstrap `.form-control` inputs. Radio cards use `.o_radio_cards`. Toggles use `.o_toggle`.
+**Form Elements:** All wrapped in `.form-group` with Bootstrap `.form-control` inputs. Radio cards use `.o_radio_cards`. Toggles use `.o_toggle`. Form errors: `<div class="o_error">` (block div, NOT span) below the input within `.form-group`.
+
+**Mega Buttons:** `ul.o_mega_buttons` (CSS Grid, auto-fill) > `li` > `button.btn.o_button_mega` (55px, flex row) > `i.o_icon` + `span` > `div.o_mega_headline` + `div` (description). Used in course element selection.
+
+**Widgets:** `.o_widgets` (CSS Grid, auto-fill minmax 260px) > `.o_widget` (card with `.o_widget_header` + `.o_widget_content`). Types: `o_figure_widget`, `o_text_widget`, `o_table_widget`.
 
 ## AJAX Rendering
 

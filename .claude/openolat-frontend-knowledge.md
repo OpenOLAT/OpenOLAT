@@ -158,14 +158,19 @@ Every component: `id="o_c{dispatchID}"`. Used for AJAX DOM replacement.
 **FlexiTable:** Full structure (each section optional):
 ```
 .o_table_tabs                          // Tab buttons (Favoriten, Suche...)
-.o_table_filters_wrapper               // Extended filter pills (nav-pills)
+.o_table_filters_wrapper.o_expanded    // Extended filter pills
+  .o_table_filters_row > ul.nav.nav-pills.o_table_filters
+    > li > a.btn.btn-default.o_table_filter[.o_filter_active]
+      > span (label) + i.o_icon.o_icon-fw.o_icon_caret
 .o_table_toolbar                       // Search (.o_table_search) + tools (.o_table_tools)
 .o_table_batch_buttons                 // Bulk actions (shown when rows selected)
 .o_table_wrapper.o_table_flexi         // Table container
-  CLASSIC: .o_scrollable_wrapper > table.table > thead/tbody
+  CLASSIC: .o_scrollable_wrapper > .o_scrollable > table.table > thead/tbody
   CUSTOM:  .o_table_body > .o_table_row > .o_repo_entry_list_item
   .o_table_pagination                  // Pagination
 ```
+Filter buttons: `FlexiFiltersComponentRenderer` renders `<a class="btn btn-default o_table_filter">`. Active state `o_filter_active` goes on the `<a>`, NOT the `<li>`. Styled via `button-variant()` mixin with `$o-table-filter-color/bg/border` and `$o-table-filter-active-*` variables. Caret icon: `<i class="o_icon o_icon-fw o_icon_caret">`.
+
 View toggle: `.o_sel_table` (classic) / `.o_sel_custom` (card/list). Active has `.active` class.
 
 **Tree:** `.o_tree > ul > li > div` → `.o_tree_oc_l{n}` (opener) + `span.o_tree_l{n}.o_tree_link` (node)
@@ -219,11 +224,34 @@ OpenOlat:  .btn.o_button_ghost, .btn.o_button_mega, .btn.o_button_primary_light
 Groups:    .o_button_group, .o_button_group_left, .o_button_group_right
 ```
 
+### Mega Buttons
+```
+ul.o_mega_buttons                      // CSS Grid container (auto-fill, responsive 1-9 cols)
+  > li > button.btn.o_button_mega      // 55px height, flex row
+    > i.o_icon.o_icon_{name}           // Left icon
+    > span                             // Text container
+      > div.o_mega_headline            // Bold title
+      > div                            // Description
+```
+Used in course element selection screens (e.g., course Planner "Add Element").
+
 ### Message Boxes
 ```
 .o_info / .o_note / .o_tip / .o_important / .o_success / .o_warning / .o_error
 .o_warning_line / .o_error_line  // inline variants
 ```
+
+### Form Field Errors
+`SimpleFormErrorText` renders as `<div class="o_error">` (block element, NOT `<span>`), positioned below the input within `.form-group`.
+
+### Widgets
+```
+.o_widgets                             // CSS Grid container (auto-fill, minmax 260px)
+  .o_widget                            // Card: border, flex column, min-height
+    .o_widget_header                   // Title
+    .o_widget_content                  // Content area
+```
+Widget types: `o_figure_widget` (number+label), `o_text_widget`, `o_table_widget`. Dashboard: `o_dashboard_widget`.
 
 ### Scrolling
 ```

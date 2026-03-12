@@ -1,0 +1,412 @@
+/* OpenOlat Component Library - Layout matching doc/openolat-frontend.html */
+
+/* === CSS Variables === */
+:root {
+  --bg: #f5f7fa;
+  --content-bg: #fff;
+  --text: #1a1a2e;
+  --heading: #136669;
+  --link: #16797c;
+  --link-hover: #1f999c;
+  --code-bg: #f6f8fa;
+  --code-border: #e2e8f0;
+  --code-color: #7c3aed;
+  --border: #e2e8f0;
+  --nav-width: 220px;
+  --nav-bg: #fff;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.o_component_library {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* === Doc-style Header === */
+.doc-header {
+  background: linear-gradient(135deg, #16797c 0%, #1f999c 65%, #23adb1 100%);
+  color: #fff;
+  padding: 28px 48px 32px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+.header-logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .1px;
+}
+.header-doc-type {
+  font-size: 10.5px;
+  color: rgba(255,255,255,.6);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 500;
+}
+.header-rule {
+  height: 1px;
+  background: rgba(255,255,255,.2);
+  margin-bottom: 16px;
+}
+.doc-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  border: none;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+}
+.doc-header .subtitle {
+  margin-top: 5px;
+  color: rgba(255,255,255,.82);
+  font-size: 13px;
+}
+.doc-header .meta {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.doc-header .meta span {
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: rgba(255,255,255,.92);
+}
+
+/* Header navigation */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+}
+.header-nav a {
+  color: rgba(255,255,255,.7);
+  text-decoration: none;
+  padding: 2px 0;
+  transition: color .15s;
+}
+.header-nav a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+.header-nav a.active {
+  color: #fff;
+  font-weight: 600;
+}
+.header-nav .sep {
+  color: rgba(255,255,255,.35);
+  font-size: 11px;
+}
+
+/* === Theme Switcher (in header meta row) === */
+.cl-theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,.92);
+}
+.cl-theme-toggle select {
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+.cl-theme-toggle select option {
+  background: #1a1a2e;
+  color: #fff;
+}
+.cl-custom-path {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+.cl-custom-path.visible {
+  display: flex;
+}
+.cl-custom-path input {
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  font-size: 11px;
+  width: 240px;
+}
+.cl-custom-path input::placeholder {
+  color: rgba(255,255,255,.5);
+}
+.cl-custom-path button {
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+.cl-custom-path button:hover {
+  background: rgba(255,255,255,.3);
+}
+
+/* === Page Layout === */
+.page-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* === Side Navigation === */
+.side-nav {
+  width: var(--nav-width);
+  min-width: var(--nav-width);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  background: var(--nav-bg);
+  padding: 1.2rem 0;
+  font-size: 12px;
+  scrollbar-width: thin;
+}
+.side-nav::-webkit-scrollbar { width: 4px; }
+.side-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.side-nav .nav-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--heading);
+  padding: 0 1rem .6rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: .5rem;
+}
+.side-nav a {
+  display: block;
+  padding: 5px 1rem 5px 1.2rem;
+  color: #475569;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all .15s;
+  line-height: 1.5;
+}
+.side-nav a:hover {
+  color: var(--link-hover);
+  background: rgba(22,121,124,.06);
+  text-decoration: none;
+}
+.side-nav a.active {
+  color: var(--link);
+  border-left-color: var(--heading);
+  background: rgba(22,121,124,.08);
+  font-weight: 600;
+}
+
+/* === Main Content === */
+.cl-main {
+  flex: 1;
+  max-width: 1100px;
+  padding: 32px 32px 80px;
+  min-width: 0;
+}
+
+/* === Sections === */
+.cl-section {
+  margin-bottom: 48px;
+}
+.cl-section > h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--heading);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 10px;
+  margin: 0 0 20px 0;
+}
+.cl-section > h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin: 28px 0 12px 0;
+}
+
+/* === Component Cards === */
+.cl-component {
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--content-bg);
+  box-shadow: var(--shadow);
+}
+.cl-component-header {
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.cl-component-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--heading);
+}
+.cl-component-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+.cl-component-header .cl-classes {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.cl-component-header .cl-classes code {
+  font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-right: 4px;
+  color: var(--code-color);
+}
+.cl-component-body {
+  padding: 20px;
+}
+
+/* === Rendered Example Area === */
+.cl-example {
+  padding: 20px;
+  background: #fff;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+/* === Code Display === */
+.cl-code {
+  position: relative;
+}
+.cl-code-toggle {
+  cursor: pointer;
+  font-size: 12px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.cl-code-toggle:hover {
+  background: #f1f5f9;
+}
+.cl-code pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 16px 20px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.7;
+  margin: 0;
+  display: none;
+  box-shadow: var(--shadow);
+  font-family: "SF Mono", "Fira Code", Consolas, monospace;
+}
+.cl-code.open pre {
+  display: block;
+}
+
+/* === Overview Page Cards === */
+.cl-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.cl-page-card {
+  display: block;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--content-bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow);
+}
+.cl-page-card:hover {
+  border-color: var(--heading);
+  box-shadow: 0 2px 8px rgba(22,121,124,0.15);
+  text-decoration: none;
+  color: inherit;
+}
+.cl-page-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--heading);
+}
+.cl-page-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* === Example Layout Helpers === */
+.cl-example-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.cl-example-row > * {
+  flex-shrink: 0;
+}
+.cl-example-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === Override theme bleeding === */
+.doc-header a,
+.side-nav a,
+.header-nav a {
+  color: inherit;
+}
+.doc-header a:hover {
+  text-decoration: none;
+}
+.header-nav a:hover {
+  text-decoration: underline;
+}
+
+/* === Responsive === */
+@media (max-width: 900px) {
+  .side-nav { display: none; }
+  .cl-main { padding: 24px 16px 40px; }
+  .doc-header { padding: 20px 16px 24px; }
+  .doc-header h1 { font-size: 22px; }
+}

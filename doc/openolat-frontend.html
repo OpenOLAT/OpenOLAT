@@ -78,6 +78,8 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
       <a href="openolat-architecture.html">Architecture</a>
       <span class="sep">|</span>
       <a href="openolat-frontend.html" class="active">Frontend</a>
+      <span class="sep">|</span>
+      <a href="component-library/index.html">Component Library</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -638,11 +640,19 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
   &lt;a class="btn btn-default btn-primary o_sel_author_bookmarks"&gt;...&lt;/a&gt;
   &lt;a class="btn btn-default o_sel_author_courses"&gt;...&lt;/a&gt;
 &lt;/div&gt;
-&lt;div class="o_table_filters_wrapper o_expanded"&gt;              <span style="color:#6c7086">&lt;!-- Extended filter panel --&gt;</span>
-  &lt;ul class="nav nav-pills o_table_filters"&gt;
-    &lt;li&gt;&lt;a class="btn btn-default o_table_filter"&gt;...&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;Mehr...&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="o_table_filters_wrapper o_expanded"&gt;              <span style="color:#6c7086">&lt;!-- FlexiFiltersComponentRenderer --&gt;</span>
+  &lt;div class="o_table_filters_row"&gt;
+    &lt;ul class="nav nav-pills o_table_filters"&gt;
+      &lt;li role="presentation"&gt;
+        &lt;a class="btn btn-default o_table_filter o_filter_active"&gt; <span style="color:#6c7086">&lt;!-- active on &lt;a&gt;, NOT &lt;li&gt; --&gt;</span>
+          &lt;span&gt;Type: Course&lt;/span&gt; &lt;i class="o_icon o_icon-fw o_icon_caret"&gt;&lt;/i&gt;
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li role="presentation"&gt;
+        &lt;a class="btn btn-default o_table_filter"&gt;&lt;span&gt;Status&lt;/span&gt; &lt;i class="o_icon o_icon-fw o_icon_caret"&gt;&lt;/i&gt;&lt;/a&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="o_table_toolbar o_table_batch_hide clearfix"&gt;     <span style="color:#6c7086">&lt;!-- Search + tools row --&gt;</span>
   &lt;div class="o_table_search o_noprint"&gt;...&lt;/div&gt;
@@ -1040,6 +1050,21 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
+<h3>Mega Button DOM Structure</h3>
+<p>Mega buttons are rendered as a CSS Grid list. Each button contains an icon and a two-line label (headline + description). Used in course element selection dialogs.</p>
+<pre><code>&lt;ul class="o_mega_buttons"&gt;                    &lt;!-- CSS Grid, auto-fill --&gt;
+  &lt;li&gt;
+    &lt;button class="btn o_button_mega"&gt;          &lt;!-- 55px height, flex row --&gt;
+      &lt;i class="o_icon o_icon_courseelement"&gt;&lt;/i&gt;
+      &lt;span&gt;
+        &lt;div class="o_mega_headline"&gt;Title&lt;/div&gt;
+        &lt;div&gt;Description text&lt;/div&gt;
+      &lt;/span&gt;
+    &lt;/button&gt;
+  &lt;/li&gt;
+  ...
+&lt;/ul&gt;</code></pre>
+
 <!-- ==================== SECTION 21: MESSAGES ==================== -->
 <h2 id="css-messages">21. Messages &amp; Alerts</h2>
 
@@ -1109,6 +1134,8 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>.o_form .o_form_chelp</code></td><td>Context help icon positioned near label</td></tr>
 </tbody>
 </table>
+
+<p><strong>Form field errors</strong> are rendered by <code>SimpleFormErrorText</code> as a block <code>&lt;div class="o_error"&gt;</code> (not a <code>&lt;span&gt;</code>) positioned below the input within the <code>.form-group</code>. This is distinct from message boxes &mdash; form errors are inline field-level feedback.</p>
 
 <h3>Date Picker</h3>
 <table>
@@ -1303,6 +1330,21 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>o_widgets</code></td><td>CSS Grid auto-fill container (minmax 260px)</td></tr>
 </tbody>
 </table>
+
+<h4>Widget DOM Structure</h4>
+<p>Widgets are rendered in a responsive CSS Grid. Each widget is a card with a header and content area. Widget types include figures, text, tables, and downloads.</p>
+<pre><code>&lt;div class="o_widgets"&gt;                         &lt;!-- CSS Grid: auto-fill minmax(260px, 1fr) --&gt;
+  &lt;div class="o_widget o_figure_widget"&gt;        &lt;!-- or o_text_widget, o_table_widget --&gt;
+    &lt;div class="o_widget_header"&gt;
+      &lt;h4&gt;Widget Title&lt;/h4&gt;
+      &lt;i class="o_icon"&gt;&lt;/i&gt;
+    &lt;/div&gt;
+    &lt;div class="o_widget_content"&gt;
+      &lt;div class="o_widget_main_figure"&gt;42&lt;/div&gt; &lt;!-- or o_widget_main_text --&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  ...
+&lt;/div&gt;</code></pre>
 
 <h3>Dashboard</h3>
 <table>
