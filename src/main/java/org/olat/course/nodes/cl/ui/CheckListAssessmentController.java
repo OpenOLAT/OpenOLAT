@@ -368,7 +368,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
 			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
 					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
-			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
 			filters.add(obligationFilter);
 		}
 		
@@ -378,7 +377,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 			membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			membersFilter.setValues(List.of(ParticipantType.member.name()));
 			filters.add(membersFilter);
 		}
 		
@@ -445,13 +443,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 
 		if (learningPath) {
-			tabs.forEach(tab -> {
-				if (tab != relevantTab) {
-					tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
-							List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
-				}
-			});
-
 			excludedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXCLUDED_TAB_ID, translate("filter.excluded"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
 							List.of(AssessmentObligation.excluded.name()))));

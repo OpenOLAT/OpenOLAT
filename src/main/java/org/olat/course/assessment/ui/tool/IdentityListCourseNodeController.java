@@ -519,14 +519,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 			tabs.add(failedTab);
 		}
 		
-		if (learningPath) {
-			tabs.forEach(tab -> {
-				if (tab != relevantTab) {
-					tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
-							List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
-				}
-			});
-		}
+//		if (learningPath) {
+//			tabs.forEach(tab -> {
+//				if (tab != relevantTab) {
+//					tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+//							List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+//				}
+//			});
+//		}
 		if (learningPath) {
 			excludedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXCLUDED_TAB_ID, translate("filter.excluded"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
