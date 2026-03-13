@@ -169,28 +169,18 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(" (select count(offer.key) from acoffer as offer ")
 			  .append("   where offer.resource.key=res.key and offer.valid=true")
-			  .append(" ) as offers,")
-			  .append(" (select count(ref.key) from references as ref ")
-			  .append("   where ref.target.key=res.key")
-			  .append(" ) as references,");
-			
+			  .append(" ) as offers,");
+			sb.append(" refs.num as countReferences,");
 			if(curriculumModule.isEnabled()) {
-				sb.append(" (select count(curel.key) from curriculumelement as curel")
-				  .append("   inner join curel.group as curElGroup")
-				  .append("   inner join repoentrytogroup as reToCurElGroup on (curElGroup.key=reToCurElGroup.group.key)")
-				  .append("   where reToCurElGroup.entry.key=v.key")
-				  .append(" ) as curriculumElements,");
+				sb.append(" curriculumElements.num as countCurriculumElements,");
 			} else {
-				sb.append(" 0 as curriculumElements,");
+				sb.append(" 0 as countCurriculumElements,");
 			}
 			
 			if(params.includeResourceType("BinderTemplate")) {
-				sb.append(" (select count(binder.key) from pfbinder as binder")
-				  .append("   inner join binder.template as template")
-				  .append("   where res.resName='BinderTemplate' and res.key=template.olatResource.key")
-				  .append(" ) as binders");
+				sb.append(" binders.num as countBinders");
 			} else {
-				sb.append(" 0 as binders");
+				sb.append(" 0 as countBinders");
 			}
 			if(lectureModule.isEnabled()) {
 				sb.append(", lectureConfig.lectureEnabled")
@@ -207,6 +197,23 @@ public class RepositoryEntryAuthorQueries {
 			}
 			if(lectureModule.isEnabled()) {
 				sb.append(" left join fetch lectureentryconfig as lectureConfig on (lectureConfig.entry.key=v.key) ");
+			}
+			sb.append(" left join (select ref.target.key targetKey, count(ref.key) num from references as ref ")
+			  .append("   group by ref.target.key")
+			  .append(" ) as refs on refs.targetKey = res.key");
+			if(curriculumModule.isEnabled()) {
+				sb.append(" left join (select reToCurElGroup.entry.key entryKey, count(curel.key) num from curriculumelement as curel")
+				  .append("   inner join curel.group as curElGroup")
+				  .append("   inner join repoentrytogroup as reToCurElGroup on (curElGroup.key=reToCurElGroup.group.key)")
+				  .append("   group by reToCurElGroup.entry.key")
+				  .append(" ) as curriculumElements on curriculumElements.entryKey = v.key");
+			}
+			if(params.includeResourceType("BinderTemplate")) {
+				sb.append(" left join (select template.olatResource.key templateResKey, count(binder.key) num from pfbinder as binder")
+				  .append("   inner join binder.template as template")
+				  .append("   where template.olatResource.resName='BinderTemplate'")
+				  .append("   group by template.olatResource.key")
+				  .append(" ) as binders on binders.templateResKey = res.key");
 			}
 		}
 
@@ -672,11 +679,16 @@ public class RepositoryEntryAuthorQueries {
 					}
 					break;
 				case references: {
-					if(asc) {
-						sb.append(" order by references asc, lower(v.displayname) asc");
-					} else {
-						sb.append(" order by references desc, lower(v.displayname) desc");
+					sb.append(" order by");
+					sb.append(" nullif((COALESCE(refs.num ,0)");
+					if(curriculumModule.isEnabled()) {
+						sb.append(" + COALESCE(curriculumElements.num,0)");
 					}
+					if(params.includeResourceType("BinderTemplate")) {
+						sb.append(" + COALESCE(binders.num,0)");
+					}
+					sb.append("), 0)");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				}
 				case creationDate:
