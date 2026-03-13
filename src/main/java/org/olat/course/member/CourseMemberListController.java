@@ -106,8 +106,6 @@ public class CourseMemberListController extends AbstractMemberListController imp
 	protected void initPortraitColumn(FlexiTableColumnModel columnsModel) {
 		DefaultFlexiColumnModel portraitCol = new DefaultFlexiColumnModel(MemberListTableModel.Cols.userPortrait);
 		portraitCol.setExportable(false);
-		portraitCol.setIconHeader("o_icon o_ac_guest_icon");
-		portraitCol.setHeaderTooltip(translate("table.header.user.portrait"));
 		columnsModel.addFlexiColumnModel(portraitCol);
 	}
 

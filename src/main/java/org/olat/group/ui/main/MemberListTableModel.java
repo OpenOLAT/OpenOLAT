@@ -169,7 +169,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		rootCurriculumElementIdentifier("table.header.curriculum.root.identifier"),
 		rootCurriculumElementDisplayName("table.header.curriculum.root.displayname"),
 		identityStatus("table.header.identity.status"),
-		userPortrait("table.header.user.portrait");
+		userPortrait("table.header.user.portrait.v2");
 		
 		private final String i18n;
 		
