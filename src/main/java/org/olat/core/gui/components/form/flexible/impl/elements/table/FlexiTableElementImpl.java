@@ -151,6 +151,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableSortOrderController sortOrderCtrl;
 	private FormLink customButton;
 	private FormLink exportButton;
+	private FormLink searchResetButton;
 	private FormLink searchButton;
 	private FormLink extendedSearchButton;
 	private FormLink classicTypeButton;
@@ -741,20 +742,33 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				searchFieldEl.setAriaLabel(translator.translate("aria.search.input"));
 				components.put("rSearch", searchFieldEl);
 			}
+			rootFormAvailable(searchFieldEl);
+			
+			if(searchResetButton == null) {
+				searchResetButton = new FormLinkImpl(dispatchId + "_searchReset", "rSearchReset", "", Link.BUTTON + Link.NONTRANSLATED);
+				searchResetButton.setDomReplacementWrapperRequired(false);
+				searchResetButton.setElementCssClass("o_reset_quick_search");
+				searchResetButton.setIconLeftCSS("o_icon o_icon_remove_filters");
+				searchResetButton.setTitle(translator.translate("aria.reset.search"));
+				components.put("rSearchReset", searchResetButton);
+			}
+			rootFormAvailable(searchResetButton);
+			
 			if(searchButton == null) {
-				searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
+				searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "", Link.BUTTON + Link.NONTRANSLATED);
 				searchButton.setDomReplacementWrapperRequired(false);
 				searchButton.setElementCssClass("o_table_search_button");
-				searchButton.setTranslator(translator);
 				searchButton.setIconLeftCSS("o_icon o_icon_search");
+				searchButton.setTitle(translator.translate("search"));
 				components.put("rSearchB", searchButton);
 			}
-			rootFormAvailable(searchFieldEl);
 			rootFormAvailable(searchButton);
 		} else {
 			components.remove("rSearch");
+			components.remove("rSearchReset");
 			components.remove("rSearchB");
 			searchFieldEl = null;
+			searchResetButton = null;
 			searchButton = null;
 		}
 	}
@@ -771,13 +785,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		searchFieldEl.getComponent().addListener(this);
 		((AutoCompleterImpl)searchFieldEl).setListProvider(autoCompleteProvider, usess);
 		components.put("rSearch", searchFieldEl);
-		searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
+		rootFormAvailable(searchFieldEl);
+		
+		searchResetButton = new FormLinkImpl(dispatchId + "_searchReset", "rSearchReset", "", Link.BUTTON + Link.NONTRANSLATED);
+		searchResetButton.setDomReplacementWrapperRequired(false);
+		searchResetButton.setElementCssClass("o_reset_quick_search");
+		searchResetButton.setIconLeftCSS("o_icon o_icon_remove_filters");
+		searchResetButton.setTitle(translator.translate("aria.reset.search"));
+		components.put("rSearchReset", searchResetButton);
+		rootFormAvailable(searchResetButton);
+		
+		searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		searchButton.setDomReplacementWrapperRequired(false);
 		searchButton.setElementCssClass("o_table_search_button");
-		searchButton.setTranslator(translator);
 		searchButton.setIconLeftCSS("o_icon o_icon_search");
+		searchButton.setTitle(translator.translate("search"));
 		components.put("rSearchB", searchButton);
-		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(searchButton);
 	}
 
@@ -1097,6 +1120,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return searchFieldEl;
 	}
 	
+	public FormLink getSearchResetButton() {
+		return searchResetButton;
+	}
+
 	public FormLink getSearchButton() {
 		return searchButton;
 	}
@@ -1250,7 +1277,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String checkbox = form.getRequestParameter("chkbox");
 		String details = form.getRequestParameter("tt-details");
 		String removeFilter = form.getRequestParameter("rm-filter");
-		String resetQuickSearch = form.getRequestParameter("reset-search");
 		String treeTableFocus = form.getRequestParameter("tt-focus");
 		String treeTableOpen = form.getRequestParameter("tt-open");
 		String treeTableClose = form.getRequestParameter("tt-close");
@@ -1286,8 +1312,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				String pos = selectedIndex.substring(index+1);
 				doSelect(ureq, Integer.parseInt(pos));
 			}
-		} else if(StringHelper.containsNonWhitespace(resetQuickSearch)
-				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+		} else if(searchResetButton != null
+				&& searchResetButton.getFormDispatchId().equals(dispatchuri)) {
 			resetQuickSearch(ureq);
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
@@ -2137,6 +2163,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchFieldEl instanceof AutoCompleter) {
 			((AutoCompleter)searchFieldEl).setKey(null);
 		}
+		getRootForm().removeRequestParameter(searchFieldEl.getFormDispatchId());
 		searchFieldEl.setValue("");
 		resetSearch(ureq);
 	}
@@ -2456,6 +2483,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchFieldEl != null) {
 			allOk &= searchFieldEl.validate();
 		}
+		if(searchResetButton != null) {
+			allOk &= searchResetButton.validate();
+		}
 		if(searchButton != null) {
 			allOk &= searchButton.validate();
 		}
@@ -2551,6 +2581,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	protected void rootFormAvailable() {
+		rootFormAvailable(searchResetButton);
 		rootFormAvailable(searchButton);
 		rootFormAvailable(sortOrderButton);
 		rootFormAvailable(customButton);
