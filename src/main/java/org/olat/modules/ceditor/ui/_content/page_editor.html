@@ -8,6 +8,9 @@ $r.render("page_editor")
 		#if($r.available("import.content"))
 			$r.render("import.content")
 		#end
+		#if($r.available("import.markdown"))
+			$r.render("import.markdown")
+		#end
 		#if($r.available("import.content") && $r.isVisible("import.content"))
 		</div>
 		#end

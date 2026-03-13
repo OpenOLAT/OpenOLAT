@@ -43,12 +43,12 @@ The `ceditor` package implements a **server-centric block-based content editor**
 ceditor/
   *.java                    # Core interfaces and enums (~39 files)
   handler/                  # PageElementHandler implementations (12 files)
-  manager/                  # Service layer, DAO, file storage (12 files)
+  manager/                  # Service layer, DAO, file storage, markdown import (18 files)
   model/                    # Domain model interfaces and value objects (~49 files)
   model/jpa/                # JPA entity classes (24 files)
   ui/                       # Controllers, run components (~52 files)
   ui/component/             # Custom UI components and renderers (16 files)
-  ui/event/                 # Event classes (27 files)
+  ui/event/                 # Event classes (29 files)
 ```
 
 Templates (`*.html` Velocity files) live in `ui/_content/` subdirectories. i18n files (`LocalStrings_XX.properties`) live in `ui/_i18n/` subdirectories.
@@ -495,6 +495,7 @@ public interface PageEditorProvider extends PageProvider {
     void movePageElement(PageElement elementToMove, PageElement sibling, boolean after);
 
     String getImportButtonKey();                        // null = no import button
+    default boolean isImportMarkdownEnabled() { return false; } // show markdown import button
 }
 ```
 
@@ -671,7 +672,7 @@ This is applied per-fragment during `createFragmentComponent()`.
 
 ## 8. Event System
 
-The editor uses 27 event classes in `ui/event/` to communicate between components and controllers.
+The editor uses 29 event classes in `ui/event/` to communicate between components and controllers.
 
 ### Event categories
 
@@ -686,6 +687,8 @@ The editor uses 27 event classes in `ui/event/` to communicate between component
 | `DeleteElementEvent`       | User clicks delete                      | fragment component          |
 | `SaveElementEvent`         | Element explicitly saved                 | (none)                      |
 | `ImportEvent`              | User clicks import button               | (none)                      |
+| `ImportMarkdownEvent`      | User clicks markdown import button      | (none)                      |
+| `MarkdownImportDoneEvent`  | Markdown import completed               | List\<String\> warnings     |
 
 **Edit mode events** -- switching between view/edit:
 
@@ -821,6 +824,40 @@ Key directories:
 - `bcroot/portfolio/` -- root for page-related files
 - Subdirectories per media, poster images, assignments, etc.
 - Maximum 32,000 subdirectories per parent directory (then rolls over to a new parent).
+
+### Markdown Import
+
+The markdown import feature allows users to create page content from CommonMark markdown text or files. It is implemented in the `manager/` package with the following classes:
+
+**Service and conversion pipeline:**
+
+| Class | Role |
+|-------|------|
+| `MarkdownImportService` | Spring `@Service` — orchestrates parsing and persistence. Calls `convertAndPersist(markdown, page, author, basePath)` which pre-processes math, parses via CommonMark, visits the AST, persists parts, and wraps them in a `ContainerPart` (reusing an existing empty container or creating a new `block_1col`). |
+| `MarkdownPagePartVisitor` | `AbstractVisitor` that walks the CommonMark AST and produces `PagePart` instances. Maps headings → `TitlePart`, paragraphs → `ParagraphPart` (merging consecutive ones), code blocks → `CodePart`, tables → `TablePart`, blockquotes → `ParagraphPart` with `AlertBoxSettings`, thematic breaks → `SpacerPart`, images → `MediaPart`, math placeholders → `MathPart`. Inline HTML is entity-escaped; HTML blocks are skipped entirely. |
+| `MarkdownMathPreprocessor` | Replaces `$$...$$` display math blocks with unique placeholders before CommonMark parsing, so LaTeX content is not mangled. |
+| `MarkdownCodeLanguageMapping` | Maps fenced code block info strings (e.g. `java`, `py`, `ts`) to the `CodeLanguage` enum for syntax highlighting. |
+| `MarkdownImportResult` | Record carrying `List<String> warnings` from partial conversion issues. |
+
+**Security measures:**
+
+- `HtmlRenderer` configured with `escapeHtml(true)` and `sanitizeUrls(true)` allowing only `http`, `https`, and `mailto` protocols.
+- HTML blocks are skipped entirely (warning emitted).
+- Inline HTML (`HtmlInline`) nodes are stripped from plain text extraction (headings, table cells).
+- Remote image downloads are restricted to domains allowed by `MediaServerModule.isRestrictedDomain()` (SSRF protection).
+- Download size is limited to `MarkdownImportController.MAX_UPLOAD_SIZE_KB` (50 MB).
+- Local file path images require a `basePath` (file upload mode); rejected in text paste mode to prevent server filesystem reads.
+- Path traversal protection via canonical path comparison against `basePath`.
+
+**UI integration:**
+
+| Class | Role |
+|-------|------|
+| `MarkdownImportController` | `FormBasicController` with file upload (`.md`, `.txt`, `.zip`) or text paste mode. ZIP archives are extracted and searched for a single `.md` file. Fires `MarkdownImportDoneEvent` on success. |
+| `ImportMarkdownEvent` | Fired by `PageEditorV2Controller` when the markdown import button is clicked. |
+| `MarkdownImportDoneEvent` | Carries `List<String> warnings` back to the embedding controller. |
+
+The markdown import button is shown when `PageEditorProvider.isImportMarkdownEnabled()` returns `true`. Currently enabled for portfolio pages (`PortfolioPageEditorProvider`).
 
 ---
 
@@ -1344,6 +1381,7 @@ There are no dedicated module configuration properties for the content editor it
 - `PageEditorSecurityCallback` (controls clone/delete/move permissions).
 - `PageEditorProvider.getAppendRejectionKey()` (type-specific creation restrictions).
 - `PageEditorProvider.getImportButtonKey()` (import functionality).
+- `PageEditorProvider.isImportMarkdownEnabled()` (markdown import button).
 
 ### VFS storage
 
@@ -1368,6 +1406,7 @@ Content editor files are stored under `bcroot/portfolio/`. The `ContentEditorFil
 | Client-side JS                 | `src/main/webapp/static/js/jquery/openolat/jquery.contenteditor.v3.js` |
 | Dragula library                | `src/main/webapp/static/js/dragula/dragula.js`              |
 | Entity registration            | `src/main/resources/META-INF/persistence.xml`               |
+| Markdown import                | `src/main/java/org/olat/modules/ceditor/manager/Markdown*.java` |
 | Media handlers (cemedia)       | `src/main/java/org/olat/modules/cemedia/handler/*.java`     |
 | Portfolio provider              | `src/main/java/org/olat/modules/portfolio/ui/PageRunController.java` (inner class `PortfolioPageEditorProvider`) |
 | Form provider                  | `src/main/java/org/olat/modules/forms/ui/EvaluationFormEditorController.java` (inner class `FormPageEditorProvider`) |

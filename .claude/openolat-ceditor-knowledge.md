@@ -73,9 +73,9 @@ For tables: `TableContent tc = new TableContent(rows, cols)` → `tc.addContent(
 
 block_1col(1), block_2cols(2), block_3cols(3), block_4cols(4,deprecated), block_5cols(5,deprecated), block_6cols(6), block_3rows(3), block_2_1rows(3), block_1_3rows(4), block_1_1lcols(2), block_1_2rows(3), block_1_2cols(3)
 
-## Event System (27 types)
+## Event System (29 types)
 
-- **Lifecycle**: AddElementEvent, ChangePartEvent, ChangeVersionPartEvent, CloneElementEvent, DeleteElementEvent, SaveElementEvent, ImportEvent
+- **Lifecycle**: AddElementEvent, ChangePartEvent, ChangeVersionPartEvent, CloneElementEvent, DeleteElementEvent, SaveElementEvent, ImportEvent, ImportMarkdownEvent, MarkdownImportDoneEvent
 - **Edit**: EditElementEvent, EditFragmentEvent, EditionEvent, EditPageElementEvent, CloseElementsEvent, ClosePartEvent
 - **Inspector**: CloseInspectorEvent, CloseInspectorsEvent, OpenRulesEvent
 - **Position**: MoveUpElementEvent, MoveDownElementEvent
@@ -104,6 +104,15 @@ block_1col(1), block_2cols(2), block_3cols(3), block_4cols(4,deprecated), block_
 - `PageImportExportHelper`: ZIP-based import/export
 - `ContentEditorXStream`: settings serialization
 
+### Markdown Import
+
+- `MarkdownImportService` (@Service): converts markdown → PageParts and persists them wrapped in a `ContainerPart` (`block_1col`). Reuses last empty container if available.
+- `MarkdownPagePartVisitor`: CommonMark `AbstractVisitor` producing PageParts. Headings→TitlePart, paragraphs→ParagraphPart (consecutive merged), code→CodePart, tables→TablePart, blockquotes→ParagraphPart+AlertBoxSettings, images→MediaPart, math→MathPart. Inline HTML entity-escaped; HTML blocks skipped. URL sanitization (http/https/mailto only). Remote image SSRF protection via `MediaServerModule.isRestrictedDomain()`.
+- `MarkdownMathPreprocessor`: replaces $$...$$ blocks with placeholders before CommonMark parsing.
+- `MarkdownCodeLanguageMapping`: maps fenced code info strings to `CodeLanguage` enum.
+- `MarkdownImportController`: `FormBasicController` with file upload (.md/.txt/.zip) or text paste. ZIP support extracts single .md file with relative image assets.
+- `PageEditorProvider.isImportMarkdownEnabled()`: default method (returns false). Override to true to show the import button. Enabled in `PortfolioPageEditorProvider`.
+
 ## Key File Paths
 
 - Interfaces: `ceditor/PageElement.java`, `PagePart.java`, `PageElementHandler.java`, `PageService.java`, `PageEditorProvider.java`
@@ -112,6 +121,8 @@ block_1col(1), block_2cols(2), block_3cols(3), block_4cols(4,deprecated), block_
 - Handlers: `ceditor/handler/TitlePageElementHandler.java` (canonical), all in `ceditor/handler/`
 - Models: `ceditor/model/TitleSettings.java`, `TableContent.java`, `ContainerSettings.java`, `CodeSettings.java`, `CodeLanguage.java`
 - Serialization: `ceditor/ContentEditorXStream.java`
+- Markdown import: `ceditor/manager/MarkdownImportService.java`, `MarkdownPagePartVisitor.java`, `MarkdownMathPreprocessor.java`, `MarkdownCodeLanguageMapping.java`
+- Markdown UI: `ceditor/ui/MarkdownImportController.java`, `ceditor/ui/event/ImportMarkdownEvent.java`, `ceditor/ui/event/MarkdownImportDoneEvent.java`
 - Media: `cemedia/handler/ImageHandler.java`
 
 ## Adding a New Element Type — Checklist
