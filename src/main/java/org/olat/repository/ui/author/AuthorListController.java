@@ -528,7 +528,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
 		columnModelList.add(markColumn);
 		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
-				Cols.type.i18nKey(), Cols.type.ordinal(), false, null,
+				Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		DefaultFlexiColumnModel technicalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.technicalType.i18nKey(), Cols.technicalType.ordinal(),
 				true, OrderBy.technicalType.name());
@@ -574,7 +574,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
 		columnModelList.add(educationalTypeColumnModel);
 		DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
-				Cols.runtimeType.ordinal(), false, null);
+				Cols.runtimeType.ordinal(), true, OrderBy.runtimeType.name());
 		runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
 		columnModelList.add(runtimeTypeColumnModel);
 
@@ -800,9 +800,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		// runtime type
 		SelectionValues runtimeTypeKV = new SelectionValues();
-		RepositoryEntryRuntimeType[] runtimeTypes = { RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template };
-		for(RepositoryEntryRuntimeType runtimeType:runtimeTypes) {
+		
+		for(RepositoryEntryRuntimeType runtimeType:RepositoryEntryRuntimeType.ORDERED) {
 			if(configuration.isRuntimeTypeAllowed(runtimeType)) {
 				runtimeTypeKV.add(SelectionValues.entry(runtimeType.name(), translate("runtime.type.".concat(runtimeType.name()))));
 			}

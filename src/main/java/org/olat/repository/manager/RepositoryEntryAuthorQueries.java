@@ -50,6 +50,8 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -82,6 +84,8 @@ public class RepositoryEntryAuthorQueries {
 	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public int countViews(SearchAuthorRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -631,6 +635,16 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" order by marks desc, lower(v.displayname) desc");
 					}
 					break;
+				case type:
+					sb.append(" order by case");
+					List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+					for (int j = 0; j < handlers.size(); j++) {
+						OrderedRepositoryHandler handler = handlers.get(j);
+						sb.append(" when res.resName = '").append(handler.getHandler().getSupportedType()).append("' then ").append(j);
+					}
+					sb.append(" end");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
 				case technicalType:
 					sb.append(" order by lower(v.technicalType)");
 					appendAsc(sb, asc).append(" nulls last");
@@ -665,11 +679,7 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" when v.status = '").append(status.name()).append("' then ").append(status.ordinal());
 					}
 					sb.append(" end");
-					if(asc) {
-						sb.append(" asc, lower(v.displayname) asc");
-					} else {
-						sb.append(" desc, lower(v.displayname) desc");
-					}
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case ac:
 					if(asc) {
@@ -677,6 +687,15 @@ public class RepositoryEntryAuthorQueries {
 					} else {
 						sb.append(" order by offers desc, lower(v.displayname) desc");
 					}
+					break;
+				case runtimeType:
+					sb.append(" order by case");
+					for (int i = 0; i < RepositoryEntryRuntimeType.ORDERED.length; i++) {
+						RepositoryEntryRuntimeType runtimeType = RepositoryEntryRuntimeType.ORDERED[i];
+						sb.append(" when v.runtimeTypeString = '").append(runtimeType.name()).append("' then ").append(i);
+					}
+					sb.append(" end");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case references: {
 					sb.append(" order by");
