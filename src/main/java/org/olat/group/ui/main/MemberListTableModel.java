@@ -188,8 +188,9 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return userPortrait != this;
 		}
+
 		@Override
 		public String sortKey() {
 			return i18n;
