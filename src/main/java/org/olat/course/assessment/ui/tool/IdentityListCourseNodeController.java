@@ -476,9 +476,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+		if (learningPath || assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			List<FlexiTableFilterValue> relevantImplicitFilters = new ArrayList<>();
-			relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
+			if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
+			}
 			if (learningPath) {
 				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
 						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
