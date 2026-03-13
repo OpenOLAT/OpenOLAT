@@ -294,7 +294,6 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			importedRow.setCourse(course);
 		}
 		
-		
 		List<LectureBlock> lectureBlocks = lectureService.loadLectureBlocksByExternalRef(importedRow.getIdentifier());
 		LectureBlock lectureBlock = null;
 		

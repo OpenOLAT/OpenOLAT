@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
@@ -49,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ImportCurriculumsReviewElementsController extends AbstractImportListController implements FlexiTableCssDelegate {
+public class ImportCurriculumsReviewElementsController extends AbstractImportListController {
 	
 	protected static final String SORT_RELEVANCE_KEY = "relevant";
 	

@@ -170,9 +170,11 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		for(ImportedRow importedRow:importedRows) {
 			if(importedRow.type() == CurriculumExportType.EVENT && !isIgnored(importedRow)) {
 				if(importedRow.getLectureBlock() == null) {
-					RepositoryEntry course = importedRow.getCourse();
-					if(course != null) {
-						createLectureBlock(importedRow, course);
+					if(importedRow.getCourse() != null) {
+						createLectureBlock(importedRow, importedRow.getCourse());
+					} else if(importedRow.getCurriculumElementParentRow() != null
+							&& importedRow.getCurriculumElementParentRow().getCurriculumElement() != null) {
+						createLectureBlock(importedRow, importedRow.getCurriculumElementParentRow().getCurriculumElement());
 					}
 				} else {
 					LectureBlock lectureBlock = lectureService.getLectureBlock(importedRow.getLectureBlock());
@@ -188,6 +190,12 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	
 	private void createLectureBlock(ImportedRow importedRow, RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
+		lectureBlock.setExternalRef(importedRow.getIdentifier());
+		updateLectureBlock(lectureBlock, importedRow);
+	}
+	
+	private void createLectureBlock(ImportedRow importedRow, CurriculumElement element) {
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element, null);
 		lectureBlock.setExternalRef(importedRow.getIdentifier());
 		updateLectureBlock(lectureBlock, importedRow);
 	}

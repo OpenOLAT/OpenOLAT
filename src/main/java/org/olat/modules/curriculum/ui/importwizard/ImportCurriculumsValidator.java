@@ -590,10 +590,10 @@ public class ImportCurriculumsValidator {
 
 		// Reference to course
 		String referenceColumn = translate(ImportCurriculumsCols.referenceIdentifier.i18nHeaderKey());
-		if(!StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef())) {
+		if(!StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef()) && importedRow.getCurriculumElementParentRow() == null) {
 			importedRow.addValidationError(ImportCurriculumsCols.referenceIdentifier, referenceColumn,
 					translate("error.no.value"), translate("error.value.required"));
-		} else if(importedRow.getCourse() == null) {
+		} else if(StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef()) && importedRow.getCourse() == null) {
 			importedRow.addValidationError(ImportCurriculumsCols.referenceIdentifier, referenceColumn,
 					null, translator.translate("error.not.exist", importedRow.getReferenceExternalRef()));
 		} else if(importedRow.getLectureBlock() != null && importedRow.getCourse() != null
