@@ -40,8 +40,10 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.resource.accesscontrol.ConfirmationByEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,6 +72,9 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	private final boolean hasChildren;
 	private final boolean confirmationPossible;
 	private MembershipModification modification;
+	
+	@Autowired
+	private CurriculumService curriculumService;
 
 	public ChangeMembershipCalloutController(UserRequest ureq, WindowControl wControl,
 			Identity member, CurriculumRoles role, CurriculumElement curriculumElement,
@@ -122,7 +127,8 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 		confirmationByEl.setVisible(confirmationPossible);
 		
 		// confirmation until
-		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", null, formLayout);
+		Date defaultConfirmUntil = curriculumService.getDefaultReservationExpiration();
+		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", defaultConfirmUntil, formLayout);
 		confirmUntilEl.setVisible(confirmationPossible);
 
 		SelectionValues applyToPK = new SelectionValues();
@@ -143,10 +149,11 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	private void updateUI() {
 		GroupMembershipStatus selectedStatus = getNextStatus();
 		boolean proposeConfirmation = selectedStatus == GroupMembershipStatus.reservation;
-		confirmationTypeEl.setVisible(proposeConfirmation && confirmationPossible);
+		confirmationTypeEl.setVisible(!proposeConfirmation && confirmationPossible);
 		if(!confirmationTypeEl.isOneSelected()) {
 			confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
 		}
+		
 		boolean withConfirmation = confirmationPossible
 				&& confirmationTypeEl.isVisible() && confirmationTypeEl.isOneSelected()
 				&& ConfirmationMembershipEnum.WITH.name().equals(confirmationTypeEl.getSelectedKey());
