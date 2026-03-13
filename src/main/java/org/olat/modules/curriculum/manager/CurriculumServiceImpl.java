@@ -1497,12 +1497,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		sendDeferredEvents(events);
 	}
 	
-	@Override
-	public void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role,
+	private void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role,
 			Date expirationDate, ConfirmationByEnum confirmBy, Identity actor, String note) {
+		// Don't create a double reservation or a reservation for someone already member 
 		OLATResource resource = element.getResource();
 		ResourceReservation reservation = reservationDao.loadReservation(member, resource);
-		if(reservation == null) {
+		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
+		if(membership == null && reservation == null) {
 			Date expiration = expirationDate == null
 					? getDefaultReservationExpiration()
 					: expirationDate;
