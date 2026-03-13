@@ -246,7 +246,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult) {
 		
 		Form theForm = ftE.getRootForm();
-		String dispatchId = ftE.getFormDispatchId();
 
 		sb.append("<div class='o_table_large_search o_noprint'>");
 		TextElement searchEl = ftE.getSearchElement();
@@ -257,16 +256,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			searchEl.setPlaceholderKey("search.placeholder", null);
 		}
 		renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
-		
-		// reset quick search
-		String id = ftE.getSearchElement().getFormDispatchId();
-		sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-				  new NameValuePair("reset-search", "true")))
-		  .append("\" draggable=\"false\" class='btn btn-default o_reset_quick_search' aria-label='")
-		  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
-		
+		renderFormItem(renderer, sb, ftE.getSearchResetButton(), ubu, translator, renderResult, null);
 		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
+		// Do not trigger form validation if search only
+		String id = ftE.getSearchElement().getFormDispatchId();
+		String searchBtnId = ftE.getSearchButton().getFormDispatchId();
+		sb.append("<script>jQuery('#").append(id).append("').on('keydown', function(e) {")
+		  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, searchBtnId, 1, false, false, true))
+		  .append("; return false; }});</script>");
 		
 		// num. of entries
 		if(ftE.isNumOfRowsEnabled()) {
@@ -336,28 +334,24 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())
 				&& !ftE.isSearchLarge() && ftE.isSearchEnabled() && ftE.getSearchElement() != null) {
-
 			
 			TextElement searchEl = ftE.getSearchElement();
 			if(StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
 				searchEl.setPlaceholderKey(null, null);
 			}
 			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
-			
-			// reset quick search
-			String id = ftE.getSearchElement().getFormDispatchId();
-			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-					  new NameValuePair("reset-search", "true")))
-			  .append("\" draggable=\"false\" class='btn btn-default o_reset_quick_search' aria-label='")
-			  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
-			
+			renderFormItem(renderer, sb, ftE.getSearchResetButton(), ubu, translator, renderResult, null);
+			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 			if(ftE.getExtendedSearchButton() != null) {
-				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
-			} else {
-				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 			}
+			// Do not trigger form validation if search only
+			String id = ftE.getSearchElement().getFormDispatchId();
+			String searchBtnId = ftE.getSearchButton().getFormDispatchId();
+			sb.append("<script>jQuery('#").append(id).append("').on('keydown', function(e) {")
+			  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, searchBtnId, 1, false, false, true))
+			  .append("; return false; }});</script>");
 		}
 		
 		// num. of entries
