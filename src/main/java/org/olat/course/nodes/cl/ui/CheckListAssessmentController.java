@@ -65,6 +65,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -594,7 +595,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 					CheckListAssessmentRow row = model.getObject(se.getIndex());
 					doOpenIdentity(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				model.filter(tableEl.getFilters());
 				tableEl.reset(false, true, true);
 			}

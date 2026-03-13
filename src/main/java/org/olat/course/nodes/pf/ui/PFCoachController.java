@@ -52,7 +52,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -109,7 +113,10 @@ public class PFCoachController extends FormBasicController implements Assessment
 	protected static final int USER_PROPS_OFFSET = 500;
 	private static final String CURRICULUM_EL_PREFIX = "curriculumelement-";
 	private static final String BUSINESS_GROUP_PREFIX = "businessgroup-";
-	
+	private static final String ALL_TAB_ID = "All";
+	private static final String RELEVANT_TAB_ID = "Relevant";
+	private static final String EXCLUDED_TAB_ID = "Excluded";
+
 	private PFCourseNode pfNode;
 	
 	private FormLink uploadLink;
@@ -119,7 +126,10 @@ public class PFCoachController extends FormBasicController implements Assessment
 	private TimerComponent timerCmp;
 	private DropBoxTableModel tableModel;
 	private FlexiTableElement dropboxTable;
-	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab excludedTab;
+
 	private CloseableModalController cmc;
 	private PFFileUploadController pfFileUploadCtr;
 	private PFParticipantController pfParticipantController; 
@@ -127,6 +137,7 @@ public class PFCoachController extends FormBasicController implements Assessment
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
+	private final boolean learningPath;
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolSecurityCallback assessmentCallback;
@@ -152,7 +163,8 @@ public class PFCoachController extends FormBasicController implements Assessment
 		this.coachCourseEnv = coachCourseEnv;
 		this.courseEnv = coachCourseEnv.getCourseEnvironment();
 		this.pfNode = sfNode;
-		
+		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(courseEnv).getType());
+
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -177,6 +189,12 @@ public class PFCoachController extends FormBasicController implements Assessment
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof AssessedIdentityListState listState) {
+			FlexiFiltersTab tab = dropboxTable.getFilterTabById(listState.getTabId());
+			if(tab != null) {
+				dropboxTable.setSelectedFilterTab(ureq, tab);
+			} else {
+				dropboxTable.setSelectedFilterTab(ureq, getDefaultTab());
+			}
 			List<FlexiTableExtendedFilter> filters = dropboxTable.getExtendedFilters();
 			listState.setValuesToFilter(filters);
 			dropboxTable.setFilters(true, filters, false, false);
@@ -251,7 +269,7 @@ public class PFCoachController extends FormBasicController implements Assessment
 				} else if ("firstName".equals(se.getCommand()) || "lastName".equals(se.getCommand())) {
 					doOpenHomePage(ureq, currentObject.getIdentity());
 				} 
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				loadModel(true);
 			}
 		} else if (source == loadTemplateStructureLink) {
@@ -334,6 +352,7 @@ public class PFCoachController extends FormBasicController implements Assessment
 		dropboxTable.setExportEnabled(true);
 		dropboxTable.setSortSettings(options);
 		initFilters();
+		initFiltersPresets();
 		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v3");
 		dropboxTable.setEmptyTableMessageKey("table.empty");
 		
@@ -415,6 +434,43 @@ public class PFCoachController extends FormBasicController implements Assessment
 		}
 	}
 	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(allTab);
+
+		boolean canAssessNonMembersOrFake = assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants();
+		if (learningPath || canAssessNonMembersOrFake) {
+			List<FlexiTableFilterValue> relevantImplicitFilters = new ArrayList<>();
+			if (canAssessNonMembersOrFake) {
+				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
+			}
+			if (learningPath) {
+				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+			}
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, relevantImplicitFilters);
+			tabs.add(relevantTab);
+		}
+
+		if (learningPath) {
+			excludedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXCLUDED_TAB_ID, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.excluded.name()))));
+			tabs.add(excludedTab);
+		}
+
+		dropboxTable.setFilterTabs(true, tabs);
+		dropboxTable.setSelectedFilterTab(null, getDefaultTab());
+	}
+
+	private FlexiFiltersTab getDefaultTab() {
+		return relevantTab != null ? relevantTab : allTab;
+	}
+
 	@Override
 	public void reload(UserRequest ureq) {
 		loadModel(true);
