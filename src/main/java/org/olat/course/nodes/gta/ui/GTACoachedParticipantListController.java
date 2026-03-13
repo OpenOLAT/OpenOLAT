@@ -170,6 +170,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	public static final String MARKED_TAB_ID = "Marked";
 	public static final String ALL_TAB_ID = "All";
+	public static final String RELEVANT_TAB_ID = "Relevant";
+	public static final String EXCLUDED_TAB_ID = "Excluded";
 	public static final String ASSIGNED_TO_ME_TAB_ID = "AssignedToMe";
 	
 	private FormLink bulkDoneButton;
@@ -181,6 +183,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab markedTab;
+	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab excludedTab;
 	private FlexiFiltersTab assignedToMeTab;
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
@@ -193,6 +197,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private int count;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean markedDefault;
+	private final boolean learningPath;
 	private final AssessmentConfig assessmentConfig;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final Set<Long> fakeParticipantKeys;
@@ -247,6 +252,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		fakeParticipantKeys = assessmentCallback.getFakeParticipants().stream().map(IdentityRef::getKey).collect(Collectors.toSet());
+		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType());
 		
 		Set<Identity> identities = new HashSet<>(getAssessableIdentities());
 		identities.addAll(securityManager.loadIdentityByRefs(assessmentCallback.getFakeParticipants()));
@@ -258,7 +264,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		initForm(ureq);
 		int rows = updateModel(ureq);
 		if(rows == 0 && tableEl.getSelectedFilterTab() != allTab) {
-			tableEl.setSelectedFilterTab(ureq, allTab);
+			tableEl.setSelectedFilterTab(ureq, relevantTab != null ? relevantTab : allTab);
 			updateModel(ureq);
 		}
 	}
@@ -419,18 +425,45 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 								List.of(ParticipantType.member.name()))));
 		markedTab.setFiltersExpanded(true);
 		tabs.add(markedTab);
-		
-		allTab = FlexiFiltersTabFactory.tabWithFilters(ALL_TAB_ID, translate("filter.all"),
-				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_OBLIGATION,
-								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_MEMBERS,
-								List.of(ParticipantType.member.name()))));
+
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_assessment_all");
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
-		
+
+		List<FlexiTableFilterValue> relevantImplicitFilters = new ArrayList<>();
+		if (!fakeParticipantKeys.isEmpty()) {
+			relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
+		}
+		if (learningPath) {
+			relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+					List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+		}
+		if (learningPath || !fakeParticipantKeys.isEmpty()) {
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, relevantImplicitFilters);
+			relevantTab.setElementCssClass("o_sel_assessment_relevant");
+			relevantTab.setFiltersExpanded(true);
+			tabs.add(relevantTab);
+		}
+
+		if (learningPath) {
+			tabs.forEach(tab -> {
+				if (tab != relevantTab) {
+					tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+				}
+			});
+
+			excludedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXCLUDED_TAB_ID, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.excluded.name()))));
+			excludedTab.setElementCssClass("o_sel_assessment_excluded");
+			excludedTab.setFiltersExpanded(true);
+			tabs.add(excludedTab);
+		}
+
 		if(assessmentConfig.hasCoachAssignment()) {
 			assignedToMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TO_ME_TAB_ID, translate("filter.assigned.to.me"),
 					TabSelectionBehavior.clear, List.of(
@@ -438,9 +471,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			assignedToMeTab.setFiltersExpanded(true);
 			tabs.add(assignedToMeTab);
 		}
-		
+
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, markedDefault? markedTab: allTab);
+		tableEl.setSelectedFilterTab(ureq, markedDefault ? markedTab : (relevantTab != null ? relevantTab : allTab));
 	}
 	
 	private void initFilters() {
