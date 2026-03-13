@@ -56,7 +56,10 @@ $r.render("searchField")
 </div>
 	
 #if($r.visible("dashboard"))
-	<div class="o_block">
+<div class="o_block">
+	<fieldset>
+		<legend>$r.translate("overview")</legend>
 		$r.render("dashboard")
-	</div>
+	</fieldset>
+</div>
 #end
