@@ -62,7 +62,6 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	private DateChooser confirmUntilEl;
 	private SingleSelection nextStatusEl;
 	private SingleSelection confirmationByEl;
-	private SingleSelection confirmationTypeEl;
 	
 	private final Identity member;
 	private final CurriculumRoles role;
@@ -106,16 +105,8 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 		if(!nextStatusPK.isEmpty()) {
 			nextStatusEl.select(nextStatusPK.keys()[0], true);
 		}
-		
+
 		String suffix = Long.toString(CodeHelper.getRAMUniqueID());
-		SelectionValues confirmationPK = new SelectionValues();
-		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITHOUT.name(), translate("confirmation.membership.without")));
-		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITH.name(), translate("confirmation.membership.with")));
-		confirmationTypeEl = uifactory.addCardSingleSelectVertical("confirmation.membership", formLayout,
-				confirmationPK.keys(), confirmationPK.values(), null, null);
-		confirmationTypeEl.addActionListener(FormEvent.ONCLICK);
-		confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
-		confirmationTypeEl.setVisible(confirmationPossible);
 		
 		// confirmation by
 		SelectionValues confirmationByPK = new SelectionValues();
@@ -149,14 +140,7 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	private void updateUI() {
 		GroupMembershipStatus selectedStatus = getNextStatus();
 		boolean proposeConfirmation = selectedStatus == GroupMembershipStatus.reservation;
-		confirmationTypeEl.setVisible(!proposeConfirmation && confirmationPossible);
-		if(!confirmationTypeEl.isOneSelected()) {
-			confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
-		}
-		
-		boolean withConfirmation = confirmationPossible
-				&& confirmationTypeEl.isVisible() && confirmationTypeEl.isOneSelected()
-				&& ConfirmationMembershipEnum.WITH.name().equals(confirmationTypeEl.getSelectedKey());
+		boolean withConfirmation = confirmationPossible && proposeConfirmation;
 		confirmationByEl.setVisible(withConfirmation && confirmationPossible);
 		confirmUntilEl.setVisible(withConfirmation && confirmationPossible);
 	}
@@ -188,7 +172,7 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(nextStatusEl == source || confirmationTypeEl == source) {
+		if(nextStatusEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -199,9 +183,8 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 		boolean applyToDescendants = getApplyTo() == ChangeApplyToEnum.CONTAINED;
 		
 		GroupMembershipStatus nextStatus = GroupMembershipStatus.valueOf(nextStatusEl.getSelectedKey());
-		
-		ConfirmationMembershipEnum confirmation = confirmationTypeEl.isVisible() && confirmationTypeEl.isOneSelected()
-				? ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey())
+		ConfirmationMembershipEnum confirmation = nextStatus == GroupMembershipStatus.reservation
+				? ConfirmationMembershipEnum.WITH
 				: ConfirmationMembershipEnum.WITHOUT;
 		ConfirmationByEnum confirmationBy = confirmationByEl.isVisible()
 				? ConfirmationByEnum.valueOf(confirmationByEl.getSelectedKey()) : null;
