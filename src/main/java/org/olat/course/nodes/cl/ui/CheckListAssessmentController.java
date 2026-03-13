@@ -62,7 +62,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -128,6 +131,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 	static final String CURRICULUM_EL_PREFIX = "curriculumelement-";
 	static final String BUSINESS_GROUP_PREFIX = "businessgroup-";
 
+	private static final String ALL_TAB_ID = "All";
+	private static final String RELEVANT_TAB_ID = "Relevant";
+	private static final String EXCLUDED_TAB_ID = "Excluded";
+
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
 	
@@ -144,6 +151,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final boolean learningPath;
 	private final Set<Long> fakeParticipantKeys;
 	private final AssessmentToolSecurityCallback assessmentCallback;
+
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab excludedTab;
 
 	private FormLink editButton;
 	private FormSubmit saveButton;
@@ -241,13 +252,26 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof AssessedIdentityListState listState) {
+			FlexiFiltersTab tab = tableEl.getFilterTabById(listState.getTabId());
+			if(tab != null) {
+				tableEl.setSelectedFilterTab(ureq, tab);
+			} else {
+				tableEl.setSelectedFilterTab(ureq, getDefaultTab());
+			}
+
 			List<FlexiTableExtendedFilter> filters = tableEl.getExtendedFilters();
 			listState.setValuesToFilter(filters);
 			tableEl.setFilters(true, filters, false, false);
 			tableEl.expandFilters(listState.isFiltersExpanded());
+		} else {
+			tableEl.setSelectedFilterTab(ureq, getDefaultTab());
 		}
 
 		reload(ureq);
+	}
+
+	private FlexiFiltersTab getDefaultTab() {
+		return relevantTab != null ? relevantTab : allTab;
 	}
 
 	@Override
@@ -311,6 +335,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		initFilters();
+		initFiltersPresets();
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setAndLoadPersistedPreferences(ureq, "checklist-assessment-v2-" + courseNode.getIdent());
@@ -393,6 +418,50 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 	}
 	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_assessment_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
+		if (learningPath || !fakeParticipantKeys.isEmpty()) {
+			List<FlexiTableFilterValue> relevantImplicitFilters = new ArrayList<>();
+			if (!fakeParticipantKeys.isEmpty()) {
+				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member));
+			}
+			if (learningPath) {
+				relevantImplicitFilters.add(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+			}
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, relevantImplicitFilters);
+			relevantTab.setElementCssClass("o_sel_assessment_relevant");
+			relevantTab.setFiltersExpanded(true);
+			tabs.add(relevantTab);
+		}
+
+		if (learningPath) {
+			tabs.forEach(tab -> {
+				if (tab != relevantTab) {
+					tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+				}
+			});
+
+			excludedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXCLUDED_TAB_ID, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION,
+							List.of(AssessmentObligation.excluded.name()))));
+			excludedTab.setElementCssClass("o_sel_assessment_excluded");
+			excludedTab.setFiltersExpanded(true);
+			tabs.add(excludedTab);
+		}
+
+		tableEl.setFilterTabs(true, tabs);
+	}
+
 	private List<CheckListAssessmentRow> loadDatas() {
 		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		
