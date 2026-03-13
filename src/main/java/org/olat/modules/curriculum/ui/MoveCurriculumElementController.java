@@ -29,13 +29,10 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
-import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.MenuTreeItem;
-import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.tree.TreePosition;
 import org.olat.core.gui.control.Controller;
@@ -179,39 +176,6 @@ public class MoveCurriculumElementController extends FormBasicController {
 	
 	private boolean isEditable(CurriculumElement element) {
 		return secCallback.canEditCurriculumElement(element);
-	}
-	
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof MenuTree && event instanceof TreeEvent te) {
-			updateUI(te.getNodeId());
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void updateUI(String nodeId) {
-		TreeNode node = curriculumTreeEl.getTreeModel().getNodeById(nodeId);
-		Position[] allowed = curriculumModel.getInsertionPosition(node);
-		boolean hasUnder = Position.hasPosition(Position.under, allowed);
-		if(hasUnder) {
-			flc.contextRemove("warning");
-		} else {
-			StringBuilder types = new StringBuilder();
-			
-			if(node.getUserObject() instanceof CurriculumElement element) {
-				List<CurriculumElementType> allowedSubTypes = curriculumModel.getAllowedSubTypes(element);
-				for(CurriculumElementType type:allowedSubTypes) {
-					if(types.length() > 0) types.append(", ");
-					types.append(type.getDisplayName());
-				}
-			}
-			
-			if(types.isEmpty()) {
-				types.append("-");
-			}
-			String msg = translate("warning.element.types", types.toString());
-			flc.contextPut("warning", msg);
-		}
 	}
 
 	@Override
