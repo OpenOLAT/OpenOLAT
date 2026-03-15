@@ -70,6 +70,8 @@ public class OAIPmhModule extends AbstractSpringModule {
 	private static final String CONFIG_SEARCHENGINE_YANDEX_URL = "oai.searchengine.yandex.url";
 	private static final String CONFIG_SELECTED_LICENSE_RESTRICTIONS = "oai.license.selectedRestrictions";
 	private static final String CONFIG_OAI_IDENTIFIER_FORMAT = "oai.identifier.format";
+	private static final String CONFIG_SEO_ORGANISATION_NAME = "oai.seo.organisation.name";
+	private static final String CONFIG_SEO_KEYWORDS = "oai.seo.keywords";
 
 	@Value("${oai.uuid}")
 	private String uuid;
@@ -115,6 +117,10 @@ public class OAIPmhModule extends AbstractSpringModule {
 	private String licenseSelectedRestrictions;
 	@Value("${oai.identifier.format}")
 	private String identifierFormat;
+	@Value("${oai.seo.organisation.name:}")
+	private String seoOrganisationName;
+	@Value("${oai.seo.keywords:}")
+	private String seoKeywords;
 
 	@Autowired
 	private ACService acService;
@@ -217,6 +223,14 @@ public class OAIPmhModule extends AbstractSpringModule {
 		enabledObj = getStringPropertyValue(CONFIG_OAI_IDENTIFIER_FORMAT, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			identifierFormat = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEO_ORGANISATION_NAME, true);
+		if (enabledObj != null) {
+			seoOrganisationName = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEO_KEYWORDS, true);
+		if (enabledObj != null) {
+			seoKeywords = enabledObj;
 		}
 	}
 
@@ -432,6 +446,24 @@ public class OAIPmhModule extends AbstractSpringModule {
 
 	public void setIdentifierFormat(String identifierFormat) {
 		this.identifierFormat = identifierFormat;
+	}
+
+	public String getSeoOrganisationName() {
+		return seoOrganisationName;
+	}
+
+	public void setSeoOrganisationName(String seoOrganisationName) {
+		this.seoOrganisationName = seoOrganisationName;
+		setStringProperty(CONFIG_SEO_ORGANISATION_NAME, seoOrganisationName, true);
+	}
+
+	public String getSeoKeywords() {
+		return seoKeywords;
+	}
+
+	public void setSeoKeywords(String seoKeywords) {
+		this.seoKeywords = seoKeywords;
+		setStringProperty(CONFIG_SEO_KEYWORDS, seoKeywords, true);
 	}
 
 	public ListBuilder<String> getSetSpecByRepositoryEntry(

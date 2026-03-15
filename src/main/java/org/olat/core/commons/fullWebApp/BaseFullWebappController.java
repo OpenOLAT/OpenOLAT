@@ -392,6 +392,15 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			mainVc.contextPut("userJSON", sb);
 		}
 
+		// SEO sub-component: separate velocity template for all SEO meta tags.
+		// SeoMetadata is a mutable object — dispatchers modify it before rendering.
+		VelocityContainer seoVc = createVelocityContainer("seohead");
+		seoVc.setDomReplacementWrapperRequired(false);
+		seoVc.contextPut("seo", w.getSeoMetadata());
+		seoVc.contextPut("windowTitle", w.getTitle());
+		mainVc.put("seoHead", seoVc);
+		// Also expose SeoMetadata in mainVc for body-level SEO checks (e.g. h1 data-nosnippet)
+		mainVc.contextPut("seo", w.getSeoMetadata());
 		mainVc.contextPut("theme", w.getGuiTheme());
 		
 		// Add JS analytics code, e.g. for google analytics

@@ -1,0 +1,42 @@
+## SEO meta tags — rendered as sub-component in <head>
+<meta name="robots" content="$seo.robotsMetaContent">
+#if(!$seo.isIndexable())
+<meta name="google" content="notranslate">
+#end
+#if($seo.metaDescription)
+<meta name="description" content="$r.escapeHtml($seo.metaDescription)">
+#else
+<meta name="description" content="$r.translate("meta.description")">
+#end
+#if($seo.metaKeywords)
+<meta name="keywords" content="$r.escapeHtml($seo.metaKeywords)">
+#else
+<meta name="keywords" content="$r.translate("meta.keywords")">
+#end
+#if($seo.canonicalUrl)
+<link rel="canonical" href="$r.escapeHtml($seo.canonicalUrl)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="$r.escapeHtml($seo.canonicalUrl)">
+<meta property="og:title" content="$r.escapeHtml($windowTitle.getValue())">
+<meta property="og:site_name" content="$r.translate("page.appname")">
+<meta property="og:locale" content="$r.getLanguageCode()">
+#if($seo.metaDescription)
+<meta property="og:description" content="$r.escapeHtml($seo.metaDescription)">
+#end
+#if($seo.ogImageUrl)
+<meta property="og:image" content="$r.escapeHtml($seo.ogImageUrl)">
+#end
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="$r.escapeHtml($windowTitle.getValue())">
+#if($seo.metaDescription)
+<meta name="twitter:description" content="$r.escapeHtml($seo.metaDescription)">
+#end
+#if($seo.ogImageUrl)
+<meta name="twitter:image" content="$r.escapeHtml($seo.ogImageUrl)">
+#end
+#end
+#if($seo.structuredDataJson)
+<script type="application/ld+json">
+$seo.structuredDataJson
+</script>
+#end

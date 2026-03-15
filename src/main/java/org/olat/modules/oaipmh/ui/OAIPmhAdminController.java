@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.oaipmh.OAIService;
 import org.olat.modules.oaipmh.common.util.URLEncoder;
@@ -93,6 +94,8 @@ public class OAIPmhAdminController extends FormBasicController {
 	private TextElement yandexTextEl;
 	private TextElement customSitemapTextEl;
 	private TextElement customIndexTextEl;
+	private TextElement seoOrganisationNameEl;
+	private TextElement seoKeywordsEl;
 	private MultipleSelectionElement licenseSelectionEl;
 
 	@Autowired
@@ -105,6 +108,8 @@ public class OAIPmhAdminController extends FormBasicController {
 	private LicenseService licenseService;
 	@Autowired
 	private OAIService oaiService;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public OAIPmhAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -217,6 +222,14 @@ public class OAIPmhAdminController extends FormBasicController {
 		} else {
 			searchEnginePublishEl.toggleOff();
 		}
+
+		String defaultOrgName = organisationService.getDefaultOrganisation().getDisplayName();
+		seoOrganisationNameEl = uifactory.addTextElement("seo.organisation.name", 255, oaiPmhModule.getSeoOrganisationName(), searchEngineCont);
+		seoOrganisationNameEl.setPlaceholderText(defaultOrgName);
+
+		String defaultKeywords = translate("meta.keywords");
+		seoKeywordsEl = uifactory.addTextAreaElement("seo.keywords", "seo.keywords", 4000, 3, 60, false, false, oaiPmhModule.getSeoKeywords(), searchEngineCont);
+		seoKeywordsEl.setPlaceholderText(defaultKeywords);
 
 		String sitemapUrl = ResourceInfoDispatcher.getUrl("sitemap.xml");
 		String[] sitemapKeys = new String[]{
@@ -349,14 +362,17 @@ public class OAIPmhAdminController extends FormBasicController {
 	}
 
 	private void updateSearchEngineContainerVisibility() {
-		searchEngineSitemapEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		searchEngineIndexnowEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		googleTextEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		bingTextEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		customSitemapTextEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		customIndexTextEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		yandexTextEl.setVisible(oaiPmhModule.isSearchEngineEnabled());
-		searchEnginePublishLink.setVisible(oaiPmhModule.isSearchEngineEnabled());
+		boolean seEnabled = oaiPmhModule.isSearchEngineEnabled();
+		seoOrganisationNameEl.setVisible(seEnabled);
+		seoKeywordsEl.setVisible(seEnabled);
+		searchEngineSitemapEl.setVisible(seEnabled);
+		searchEngineIndexnowEl.setVisible(seEnabled);
+		googleTextEl.setVisible(seEnabled);
+		bingTextEl.setVisible(seEnabled);
+		customSitemapTextEl.setVisible(seEnabled);
+		customIndexTextEl.setVisible(seEnabled);
+		yandexTextEl.setVisible(seEnabled);
+		searchEnginePublishLink.setVisible(seEnabled);
 	}
 
 	/**
@@ -400,6 +416,8 @@ public class OAIPmhAdminController extends FormBasicController {
 			oaiPmhModule.setSetTypeRelease(setTypeEl.isKeySelected(OAI_KEY_SET_TYPE_RELEASE));
 		}
 		if (searchEnginePublishEl.isOn()) {
+			oaiPmhModule.setSeoOrganisationName(seoOrganisationNameEl.getValue().trim());
+			oaiPmhModule.setSeoKeywords(seoKeywordsEl.getValue().trim());
 			oaiPmhModule.setSearchEngineBing(searchEngineIndexnowEl.isKeySelected(OAI_KEY_SEARCHENGINE_BING));
 			oaiPmhModule.setSearchEngineBingUrl(bingTextEl.getValue());
 			oaiPmhModule.setSearchEngineCustomSitemap(searchEngineSitemapEl.isKeySelected(OAI_KEY_SEARCHENGINE_CUSTOM_SITEMAP));
