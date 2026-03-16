@@ -46,8 +46,10 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.invitation.InvitationService;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -97,6 +99,8 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
 	private RepositoryModule repositoryModule;
 	
 	@Override
@@ -111,7 +115,7 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			if(RepositoryEntryMembershipModifiedEvent.IDENTITY_REMOVED.equals(e.getCommand())) {
 				processIdentityRemoved(e.getRepositoryEntryKey(), e.getIdentityKey());
 			} else if(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADD_PENDING.equals(e.getCommand())) {
-				sendNotificationsToIdentities(e.getIdentityKey());
+				sendRepositoryEntryReservationNotification(e.getIdentityKey(), e.getRepositoryEntryKey());
 			} else if (RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(e.getCommand())) {
 				processIdentityAddedToRepositoryEntry(e.getIdentityKey(), e.getRepositoryEntryKey());
 			} else if (RepositoryEntryMembershipModifiedEvent.ROLE_OWNER_ADDED.equals(e.getCommand())) {
@@ -120,24 +124,59 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 		} else if (event instanceof CurriculumElementMembershipEvent e) {
 			if (CurriculumElementMembershipEvent.MEMBER_ADDED.equals(e.getCommand())) {
 				processIdentityRepoEntryChangeSubscription(e.getIdentityKey());
+			} else if (CurriculumElementMembershipEvent.MEMBER_RESERVATION_ADDED.equals(e.getCommand())) {
+				sendCurriculumReservationNotification(e.getIdentityKey(), e.getCurriculumElementKey());
 			} else if (CurriculumElementMembershipEvent.MEMBER_REMOVED.equals(e.getCommand())) {
 				processIdentityRemovedFromCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey());
 			}
 		}
 	}
 	
-	private void sendNotificationsToIdentities(Long identityKey) {
-		OLATResourceable target = OresHelper.createOLATResourceableInstance(NotificationsCenter.class, identityKey);
-		if (identityKey != null && !acService.getReservations(new IdentityRefImpl(identityKey)).isEmpty()) {
-			String businessPath = "[GroupsSite:0][AllGroups:0]";
-			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
-			String[] args = new String[] {url};
-			NotificationEvent event = new NotificationEvent(RepositoryManager.class, "pending.enrolments.info", args);
-			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, target);
+	private void sendRepositoryEntryReservationNotification(Long identityKey, Long repositoryEntryKey) {
+		OLATResource resource = repositoryManager.lookupRepositoryEntryResource(repositoryEntryKey);
+		sendNotificationsToIdentities(identityKey, resource);
+	}
+
+	private void sendNotificationsToIdentities(Long identityKey, OLATResource resource) {
+		if (hasUserConfirmableReservation(identityKey, resource)) {
+			sendNotification(identityKey, "pending.course.invitation.info");
 		}
 	}
-	
+
+	private void sendCurriculumReservationNotification(Long identityKey, Long curriculumElementKey) {
+		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if (element == null) {
+			return;
+		}
+		if (!hasUserConfirmableReservation(identityKey, element.getResource())) {
+			return;
+		}
+		if (element.isSingleCourseImplementation()) {
+			sendNotification(identityKey, "pending.course.invitation.info");
+		} else {
+			sendNotification(identityKey, "pending.curriculum.invitation.info");
+		}
+	}
+
+	private boolean hasUserConfirmableReservation(Long identityKey, OLATResource resource) {
+		if (identityKey == null || resource == null) {
+			return false;
+		}
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(resource));
+		searchParams.setIdentities(List.of(new IdentityRefImpl(identityKey)));
+		searchParams.setConfirmationByUser(Boolean.TRUE);
+		return !acService.getReservations(searchParams).isEmpty();
+	}
+
+	private void sendNotification(Long identityKey, String i18nKey) {
+		OLATResourceable target = OresHelper.createOLATResourceableInstance(NotificationsCenter.class, identityKey);
+		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString("[MyCoursesSite:0]");
+		String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
+		String[] args = new String[] {url};
+		NotificationEvent event = new NotificationEvent(RepositoryManager.class, i18nKey, args);
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, target);
+	}
+
 	private void processIdentityRemovedFromCurriculumElement(Long identityKey, long curriculumElementKey) {
 		IdentityRef identity = new IdentityRefImpl(identityKey);
 		List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao

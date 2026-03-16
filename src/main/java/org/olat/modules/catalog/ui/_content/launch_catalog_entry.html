@@ -26,7 +26,7 @@
 						<div class="o_entry_card_image">
 							<div class="o_visual">
 								#if($row.isThumbnailAvailable())
-									<img src="${row.getThumbnailRelPath()}" alt="" />
+									<img src="${row.getThumbnailRelPath()}" alt="$r.escapeForHtmlAttribute($row.displayName)" />
 								#else
 									<div class="o_visual_not_available"></div>
 								#end

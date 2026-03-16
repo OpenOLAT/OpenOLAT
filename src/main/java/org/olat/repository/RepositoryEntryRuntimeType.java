@@ -38,6 +38,12 @@ public enum RepositoryEntryRuntimeType {
 	private RepositoryEntryRuntimeType() {
 		//
 	}
+	
+	public static final RepositoryEntryRuntimeType[] ORDERED = {
+			RepositoryEntryRuntimeType.standalone,
+			RepositoryEntryRuntimeType.embedded,
+			RepositoryEntryRuntimeType.curricular,
+			RepositoryEntryRuntimeType.template };
 
 	public static ILoggingAction loggingAction(RepositoryEntryRuntimeType status) {
 		return switch(status) {

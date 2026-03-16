@@ -209,10 +209,10 @@ public class ImportCurriculumsValidator {
 		
 		if(importedRow.getStatus() == null) {
 			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
-			if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-			} else if(statistics.changes() > 0) {
+			if(statistics.changes() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
+			} else if(statistics.errors() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
@@ -285,10 +285,10 @@ public class ImportCurriculumsValidator {
 		
 		if(importedRow.getStatus() == null) {
 			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
-			if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
-			} else if(statistics.changes() > 0) {
+			if(statistics.changes() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
+			} else if(statistics.errors() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
@@ -590,10 +590,10 @@ public class ImportCurriculumsValidator {
 
 		// Reference to course
 		String referenceColumn = translate(ImportCurriculumsCols.referenceIdentifier.i18nHeaderKey());
-		if(!StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef())) {
+		if(!StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef()) && importedRow.getCurriculumElementParentRow() == null) {
 			importedRow.addValidationError(ImportCurriculumsCols.referenceIdentifier, referenceColumn,
 					translate("error.no.value"), translate("error.value.required"));
-		} else if(importedRow.getCourse() == null) {
+		} else if(StringHelper.containsNonWhitespace(importedRow.getReferenceExternalRef()) && importedRow.getCourse() == null) {
 			importedRow.addValidationError(ImportCurriculumsCols.referenceIdentifier, referenceColumn,
 					null, translator.translate("error.not.exist", importedRow.getReferenceExternalRef()));
 		} else if(importedRow.getLectureBlock() != null && importedRow.getCourse() != null
@@ -693,6 +693,8 @@ public class ImportCurriculumsValidator {
 			} else if(importedRow.getCurriculum() != null && !Objects.equals(importedRow.getCurriculum().getOrganisation(), importedRow.getOrganisation())) {
 				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
 						null, translate("error.no.update"));
+				importedRow.addChanged(organisationColumn, importedRow.getCurriculum().getOrganisation().getDisplayName(),
+						importedRow.getOrganisation().getDisplayName(), ImportCurriculumsCols.organisationIdentifier);
 			}
 		}
 		

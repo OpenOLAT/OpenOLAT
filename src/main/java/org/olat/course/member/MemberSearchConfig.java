@@ -21,6 +21,7 @@ package org.olat.course.member;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
@@ -37,6 +38,7 @@ public class MemberSearchConfig {
 	private boolean singleSelection = true;
 	private boolean multiSelection = true;
 	private boolean showSelectButton = true;
+	private BooleanSupplier tableValidation = () -> true;
 	
 	private GroupRoles[] roles;
 	private boolean runningTestSession;
@@ -83,6 +85,15 @@ public class MemberSearchConfig {
 	
 	public MemberSearchConfig showSelectButton(boolean show) {
 		this.showSelectButton = show;
+		return this;
+	}
+
+	public BooleanSupplier tableValidation() {
+		return tableValidation;
+	}
+
+	public MemberSearchConfig tableValidation(BooleanSupplier supplier) {
+		this.tableValidation = supplier;
 		return this;
 	}
 

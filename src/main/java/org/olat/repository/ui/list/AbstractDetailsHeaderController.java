@@ -141,12 +141,6 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract OLATResource getResource();
 	
 	private void initByConfig(UserRequest ureq) {
-		if (config.isParticipantConfirmationPending()) {
-			acceptPendingReservationCtrl = new AcceptPendingReservationController(ureq, getWindowControl());
-			listenTo(acceptPendingReservationCtrl);
-			mainVC.put("acceptPendingReservation", acceptPendingReservationCtrl.getInitialComponent());
-		}
-
 		// Guest start
 		if (StringHelper.containsNonWhitespace(config.getGuestStartUrl())) {
 			startCtrl.getInitialComponent().setVisible(true);
@@ -154,6 +148,12 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			startCtrl.getGuestStartLink().setVisible(true);
 			startCtrl.getGuestStartLink().setUrl(config.getGuestStartUrl());
 			return;
+		}
+
+		if (config.isParticipantConfirmationPending()) {
+			acceptPendingReservationCtrl = new AcceptPendingReservationController(ureq, getWindowControl());
+			listenTo(acceptPendingReservationCtrl);
+			mainVC.put("acceptPendingReservation", acceptPendingReservationCtrl.getInitialComponent());
 		}
 
 		// Start
@@ -197,6 +197,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		// Leave
 		if (config.isLeaveAvailable()) {
 			startCtrl.getLeaveLink().setVisible(true);
+			startCtrl.getLeaveLink().setEnabled(config.isLeaveEnabled());
 			startCtrl.getLeaveLink().setCustomDisplayText(getLeaveText(config.isLeaveWithCancellationFee()));
 		}
 		
@@ -212,7 +213,9 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			}
 		}
 		
-		startCtrl.getInitialComponent().setVisible(startCtrl.getStartLink().isVisible());
+		boolean startCtrlVisible = startCtrl.getStartLink().isVisible()
+				|| startCtrl.getLeaveLink().isVisible();
+		startCtrl.getInitialComponent().setVisible(startCtrlVisible);
 	}
 	
 	protected String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {
@@ -248,9 +251,9 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == acceptPendingReservationCtrl) {
 			if (event == AcceptPendingReservationController.ACCEPT_EVENT) {
-				doAcceptReservation(ureq);
+				doAcceptReservation();
 			} else if (event == AcceptPendingReservationController.DECLINE_EVENT) {
-				doDeclineReservation(ureq);
+				doDeclineReservation();
 			}
 			fireEvent(ureq, RESERVATION_CONFIRMATION_EVENT);
 		} else if (source == startCtrl) {
@@ -278,14 +281,14 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		//
 	}
 
-	private void doAcceptReservation(UserRequest ureq) {
+	private void doAcceptReservation() {
 		ResourceReservation reservation = acService.getReservation(getIdentity(), getResource());
 		if (reservation != null) {
 			acService.acceptReservationToResource(getIdentity(), reservation);
 		}
 	}
 
-	private void doDeclineReservation(UserRequest ureq) {
+	private void doDeclineReservation() {
 		ResourceReservation reservation = acService.getReservation(getIdentity(), getResource());
 		if (reservation != null) {
 			acService.removeReservation(getIdentity(), getIdentity(), reservation, null);

@@ -43,6 +43,10 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.run.leave.LeaveCourseContext;
+import org.olat.course.run.leave.LeaveCourseEvaluator;
+import org.olat.course.run.leave.LeaveCourseStatus;
+import org.olat.course.run.leave.RepositoryEntryLeaveCourseContext;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.repository.RepositoryEntry;
@@ -194,8 +198,10 @@ public class AccessDeniedFactory {
 		public NotPublishedYetConfig(RepositoryEntry repositoryEntry, Identity identity, boolean participant) {
 			super(identity);
 			notPublishedYetMessage = true;
-			if (repositoryEntry != null && participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
-				leaveAvailable = true;
+			if (participant && repositoryEntry != null) {
+				LeaveCourseContext leaveCtx = new RepositoryEntryLeaveCourseContext(repositoryEntry, identity);
+				LeaveCourseStatus status = new LeaveCourseEvaluator().evaluate(leaveCtx);
+				setLeave(status);
 			}
 		}
 		
@@ -207,8 +213,10 @@ public class AccessDeniedFactory {
 			super(identity);
 			initReservations(reservations);
 			hideOpenButtons();
-			if (repositoryEntry != null &&  participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
-				leaveAvailable = true;
+			if (participant && repositoryEntry != null) {
+				LeaveCourseContext leaveCtx = new RepositoryEntryLeaveCourseContext(repositoryEntry, identity);
+				LeaveCourseStatus status = new LeaveCourseEvaluator().evaluate(leaveCtx);
+				setLeave(status);
 			}
 		}
 		
@@ -240,8 +248,10 @@ public class AccessDeniedFactory {
 		public AccessPendingConfig(RepositoryEntry repositoryEntry, Identity identity, boolean participant) {
 			super(identity);
 			adminConfirmationPendingMessage = true;
-			if (repositoryEntry != null &&  participant && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
-				leaveAvailable = true;
+			if (participant && repositoryEntry != null) {
+				LeaveCourseContext leaveCtx = new RepositoryEntryLeaveCourseContext(repositoryEntry, identity);
+				LeaveCourseStatus status = new LeaveCourseEvaluator().evaluate(leaveCtx);
+				setLeave(status);
 			}
 		}
 		

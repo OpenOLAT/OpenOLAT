@@ -23,7 +23,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -37,8 +39,6 @@ public class GuiDemoEmptyStateController extends BasicController {
 
 	VelocityContainer mainVC;
 
-	private GuiDemoEmptyStateFormController emptyStateFormCtrl;
-
 	public GuiDemoEmptyStateController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
@@ -46,13 +46,23 @@ public class GuiDemoEmptyStateController extends BasicController {
 
 		initStandard1();
 		initStandard2();
-		initStandardForm3(ureq);
+		initStandardForm(ureq);
+		
+		initSmall1();
+		
+		initSmallForm(ureq);
 
 		putInitialPanel(mainVC);
 	}
 
 	private void initStandard1() {
-		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+		EmptyStateConfig emptyStateConfig = example1Builder().build();
+		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard1", mainVC, this, emptyStateConfig);
+		emptyState.setTranslator(getTranslator());
+	}
+
+	EmptyStateConfigBuilder example1Builder() {
+		return EmptyStateConfig.builder()
 				.withIconCss("o_icon_globe")
 				.withMessageI18nKey("empty.state.message.nothing")
 				.withHintI18nKey("empty.state.hint.additional")
@@ -60,16 +70,20 @@ public class GuiDemoEmptyStateController extends BasicController {
 				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
 				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.1", null, "#1")
 				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.2", null,"#2")
-				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.3", null,"#3")
-				.build();
-		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard1", mainVC, this, emptyStateConfig);
+				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.3", null,"#3");
+	}
+	
+	private void initSmall1() {
+		EmptyStateConfig emptyStateConfig = example1Builder().withVariant(EmptyStateVariant.small).build();
+		EmptyState emptyState = EmptyStateFactory.create("emptyStateSmall1", mainVC, this, emptyStateConfig);
 		emptyState.setTranslator(getTranslator());
 	}
 
-	private void initStandardForm3(UserRequest ureq) {
-		emptyStateFormCtrl = new GuiDemoEmptyStateFormController(ureq, getWindowControl());
-		listenTo(emptyStateFormCtrl);
-		mainVC.put("emptyStateForm", emptyStateFormCtrl.getInitialComponent());
+	private void initStandardForm(UserRequest ureq) {
+		GuiDemoEmptyStateFormController ctrl = new GuiDemoEmptyStateFormController(ureq, getWindowControl(), 
+				EmptyStateVariant.standard);
+		listenTo(ctrl);
+		mainVC.put("emptyStateStandardForm", ctrl.getInitialComponent());
 	}
 
 	private void initStandard2() {
@@ -80,6 +94,13 @@ public class GuiDemoEmptyStateController extends BasicController {
 				.build();
 		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard2", mainVC, this, emptyStateConfig);
 		emptyState.setTranslator(getTranslator());
+	}
+	
+	private void initSmallForm(UserRequest ureq) {
+		GuiDemoEmptyStateFormController ctrl = new GuiDemoEmptyStateFormController(ureq, getWindowControl(), 
+				EmptyStateVariant.small);
+		listenTo(ctrl);
+		mainVC.put("emptyStateSmallForm", ctrl.getInitialComponent());
 	}
 
 	@Override

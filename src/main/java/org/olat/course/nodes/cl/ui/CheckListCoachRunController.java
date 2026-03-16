@@ -232,6 +232,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
 		participantsCtrl = new CheckListAssessmentController(ureq, swControl, userCourseEnv, assessmentCallback, ores, courseNode);
 		listenTo(participantsCtrl);
+		participantsCtrl.activate(ureq, null, null);
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 		segmentView.select(participantsLink);
 		segmentPrefs.setSegment(ureq, CourseNodeSegment.participants, segmentView, saveSegmentPref);

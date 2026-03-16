@@ -103,7 +103,7 @@ public class LoginPage {
 	}
 	
 	public LoginPage assertOnMembershipConfirmation() {
-		By reservationBy = By.cssSelector("div.o_reservation");
+		By reservationBy = By.cssSelector(".o_warning_with_icon div.o_ac_reservation_cards");
 		WebElement reservationEl = OOGraphene.waitElement(reservationBy, 10, browser);
 		Assert.assertTrue(reservationEl.isDisplayed());
 		return this;
@@ -361,17 +361,15 @@ public class LoginPage {
 		return this;
 	}
 	
-	public LoginPage confirmMembership() {
-		By acceptLinkBy = By.xpath("//div[contains(@class,'o_reservation')]//a[i[contains(@class,'o_icon_accept')]]");
+	/**
+	 * Confirm a single membership.
+	 * 
+	 * @return Itself
+	 */
+	public LoginPage confirmSingleMembership() {
+		By acceptLinkBy = By.xpath("//div[contains(@class,'o_ac_reservation_card')]/div[contains(@class,'o_ac_reservation_actions')]//a[i[contains(@class,'o_icon_accept')]]");
 		browser.findElement(acceptLinkBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By okBy = By.cssSelector("button.btn.btn-primary");
-		browser.findElement(okBy).click();
-		OOGraphene.waitBusy(browser);
-
-		By reservationBy = By.xpath("//div[contains(@class,'o_reservation')]");
-		OOGraphene.waitElementDisappears(reservationBy, 5, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

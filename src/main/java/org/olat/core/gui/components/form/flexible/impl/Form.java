@@ -604,6 +604,10 @@ public class Form {
 		return requestParams.get(key);
 	}
 	
+	public void removeRequestParameter(String key) {
+		requestParams.remove(key);
+	}
+	
 	/**
 	 * Return the form parameter set. This takes care if a multipart form has been
 	 * used or a normal form.

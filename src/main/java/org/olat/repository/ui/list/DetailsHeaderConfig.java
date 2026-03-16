@@ -54,7 +54,9 @@ public interface DetailsHeaderConfig {
 	List<OfferAccess> getAvailableMethods();
 	
 	boolean isLeaveAvailable();
-	
+
+	boolean isLeaveEnabled();
+
 	boolean isLeaveWithCancellationFee();
 	
 	ParticipantsAvailabilityNum getParticipantsAvailabilityNum();

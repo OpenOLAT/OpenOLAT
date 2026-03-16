@@ -333,6 +333,10 @@ public class StringHelper {
 		return !matcher.find();
 	}
 	
+	public static String nullIfBlank(String s) {
+		return containsNonWhitespace(s)? s: null;
+	}
+	
 	public static String blankIfNull(String s) {
 		return s != null? s: "";
 	}

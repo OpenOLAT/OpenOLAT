@@ -349,7 +349,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		leafColumns.add(columnModel);
 		columnsModel.addFlexiColumnModel(columnModel);
 		
-		columnModel = new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), sortEnabled, OrderBy.type.name(),
+		columnModel = new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer());
 		leafColumns.add(columnModel);
 		columnsModel.addFlexiColumnModel(columnModel);

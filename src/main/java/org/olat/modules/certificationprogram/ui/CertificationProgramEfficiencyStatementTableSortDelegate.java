@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.NullOrder;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.certificationprogram.ui.CertificationProgramEfficiencyStatementTableModel.StatmentCols;
 
@@ -57,7 +58,7 @@ public class CertificationProgramEfficiencyStatementTableSortDelegate extends So
 		@Override
 		public int compare(CertificationProgramEfficiencyStatementRow o1, CertificationProgramEfficiencyStatementRow o2) {
 			if(o1 == null || o2 == null) {
-				return compareNullObjectsAlwaysLast(o1, o2);
+				return compareNullObjects(o1, o2, NullOrder.NULLS_ALWAYS_LAST);
 			}
 			
 			int c = compareBigDecimal(o1.getScore(), o2.getScore());

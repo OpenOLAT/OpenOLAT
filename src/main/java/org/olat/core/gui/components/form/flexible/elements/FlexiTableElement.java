@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractFlexiTableRenderer;
@@ -576,51 +577,49 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void reloadData();
 
 	/**
+	 * Configures the empty state settings with the specified {@code EmptyStateConfig}.
+	 *
+	 * @param emptyStateConfig the configuration object containing details for the empty state setup.
+	 */
+	void setEmptyStateConfig(EmptyStateConfig emptyStateConfig);
+
+	/**
+	 * Configures the empty state for a view or component with the given configuration.
+	 *
+	 * @param emptyStateConfig the configuration object containing the details for the empty state, such as texts, images, or actions to display when the state is active
+	 * @param alwaysShowSearchFields a flag indicating whether search fields should always be visible, even when the empty state is displayed
+	 */
+	public void setEmptyStateConfig(EmptyStateConfig emptyStateConfig, boolean alwaysShowSearchFields);
+	
+	/**
 	 * Set the message displayed when the table is empty and the table header
 	 * and table options such as search, sort etc are hidden. If null (default)
 	 * the empty table is shown.
 	 * 
-	 * @param i18key
+	 * @deprecated Use {@link #setEmptyStateConfig(EmptyStateConfig, boolean)} instead.
 	 */
+	@Deprecated
 	public void setEmptyTableMessageKey(String i18key);
 
 	/**
 	 * Configure the empty table screen with custom message, hint text and
 	 * background icon and define the next primary user action.
 	 * 
-	 * @param emptyMessagei18key        the i18n key used as the main message. If
-	 *                                  set to null, the empty screen is disabled
-	 *                                  alltogether
-	 * @param emptyTableHintKey         the i18n key for an optional hint message to
-	 *                                  tell the user what the empty table means and
-	 *                                  what to do about it
-	 * @param emptyTableIconCss         the CSS icon class that shows the icon for
-	 *                                  the objects listed in the table
+	 * @deprecated Use {@link #setEmptyStateConfig(EmptyStateConfig, boolean)} instead.
 	 */
+	@Deprecated
 	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss);
 
 	/**
 	 * Configure the empty table screen with custom message, hint text and
 	 * background icon and define the next primary user action.
 	 * 
-	 * @param emptyMessagei18key        the i18n key used as the main message. If
-	 *                                  set to null, the empty screen is disabled
-	 *                                  alltogether
-	 * @param emptyTableHintKey         the i18n key for an optional hint message to
-	 *                                  tell the user what the empty table means and
-	 *                                  what to do about it
-	 * @param emptyTableIconCss         the CSS icon class that shows the icon for
-	 *                                  the objects listed in the table
-	 * @param emptyPrimaryActionKey     the i18n key for the button presented as the
-	 *                                  primary user action below the empty screen
-	 *                                  (optional)
-	 * @param emptyPrimaryActionIconCSS the CSS icon class added to the button
-	 *                                  (optional)
-	 * @param showAlwaysSearchFields    true (default): show the search field,
-	 *                                  false: don't show it on empty tables
+	 * @deprecated Use {@link #setEmptyStateConfig(EmptyStateConfig, boolean)} instead.
 	 */
-	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS,
-			boolean showAlwaysSearchFields, String... i18nArgs);
+	@Deprecated
+	public void setEmptyTableSettings(String messageI18nKey, String hintI18nKey, String iconCss, 
+									  String primaryButtonI18nKey, String primaryButtonLeftIconCss, 
+									  boolean showAlwaysSearchFields, String... i18nArgs);
 	
 	/**
 	 * Add a button or an other component in the "button grouped"

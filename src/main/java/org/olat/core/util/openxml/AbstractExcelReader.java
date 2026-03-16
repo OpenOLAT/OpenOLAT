@@ -25,12 +25,16 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.dhatim.fastexcel.reader.Cell;
 import org.dhatim.fastexcel.reader.CellType;
 import org.dhatim.fastexcel.reader.Row;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 
 /**
@@ -40,8 +44,18 @@ import org.olat.core.util.DateUtils;
  *
  */
 public abstract class AbstractExcelReader {
+	
+	private static final Logger log = Tracing.createLoggerFor(AbstractExcelReader.class);
 
 	private static final DecimalFormat hierarchyFormat = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
+	private static final DateTimeFormatter AM_PM_TIME_FORMATTER = new DateTimeFormatterBuilder()
+		      .parseCaseInsensitive()          // accept "am", "AM", "Am"
+		      .appendPattern("h:mm a")
+		      .toFormatter(Locale.ENGLISH);
+	private static final DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
+		      .parseCaseInsensitive()          // accept "am", "AM", "Am"
+		      .appendPattern("H:mm")
+		      .toFormatter(Locale.GERMAN);
 	
 	public String getString(Row r, int pos) {
 		if(r.getCellCount() <= pos) return null;
@@ -154,6 +168,14 @@ public abstract class AbstractExcelReader {
 		}
 		
 		String rawValue = getString(r, pos);
+		// Try our best
+		if(rawValue != null ) {
+			LocalTime dateTime = parseTime(rawValue);
+			if(dateTime != null) {
+				return ReaderLocalTime.valueOf(dateTime);
+			}
+		}
+
 		if(rawValue != null) {
 			return ReaderLocalTime.valueOf(rawValue);
 		}
@@ -182,6 +204,20 @@ public abstract class AbstractExcelReader {
 		return DateUtils.getEndOfDay(DateUtils.toDate(dateTime));
 	}
 	
+	public static final LocalTime parseTime(String value) {
+		try {
+			if(value.contains("AM") || value.contains("PM")) {
+				return LocalTime.parse(value, AM_PM_TIME_FORMATTER);
+			}
+			if(value.contains(":")) {
+				return LocalTime.parse(value, TIME_FORMATTER);
+			}
+		} catch (Exception e) {
+			log.warn("Cannot parse time: {}", value, e);
+		}
+		return null;
+	}
+	
 	public record ReaderLocalDate(LocalDate date, String val) {
 
 		public static final ReaderLocalDate valueOf(LocalDateTime dateTime) {
@@ -197,6 +233,10 @@ public abstract class AbstractExcelReader {
 		
 		public static final ReaderLocalTime valueOf(LocalDateTime dateTime) {
 			return new ReaderLocalTime(LocalTime.from(dateTime), null);
+		}
+		
+		public static final ReaderLocalTime valueOf(LocalTime time) {
+			return new ReaderLocalTime(time, null);
 		}
 		
 		public static final ReaderLocalTime valueOf(String val) {

@@ -28,5 +28,10 @@ $r.render("searchField")
 	<li aria-hidden="true"></li>
 </ul>
 #if($r.available("dashboard"))
-	$r.render("dashboard")
+<div class="o_block">
+	<fieldset>
+		<legend>$r.translate("overview")</legend>
+		$r.render("dashboard")
+	</fieldset>
+</div>
 #end

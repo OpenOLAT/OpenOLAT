@@ -21,6 +21,8 @@ package org.olat.modules.curriculum.ui.importwizard;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
@@ -48,7 +50,7 @@ public class AbstractImportRow {
 	private MultipleSelectionElement ignoreEl;
 
 	private ImportCurriculumsStatus status;
-	private Map<ImportCurriculumsCols,CurriculumImportedValue> validationMap = new EnumMap<>(ImportCurriculumsCols.class);
+	private Map<ImportCurriculumsCols,CurriculumImportedValues> validationMap = new EnumMap<>(ImportCurriculumsCols.class);
 	
 	public AbstractImportRow(int rowNum) {
 		this.rowNum = rowNum;
@@ -93,23 +95,42 @@ public class AbstractImportRow {
 	public void setValidationResultsLink(FormLink validationResultsLink) {
 		this.validationResultsLink = validationResultsLink;
 	}
+	
+	public CurriculumImportedValue getValidationByImportance(ImportCurriculumsCols col) {
+		CurriculumImportedValues values = validationMap.get(col);
+		if(values == null || values.values().isEmpty()) {
+			return null;
+		}
+		if(values.values().size() == 1) {
+			return values.values().get(0);
+		}
+		
+		List<CurriculumImportedValue> list = new ArrayList<>(values.values());
+		Collections.sort(list, new CurriculumImportedValueComparator());
+		return list.get(0);
+	}
 
-	public CurriculumImportedValue getValidation(ImportCurriculumsCols col) {
-		return validationMap.get(col);
+	public List<CurriculumImportedValue> getValidation(ImportCurriculumsCols col) {
+		CurriculumImportedValues values = validationMap.get(col);
+		return values == null ? List.of() : values.values();
 	}
 	
 	public List<CurriculumImportedValue> getValues() {
-		return List.copyOf(validationMap.values());
+		List<CurriculumImportedValue> list = new ArrayList<>(validationMap.size() + 3);
+		for(CurriculumImportedValues values:validationMap.values()) {
+			list.addAll(values.values());
+		}
+		return list;
 	}
 	
 	public void addValidationWarning(ImportCurriculumsCols col, String column, String placeholder, String message) {
-		validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-			.setWarning(placeholder, message);
+		validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+			.addWarning(placeholder, message);
 	}
 	
 	public void addValidationError(ImportCurriculumsCols col, String column, String placeholder, String message) {
-		validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-			.setError(placeholder, message);
+		validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+			.addError(placeholder, message);
 	}
 	
 	public void addChanged(String column, Object currentValue, Object newValue, ImportCurriculumsCols col) {
@@ -119,15 +140,15 @@ public class AbstractImportRow {
 			currentValue = DateUtils.toLocalTime(date);	
 		}
 		if(!Objects.equals(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-				.setChanged(currentValue, newValue);
+			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+				.addChanged(currentValue, newValue);
 		}
 	}
 	
 	public void addChanged(String column, String currentValue, String newValue, ImportCurriculumsCols col) {
 		if(!equalsString(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> new CurriculumImportedValue(column))
-				.setChanged(currentValue, newValue);
+			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+				.addChanged(currentValue, newValue);
 		}
 	}
 	private boolean equalsString(String s1, String s2) {
@@ -138,12 +159,19 @@ public class AbstractImportRow {
 	}
 	
 	public boolean hasValidationError(ImportCurriculumsCols col) {
-		CurriculumImportedValue val = validationMap.get(col);
-		return val != null && val.isError();
+		CurriculumImportedValues values = validationMap.get(col);
+		return values != null && values.values().stream().anyMatch(v -> v.isError());
 	}
 	
 	public boolean hasValidationErrors() {
-		return validationMap.values().stream().anyMatch(v -> v.isError());
+		for(CurriculumImportedValues values:validationMap.values()) {
+			for(CurriculumImportedValue val:values.values()) {
+				if(val.isError()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public CurriculumImportedStatistics getValidationStatistics() {
@@ -151,14 +179,16 @@ public class AbstractImportRow {
 		int warnings = 0;
 		int changes = 0;
 		
-		for(CurriculumImportedValue val:validationMap.values()) {
-			if(val.isChanged()) {
-				changes++;
-			}
-			if(val.isError()) {
-				errors++;
-			} else if(val.isWarning()) {
-				warnings++;
+		for(CurriculumImportedValues values:validationMap.values()) {
+			for(CurriculumImportedValue val:values.values()) {
+				if(val.isChanged()) {
+					changes++;
+				}
+				if(val.isError()) {
+					errors++;
+				} else if(val.isWarning()) {
+					warnings++;
+				}
 			}
 		}
 		

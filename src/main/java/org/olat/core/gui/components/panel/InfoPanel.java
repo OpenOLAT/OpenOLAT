@@ -39,6 +39,7 @@ public class InfoPanel extends AbstractComponent implements ComponentCollection 
 	
 	private static final InfoPanelRenderer RENDERER = new InfoPanelRenderer();
 	
+	private boolean collapsible = true;
 	private String title;
 	private String informations;
 	private Component informationsCmp;
@@ -62,6 +63,14 @@ public class InfoPanel extends AbstractComponent implements ComponentCollection 
 		status = reloadedStatus;
 	}
 	
+	public boolean isCollapsible() {
+		return collapsible;
+	}
+
+	public void setCollapsible(boolean collapsible) {
+		this.collapsible = collapsible;
+	}
+
 	public String getTitle() {
 		return title;
 	}

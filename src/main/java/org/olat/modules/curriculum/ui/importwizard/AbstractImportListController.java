@@ -245,6 +245,14 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 					} else {
 						cssClass = "o_import_new";
 					}
+				} else if(importedRow.getStatus() == ImportCurriculumsStatus.MODIFIED) {
+					if(statistics.errors() > 0) {
+						cssClass = "o_import_error";
+					} else if(importedRow.isIgnored()) {
+						cssClass = "o_import_ignored";
+					} else {
+						cssClass = "o_import_changed";
+					}
 				} else if(importedRow.isIgnored()) {
 					cssClass = "o_import_ignored";
 				} else if(statistics.changes() > 0) {
@@ -416,7 +424,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		removeAsListenerAndDispose(validationCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		
-		CurriculumImportedValue value = row.getValidation(col);
+		CurriculumImportedValue value = row.getValidationByImportance(col);
 		validationCtrl = new ValidationResultController(ureq, getWindowControl(), value);
 		listenTo(validationCtrl);
 	

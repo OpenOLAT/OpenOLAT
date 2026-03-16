@@ -20,7 +20,6 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -96,7 +95,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryDataDeletable;
@@ -115,7 +113,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.MembershipInfos;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryPermanentlyDeletedEvent;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
@@ -886,35 +883,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public boolean hasRoleExpanded(Identity identity, String... roles) {
 		return reToGroupDao.hasRoleExpanded(identity, roles);
-	}
-
-	@Override
-	public boolean isParticipantAllowedToLeave(RepositoryEntry re) {
-		boolean allowed = false;
-		RepositoryEntryAllowToLeaveOptions setting = re.getAllowToLeaveOption();
-		if(setting == RepositoryEntryAllowToLeaveOptions.atAnyTime) {
-			allowed = true;
-		} else if(setting == RepositoryEntryAllowToLeaveOptions.afterEndDate) {
-			RepositoryEntryLifecycle lifecycle = re.getLifecycle();
-			if(lifecycle == null || lifecycle.getValidTo() == null) {
-				allowed = false;
-			} else {
-				Calendar cal = Calendar.getInstance();
-				cal.set(Calendar.HOUR, 0);
-				cal.set(Calendar.MINUTE, 0);
-				cal.set(Calendar.SECOND, 0);
-				cal.set(Calendar.MILLISECOND, 0);
-				Date now = cal.getTime();
-				if(now.compareTo(lifecycle.getValidTo()) >= 0) {
-					allowed = true;
-				} else {
-					allowed = false;
-				}
-			}
-		} else {
-			allowed = false;
-		}
-		return allowed;
 	}
 
 	@Override

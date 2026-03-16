@@ -53,6 +53,14 @@ public class InfoPanelItem extends FormItemImpl {
 		infoPanel.setInformations(informations);
 	}
 
+	public boolean isCollapsible() {
+		return infoPanel.isCollapsible();
+	}
+
+	public void setCollapsible(boolean collapsible) {
+		infoPanel.setCollapsible(collapsible);
+	}
+
 	public void setPersistedStatusId(UserRequest ureq, String id) {
 		infoPanel.setPersistedStatusId(ureq, id);
 	}

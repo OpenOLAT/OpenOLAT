@@ -65,6 +65,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -108,7 +110,10 @@ import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.ValidationMessage;
+import org.olat.modules.ceditor.ui.MarkdownImportController;
 import org.olat.modules.ceditor.ui.event.ImportEvent;
+import org.olat.modules.ceditor.ui.event.ImportMarkdownEvent;
+import org.olat.modules.ceditor.ui.event.MarkdownImportDoneEvent;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.MediaCenterChooserController;
@@ -167,6 +172,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	private SelectPageListController selectPageController;
+	private MarkdownImportController markdownImportCtrl;
 	
 	private Page page;
 	private boolean edit = false;
@@ -479,6 +485,8 @@ public class PageRunController extends BasicController implements TooledControll
 				doConfirmPublish(ureq);
 			} else if(event instanceof ImportEvent) {
 				openImportPageSelection(ureq);
+			} else if(event instanceof ImportMarkdownEvent) {
+				openMarkdownImport(ureq);
 			}
 		} else if(editMetadataCtrl == source || restorePageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -545,7 +553,13 @@ public class PageRunController extends BasicController implements TooledControll
 			cleanUp();
 		} else if(selectPageController == source) {
 			importSelectedContents(ureq, event);
-		}  else if(cmc == source) {
+		} else if(markdownImportCtrl == source) {
+			if(event instanceof MarkdownImportDoneEvent mdEvent) {
+				doImportMarkdownContents(ureq, mdEvent);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -553,10 +567,12 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDonePageCtrl);
+		removeAsListenerAndDispose(markdownImportCtrl);
 		removeAsListenerAndDispose(editMetadataCtrl);
 		removeAsListenerAndDispose(restorePageCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDonePageCtrl = null;
+		markdownImportCtrl = null;
 		editMetadataCtrl = null;
 		restorePageCtrl = null;
 		cmc = null;
@@ -839,6 +855,29 @@ public class PageRunController extends BasicController implements TooledControll
 		mainVC.setDirty(true);
 	}
 
+	private void openMarkdownImport(UserRequest ureq) {
+		removeAsListenerAndDispose(markdownImportCtrl);
+		markdownImportCtrl = new MarkdownImportController(ureq, getWindowControl(), page);
+		listenTo(markdownImportCtrl);
+
+		Translator mdTranslator = Util.createPackageTranslator(MarkdownImportController.class, getLocale());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+			markdownImportCtrl.getInitialComponent(), true,
+			mdTranslator.translate("import.markdown.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doImportMarkdownContents(UserRequest ureq, MarkdownImportDoneEvent mdEvent) {
+		if (mdEvent.hasWarnings()) {
+			Translator mdTranslator = Util.createPackageTranslator(MarkdownImportController.class, getLocale());
+			getWindowControl().setWarning(mdTranslator.translate("import.markdown.warnings", String.join("\n", mdEvent.getWarnings())));
+		}
+		dirtyMarker = true;
+		pageEditCtrl.loadModel(ureq);
+		mainVC.setDirty(true);
+	}
+
 	private class PortfolioPageProvider implements PageProvider {
 		
 		private final List<PageElementHandler> handlers = new ArrayList<>();
@@ -1075,6 +1114,11 @@ public class PageRunController extends BasicController implements TooledControll
 		@Override
 		public String getImportButtonKey() {
 			return settings.isWithImportContent() && page.getBody().getUsage() <= 1 ? "import.content" : null;
+		}
+
+		@Override
+		public boolean isImportMarkdownEnabled() {
+			return true;
 		}
 	}
 	

@@ -31,6 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
+import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.commons.services.robots.SitemapWriter;
 import org.olat.core.commons.services.robots.model.SitemapItem;
 import org.olat.core.dispatcher.Dispatcher;
@@ -171,7 +172,10 @@ public class WebCatalogDispatcher implements Dispatcher {
 			WindowControl wControl = chiefController.getWindowControl();
 			NewControllerFactory.getInstance().launch(ureq, wControl);	
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
-			
+			SeoMetadata seo = w.getSeoMetadata();
+			seo.setRobotsMetaContent("index, follow");
+			seo.setCanonicalUrl(WebCatalogDispatcher.getBaseUrl().append(restPart).toString());
+
 			String[] restParts = extractRestParts(restPart);
 			if (restParts.length > 0 && restParts.length % 2 == 0) {
 				String businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(restParts);

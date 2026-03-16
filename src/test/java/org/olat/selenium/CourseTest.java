@@ -1855,7 +1855,7 @@ public class CourseTest extends Deployments {
 		new LoginPage(participantBrowser)
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.assertOnMembershipConfirmation()
-			.confirmMembership();
+			.confirmSingleMembership();
 		new CoursePageFragment(participantBrowser)
 			.assertOnCoursePage()
 			.assertOnTitle(courseTitle);
@@ -1865,7 +1865,7 @@ public class CourseTest extends Deployments {
 		participantLoginPage
 			.loginAs(participant.getLogin(), participant.getPassword())
 			.assertOnMembershipConfirmation()
-			.confirmMembership();
+			.confirmSingleMembership();
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
 		participantNavBar
 			.openMyCourses()

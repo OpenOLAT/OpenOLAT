@@ -574,7 +574,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
 		columnModelList.add(educationalTypeColumnModel);
 		DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
-				Cols.runtimeType.ordinal(), false, null);
+				Cols.runtimeType.ordinal(), true, OrderBy.runtimeType.name());
 		runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
 		columnModelList.add(runtimeTypeColumnModel);
 
@@ -800,9 +800,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		// runtime type
 		SelectionValues runtimeTypeKV = new SelectionValues();
-		RepositoryEntryRuntimeType[] runtimeTypes = { RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template };
-		for(RepositoryEntryRuntimeType runtimeType:runtimeTypes) {
+		
+		for(RepositoryEntryRuntimeType runtimeType:RepositoryEntryRuntimeType.ORDERED) {
 			if(configuration.isRuntimeTypeAllowed(runtimeType)) {
 				runtimeTypeKV.add(SelectionValues.entry(runtimeType.name(), translate("runtime.type.".concat(runtimeType.name()))));
 			}

@@ -2,10 +2,8 @@
 <html lang="$r.getLanguageCode()">
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="robots" content="nofollow">
-<meta name="google" content="notranslate">
-<meta name="description" content="$r.translate("meta.description")">
-<meta name="keywords" content="$r.translate("meta.keywords")"> 
+## SEO meta tags (robots, description, canonical, OG, JSON-LD)
+$r.render("seoHead")
 <meta name="generator" content="OpenOlat $buildversion - https://www.openolat.org">
 <meta name="dcterms.type" content="Interactive Resource">
 ## hide toolbar on ios with minimal-ui
@@ -216,7 +214,7 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 </head>
 
 <body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode() $pageSizeCss">
-<h1 id='o_top' class="sr-only" data-nosnippet>$r.escapeHtml($windowTitle.getValue())</h1>	
+<h1 id='o_top' class="sr-only" #if(!$seo.isIndexable())data-nosnippet#end>$r.escapeHtml($windowTitle.getValue())</h1>
 <div id="o_bg"></div>
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.

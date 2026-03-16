@@ -81,6 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserAccountController extends FormBasicController {
 
 	private final boolean canDeactivateAccounts;
+	private final boolean restrictedView;
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
 	private StaticTextElement userTypeEl;
@@ -120,7 +121,7 @@ public class UserAccountController extends FormBasicController {
 	private UserBulkChangeManager userBulkChangeManager;
 	
 	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity) {
-		this(wControl, ureq, identity, false);
+		this(wControl, ureq, identity, false, false);
 	}
 
 	/**
@@ -131,8 +132,14 @@ public class UserAccountController extends FormBasicController {
 	 */
 	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity,
 								 boolean canDeactivateAccounts) {
+		this(wControl, ureq, identity, canDeactivateAccounts, false);
+	}
+
+	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity,
+								 boolean canDeactivateAccounts, boolean restrictedView) {
 		super(ureq, wControl);
 		this.canDeactivateAccounts = canDeactivateAccounts;
+		this.restrictedView = restrictedView;
 		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		this.editedIdentity = identity;
@@ -226,8 +233,11 @@ public class UserAccountController extends FormBasicController {
 		setStatus(editedIdentity.getStatus());
 
 		expirationDateEl.setDate(editedIdentity.getExpirationDate());
-		expirationDateEl.setVisible(!editedRoles.isSystemAdmin() && !editedRoles.isAdministrator()
+		expirationDateEl.setVisible(!restrictedView && !editedRoles.isSystemAdmin() && !editedRoles.isAdministrator()
 				&& !editedRoles.isGuestOnly());
+		if (restrictedView) {
+			statusEl.setVisible(false);
+		}
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String lastLogin = formatter.formatDateAndTime(editedIdentity.getLastLogin());

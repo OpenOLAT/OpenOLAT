@@ -228,7 +228,7 @@ public class RepositoryEntryListController extends FormBasicController
 			markColModel.setIconHeader("o_icon o_icon_bookmark_header");
 			columnsModel.addFlexiColumnModel(markColModel);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.select.ordinal(),
 				true, OrderBy.displayname.name()));
@@ -255,7 +255,9 @@ public class RepositoryEntryListController extends FormBasicController
 			levelsCol.setDefaultVisible(false);
 			columnsModel.addFlexiColumnModel(levelsCol);
 		}
-
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.author.i18nKey(), Cols.author.ordinal(),
+				true, OrderBy.author.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
 		DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),

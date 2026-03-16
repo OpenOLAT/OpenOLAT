@@ -25,11 +25,14 @@ import java.util.List;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.emptystate.EmptyStateButtonRenderer;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateRenderConfigBuilder;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -62,7 +65,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
-		if(ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
+		if(ftE.getTableDataModel().getRowCount() == 0 && ftE.getEmptyStateConfig() != null) {
 			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);
 		} else {
 			renderTable(renderer, sb, ftC, ubu, translator, renderResult);
@@ -169,31 +172,42 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 
 	protected void renderEmptyState(Renderer renderer, StringOutput sb, URLBuilder ubu, Translator translator,
-		RenderResult renderResult, FlexiTableElementImpl ftE) {
-		String message = getMessage(ftE, translator);
-		String hint = getHint(ftE, translator);
-		EmptyStateButtonRenderer buttonRenderer = ftE.getEmptyTablePrimaryActionButton() != null ? 
-				() -> renderFormItem(renderer, sb, ftE.getEmptyTablePrimaryActionButton(), ubu, translator, renderResult, null) : null;
+									RenderResult renderResult, FlexiTableElementImpl ftE) {
+		
+		EmptyStateConfig config = ftE.getEmptyStateConfig();
+		String message = getMessage(config, translator);
+		String hint = getHint(config, translator);
+		EmptyStateButtonRenderer buttonRenderer = ftE.getEmptyStatePrimaryButton() != null ? 
+				() -> renderFormItem(renderer, sb, ftE.getEmptyStatePrimaryButton(), ubu, translator, renderResult, null) : null;
 
-		EmptyStateRenderConfig config = EmptyStateRenderConfig.builder()
+		EmptyStateRenderConfigBuilder renderConfigBuilder = EmptyStateRenderConfig.builder()
+				.withVariant(config.getVariant())
 				.withWrapperSelector(ftE.getWrapperSelector())
-				.withIconCss(ftE.getEmtpyTableIconCss())
+				.withIconCss(config.getIconCss())
 				.withMessageTranslated(message)
+				.withHelp(config.getHelpTranslated(), config.getHelpPage())
 				.withHintTranslated(hint)
-				.withPrimaryButtonRenderer(buttonRenderer)
-				.build();
-		EmptyStateRenderer.renderEmptyState(sb, translator, null, config);
-	}
-	
-	private String getMessage(FlexiTableElementImpl ftE, Translator translator) {
-		return translator.translate(ftE.getEmtpyTableMessageKey(), ftE.getEmtpyTableMessageArgs());
-	}
-	
-	private String getHint(FlexiTableElementImpl ftE, Translator translator) {
-		if (ftE.getEmptyTableHintKey() != null) {
-			return translator.translate(ftE.getEmptyTableHintKey(), ftE.getEmtpyTableMessageArgs());
+				.withPrimaryButtonRenderer(buttonRenderer);
+		for (FormLink secondaryButton : ftE.getEmptyStateSecondaryButtons()) {
+			EmptyStateButtonRenderer secondaryButtonRenderer = 
+					() -> renderFormItem(renderer, sb, secondaryButton, ubu, translator, renderResult, null);
+			renderConfigBuilder.withSecondaryButtonRenderer(secondaryButtonRenderer);
 		}
-		return null;
+		EmptyStateRenderer.renderEmptyState(sb, translator, null, renderConfigBuilder.build());
+	}
+	
+	private String getMessage(EmptyStateConfig config, Translator translator) {
+		if (StringHelper.containsNonWhitespace(config.getMessageI18nKey())) {
+			return translator.translate(config.getMessageI18nKey(), config.getMessageI18nArgs());
+		}
+		return config.getMessageTranslated();
+	}
+	
+	private String getHint(EmptyStateConfig config, Translator translator) {
+		if (StringHelper.containsNonWhitespace(config.getHintI18nKey())) {
+			return translator.translate(config.getHintI18nKey(), config.getHintI18nArgs());
+		}
+		return config.getHintTranslated();
 	}
 	
 	protected boolean hasFooter(FlexiTableElementImpl ftE) {
@@ -232,7 +246,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult) {
 		
 		Form theForm = ftE.getRootForm();
-		String dispatchId = ftE.getFormDispatchId();
 
 		sb.append("<div class='o_table_large_search o_noprint'>");
 		TextElement searchEl = ftE.getSearchElement();
@@ -243,16 +256,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			searchEl.setPlaceholderKey("search.placeholder", null);
 		}
 		renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
-		
-		// reset quick search
-		String id = ftE.getSearchElement().getFormDispatchId();
-		sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-				  new NameValuePair("reset-search", "true")))
-		  .append("\" draggable=\"false\" class='btn btn-default o_reset_quick_search' aria-label='")
-		  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
-		
+		renderFormItem(renderer, sb, ftE.getSearchResetButton(), ubu, translator, renderResult, null);
 		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
+		// Do not trigger form validation if search only
+		String id = ftE.getSearchElement().getFormDispatchId();
+		String searchBtnId = ftE.getSearchButton().getFormDispatchId();
+		sb.append("<script>jQuery('#").append(id).append("').on('keydown', function(e) {")
+		  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, searchBtnId, 1, false, false, true))
+		  .append("; return false; }});</script>");
 		
 		// num. of entries
 		if(ftE.isNumOfRowsEnabled()) {
@@ -307,9 +319,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		Component searchCmp = ftE.getExtendedSearchComponent();
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
-		boolean hideSearch = empty && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey()) && !ftE.isFilterEnabled() 
+		boolean hideSearch = empty && ftE.getEmptyStateConfig() != null && !ftE.isFilterEnabled() 
 				&& !ftE.isExtendedSearchExpanded() && !StringHelper.containsNonWhitespace(ftE.getQuickSearchString())
-				&& !ftE.isShowAlwaysSearchFields();
+				&& !ftE.isAlwaysShowSearchFields();
 		
 		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
 			renderer.render(searchCmp, sb, args);
@@ -322,28 +334,24 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())
 				&& !ftE.isSearchLarge() && ftE.isSearchEnabled() && ftE.getSearchElement() != null) {
-
 			
 			TextElement searchEl = ftE.getSearchElement();
 			if(StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
 				searchEl.setPlaceholderKey(null, null);
 			}
 			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
-			
-			// reset quick search
-			String id = ftE.getSearchElement().getFormDispatchId();
-			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-					  new NameValuePair("reset-search", "true")))
-			  .append("\" draggable=\"false\" class='btn btn-default o_reset_quick_search' aria-label='")
-			  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
-			
+			renderFormItem(renderer, sb, ftE.getSearchResetButton(), ubu, translator, renderResult, null);
+			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 			if(ftE.getExtendedSearchButton() != null) {
-				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
-			} else {
-				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 			}
+			// Do not trigger form validation if search only
+			String id = ftE.getSearchElement().getFormDispatchId();
+			String searchBtnId = ftE.getSearchButton().getFormDispatchId();
+			sb.append("<script>jQuery('#").append(id).append("').on('keydown', function(e) {")
+			  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, searchBtnId, 1, false, false, true))
+			  .append("; return false; }});</script>");
 		}
 		
 		// num. of entries

@@ -20,7 +20,6 @@
 package org.olat.repository;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import jakarta.servlet.ServletException;
@@ -30,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
+import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.commons.services.robots.SitemapWriter;
 import org.olat.core.commons.services.robots.model.SitemapItem;
 import org.olat.core.dispatcher.Dispatcher;
@@ -49,12 +49,14 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.modules.oaipmh.OAIPmhModule;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.ui.list.RepositoryEntryPublicInfosController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -125,15 +127,22 @@ public class ResourceInfoDispatcher implements Dispatcher {
 			} else {
 				window.dispatchRequest(ureq);
 			}
-		} else if (IsValidImage(requestedData)) {
-			String mimeType = requestedData.substring(requestedData.indexOf('.') + 1);
-			requestedData = requestedData.substring(0, requestedData.indexOf('.'));
-			RepositoryEntry entry = getRepositoryEntryById(Long.valueOf(requestedData));
-
-			if (entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
+		} else if (isValidImage(requestedData)) {
+			String mimeType = WebappHelper.getMimeType(requestedData);
+			String idPart = requestedData.substring(0, requestedData.indexOf('.'));
+			Long entryId = parseEntryId(idPart);
+			if (entryId == null) {
+				DispatcherModule.sendBadRequest(pathInfo, response);
+				return;
+			}
+			RepositoryEntry entry = getRepositoryEntryById(entryId);
+			if (entry == null) {
+				DispatcherModule.sendNotFound(pathInfo, response);
+				return;
+			}
+			if (oaiPmhModule.isSearchEngineEnabled() || (entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published)) {
 				MediaResource image = getRepositoryEntryImage(entry);
-				// Only return image if correct mimeType is used
-				if (image.getContentType().contains(mimeType)) {
+				if (image != null && image.getContentType() != null && image.getContentType().contains(mimeType)) {
 					ServletUtil.serveResource(request, response, image);
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -142,11 +151,16 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				DispatcherModule.redirectToServiceNotAvailable(response);
 			}
 		} else {
-			dispatch(ureq, uriPrefix, requestedData, response);
+			Long entryId = parseEntryId(requestedData);
+			if (entryId == null) {
+				DispatcherModule.sendBadRequest(pathInfo, response);
+				return;
+			}
+			dispatch(ureq, uriPrefix, entryId, response);
 		}
 	}
 
-	private void dispatch(UserRequest ureq, String uriPrefix, String requestedData, HttpServletResponse response) {
+	private void dispatch(UserRequest ureq, String uriPrefix, Long entryId, HttpServletResponse response) {
 		UserSession usess = ureq.getUserSession();
 
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
@@ -154,8 +168,8 @@ public class ResourceInfoDispatcher implements Dispatcher {
 
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
 		bfwcParts.showTopNav(false);
-		final RepositoryEntry entry = getRepositoryEntryById(Long.valueOf(requestedData));
-		if (entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
+		final RepositoryEntry entry = getRepositoryEntryById(entryId);
+		if (entry != null && entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
 			// Set last modified, required by google
 			long lastModified = entry.getLastModified().toInstant().toEpochMilli();
 			long lastModifiedFromBrowser = ureq.getHttpReq().getDateHeader("If-Modified-Since");			
@@ -192,6 +206,13 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				// set a search engine friendly page title
 				Translator trans = Util.createPackageTranslator(ResourceInfoDispatcher.class, ureq.getLocale());
 				w.setTitle(trans.translate("resource.info.page.title", entry.getDisplayname()));
+				// SEO: populate metadata for public resource info pages
+				SeoMetadata seo = w.getSeoMetadata();
+				seo.setRobotsMetaContent("index, follow");
+				Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale());
+				ResourceInfoHelper.populateEntrySeoMetadata(seo, entry,
+						ResourceInfoDispatcher.getUrl(entryId.toString()), ureq.getLocale(),
+						taxonomyTranslator, repositoryService);
 				// dispatch and go
 				w.dispatchRequest(ureq, false); // renderOnly
 				chiefController.resetReload();
@@ -254,14 +275,27 @@ public class ResourceInfoDispatcher implements Dispatcher {
 		}
 	}
 
-	private boolean IsValidImage(String requestedData) {
-		String[] allowedTeaserImageTypes = {"jpg", "jpeg", "png", "gif"};
-		return Arrays.asList(allowedTeaserImageTypes).contains(requestedData.substring(requestedData.lastIndexOf('.') + 1));
+	private Long parseEntryId(String data) {
+		try {
+			return Long.valueOf(data);
+		} catch (NumberFormatException e) {
+			log.debug("Invalid resource info entry id: {}", data);
+			return null;
+		}
+	}
+
+	private boolean isValidImage(String requestedData) {
+		int dotIndex = requestedData.lastIndexOf('.');
+		if (dotIndex < 0) {
+			return false;
+		}
+		String ext = requestedData.substring(dotIndex + 1);
+		return List.of("jpg", "jpeg", "png", "gif").contains(ext);
 	}
 
 	private MediaResource getRepositoryEntryImage(RepositoryEntry entry) {
 		VFSLeaf image = repositoryService.getIntroductionImage(entry);
-		return new VFSMediaResource(image);
+		return image != null ? new VFSMediaResource(image) : null;
 	}
 
 	private RepositoryEntry getRepositoryEntryById(Long entryId) {

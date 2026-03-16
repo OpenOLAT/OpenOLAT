@@ -373,13 +373,12 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public enum OrderBy {
 		key,
-		favorit,	
+		favorit,
 		type,
 		technicalType,
 		displayname,
 		authors,
 		author,
-		license,
 		location,
 		access,
 		ac,
@@ -391,6 +390,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		lifecycleSoftkey,
 		lifecycleStart,
 		lifecycleEnd,
+		runtimeType,
 		references,
 		deletionDate,
 		deletedBy,

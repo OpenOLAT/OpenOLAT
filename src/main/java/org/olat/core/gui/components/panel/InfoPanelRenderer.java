@@ -46,21 +46,30 @@ public class InfoPanelRenderer extends DefaultComponentRenderer {
 		String informations = panel.getInformations();
 		String cid = "o_c" + panel.getDispatchID();
 		boolean collapsed = panel.isCollapsed();
-		
+		boolean collapsible = panel.isCollapsible();
+
 		sb.append("<div id='").append(cid).append("' class='o_info_with_icon");
 		if(StringHelper.containsNonWhitespace(panel.getElementCssClass())) {
 			sb.append(" ").append(panel.getElementCssClass());
 		}
 		sb.append("'>");
-		
-		if(StringHelper.containsNonWhitespace(title)) {		
-			sb.append("<a id='").append(cid).append("_button' class='o_collapse_title").append(collapsed ? " collapsed" : "").append("' role='button' data-toggle='collapse' data-target='#").append(cid).append("_infos' aria-expanded='").append(collapsed ? "false" : "true").append("' aria-controls='").append(cid).append("_infos'>")
-			  .append("<h4>").appendHtmlEscaped(title).append("</h4> <i class='o_icon o_icon_lg ").append(collapsed ? "o_icon_details_expand" : "o_icon_details_collaps").append("'> </i>")
-			  .append("</a>");
-			//TODO a11y title/sr-only 
+
+		if(StringHelper.containsNonWhitespace(title)) {
+			if (collapsible) {
+				sb.append("<a id='").append(cid).append("_button' class='o_collapse_title").append(collapsed ? " collapsed" : "").append("' role='button' data-toggle='collapse' data-target='#").append(cid).append("_infos' aria-expanded='").append(collapsed ? "false" : "true").append("' aria-controls='").append(cid).append("_infos'>")
+				  .append("<h4>").appendHtmlEscaped(title).append("</h4> <i class='o_icon o_icon_lg ").append(collapsed ? "o_icon_details_expand" : "o_icon_details_collaps").append("'> </i>")
+				  .append("</a>");
+				//TODO a11y title/sr-only
+			} else {
+				sb.append("<h4>").appendHtmlEscaped(title).append("</h4>");
+			}
 		}
-		
-		sb.append("<div id='").append(cid).append("_infos' class='collapse ").append("in", !collapsed).append("' aria-expanded='").append(collapsed ? "false" : "true").append("'>");
+
+		if (collapsible) {
+			sb.append("<div id='").append(cid).append("_infos' class='collapse ").append("in", !collapsed).append("' aria-expanded='").append(collapsed ? "false" : "true").append("'>");
+		} else {
+			sb.append("<div id='").append(cid).append("_infos'>");
+		}
 		Component informationsCmp = panel.getInformationsCmp();
 		if (informationsCmp != null) {
 			renderer.render(informationsCmp, sb, args);
@@ -68,19 +77,21 @@ public class InfoPanelRenderer extends DefaultComponentRenderer {
 			sb.appendScanned(informations);
 		}
 		sb.append("</div>");
-		
-		sb.append("<script>\n")
-		  .append("\"use strict\";\n")
-		  .append("jQuery('#").append(cid).append("_infos').on('shown.bs.collapse', function () {\n")
-		  .append(" jQuery('#").append(cid).append("_button>i').removeClass('o_icon_details_expand').addClass('o_icon_details_collaps');\n");
-		ubu.getXHRNoResponseEvent(sb, null, new NameValuePair(VelocityContainer.COMMAND_ID, "expanded"));
-		sb.append("\n")
-		  .append("});\n")
-		  .append("jQuery('#").append(cid).append("_infos').on('hidden.bs.collapse', function () {\n")
-		  .append(" jQuery('#").append(cid).append("_button>i').removeClass('o_icon_details_collaps').addClass('o_icon_details_expand');\n");
-		ubu.getXHRNoResponseEvent(sb, null, new NameValuePair(VelocityContainer.COMMAND_ID, "collapsed"));
-		sb.append("});\n")
-		  .append("</script>")
-		  .append("</div>");
+
+		if (collapsible) {
+			sb.append("<script>\n")
+			  .append("\"use strict\";\n")
+			  .append("jQuery('#").append(cid).append("_infos').on('shown.bs.collapse', function () {\n")
+			  .append(" jQuery('#").append(cid).append("_button>i').removeClass('o_icon_details_expand').addClass('o_icon_details_collaps');\n");
+			ubu.getXHRNoResponseEvent(sb, null, new NameValuePair(VelocityContainer.COMMAND_ID, "expanded"));
+			sb.append("\n")
+			  .append("});\n")
+			  .append("jQuery('#").append(cid).append("_infos').on('hidden.bs.collapse', function () {\n")
+			  .append(" jQuery('#").append(cid).append("_button>i').removeClass('o_icon_details_collaps').addClass('o_icon_details_expand');\n");
+			ubu.getXHRNoResponseEvent(sb, null, new NameValuePair(VelocityContainer.COMMAND_ID, "collapsed"));
+			sb.append("});\n")
+			  .append("</script>");
+		}
+		sb.append("</div>");
 	}
 }

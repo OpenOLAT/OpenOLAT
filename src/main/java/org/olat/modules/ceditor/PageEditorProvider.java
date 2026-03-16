@@ -76,4 +76,12 @@ public interface PageEditorProvider extends PageProvider {
 	public void movePageElement(PageElement elementToMove, PageElement sibling, boolean after);
 	
 	public String getImportButtonKey();
+
+	/**
+	 * Whether the markdown import button should be shown.
+	 * @return true to show the import markdown button
+	 */
+	default boolean isImportMarkdownEnabled() {
+		return false;
+	}
 }

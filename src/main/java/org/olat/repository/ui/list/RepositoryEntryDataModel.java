@@ -81,6 +81,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case mark -> item.getMarkLink();
 			case select -> item.getSelectLink();
 			case open -> item.getStartLink();
+			case author -> item.getAuthors();
 			case location -> item.getLocation();
 			case educationalType -> item.getEducationalType();
 			case completion -> item.getCompletionItem();
@@ -101,6 +102,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		lifecycleSoftkey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
+		author("table.header.authors"),
 		location("table.header.location"),
 		educationalType("table.header.educational.type"),
 		completion("table.header.completion"),

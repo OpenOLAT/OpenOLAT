@@ -196,7 +196,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		authors("table.header.authors"),
 		license("table.header.license"),
 		location("table.header.location"),
-		access("table.header.access", "cif.resources.status"),
+		access("cif.resources.status"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
 		references("table.header.references"),

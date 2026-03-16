@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.NullOrder;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 
@@ -51,7 +52,7 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 		switch(CatalogEntryDataModel.COLS[columnIndex]) {
 			case title: Collections.sort(rows, (r1, r2) -> compareString(r1.getTitle(), r2.getTitle())); break;
 			case lifecycleSoftkey: Collections.sort(rows, new LifecycleComparator()); break;
-			case lifecycleLabel: Collections.sort(rows, (r1, r2) -> compareString(r1.getLifecycleLabel(), r2.getLifecycleLabel(), false)); break;
+			case lifecycleLabel: Collections.sort(rows, (r1, r2) -> compareString(r1.getLifecycleLabel(), r2.getLifecycleLabel())); break;
 			case lifecycleStart: Collections.sort(rows, new DateNullAlwaysLastComparator(CatalogEntryRow::getLifecycleStart)); break;
 			case lifecycleEnd: Collections.sort(rows, new DateNullAlwaysLastComparator(CatalogEntryRow::getLifecycleEnd)); break;
 			default: super.sort(rows);
@@ -63,16 +64,16 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 		@Override
 		public int compare(CatalogEntryRow o1, CatalogEntryRow o2) {
 			// Nulls after string values
-			int c = -compareNullObjects(o1.getLifecycleSoftKey(), o2.getLifecycleSoftKey());
+			int c = compareNullObjects(o1.getLifecycleSoftKey(), o2.getLifecycleSoftKey(), NullOrder.NULLS_ALWAYS_LAST);
 			
 			// Rows with life cycle by date
 			if (o1.getLifecycleSoftKey() != null && o2.getLifecycleSoftKey() != null) {
 				if (c == 0) {
-					c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart(), false);
+					c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart());
 				}
 				
 				if (c == 0) {
-					c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd(), false);
+					c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd());
 				}
 			}
 			
@@ -92,11 +93,11 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 			int c = -o1.getSortPriority().compareTo(o2.getSortPriority());
 			
 			if (c == 0) {
-				c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart(), false);
+				c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart());
 			}
 			
 			if (c == 0) {
-				c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd(), false);
+				c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd());
 			}
 			
 			if (c == 0) {

@@ -44,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.analytics.AnalyticsModule;
 import org.olat.core.commons.services.analytics.AnalyticsSPI;
@@ -192,7 +193,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate, Http
 	private CustomCSS customCSS;
 	// the window title
 	private final WindowTitle title;
-	
+	// SEO metadata
+	private final SeoMetadata seoMetadata = new SeoMetadata();
+
 	// wbackoffice reference
 	private final WindowBackOfficeImpl wbackofficeImpl;
 	// mutex for rendering
@@ -249,6 +252,10 @@ public class Window extends AbstractComponent implements CustomCSSDelegate, Http
 	 */
 	public WindowTitle getTitle() {
 		return title;
+	}
+
+	public SeoMetadata getSeoMetadata() {
+		return seoMetadata;
 	}
 
 	/**

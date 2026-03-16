@@ -93,7 +93,7 @@ public class CurriculumImportedValue {
 		this.placeholder = placeholder;
 		this.message = message;
 	}
-	
+
 	public enum Level {
 		ERROR("o_icon_validation_error"),
 		WARNING("o_icon_validation_warning"),

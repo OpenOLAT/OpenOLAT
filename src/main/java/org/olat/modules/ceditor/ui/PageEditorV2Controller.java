@@ -77,6 +77,7 @@ import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 import org.olat.modules.ceditor.ui.event.EditElementEvent;
 import org.olat.modules.ceditor.ui.event.ImportEvent;
+import org.olat.modules.ceditor.ui.event.ImportMarkdownEvent;
 import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
@@ -100,6 +101,7 @@ public class PageEditorV2Controller extends BasicController {
 	private Link addLayoutButton;
 	private Link addElementButton;
 	private Link importContentButton;
+	private Link importMarkdownButton;
 	
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
@@ -147,6 +149,12 @@ public class PageEditorV2Controller extends BasicController {
 			addLayoutButton.setElementCssClass("o_sel_add_container_main");
 		}
 		
+		if (provider.isImportMarkdownEnabled()) {
+			importMarkdownButton = LinkFactory.createButton("import.markdown", mainVC, this);
+			importMarkdownButton.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
+			importMarkdownButton.setElementCssClass("o_sel_import_markdown");
+		}
+
 		if (StringHelper.containsNonWhitespace(provider.getImportButtonKey())) {
 			importContentButton = LinkFactory.createLink("import.content", "import.content", "import.content", provider.getImportButtonKey(), getTranslator(), mainVC, this, Link.BUTTON);
 			importContentButton.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
@@ -287,6 +295,8 @@ public class PageEditorV2Controller extends BasicController {
 			openAddLayoutCallout(ureq);
 		} else if(source == importContentButton) {
 			fireEvent(ureq, new ImportEvent());
+		} else if(source == importMarkdownButton) {
+			fireEvent(ureq, new ImportMarkdownEvent());
 		} else if(event instanceof EditElementEvent e) {
 			doCloseEditionEvent(ureq, e.getElementId());
 		} else if(event instanceof CloseElementsEvent cee) {

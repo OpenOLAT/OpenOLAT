@@ -72,6 +72,8 @@ public class EmptyStateItem extends FormItemImpl implements ComponentEventListen
 		if (source == component) {
 			if (event instanceof EmptyState.PrimaryEvent) {
 				getRootForm().fireFormEvent(ureq, new EmptyStatePrimaryActionEvent(this));
+			} else if (event instanceof EmptyState.SecondaryEvent secondaryEvent) {
+				getRootForm().fireFormEvent(ureq, new EmptyStateSecondaryActionEvent(this, secondaryEvent.getAction()));
 			}
 		}
 	}

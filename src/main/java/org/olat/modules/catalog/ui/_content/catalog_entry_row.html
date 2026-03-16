@@ -2,7 +2,7 @@
 	<div class="o_visual">
 		<a href="$row.getInfoUrl()" "onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())
-			<img src="${row.getThumbnailRelPath()}" alt="" />
+			<img src="${row.getThumbnailRelPath()}" alt="$r.escapeForHtmlAttribute($row.displayName)" />
 		#else
 			<div class="o_visual_not_available"></div>
 		#end

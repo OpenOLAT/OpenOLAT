@@ -37,6 +37,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -137,6 +138,7 @@ import org.olat.registration.SelfRegistrationAdvanceOrderInput;
 import org.olat.registration.TemporaryKey;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ResourceInfoHelper;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -214,6 +216,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -1039,6 +1043,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			String windowTitle = translate("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
+			// SEO: set per-entry meta data for catalog detail pages
+			SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
+			String canonicalUrl = searchParams.isWebPublish()
+					? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()) : null;
+			ResourceInfoHelper.populateEntrySeoMetadata(seo, entry, canonicalUrl,
+					getLocale(), getTranslator(), repositoryService);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();
@@ -1074,6 +1084,21 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			String windowTitle = translate("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
+			// SEO: set per-entry meta data for catalog detail pages
+			SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
+			String metaDesc = ResourceInfoHelper.buildMetaDescription(curriculumElement, getLocale(), getTranslator());
+			if (StringHelper.containsNonWhitespace(metaDesc)) {
+				seo.setMetaDescription(metaDesc);
+			}
+			if (searchParams.isWebPublish()) {
+				seo.setCanonicalUrl(CatalogBCFactory.get(true).getOfferUrl(curriculumElement.getResource()));
+				if (entry != null) {
+					String ogImageUrl = ResourceInfoHelper.buildOgImageUrl(entry, repositoryService);
+					if (ogImageUrl != null) {
+						seo.setOgImageUrl(ogImageUrl);
+					}
+				}
+			}
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();

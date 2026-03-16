@@ -50,6 +50,8 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -82,6 +84,8 @@ public class RepositoryEntryAuthorQueries {
 	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public int countViews(SearchAuthorRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -169,28 +173,18 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(" (select count(offer.key) from acoffer as offer ")
 			  .append("   where offer.resource.key=res.key and offer.valid=true")
-			  .append(" ) as offers,")
-			  .append(" (select count(ref.key) from references as ref ")
-			  .append("   where ref.target.key=res.key")
-			  .append(" ) as references,");
-			
+			  .append(" ) as offers,");
+			sb.append(" refs.num as countReferences,");
 			if(curriculumModule.isEnabled()) {
-				sb.append(" (select count(curel.key) from curriculumelement as curel")
-				  .append("   inner join curel.group as curElGroup")
-				  .append("   inner join repoentrytogroup as reToCurElGroup on (curElGroup.key=reToCurElGroup.group.key)")
-				  .append("   where reToCurElGroup.entry.key=v.key")
-				  .append(" ) as curriculumElements,");
+				sb.append(" curriculumElements.num as countCurriculumElements,");
 			} else {
-				sb.append(" 0 as curriculumElements,");
+				sb.append(" 0 as countCurriculumElements,");
 			}
 			
 			if(params.includeResourceType("BinderTemplate")) {
-				sb.append(" (select count(binder.key) from pfbinder as binder")
-				  .append("   inner join binder.template as template")
-				  .append("   where res.resName='BinderTemplate' and res.key=template.olatResource.key")
-				  .append(" ) as binders");
+				sb.append(" binders.num as countBinders");
 			} else {
-				sb.append(" 0 as binders");
+				sb.append(" 0 as countBinders");
 			}
 			if(lectureModule.isEnabled()) {
 				sb.append(", lectureConfig.lectureEnabled")
@@ -207,6 +201,23 @@ public class RepositoryEntryAuthorQueries {
 			}
 			if(lectureModule.isEnabled()) {
 				sb.append(" left join fetch lectureentryconfig as lectureConfig on (lectureConfig.entry.key=v.key) ");
+			}
+			sb.append(" left join (select ref.target.key targetKey, count(ref.key) num from references as ref ")
+			  .append("   group by ref.target.key")
+			  .append(" ) as refs on refs.targetKey = res.key");
+			if(curriculumModule.isEnabled()) {
+				sb.append(" left join (select reToCurElGroup.entry.key entryKey, count(curel.key) num from curriculumelement as curel")
+				  .append("   inner join curel.group as curElGroup")
+				  .append("   inner join repoentrytogroup as reToCurElGroup on (curElGroup.key=reToCurElGroup.group.key)")
+				  .append("   group by reToCurElGroup.entry.key")
+				  .append(" ) as curriculumElements on curriculumElements.entryKey = v.key");
+			}
+			if(params.includeResourceType("BinderTemplate")) {
+				sb.append(" left join (select template.olatResource.key templateResKey, count(binder.key) num from pfbinder as binder")
+				  .append("   inner join binder.template as template")
+				  .append("   where template.olatResource.resName='BinderTemplate'")
+				  .append("   group by template.olatResource.key")
+				  .append(" ) as binders on binders.templateResKey = res.key");
 			}
 		}
 
@@ -625,28 +636,34 @@ public class RepositoryEntryAuthorQueries {
 					}
 					break;
 				case type:
-					sb.append(" order by res.resName");
-					appendAsc(sb, asc);
+					sb.append(" order by case");
+					List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+					for (int j = 0; j < handlers.size(); j++) {
+						OrderedRepositoryHandler handler = handlers.get(j);
+						sb.append(" when res.resName = '").append(handler.getHandler().getSupportedType()).append("' then ").append(j);
+					}
+					sb.append(" end");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case technicalType:
 					sb.append(" order by lower(v.technicalType)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(" nulls last");
 					break;
 				case displayname:
 					sb.append(" order by lower(v.displayname)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(" nulls last");
 					break;
 				case authors:
-					sb.append(" order by lower(v.authors)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					sb.append(" order by case when v.authors = '' then null else lower(v.authors) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case author:
-					sb.append(" order by lower(v.initialAuthor)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					sb.append(" order by case when v.initialAuthor = '' then null else lower(v.initialAuthor) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case location:
-					sb.append(" order by lower(v.location)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					sb.append(" order by case when v.location = '' then null else lower(v.location) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case guests:
 					sb.append(" order by v.guests");
@@ -657,11 +674,12 @@ public class RepositoryEntryAuthorQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case access:
-					if(asc) {
-						sb.append(" order by v.status asc, lower(v.displayname) asc");
-					} else {
-						sb.append(" order by v.status desc, lower(v.displayname) desc");
+					sb.append(" order by case");
+					for (RepositoryEntryStatusEnum status : RepositoryEntryStatusEnum.values()) {
+						sb.append(" when v.status = '").append(status.name()).append("' then ").append(status.ordinal());
 					}
+					sb.append(" end");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case ac:
 					if(asc) {
@@ -670,12 +688,26 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" order by offers desc, lower(v.displayname) desc");
 					}
 					break;
-				case references: {
-					if(asc) {
-						sb.append(" order by references asc, lower(v.displayname) asc");
-					} else {
-						sb.append(" order by references desc, lower(v.displayname) desc");
+				case runtimeType:
+					sb.append(" order by case");
+					for (int i = 0; i < RepositoryEntryRuntimeType.ORDERED.length; i++) {
+						RepositoryEntryRuntimeType runtimeType = RepositoryEntryRuntimeType.ORDERED[i];
+						sb.append(" when v.runtimeTypeString = '").append(runtimeType.name()).append("' then ").append(i);
 					}
+					sb.append(" end");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case references: {
+					sb.append(" order by");
+					sb.append(" nullif((COALESCE(refs.num ,0)");
+					if(curriculumModule.isEnabled()) {
+						sb.append(" + COALESCE(curriculumElements.num,0)");
+					}
+					if(params.includeResourceType("BinderTemplate")) {
+						sb.append(" + COALESCE(binders.num,0)");
+					}
+					sb.append("), 0)");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				}
 				case creationDate:
@@ -684,18 +716,18 @@ public class RepositoryEntryAuthorQueries {
 					break;
 				case lastUsage:
 					sb.append(" order by v.statistics.lastUsage ");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case externalId:
-					sb.append(" order by lower(v.externalId)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					sb.append(" order by case when v.externalId = '' then null else lower(v.externalId) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case externalRef:
-					sb.append(" order by lower(v.externalRef)");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					sb.append(" order by case when v.externalRef = '' then null else lower(v.externalRef) end ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleLabel:
-					sb.append(" order by case when lifecycle.privateCycle = false then lifecycle.label end ");
+					sb.append(" order by case when lifecycle.privateCycle = false and lifecycle.label <> '' then lifecycle.label end ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleSoftkey:
@@ -731,10 +763,6 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" lectureConfig.lectureEnabled").appendAsc(asc).append(" nulls last");
 					}
 					sb.append(", lower(v.displayname) asc");
-					break;
-				case license:
-					sb.append(" order by v.key");
-					appendAsc(sb, asc);
 					break;
 			}
 		}

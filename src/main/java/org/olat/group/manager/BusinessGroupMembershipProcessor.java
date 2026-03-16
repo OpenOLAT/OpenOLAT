@@ -114,11 +114,11 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 	private void sendNotificationsToIdentities(Long identityKey) {
 		OLATResourceable target = OresHelper.createOLATResourceableInstance(NotificationsCenter.class, identityKey);
 		if (identityKey != null && !acService.getReservations(new IdentityRefImpl(identityKey)).isEmpty()) {
-			String businessPath = "[GroupsSite:0][AllGroups:0]";
+			String businessPath = "[GroupsSite:0]";
 			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
 			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
 			String[] args = new String[] {url};
-			NotificationEvent event = new NotificationEvent(BusinessGroupListController.class, "pending.enrolments.info", args);
+			NotificationEvent event = new NotificationEvent(BusinessGroupListController.class, "pending.group.invitation.info", args);
 			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, target);
 		}
 	}

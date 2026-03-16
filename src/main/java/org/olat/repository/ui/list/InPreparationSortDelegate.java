@@ -44,7 +44,7 @@ public class InPreparationSortDelegate extends SortableFlexiTableModelDelegate<I
 		int columnIndex = getColumnIndex();
 		switch(InPreparationDataModel.COLS[columnIndex]) {
 			case lifecycleSoftkey: Collections.sort(rows, new LifecycleComparator()); break;
-			case lifecycleLabel: Collections.sort(rows, (r1, r2) -> compareString(r1.getLifecycleLabel(), r2.getLifecycleLabel(), false)); break;
+			case lifecycleLabel: Collections.sort(rows, (r1, r2) -> compareString(r1.getLifecycleLabel(), r2.getLifecycleLabel())); break;
 			case lifecycleStart: Collections.sort(rows, new DateNullAlwaysLastComparator(InPreparationRow::getLifecycleStart)); break;
 			case lifecycleEnd: Collections.sort(rows, new DateNullAlwaysLastComparator(InPreparationRow::getLifecycleEnd)); break;
 			default: super.sort(rows);
@@ -61,11 +61,11 @@ public class InPreparationSortDelegate extends SortableFlexiTableModelDelegate<I
 			// Rows with life cycle by date
 			if (o1.getLifecycleSoftKey() != null && o2.getLifecycleLabel() != null) {
 				if (c == 0) {
-					c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart(), false);
+					c = compareDateAndTimestamps(o1.getLifecycleStart(), o2.getLifecycleStart());
 				}
 				
 				if (c == 0) {
-					c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd(), false);
+					c = compareDateAndTimestamps(o1.getLifecycleEnd(), o2.getLifecycleEnd());
 				}
 			}
 			

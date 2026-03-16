@@ -21,6 +21,8 @@ package org.olat.modules.certificationprogram.ui.wizard;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -39,6 +41,9 @@ import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
+import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
+import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,14 +73,27 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 		Date issuedDate = membersContext.getIssuedDate();
 		List<Identity> userToCertifyList = membersContext.getIdentitiesToCertify();
 		CertificationProgram certificationProgram = membersContext.getProgram();
+		Set<Identity> removedMembers = getRemovedMembers(certificationProgram, ureq.getRequestTimestamp()); 
+		
 		for(Identity userToCertify:userToCertifyList) {
 			Certificate certificate = certificationCoordinator.generateCertificate(userToCertify, certificationProgram, issuedDate, RequestMode.COACH,
 					CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, ureq.getIdentity());
 			String val = issuedDate == null ? null : Formatter.formatDatetime(issuedDate);
+			String statusBefore = removedMembers.contains(userToCertify) ? "removed" : null;
 			certificationProgramService.log(certificate, certificationProgram, CertificationProgramLogAction.add_membership_manually,
-					null, null, "certified", val, null, null, ureq.getIdentity());
+					statusBefore, null, "certified", val, null, null, ureq.getIdentity());
 		}
 		dbInstance.commit();
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private Set<Identity> getRemovedMembers(CertificationProgram certificationProgram, Date referencedDate) {
+		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(certificationProgram);
+		searchParams.setType(Type.REMOVED);
+		List<CertificationProgramMemberWithInfos> removedMembers = certificationProgramService.getMembers(searchParams, referencedDate, -1);
+		return removedMembers.stream()
+				.filter(infos -> infos.identity() != null)
+				.map(CertificationProgramMemberWithInfos::identity)
+				.collect(Collectors.toSet());
 	}
 }

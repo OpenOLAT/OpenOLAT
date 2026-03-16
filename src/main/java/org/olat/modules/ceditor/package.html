@@ -186,12 +186,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><th>Directory</th><th>Files</th><th>Purpose</th></tr>
   <tr><td><code>ceditor/</code> (root)</td><td>~39</td><td>Core interfaces, enums, markers</td></tr>
   <tr><td><code>handler/</code></td><td>12</td><td>PageElementHandler implementations</td></tr>
-  <tr><td><code>manager/</code></td><td>12</td><td>DAOs, services, file storage, XStream</td></tr>
+  <tr><td><code>manager/</code></td><td>18</td><td>DAOs, services, file storage, XStream, markdown import</td></tr>
   <tr><td><code>model/</code></td><td>~49</td><td>POJOs, settings, value objects</td></tr>
   <tr><td><code>model/jpa/</code></td><td>24</td><td>JPA entity classes</td></tr>
   <tr><td><code>ui/</code></td><td>~52</td><td>Controllers, run components, factories</td></tr>
   <tr><td><code>ui/component/</code></td><td>16</td><td>Custom components and renderers</td></tr>
-  <tr><td><code>ui/event/</code></td><td>27</td><td>Event classes for AJAX communication</td></tr>
+  <tr><td><code>ui/event/</code></td><td>29</td><td>Event classes for AJAX communication</td></tr>
 </table>
 
 <div class="aside"><strong>Key Principle:</strong> All state lives on the server. The browser receives HTML fragments via AJAX. There is no client-side framework &mdash; drag-and-drop uses the lightweight <code>dragula.js</code> library.</div>
@@ -525,6 +525,7 @@ part.setLayoutOptions(xml);
     <span class="kw">void</span> removePageElement(<span class="typ">PageElement</span> element);
     <span class="kw">void</span> movePageElement(<span class="typ">PageElement</span> toMove, <span class="typ">PageElement</span> sibling, <span class="kw">boolean</span> after);
     <span class="typ">String</span> getImportButtonKey();
+    <span class="kw">default</span> <span class="kw">boolean</span> isImportMarkdownEnabled() { <span class="kw">return</span> <span class="kw">false</span>; }
     <span class="cmt">// ... more methods</span>
 }</code></pre>
 
@@ -633,12 +634,12 @@ part.setLayoutOptions(xml);
 <!-- ===== EVENT SYSTEM ===== -->
 <h2 id="event-system">Event System</h2>
 
-<p>The editor uses 27 custom event types for AJAX communication between components, editors, inspectors, and the main controller.</p>
+<p>The editor uses 29 custom event types for AJAX communication between components, editors, inspectors, and the main controller.</p>
 
 <h3>Event Categories</h3>
 <table>
   <tr><th>Category</th><th>Events</th></tr>
-  <tr><td>Lifecycle</td><td><code>AddElementEvent</code>, <code>ChangePartEvent</code>, <code>CloneElementEvent</code>, <code>DeleteElementEvent</code>, <code>SaveElementEvent</code>, <code>ImportEvent</code></td></tr>
+  <tr><td>Lifecycle</td><td><code>AddElementEvent</code>, <code>ChangePartEvent</code>, <code>CloneElementEvent</code>, <code>DeleteElementEvent</code>, <code>SaveElementEvent</code>, <code>ImportEvent</code>, <code>ImportMarkdownEvent</code>, <code>MarkdownImportDoneEvent</code></td></tr>
   <tr><td>Edit Mode</td><td><code>EditElementEvent</code>, <code>EditFragmentEvent</code>, <code>CloseElementsEvent</code>, <code>ClosePartEvent</code></td></tr>
   <tr><td>Inspector</td><td><code>CloseInspectorEvent</code>, <code>CloseInspectorsEvent</code>, <code>OpenRulesEvent</code></td></tr>
   <tr><td>Position</td><td><code>MoveUpElementEvent</code>, <code>MoveDownElementEvent</code></td></tr>
@@ -704,7 +705,17 @@ part.setLayoutOptions(xml);
   <tr><td><code>PageImportExportHelper</code></td><td>ZIP-based page import/export</td></tr>
   <tr><td><code>ContentEditorXStream</code></td><td>Settings serialization (secure XStream)</td></tr>
   <tr><td><code>PageXStream</code></td><td>Page serialization for export</td></tr>
+  <tr><td><code>MarkdownImportService</code></td><td>Markdown-to-PagePart conversion and persistence (CommonMark + GFM tables)</td></tr>
+  <tr><td><code>MarkdownPagePartVisitor</code></td><td>CommonMark AST visitor producing PagePart instances</td></tr>
+  <tr><td><code>MarkdownMathPreprocessor</code></td><td>$$...$$ math block pre-processing</td></tr>
+  <tr><td><code>MarkdownCodeLanguageMapping</code></td><td>Code block info string to CodeLanguage mapping</td></tr>
 </table>
+
+<h3>Markdown Import</h3>
+<p>The markdown import feature converts CommonMark markdown into page content. Users can upload <code>.md</code>/<code>.txt</code> files, <code>.zip</code> archives (containing a single <code>.md</code> with images), or paste markdown text directly.</p>
+<p><strong>Conversion pipeline:</strong> <code>MarkdownMathPreprocessor</code> &rarr; CommonMark parser (+ GFM Tables extension) &rarr; <code>MarkdownPagePartVisitor</code> &rarr; persist parts &rarr; wrap in <code>ContainerPart</code> (<code>block_1col</code>).</p>
+<p><strong>Security:</strong> Inline HTML is entity-escaped (<code>escapeHtml(true)</code>), HTML blocks are skipped, URL sanitization allows only <code>http</code>/<code>https</code>/<code>mailto</code> protocols, remote image downloads are restricted to allowed domains (<code>MediaServerModule</code>), and local file paths are blocked in text paste mode.</p>
+<p><strong>UI:</strong> <code>MarkdownImportController</code> (<code>FormBasicController</code>) with file upload or text paste tabs. Enabled when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>.</p>
 
 <!-- ===== CONTAINER SYSTEM ===== -->
 <h2 id="container-system">Container System</h2>

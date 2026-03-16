@@ -40,6 +40,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.choice.Choice;
+import org.olat.core.gui.components.emptystate.EmptyStateButton;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -137,12 +139,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean hasAlwaysVisibleColumns = false;
 	private int columnLabelForDragAndDrop;
 	
-	private String emptyTableMessageKey;
-	private String emptyTableHintKey;		
-	private String emptyTableIconCss;	
-	private String[] emptyMessagei18nArgs;
-	private FormLink emptyTablePrimaryActionButton;
-	private boolean emptyShowSearch = true;
+	private EmptyStateConfig emptyStateConfig;
+	private FormLink emptyStatePrimaryButton;
+	private final List<FormLink> emptyStateSecondaryButtons = new ArrayList<>();
+	private boolean alwaysShowSearchFields = true;
 	
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
@@ -151,6 +151,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableSortOrderController sortOrderCtrl;
 	private FormLink customButton;
 	private FormLink exportButton;
+	private FormLink searchResetButton;
 	private FormLink searchButton;
 	private FormLink extendedSearchButton;
 	private FormLink classicTypeButton;
@@ -365,10 +366,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return externalTypeButton;
 	}
 
-	public FormLink getEmptyTablePrimaryActionButton() {
-		return emptyTablePrimaryActionButton;
+	public FormLink getEmptyStatePrimaryButton() {
+		return emptyStatePrimaryButton;
 	}
-	
+
+	public List<FormLink> getEmptyStateSecondaryButtons() {
+		return emptyStateSecondaryButtons;
+	}
+
 	@Override
 	public boolean isBordered() {
 		return bordered;
@@ -741,20 +746,33 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				searchFieldEl.setAriaLabel(translator.translate("aria.search.input"));
 				components.put("rSearch", searchFieldEl);
 			}
+			rootFormAvailable(searchFieldEl);
+			
+			if(searchResetButton == null) {
+				searchResetButton = new FormLinkImpl(dispatchId + "_searchReset", "rSearchReset", "", Link.BUTTON + Link.NONTRANSLATED);
+				searchResetButton.setDomReplacementWrapperRequired(false);
+				searchResetButton.setElementCssClass("o_reset_quick_search");
+				searchResetButton.setIconLeftCSS("o_icon o_icon_remove_filters");
+				searchResetButton.setTitle(translator.translate("aria.reset.search"));
+				components.put("rSearchReset", searchResetButton);
+			}
+			rootFormAvailable(searchResetButton);
+			
 			if(searchButton == null) {
-				searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
+				searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "", Link.BUTTON + Link.NONTRANSLATED);
 				searchButton.setDomReplacementWrapperRequired(false);
 				searchButton.setElementCssClass("o_table_search_button");
-				searchButton.setTranslator(translator);
 				searchButton.setIconLeftCSS("o_icon o_icon_search");
+				searchButton.setTitle(translator.translate("search"));
 				components.put("rSearchB", searchButton);
 			}
-			rootFormAvailable(searchFieldEl);
 			rootFormAvailable(searchButton);
 		} else {
 			components.remove("rSearch");
+			components.remove("rSearchReset");
 			components.remove("rSearchB");
 			searchFieldEl = null;
+			searchResetButton = null;
 			searchButton = null;
 		}
 	}
@@ -771,13 +789,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		searchFieldEl.getComponent().addListener(this);
 		((AutoCompleterImpl)searchFieldEl).setListProvider(autoCompleteProvider, usess);
 		components.put("rSearch", searchFieldEl);
-		searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
+		rootFormAvailable(searchFieldEl);
+		
+		searchResetButton = new FormLinkImpl(dispatchId + "_searchReset", "rSearchReset", "", Link.BUTTON + Link.NONTRANSLATED);
+		searchResetButton.setDomReplacementWrapperRequired(false);
+		searchResetButton.setElementCssClass("o_reset_quick_search");
+		searchResetButton.setIconLeftCSS("o_icon o_icon_remove_filters");
+		searchResetButton.setTitle(translator.translate("aria.reset.search"));
+		components.put("rSearchReset", searchResetButton);
+		rootFormAvailable(searchResetButton);
+		
+		searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		searchButton.setDomReplacementWrapperRequired(false);
 		searchButton.setElementCssClass("o_table_search_button");
-		searchButton.setTranslator(translator);
 		searchButton.setIconLeftCSS("o_icon o_icon_search");
+		searchButton.setTitle(translator.translate("search"));
 		components.put("rSearchB", searchButton);
-		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(searchButton);
 	}
 
@@ -1097,6 +1124,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return searchFieldEl;
 	}
 	
+	public FormLink getSearchResetButton() {
+		return searchResetButton;
+	}
+
 	public FormLink getSearchButton() {
 		return searchButton;
 	}
@@ -1250,7 +1281,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String checkbox = form.getRequestParameter("chkbox");
 		String details = form.getRequestParameter("tt-details");
 		String removeFilter = form.getRequestParameter("rm-filter");
-		String resetQuickSearch = form.getRequestParameter("reset-search");
 		String treeTableFocus = form.getRequestParameter("tt-focus");
 		String treeTableOpen = form.getRequestParameter("tt-open");
 		String treeTableClose = form.getRequestParameter("tt-close");
@@ -1286,8 +1316,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				String pos = selectedIndex.substring(index+1);
 				doSelect(ureq, Integer.parseInt(pos));
 			}
-		} else if(StringHelper.containsNonWhitespace(resetQuickSearch)
-				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+		} else if(searchResetButton != null
+				&& searchResetButton.getFormDispatchId().equals(dispatchuri)) {
 			resetQuickSearch(ureq);
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
@@ -1318,8 +1348,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(exportButton != null
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			doExport(ureq);
-		} else if (emptyTablePrimaryActionButton != null && emptyTablePrimaryActionButton.getFormDispatchId().equals(dispatchuri)) {
+		} else if (emptyStatePrimaryButton != null && emptyStatePrimaryButton.getFormDispatchId().equals(dispatchuri)) {
 			getRootForm().fireFormEvent(ureq, new FlexiTableEmptyNextPrimaryActionEvent(this));
+		} else if (fireSecondaryButtonEvent(ureq, dispatchuri)) {
+			// fired already
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			selectAll();
 		} else if(dispatchuri != null && select != null && select.equals("checkpage")) {
@@ -1372,7 +1404,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//do select
 		}
 	}
-	
+
+	private boolean fireSecondaryButtonEvent(UserRequest ureq, String dispatchuri) {
+		for (FormLink button : emptyStateSecondaryButtons) {
+			if (button.getFormDispatchId().equals(dispatchuri)) {
+				getRootForm().fireFormEvent(ureq, new FlexiTableEmptySecondaryActionEvent(this, button.getCmd()));
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean matchDispatchUri(String dispatchUri) {
 		return dispatchUri!= null && (
 				dispatchUri.equals(component.getFormDispatchId())
@@ -2137,6 +2179,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchFieldEl instanceof AutoCompleter) {
 			((AutoCompleter)searchFieldEl).setKey(null);
 		}
+		getRootForm().removeRequestParameter(searchFieldEl.getFormDispatchId());
 		searchFieldEl.setValue("");
 		resetSearch(ureq);
 	}
@@ -2456,6 +2499,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchFieldEl != null) {
 			allOk &= searchFieldEl.validate();
 		}
+		if(searchResetButton != null) {
+			allOk &= searchResetButton.validate();
+		}
 		if(searchButton != null) {
 			allOk &= searchButton.validate();
 		}
@@ -2551,6 +2597,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	protected void rootFormAvailable() {
+		rootFormAvailable(searchResetButton);
 		rootFormAvailable(searchButton);
 		rootFormAvailable(sortOrderButton);
 		rootFormAvailable(customButton);
@@ -2562,7 +2609,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(verticalTimeLineTypeButton);
 		rootFormAvailable(classicTypeButton);
 		rootFormAvailable(externalTypeButton);
-		rootFormAvailable(emptyTablePrimaryActionButton);
+		rootFormAvailable(emptyStatePrimaryButton);
+		for (FormLink button : emptyStateSecondaryButtons) {
+			rootFormAvailable(button);
+		}
 		if(components != null) {
 			for(FormItem item:components.values()) {
 				rootFormAvailable(item);
@@ -2619,6 +2669,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
+	public void setEmptyStateConfig(EmptyStateConfig emptyStateConfig) {
+		setEmptyStateConfig(emptyStateConfig, false);
+	}
+	
+	@Override
+	public void setEmptyStateConfig(EmptyStateConfig emptyStateConfig, boolean alwaysShowSearchFields) {
+		this.emptyStateConfig = emptyStateConfig;
+		this.alwaysShowSearchFields = alwaysShowSearchFields;
+		
+		syncButtonComponents();
+	}
+
+	public EmptyStateConfig getEmptyStateConfig() {
+		return emptyStateConfig;
+	}
+
+	@Override
 	public void setEmptyTableMessageKey(String i18key) {
 		setEmptyTableSettings(i18key, null, TABLE_EMPTY_ICON);
 	}
@@ -2629,49 +2696,60 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
-	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS,
-			boolean showAlwaysSearchFields, String... i18nArgs) {
-		this.emptyTableMessageKey = emptyMessagei18key;
-		this.emptyTableHintKey = emptyTableHintKey;
-		this.emptyTableIconCss = emptyTableIconCss;
-		this.emptyMessagei18nArgs = i18nArgs;
-		// create action button
-		if (emptyPrimaryActionKey != null) {
-			String dispatchId = component.getDispatchID();
-			emptyTablePrimaryActionButton = new FormLinkImpl(dispatchId + "_emptyTablePrimaryActionButton", "rEmtpyTablePrimaryActionButton", emptyPrimaryActionKey, Link.BUTTON);
-			emptyTablePrimaryActionButton.setTranslator(translator);
-			emptyTablePrimaryActionButton.setPrimary(true);
-			if (emptyPrimaryActionIconCSS != null) {
-				emptyTablePrimaryActionButton.setIconLeftCSS("o_icon o_icon-fw " + emptyPrimaryActionIconCSS);
-			}
-			emptyTablePrimaryActionButton.setTitle(emptyPrimaryActionKey);
-			components.put("rEmtpyTablePrimaryActionButton", emptyTablePrimaryActionButton);			
-			if(getRootForm() != null) {
-				rootFormAvailable(emptyTablePrimaryActionButton);
-			}		
-		} else if (emptyTablePrimaryActionButton != null) {
-			emptyTablePrimaryActionButton = null;
-		}
-		// search filed config
-		this.emptyShowSearch = showAlwaysSearchFields;
+	public void setEmptyTableSettings(String messageI18nKey, String hintI18nKey, String iconCss,
+									  String primaryButtonI18nKey, String primaryButtonLeftIconCss,
+									  boolean alwaysShowSearchFields, String... i18nArgs) {
+		EmptyStateConfig config = EmptyStateConfig.builder()
+				.withMessageI18nKey(messageI18nKey)
+				.withMessageI18nArgs(i18nArgs)
+				.withHintI18nKey(hintI18nKey)
+				.withHintI18nArgs(i18nArgs)
+				.withIconCss(iconCss)
+				.withPrimaryButton(primaryButtonLeftIconCss, primaryButtonI18nKey, null)
+				.build();
+		setEmptyStateConfig(config, alwaysShowSearchFields);
 	}
 
-	
-	public boolean isShowAlwaysSearchFields() {
-		return emptyShowSearch;
+	private void syncButtonComponents() {
+		String dispatchId = component.getDispatchID();
+		if (emptyStateConfig.getPrimaryButton() != null) {
+			EmptyStateButton primaryButton = emptyStateConfig.getPrimaryButton();
+			emptyStatePrimaryButton = new FormLinkImpl(dispatchId + "_emptyStatePrimaryButton", 
+					"emptyStatePrimaryButton", primaryButton.i18nKey(), Link.BUTTON);
+			emptyStatePrimaryButton.setTranslator(translator);
+			emptyStatePrimaryButton.setPrimary(true);
+			if (primaryButton.leftIcon() != null) {
+				emptyStatePrimaryButton.setIconLeftCSS("o_icon o_icon-fw " + primaryButton.leftIcon());
+			}
+			components.put("emtpyStatePrimaryButton", emptyStatePrimaryButton);
+			if (getRootForm() != null) {
+				rootFormAvailable(emptyStatePrimaryButton);
+			}
+
+		} else if (emptyStatePrimaryButton != null) {
+			emptyStatePrimaryButton = null;
+		}
+		
+		emptyStateSecondaryButtons.clear();
+		for (EmptyStateButton secondaryButton : emptyStateConfig.getSecondaryButtons()) {
+			FormLink secondaryButtonLink = new FormLinkImpl(
+					dispatchId + "_emptyStateSecondaryButton_" + secondaryButton.action(), 
+					secondaryButton.action(), secondaryButton.i18nKey(), Link.BUTTON);
+			secondaryButtonLink.setTranslator(translator);
+			if (secondaryButton.leftIcon() != null) {
+				secondaryButtonLink.setIconLeftCSS("o_icon o_icon-fw " + secondaryButton.leftIcon());
+			}
+			emptyStateSecondaryButtons.add(secondaryButtonLink);
+			components.put("emptyStateSecondaryButton_" + secondaryButton.action(), secondaryButtonLink);
+			if (getRootForm() != null) {
+				rootFormAvailable(secondaryButtonLink);
+			}
+		}
 	}
-	
-	public String getEmtpyTableMessageKey() {
-		return emptyTableMessageKey;
-	}
-	public String getEmptyTableHintKey() {
-		return emptyTableHintKey;
-	}
-	public String getEmtpyTableIconCss() {
-		return emptyTableIconCss;
-	}
-	public String[] getEmtpyTableMessageArgs() {
-		return emptyMessagei18nArgs;
+
+
+	public boolean isAlwaysShowSearchFields() {
+		return alwaysShowSearchFields;
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class BusinessGroupListWrapperController extends BasicController implemen
 		
 		wrapper = createVelocityContainer("group_list_wrapper");
 		
-		groupAcceptReservationsCtrl = new GroupAcceptReservationsController(ureq, wControl);
+		groupAcceptReservationsCtrl = new GroupAcceptReservationsController(ureq, wControl, true);
 		listenTo(groupAcceptReservationsCtrl);
 		if (groupAcceptReservationsCtrl.hasReservations()) {
 			wrapper.put("groupAcceptReservations", groupAcceptReservationsCtrl.getInitialComponent());

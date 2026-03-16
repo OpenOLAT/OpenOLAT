@@ -394,10 +394,10 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (roleSecurityCallback.canDeactivateAccounts()) {
 			accountTabIndex = functionsTabbedPane.addTab(ureq, translate("account"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ACCOUNT), null);
-						userAccountController = new UserAccountController(bwControl, uureq, mentee, 
-								!roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles());
+				boolean restricted = roleSecurityCallback.isReadOnlyDueToAdditionalOrgRoles();
+				userAccountController = new UserAccountController(bwControl, uureq, mentee, !restricted, restricted);
 				listenTo(userAccountController);
-			return userAccountController.getInitialComponent();
+				return userAccountController.getInitialComponent();
 			});
 		}
 
