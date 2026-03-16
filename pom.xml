@@ -66,10 +66,10 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>7.0.5</org.springframework.version>
+		<org.springframework.version>7.0.6</org.springframework.version>
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
-		<org.glassfish.jaxb.runtime>4.0.6</org.glassfish.jaxb.runtime>
+		<org.glassfish.jaxb.runtime>4.0.7</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.1.4</apache.cxf>
 		<apache.pdfbox>3.0.7</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
@@ -1983,7 +1983,7 @@
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20260102.1</version>
+			<version>20260313.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -2373,7 +2373,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.22.0</version>
+			<version>5.23.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2464,7 +2464,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.10.0.Final</version>
+				<version>1.10.1.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
