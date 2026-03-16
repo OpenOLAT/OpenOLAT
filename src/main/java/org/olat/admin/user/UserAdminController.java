@@ -145,7 +145,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
 	private static final String NLS_VIEW_COMPETENCES	= "view.competences";
-	private static final String NLS_VIEW_CURRICULUM		= "view.curriculum";
+	private static final String NLS_VIEW_EDU_PRODUCTS   = "view.education.products";
 	private static final String NLS_VIEW_GRADER			= "view.grader";
 	private static final String NLS_VIEW_PORTFOLIO		= "view.portfolio";
 	private static final String NLS_VIEW_CREDITPOINT	= "view.creditpoint";
@@ -707,11 +707,11 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		
 		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
-			userTabP.addTab(ureq, translate(NLS_VIEW_CURRICULUM),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_EDU_PRODUCTS), uureq -> {
 				curriculumCtr = new CurriculumListController(uureq, getWindowControl(), identity);
 				listenTo(curriculumCtr);
 				BreadcrumbedStackedPanel curriculumPanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), curriculumCtr);
-				curriculumPanel.pushController(translate(NLS_VIEW_CURRICULUM), curriculumCtr);
+				curriculumPanel.pushController(translate(NLS_VIEW_EDU_PRODUCTS), curriculumCtr);
 				curriculumCtr.setBreadcrumbPanel(curriculumPanel);
 				curriculumPanel.setInvisibleCrumb(1);
 				return curriculumPanel;
