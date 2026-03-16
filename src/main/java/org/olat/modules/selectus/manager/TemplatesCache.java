@@ -47,13 +47,8 @@ public class TemplatesCache {
 	throws TransformerConfigurationException, TransformerFactoryConfigurationError {
 		
 		Templates template;
-		if (Settings.isDebuging()) {
-			String instanceId = WebappHelper.getInstanceId();
-			if("demofacrec".equals(instanceId)) {
-				instanceId = "demo";
-			}
-			
-			File path = new File(WebappHelper.getSourcePath().replace("/java", "/resources-" + instanceId),"org/olat/modules/selectus/ui");
+		if (Settings.isDebuging()) {			
+			File path = new File(WebappHelper.getSourcePath().replace("/java", "/resources"),"org/olat/modules/selectus/ui");
 			try(InputStream inXslt = new FileInputStream(new File(path, templateName));	) {
 				StreamSource sourceXslt = new StreamSource(inXslt);
 				TransformerFactory factory = XMLFactories.newTransformerFactory();

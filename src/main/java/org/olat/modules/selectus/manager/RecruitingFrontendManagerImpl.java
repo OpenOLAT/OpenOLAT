@@ -452,10 +452,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	
 	@Override
 	public boolean hasPositions(Identity identity, Roles roles, PositionStatus... status) {
-		if(!recruitingModule.isOrganisationUnitEnabled() && !roles.isSelectusManager() && !roles.isAdministrator()) {
-			return false;
-		}
-		
 		List<PositionStatus> statusList = PositionStatus.toList(status);
 		PositionStatusFilters filters = positionDao.getPositionStatusFilters(identity, roles, statusList);
 		return positionDao.hasPositions(identity, filters, true);
@@ -464,10 +460,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public List<PositionLightWithStatistics> getPositionsLightWithStatistics(Identity identity, Roles roles,
 			List<PositionAttributeDefinition> globalAttributes, Locale locale, PositionStatus... status) {
-		if(!recruitingModule.isOrganisationUnitEnabled() && !roles.isSelectusManager() && !roles.isAdministrator()) {
-			return Collections.emptyList();
-		}
-
 		List<PositionStatus> statusList = PositionStatus.toList(status);
 		PositionStatusFilters filters = positionDao.getPositionStatusFilters(identity, roles, statusList);
 		return positionDao.findPositionsLightWithStatistics(identity, filters, globalAttributes, true, locale);

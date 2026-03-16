@@ -184,15 +184,21 @@ public class PositionCommitteeController extends FormBasicController implements 
 		}
 		
 		if(secCallback.canEditCommitteeMember()) {
-			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit", translate("edit"), "edit", "o_icon o_icon_edit");
+			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit", -1, "edit",
+					new StaticFlexiCellRenderer("", "edit", null, "o_icon o_icon_edit", translate("edit")));
+			editCol.setIconHeader("o_icon o_icon_edit");
+			editCol.setHeaderLabel(translate("edit"));
 			editCol.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(editCol);
 		}
 		
 		if(secCallback.canRemoveCommitteeMember()) {
-			DefaultFlexiColumnModel deleteColDesc = new DefaultFlexiColumnModel("delete", translate("remove"), "remove", "o_icon o_icon_delete");
-			deleteColDesc.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(deleteColDesc);	
+			DefaultFlexiColumnModel removeCol = new DefaultFlexiColumnModel("delete", -1, "remove",
+					new StaticFlexiCellRenderer("", "delete", null, "o_icon o_icon_delete", translate("remove")));
+			removeCol.setIconHeader("o_icon o_icon_delete");
+			removeCol.setHeaderLabel(translate("remove"));
+			removeCol.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(removeCol);	
 		}
 		
 		membersDataModel = new PositionCommitteeDataModel(columnsModel, userPropertyHandlers, getTranslator());
@@ -362,7 +368,7 @@ public class PositionCommitteeController extends FormBasicController implements 
 		if(secCallback.canImportCommitteeMembers()) {
 			importCommitteeLink = LinkFactory.createToolLink("import_committee_members", translate("import_committee_members"), this);
 			importCommitteeLink.setElementCssClass("o_sel_import_committee_member");
-			importCommitteeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_import_members");
+			importCommitteeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_membersmanagement");
 			stackPanel.addTool(importCommitteeLink, Align.right);
 		}
 		

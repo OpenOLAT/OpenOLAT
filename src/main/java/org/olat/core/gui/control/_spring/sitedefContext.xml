@@ -99,6 +99,8 @@
 	
 	<bean id="olatsites_recruiting" class="org.olat.modules.selectus.site.RecruitingSiteDef" scope="prototype" >
 		<property name="order" value="8" />
+		<property name="enabled" value="${site.selectus.enable}"/>
+		<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 
 	<bean id="olatsites_taxonomy" class="org.olat.modules.docpool.site.DocumentPoolSiteDef">

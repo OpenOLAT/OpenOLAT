@@ -1452,6 +1452,9 @@ $o-step-status-extended-color		: #31708F !default;
 $o-step-status-auto-collect-color	: $brand-danger !default;
 $o-step-status-extended-color		: $brand-info !default;
 $o-step-status-need-revision-color	: $brand-danger !default;
+$o-step-status-enabled				: $brand-success !default;
+$o-step-status-disabled				: $brand-danger !default;
+$o-step-status-staff-only			: $brand-warning !default;
 
 /* Email */
 $o-email-brand							: $btn-primary-bg !default;
@@ -1693,6 +1696,14 @@ $o-video-color-sea-green   : $o-color-sea-green;
 $o-video-color-practice    : #FFFFFF;
 
 $o-video-border-color      : $o-bright-text-and-border;
+
+/* Selectus */
+$o-selectus-review-comment-link-color		: #519ed4 !default;
+$o-selectus-review-comment-date-color		: #777 !default;
+$o-selectus-review-glowing-color			: $brand-primary;
+$o-selectus-review-comment-glowing-color	: $brand-warning;
+$o-selectus-onhold-color					: #9e9e9e;
+$o-selectus-mail-disabled-color				: #9e9e9e;
 
 /* Educational course types */
 $o-edu-type-standard-course-color 			: o-a11y-color($gray) !default;

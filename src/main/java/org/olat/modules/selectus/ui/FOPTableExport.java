@@ -251,7 +251,7 @@ public class FOPTableExport {
 			}
 		}
 		
-		print(doc);
+		//print(doc);
 		return doc;
 	}
 	

@@ -5,6 +5,7 @@
  */
 package org.olat.modules.selectus.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -22,8 +23,10 @@ import jakarta.persistence.TemporalType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Embeddable
-public class AcademicalBackgroundImpl implements AcademicalBackground {
+public class AcademicalBackgroundImpl implements AcademicalBackground, Serializable {
 
+	private static final long serialVersionUID = -4865559252546958230L;
+	
 	@Column(name="highestdegreetype", nullable=true, insertable=true, updatable=true)
 	private String highestDegreeType;
 	@Column(name="highestdegreedescr", nullable=true, insertable=true, updatable=true)

@@ -322,6 +322,7 @@ public class ApplicationOverviewController extends BasicController implements To
 			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 			ExternalLink openInNewWindowButton = LinkFactory.createExternalLink("open.new.window", translate("open.new.window"), url);
 			openInNewWindowButton.setIconLeftCSS("o_icon o_icon-lg o_icon_external_link");
+			openInNewWindowButton.setName(translate("open.new.window"));
 			stackPanel.addTool(openInNewWindowButton, Align.rightEdge);
 		}
 	}

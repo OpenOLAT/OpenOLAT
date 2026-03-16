@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -856,13 +857,19 @@ public class PositionApplicationsController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(newWindowColumn);
 
 		if(secCallback.canEditApplication()) {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", translate("edit"), "edit", "o_icon o_icon_edit");
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1, "edit",
+					new StaticFlexiCellRenderer("", "edit", null, "o_icon o_icon_edit", translate("edit")));
+			editColumn.setIconHeader("o_icon o_icon_edit");
+			editColumn.setHeaderLabel(translate("edit"));
 			editColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
 		
 		if(secCallback.canDeleteApplication()) {
-			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel("delete", translate("delete"), "delete", "o_icon o_icon_delete_item");
+			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel("delete", -1, "delete",
+					new StaticFlexiCellRenderer("", "delete", null, "o_icon o_icon_delete_item", translate("delete")));
+			deleteColumn.setIconHeader("o_icon o_icon_delete_item");
+			deleteColumn.setHeaderLabel(translate("delete"));
 			deleteColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(deleteColumn);
 		}

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -193,7 +194,10 @@ public class PositionListController extends FormBasicController implements Toole
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.numOfFemaleApplications, "select_apps"));
 
 		if(secCallback.canDeletePosition()) {
-			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel("table.header.action", translate("delete"), "delete", "o_icon o_icon_delete_item");
+			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel("delete", -1, "delete",
+							new StaticFlexiCellRenderer("", "delete", null, "o_icon o_icon_delete_item", translate("delete")));
+			deleteColumn.setIconHeader("o_icon o_icon_delete_item");
+			deleteColumn.setHeaderLabel(translate("delete"));
 			deleteColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(deleteColumn);
 		}

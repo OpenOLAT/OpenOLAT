@@ -5,6 +5,8 @@
  */
 package org.olat.modules.selectus.model.application;
 
+import java.io.Serializable;
+
 import org.olat.modules.selectus.model.ApplicationRef;
 
 /**
@@ -13,8 +15,9 @@ import org.olat.modules.selectus.model.ApplicationRef;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ApplicationRefImpl implements ApplicationRef {
+public class ApplicationRefImpl implements ApplicationRef, Serializable {
 	
+	private static final long serialVersionUID = 4661257934808330650L;
 	private final Long key;
 	
 	public ApplicationRefImpl(Long key) {

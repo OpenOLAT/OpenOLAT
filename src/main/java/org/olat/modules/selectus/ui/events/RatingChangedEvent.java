@@ -6,8 +6,8 @@
 package org.olat.modules.selectus.ui.events;
 
 import org.olat.core.util.event.MultiUserEvent;
-
 import org.olat.modules.selectus.model.ApplicationRef;
+import org.olat.modules.selectus.model.application.ApplicationRefImpl;
 
 /**
  * 
@@ -26,7 +26,7 @@ public class RatingChangedEvent extends MultiUserEvent  {
 	
 	public RatingChangedEvent(ApplicationRef application, Long doerIdentityKey, String emitter) {
 		super(RATING_CHANGED);
-		this.application = application;
+		this.application = new ApplicationRefImpl(application.getKey());
 		this.doerIdentityKey = doerIdentityKey;
 		this.emitter = emitter;
 	}
