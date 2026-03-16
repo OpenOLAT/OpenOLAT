@@ -22,6 +22,7 @@ package org.olat.repository.ui.list;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.course.run.leave.LeaveCourseStatus;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -49,6 +50,7 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	protected boolean administrativOpenAvailable = false;
 	protected boolean participantConfirmationPending = false;
 	protected boolean leaveAvailable = false;
+	protected boolean leaveEnabled = false;
 	protected boolean leaveWithCancellationFee = false;
 
 	public BasicDetailsHeaderConfig(Identity identity) {
@@ -88,6 +90,15 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 		bookAvailable = true;
 		bookEnabled = false;
 		availabilityMessage = true;
+	}
+
+	protected void setLeave(LeaveCourseStatus status) {
+		if (status == LeaveCourseStatus.ENABLED) {
+			leaveAvailable = true;
+			leaveEnabled = true;
+		} else if (status == LeaveCourseStatus.DISABLED) {
+			leaveAvailable = true;
+		}
 	}
 
 	@Override
@@ -143,6 +154,11 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	@Override
 	public boolean isLeaveAvailable() {
 		return leaveAvailable;
+	}
+
+	@Override
+	public boolean isLeaveEnabled() {
+		return leaveEnabled;
 	}
 
 	@Override

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.run;
+package org.olat.course.run.leave;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.run.CourseRuntimeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 
@@ -51,7 +52,7 @@ public class ConfirmLeaveController extends FormBasicController {
 	private MultipleSelectionElement acknowledgeEl;
 
 	public ConfirmLeaveController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, "confirm_leave");
+		super(ureq, wControl, "confirm_leave", Util.createPackageTranslator(CourseRuntimeController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		this.entry = entry;

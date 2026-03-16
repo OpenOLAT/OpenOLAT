@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -137,7 +136,6 @@ import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodeaccess.ui.MigrationSelectionController;
 import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.bc.CoachFolderController;
 import org.olat.course.nodes.bc.CoachFolderFactory;
 import org.olat.course.nodes.bc.CourseDocumentsController;
@@ -157,6 +155,11 @@ import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
+import org.olat.course.run.leave.ConfirmLeaveController;
+import org.olat.course.run.leave.CourseRuntimeLeaveCourseContext;
+import org.olat.course.run.leave.LeaveCourseContext;
+import org.olat.course.run.leave.LeaveCourseEvaluator;
+import org.olat.course.run.leave.LeaveCourseStatus;
 import org.olat.course.run.preview.PreviewConfigController;
 import org.olat.course.run.preview.PreviewLayoutController;
 import org.olat.course.run.tools.CourseTool;
@@ -227,7 +230,6 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.author.CreateCourseFromTemplateContext;
 import org.olat.repository.ui.author.CreateCourseFromTemplateStep02;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
-import org.olat.resource.OLATResource;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
@@ -1143,11 +1145,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			}
 			
-			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
-					&& !assessmentLock && !roles.isGuestOnly() && !userCourseEnv.isCourseReadOnly()
-					&& isAllowedToLeave(userCourseEnv)) {
+			LeaveCourseContext leaveCtx = new CourseRuntimeLeaveCourseContext(
+				userCourseEnv, assessmentLock, isGuestOnly,
+				reSecurity.getWrappedSecurity().isCurriculumParticipant());
+			LeaveCourseStatus leaveStatus = new LeaveCourseEvaluator().evaluate(leaveCtx);
+			if (leaveStatus != LeaveCourseStatus.HIDDEN) {
 				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
 				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
+				leaveLink.setEnabled(leaveStatus == LeaveCourseStatus.ENABLED);
 				myCourse.addComponent(new Spacer("leaving-space"));
 				myCourse.addComponent(leaveLink);
 			}
@@ -1156,32 +1161,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(myCourse.size() > 0) {
 			toolbarPanel.addTool(myCourse, Align.right);
 		}
-	}
-	
-	private boolean isAllowedToLeave(UserCourseEnvironment userCourseEnv) {
-		if(!userCourseEnv.getParticipatingGroups().isEmpty()) {
-			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-			OLATResource courseResource = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			
-			AtomicBoolean bool = new AtomicBoolean(false);
-			new TreeVisitor(node -> {
-				if(!bool.get() && node instanceof ENCourseNode enNode) {
-					try {
-						boolean cancelEnrollEnabled = enNode.getModuleConfiguration().getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
-						if(!cancelEnrollEnabled && enNode.isUsedForEnrollment(userCourseEnv.getParticipatingGroups(), courseResource)) {
-							bool.set(true);
-						}
-					} catch (Exception e) {
-						logError("", e);
-					}
-				}
-			}, rootNode, true).visitAll();
-
-			if(bool.get()) {
-				return false;// is in a enrollment group
-			}
-		}
-		return (userCourseEnv.isParticipant() || !userCourseEnv.getParticipatingGroups().isEmpty());
 	}
 	
 	private void initGeneralTools(ICourse course, boolean disclaimerAccepted) {

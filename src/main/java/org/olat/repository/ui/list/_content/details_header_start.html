@@ -1,5 +1,5 @@
 <div class="o_header_start o_block_top">
-	#if($r.visible("start") || $r.visible("start.guest"))
+	#if($r.visible("start") || $r.visible("start.guest") || $r.visible("leave"))
 		<div class="o_start_wrapper">
 			#if($r.isNotEmpty($warning))
 				<div class="o_start_message o_warning_line">

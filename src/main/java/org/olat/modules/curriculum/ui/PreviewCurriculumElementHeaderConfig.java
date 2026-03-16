@@ -133,6 +133,11 @@ public class PreviewCurriculumElementHeaderConfig implements DetailsHeaderConfig
 	}
 
 	@Override
+	public boolean isLeaveEnabled() {
+		return false;
+	}
+
+	@Override
 	public boolean isLeaveWithCancellationFee() {
 		return false;
 	}

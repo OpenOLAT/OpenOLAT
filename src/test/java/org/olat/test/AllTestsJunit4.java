@@ -785,6 +785,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.st.assessment.STRootGradeEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STRootPassedEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.WithoutSequenceBlockerTest.class,
+	org.olat.course.run.leave.LeaveCourseEvaluatorTest.class,
 	org.olat.course.run.scoring.AverageCompletionEvaluatorTest.class,
 	org.olat.course.run.userview.UserCourseEnvironmentImplTest.class,
 	org.olat.course.style.manager.CachingColorCategoryResolverTest.class,

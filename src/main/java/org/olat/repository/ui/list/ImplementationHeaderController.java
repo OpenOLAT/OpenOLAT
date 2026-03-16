@@ -40,7 +40,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryManager;
@@ -68,8 +67,6 @@ public class ImplementationHeaderController extends FormBasicController {
 	private MarkManager markManager;
 	@Autowired
 	private MapperService mapperService;
-	@Autowired
-	private CurriculumService curriculumService;
 	
 	public ImplementationHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element, boolean withDetailsLink) {
 		super(ureq, wControl, "row_1");

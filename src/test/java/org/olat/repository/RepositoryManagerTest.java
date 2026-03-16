@@ -1169,16 +1169,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void isParticipantAllowedToLeave() {
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-		re = repositoryManager.setLeaveSetting(re, RepositoryEntryAllowToLeaveOptions.never);
-		dbInstance.commitAndCloseSession();
-		
-		Assert.assertFalse(repositoryService.isParticipantAllowedToLeave(re));
-	}
-	
-	@Test
 	public void isAllowed_coach() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-re-1");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();

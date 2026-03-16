@@ -255,12 +255,6 @@ public interface RepositoryService {
 	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, Collection<? extends IdentityRef> identities, String... roles);
 
 	/**
-	 * @param re The repository entry
-	 * @return True if the configuration allowed user to leave the entry right now
-	 */
-	public boolean isParticipantAllowedToLeave(RepositoryEntry re);
-	
-	/**
 	 * Check if the resource has some business groups, curriculum elements or
 	 * some participants or coaches on the repository entry itself.
 	 * 

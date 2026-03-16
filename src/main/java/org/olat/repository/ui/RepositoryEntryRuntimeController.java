@@ -74,6 +74,10 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.run.leave.LeaveCourseContext;
+import org.olat.course.run.leave.LeaveCourseEvaluator;
+import org.olat.course.run.leave.LeaveCourseStatus;
+import org.olat.course.run.leave.RepositoryEntryLeaveCourseContext;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -1150,9 +1154,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		public InfoToolConfig() {
 			super(getIdentity());
-			if (reSecurity.getWrappedSecurity().isParticipant() && repositoryService.isParticipantAllowedToLeave(re)) {
-				leaveAvailable = true;
-			}
+			LeaveCourseContext leaveCtx = new RepositoryEntryLeaveCourseContext(re, getIdentity());
+			LeaveCourseStatus status = new LeaveCourseEvaluator().evaluate(leaveCtx);
+			setLeave(status);
 		}
 		
 	}

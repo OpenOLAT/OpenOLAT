@@ -24,11 +24,14 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.course.run.leave.LeaveCourseContext;
+import org.olat.course.run.leave.LeaveCourseEvaluator;
+import org.olat.course.run.leave.LeaveCourseStatus;
+import org.olat.course.run.leave.RepositoryEntryLeaveCourseContext;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -147,9 +150,13 @@ public class CatalogRepositoryEntryHeaderConfig extends BasicDetailsHeaderConfig
 	}
 
 	private void initLeave() {
-		if (reSecurity.isParticipant() && CoreSpringFactory.getImpl(RepositoryService.class).isParticipantAllowedToLeave(repositoryEntry)) {
-			leaveAvailable = true;
+		if (!reSecurity.isParticipant()) {
+			return;
 		}
+		
+		LeaveCourseContext leaveCtx = new RepositoryEntryLeaveCourseContext(repositoryEntry, identity);
+		LeaveCourseStatus status = new LeaveCourseEvaluator().evaluate(leaveCtx);
+		setLeave(status);
 	}
 	
 	private void openWithStatusCheck(RepositoryEntry repositoryEntry, RepositoryEntryStatusEnum[] statusArray) {
