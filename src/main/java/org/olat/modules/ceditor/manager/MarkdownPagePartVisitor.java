@@ -38,7 +38,6 @@ import org.commonmark.ext.gfm.tables.TableBody;
 import org.commonmark.ext.gfm.tables.TableCell;
 import org.commonmark.ext.gfm.tables.TableHead;
 import org.commonmark.ext.gfm.tables.TableRow;
-import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.BulletList;
@@ -61,8 +60,11 @@ import org.commonmark.node.ThematicBreak;
 import org.commonmark.renderer.html.DefaultUrlSanitizer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.olat.basesecurity.MediaServerModule;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
@@ -84,7 +86,11 @@ import org.olat.modules.ceditor.model.jpa.TitlePart;
 import org.olat.modules.ceditor.ui.MarkdownImportController;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
+import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 
 /**
  * CommonMark AST visitor that converts top-level block nodes into
@@ -108,23 +114,25 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 	private final ImageHandler imageHandler;
 	private final MediaServerModule mediaServerModule;
 	private final Map<String, String> mathBlocks;
+	private final Translator translator;
 
 	private final HtmlRenderer inlineRenderer;
 	private HttpClient httpClient;
 
 	public MarkdownPagePartVisitor(Identity author, File basePath,
 			ImageHandler imageHandler, MediaServerModule mediaServerModule,
-			Map<String, String> mathBlocks) {
+			Map<String, String> mathBlocks, Translator translator) {
 		this.author = author;
 		this.basePath = basePath;
 		this.imageHandler = imageHandler;
 		this.mediaServerModule = mediaServerModule;
 		this.mathBlocks = mathBlocks;
+		this.translator = translator;
 		this.inlineRenderer = HtmlRenderer.builder()
 			.escapeHtml(true)
 			.sanitizeUrls(true)
 			.urlSanitizer(new DefaultUrlSanitizer(List.of("http", "https", "mailto")))
-			.extensions(List.of(TablesExtension.create()))
+			.extensions(MarkdownImportService.markdownExtensions())
 			.build();
 	}
 
@@ -212,6 +220,12 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 
 	@Override
 	public void visit(BlockQuote blockQuote) {
+		// Detect GitHub-style admonition [!TYPE]
+		MarkdownAdmonitionMapping.AdmonitionResult admonition =
+			MarkdownAdmonitionMapping.detectAdmonition(blockQuote);
+
+		AlertBoxType alertType = admonition != null ? admonition.type() : AlertBoxType.note;
+
 		String html = renderChildrenToHtml(blockQuote);
 
 		ParagraphPart part = new ParagraphPart();
@@ -219,8 +233,11 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		TextSettings textSettings = new TextSettings();
 		AlertBoxSettings alertBox = AlertBoxSettings.getPredefined();
 		alertBox.setShowAlertBox(true);
-		alertBox.setType(AlertBoxType.note);
-		alertBox.setWithIcon(true);
+		alertBox.setWithIcon(admonition != null);
+		alertBox.setType(alertType);
+		if (admonition != null && translator != null) {
+			alertBox.setTitle(translator.translate(alertType.getI18nKey()));
+		}
 		textSettings.setAlertBoxSettings(alertBox);
 		part.setLayoutOptions(ContentEditorXStream.toXml(textSettings));
 		parts.add(part);
@@ -413,11 +430,26 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			if (mediaTitle.isBlank()) {
 				mediaTitle = filename;
 			}
-
-			Media media = imageHandler.createMedia(
-				mediaTitle, null, altText, imageFile, filename,
-				null, author, MediaLog.Action.IMPORTED
-			);
+			// check for duplicate media file, reuse same image that has already been uploaded
+			Media media = null;
+			MediaService mediaService = (MediaService) CoreSpringFactory.getImpl(MediaService.class); 
+			if (mediaService.isInMediaCenter(author, imageFile)) {
+				SearchMediaParameters params = new SearchMediaParameters();
+				String checksum = FileUtils.checksumSha256(imageFile);
+				params.setChecksum(checksum);
+				params.setIdentity(author);
+				params.setScope(Scope.ALL);
+				List<MediaWithVersion> versions =  mediaService.searchMedias(params);
+				if (versions.size() > 0) {
+					media = versions.get(0).media();
+				}
+			}
+			if (media == null) {
+				media = imageHandler.createMedia(
+					mediaTitle, null, altText, imageFile, filename,
+					null, author, MediaLog.Action.IMPORTED
+				);
+			}
 
 			MediaPart mediaPart = MediaPart.valueOf(author, media);
 			parts.add(mediaPart);

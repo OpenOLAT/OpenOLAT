@@ -415,6 +415,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.ceditor.manager.MarkdownPagePartVisitorTest.class,
 	org.olat.modules.ceditor.manager.MarkdownMathPreprocessorTest.class,
 	org.olat.modules.ceditor.manager.MarkdownCodeLanguageMappingTest.class,
+	org.olat.modules.ceditor.manager.MarkdownAdmonitionMappingTest.class,
 	org.olat.modules.creditpoint.CreditPointFormatTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointSystemDAOTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointWalletDAOTest.class,

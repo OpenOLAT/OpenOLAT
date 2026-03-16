@@ -22,11 +22,20 @@ package org.olat.modules.ceditor.manager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.commonmark.Extension;
+import org.commonmark.ext.autolink.AutolinkExtension;
+import org.commonmark.ext.footnotes.FootnotesExtension;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.olat.basesecurity.MediaServerModule;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PagePart;
@@ -34,7 +43,7 @@ import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
-import org.olat.basesecurity.MediaServerModule;
+import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +57,19 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MarkdownImportService {
+
+	/**
+	 * Shared CommonMark extension list used by both the Parser and HtmlRenderer.
+	 */
+	static List<Extension> markdownExtensions() {
+		return List.of(
+			TablesExtension.create(),
+			StrikethroughExtension.create(),
+			TaskListItemsExtension.create(),
+			AutolinkExtension.create(),
+			FootnotesExtension.create()
+		);
+	}
 
 	@Autowired
 	private PageService pageService;
@@ -66,10 +88,11 @@ public class MarkdownImportService {
 	 * @param page      The target page to append parts to
 	 * @param author    The identity performing the import
 	 * @param basePath  Optional base directory for resolving relative image paths
+	 * @param locale    The user's locale for translating admonition titles
 	 * @return MarkdownImportResult with any warnings
 	 */
 	public MarkdownImportResult convertAndPersist(String markdown, Page page,
-			Identity author, File basePath) {
+			Identity author, File basePath, Locale locale) {
 		if (markdown == null || markdown.isBlank()) {
 			return new MarkdownImportResult(List.of());
 		}
@@ -80,13 +103,14 @@ public class MarkdownImportService {
 
 		// 2. Parse with CommonMark + GFM Tables
 		Parser parser = Parser.builder()
-			.extensions(List.of(TablesExtension.create()))
+			.extensions(markdownExtensions())
 			.build();
 		Node document = parser.parse(preprocessed.text());
 
 		// 3. Visit AST
+		Translator translator = Util.createPackageTranslator(PageEditorV2Controller.class, locale);
 		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(
-			author, basePath, imageHandler, mediaServerModule, preprocessed.mathBlocks());
+			author, basePath, imageHandler, mediaServerModule, preprocessed.mathBlocks(), translator);
 		document.accept(visitor);
 
 		// 4. Persist parts in container
