@@ -68,12 +68,18 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListContr
 import org.olat.course.certificate.ui.CertificatesListOverviewController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
 import org.olat.modules.creditpoint.ui.CreditPointUserController;
+import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.ui.CurriculumListController;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationListController;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.ui.GraderUserOverviewController;
@@ -175,7 +181,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserQuotaController quotaCtr;
 	private UserAccountController accountCtrl;
 	private UserRoleOverviewController rolesCtr;
-	private CurriculumListController curriculumCtr;
+	private CourseListWrapperController courseListWrapperCtrl;
 	private UserRelationsController relationsCtrl;
 	private InviteeBindersAdminController portfolioCtr;
 	private GraderUserOverviewController graderOverviewCtrl;
@@ -209,6 +215,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private GradingModule gradingModule;
 	@Autowired
@@ -708,13 +716,13 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_EDU_PRODUCTS), uureq -> {
-				curriculumCtr = new CurriculumListController(uureq, getWindowControl(), identity);
-				listenTo(curriculumCtr);
-				BreadcrumbedStackedPanel curriculumPanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), curriculumCtr);
-				curriculumPanel.pushController(translate(NLS_VIEW_EDU_PRODUCTS), curriculumCtr);
-				curriculumCtr.setBreadcrumbPanel(curriculumPanel);
-				curriculumPanel.setInvisibleCrumb(1);
-				return curriculumPanel;
+				List<Curriculum> curriculumRefs = curriculumService.getMyCurriculums(identity);
+				CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+				RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.createForAdmin();
+				courseListWrapperCtrl = new CourseListWrapperController(uureq, getWindowControl(), stackPanel, identity,
+				      curriculumSecurityCallback, roleSecurityCallback, List.copyOf(curriculumRefs), null, true);
+				listenTo(courseListWrapperCtrl);
+				return courseListWrapperCtrl.getInitialComponent();
 			});
 		}
 		
