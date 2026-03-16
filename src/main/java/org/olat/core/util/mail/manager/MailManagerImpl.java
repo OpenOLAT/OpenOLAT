@@ -1675,7 +1675,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 * @throws MessagingException
 	 * @throws UnsupportedEncodingException
 	 */
-	private MimeMessage createMessage(String subject, Address from)
+	public MimeMessage createMessage(String subject, Address from)
 	throws AddressException, MessagingException, UnsupportedEncodingException {
 		String mailhost = WebappHelper.getMailConfig("mailhost");
 		String mailport = WebappHelper.getMailConfig("mailport");

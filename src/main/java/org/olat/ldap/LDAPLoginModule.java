@@ -56,6 +56,8 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	private String ldapUrl;
 	@Value("${ldap.enable:false}")
 	private boolean ldapEnabled;
+	@Value("${ldap.lookup.enable:false}")
+	private boolean ldapLookupEnabled;
 	@Value("${ldap.activeDirectory:false}")
 	private boolean activeDirectory;
 	@Value("${ldap.dateFormat}")
@@ -298,6 +300,14 @@ public class LDAPLoginModule extends AbstractSpringModule {
 
 	public void setSslEnabled(boolean sslEnabl) {
 		sslEnabled = sslEnabl;
+	}
+	
+	public boolean isLdapLookupEnabled() {
+		return ldapLookupEnabled;
+	}
+
+	public void setLdapLookupEnabled(boolean ldapLookupEnabled) {
+		this.ldapLookupEnabled = ldapLookupEnabled;
 	}
 	
 	public void setActiveDirectory(boolean aDirectory) {

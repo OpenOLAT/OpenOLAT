@@ -119,6 +119,8 @@ public class UserImpl implements User {
 	@Column(name="u_nickname", nullable=true, insertable=true, updatable=true)
 	private String nickName;
 	
+	@Column(name="u_title", nullable=true, insertable=true, updatable=true)
+	private String title;
 	@Column(name="u_gender", nullable=true, insertable=true, updatable=true)
 	private String gender;
 	@Column(name="u_birthday", nullable=true, insertable=true, updatable=true)
@@ -439,6 +441,7 @@ public class UserImpl implements User {
 			case "birthDay": return birthDay;
 			case "graduation": return graduation;
 			case "gender": return gender;
+			case "title": return title;
 			case "telPrivate": return telPrivate;
 			case "telMobile": return telMobile;
 			case "smsTelMobile": return smsTelMobile;
@@ -517,6 +520,7 @@ public class UserImpl implements User {
 			case "birthDay": birthDay = value; break;
 			case "graduation": graduation = value; break;
 			case "gender": gender = value; break;
+			case "title": title = value; break;
 			case "telPrivate": telPrivate = value; break;
 			case "telMobile": telMobile = value; break;
 			case "smsTelMobile": smsTelMobile = value; break;

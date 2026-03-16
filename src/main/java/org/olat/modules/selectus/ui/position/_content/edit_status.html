@@ -1,0 +1,10 @@
+<div class="form-inline o_sel_position_status">
+#if($statusCss == "preparation")<i class='o_icon o_position_status_filter o_preparation'> </i>
+#elseif($statusCss == "published")<i class='o_icon o_position_status_filter o_published'> </i>
+#elseif($statusCss == "publishedAndInScreening")<span class='o_icon-stack o_position_status'><i class='o_icon o_icon-stack-1x o_position_status_filter o_published_screening_back'></i><i class='o_icon o_icon-rotate-180 o_icon-stack-1x o_position_status_filter o_published_screening'></i></span>
+#elseif($statusCss == "closedAndInScreening")<span class='o_icon-stack o_position_status'><i class='o_icon o_icon-stack-1x o_position_status_filter o_closed_screening_back'></i><i class='o_icon o_icon-stack-1x o_position_status_filter o_closed_screening'></i></span>
+#elseif($statusCss == "closedAndNoRating")<i class='o_icon o_position_status_filter o_closed_no_rating'> </i>
+#elseif($statusCss == "closed")<i class='o_icon o_position_status_filter o_closed'> </i>
+#elseif($statusCss == "reporting")<i class='o_icon o_position_status_filter o_reporting'> </i>
+#end
+$r.render("pos_status")</div>

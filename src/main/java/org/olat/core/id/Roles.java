@@ -245,6 +245,10 @@ public class Roles implements Serializable {
 		return hasRole(OrganisationRoles.author);
 	}
 	
+	public boolean isSelectusManager() {
+		return hasRole(OrganisationRoles.selectusmanager);
+	}
+	
 	public boolean isGroupManager() {
 		return hasRole(OrganisationRoles.groupmanager);
 	}
@@ -300,6 +304,7 @@ public class Roles implements Serializable {
 				|| isProjectManager()
 				|| isQualityManager()
 				|| isRolesManager()
+				|| isSelectusManager()
 				|| isUserManager();
 	}
 	

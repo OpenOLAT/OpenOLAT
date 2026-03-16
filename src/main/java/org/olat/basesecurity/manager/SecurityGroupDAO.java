@@ -26,9 +26,11 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -91,7 +93,7 @@ public class SecurityGroupDAO implements UserDataDeletable {
 		return query.getResultList();
 	}
 	
-	public List<SecurityGroup> getSecurityGroupsForIdentity(Identity identity) {
+	public List<SecurityGroup> getSecurityGroupsForIdentity(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select sgi from ").append(SecurityGroupImpl.class.getName()).append(" as sgi, ")
 		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
@@ -118,6 +120,26 @@ public class SecurityGroupDAO implements UserDataDeletable {
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("secGroups", secGroups)
 				.getResultList();
+	}
+	
+	public List<IdentityRef> getIdentityRefsOfSecurityGroups(List<SecurityGroup> secGroups) {
+		if (secGroups == null || secGroups.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(sgmsi.identity.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+		  .append(" where sgmsi.securityGroup in (:secGroups)");
+		
+		List<Long> identityKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("secGroups", secGroups)
+				.getResultList();
+		List<IdentityRef> identityRefs = new ArrayList<>(identityKeys.size());
+		for(Long identityKey:identityKeys) {
+			identityRefs.add(new IdentityRefImpl(identityKey));
+		}
+		return identityRefs;
 	}
 
 	/**
@@ -174,6 +196,23 @@ public class SecurityGroupDAO implements UserDataDeletable {
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return counts.get(0).intValue();
+	}
+	
+	public int countIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups) {
+		if (secGroups == null || secGroups.isEmpty()) {
+			return 0;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(distinct identity.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+		  .append(" inner join sgmsi.identity identity")
+		  .append(" where sgmsi.securityGroup in (:secGroups)");
+		
+		List<Number> counts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("secGroups", secGroups)
+				.getResultList();
+		return counts == null || counts.isEmpty() ? 0 : counts.get(0).intValue();
 	}
 
 	public SecurityGroup findSecurityGroupByName(String securityGroupName) {

@@ -516,6 +516,15 @@ public class LDAPSyncConfiguration {
 	public Map<String, String> getUserAttributeMap() {
 		return userAttributeMap;
 	}
+	
+	public String getLDAPAttributeName(String openolatAttrName) {
+		for(Map.Entry<String, String> entry:userAttributeMap.entrySet()) {
+			if(entry.getValue().equals(openolatAttrName)) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
 
 	public void setUserAttributeMap(Map<String, String> mapping) {
 		userAttributeMap = new HashMap<>();

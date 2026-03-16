@@ -1,0 +1,26 @@
+<div class="b_form clearfix">
+	#foreach($document in $documents)
+		<div class="b_form_element_wrapper b_clearfix">
+			#if($document.image)
+				<a href="$mapperBaseURL$document.getRelativePath()" target="_blank" title="$document.label">$document.label</a>
+				<div class="o_doc_image_preview">
+					<a href="$mapperBaseURL$document.getRelativePath()" target="_blank">
+					<img src="$mapperBaseURL$document.getRelativePath()" alt="$document.label">
+					</a>
+				</div>
+			#else
+				<a href="$mapperBaseURL$document.getRelativePath()" target="_blank" title="$document.label"><i class="o_icon o_filetype_pdf"> </i> $document.label</a>
+			#end
+		</div>
+	#end
+</div>
+#if($r.isNotEmpty($referees))
+<div class="o_block_large clearfix">
+	<h4><i class="o_icon o_icon_group"> </i> $r.translate("application.recommendations")</h4>
+	<ul class="list-unstyled">
+	#foreach($referee in $referees)
+		<li><span><i class="o_icon o_icon_user"> </i> $referee.fullName, $referee.institution</span></li>
+	#end
+	</ul>
+</div>
+#end

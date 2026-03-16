@@ -171,6 +171,10 @@ public class RolesByOrganisation implements Serializable {
 		return hasRole(OrganisationRoles.rolesmanager);
 	}
 	
+	public boolean isSelectusManager() {
+		return hasRole(OrganisationRoles.selectusmanager);
+	}
+	
 	public boolean isPoolManager() {
 		return hasRole(OrganisationRoles.poolmanager);
 	}

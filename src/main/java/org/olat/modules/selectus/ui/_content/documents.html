@@ -1,0 +1,107 @@
+<div class="clearfix o_block_large_bottom">
+	<h4><i class="o_icon o_icon_files"> </i> $r.translate("edit.application.document.title",$fullName)</h4>
+	#if($r.isNotEmpty($documents) && $r.isNotEmpty($otherDocuments))
+		<h5>$r.translate("edit.application.main.documents",$fullName)</h5>
+	#end
+	<ul class="list-unstyled">
+	#foreach($document in $documents)
+		<li>
+		#if($document.image)
+			<a href="$mapperBaseURL$document.getRelativePath()" target="_blank" title="$document.label">$document.label</a>
+			<div class="o_doc_image_preview">
+				<a href="$mapperBaseURL$document.getRelativePath()" target="_blank">
+				<img src="$mapperBaseURL$document.getRelativePath()" alt="$document.label">
+				</a>
+			</div>
+		#else
+			<a href="$mapperBaseURL$document.getRelativePath()" target="_blank" title="$document.label"><i class="o_icon o_filetype_pdf"> </i> $document.label</a>
+		#end
+		</li>
+	#end
+	</ul>
+	#if($r.isNotEmpty($recommendations))
+		<h5>$r.translate("application.recommendations.document.explain")</h5>
+		<ul class="list-unstyled">
+		#foreach($recommendation in $recommendations)
+			<li>
+			#if(${recommendation.isSubmitted()})
+			<a href="$referenceMapperBaseURL$recommendation.getRelativePath()" target="_blank"><i class="o_icon o_filetype_pdf"> </i> $r.escapeHtml($recommendation.fullName), $r.escapeHtml($recommendation.institution)</a>
+			#else
+			<span>$r.escapeHtml($recommendation.fullName), $r.escapeHtml($recommendation.institution) #if(${recommendation.getReferenceStatus()} == "notSent") $r.translate("requestNotSent") #else $r.translate("pending")#end</span>
+			#end</li>
+		#end
+		</ul>
+	#end
+	#if($combinedDocument)
+	<div class="o_block">
+		<i class="fx_r_documents b_with_small_icon_left">$r.translate("edit.application.document.combined.title")</i><br>
+		<a href="$mapperBaseURL$combinedDocument.getRelativePath()" target="_blank" title="$combinedDocument.label"><i class="o_icon o_filetype_pdf"> </i> $combinedDocument.label</a>
+	</div>
+	#end
+	
+	#if($r.isNotEmpty($otherDocuments))
+		#if($r.isNotEmpty($documents) && $r.isNotEmpty($otherDocuments))
+			<h5>$r.translate("edit.application.other.documents",$fullName)</h5>
+		#end
+		<ul class="list-unstyled">
+		#foreach($otherDocument in $otherDocuments)
+			<li>
+			#if($otherDocument.image)
+				<a href="$mapperBaseURL$otherDocument.getRelativePath()" target="_blank" title="$otherDocument.label">$otherDocument.label</a>
+				<div class="o_doc_image_preview">
+					<a href="$mapperBaseURL$otherDocument.getRelativePath()" target="_blank">
+					<img src="$mapperBaseURL$otherDocument.getRelativePath()" alt="$otherDocument.label">
+					</a>
+				</div>
+			#else
+				<a href="$mapperBaseURL$otherDocument.getRelativePath()" target="_blank" title="$otherDocument.label"><i class="o_icon o_filetype_pdf"> </i> $otherDocument.label</a>
+			#end
+			</li>
+		#end
+		</ul>
+		#if($r.isNotNull($otherDocumentsZip))
+		<div class="o_block">
+			<i class="fx_r_documents b_with_small_icon_left">$r.translate("edit.application.other.document.combined.title")</i><br>
+			<a href="$mapperBaseURL$otherDocumentsZip.getRelativePath()" target="_blank" title="$otherDocumentsZip.label"><i class="o_icon o_filetype_zip"> </i> $otherDocumentsZip.label</a>
+		</div>
+		#end
+	#end
+	
+	
+	#if($r.isNotEmpty($experts) || $r.isNotEmpty($comparativeExperts))
+		<h4><i class="o_icon o_icon_files"> </i> $r.translate("application.experts.document.title")</h4>
+		#if($r.isNotEmpty($experts))
+			<h5>$r.translate("application.experts.document.explain")</h5>
+			<ul class="list-unstyled">
+			#foreach($expert in $experts)
+				<li>#if(${expert.isSubmitted()})
+					<a href="$referenceMapperBaseURL$expert.getRelativePath()" target="_blank"><i class="o_icon o_filetype_pdf"> </i> $r.escapeHtml($expert.fullName), $r.escapeHtml($expert.institution)</a>
+				#else
+					<span>$r.escapeHtml($expert.fullName), $r.escapeHtml($expert.institution) #if(${expert.getReferenceStatus()} == "notSent") $r.translate("requestNotSent") #else $r.translate("pending")#end</span>
+				#end</li>
+			#end
+			</ul>
+		#end
+		
+		#if($r.isNotEmpty($comparativeExperts))
+			<h5>$r.translate("application.comparative.experts.document.explain")</h5>
+			<ul class="list-unstyled">
+			#foreach($comparativeExpert in $comparativeExperts)
+				<li>#if(${comparativeExpert.isSubmitted()})
+					<a href="$referenceMapperBaseURL$comparativeExpert.getRelativePath()" target="_blank"><i class="o_icon o_filetype_pdf"> </i> $r.escapeHtml($comparativeExpert.fullName), $r.escapeHtml($comparativeExpert.institution)</a>
+				#else
+					<span>$r.escapeHtml($comparativeExpert.fullName), $r.escapeHtml($comparativeExpert.institution) #if(${comparativeExpert.getReferenceStatus()} == "notSent") $r.translate("requestNotSent") #else $r.translate("pending")#end</span>
+				#end</li>
+			#end
+			</ul>
+		#end
+		
+		
+		#if($expertsCombinedDocument)
+		<div class="o_block">
+			<i class="fx_r_documents b_with_small_icon_left">$r.translate("application.experts.document.combined.title")</i><br>
+			<a href="$referenceMapperBaseURL/expert_opinions_combined.pdf" target="_blank" title="$r.translate("application.experts.document.combined.label")"><i class="o_icon o_filetype_pdf"> </i> $r.translate("application.experts.document.combined.label")</a>
+		</div>
+		#end
+	#end
+</div>

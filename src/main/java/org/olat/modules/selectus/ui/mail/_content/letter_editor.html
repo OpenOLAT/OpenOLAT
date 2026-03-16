@@ -1,0 +1,19 @@
+$r.render("title-cont")
+<fieldset class="o_letter_editor">
+	<legend>$r.translate("form.letter.content")</legend>
+	<div class="form-horizontal clearfix">
+		<div class="col-sm-6 o_letter_content">
+			$r.render("element-cont")
+		</div>
+		<div class="col-sm-6">
+			$r.render("preview-cont")
+		</div>
+	</div>
+	<div class="form-horizontal clearfix">
+		$r.render("edit.template.variables")
+	</div>
+	<div class="o_button_group clearfix">
+		$r.render("save")
+		$r.render("cancel")
+	</div>
+</fieldset>

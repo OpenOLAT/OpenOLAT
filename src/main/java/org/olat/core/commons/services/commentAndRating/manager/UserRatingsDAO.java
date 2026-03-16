@@ -302,6 +302,18 @@ public class UserRatingsDAO {
 		return ratings.size();
 	}
 	
+	public int deleteRating(UserRating rating) {
+		// First reload parent from cache to prevent stale object or cache issues
+		UserRating ratingRef = dbInstance.getCurrentEntityManager().getReference(UserRatingImpl.class, rating.getKey());
+		if (ratingRef == null) {
+			// Original rating has been deleted in the meantime. Don't delete it again.
+			return 0;
+		}
+		// Delete this rating and finish
+		dbInstance.getCurrentEntityManager().remove(ratingRef);
+		return 1;
+	}
+	
 	private void recalculateDelegateRatings(OLATResourceable ores, String resSubPath) {
 		if(delegates == null || delegates.isEmpty()) return;
 

@@ -1,0 +1,6 @@
+#if($r.available("selectedApplication"))
+	$r.render("selectedApplication")
+#else
+	$r.render("crumb.applications")
+	$r.render("applications")
+#end

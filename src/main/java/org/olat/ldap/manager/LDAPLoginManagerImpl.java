@@ -50,6 +50,7 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -752,6 +753,73 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		return identity;
 	}
 	
+	@Override
+	public TransientIdentity createTransientIdentity(Attributes userAttributes) {
+		// Get and Check Config
+		List<String> reqAttrs = syncConfiguration.checkRequestAttributes(userAttributes, userModule.isEmailMandatory());
+		if (reqAttrs != null) {
+			log.warn("Can not create and persist user, the following attributes are missing::{}", reqAttrs);
+			return null;
+		}
+		
+		String uid = getAttributeValue(userAttributes.get(syncConfiguration
+				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
+		String email = getAttributeValue(userAttributes.get(syncConfiguration.getOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
+		// Lookup user
+		if (securityManager.findIdentityByName(uid) != null) {
+			log.error("Can't create user with username='" + uid + "', this username does already exist in OLAT database");
+			return null;
+		}
+		if (!MailHelper.isValidEmailAddress(email)) {
+			// needed to prevent possibly an AssertException in findIdentityByEmail breaking the sync!
+			log.error("Cannot try to lookup user " + uid + " by email with an invalid email::" + email);
+			return null;
+		}
+		/*//TODO selectus merge with other methods
+		if (userManager.userExist(email) ) {
+			log.error("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database");
+			return null;
+		}
+		*/
+		
+		// Create User (first and lastname is added in next step)
+		TransientIdentity identity = new TransientIdentity();
+		identity.setLdap(true);
+		identity.setName(uid);
+		//TODO selectus identity.setLDAPAttributes();
+		
+		User user = identity.getUser();
+		// Set User Property's (Iterates over Attributes and gets OLAT Property out
+		// of olatexconfig.xml)
+		NamingEnumeration<? extends Attribute> neAttr = userAttributes.getAll();
+		try {
+			while (neAttr.hasMore()) {
+				Attribute attr = neAttr.next();
+				String olatProperty = mapLdapAttributeToOlatProperty(attr.getID());
+				if (!attr.getID().equalsIgnoreCase(syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)) ) {
+					String ldapValue = getAttributeValue(attr);
+					if (olatProperty == null || ldapValue == null) continue;
+					user.setProperty(olatProperty, ldapValue);
+				} 
+			}
+			// Add static user properties from the configuration
+			Map<String, String> staticProperties = syncConfiguration.getStaticUserProperties();
+			if (staticProperties != null && staticProperties.size() > 0) {
+				for (Entry<String, String> staticProperty : staticProperties.entrySet()) {
+					user.setProperty(staticProperty.getKey(), staticProperty.getValue());
+				}
+			}
+		} catch (NamingException e) {
+			log.error("NamingException when trying to create and persist LDAP user with username::" + uid, e);
+			return null;
+		} catch (Exception e) {
+			// catch any exception here to properly log error
+			log.error("Unknown exception when trying to create and persist LDAP user with username::" + uid, e);
+			return null;
+		}
+		return identity;
+	}
+	
 	private String validateLdapValue(String ldapValue) {
 		if(ldapValue == null || "\u0000".equals(ldapValue)) {
 			return null;
@@ -1181,6 +1249,64 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			ldapAuth = securityManager.updateAuthentication(ldapAuth);
 		}
 		return ldapAuth;
+	}
+	
+	@Override
+	public Attributes findByEmail(String email, LdapContext ctx) {
+		String[] returningAttrs =  syncConfiguration.getUserAttributes();
+		return ldapDao.searchByEmail(email, returningAttrs, ctx);
+	}
+	
+	@Override
+	public List<TransientIdentity> search(String searchString) {
+		LdapContext ldapContext = bindSystem();
+		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
+		String uidProp = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		String ldapUserMailAttribute = syncConfiguration.getLDAPAttributeName(UserConstants.EMAIL);
+		String ldapUserFirstNameAttribute = syncConfiguration.getLDAPAttributeName(UserConstants.FIRSTNAME);
+		String ldapUserLastNameAttribute = syncConfiguration.getLDAPAttributeName(UserConstants.LASTNAME);
+		
+		StringBuilder filter = new StringBuilder(256);
+		if(MailHelper.isValidEmailAddress(searchString)) {
+			filter.append("(&").append(ldapUserFilter).append("(").append(ldapUserMailAttribute).append("=").append(searchString).append("*))");	
+		} else {
+			List<String> terms = searchTerms(searchString);
+			filter.append("(&").append(ldapUserFilter);
+			for(String term:terms) {
+				filter.append("( |")
+				      .append(" (").append(ldapUserMailAttribute).append("=*").append(term).append("*)")
+				      .append(" (").append(uidProp).append("=*").append(term).append("*)")
+				      .append(" (").append(ldapUserFirstNameAttribute).append("=*").append(term).append("*)")
+				      .append(" (").append(ldapUserLastNameAttribute).append("=*").append(term).append("*)")
+				      .append(")");
+			}
+			filter.append(")");
+		}
+
+		String[] returningAttrs =  syncConfiguration.getUserAttributes();
+		final List<TransientIdentity> identities = new ArrayList<>();
+		ldapDao.searchInLdap(new LDAPVisitor() {
+			@Override
+			public void visit(SearchResult searchResult) throws NamingException {
+				Attributes attributes = searchResult.getAttributes();
+				TransientIdentity tIdentity = createTransientIdentity(attributes);
+				if(tIdentity != null) {
+					identities.add(tIdentity);
+				}
+			}	
+		}, filter.toString(), returningAttrs, ldapContext);
+		return identities;
+	}
+	
+	private List<String> searchTerms(String searchString) {
+		String[] terms = searchString.split("\\s+");
+		List<String> termList = new ArrayList<>(terms.length);
+		for(String term:terms) {
+			if(StringHelper.containsNonWhitespace(term)) {
+				termList.add(term);
+			}
+		}
+		return termList;
 	}
 
 	/**

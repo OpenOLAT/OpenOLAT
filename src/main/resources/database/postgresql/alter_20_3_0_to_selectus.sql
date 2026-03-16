@@ -1,0 +1,1 @@
+alter table o_user add column u_title varchar(255);

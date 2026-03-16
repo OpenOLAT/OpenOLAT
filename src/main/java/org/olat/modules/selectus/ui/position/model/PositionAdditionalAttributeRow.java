@@ -1,0 +1,128 @@
+/**
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ */
+package org.olat.modules.selectus.ui.position.model;
+
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+
+import org.olat.modules.selectus.model.PositionAttributeDefinition;
+import org.olat.modules.selectus.model.PositionAttributeDefinitionTypeEnum;
+
+/**
+ * 
+ * Initial date: 6 sept. 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class PositionAdditionalAttributeRow {
+	
+	private MultipleSelectionElement mandatoryEl;
+	private TextElement labelEl;
+	private TextElement placeholderEl;
+	
+	private FormLink upButton;
+	private FormLink downButton;
+	private FormLink editButton;
+	private FormLink deleteButton;
+	private FormLink editLabelButton;
+	private FormLink editPlaceholderButton;
+	
+	private int position;
+	private PositionAttributeDefinition attributeDefinition;
+	
+	public PositionAdditionalAttributeRow(PositionAttributeDefinition attributeDefinition, MultipleSelectionElement mandatoryEl,
+			TextElement nameEl, TextElement placeholderEl) {
+		this.labelEl = nameEl;
+		this.mandatoryEl = mandatoryEl;
+		this.placeholderEl = placeholderEl;
+		this.attributeDefinition = attributeDefinition;
+	}
+	
+	public MultipleSelectionElement getMandatoryEl() {
+		return mandatoryEl;
+	}
+
+	public TextElement getLabelEl() {
+		return labelEl;
+	}
+
+	public TextElement getPlaceholderEl() {
+		return placeholderEl;
+	}
+	
+	public void setPlaceholderEl(TextElement placeholderEl) {
+		this.placeholderEl = placeholderEl;
+	}
+
+	public PositionAttributeDefinitionTypeEnum getType() {
+		return attributeDefinition == null ? null : attributeDefinition.getTypeEnum();
+	}
+
+	public PositionAttributeDefinition getAttributeDefinition() {
+		return attributeDefinition;
+	}
+
+	public void setAttributeDefinition(PositionAttributeDefinition attributeDefinition) {
+		this.attributeDefinition = attributeDefinition;
+	}
+
+	public FormLink getUpButton() {
+		return upButton;
+	}
+
+	public void setUpButton(FormLink upButton) {
+		this.upButton = upButton;
+	}
+
+	public FormLink getDownButton() {
+		return downButton;
+	}
+
+	public void setDownButton(FormLink downButton) {
+		this.downButton = downButton;
+	}
+	
+	public FormLink getEditButton() {
+		return editButton;
+	}
+
+	public void setEditButton(FormLink editButton) {
+		this.editButton = editButton;
+	}
+
+	public FormLink getEditLabelButton() {
+		return editLabelButton;
+	}
+
+	public void setEditLabelButton(FormLink editLabelButton) {
+		this.editLabelButton = editLabelButton;
+	}
+
+	public FormLink getEditPlaceholderButton() {
+		return editPlaceholderButton;
+	}
+
+	public void setEditPlaceholderButton(FormLink editPlaceholderButton) {
+		this.editPlaceholderButton = editPlaceholderButton;
+	}
+
+	public FormLink getDeleteButton() {
+		return deleteButton;
+	}
+
+	public void setDeleteButton(FormLink deleteButton) {
+		this.deleteButton = deleteButton;
+	}
+
+	public int getPosition() {
+		return position;
+	}
+
+	public void setPosition(int position) {
+		this.position = position;
+	}
+}

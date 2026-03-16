@@ -293,6 +293,34 @@ public class LDAPDAO {
 		return users.isEmpty() ? null : users.get(0);
 	}
 	
+	public Attributes searchByEmail(String email, String[] returningAttrs, LdapContext ctx) {
+		List<String> ldapBases = syncConfiguration.getLdapBases();
+		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
+		String ldapUserMailAttribute = "mail";//TODO selectus
+		
+		String filter = "(&" + ldapUserFilter + "(" + ldapUserMailAttribute + "=" + email + "))";
+		SearchControls ctls = new SearchControls();
+		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		ctls.setReturningAttributes(returningAttrs);
+
+		Attributes userAttrs = null;
+		a_a:
+		for (String ldapBase : ldapBases) {
+			try {
+				NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
+				while (enm.hasMore()) {
+					SearchResult result = enm.next();
+					userAttrs = result.getAttributes();
+					break a_a;
+				}
+			} catch (NamingException e) {
+				log.error("NamingException when trying to bind user with mail::{} on ldapBase::{}", email, ldapBase, e);
+			}
+		}
+		
+		return userAttrs;
+	}
+	
 	protected static List<String> parseGroupList(Attributes resAttribs, String attributeName, String attributeSeparator) {
 		List<String> groupList = List.of();
 		if(StringHelper.containsNonWhitespace(attributeName)) {

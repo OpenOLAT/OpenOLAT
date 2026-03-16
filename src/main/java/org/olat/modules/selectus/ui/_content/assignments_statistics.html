@@ -1,0 +1,22 @@
+#if($r.isTrue($allStatisticsOnly)) 
+<div class="fx_r_assignments_statistics">
+	<div class="fx_r_assignments_message">$allStatisticsMsg</div>
+	<div class="fx_r_assignments_progress_bar">$r.render("allStatisticsItem")</div>
+</div>
+#elseif($r.isNotZero($myStatistics.numOfAssignments))
+<div class="fx_r_assignments_statistics">
+	#if($r.visible("myStatisticsItem"))
+		<div class="fx_r_assignments_message">$myStatisticsMsg</div>
+		<div class="fx_r_assignments_progress_bar">$r.render("myStatisticsItem")</div>
+	#elseif($r.visible("allStatisticsItem"))
+		<div class="fx_r_assignments_message">$allStatisticsMsg</div>
+		<div class="fx_r_assignments_progress_bar">$r.render("allStatisticsItem")</div>
+	#end	
+	<div class="fx_r_assignments_link">$r.render("toogle.statistics")</div>
+</div>
+#elseif($r.isNotZero($allStatistics.numOfApplications))
+<div class="fx_r_assignments_statistics">
+	<div class="fx_r_assignments_message">$allStatisticsMsg</div>
+	<div class="fx_r_assignments_progress_bar">$r.render("allStatisticsItem")</div>
+</div>
+#end

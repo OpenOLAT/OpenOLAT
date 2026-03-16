@@ -26,6 +26,7 @@ import java.util.List;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -54,9 +55,15 @@ public interface LDAPLoginManager {
 	
 	public Identity createAndPersistUser(Attributes userAttributes);
 	
+	public TransientIdentity createTransientIdentity(Attributes userAttributes);
+	
 	public List<Identity> getIdentitiesDeletedInLdap(LdapContext ctx);
 	
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors);
+	
+	public List<TransientIdentity> search(String searchString);
+	
+	public Attributes findByEmail(String email, LdapContext ctx);
 	
 	public void syncUser(Identity identity);
 	

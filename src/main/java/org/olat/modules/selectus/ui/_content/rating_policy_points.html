@@ -1,0 +1,31 @@
+#if($focusEnabled)
+	<h5 class="first">$r.translate("edit.rating.policy.points.focus.title")</h5>
+	$r.translate("edit.rating.policy.points.focus")
+#end
+
+<h5>$r.translate("edit.rating.policy.points.women.title")</h5>
+$r.translate("edit.rating.policy.points.women")
+
+
+
+#if($professorship == 'disabled')
+#else
+	<h5>$r.translate("edit.rating.policy.points.age")</h5>
+	#if($professorshipTypeGenericExplanationEnabled) 
+		$r.translate("policy.professorship.type.explanation")
+	#elseif($professorship == 'assistant')
+		$r.translate("policy.professorship.type.assistant")
+	#elseif($professorship == 'full')
+		$r.translate("policy.professorship.type.full")
+	#else
+		$r.translate("policy.professorship.type.any")
+	#end
+#end
+
+#if($potentialCandidatesEnabled)
+	<h5>$r.translate("edit.rating.policy.points.introduction.title")</h5>
+	$r.translate("edit.rating.policy.points.introduction")
+#end
+
+<h5 class="last">$r.translate("edit.rating.policy.points.confidentiality.title")</h5>
+$r.translate("edit.rating.policy.points.confidentiality")

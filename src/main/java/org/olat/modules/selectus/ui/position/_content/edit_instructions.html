@@ -1,0 +1,33 @@
+<fieldset>
+	<legend>$r.translate("instructions.title")</legend>
+#if($r.isNotEmpty($instructionsText))
+	<div class="fx_r_app_instructions b_clearfix">
+		$instructionsText
+	</div>
+#elseif($r.visible("instructions"))
+	$r.render("instructions")
+	
+#else
+	<div class="o_info">$r.translate("instructions.infos")</div>
+#end
+</fieldset>
+<div class="o_button_group">
+	#if($r.visible("save"))
+		$r.render("save")
+	#end
+	#if($r.visible("reset.text"))
+		$r.render("reset.text")
+	#end
+	#if($r.visible("customize.text"))
+		$r.render("customize.text")
+	#end
+	#if($r.visible("customize.edit.text"))
+		$r.render("customize.edit.text")
+	#end
+	#foreach($previewButton in $previewButtons)
+		$r.render($previewButton)
+	#end
+	#if($r.visible("cancel"))
+		$r.render("cancel")
+	#end
+</div>

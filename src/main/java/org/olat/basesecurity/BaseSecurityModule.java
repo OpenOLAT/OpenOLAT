@@ -53,7 +53,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			OrganisationRoles.user, OrganisationRoles.author,
 			OrganisationRoles.usermanager, OrganisationRoles.rolesmanager,
 			OrganisationRoles.groupmanager, OrganisationRoles.learnresourcemanager,
-			OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
+			OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager, OrganisationRoles.selectusmanager,
 			OrganisationRoles.lecturemanager, OrganisationRoles.projectmanager, OrganisationRoles.qualitymanager,
 			OrganisationRoles.linemanager, OrganisationRoles.educationmanager, OrganisationRoles.principal,
 			OrganisationRoles.administrator, OrganisationRoles.sysadmin

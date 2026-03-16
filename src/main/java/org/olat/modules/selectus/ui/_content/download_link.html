@@ -1,0 +1,3 @@
+<a href="$mapperBaseURL$document.getRelativePath()" target="_blank"><i class="o_icon $document.getCssClass()"> </i> <span #if($tooltip) title="$tooltip" #end>$document.label</span> </a>
+#if($document.delLink && $r.available($document.delLink.component.componentName)) $r.render($document.delLink.component.componentName) #end
+		

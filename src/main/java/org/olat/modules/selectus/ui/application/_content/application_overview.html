@@ -1,0 +1,13 @@
+<div class="fx_r_app_details clearfix o_block_large_bottom">
+	$r.render("application")
+
+	#if($r.visible("feedbacksAndReviews"))
+	<div class="col-sm-12">$r.render("feedbacksAndReviews")</div>
+	#elseif($r.visible("reviews"))
+	<div class="col-sm-12">$r.render("reviews")</div>
+	#elseif($r.visible("public.feedbacks"))
+	<div class="col-sm-12">$r.render("public.feedbacks")</div>
+	#elseif($r.visible("member.feedbacks"))
+	<div class="col-sm-12">$r.render("member.feedbacks")</div>
+	#end
+</div>

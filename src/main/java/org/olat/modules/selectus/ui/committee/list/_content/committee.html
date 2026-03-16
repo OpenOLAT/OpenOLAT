@@ -1,0 +1,60 @@
+<div class="o_block o_sel_position_committee_managers">
+	<table class="table"><tbody>
+		#if($r.isNotEmpty($heads))
+			<tr><td colspan="6"><strong><span>$r.translate("role.head")</span></strong></td></tr>
+			#foreach($head in $heads)
+			<tr class="o_sel_position_committee_head">
+				<td><span>$head.name</span></td>
+				<td>#if($head.institution)<span>$head.institution, </span>#end</td>
+				<td><span>$head.emailLabel: $r.render("mail_head_$head.key")</span></td>
+				<td>#if($head.phone)<span>$head.phoneLabel: $head.phone</span>#end</td>
+				#if($r.available("edit_head_$head.key"))
+					<td>$r.render("edit_head_$head.key")</td>
+				#end
+				#if($r.available("remove_head_$head.key"))
+					<td>$r.render("remove_head_$head.key")</td>
+				#end
+			</tr>
+			#end
+		#end
+		
+		#if($r.isNotEmpty($secretaries))
+			<tr><td colspan="6"><strong><span>$r.translate("role.secretary")</span></strong></td></tr>
+			#foreach($secretary in $secretaries)
+			<tr class="o_sel_position_committee_secretary">
+				<td><span>$secretary.name</span></td>
+				<td>#if($secretary.institution)<span>$secretary.institution, </span>#end</td>
+				<td><span>$secretary.emailLabel: $r.render("mail_secretary_$secretary.key")</span></td>
+				<td>#if($secretary.phone)<span>$secretary.phoneLabel: $secretary.phone</span>#end</td>
+				#if($r.available("edit_secretary_$secretary.key"))
+					<td>$r.render("edit_secretary_$secretary.key")</td>
+				#end
+				#if($r.available("remove_secretary_$secretary.key"))
+					<td>$r.render("remove_secretary_$secretary.key")</td>
+				#end
+			</tr>
+			#end
+		#end
+		
+		#if($r.isNotEmpty($exOfficios))
+			<tr><td colspan="6"><strong><span>$r.translate("role.exofficio")</span></strong></td></tr>
+			#foreach($exOfficio in $exOfficios)
+			<tr class="o_sel_position_committee_exofficio">
+				<td><span>$exOfficio.name</span></td>
+				<td>#if($exOfficio.institution)<span>$exOfficio.institution, </span>#end</td>
+				<td><span>$exOfficio.emailLabel: $r.render("mail_exofficio_$exOfficio.key")</span></td>
+				<td>#if($exOfficio.phone)<span>$exOfficio.phoneLabel: $exOfficio.phone</span>#end</td>
+				#if($r.available("edit_exofficio_$exOfficio.key"))
+					<td>$r.render("edit_exofficio_$exOfficio.key")</td>
+				#end
+				#if($r.available("remove_exofficio_$exOfficio.key"))
+					<td>$r.render("remove_exofficio_$exOfficio.key")</td>
+				#end
+			</tr>
+			#end
+		#end
+	</tbody></table>
+</div>
+<div class="o_sel_position_committee_list clearfix">
+	$r.render("committeeTable")
+</div>

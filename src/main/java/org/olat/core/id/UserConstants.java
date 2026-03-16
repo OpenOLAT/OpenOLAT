@@ -52,6 +52,8 @@ public class UserConstants {
 	public static final String SMSTELMOBILE = "smsTelMobile";
 	/** SKYPE user field identifier. */
 	public static final String SKYPE = "skype";
+	/** Title user field identifier. */
+	public static final String TITLE = "title";
 	/** HOMEPAGE user field identifier. */
 	public static final String HOMEPAGE = "homepage";
 	/** MSN user field identifier. */

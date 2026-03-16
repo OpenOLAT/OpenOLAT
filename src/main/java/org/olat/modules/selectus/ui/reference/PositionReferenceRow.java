@@ -1,0 +1,89 @@
+/**
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ */
+package org.olat.modules.selectus.ui.reference;
+
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+
+import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.Reference;
+import org.olat.modules.selectus.ui.model.AppToCategory;
+
+/**
+ * 
+ * Initial date: 15.09.2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class PositionReferenceRow {
+
+	private String applicationUrl;
+	private List<AppToCategory> tags;
+	
+	private final Reference reference;
+	private final Application application;
+	private final List<Application> applications;
+	private final boolean refereeComment;
+	
+	private final FormLink sendLink;
+	private final DownloadLink documentLink;
+	private final FormItemCollection applicationsLinks;
+	
+	public PositionReferenceRow(Reference reference, String applicationUrl, List<Application> applications,
+			boolean refereeComment, FormLink sendLink, DownloadLink documentLink, FormItemCollection applicationsLinks) {
+		this.reference = reference;
+		this.application = reference.getApplication();
+		this.applications = applications;
+		this.applicationUrl = applicationUrl;
+		this.sendLink = sendLink;
+		this.documentLink = documentLink;
+		this.refereeComment = refereeComment;
+		this.applicationsLinks = applicationsLinks;
+	}
+
+	public Reference getReference() {
+		return reference;
+	}
+	
+	public Application getApplication() {
+		return application;
+	}
+	
+	public List<Application> getApplications() {
+		return applications;
+	}
+	
+	public String getApplicationUrl() {
+		return applicationUrl;
+	}
+	
+	public boolean isRefereeCommentAvailable() {
+		return refereeComment;
+	}
+
+	public FormLink getSendLink() {
+		return sendLink;
+	}
+	
+	public DownloadLink getDocumentLink() {
+		return documentLink;
+	}
+	
+	public FormItemCollection getApplicationsLinks() {
+		return applicationsLinks;
+	}
+
+	public List<AppToCategory> getCategories() {
+		return tags;
+	}
+
+	public void setCategorie(List<AppToCategory> tags) {
+		this.tags = tags;
+	}
+}

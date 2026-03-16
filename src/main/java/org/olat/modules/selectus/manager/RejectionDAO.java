@@ -1,0 +1,136 @@
+/**
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ */
+package org.olat.modules.selectus.manager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailerResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import org.olat.modules.selectus.DocumentType;
+import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.ApplicationLight;
+import org.olat.modules.selectus.model.Attachment;
+import org.olat.modules.selectus.model.Position;
+import org.olat.modules.selectus.model.PositionRef;
+import org.olat.modules.selectus.model.RejectionEmailLog;
+import org.olat.modules.selectus.model.RejectionEmailLogFull;
+import org.olat.modules.selectus.model.mail.MailAttachment;
+import org.olat.modules.selectus.model.mail.RejectionEmailLogFullImpl;
+import org.olat.modules.selectus.model.mail.SentEmailTemplates;
+
+/**
+ * 
+ * Initial date: 19.09.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Service("rejectionDAO")
+public class RejectionDAO  {
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private ApplicationDAO applicationDao;
+	
+	public List<RejectionEmailLog> getLog(Position position) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select log from rrejectionlog log")
+		  .append(" inner join fetch log.application app")
+		  .append(" where app.positionKey=:positionKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RejectionEmailLog.class)
+				.setParameter("positionKey", position.getKey())
+				.getResultList();
+	}
+	
+	public RejectionEmailLogFull getFullLog(RejectionEmailLog log) {
+		List<RejectionEmailLogFull> logs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadFullEmailLogByKey", RejectionEmailLogFull.class)
+				.setParameter("logKey", log.getKey())
+				.getResultList();
+		return logs == null || logs.isEmpty() ? null : logs.get(0);
+	}
+	
+	public List<Long> getRejectedApplicationKeys(PositionRef position) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select distinct app.key from rrejectionlog log")
+		  .append(" inner join log.application app")
+		  .append(" where log.rejected=true and app.positionKey=:positionKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("positionKey", position.getKey())
+				.getResultList();
+	}
+	
+	public List<SentEmailTemplates> getApplicationSentEmails(PositionRef position) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select app.key, log.mailTemplate from rrejectionlog log")
+		  .append(" inner join log.application app")
+		  .append(" where app.positionKey=:positionKey");
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("positionKey", position.getKey())
+				.getResultList();
+		
+		Map<Long, List<String>> applicationKeyToTemplates = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			Long applicationKey = (Long)rawObject[0];
+			String mailTemplate = (String)rawObject[1];
+
+			List<String> templates = applicationKeyToTemplates
+					.computeIfAbsent(applicationKey, key -> new ArrayList<>());
+			templates.add(mailTemplate);
+		}
+
+		final List<SentEmailTemplates> emails = new ArrayList<>();
+		for(Map.Entry<Long, List<String>> entry:applicationKeyToTemplates.entrySet()) {
+			String[] templates = entry.getValue().toArray(new String[entry.getValue().size()]);
+			emails.add(new SentEmailTemplates(entry.getKey(), templates));
+		}
+		return emails;
+	}
+
+	public void addLog(String templateName, String subject, String content, MailAttachment attachment, boolean rejected, ApplicationLight application, MailerResult result) {
+		RejectionEmailLogFullImpl log = new RejectionEmailLogFullImpl();
+		log.setApplication(application);
+		log.setStatus(result.getReturnCode());
+		log.setMailTemplate(templateName);
+		log.setMailSubject(subject);
+		log.setMailContent(content);
+		log.setRejected(rejected);
+		
+		if(attachment != null && attachment.getContent() != null) {
+			String filename = attachment.getFilename();
+			if(!StringHelper.containsNonWhitespace(filename)) {
+				filename = "Attachment.pdf";
+			}
+			String type = attachment.getMimeType();
+			if(!StringHelper.containsNonWhitespace(type)) {
+				type = DocumentType.pdf.name();
+			} else if(type.indexOf('/') >= 0) {
+				type = type.substring(type.indexOf('/') + 1);
+			}
+			Attachment data = applicationDao.setAttachmentDatas(null, filename, type, attachment.getContent());
+			log.setLetter(data);
+		}
+		
+		dbInstance.getCurrentEntityManager().persist(log);
+	}
+
+	public void deleteApplication(Application application) {
+		String q = "delete from rrejectionlog log where log.application.key=:applicationKey";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("applicationKey", application.getKey())
+			.executeUpdate();
+	}
+}

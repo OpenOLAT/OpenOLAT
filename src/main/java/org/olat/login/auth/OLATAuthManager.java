@@ -83,6 +83,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(OLATAuthManager.class);
 	
+	public static final String PROVIDER_OLAT = "OLAT";
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -119,7 +121,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 
 	@Override
 	public List<String> getProviderNames() {
-		return Collections.singletonList("OLAT");
+		return List.of(PROVIDER_OLAT);
 	}
 
 	@Override
@@ -129,7 +131,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 
 	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
-		return "OLAT".equals(provider);
+		return PROVIDER_OLAT.equals(provider);
 	}
 
 	@Override

@@ -87,4 +87,7 @@ public interface FormItemContainer extends FormItem, FormItemCollection {
 	 */
 	public boolean hasFormComponent(FormItem item);
 	
+	//NEW selectus
+	public void contextPut(String key, Object value);
+	
 }

@@ -1,0 +1,42 @@
+<div class="o_sel_position_application_list clearfix">
+	#if($ratingDeadlineWarning)
+		<div class="o_warning">
+			$ratingDeadlineWarning<br>
+			$countdown
+			#if($r.visible("statistics"))
+				$r.render("statistics")
+			#end
+		</div>
+	#elseif($r.visible("statistics"))
+		<div class="o_info">
+		$r.render("statistics")
+		</div>
+	#end
+	$r.render("table")
+	<div class="o_button_group">
+	#if($r.available("batch.categories"))
+		$r.render("batch.categories")
+	#end
+	#if($r.available("batch.assignments"))
+		$r.render("batch.assignments")
+	#end
+	#if($r.available("batch.decision"))
+		$r.render("batch.decision")
+	#end
+	
+	#if($r.available("generate.application.list"))
+		$r.render("generate.application.list")
+	#end
+	
+	#if($r.visible("batch.more"))
+		$r.render("batch.more")
+	#else
+		#if($r.available("send.application.mails"))
+			$r.render("send.application.mails")
+		#end
+		#if($r.available("send.reference.mails"))
+			$r.render("send.reference.mails")
+		#end
+	#end
+	</div>
+</div>

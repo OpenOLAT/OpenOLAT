@@ -1,0 +1,13 @@
+#if($r.isNotEmpty($assignees) || $r.available("assignments"))
+<div class="o_clearfix o_block_large_bottom o_header_with_buttons">
+	<h4><i class="o_icon o_icon_committee"> </i> $r.translate("application.assignments")</h4>
+	#if($r.available("assignments"))
+		<div class="o_button_group o_button_group_right">$r.render("assignments")</div>
+	#end
+	<ul class="list-unstyled">
+	#foreach($assignee in $assignees)
+		<li>$assignee</li>
+	#end
+	</ul>
+</div>
+#end

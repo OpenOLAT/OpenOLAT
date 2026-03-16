@@ -1,0 +1,22 @@
+<div class="dialog">
+	<div class="o_warning"><p>$message</p>
+	#if($r.isNotEmpty($hint1))
+		<ul class="list-unstyled">
+			<li><p>$hint1</p></li>
+			#if($r.isNotEmpty($hint2))
+			<li><p>$hint2</p></li>
+			#end
+		</ul>
+	#end
+	</div>
+	<div class="b_floatscrollbox">$r.translate("rejection.backup.message") $r.render("rejection.backup")</div>
+</div>
+<div class="o_button_group">
+	#if($r.visible("delete"))
+		$r.render("delete")
+	#end
+	#if($r.visible("delete.anonymous"))
+		$r.render("delete.anonymous")
+	#end
+	$r.render("cancel")				
+</div>

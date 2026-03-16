@@ -1,0 +1,13 @@
+<div class="fx_r_app_details clearfix o_block_large_bottom">
+#if($r.visible("documents"))
+	<div class="col-sm-6">
+		$r.render("details")
+	</div>
+	<div class="col-sm-6">
+		$r.render("documents")
+	</div>
+#else
+	$r.render("details")
+#end
+</div>
+<div class="o_button_group">$r.render("next")</div>

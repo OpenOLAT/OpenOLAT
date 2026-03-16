@@ -171,7 +171,7 @@ public class FormUIFactory {
 	 * @param i18nLabel the i18n key to set the label, or <code>null</code> to disable the label.
 	 * @param fi
 	 */
-	static FormItem setLabelIfNotNull(String i18nLabel, FormItem fi){
+	public static FormItem setLabelIfNotNull(String i18nLabel, FormItem fi){
 		if (StringHelper.containsNonWhitespace(i18nLabel)) {
 			fi.setLabel(i18nLabel, null);
 			fi.showLabel(true);

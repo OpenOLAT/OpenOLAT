@@ -1,0 +1,15 @@
+#if($r.available("public.feedback"))
+	$r.render("public.feedback")
+#end
+
+<fieldset>
+	<legend>$r.translate("app.feedback.members.title")</legend>
+#if($r.available("feedbacks"))
+	#if($r.visible("add.feedback"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.feedback")
+	</div>
+	#end
+	$r.render("feedbacks")
+#end
+</fieldset>

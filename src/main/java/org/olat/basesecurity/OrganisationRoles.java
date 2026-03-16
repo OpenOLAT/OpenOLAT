@@ -45,6 +45,7 @@ public enum OrganisationRoles {
 	projectmanager,
 	linemanager,
 	educationmanager,
+	selectusmanager,
 	principal,
 	author,
 	user,
@@ -124,6 +125,7 @@ public enum OrganisationRoles {
 				qualitymanager,
 				linemanager,
 				educationmanager,
+				selectusmanager,
 				principal,
 				author,
 				user };
@@ -143,6 +145,7 @@ public enum OrganisationRoles {
 				qualitymanager,
 				linemanager,
 				educationmanager,
+				selectusmanager,
 				principal,
 				author,
 			};
@@ -156,7 +159,7 @@ public enum OrganisationRoles {
 		return role == OrganisationRoles.author
 				|| role == OrganisationRoles.usermanager || role == OrganisationRoles.rolesmanager
 				|| role == OrganisationRoles.groupmanager || role == OrganisationRoles.learnresourcemanager
-				|| role == OrganisationRoles.poolmanager || role == OrganisationRoles.curriculummanager
+				|| role == OrganisationRoles.poolmanager || role == OrganisationRoles.curriculummanager || role == OrganisationRoles.selectusmanager
 				|| role == OrganisationRoles.lecturemanager || role == projectmanager || role == OrganisationRoles.qualitymanager
 				|| role == OrganisationRoles.linemanager || role == OrganisationRoles.educationmanager || role == OrganisationRoles.principal
 				|| role == OrganisationRoles.administrator || role == OrganisationRoles.sysadmin;

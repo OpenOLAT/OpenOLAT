@@ -26,7 +26,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.OAuth2Tokens;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsMeeting;
@@ -205,6 +207,28 @@ public class MicrosoftGraphDAO {
 		}
 	}
 	
+	public List<User> searchUsers(String searchString, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("mail eq '").append(searchString).append("'")
+		  .append(" or startswith(surname,'").append(searchString).append("')")
+		  .append(" or startswith(givenName,'").append(searchString).append("')")
+		  .append(" or otherMails/any(x:x eq '").append(searchString).append("')");
+		
+		try {
+			UserCollectionResponse user = client(oauth2Tokens)
+					.users()
+					.get(requestConfiguration -> {
+						requestConfiguration.queryParameters.select = USER_ATTRS;
+						requestConfiguration.queryParameters.filter = sb.toString();
+					});
+			return user.getValue();
+		} catch (NullPointerException | IllegalArgumentException e) {
+			log.error("Cannot find user with: {}", searchString, e);
+			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			return new ArrayList<>();
+		}
+	}
+	
 	public Organization getOrganisation(String id, GraphServiceClient client) {
 		return client
 			.organization()
@@ -271,6 +295,21 @@ public class MicrosoftGraphDAO {
 			}
 		}
 		return val;
+	}
+	
+	//TODO selectus match with OAuth?
+	public List<TransientIdentity> toIdentity(List<User> users) {
+		List<TransientIdentity> identities = new ArrayList<>();
+		for(User user:users) {
+			TransientIdentity identity = new TransientIdentity();
+			identity.setAzure(true);
+			identity.setName(user.getMail());
+			identity.getUser().setProperty(UserConstants.FIRSTNAME, user.getGivenName());
+			identity.getUser().setProperty(UserConstants.LASTNAME, user.getSurname());
+			identity.getUser().setProperty(UserConstants.EMAIL, user.getMail());
+			identities.add(identity);
+		}
+		return identities;
 	}
 	
 	private IdentitySet createIdentitySetById(User user) {

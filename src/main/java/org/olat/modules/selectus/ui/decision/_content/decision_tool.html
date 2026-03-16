@@ -1,0 +1,11 @@
+#if($r.available("create.decision.tool"))
+<div class="o_button_group o_button_group_right">
+	$r.render("create.decision.tool")
+</div>
+#end
+$r.render("table")
+#if($r.available("batch.decision"))
+<div class="o_button_group">
+	$r.render("batch.decision")
+</div>
+#end

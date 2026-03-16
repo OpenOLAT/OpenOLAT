@@ -1,0 +1,30 @@
+<div class="container-fluid">
+#if($languageLinks && !$languageLinks.isEmpty())
+	<div class="o_button_group o_button_group_right"><div class="btn-group">
+	#foreach($languageLink in $languageLinks)
+		$r.render("$languageLink.componentName")
+	#end
+	</div></div>
+#end
+#if($r.isNotEmpty($positions))
+	#foreach($position in $positions)
+	<div class="o_position clearfix">
+		<h1>$position.title
+		#if($position.departement && !$position.departement.isEmpty())
+			#if($position.homepageUrl && !$position.homepageUrl.isEmpty())<small><a href="$position.homepageUrl" target="_blank">$position.departement</a></small>#else<small>$position.departement</small>#end
+		#end</h1>
+		<p>#if($position.homepage && !$position.homepage.isEmpty())<small>$position.homepage</small>#end</p>
+		<p>#if($r.isNull($position.departement) && $position.homepageUrl && !$position.homepageUrl.isEmpty())<small><a href="$position.homepageUrl" target="_blank">$position.homepageUrl</a></small>#end</p>
+		#if($position.description && !$position.description.isEmpty())
+			$position.description
+		#end
+		<p>$r.render("$position.applyLinkName")</p>
+	</div>
+	#end
+#else
+	<div class="o_warning">
+		<p><strong>$r.translate("positions.list.empty.text1")</strong></p>
+		<p>$r.translate("positions.list.empty.text2")</p>
+	</div>
+#end
+</div>

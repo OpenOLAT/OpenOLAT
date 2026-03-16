@@ -1,0 +1,42 @@
+#if($r.isNotNull($explanation) && $explanation)
+	<div class="o_info">$r.translate("add.references.explanation")</div>
+#end
+#if($r.isNotEmpty($expertWarningArgs))
+	<div class="o_warning">$r.translate("warning.expert.blacklist", $expertWarningArgs)</div>
+#end
+
+#if($r.available("references"))
+<fieldset>
+	<legend>$r.translate("edit.recommendation.referees")</legend>
+	#if($r.visible("add.recommendation"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.recommendation")
+	</div>
+	#end
+	$r.render("references")
+</fieldset>
+#end
+
+#if($r.available("experts"))
+<fieldset>
+	<legend>$r.translate("edit.recommendation.experts")</legend>
+	#if($r.visible("add.expert"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.expert")
+	</div>
+	#end
+	$r.render("experts")
+</fieldset>
+#end
+
+#if($r.available("comparative.experts"))
+<fieldset>
+	<legend>$r.translate("edit.recommendation.comparative.experts")</legend>
+	#if($r.visible("add.comparative.expert"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.comparative.expert")
+	</div>
+	#end
+	$r.render("comparative.experts")
+</fieldset>
+#end

@@ -1,0 +1,25 @@
+<div class="col-sm-6">$r.render("details")</div>
+<div class="col-sm-6">
+	$r.render("documents")
+	#if($r.available("assignments"))
+		$r.render("assignments")
+	#end
+	$r.render("status")
+	#if($r.available("categories"))
+		$r.render("categories")
+	#end
+	#if($r.available("notes"))
+		<br>$r.render("notes")
+	#end
+	#if($parallelApplications)
+	<div class="o_warning">
+		<h4>$r.translate("parallel.applications.title")</h4>
+		<p>$r.translate("parallel.applications")</p>
+		<ul>
+		#foreach($parallelApplication in $parallelApplications)
+			<li>#if($parallelApplication.planingsNumber &&!$parallelApplication.planingsNumber.isEmpty()) $parallelApplication.planingsNumber:#end $parallelApplication.title</li>
+		#end
+		</ul>
+	</div>
+	#end
+</div>

@@ -1,0 +1,9 @@
+<h2>$r.translate("reference.management.title")</h2>
+<h4>$r.escapeHtml($subTitle)</h4>
+<p>$r.xssScan($message)</p>
+<p>$r.xssScan($access)</p>
+<h3>$r.translate("reference.management.status.title")</h3>
+<div class="$statusActiveCssClass"><i class="o_icon $statusActiveIconCssClass"> </i> $r.xssScan($statusActive)</div>
+<div class="$statusSubmittedCssClass"><i class="o_icon $statusSubmittedIconCssClass"> </i> $r.xssScan($statusSubmitted)</div>
+<div class="o_button_group">$r.render("add.recommendation")</div>
+$r.render("table")

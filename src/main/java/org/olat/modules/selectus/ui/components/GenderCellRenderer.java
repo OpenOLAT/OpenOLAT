@@ -1,0 +1,46 @@
+/**
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ */
+package org.olat.modules.selectus.ui.components;
+
+import java.util.Locale;
+
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+
+/**
+ * 
+ * Description:<br>
+ * 
+ * <P>
+ * Initial Date:  30 jul. 2010 <br>
+ *
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public class GenderCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
+	
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		render(sb, val);
+	}
+
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		render(target, cellValue);
+	}
+	
+	private void render(StringOutput sb, Object val) {
+		if(val instanceof String) {
+			String gender = (String)val;
+			sb.append(gender);
+		}
+	}
+}

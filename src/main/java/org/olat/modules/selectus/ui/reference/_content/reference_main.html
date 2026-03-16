@@ -1,0 +1,18 @@
+<div class="o_note">
+	#if($r.isNotEmpty($message))
+		$message<br/><br/>
+	#end
+	$r.translate("recommendation.info.text")<br/>
+	<div class="o_button_group">
+		$r.render("recommendation.sendmails")
+	</div>
+</div>
+<fieldset class="o_sel_rejection_log">
+	<legend><strong>$r.translate("recommendation.table.log")</strong></legend>
+	$r.render("table")
+	#if($r.available("recommendation.contact"))
+	<div class="o_button_group">
+		$r.render("recommendation.contact")
+	</div>
+	#end
+</fieldset>

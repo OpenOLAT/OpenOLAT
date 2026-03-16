@@ -1,0 +1,19 @@
+<div class="o_info">
+	<p>$r.xssScan($infos)</p>
+	<p>$r.xssScan($featureStates)</p>
+</div>
+<fieldset>
+	<legend>$r.translate("edit.help.title")</legend>
+	#if($r.isTrue($featureEnabled))
+		$r.render("helps")
+	#else
+		$r.translate("referees.feature.help.disabled")
+	#end
+</fieldset>
+<div class="o_button_group">
+	$r.render("save")
+	#foreach($previewButton in $previewButtons)
+		$r.render($previewButton)
+	#end
+	$r.render("cancel")
+</div>

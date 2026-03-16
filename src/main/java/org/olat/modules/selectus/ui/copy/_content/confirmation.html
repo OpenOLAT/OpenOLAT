@@ -1,0 +1,21 @@
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+	<legend>$r.translate("confirm.title")</legend>
+	<div class="row"><div class="col-sm-12">
+		<div class="">$r.translate("confirm.desc")</div>
+	</div></div>
+
+<div class='form-group $f.getElementCssClass("confirm") #if($f.hasError("confirm")) has-feedback has-error #end clearfix'>
+	<div class="col-sm-12">
+	$r.render("confirm")
+	#if($f.hasError("confirm"))
+		<span class="o_icon o_icon_error form-control-feedback"></span>
+	#end
+	</div>
+	#if($f.hasError("confirm"))
+	<div class="col-sm-12">
+		$r.render("confirm_ERROR")
+	</div>
+	#end
+</div>
+
+</fieldset>

@@ -104,6 +104,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String azureAdfsApiSecret;
 	@Value("${azure.adfs.tenant}")
 	private String azureAdfsTenant;
+	@Value("${azure.lookup.enable:false}")
+	private boolean azureLookupEnabled;
 
 	@Value("${switch.eduid.enabled:false}")
 	private boolean switchEduIDEnabled;
@@ -254,6 +256,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		azureAdfsApiKey = getStringPropertyValue("azureAdfsApiKey", azureAdfsApiKey);
 		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", azureAdfsApiSecret);
 		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", azureAdfsTenant);
+		String azureLookupEnabledObj = getStringPropertyValue("azureLookupEnabled", Boolean.toString(azureLookupEnabled));
+		azureLookupEnabled = "true".equals(azureLookupEnabledObj);
 		
 		// Switch edu-ID
 		String switchEduIDEnabledObj = getStringPropertyValue("switchEduIDEnabled", Boolean.toString(switchEduIDEnabled));
@@ -665,6 +669,17 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setAzureAdfsTenant(String azureAdfsTenant) {
 		this.azureAdfsTenant = azureAdfsTenant;
 		setStringProperty("azureAdfsTenant", azureAdfsTenant, true);
+	}
+	
+	
+
+	public boolean isAzureLookupEnabled() {
+		return azureLookupEnabled;
+	}
+
+	public void setAzureLookupEnabled(boolean enabled) {
+		this.azureLookupEnabled = enabled;
+		setStringProperty("azureLookupEnabled", enabled ? "true" : "false", true);
 	}
 
 	public boolean isSwitchEduIDEnabled() {
