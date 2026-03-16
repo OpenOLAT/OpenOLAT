@@ -309,7 +309,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 				List<Curriculum> curriculumRefs = curriculumService.getMyCurriculums(mentee);
 				CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback,
-						List.copyOf(curriculumRefs), statEntry);
+						List.copyOf(curriculumRefs), statEntry, false);
 				listenTo(courseListWrapperController);
 				return courseListWrapperController;
 			});

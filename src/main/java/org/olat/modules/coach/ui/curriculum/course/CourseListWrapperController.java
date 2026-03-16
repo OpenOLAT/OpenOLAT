@@ -81,7 +81,7 @@ public class CourseListWrapperController extends BasicController implements Acti
 
 	public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee,
 			CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
-			List<CurriculumRef> curriculumRefs, Object statEntry) {
+			List<CurriculumRef> curriculumRefs, Object statEntry, boolean onlyImplementations) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
@@ -111,7 +111,12 @@ public class CourseListWrapperController extends BasicController implements Acti
 		}
 		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
 		
-		doOpenAllCourses(ureq);
+		if (onlyImplementations) {
+			doOpenImplementations(ureq);
+		} else {
+			mainVC.contextPut("showScopes", true);
+			doOpenAllCourses(ureq);
+		}
 
         putInitialPanel(mainVC);
     }
