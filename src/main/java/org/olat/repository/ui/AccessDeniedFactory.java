@@ -81,7 +81,7 @@ public class AccessDeniedFactory {
 	}
 	
 	public static AccessDeniedMessage createRepositoryEntryStatusNotPublishedMessage() {
-		return new AccessDeniedMessage("access.denied.preparation", "access.denied.preparation.hint", null);
+		return new AccessDeniedMessage("access.denied.not.yet.available", "access.denied.not.yet.available.hint", null);
 	}
 	
 	public static Controller createRepositoryEntryStatusNotPublished(UserRequest ureq, WindowControl wControl,
