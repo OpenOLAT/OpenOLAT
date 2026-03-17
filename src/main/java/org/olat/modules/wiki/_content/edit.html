@@ -1,15 +1,19 @@
 <div class="clearfix">
+#set($pageName = $r.escapeHtml($page.getPageName().replace("_"," ")))
+
 #if($isGuest)
 	<div class="o_warning_with_icon">$r.translate("guest.no.edit")</div>
 #elseif(!$lockEntry.isSuccess())
-	<div class="o_warning_with_icon">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getUser().getFirstName(), $lockEntry.getOwner().getUser().getLastName()])</div>
+	#set($firstName = $r.escapeHtml($lockEntry.getOwner().getUser().getFirstName()))
+	#set($lastName = $r.escapeHtml($lockEntry.getOwner().getUser().getLastName()))
+	<div class="o_warning_with_icon">$r.translate("page.locked", [$pageName, $firstName, $lastName])</div>
 #else
 	## normal edit workflow
 	#if ($r.available("versionDisplay"))
 		<br />
 		<div class="o_wikimod_warn o_warning">
 			#if($isDirty)
-				$r.translate("preview.edit",$page.getPageName())
+				$r.translate("preview.edit",$pageName)
 			#end
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$r.render("preview.close")
 		</div>
@@ -19,7 +23,7 @@
 	#end
 	<h3>
 		$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_Wiki/")
-		$r.translate("edit"): $r.escapeHtml($page.getPageName().replace("_"," "))</h3>
+		$r.translate("edit"): $pageName</h3>
 
 	<div class="btn-toolbar" role="toolbar">
 		<div class="btn-group">
@@ -43,7 +47,7 @@
   			<button id="wiki-button-link-insert" type="button" class="btn btn-default dropdown-toggle">$r.translateInAttribute("link.insert") <span class="caret"></span></button>
   			<div id="wiki-list-link-insert" class="hide"><ul class="o_dropdown o_wiki_dropdown list-unstyled">
   				#foreach($link in $linkList)
-  					<li><a href="#" onclick="javascript:insertTags('[[',']]','$link')">$link</a></li>
+  					<li><a href="#" onclick="javascript:insertTags('[[',']]','$r.escapeJavaScript($link)')">$r.escapeHtml($link)</a></li>
 				#end
   			</ul></div>
   			<script>
