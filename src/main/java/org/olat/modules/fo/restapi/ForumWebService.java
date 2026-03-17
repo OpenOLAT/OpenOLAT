@@ -69,6 +69,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -254,7 +256,10 @@ public class ForumWebService {
 		// creating the thread (a message without a parent message)
 		Message newThread = fom.createMessage(forum, author, false);
 		newThread.setTitle(title);
-		newThread.setBody(body);
+		
+		Filter xssFilter = FilterFactory.getXSSFilter();
+		String cleanBody = xssFilter.filter(body);
+		newThread.setBody(cleanBody);
 		// open a new thread
 		fom.addTopMessage(newThread);
 		

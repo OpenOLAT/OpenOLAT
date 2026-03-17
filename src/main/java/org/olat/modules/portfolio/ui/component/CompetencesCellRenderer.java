@@ -69,14 +69,14 @@ public class CompetencesCellRenderer implements FlexiCellRenderer {
 				
 				for(TaxonomyCompetence competence : competences) {
 					target.append("<span class='o_tag o_competence o_small o_block_inline' id='").append("o_competence_" + competence.getKey()).append("'>");
-					target.append(translateDisplayName(taxonomyTranslator, competence.getTaxonomyLevel()));
+					target.appendHtmlEscaped(translateDisplayName(taxonomyTranslator, competence.getTaxonomyLevel()));
 					target.append("</span>");
 					target.append("<script>")
 					  	  .append("jQuery(function() {\n")
 					  	  .append("  jQuery('#").append("o_competence_" + competence.getKey()).append("').tooltip({\n")
 					  	  .append("    html: true,\n")
 					  	  .append("    container: 'body',\n")
-					  	  .append("    title: '").append(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash()).append("' \n")
+					  	  .append("    title: '").appendScanned(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash()).append("' \n")
 					  	  .append("  });\n")
 					  	  .append("});")
 					  	  .append("</script>");

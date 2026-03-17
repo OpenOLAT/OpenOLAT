@@ -38,6 +38,7 @@ import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -268,7 +269,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		tableEl.setCustomizeColumns(true);
 		String cssClass = "o_binder_page_listing " + (flatList ? "o_binder_page_flat_listing" : "o_binder_page_tree_listing");
 		tableEl.setElementCssClass(cssClass);
-		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+			.withMessageI18nKey("table.sEmptyTable").build();
+		tableEl.setEmptyStateConfig(emptyStateConfig);
 		tableEl.setPageSize(24);
 		rowVC.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		rowVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);

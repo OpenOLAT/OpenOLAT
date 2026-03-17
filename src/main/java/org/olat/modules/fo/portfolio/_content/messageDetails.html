@@ -1,12 +1,10 @@
 <div class="o_forum">
 	#if($title)
-	<h5>
-		$title
-		<small>$r.translate("document.by",$author)</small>	
-	</h5>
+	<h5>$r.escapeHtml($title)
+		<small>$r.translate("document.by",$r.escapeHtml($author))</small></h5>
 	#end
 
-	$text
+	$r.xssScan($r.formatLatexFormulas($text))
 	#if ($hasAttachments)
 	<div class="o_forum_message_attachments" style="border-top-style:hidden;">
 		<strong>$r.translateWithPackage("org.olat.modules.fo","attachments")</strong>
