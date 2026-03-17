@@ -89,9 +89,6 @@ public class CSPModule extends AbstractSpringModule {
 	@Value("${base.security.contentSecurityPolicy.reportOnly:enabled}")
 	private String contentSecurityPolicyReportOnly;
 	
-	@Value("${base.security.unsafe.eval:true}")
-	private String allowUnsafeEval;
-	
 	@Value("${base.security.contentSecurityPolicy.defaultSrc:}")
 	private String contentSecurityPolicyDefaultSrc;
 	@Value("${base.security.contentSecurityPolicy.scriptSrc:}")
@@ -289,10 +286,6 @@ public class CSPModule extends AbstractSpringModule {
 		String enabled = enable ? "enabled" : "disabled";
 		contentSecurityPolicyReportOnly = enabled;
 		setStringProperty(CONTENT_SECURITY_POLICY_REPORT_ONLY, enabled, true);
-	}
-	
-	public boolean isAllowUnsafeEval() {
-		return "true".equals(allowUnsafeEval);
 	}
 
 	public String getContentSecurityPolicyDefaultSrc() {
