@@ -31,6 +31,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.library.LibraryManager;
 import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.event.OpenFileEvent;
@@ -71,10 +72,9 @@ public class NewestFilesController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (links.contains(source)) {
-			Link link = (Link) source;
+		if (links.contains(source) && source instanceof Link link
+				&& link.getUserObject() instanceof CatalogItem item) {
 			String cmd = link.getCommand();
-			CatalogItem item = (CatalogItem) link.getUserObject();
 			fireEvent(ureq, new OpenFileEvent(cmd, item));
 		}
 	}
@@ -93,7 +93,7 @@ public class NewestFilesController extends BasicController {
 		for (CatalogItem item : items) {
 			Link link = LinkFactory.createCustomLink("link_nf_" + i++, "cmd", "", Link.LINK_CUSTOM_CSS, mainVC, this);
 			link.setUserObject(item);
-			link.setCustomDisplayText(item.getDisplayName());
+			link.setCustomDisplayText(StringHelper.escapeHtml(item.getDisplayName()));
 			link.setIconLeftCSS("o_icon " + item.getCssClass());
 			mainVC.put(link.getComponentName(), link);
 			links.add(link);

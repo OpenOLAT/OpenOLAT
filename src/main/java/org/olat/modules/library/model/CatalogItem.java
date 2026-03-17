@@ -27,6 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.library.LibraryManager;
 
 /**
@@ -208,10 +209,10 @@ public class CatalogItem {
 	public String getPublicationDate() {
 		String[] pubDate = metadata.getPublicationDate();
 		String formattedDate = null;
-		if (pubDate[0] != null) {
+		if (StringHelper.containsNonWhitespace(pubDate[0])) {
 			formattedDate = pubDate[0];
 		}
-		if (pubDate[1] != null) {
+		if (StringHelper.containsNonWhitespace(pubDate[1])) {
 			if (formattedDate != null) {
 				formattedDate += "/" + pubDate[1];
 			}
