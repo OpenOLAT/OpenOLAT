@@ -426,7 +426,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		Identity identity = baseSecurity.loadIdentityByKey(row.getIdentityKey());
 
 		MemberDetailsConfig detailsConfig = new MemberDetailsConfig(null, null, false, true, false, false, true,
-				true, true, true, true, true);
+				true, true, true, true, true, true);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculumElement.getCurriculum(), curriculumElement, elements, identity, detailsConfig);
 		detailsCtrl.setUserObject(row);
