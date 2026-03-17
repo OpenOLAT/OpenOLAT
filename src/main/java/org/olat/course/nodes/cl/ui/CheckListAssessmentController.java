@@ -413,7 +413,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 		
 		if (!filters.isEmpty()) {
-			tableEl.setFilters(true, filters, false, true);
+			tableEl.setFilters(true, filters, false, false);
 		}
 	}
 	

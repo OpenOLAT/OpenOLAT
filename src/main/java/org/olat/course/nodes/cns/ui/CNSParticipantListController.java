@@ -258,6 +258,7 @@ public class CNSParticipantListController extends FormBasicController implements
 		}
 		
 		tableEl.setFilters(true, filters, false, false);
+		tableEl.expandFilters(true);
 	}
 	
 	private void initFilterTabs(UserRequest ureq) {

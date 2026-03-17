@@ -430,7 +430,8 @@ public class PFCoachController extends FormBasicController implements Assessment
 		}
 		
 		if (!filters.isEmpty()) {
-			dropboxTable.setFilters(true, filters, false, true);
+			dropboxTable.setFilters(true, filters, false, false);
+			dropboxTable.expandFilters(true);
 		}
 	}
 	
