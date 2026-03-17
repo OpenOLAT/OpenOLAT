@@ -366,7 +366,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		String[] userAttr = syncConfiguration.getUserAttributes();
 
 		if (login == null || pwd == null) {
-			log.debug("Error when trying to bind user, missing username or password. Username::{} pwd::{}", login, pwd);
+			log.debug("Error when trying to bind user, missing username or password. Username::{} pwd::{}", login, (pwd == null ? "absent" : "present"));
 			errors.insert("Username and password must be selected");
 			return null;
 		}
