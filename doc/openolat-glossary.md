@@ -961,7 +961,7 @@ A type of learning resource that can be created or imported in the authoring are
 
 *Canonical key:* `org.olat.repository:FileResource.SHAREDFOLDER`
 
-### Sound
+### Audio
 
 A type of learning resource that can be created or imported in the authoring area.
 

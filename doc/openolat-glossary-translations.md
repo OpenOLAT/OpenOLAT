@@ -223,7 +223,7 @@ canonical translations used throughout the application.
 | PDF | PDF | PDF | PDF | PDF |
 | PowerPoint | PowerPoint | Powerpoint | PowerPoint | PowerPoint |
 | Resource folder | Ressourcenordner | Dossier de ressources | Carpeta de recursos | Cartella delle risorse |
-| Sound | Musik | Son | Sonido | Musica |
+| Audio | Audio |  |  |  |
 | Test (QTI 1.2 - no longer supported) | Test (QTI 1.2 - nicht mehr unterst\u00FCtzt) | Test (QTI 1.2 - n'est plus support\u00E9) | Test | Test (QTI 1.2 - non pi\u00F9 supportato) |
 | Wiki page | Wiki Seite | Page wiki |  | Pagina wiki |
 | Word | Word | Word | Word | Word |
