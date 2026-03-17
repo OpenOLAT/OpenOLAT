@@ -416,13 +416,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
 		
 		markedTab = FlexiFiltersTabFactory.tabWithFilters(MARKED_TAB_ID, translate("filter.marked"),
-				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_OBLIGATION,
-								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_MEMBERS,
-								List.of(ParticipantType.member.name()))));
+				TabSelectionBehavior.reloadData, List.of());
 		markedTab.setFiltersExpanded(true);
 		tabs.add(markedTab);
 
