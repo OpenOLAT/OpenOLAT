@@ -106,15 +106,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CNSParticipantListController extends FormBasicController implements FlexiTableComponentDelegate {
 	
 	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_RELEVANT = "Relevant";
 	private static final String TAB_ID_PARTIALLY = "Partially";
 	private static final String TAB_ID_COMPLETELY = "Completely";
+	private static final String TAB_ID_EXCLUDED = "Excluded";
 	private static final String CMD_DETAILS = "details";
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private InfoPanel configPanel;
 	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabRelevant;
 	private FlexiFiltersTab tabPartially;
 	private FlexiFiltersTab tabCompletely;
+	private FlexiFiltersTab tabExcluded;
 	private CNSParticipantDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private VelocityContainer detailsVC;
@@ -126,6 +130,7 @@ public class CNSParticipantListController extends FormBasicController implements
 	private final List<CourseNode> childNodes;
 	private final List<String> childNodeIdents;
 	private final int requiredSelections;
+	private final boolean learningPath;
 	private final UserInfoProfileConfig profileConfig;
 	private Set<Long> detailsOpenIdentityKeys;
 	private List<CNSParticipantDetailsController> detailCtrls = new ArrayList<>(1);
@@ -161,7 +166,8 @@ public class CNSParticipantListController extends FormBasicController implements
 				isAdministrativeUser);
 		
 		requiredSelections = Integer.valueOf(courseNode.getModuleConfiguration().getStringValue(CNSCourseNode.CONFIG_KEY_REQUIRED_SELECTIONS));
-		
+		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType());
+
 		profileConfig = userPortraitService.createProfileConfig();
 		
 		initForm(ureq);
@@ -183,7 +189,7 @@ public class CNSParticipantListController extends FormBasicController implements
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
 		
-		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
+		if (learningPath) {
 			SelectionValues obligationValues = new SelectionValues();
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
@@ -255,22 +261,29 @@ public class CNSParticipantListController extends FormBasicController implements
 	}
 	
 	private void initFilterTabs(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
-		
-		tabAll = FlexiFiltersTabFactory.tabWithFilters(
-				TAB_ID_ALL,
-				translate("all"),
-				TabSelectionBehavior.reloadData,
-				List.of(
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_OBLIGATION,
-								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_MEMBERS,
-								List.of(ParticipantType.member.name()))
-					));
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_ALL, translate("all"),
+				TabSelectionBehavior.nothing, List.of());
 		tabs.add(tabAll);
-		
+
+		if (learningPath || assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+			List<FlexiTableFilterValue> relevantFilters = new ArrayList<>();
+			if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+				relevantFilters.add(FlexiTableFilterValue.valueOf(
+						AssessedIdentityListState.FILTER_MEMBERS, List.of(ParticipantType.member.name())));
+			}
+			if (learningPath) {
+				relevantFilters.add(FlexiTableFilterValue.valueOf(
+						AssessedIdentityListState.FILTER_OBLIGATION,
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+			}
+			tabRelevant = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_RELEVANT, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, relevantFilters);
+			tabRelevant.setElementCssClass("o_sel_assessment_relevant");
+			tabs.add(tabRelevant);
+		}
+
 		if (requiredSelections > 1) {
 			tabPartially = FlexiFiltersTabFactory.tab(
 					TAB_ID_PARTIALLY,
@@ -284,9 +297,17 @@ public class CNSParticipantListController extends FormBasicController implements
 				translate("tab.completely"),
 				TabSelectionBehavior.reloadData);
 		tabs.add(tabCompletely);
-		
+
+		if (learningPath) {
+			tabExcluded = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_EXCLUDED, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(
+							AssessedIdentityListState.FILTER_OBLIGATION, List.of(AssessmentObligation.excluded.name()))));
+			tabExcluded.setElementCssClass("o_sel_assessment_excluded");
+			tabs.add(tabExcluded);
+		}
+
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabAll);
+		tableEl.setSelectedFilterTab(ureq, tabRelevant != null ? tabRelevant : tabAll);
 	}
 
 	@Override
