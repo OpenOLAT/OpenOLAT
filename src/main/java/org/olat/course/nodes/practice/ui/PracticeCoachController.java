@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,7 +45,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -62,6 +66,8 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 import org.olat.course.nodes.practice.PracticeService;
@@ -73,6 +79,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -92,7 +99,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PracticeCoachController extends FormBasicController implements Activateable2 {
 
 	protected static final String USER_PROPS_ID = GTACoachedGroupGradingController.class.getCanonicalName();
-	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_RELEVANT = "Relevant";
+	private static final String TAB_ID_EXCLUDED = "Excluded";
+
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabRelevant;
+	private FlexiFiltersTab tabExcluded;
 	private FlexiTableElement tableEl;
 	private PracticeIdentityTableModel tableModel;
 	private TooledStackedPanel stackPanel;
@@ -102,6 +115,7 @@ public class PracticeCoachController extends FormBasicController implements Acti
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
+	private final boolean learningPath;
 	
 	@Autowired
 	private UserManager userManager;
@@ -127,7 +141,8 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
-		
+		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType());
+
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
@@ -170,11 +185,21 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		tableEl.setSelectAllEnable(true);
 		
 		initFilters();
+		initFilterTabs(ureq);
 	}
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
-		
+
+		if (learningPath) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true));
+		}
+
 		// life-cycle
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry("notReady", translate("filter.notReady")));
@@ -196,10 +221,8 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
 			if (membersValues.size() > 1) {
-				FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
-						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-				filter.setValues(List.of(ParticipantType.member.name()));
-				filters.add(filter);
+				filters.add(new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true));
 			}
 		}
 		
@@ -245,6 +268,43 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		}
 		
 		tableEl.setFilters(true, filters, false, false);
+		tableEl.expandFilters(true);
+	}
+
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_ALL, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(tabAll);
+
+		if (learningPath || assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+			List<FlexiTableFilterValue> relevantFilters = new ArrayList<>();
+			if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+				relevantFilters.add(FlexiTableFilterValue.valueOf(
+						AssessedIdentityListState.FILTER_MEMBERS, List.of(ParticipantType.member.name())));
+			}
+			if (learningPath) {
+				relevantFilters.add(FlexiTableFilterValue.valueOf(
+						AssessedIdentityListState.FILTER_OBLIGATION,
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+			}
+			tabRelevant = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_RELEVANT, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, relevantFilters);
+			tabRelevant.setElementCssClass("o_sel_assessment_relevant");
+			tabs.add(tabRelevant);
+		}
+
+		if (learningPath) {
+			tabExcluded = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_EXCLUDED, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(
+							AssessedIdentityListState.FILTER_OBLIGATION, List.of(AssessmentObligation.excluded.name()))));
+			tabExcluded.setElementCssClass("o_sel_assessment_excluded");
+			tabs.add(tabExcluded);
+		}
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabRelevant != null ? tabRelevant : tabAll);
 	}
 
 	@Override
@@ -314,7 +374,20 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		params.setSearchString(tableEl.getQuickSearchString());
 
 		List<FlexiTableFilter> filters = tableEl.getFilters();
-		
+
+		if (learningPath) {
+			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_OBLIGATION);
+			if (obligationFilter != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+				if (filterValues != null && !filterValues.isEmpty()) {
+					List<AssessmentObligation> obligations = filterValues.stream()
+							.map(AssessmentObligation::valueOf)
+							.collect(Collectors.toList());
+					params.setAssessmentObligations(obligations);
+				}
+			}
+		}
+
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
 		if (statusFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
