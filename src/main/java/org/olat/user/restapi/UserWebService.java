@@ -648,8 +648,7 @@ public class UserWebService {
 
 	@Path("{identityKey}/relations")
 	public IdentityToIdentityRelationsWebService getRelations(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManagerOf(identityKey, request);
-		if(!isUserManager) {
+		if(!isUserManagerOf(identityKey, request)) {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -676,6 +675,7 @@ public class UserWebService {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("identityKey") Long identityKey, @QueryParam("withPortrait") @DefaultValue("false") Boolean withPortrait,
@@ -794,6 +794,8 @@ public class UserWebService {
 		if(identity == null) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
+		// User can access other personal folders, evaluation of access permissions are delegated
+		// to UserFoldersWebService.
 		return new UserFoldersWebService(identity);
 	}
 	
@@ -803,14 +805,12 @@ public class UserWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public UserCoursesWebService getCoursesWebService(@PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest httpRequest) {
+			@Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
-
-		Identity ureqIdentity = getIdentity(httpRequest);
-		if(ureqIdentity == null || !ureqIdentity.equals(identity)) {
+		if(!isUserManagerOf(identityKey, request) && !itself(identityKey, request)) {
 			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 		UserCoursesWebService ws = new UserCoursesWebService(identity);
@@ -975,10 +975,13 @@ public class UserWebService {
 	}
 
 	@Path("{identityKey}/groups")
-	public MyGroupWebService getUserGroupList(@PathParam("identityKey") Long identityKey) {
+	public MyGroupWebService getUserGroupList(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity retrievedUser = securityManager.loadIdentityByKey(identityKey, false);
 		if(retrievedUser == null) {
-			return null;
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+		if(!isUserManagerOf(identityKey, request) && !itself(identityKey, request)) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 		MyGroupWebService ws = new MyGroupWebService(retrievedUser);
 		CoreSpringFactory.autowireObject(ws);
