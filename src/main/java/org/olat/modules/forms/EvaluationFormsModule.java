@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -80,7 +80,7 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 		
 		evaluationFormMAnager.deleteTmpDirs();
 
-		RepositoryHandlerFactory.registerHandler(formHandler, 40);
+		RepositoryHandlerFactory.registerHandler(formHandler, 22);
 	}
 
 	private void initFileUploadLimit() {

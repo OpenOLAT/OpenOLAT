@@ -137,7 +137,7 @@ public class VideoModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
-		RepositoryHandlerFactory.registerHandler(this.videoHandler, 43);
+		RepositoryHandlerFactory.registerHandler(this.videoHandler, 21);
 		
 		String enabledObj = getStringPropertyValue(VIDEO_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {

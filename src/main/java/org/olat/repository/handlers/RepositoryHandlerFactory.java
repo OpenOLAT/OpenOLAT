@@ -52,11 +52,11 @@ import org.springframework.stereotype.Service;
  *
  * @author Mike Stock
  * 
- * Comment:  
- * 
  */
 @Service
 public class RepositoryHandlerFactory {
+
+	public static final int OTHER_TYPES_ORDER = 100000;
 
 	private static Map<String, RepositoryHandler> handlerMap;
 	private static List<OrderedRepositoryHandler> handlerList;
@@ -66,21 +66,24 @@ public class RepositoryHandlerFactory {
 		handlerList = new ArrayList<>(21);
 		forCreationOnlyHandlerList = new ArrayList<>();
 
-		// 0-9 Most important resources = 0-9
 		registerHandler(new CourseHandler(), 0);
 		registerHandler(new CourseTemplateHandler(), 1, true);
-		// 10-19 Assessment modules
-		// 20-29 Content modules
-		registerHandler(new SCORMCPHandler(), 20);
-		registerHandler(new ImsCPHandler(), 21);
-		registerHandler(new WikiHandler(), 22);
-		// 30-39 Interactive modules
-		registerHandler(new PodcastHandler(), 31);
-		registerHandler(new BlogHandler(), 32);
-		// 40-49 Supporting resources
-		registerHandler(new SharedFolderHandler(), 40);
-		registerHandler(new GlossaryHandler(), 41);
 		
+		// 10: QTI 2.1 Test
+		
+		registerHandler(new SCORMCPHandler(), 20);
+		// 21: Video
+		// 22: Evaluation form
+		registerHandler(new SharedFolderHandler(), 23);
+		
+		registerHandler(new BlogHandler(), 30);
+		registerHandler(new PodcastHandler(), 31);
+		registerHandler(new WebDocumentHandler(SoundFileResource.TYPE_NAME), 32);
+		registerHandler(new ImsCPHandler(), 33);
+		registerHandler(new WikiHandler(), 34);
+		
+		// 40: Portfolio 2.0 template
+		registerHandler(new GlossaryHandler(), 41);
 		
 		DocumentEditorDelegate wordDelegate = new DocumentEditorDelegate(new WordVFSEditorDelegateType());
 		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME, wordDelegate, wordDelegate), 10001);
@@ -90,14 +93,14 @@ public class RepositoryHandlerFactory {
 		registerHandler(new WebDocumentHandler(PowerpointFileResource.TYPE_NAME, powerPointDelegate, powerPointDelegate), 10003);
 		registerHandler(new WebDocumentHandler(PdfFileResource.TYPE_NAME), 10010);
 		registerHandler(new WebDocumentHandler(ImageFileResource.TYPE_NAME), 10011);
-		registerHandler(new WebDocumentHandler(SoundFileResource.TYPE_NAME), 10020);
-		registerHandler(new WebDocumentHandler(MovieFileResource.TYPE_NAME), 10021);
-		registerHandler(new WebDocumentHandler(AnimationFileResource.TYPE_NAME), 10022);
-		registerHandler(new WebDocumentHandler(FileResource.GENERIC_TYPE_NAME), 10100);
+		
+		registerHandler(new WebDocumentHandler(MovieFileResource.TYPE_NAME), 100002);
+		registerHandler(new WebDocumentHandler(AnimationFileResource.TYPE_NAME), 100003);
+		registerHandler(new WebDocumentHandler(FileResource.GENERIC_TYPE_NAME), 100004);
 		
 		// Legacy
-		registerHandler(new QTISurveyHandler(), 10);
-		registerHandler(new QTITestHandler(), 10);
+		registerHandler(new QTITestHandler(), 100000);
+		registerHandler(new QTISurveyHandler(), 100001);
 	}
 
 	public static void registerHandler(RepositoryHandler handler, int order) {
@@ -149,6 +152,16 @@ public class RepositoryHandlerFactory {
 		List<OrderedRepositoryHandler> ordered = new ArrayList<>(handlerList);
 		Collections.sort(ordered);
 		return ordered;
+	}
+
+	public List<String> getOtherTypes() {
+		List<String> otherTypes = new ArrayList<>();
+		for (OrderedRepositoryHandler handler : handlerList) {
+			if (handler.getOrder() >= OTHER_TYPES_ORDER) {
+				otherTypes.add(handler.getHandler().getSupportedType());
+			}
+		}
+		return otherTypes;
 	}
 	
 	public List<OrderedRepositoryHandler> getOrderedRepositoryHandlersForCreation() {

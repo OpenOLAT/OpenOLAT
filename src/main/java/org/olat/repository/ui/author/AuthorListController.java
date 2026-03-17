@@ -826,13 +826,21 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		// type of resources
 		SelectionValues resourceValues = new SelectionValues();
+		boolean hasOtherTypes = false;
 		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
 		for(OrderedRepositoryHandler handler:supportedHandlers) {
 			String type = handler.getHandler().getSupportedType();
 			if(configuration.isResourceTypeAllowed(type)) {
-				String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
-				resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
+				if(handler.getOrder() >= RepositoryHandlerFactory.OTHER_TYPES_ORDER) {
+					hasOtherTypes = true;
+				} else {
+					String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
+					resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
+				}
 			}
+		}
+		if(hasOtherTypes) {
+			resourceValues.add(new SelectionValue("others", translate("cif.type.others"), null, null, null, true));
 		}
 		if(resourceValues.size() > 1) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),

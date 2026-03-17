@@ -59,6 +59,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
@@ -211,7 +212,13 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				searchParams.setStatus(RepositoryEntryStatusEnum.toArray(selectedStatus));
 				break;
 			case TYPE:
-				searchParams.setResourceTypes(((FlexiTableMultiSelectionFilter)filter).getValues());
+				List<String> selectedTypes = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if(selectedTypes != null && selectedTypes.contains("others")) {
+					selectedTypes = new ArrayList<>(selectedTypes);
+					selectedTypes.remove("others");
+					selectedTypes.addAll(CoreSpringFactory.getImpl(RepositoryHandlerFactory.class).getOtherTypes());
+				}
+				searchParams.setResourceTypes(selectedTypes);
 				break;
 			case ID:
 				searchParams.setIdAndRefs(((FlexiTableTextFilter)filter).getValue());
