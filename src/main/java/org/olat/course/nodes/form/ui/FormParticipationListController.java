@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -53,6 +54,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -120,7 +125,13 @@ public class FormParticipationListController extends FormBasicController impleme
 	private static final String CMD_PDF = "pdf";
 	private static final String CMD_REOPEN = "reopen";
 	private static final String CMD_RESET = "reset";
-	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_RELEVANT = "Relevant";
+	private static final String TAB_ID_EXCLUDED = "Excluded";
+
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabRelevant;
+	private FlexiFiltersTab tabExcluded;
 	private FormLink resetAllButton;
 	private FormLink exportButton;
 	private FormLink bulkExportButton;
@@ -143,6 +154,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	private final RepositoryEntry courseEntry;
 	private final EvaluationFormSurvey survey;
 	private final Collection<Identity> fakeParticipants;
+	private final boolean learningPath;
 
 	@Autowired
 	private FormManager formManager;
@@ -178,9 +190,11 @@ public class FormParticipationListController extends FormBasicController impleme
 						getIdentity(), coachCourseEnv.isAdmin(), coachCourseEnv.isCoach());
 		fakeParticipants = securityManager.loadIdentityByRefs(fakeParticipantRefs);
 		
+		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType());
+
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		survey = formManager.loadSurvey(surveyIdent);
-		
+
 		initForm(ureq);
 		reload();
 	}
@@ -240,22 +254,21 @@ public class FormParticipationListController extends FormBasicController impleme
 		tableEl.setAndLoadPersistedPreferences(ureq, "course.element.form.v2");
 		
 		initFilters();
+		initFilterTabs(ureq);
 		initBulkLinks();
 	}
 
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
-		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
+		if (learningPath) {
 			SelectionValues obligationValues = new SelectionValues();
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
-			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
-					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
-			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
-			filters.add(obligationFilter);
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true));
 		}
-		
+
 		SelectionValues membersValues = new SelectionValues();
 		membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
 		if (coachCourseEnv.isAdmin()) {
@@ -265,10 +278,8 @@ public class FormParticipationListController extends FormBasicController impleme
 			membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 		}
 		if (membersValues.size() > 1) {
-			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
-					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-			membersFilter.setValues(List.of(ParticipantType.member.name()));
-			filters.add(membersFilter);
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true));
 		}
 		
 		SelectionValues statusValues = new SelectionValues();
@@ -279,8 +290,45 @@ public class FormParticipationListController extends FormBasicController impleme
 				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
 		
 		tableEl.setFilters(true, filters, false, false);
+		tableEl.expandFilters(true);
 	}
 	
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_ALL, translate("all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(tabAll);
+
+		if (learningPath || coachCourseEnv.isAdmin() || !fakeParticipants.isEmpty()) {
+			List<FlexiTableFilterValue> relevantFilters = new ArrayList<>();
+			if (coachCourseEnv.isAdmin() || !fakeParticipants.isEmpty()) {
+				relevantFilters.add(FlexiTableFilterValue.valueOf(
+						AssessedIdentityListState.FILTER_MEMBERS, List.of(ParticipantType.member.name())));
+			}
+			if (learningPath) {
+				relevantFilters.add(FlexiTableFilterValue.valueOf(
+						AssessedIdentityListState.FILTER_OBLIGATION,
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
+			}
+			tabRelevant = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_RELEVANT, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, relevantFilters);
+			tabRelevant.setElementCssClass("o_sel_assessment_relevant");
+			tabs.add(tabRelevant);
+		}
+
+		if (learningPath) {
+			tabExcluded = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_EXCLUDED, translate("filter.excluded"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(
+							AssessedIdentityListState.FILTER_OBLIGATION, List.of(AssessmentObligation.excluded.name()))));
+			tabExcluded.setElementCssClass("o_sel_assessment_excluded");
+			tabs.add(tabExcluded);
+		}
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabRelevant != null ? tabRelevant : tabAll);
+	}
+
 	private void initBulkLinks() {
 		bulkExportButton = uifactory.addFormLink("export.data", flc, Link.BUTTON);
 		bulkExportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
@@ -399,6 +447,8 @@ public class FormParticipationListController extends FormBasicController impleme
 				if(CMD_SELECT.equals(cmd)) {
 					doSelect(ureq, row);
 				}
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				reload();
 			} else if(event instanceof FlexiTableSearchEvent) {
 				reload();
 			}
