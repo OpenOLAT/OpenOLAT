@@ -451,11 +451,22 @@ public class OpenOLATPolicy {
 
 		@Override
 		public boolean test(String s) {
-			return a.matcher(s).matches()
-					|| b.matcher(s).matches()
-					|| c == null || c.matcher(s).matches()
-					|| d == null || d.matcher(s).matches()
-					|| e == null || e.matcher(s).matches();
+			if(a != null && a.matcher(s).matches()) {
+				return true;
+			}
+			if(b != null && b.matcher(s).matches()) {
+				return true;
+			}
+			if(c != null && c.matcher(s).matches()) {
+				return true;
+			}
+			if(d != null && d.matcher(s).matches()) {
+				return true;
+			}
+			if(e != null && e.matcher(s).matches()) {
+				return true;
+			}
+			return false;
 		}
 	}
 }
