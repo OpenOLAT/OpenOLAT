@@ -26,6 +26,7 @@
 
 package org.olat.basesecurity;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -942,7 +943,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public boolean checkCredentials(Authentication authentication, String password) {
 		Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
 		String hash = Encoder.encrypt(password, authentication.getSalt(), algorithm);
-		return authentication.getCredential() != null && authentication.getCredential().equals(hash);
+		return hash != null && authentication.getCredential() != null
+				&& MessageDigest.isEqual(authentication.getCredential().getBytes(), hash.getBytes());
 	}
 
 	@Override
