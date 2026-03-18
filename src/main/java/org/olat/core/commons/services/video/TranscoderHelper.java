@@ -134,6 +134,7 @@ public class TranscoderHelper {
 		transcoderJob.setInstance(instanceId);
 		transcoderJob.setReferenceId(referenceId);
 		transcoderJob.setResolutions(resolutions);
+		transcoderJob.setGenerateSubtitles(type == TranscoderJobType.videoTranscoding);
 
 		String apiUrl = Settings.getServerContextPathURI() + "/" + TranscoderJob.TRANSCODING_NAMESPACE;
 		transcoderJob.setNotifyResultUrl(apiUrl + "/" + TranscoderJob.NOTIFY_RESULT_COMMAND);
