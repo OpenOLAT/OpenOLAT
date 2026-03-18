@@ -357,6 +357,10 @@ public class ZipUtil {
 			VFSLeaf lastLeaf = null;
 			while (oEntr != null) {
 				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
+					if(!targetDir.isInPath(oEntr.getName())) {
+						throw new IOException("Invalip ZIP");
+					}
+					
 					if (oEntr.isDirectory()) {
 						// skip MacOSX specific metadata directory
 						// create directories
