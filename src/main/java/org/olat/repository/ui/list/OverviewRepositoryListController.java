@@ -390,9 +390,7 @@ public class OverviewRepositoryListController extends BasicController implements
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			searchParams.setMembershipMandatory(true);
 			searchParams.setParticipantsOnly(participantsOnly);
-			searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {
-					RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished, RepositoryEntryStatusEnum.published
-				});
+			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToClosed());
 			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
 			searchParams.setOfferValidAt(new Date());
 			searchParams.setRuntimeTypes(new RepositoryEntryRuntimeType[] { RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone });

@@ -441,7 +441,7 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
-		lifecycleValues.add(SelectionValues.entry(FilterStatus.PREPARATION.name(), translate("cif.resources.status.preparation")));
+		lifecycleValues.add(SelectionValues.entry(FilterStatus.PREPARATION.name(), translate("cif.resources.status.in.preparation")));
 		lifecycleValues.add(SelectionValues.entry(FilterStatus.ACTIVE.name(), translate("cif.resources.status.active")));
 		lifecycleValues.add(SelectionValues.entry(FilterStatus.CLOSED.name(), translate("cif.resources.status.closed")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
