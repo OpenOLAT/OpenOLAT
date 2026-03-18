@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollectImageMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
-	public static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
+	public static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png", "image/svg+xml");
 
 	private FileElement fileEl;
 	private StaticTextElement filenameEl;

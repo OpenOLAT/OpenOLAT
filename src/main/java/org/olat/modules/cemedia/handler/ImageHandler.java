@@ -84,7 +84,7 @@ import org.springframework.stereotype.Service;
 public class ImageHandler extends AbstractMediaHandler implements PageElementStore<ImageElement>, InteractiveAddPageElementHandler {
 	
 	public static final String IMAGE_TYPE = "image";
-	public static final Set<String> mimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
+	public static final Set<String> mimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png", "image/svg+xml");
 
 	@Autowired
 	private MediaDAO mediaDao;
