@@ -24,8 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
@@ -33,6 +32,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.run.leave.ConfirmLeaveController;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -51,10 +51,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeaderController {
 
+	private CloseableModalController cmc;
+	private ConfirmLeaveController leaveDialogBox;
+	
 	private final RepositoryEntry entry;
 	private final boolean closeTabOnLeave;
-	
-	private DialogBoxController leaveDialogBox;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -156,21 +157,34 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 				doConfirmLeave(ureq);
 			}
 		} else if (leaveDialogBox == source) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
 				if (!closeTabOnLeave) {
 					fireEvent(ureq, new LeavingEvent(entry));
 				}
 			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(leaveDialogBox);
+		removeAsListenerAndDispose(cmc);
+		leaveDialogBox = null;
+		cmc = null;
+	}
+
 	private void doConfirmLeave(UserRequest ureq) {
-		String reName = StringHelper.escapeHtml(entry.getDisplayname());
+		if (guardModalController(leaveDialogBox)) return;
+
 		String title = translate("sign.out");
-		String text = "<div class='o_warning'>" + translate("sign.out.dialog.text", reName) + "</div>";
-		leaveDialogBox = activateYesNoDialog(ureq, title, text, leaveDialogBox);
+		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), entry);
+		listenTo(leaveDialogBox);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doLeave(UserRequest ureq) {

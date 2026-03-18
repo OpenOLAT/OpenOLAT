@@ -69,11 +69,11 @@ public class ConfirmLeaveController extends FormBasicController {
 
 			uifactory.addStaticTextElement("rows", "course.leave.entry", StringHelper.escapeHtml(entry.getDisplayname()), layoutCont);
 
-			String[] acknowledge = new String[] { translate("course.leave.acknowledge.msg") };
+			String[] acknowledge = new String[] { translate("course.leave.confirmation") };
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
-			leaveButton = uifactory.addFormLink("sign.out", buttonsCont, Link.BUTTON);
+			leaveButton = uifactory.addFormLink("course.leave.button", buttonsCont, Link.BUTTON);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}

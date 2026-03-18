@@ -284,7 +284,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseDocumentsController documentsCtrl;
 	private CoachFolderController coachFolderCtrl;
 	private CourseAreasController areasCtrl;
-	private ConfirmLeaveController leaveDialogBox;
+	private ConfirmLeaveController leaveCtrl;
 	private Controller archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private CourseFolderController courseFolderCtrl;
@@ -1599,12 +1599,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if(event instanceof QuickPublishEvent qpe) {
 				toolControllerDone(ureq, qpe.getSelectedCourseNodeIdent());
 			}
-		}  else if(source == leaveDialogBox) {
+		}  else if(source == leaveCtrl) {
 			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
-			} else{
-				cmc.deactivate();
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == searchController) {
 			if (QuickSearchEvent.QUICKSEARCH.equals(event.getCommand())) {
 				doDeactivateQuickSearch();
@@ -1809,7 +1809,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(statsToolCtr);
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
-		removeAsListenerAndDispose(leaveDialogBox);
+		removeAsListenerAndDispose(leaveCtrl);
 		migrationSelectionCtrl = null;
 		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
@@ -2270,11 +2270,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void doConfirmLeave(UserRequest ureq) {
-		String title = translate("sign.out");
+		if (guardModalController(leaveCtrl)) return;
 
-		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), getRepositoryEntry());
-		listenTo(leaveDialogBox);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(), true, title);
+		String title = translate("sign.out");
+		leaveCtrl = new ConfirmLeaveController(ureq, getWindowControl(), getRepositoryEntry());
+		listenTo(leaveCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

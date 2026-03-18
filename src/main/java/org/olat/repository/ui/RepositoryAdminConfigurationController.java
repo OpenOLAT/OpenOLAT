@@ -170,7 +170,7 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 		
 		String[] leaveValues = new String[] {
 				translate("rentry.leave.atanytime"),
-				translate("rentry.leave.afterenddate"),
+				translate("rentry.leave.after.enddate"),
 				translate("rentry.leave.never")
 		};
 		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "rentry.leave.option", leaveCont, leaveKeys, leaveValues, null);
