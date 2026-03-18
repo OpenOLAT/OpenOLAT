@@ -98,7 +98,7 @@ public class CatalogLauncherRecentlyPublishedEditController extends AbstractLaun
 		
 		// type of resources
 		SelectionValues resourceTypeSV = new SelectionValues();
-		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getMainOrderRepositoryHandlers();
 		for (OrderedRepositoryHandler handler:supportedHandlers) {
 			String type = handler.getHandler().getSupportedType();
 			String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);

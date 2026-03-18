@@ -154,6 +154,12 @@ public class RepositoryHandlerFactory {
 		return ordered;
 	}
 
+	public List<OrderedRepositoryHandler> getMainOrderRepositoryHandlers() {
+		return getOrderRepositoryHandlers().stream()
+				.filter(handler -> handler.getOrder() < OTHER_TYPES_ORDER)
+				.toList();
+	}
+
 	public List<String> getOtherTypes() {
 		List<String> otherTypes = new ArrayList<>();
 		for (OrderedRepositoryHandler handler : handlerList) {
