@@ -459,27 +459,38 @@ public class UserWebService {
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RolesVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RolesVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateRoles(@PathParam("identityKey") Long identityKey, RolesVO roles, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManagerOf(identityKey, request);
-		if(!isUserManager) {
+		Roles managerRoles = getRoles(request);
+		if(!managerRoles.isUserManager() && !managerRoles.isRolesManager() && !managerRoles.isAdministrator()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		Roles identityRoles = securityManager.getRoles(identity);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+
+		RolesByOrganisation defaultRoles = identityRoles.getRoles(defOrganisation);
+		boolean rolesManager = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
+		boolean admin = managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 		
 		Identity actingIdentity = getIdentity(request);
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		boolean userRole = !roles.isGuestOnly() && !roles.isInvitee();
 		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation,
 				roles.isGuestOnly(), roles.isInvitee(), userRole, roles.isAuthor(),
-				roles.isGroupManager(), roles.isPoolAdmin(), roles.isCurriculumManager(),
-				roles.isUserManager(), roles.isInstitutionalResourceManager(), roles.isOlatAdmin(), roles.isSystemAdmin());
+				rolesManager || admin ? roles.isGroupManager() : defaultRoles.hasRole(OrganisationRoles.groupmanager),
+				rolesManager || admin ? roles.isPoolAdmin() : defaultRoles.hasRole(OrganisationRoles.poolmanager),
+				rolesManager || admin ? roles.isCurriculumManager() : defaultRoles.hasRole(OrganisationRoles.curriculummanager),
+				rolesManager || admin ? roles.isUserManager() : defaultRoles.hasRole(OrganisationRoles.usermanager),
+				rolesManager || admin ? roles.isInstitutionalResourceManager() : defaultRoles.hasRole(OrganisationRoles.learnresourcemanager),
+				admin ? roles.isOlatAdmin() : defaultRoles.hasRole(OrganisationRoles.administrator),
+				admin ? roles.isSystemAdmin(): defaultRoles.hasRole(OrganisationRoles.sysadmin));
 		securityManager.updateRoles(actingIdentity, identity, modifiedRoles);
 		dbInstance.commit();// make sure all is committed before loading the roles again
 		Roles updatedRoles = securityManager.getRoles(identity);
