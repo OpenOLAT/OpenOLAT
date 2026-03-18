@@ -105,6 +105,12 @@
 					justify-content: center;
 				}
 			}
+			@container o_start_wrapper (max-width: 660px) {
+				.o_start_inner:has(:nth-child(3))  {
+					flex-wrap: wrap;
+					justify-content: center;
+				}
+			}
 		}
 	}
 	

@@ -1,5 +1,5 @@
 <div class="o_header_start o_block_top">
-	#if($r.visible("start") || $r.visible("start.guest") || $r.visible("leave"))
+	#if($r.visible("start") || $r.visible("start.guest") || $r.visible("leave") || $r.visible("start.admin"))
 		<div class="o_start_wrapper">
 			#if($r.isNotEmpty($warning))
 				<div class="o_start_message o_warning_line">
@@ -19,7 +19,8 @@
 				#end
 				#if($r.available("leave") && $r.visible("leave"))
 					$r.render("leave")
-				#elseif($r.available("start.admin") && $r.visible("start.admin"))
+				#end
+				#if($r.available("start.admin") && $r.visible("start.admin"))
 					$r.render("start.admin")
 				#end
 			</div>
