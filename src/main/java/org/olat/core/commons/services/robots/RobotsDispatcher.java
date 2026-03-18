@@ -20,7 +20,6 @@
 package org.olat.core.commons.services.robots;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 import jakarta.servlet.ServletException;
@@ -29,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -46,33 +46,35 @@ public class RobotsDispatcher implements Dispatcher {
 
 	@Autowired
 	private RobotsService robotsService;
-	
+
+	@Override
+	public boolean isSessionRequired() {
+		return false;
+	}
+
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		try {
-			response.setCharacterEncoding("UTF-8");
-		} catch (Exception e) {
-			//we do our best
+		StringBuilder sb = new StringBuilder();
+		sb.append("User-agent: *\n");
+		sb.append("Disallow: /");
+		List<String> allows = robotsService.getRobotsAllows();
+		for (String allow : allows) {
+			sb.append("\nAllow: ").append(allow);
+			// Disallow indexing the ajax responses
+			sb.append("\nDisallow: ").append(allow).append("1:");
+			sb.append("\nDisallow: ").append(allow).append("1%3A1");
 		}
-		response.setContentType("text/plain");
-		try(PrintWriter writer = response.getWriter()) {
-			writer.write("User-agent: *\n");
-			writer.write("Disallow: /");
-			List<String> allows = robotsService.getRobotsAllows();
-			for (String allow : allows) {
-				writer.write("\nAllow: " + allow);
-				// Disallow indexing the ajax responses
-				writer.write("\nDisallow: " + allow + "1:");
-				writer.write("\nDisallow: " + allow + "1%3A1");
-			}
-			
-			String sitemapIndexPath = robotsService.getSitemapIndexPath();
-			if (StringHelper.containsNonWhitespace(sitemapIndexPath)) {
-				writer.write("\nAllow: " + sitemapIndexPath);
-				writer.write("\n\nSitemap: " + Settings.getServerContextPathURI() + sitemapIndexPath);
-			}
-		} catch(IOException e) {
+
+		String sitemapIndexPath = robotsService.getSitemapIndexPath();
+		if (StringHelper.containsNonWhitespace(sitemapIndexPath)) {
+			sb.append("\nAllow: ").append(sitemapIndexPath);
+			sb.append("\n\nSitemap: ").append(Settings.getServerContextPathURI()).append(sitemapIndexPath);
+		}
+
+		try {
+			ServletUtil.servePublicContent(request, response, sb.toString(), "text/plain", ServletUtil.CACHE_ONE_HOUR);
+		} catch (IOException e) {
 			log.error("", e);
 		}
 	}

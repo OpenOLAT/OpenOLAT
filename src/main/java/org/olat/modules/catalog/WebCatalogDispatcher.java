@@ -45,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -214,16 +213,8 @@ public class WebCatalogDispatcher implements Dispatcher {
 		if (sitemapItems != null) {
 			String result = new SitemapWriter(sitemapItems).getSitemap();
 			
-			StringMediaResource mr = new StringMediaResource();
-			mr.setContentType("application/xml");
-			mr.setEncoding("UTF-8");
-			mr.setData(result);
-			
-			response.setCharacterEncoding("UTF-8");
-			response.setContentType(mr.getContentType());
-			
 			try {
-				ServletUtil.serveResource(request, response, mr);
+				ServletUtil.servePublicContent(request, response, result, "application/xml", ServletUtil.CACHE_ONE_HOUR);
 			} catch (Exception e) {
 				log.error("", e);
 				DispatcherModule.sendServerError(response);

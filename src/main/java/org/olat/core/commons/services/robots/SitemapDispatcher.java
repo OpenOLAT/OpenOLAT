@@ -31,7 +31,6 @@ import org.olat.core.commons.services.robots.model.SitemapIndexItem;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,27 +46,25 @@ public class SitemapDispatcher implements Dispatcher {
 	
 	@Autowired
 	private RobotsService robotsService;
-	
+
+	@Override
+	public boolean isSessionRequired() {
+		return false;
+	}
+
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		List<SitemapIndexItem> sitemapIndexItems = robotsService.getSitemapIndexItems();
 		if (sitemapIndexItems == null || sitemapIndexItems.isEmpty()) {
 			// No provider has a sitemap activated
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
+			return;
 		}
 		
 		String result = new SitemapIndexWriter(sitemapIndexItems).getSitemapIndex();
 		
-		StringMediaResource mr = new StringMediaResource();
-		mr.setContentType("application/xml");
-		mr.setEncoding("UTF-8");
-		mr.setData(result);
-		
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType(mr.getContentType());
-		
 		try {
-			ServletUtil.serveResource(request, response, mr);
+			ServletUtil.servePublicContent(request, response, result, "application/xml", ServletUtil.CACHE_ONE_HOUR);
 		} catch (Exception e) {
 			log.error("", e);
 			DispatcherModule.sendServerError(response);

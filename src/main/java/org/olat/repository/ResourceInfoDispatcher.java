@@ -236,16 +236,8 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				.toList();
 		String result = new SitemapWriter(items).getSitemap();
 		
-		StringMediaResource mr = new StringMediaResource();
-		mr.setContentType("application/xml");
-		mr.setEncoding(CONTENT_ENCODING);
-		mr.setData(result);
-
-		response.setCharacterEncoding(CONTENT_ENCODING);
-		response.setContentType(mr.getContentType());
-
 		try {
-			ServletUtil.serveResource(request, response, mr);
+			ServletUtil.servePublicContent(request, response, result, "application/xml", ServletUtil.CACHE_ONE_HOUR);
 		} catch (Exception e) {
 			DispatcherModule.sendServerError(response);
 		}

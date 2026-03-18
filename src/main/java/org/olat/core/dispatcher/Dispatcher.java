@@ -55,4 +55,15 @@ public interface Dispatcher {
 	 * @param uriPrefix
 	 */
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+
+	/**
+	 * Indicates whether this dispatcher requires an HTTP session. Public-facing
+	 * dispatchers (e.g. robots.txt, sitemap.xml) should return false to avoid
+	 * creating sessions for search engine crawlers.
+	 *
+	 * @return true if a session should be created (default), false otherwise
+	 */
+	default boolean isSessionRequired() {
+		return true;
+	}
 }
