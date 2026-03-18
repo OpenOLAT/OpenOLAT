@@ -573,8 +573,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 						doCloseDetails(row);
 						membersTable.collapseDetails(se.getIndex());
 					} else {
-						membersTable.expandDetails(se.getIndex());
 						doOpenDetails(ureq, row);
+						if (row.getDetailsController() != null) {
+							membersTable.expandDetails(se.getIndex());
+						} else {
+							// there is no details controller available: just edit membership
+							openEdit(ureq, row);
+						}
 					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
