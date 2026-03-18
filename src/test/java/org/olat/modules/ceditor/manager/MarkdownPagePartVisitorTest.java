@@ -530,6 +530,46 @@ public class MarkdownPagePartVisitorTest {
 		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
 	}
 
+	// --- Data URI image tests ---
+
+	@Test
+	public void testDataUriImageUnsupportedMimeType() {
+		// WebP is not in ImageHandler.mimeTypes, should produce a warning
+		VisitorResult result = convertWithWarnings("![icon](data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("Unsupported data URI image type"));
+	}
+
+	@Test
+	public void testDataUriImageNonBase64Rejected() {
+		// Plain text data URI (no ;base64) should be rejected
+		VisitorResult result = convertWithWarnings("![img](data:image/png,rawdata)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("Only base64-encoded"));
+	}
+
+	@Test
+	public void testDataUriImageMalformedNoComma() {
+		VisitorResult result = convertWithWarnings("![img](data:image/png;base64)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("Malformed data URI"));
+	}
+
+	@Test
+	public void testDataUriImageMalformedBase64() {
+		VisitorResult result = convertWithWarnings("![img](data:image/png;base64,!!!notbase64!!!)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("Malformed base64"));
+	}
+
 	// --- Complex document ---
 
 	@Test

@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -444,7 +445,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 					media = versions.get(0).media();
 				}
 			}
-			if (media == null) {
+			if (media == null && imageHandler != null) {
 				media = imageHandler.createMedia(
 					mediaTitle, null, altText, imageFile, filename,
 					null, author, MediaLog.Action.IMPORTED
@@ -470,10 +471,9 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			return downloadRemoteImage(destination);
 		}
 
-		// Data URIs are not supported
+		// Data URIs: decode base64 payload to a temp file
 		if (destination.startsWith("data:")) {
-			warnings.add("Data URI images are not supported: " + destination.substring(0, Math.min(destination.length(), 40)) + "...");
-			return null;
+			return decodeDataUriImage(destination);
 		}
 
 		// Local file paths are only allowed when a basePath is provided (file upload).
@@ -514,10 +514,85 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 					return name;
 				}
 			} catch (Exception e) {
-				// fall through
+				log.debug("Could not extract filename from URL: {}", destination, e);
 			}
 		}
+		if (destination.startsWith("data:")) {
+			String mimeType = extractDataUriMimeType(destination);
+			String suffix = mimeTypeToSuffix(mimeType);
+			return "image" + suffix;
+		}
 		return imageFile.getName();
+	}
+
+	private File decodeDataUriImage(String dataUri) {
+		String mimeType = extractDataUriMimeType(dataUri);
+		if (mimeType == null || !ImageHandler.mimeTypes.contains(mimeType)) {
+			warnings.add("Unsupported data URI image type: " + (mimeType != null ? mimeType : "unknown"));
+			return null;
+		}
+
+		int commaIdx = dataUri.indexOf(',');
+		if (commaIdx < 0) {
+			warnings.add("Malformed data URI (no data payload).");
+			return null;
+		}
+
+		// Only accept base64 encoding
+		String header = dataUri.substring(0, commaIdx);
+		if (!header.contains(";base64")) {
+			warnings.add("Only base64-encoded data URIs are supported.");
+			return null;
+		}
+
+		String base64Data = dataUri.substring(commaIdx + 1);
+		try {
+			// Check estimated decoded size before allocating memory to prevent
+			// OutOfMemoryError from oversized payloads (base64 expands 3 bytes → 4 chars)
+			long estimatedBytes = (long) base64Data.length() * 3 / 4;
+			if (estimatedBytes > MAX_DOWNLOAD_BYTES) {
+				warnings.add("Data URI image too large (max " + (MAX_DOWNLOAD_BYTES / (1024 * 1024)) + " MB).");
+				return null;
+			}
+			byte[] decoded = Base64.getDecoder().decode(base64Data);
+
+			String suffix = mimeTypeToSuffix(mimeType);
+			Path tempFile = Files.createTempFile("md_img_", suffix);
+			Files.write(tempFile, decoded);
+			File file = tempFile.toFile();
+			file.deleteOnExit();
+			return file;
+		} catch (IllegalArgumentException e) {
+			warnings.add("Malformed base64 data in data URI.");
+			return null;
+		} catch (Exception e) {
+			log.warn("Failed to decode data URI image", e);
+			warnings.add("Failed to decode data URI image: " + e.getMessage());
+			return null;
+		}
+	}
+
+	private String extractDataUriMimeType(String dataUri) {
+		// Format: data:<mime>;base64,<data> or data:<mime>,<data>
+		if (!dataUri.startsWith("data:")) {
+			return null;
+		}
+		int semicolonIdx = dataUri.indexOf(';');
+		int commaIdx = dataUri.indexOf(',');
+		int endIdx = semicolonIdx > 0 && (commaIdx < 0 || semicolonIdx < commaIdx) ? semicolonIdx : commaIdx;
+		if (endIdx <= 5) {
+			return null;
+		}
+		return dataUri.substring(5, endIdx).toLowerCase();
+	}
+
+	private static String mimeTypeToSuffix(String mimeType) {
+		if (mimeType == null) return ".png";
+		return switch (mimeType) {
+			case "image/gif" -> ".gif";
+			case "image/jpg", "image/jpeg" -> ".jpg";
+			default -> ".png";
+		};
 	}
 
 	private File downloadRemoteImage(String url) {
