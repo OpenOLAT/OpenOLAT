@@ -22,10 +22,10 @@ package de.bps.olat.portal.institution;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.FastHashMap;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -47,7 +47,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 	private String cssWrapperClass = "o_portlet_institutions";
 
 	private static final String CONFIG_FILE = "/WEB-INF/olat_portals_institution.xml";
-	private static FastHashMap institutions = null;
+	private static Map<String,InstitutionPortletEntry> institutions;
 
 	public static final String TYPE_COURSE = "course";
 	public static final String TYPE_CATALOG = "catalog";
@@ -75,7 +75,9 @@ public class InstitutionPortlet extends AbstractPortlet {
 
 	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
-		if (institutions == null) init();
+		if (institutions == null) {
+			init();
+		}
 		InstitutionPortlet p = new InstitutionPortlet();
 		p.setName(this.getName());
 		p.setConfiguration(configuration);
@@ -123,8 +125,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 	 * initializes the institution portlet config
 	 */
 	public void init() {
-
-		institutions = new FastHashMap();
+		Map<String,InstitutionPortletEntry> map = new HashMap<>();
 		
 		File configurationFile = new File(WebappHelper.getContextRealPath(CONFIG_FILE));
 		XStream xstream = getInstitutionConfigXStream();
@@ -135,11 +136,10 @@ public class InstitutionPortlet extends AbstractPortlet {
 			if (shortName == null) { 
 				throw new StartupException("Institution portlet startup: No shortname given for one entry!");
 			}
-			institutions.put(shortName.toLowerCase(), institution);
+			map.put(shortName.toLowerCase(), institution);
 		}
-
-		// from now on optimize for non-synchronized read access
-		institutions.setFast(true);
+		
+		institutions = Map.copyOf(map);
 	}
 
 	/**
@@ -148,14 +148,12 @@ public class InstitutionPortlet extends AbstractPortlet {
 	 * @return The entry, or null if not found
 	 */
 	public static InstitutionPortletEntry getInstitutionPortletEntry(String institution) {
-		return (InstitutionPortletEntry) institutions.get(institution);
+		return institutions.get(institution);
 	}
 	
 		
 	public static XStream getInstitutionConfigXStream() {
 		XStream xstream = new XStream(new XppDriver(new NoNameCoder()));
-		
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				InstitutionConfiguration.class, Value.class, PolymorphLinkElement.class, PolymorphLink.class,
 				InstitutionPortletEntry.class, InstitutionPortletSupervisorEntry.class, InstitutionPortlet.class,

@@ -1,7 +1,7 @@
 #if($hasInstitution) 
    <div class="o_institution">	
 	<h4 class="o_institution_header">
-  	  <a href="$iurl" target="_blank"><img src='$r.staticLink("images/institution/$ilogo")' alt="$iname" /></a>
+  	  <a href="$iurl" target="_blank" rel="noopener noreferrer"><img src='$r.staticLink("images/institution/$ilogo")' alt="$iname" /></a>
 	  <p>$iname</p>
 	</h4>
 	<ul>
@@ -22,7 +22,7 @@
 		<p>$r.translate("url"): <a href="$surl" target="_blank">$surl</a></p>
 	#end
 	#if($showblog)
-		<p>$r.translate("blog"): <a href="$sblog" target="_blank">$sblog</a></p>
+		<p>$r.translate("blog"): <a href="$sblog" target="_blank" rel="noopener noreferrer">$sblog</a></p>
 	#end
    </div>
 #else
