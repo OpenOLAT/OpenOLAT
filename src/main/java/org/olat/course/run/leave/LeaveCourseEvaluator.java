@@ -54,10 +54,10 @@ public class LeaveCourseEvaluator {
 			if (p.origin() == LeaveCourseParticipation.Origin.CPL) {
 				return LeaveCourseStatus.HIDDEN;
 			}
-			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && p.enrollmentGroup() && !p.delistingPermitted()) {
+			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && p.linkedCourseCount() > 1) {
 				return LeaveCourseStatus.HIDDEN;
 			}
-			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && !p.enrollmentGroup() && p.linkedCourseCount() > 1) {
+			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && p.enrollmentGroup() && !p.delistingPermitted()) {
 				return LeaveCourseStatus.HIDDEN;
 			}
 		}
@@ -70,7 +70,7 @@ public class LeaveCourseEvaluator {
 			return LeaveCourseStatus.ENABLED;
 		}
 
-		if (ctx.getLifecycleEndDate() != null && !DateUtils.toLocalDate(ctx.getNow()).isBefore(DateUtils.toLocalDate(ctx.getLifecycleEndDate()))) {
+		if (ctx.getLifecycleEndDate() != null && DateUtils.toLocalDate(ctx.getNow()).isAfter(DateUtils.toLocalDate(ctx.getLifecycleEndDate()))) {
 			return LeaveCourseStatus.ENABLED;
 		}
 
