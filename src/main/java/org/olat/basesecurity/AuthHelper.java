@@ -365,7 +365,10 @@ public class AuthHelper {
 			sessionManager.signOffAndClear(usess);
 			return LOGIN_NOTAVAILABLE;
 		}
-
+		
+		// Rotate session id
+		ureq.getHttpReq().changeSessionId();
+		
 		//need to block the all things for assessment?
 		if(usess.getRoles() != null && (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin())) {
 			usess.setLockRequests(List.of());
