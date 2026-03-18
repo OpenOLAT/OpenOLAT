@@ -36,6 +36,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -95,17 +98,25 @@ public class RepositoryEntryLeaveCourseContext implements LeaveCourseContext {
 			result.add(new LeaveCourseParticipation(Origin.DIRECT, false, false, 1));
 		}
 
+		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(
+				repositoryEntry, identity, List.of(CurriculumRoles.participant));
+		if (!curriculumElements.isEmpty()) {
+			result.add(new LeaveCourseParticipation(Origin.CPL, false, false, 1));
+		}
+
 		boolean isCourse = CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName());
-		if (isCourse) {
-			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
-			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, repositoryEntry, 0, -1);
-			if (!groups.isEmpty()) {
+
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, repositoryEntry, 0, -1);
+		if (!groups.isEmpty()) {
+			Map<Long, Boolean> enrollmentDelistingByGroupKey = new HashMap<>(1);
+
+			if (isCourse) {
 				var course = CourseFactory.loadCourse(repositoryEntry);
 				var rootNode = course.getRunStructure().getRootNode();
 				var courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-
-				Map<Long, Boolean> enrollmentDelistingByGroupKey = new HashMap<>();
 
 				new TreeVisitor(node -> {
 					if (node instanceof ENCourseNode enNode) {
@@ -122,14 +133,14 @@ public class RepositoryEntryLeaveCourseContext implements LeaveCourseContext {
 						}
 					}
 				}, rootNode, true).visitAll();
+			}
 
-				BusinessGroupRelationDAO businessGroupRelationDAO = CoreSpringFactory.getImpl(BusinessGroupRelationDAO.class);
-				for (BusinessGroup group : groups) {
-					boolean isEnrollment = enrollmentDelistingByGroupKey.containsKey(group.getKey());
-					boolean delisting = enrollmentDelistingByGroupKey.getOrDefault(group.getKey(), false);
-					int linkedCourseCount = businessGroupRelationDAO.countResources(group);
-					result.add(new LeaveCourseParticipation(Origin.GROUP, isEnrollment, delisting, linkedCourseCount));
-				}
+			BusinessGroupRelationDAO businessGroupRelationDAO = CoreSpringFactory.getImpl(BusinessGroupRelationDAO.class);
+			for (BusinessGroup group : groups) {
+				boolean isEnrollment = isCourse && enrollmentDelistingByGroupKey.containsKey(group.getKey());
+				boolean delisting = isCourse && enrollmentDelistingByGroupKey.getOrDefault(group.getKey(), false);
+				int linkedCourseCount = businessGroupRelationDAO.countResources(group);
+				result.add(new LeaveCourseParticipation(Origin.GROUP, isEnrollment, delisting, linkedCourseCount));
 			}
 		}
 
