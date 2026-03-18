@@ -330,4 +330,32 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		restModule.setApiAccess(currentAccess);
 		waitMessageAreConsumed();
 	}
+	
+	/**
+	 * Login is blocked for 5 minutes after a certain number of failed attempts.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void loginBlocked() throws IOException, URISyntaxException {
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-2");
+		dbInstance.commitAndCloseSession();
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users/me").build();
+		RestConnection conn = new RestConnection(id.getLogin(), "wrong password");
+		for(int i=0; i<10; i++) {
+			HttpGet method = conn.createGet(request, MediaType.APPLICATION_XML, true);
+			HttpResponse response = conn.execute(method);
+			Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+			EntityUtils.consume(response.getEntity());
+		}
+		conn.shutdown();
+		
+		RestConnection correctConn = new RestConnection(id.getLogin(), id.getPassword());
+		HttpGet method = correctConn.createGet(request, MediaType.APPLICATION_XML, true);
+		HttpResponse response = correctConn.execute(method);
+		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+	}
 }
