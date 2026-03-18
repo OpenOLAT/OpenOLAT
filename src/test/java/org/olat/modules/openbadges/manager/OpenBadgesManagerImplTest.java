@@ -37,13 +37,16 @@ import java.util.UUID;
 
 import javax.imageio.IIOImage;
 import javax.imageio.metadata.IIOMetadata;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -51,6 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.crypto.CryptoUtil;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.openbadges.BadgeAssertion;
@@ -75,6 +79,16 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -87,19 +101,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
-import org.apache.commons.io.FileUtils;
-import org.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * <a href="http://www.openolat.org">
@@ -257,7 +258,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		String mergedSvg = managerImpl.mergeSvg(svg, verifyValue, assertionJson);
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		String xPathString = "//svg";
-		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(mergedSvg)));
+		Document document = XMLFactories.newSVGDocumentBuilder().parse(new InputSource(new StringReader(mergedSvg)));
 		NodeList nodeList = (NodeList) xPath.compile(xPathString).evaluate(document, XPathConstants.NODESET);
 		
 		Assert.assertEquals(1, nodeList.getLength());
@@ -320,7 +321,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		String xPathString = "//svg";
-		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(mergedSvg)));
+		Document document = XMLFactories.newSVGDocumentBuilder().parse(new InputSource(new StringReader(mergedSvg)));
 		NodeList nodeList = (NodeList) xPath.compile(xPathString).evaluate(document, XPathConstants.NODESET);
 
 		Assert.assertEquals(1, nodeList.getLength());
