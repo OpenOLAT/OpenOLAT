@@ -274,6 +274,10 @@ VFSLeaf file = folder.createChildLeaf("report.pdf");
 VFSManager.copyContent(inputStream, file, identity);
 ```
 
+## Code Style Rules
+
+- **No pure whitespace changes:** Never change invisible characters (spaces, tabs) on lines where the only modification is the whitespace itself. Whitespace may be changed on lines where actual code is also being modified. This keeps diffs clean and avoids unnecessary merge conflicts.
+
 ## Security Checklist
 
 - **XSS:** Use `$r.escapeHtml()` for all user text in templates. `$r.render()` is safe.
