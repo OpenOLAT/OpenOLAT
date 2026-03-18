@@ -753,7 +753,7 @@ A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_iqsurv`
 
-### SCORM learning content
+### SCORM 1.2
 
 A course element (building block) that can be added to a course structure.
 

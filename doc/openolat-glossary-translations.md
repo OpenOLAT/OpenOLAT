@@ -195,7 +195,7 @@ canonical translations used throughout the application.
 | Portfolio task | Portfolioaufgabe | Devoir portfolio |  | Attivit\u00E0 del portfolio |
 | Practice | \u00DCbung | Exercice |  | Prova |
 | Questionnaire | Fragebogen | Questionnaire | Cuestionario | Questionario |
-| SCORM learning content | SCORM-Lerninhalt | Contenu did. SCORM | Contenido did\u00E1ctico SCORM | Contenuto didattico SCORM |
+| SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 |
 | Selection | Auswahl | S\u00E9lection |  | Selezione |
 | Self-test | Selbsttest | Auto-test | Auto-Test | Autotest |
 | Structure | Struktur | Structure | Estructura | Struttura |
