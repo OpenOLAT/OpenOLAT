@@ -46,6 +46,7 @@ public class TranscoderJob {
 	private String notifyStatusUrl;
 	private TranscoderOriginal original;
 	private List<Integer> resolutions;
+	private boolean generateSubtitles;
 	
 	public String getUuid() {
 		return uuid;
@@ -109,5 +110,13 @@ public class TranscoderJob {
 
 	public void setResolutions(List<Integer> resolutions) {
 		this.resolutions = resolutions;
+	}
+
+	public boolean isGenerateSubtitles() {
+		return generateSubtitles;
+	}
+
+	public void setGenerateSubtitles(boolean generateSubtitles) {
+		this.generateSubtitles = generateSubtitles;
 	}
 }
