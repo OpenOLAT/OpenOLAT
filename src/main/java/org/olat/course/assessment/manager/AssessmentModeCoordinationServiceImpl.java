@@ -592,6 +592,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 	
 	private void sendEvent(String cmd, AssessmentMode mode, Set<Long> assessedIdentityKeys, Map<Long,Integer> extraTimesInSeconds) {
+		RepositoryEntry entry = repositoryEntryDao.loadByKey(mode.getRepositoryEntry().getKey());
+		((AssessmentModeImpl) mode).setRepositoryEntry(entry);
 		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
 		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, transientMode, assessedIdentityKeys, extraTimesInSeconds);
 		coordinatorManager.getCoordinator().getEventBus()
