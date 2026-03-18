@@ -1145,17 +1145,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			}
 			
-			LeaveCourseContext leaveCtx = new CourseRuntimeLeaveCourseContext(
-				userCourseEnv, assessmentLock, isGuestOnly,
-				reSecurity.getWrappedSecurity().isCurriculumParticipant());
-			LeaveCourseStatus leaveStatus = new LeaveCourseEvaluator().evaluate(leaveCtx);
-			if (leaveStatus != LeaveCourseStatus.HIDDEN) {
-				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
-				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
-				leaveLink.setEnabled(leaveStatus == LeaveCourseStatus.ENABLED);
-				myCourse.addComponent(new Spacer("leaving-space"));
-				myCourse.addComponent(leaveLink);
+			// Show leave action, but only if participant is selected in roles switch.
+			if (reSecurity.isParticipant()) {
+				LeaveCourseContext leaveCtx = new CourseRuntimeLeaveCourseContext(
+						userCourseEnv, assessmentLock, isGuestOnly,
+						reSecurity.getWrappedSecurity().isCurriculumParticipant());
+				LeaveCourseStatus leaveStatus = new LeaveCourseEvaluator().evaluate(leaveCtx);
+				if (leaveStatus != LeaveCourseStatus.HIDDEN) {
+					leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
+					leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
+					leaveLink.setEnabled(leaveStatus == LeaveCourseStatus.ENABLED);
+					myCourse.addComponent(new Spacer("leaving-space"));
+					myCourse.addComponent(leaveLink);
+				}
 			}
+			
 		}
 			
 		if(myCourse.size() > 0) {
