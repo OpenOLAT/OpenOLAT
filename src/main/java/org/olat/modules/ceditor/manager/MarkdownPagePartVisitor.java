@@ -591,6 +591,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		return switch (mimeType) {
 			case "image/gif" -> ".gif";
 			case "image/jpg", "image/jpeg" -> ".jpg";
+			case "image/svg+xml" -> ".svg";
 			default -> ".png";
 		};
 	}
