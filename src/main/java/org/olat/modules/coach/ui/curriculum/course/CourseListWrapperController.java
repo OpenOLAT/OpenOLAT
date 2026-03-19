@@ -112,6 +112,7 @@ public class CourseListWrapperController extends BasicController implements Acti
 		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
 		
 		if (onlyImplementations) {
+			mainVC.contextPut("showTitle", Boolean.TRUE);
 			doOpenImplementations(ureq);
 		} else {
 			mainVC.contextPut("showScopes", true);

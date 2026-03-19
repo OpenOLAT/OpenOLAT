@@ -1,6 +1,13 @@
-#if($showScopes)
-$r.render("scopes")
-#end
-<div class="o_segments_content clearfix">
-	$r.render("content")
-</div>
+<fieldset>
+	#if($showTitle)
+	<legend>
+		<i class="o_icon o_icon-fw o_icon_curriculum"> </i> $r.translate("search.implementations.list")
+	</legend>
+	#end
+	#if($showScopes)
+	$r.render("scopes")
+	#end
+	<div class="o_segments_content clearfix">
+		$r.render("content")
+	</div>
+</fieldset>
