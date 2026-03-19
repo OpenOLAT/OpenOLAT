@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
@@ -524,7 +525,7 @@ public class CurriculumElementListController extends FormBasicController impleme
             if (event instanceof SelectionEvent se) {
                 CourseCurriculumTreeWithViewsRow row = tableModel.getObject(se.getIndex());
                 doSelect(ureq, row);
-            } else if(event instanceof FlexiTableFilterTabEvent) {
+            } else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
             	tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
             	tableEl.reset(true, true, true);
             }
