@@ -228,7 +228,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 	private static void renderStandardVariantIcon(StringOutput sb, EmptyStateRenderConfig config) {
 		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
-				config.getIconCss() : "o_icon_empty_objects";
+				config.getIconCss() : "o_icon_question";
 		
 		sb.append("<div class='o_empty_standard'>");
 		sb.append("<div class='o_empty_circle'>");
@@ -239,7 +239,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 	private static void renderSmallVariantOpen(StringOutput sb, EmptyStateRenderConfig config) {
 		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
-				config.getIconCss() : "o_icon_empty_objects";
+				config.getIconCss() : "o_icon_question";
 
 		sb.append("<div class='o_empty_small'>");
 		sb.append("<div class='o_empty_circle'>");
