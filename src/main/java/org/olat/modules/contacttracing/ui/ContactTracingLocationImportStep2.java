@@ -169,7 +169,7 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 	        tableEl.setMultiSelect(true);
 	        tableEl.setSelectAllEnable(true);
 	        tableEl.setShowAllRowsEnabled(true);
-			tableEl.setEmptyTableSettings("contact.tracing.location.table.empty", null, FlexiTableElement.TABLE_EMPTY_ICON);	        
+			tableEl.setEmptyTableMessageKey("contact.tracing.location.table.empty");	        
 	        tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingLocationImportStep2.class.getCanonicalName());
 	        
 	        // Legend to table

@@ -132,8 +132,6 @@ public class TableController extends BasicController {
 	 * Fired when the next primary action is klicked in the empty state
 	 */
 	public static final Event EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION = new Event("empty.table.next.primary.action");
-	public static final String TABLE_EMPTY_ICON = "o_icon_empty_objects";
-	
 
 	private VelocityContainer contentVc;
 
@@ -256,9 +254,6 @@ public class TableController extends BasicController {
 		emptyState.setMessageTranslated(tableEmptyMessage);
 		
 		String tableEmptyIconCss = tableConfig.getTableEmptyIconCss();
-		if (tableEmptyIconCss == null) {
-			tableEmptyIconCss = TABLE_EMPTY_ICON;
-		}
 		emptyState.setIconCss(tableEmptyIconCss);
 
 		emptyState.setHintTranslated(tableConfig.getTableEmptyHint());

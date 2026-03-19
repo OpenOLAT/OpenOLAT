@@ -57,7 +57,6 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public static final String ROW_SELECT_EVENT = "rSelect";
 	public static final String ROW_CHECKED_EVENT = "rChecked";
 	public static final String ROW_UNCHECKED_EVENT = "rUnchecked";
-	public static final String TABLE_EMPTY_ICON = "o_icon_empty_objects";
 
 	
 	@Override

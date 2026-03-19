@@ -251,7 +251,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.load(null, null, 0, pageSize);
 		}
 		// Initialize empty state with standard message
-		setEmptyTableSettings("default.tableEmptyMessage", null, FlexiTableElement.TABLE_EMPTY_ICON);
+		setEmptyTableSettings("default.tableEmptyMessage", null, null);
 	}
 
 	@Override
@@ -2687,7 +2687,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void setEmptyTableMessageKey(String i18key) {
-		setEmptyTableSettings(i18key, null, TABLE_EMPTY_ICON);
+		setEmptyTableSettings(i18key, null, null);
 	}
 
 	@Override
