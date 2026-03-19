@@ -47,9 +47,10 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 	
 	private final Locale locale;
 
-	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel, Locale locale, boolean openCloseAll) {
 		super(columnsModel);
 		this.locale = locale;
+		setHasOpenCloseAll(openCloseAll);
 	}
 	
 	@Override

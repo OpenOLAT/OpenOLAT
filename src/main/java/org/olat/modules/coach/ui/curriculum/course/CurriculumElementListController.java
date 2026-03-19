@@ -206,7 +206,7 @@ public class CurriculumElementListController extends FormBasicController impleme
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
         }
 
-        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale());
+        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale(), implementation != null);
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
         tableEl.setElementCssClass("o_curriculumtable");
         tableEl.setCustomizeColumns(true);
