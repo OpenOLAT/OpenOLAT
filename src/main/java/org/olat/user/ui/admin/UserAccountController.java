@@ -272,8 +272,9 @@ public class UserAccountController extends FormBasicController {
 			daysDeletionEl.setValue(Long.toString(daysBeforeDeletion));
 		}
 		
-		saveButton.setVisible(!editedRoles.isGuestOnly());
-		cancelButton.setVisible(!editedRoles.isGuestOnly());
+		boolean editableFieldsVisible = statusEl.isVisible() || expirationDateEl.isVisible();
+		saveButton.setVisible(editableFieldsVisible);
+		cancelButton.setVisible(editableFieldsVisible);
 	}
 	
 	private void setStatus(Integer status) {
