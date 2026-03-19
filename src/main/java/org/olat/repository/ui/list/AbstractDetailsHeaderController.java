@@ -164,7 +164,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			// Same message if one of this two reasons
 			setWarning(translate("access.denied.not.yet.available"), translate("access.denied.not.yet.available.hint"));
 		} else if (config.isAdminConfirmationPendingMessage()) {
-			setWarning(translate("access.denied.pending"), translate("access.denied.pending.hint"));
+			setWarning(translate("access.denied.reservation.confirmation.pending"), translate("access.denied.reservation.confirmation.pending.hint"));
 		}
 		if (config.isOwnerCoachMessage()) {
 			setWarning2(translate("access.available.roles"), translate("access.available.roles.hint"));
