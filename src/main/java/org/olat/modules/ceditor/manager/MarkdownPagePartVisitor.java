@@ -62,6 +62,8 @@ import org.commonmark.renderer.html.DefaultUrlSanitizer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -86,6 +88,7 @@ import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
 import org.olat.modules.ceditor.ui.MarkdownImportController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaCenterLicenseHandler;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
@@ -450,6 +453,13 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 					mediaTitle, null, altText, imageFile, filename,
 					null, author, MediaLog.Action.IMPORTED
 				);
+				// Set default license if license module is enabled for media center
+				LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
+				MediaCenterLicenseHandler licenseHandler = CoreSpringFactory.getImpl(MediaCenterLicenseHandler.class);
+				if (licenseModule.isEnabled(licenseHandler)) {
+					LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+					licenseService.createDefaultLicense(media, licenseHandler, author);
+				}
 			}
 
 			MediaPart mediaPart = MediaPart.valueOf(author, media);
