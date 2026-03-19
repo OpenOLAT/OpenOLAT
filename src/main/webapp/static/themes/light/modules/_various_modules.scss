@@ -1128,6 +1128,11 @@ div.o_reminder_custom_email {
 	.o_tabbed_pane_content {
 		padding: $o-tabbed-pane-padding;
 	}
+	@media (prefers-reduced-motion: no-preference) {
+		.nav-tabs > li > a {
+			transition: color 0.15s ease, border-color 0.15s ease;
+		}
+	}
 }
 
 /* Icon panel component */

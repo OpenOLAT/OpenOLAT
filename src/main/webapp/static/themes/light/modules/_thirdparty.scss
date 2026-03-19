@@ -206,6 +206,9 @@
 			+.swiper-button-next {
 				margin-left: 5px;
 			}
+			@media (prefers-reduced-motion: no-preference) {
+				transition: box-shadow 0.15s ease, color 0.15s ease;
+			}			
 		}
 		
 		.swiper {

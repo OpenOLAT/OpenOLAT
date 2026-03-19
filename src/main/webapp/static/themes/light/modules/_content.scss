@@ -40,6 +40,13 @@ a {
     @include tab-focus();
   }
 }
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	a {
+		transition: color 0.15s ease;
+	}
+}
+
 
 h1 { 
 	color: $o-content-h1-color;

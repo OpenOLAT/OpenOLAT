@@ -100,6 +100,11 @@ body .modal-body {
 	padding: 20px;
 }
 
+/* Panels: very subtle depth */
+.panel {
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
 /* extend panel to contain multiple separated bodies */
 .panel-body:nth-child(n+2) {
 	border-top: 1px solid $panel-default-border;
@@ -108,6 +113,18 @@ body .modal-body {
 /* collapsible panels must have pointer cursor to indicate clickable space*/	
 .panel .panel-heading[data-toggle="collapse"] {
 	cursor: pointer;
+}
+
+/* ---- Focus states ---- */
+.form-control:focus {
+	box-shadow: 0 0 0 3px rgba($brand-primary, 0.12);
+	border-color: $brand-primary;
+}
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	.form-control {
+		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	}
 }
 
 /* fix misplaced error icon */
@@ -130,10 +147,24 @@ body .modal-body {
 	right: 0;
 }
 
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	.btn {
+		transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+	}	
+}
+
 .btn.btn-primary.o_disabled {
 	color: $btn-primary-color !important;
 }
 
+/* Primary button: subtle shadow for prominence */
+.btn-primary {
+	box-shadow: 0 1px 2px rgba($btn-primary-bg, 0.3);
+	&:hover {
+		box-shadow: 0 2px 6px rgba($btn-primary-bg, 0.35);
+	}
+}
 
 body .progress-bar {
 	&[aria-valuenow="1"], &[aria-valuenow="2"] {
@@ -167,7 +198,10 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 	}
 }
 
-// The dropdown menu (ul)
+/* Dropdown menus: elevated with shadow */
+.dropdown-menu {
+ 	box-shadow: $o-dropdown-box-shadow; 
+}
 .dropdown-menu {
 	// Links within the dropdown menu
 	> li > a {

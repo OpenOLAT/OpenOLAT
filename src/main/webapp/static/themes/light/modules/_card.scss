@@ -3,7 +3,8 @@
 %o_card,
 .o_card {
 	border: $o-card-border;
-	border-radius: $o-card-border-radius;
+	border-radius: $o-card-border-radius;	
+	box-shadow: $o-card-box-shadow;
 	
 	.o_card_title {
 		a {
@@ -14,12 +15,15 @@
 	
 	&:hover {
 		border: 1px solid $o-card-hover-color;
-		border-radius: 3px;
+		box-shadow: $o-card-box-hover-shadow; 
 		.o_card_title {
 			a {
 				color: $o-card-hover-color;
 			}
 		}
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		transition: box-shadow 0.2s ease, border-color 0.2s ease;
 	}
 	
 	.o_card_radio_select {

@@ -28,7 +28,9 @@
 			content: none;
 		}
 	}
-
+	.breadcrumb {
+		border-radius: $border-radius-base;
+	}
 }
 
 .o_breadcrumb_bar {

@@ -65,6 +65,7 @@
 	  	@include clearfix();
 
 	  	background-color: $o-toolbar-bg-color;
+	  	box-shadow: $o-toolbar-box-shadow;
     	@include border-bottom-radius($o-toolbar-border-radius); // don't hide background
 		
 		@media (max-width: $screen-sm-max) { 

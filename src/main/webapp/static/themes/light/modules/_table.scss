@@ -1024,6 +1024,16 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	.o_table_flexi .o_table_filter_area {
+		.o_filter {
+			transition: border-color 0.15s ease, background-color 0.15s ease;
+		}
+	}
+}
+
+
 /* Helper classes to display a custom row as a table */
 @mixin row-flex($index) {
 	padding: $table-condensed-cell-padding;

@@ -34,6 +34,13 @@ $o-bookmark-color				: $o-brand-berry;
 $o-button-dirty-color			: $text-color;
 $o-button-dirty-bg				: $o-brand-peach;
 
+
+/* Modern border radius */
+$border-radius-base				: 8px !default;
+$border-radius-large			: 10px !default;
+$border-radius-small			: 6px !default;
+
+
 /* Login screen */
 $o-login-form-align				: left;
 $o-login-form-bg-img			: "images/sunrise-surge.jpg"; 

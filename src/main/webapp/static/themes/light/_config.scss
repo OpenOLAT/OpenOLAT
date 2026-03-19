@@ -33,22 +33,23 @@
 /* To add place for the scroll bar */
 $modal-lg						: 920px !default;
 $modal-md                    	: auto !default;
+$modal-content-border-color		: #e4e7ec !default;
 
 
 /* bootstrap default is very white, use just a little bit more than just white */
-$btn-default-color				: #333 !default;
-$btn-default-bg					: #f8f8f8 !default;
-$btn-default-border				: #d4d4d4 !default;
-$dropdown-bg					: #fcfcfc !default; 
-$panel-bg						: #fcfcfc !default;
-$pagination-bg					: #fcfcfc !default;
+$btn-default-color				: #344054 !default;
+$btn-default-bg					: #fff !default;
+$btn-default-border				: #d0d5dd !default;
+$dropdown-bg					: #fff !default;
+$panel-bg						: #fff !default;
+$pagination-bg					: #fff !default;
 $pagination-active-color 		: #fff !default;
-$list-group-bg					: #fcfcfc !default;
+$list-group-bg					: #fff !default;
 
 $input-bg						: #fff !default; 
 $input-border					: $btn-default-border !default;
-$input-bg-disabled				: #fafafa !default;
-$input-group-addon-bg			: $btn-default-bg !default;
+$input-bg-disabled				: #f9fafb !default;
+$input-group-addon-bg			: #f2f4f7 !default;
 $input-group-addon-border-color	: $btn-default-border !default;
 
 /* pagination is must a special button, same style */
@@ -58,10 +59,26 @@ $pagination-border				: $btn-default-border !default;
 $pagination-disabled-border		: $btn-default-border !default;
 
 /* a11y optimizations */
-$text-color						: #333 !default;
-$navbar-default-link-color		: #666 !default;
-$badge-bg						: #666 !default;
-$text-muted						: #595959 !default;
+$text-color						: #344054 !default;
+$navbar-default-link-color		: #475467 !default;
+$badge-bg						: #667085 !default;
+$text-muted						: #667085 !default;
+
+/* Modern primary blue */
+$brand-primary					: #2E6BBF !default;
+/* Modern navbar - white with subtle border */
+$navbar-default-bg				: #fff !default;
+$navbar-default-border			: #eaecf0 !default;
+/* Modern panel borders */
+$panel-default-heading-bg		: #f9fafb !default;
+$panel-default-border			: #e4e7ec !default;
+$nav-tabs-border-color			: $panel-default-border !default;
+/* Modern dropdown */
+$dropdown-border				: rgba(0, 0, 0, .03) !default;
+$o-dropdown-box-shadow			: 0 4px 16px rgba(16, 24, 40, 0.1), 0 1px 3px rgba(16, 24, 40, 0.06) !default;
+/* Modern table */ 
+$table-border-color				: #f2f4f7 !default;
+$table-bg-accent				: #f9fafb !default;
 
 /* Colors (style guide) */
 $o-base-blue-color						: #105CAD !default;
@@ -220,11 +237,11 @@ $o-table-details-bg							: #f6fbfd !default;
 $o-table-details-padding						: 5px 30px 20px 30px !default;
 $o-table-details-container-margin			: 0px !default;
 $o-table-details-container-padding			: 10px !default;
-$o-table-details-container-border			: 1px solid #e7e7e7 !default;
+$o-table-details-container-border			: 1px solid #e4e7ec !default;
 $o-table-details-container-border-radius	: 5px !default;
 $o-table-details-container-bg				: #fff !default;
 
-$o-table-filter-collapse-color	: #e7e7e7;
+$o-table-filter-collapse-color	: #e4e7ec;
 
 $o-table-filter-color			: $btn-primary-border !default;
 $o-table-filter-border			: $btn-primary-border !default;
@@ -241,7 +258,7 @@ $o-table-filter-active-bg		: $btn-primary-border !default;
 /* Empty state in various modules */
 $o-empty-indicator-color		: #495057 !default;
 $o-empty-icon-color				: #C6C9CD !default;
-$o-empty-border-color			: 1px solid #e7e7e7 !default;
+$o-empty-border-color			: 1px solid #e4e7ec !default;
 $o-empty-border-radius			: $panel-border-radius !default;
 $o-empty-msg-color				: $text-color !default;
 
@@ -251,11 +268,11 @@ $o-empty-panel-icon-bg-color		: rgb($brand-primary, 0.1) !default;
 
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
-$o-page-width-toggler-border-color			: #eee !default;
-$o-page-width-toggler-border-radius			: 4px !default;
-$o-page-width-toggler-background			: #efefef !default;
-$o-page-width-toggler-border-hover-color	: #ccc !default;
-$o-page-width-toggler-hover-background		: #eee !default;
+$o-page-width-toggler-border-color			: #eaecf0 !default;
+$o-page-width-toggler-border-radius			: $border-radius-base !default;
+$o-page-width-toggler-background			: #f2f4f7 !default;
+$o-page-width-toggler-border-hover-color	: #d0d5dd !default;
+$o-page-width-toggler-hover-background		: #eaecf0 !default;
 
 
 /* Main content area. The outer area is left and right outside the content area (only visible in large screen).  */
@@ -276,7 +293,7 @@ $o-navbar-collapse-max-height		: $navbar-collapse-max-height !default;
 $o-navbar-border-color				: $navbar-default-border !default;
 $o-navbar-bg						: $navbar-default-bg !default;
 $o-navbar-color						: $navbar-default-color !default;
-$o-navbar-link-color				: #666 !default;
+$o-navbar-link-color				: #475467 !default;
 $o-navbar-link-hover-color			: darken($o-navbar-link-color, 10%) !default;
 $o-navbar-link-hover-bg 			: $navbar-default-link-hover-bg !default;
 $o-navbar-link-active-color 		: $navbar-default-link-active-color !default;
@@ -348,17 +365,18 @@ $o-footer-share-font-size			: $font-size-base !default;
 $o-footer-padding-top				: 10px !default;
 $o-footer-height 					: 70px !default;
 $o-footer-dmz-height 				: $o-footer-height !default;
-$o-footer-outer-bg 					: #f5f5f5 !default;
-$o-footer-inner-bg 					: #f5f5f5 !default;
-$o-footer-default-color 			: #666 !default;
-$o-footer-default-link-color 		: #666 !default;
-$o-footer-default-link-hover-color 	: #000 !default;
+$o-footer-outer-bg 					: #f9fafb !default;
+$o-footer-inner-bg 					: #f9fafb !default;
+$o-footer-default-color 			: #667085 !default;
+$o-footer-default-link-color 		: #667085 !default;
+$o-footer-default-link-hover-color 	: #344054 !default;
 $o-footer-position-absolute 		: true !default;
 $o-footer-margin-top				: $padding-large-vertical !default;
 
 /* Toolbar in course, editor etc */
 $o-toolbar-bg-color				: $navbar-default-bg !default;
-$o-toolbar-edit_bg-color		: #fcfcfc !default;
+$o-toolbar-box-shadow			: 0 1px 2px rgba(16, 24, 40, 0.04) !default;
+$o-toolbar-edit_bg-color		: #fff !default;
 $o-toolbar-edit_stripe-color	: #fff0d9 !default; 
 $o-toolbar-border-color			: $navbar-default-border !default;
 $o-toolbar-border-radius		: $navbar-border-radius !default;
@@ -457,15 +475,16 @@ $o-tree-insertion-source-border				: #FFDBAC !default;
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
 
 /* Icon panel component */
-$o-icon-panel-border				: 1px solid #e7e7e7 !default;
+$o-icon-panel-border				: 1px solid #e4e7ec !default;
 $o-icon-panel-border-radius			: $panel-border-radius !default;
-$o-icon-panel-icon-bg-color			: #fcfcfc !default;
+$o-icon-panel-icon-bg-color			: #f9fafb !default;
 $o-icon-panel-content-bg-color		: $panel-bg !default;
+$o-icon-panel-box-shadow 			: 0 1px 2px rgba(16, 24, 40, 0.04) !default;
 
 /* Wizard */
-$o-wizard-steps-bg-color				: #f9f9f9 !default;
-$o-wizard-steps-border-color			: #d4d4d4 !default;
-$o-wizard-step-bg-color					: #ededed !default;
+$o-wizard-steps-bg-color				: #f9fafb !default;
+$o-wizard-steps-border-color			: #d0d5dd !default;
+$o-wizard-step-bg-color					: #eaecf0 !default;
 $o-wizard-step-main-active-color		: $btn-primary-color !default;
 $o-wizard-step-main-active-bg-color		: $btn-primary-bg !default;
 $o-wizard-step-sub-active-color			: $text-color !default;
@@ -516,7 +535,7 @@ $o-button-primary-light-bg					: #fff !default;
 $o-button-primary-light-color				: o-a11y-color($btn-primary-bg, $o-button-primary-light-bg) !default;
 $o-button-primary-light-border				: $o-button-primary-light-color !default;
 $o-button-primary-light-hover-bg			: $btn-primary-bg !default;
-$o-button-primary-light-hover-color		: o-a11y-color($btn-primary-color, $o-button-primary-light-hover-bg) !default;
+$o-button-primary-light-hover-color			: o-a11y-color($o-button-primary-light-color, $o-button-primary-light-hover-bg) !default;
 $o-button-primary-light-hover-border		: $o-button-primary-light-hover-bg !default;
 
 /* Bento layout */
@@ -527,13 +546,14 @@ $o-bento-border-radius					: $panel-border-radius !default;
 /* Login page */
 $o-login-header-color			: $brand-primary !default;
 $o-login-bg-color				: rgba(255,255,255,0.95) !default;
-$o-login-border-color			: #e7e7e7 !default;
+$o-login-border-color			: #e4e7ec !default;
 $o-login-border					: 1px solid $o-login-border-color !default;
 $o-login-border-radius			: $panel-border-radius !default;
-$o-login-box-shadow				: 0px 1px 10px -1px rgba(0,0,0,.3) !default;
+$o-login-box-shadow				: 0 8px 32px rgba(16, 24, 40, 0.12), 0 2px 8px rgba(16, 24, 40, 0.06) !default;
+
 $o-login-padding				: 50px !default;
 $o-login-xs-padding				: 10px !default;
-$o-login-help-bg-color			: #e7e7e7 !default;
+$o-login-help-bg-color			: #e4e7ec !default;
 $o-login-help-link-color		: o-a11y-color($link-color, $o-login-help-bg-color) !default;
 $o-login-form-width				: 480px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
@@ -549,7 +569,7 @@ $o-login-infomessage-radius		: $border-radius-base !default;
 $o-login-infomessage-bg			: rgba(255,255,255,.5) !default;
 $o-login-lead-color				: $text-color !default;
 $o-login-lead-header-color		: $o-content-header-base-color !default;
-$o-login-border-color			: #e5e5e5 !default;
+$o-login-border-color			: #e4e7ec !default;
 
 /* Course and catalog site */
 $o-coursesite-rowelem-width-md 		: 210px !default;
@@ -564,6 +584,9 @@ $o-coursesite-rowelem-space-xs		: 0px 	!default;
 $o-coursesite-rowelem-border 		: $btn-default-border !default; 
 $o-coursesite-rowelem-border-radius : $border-radius-base !default;
 $o-coursesite-rowelem-bg			: #fff !default;
+$o-coursesite-rowelem-hover-bg			: rgba($gray-light, 0.01) !default;
+$o-coursesite-rowelem-hover-box-shadow	: inset 0 1px 4px rgba($brand-primary, 0.05) !default;
+$o-coursesite-rowelem-hover-visual-transform	: scale(1.02) !default;
 $o-coursesite-catalog-space 		: $padding-large-vertical * 2 !default;
 $o-coursesite-catalog-space-sm 		: $padding-large-vertical !default;
 $o-coursesite-catalog-space-xs 		: $padding-xs-vertical !default;
@@ -631,8 +654,8 @@ $o-ac-order-warning-color			: $o-labeled-yellow-light-color !default;
 $o-ac-order-pending-color			: $o-labeled-yellow-light-color !default;
 $o-ac-ba-radio-card-width			: 270px !default;
 $o-ac-ba-min-width					: 250px !default;
-$o-ac-ba-bg-color					: #f9f9f9 !default;
-$o-ac-ba-border						: 1px solid #cccccc !default;
+$o-ac-ba-bg-color					: #f9fafb !default;
+$o-ac-ba-border						: 1px solid #d0d5dd !default;
 $o-ac-ba-border-radius				: 4px !default;
 $o-ac-ba-padding					: 10px 15px 10px 0px !default;
 $o-ac-ba-icon-width					: 65px !default;
@@ -675,10 +698,10 @@ $o-course-node-warning			: $state-warning-text !default;
 $o-course-node-locked			: $state-info-text !default;
 $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
-$o-cn-style-border					: 1px solid #e7e7e7 !default;
+$o-cn-style-border					: 1px solid #e4e7ec !default;
 $o-cn-style-border-radius			: $panel-border-radius !default;
 $o-cn-style-border-width			: 3px !default;
-$o-cn-style-bg						: #fcfcfc !default;
+$o-cn-style-bg						: #f9fafb !default;
 $o-cn-style-text-pading				: $panel-body-padding !default;
 $o-cn-style-image-bg				: $brand-primary !default;
 $o-cn-style-image-height			: 120px !default;
@@ -693,7 +716,7 @@ $o-cn-style-cat-orange-color		: #FF8C00 !default;
 $o-cn-style-cat-yellow-color		: #FFD700 !default;
 $o-cn-style-cat-light-green-color	: #32CD32 !default;
 $o-cn-style-cat-dark-green-color	: #228B22 !default;
-$o-cn-style-peekview-bg				: rgba(0, 0, 0, 0.025) !default;
+$o-cn-style-peekview-bg				: rgba(16, 24, 40, 0.02) !default;
 $o-st-peekview-bg					: $body-bg !default;
 $o-st-peekview-text-padding			: 2px 15px !default;
 
@@ -739,8 +762,8 @@ $o-curriculum-lifecycle-bg			: transparent !default;
 $o-curriculum-lifecycle-padding		: math.div($padding-base-horizontal,2) $padding-base-vertical $padding-base-horizontal $padding-base-vertical!default;
 /* Level 0 specific styling */
 $o-curriculum-l0-show-description	: true !default;
-$o-curriculum-l0-border				: 1px solid #eee !default;
-$o-curriculum-l0-bg					: #f6f6f6 !default;
+$o-curriculum-l0-border				: 1px solid #eaecf0 !default;
+$o-curriculum-l0-bg					: #f2f4f7 !default;
 $o-curriculum-l0-margin				: math.div($line-height-computed,2) 0 math.div($line-height-computed,4) 0 !default;
 $o-curriculum-l0-title-bg			: $o-curriculum-title-bg !default;
 $o-curriculum-l0-title-padding		: $padding-base-horizontal $padding-base-vertical !default;
@@ -752,7 +775,7 @@ $o-curriculum-l1-show-description	: $o-curriculum-show-description !default;
 $o-curriculum-l1-border				: $o-curriculum-border !default;
 $o-curriculum-l1-bg					: $o-curriculum-bg !default;
 $o-curriculum-l1-margin				: $o-curriculum-margin !default;
-$o-curriculum-l1-title-bg			: #ebebeb !default;
+$o-curriculum-l1-title-bg			: #eaecf0 !default;
 $o-curriculum-l1-title-padding		: $o-curriculum-title-padding !default;
 $o-curriculum-l1-lifecycle-bg		: $o-curriculum-l1-title-bg !default;
 $o-curriculum-l1-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
@@ -776,7 +799,7 @@ $o-curriculum-l3-lifecycle-bg		: $o-curriculum-lifecycle-bg !default;
 $o-curriculum-l3-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
 /* Render all curriculum elements with courses in multi columnn layout? If no set to 1 */
 $o-curriculum-entry-cols			: 2 !default;
-$o-curriculum-entry-bg				: #f6f6f6 !default;
+$o-curriculum-entry-bg				: #f2f4f7 !default;
 /* Element type specific styles */
 /* Type course program */
 $o-curriculum-style-program-show-description	: $o-curriculum-l0-show-description !default;
@@ -852,14 +875,14 @@ $o-curriculum-status-select-border-color		: #707070 !default;
 $o-curriculum-status-select-color				: #707070 !default;
 
 /* Curriculum overview */
-$o-curriculum-widget-border						: 1px solid #e7e7e7 !default;
+$o-curriculum-widget-border						: 1px solid #e4e7ec !default;
 $o-curriculum-widget-border-radius				: 4px !default;
 $o-curriculum-widget-bg-color					: $panel-bg !default;
 $o-curriculum-widget-color						: $brand-primary !default;
-$o-curriculum-widget-card-border				: 1px solid #cccccc !default;
+$o-curriculum-widget-card-border				: 1px solid #d0d5dd !default;
 $o-curriculum-widget-card-border-radius			: 4px !default;
 
-$o-curriculum-widget-template-label-border		: 1px solid #cccccc !default;
+$o-curriculum-widget-template-label-border		: 1px solid #d0d5dd !default;
 $o-curriculum-widget-template-label-bg			: #fff;
 $o-curriculum-widget-template-label-color		: $text-color !default;
 
@@ -891,7 +914,7 @@ $o-assessment-mode-end-soon-bg					: $state-danger-bg !default;
 $o-assessment-mode-end-soon-border-color		: $state-danger-text !default;
 $o_assessment-mode-status-color-bright			: #fff;
 
-$o-assessment-inspection-border-color			: 1px solid #cccccc !default;
+$o-assessment-inspection-border-color			: 1px solid #d0d5dd !default;
 
 $o-assessment-inspection-scheduled-color		: #4a6785 !default;
 $o-assessment-inspection-active-color			: #32cd32 !default;
@@ -922,7 +945,7 @@ $o-portfolio-entry-deleted-color					: #000 !default;
 $o-portfolio-entry-incoming-color					: $brand-success !default;
 $o-portfolio-entry-inprocess-color					: #c8c8c8 !default;
 $o-portfolio-entry-done-color						: $brand-success !default;
-$o-portfolio-media-content-background-color			: #f8f8f8 !default;
+$o-portfolio-media-content-background-color			: #f9fafb !default;
 $o-portfolio-media-content-space					: $padding-large-vertical !default;
 $o-portfolio-lead-space-sm							: $padding-large-vertical !default;
 $o-portfolio-lead-background-color					: lighten($gray-base, 95%) !default;
@@ -933,19 +956,19 @@ $o-portfolio-lead-ended-border-color				: darken($o-portfolio-lead-ended-backgro
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
 
 /* Page editor */
-$o-editor-edit-background-color						: #F5F5F5;
+$o-editor-edit-background-color						: #f2f4f7;
 
 /* Editor */
-$o-editor-settings-bg								: #f9f9f9 !default;
+$o-editor-settings-bg								: #f9fafb !default;
 $o-editor-title-dark								: #000 !default;
 $o-editor-title-bright								: #f9f9f9 !default;
 $o-editor-hover-border-color						: #ef00ef !default;
 $o-editor-drop-border-color							: #a0a0b0 !default;
 $o-editor-drag-accepted-color						: #e80c96 !default;
-$o-editor-container-border-color					: #eeeeee !default;
+$o-editor-container-border-color					: #eaecf0 !default;
 $o-editor-container-slot-padding					: 10px;
 
-$o-editor-border-color								: #d9d9d9 !default;
+$o-editor-border-color								: #d0d5dd !default;
 $o-editor-border-width								: 25px !default;
 $o-editor-selected-border-color						: $brand-primary !default;
 $o-editor-selected-color							: $brand-primary !default;
@@ -958,7 +981,7 @@ $o-editor-tools-box-shadow							: $o-editor-inspector-box-shadow;
 $o-editor-layout-inner-v-border						: 1px solid $o-editor-border-color;
 $o-editor-layout-inner-h-border						: 1px dashed $o-editor-border-color;
 $o-editor-layout-pseudo-icon-border-color			: grey;
-$o-editor-layout-pseudo-icon-bg-color				: #eeeeee;
+$o-editor-layout-pseudo-icon-bg-color				: #eaecf0;
 $o-editor-layout-pseudo-icon-bg-active-color		: $brand-primary;
 
 /* Media */
@@ -1082,20 +1105,20 @@ $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-c
 
 $o-qti-inline-choice-print-border-color				: #999 !default;
 
-$o-qti-editor-box-border-color						: #e5e5e5;
+$o-qti-editor-box-border-color						: #e4e7ec;
 
 $o-qti-log-viewer-manual-correction-bg-color		: #feffee;
 
 /* Video module */
 $o-video-controls-selected							: rgba(33, 248, 248, 1);
 $o-video-controls-bg								: rgba(50, 50, 50, 0.95);
-$o-video-marker-bg-color							: #efefef;
+$o-video-marker-bg-color							: #eaecf0;
 $o-video-time-marker-default-bg-color				: $brand-info;
 
 $o-video-startbox-main-border-color					: $brand-primary;
 $o-video-startbox-main-bg-color						: rgba($brand-primary,0.1);
 $o-video-startbox-border-radius						: $border-radius-base !default;
-$o-video-startbox-bg-color							: #fcfcfc;
+$o-video-startbox-bg-color							: #f9fafb;
 
 $o-video-correct-segments-color						: $brand-success;
 $o-video-notcorrect-segments-color					: $brand-danger;
@@ -1126,11 +1149,11 @@ $o-lm-table-timeline-next-border-color				: $o-labeled-blue-light-border-color !
 $o-lm-table-timeline-next-bg-color					: transparentize($o-labeled-blue-light-border-color, 0.9) !default;
 
 /* Chat and other floating window */
-$o-dialog-window-bg				: #fefefe !default;
-$o-dialog-window-bar-bg			: #eee !default;
+$o-dialog-window-bg				: #fff !default;
+$o-dialog-window-bar-bg			: #f2f4f7 !default;
 $o-dialog-header-color			: $brand-primary !default;
 $o-dialog-header-font-weight	: $headings-font-weight !default;
-$o-dialog-header-background		: #f8f8f8 !default;
+$o-dialog-header-background		: #f9fafb !default;
 $o-dialog-footer-background		: $o-dialog-header-background !default;
 
 /* Instant messaging and chat */
@@ -1375,12 +1398,12 @@ $o-drawing-select-bg		: transparentize($brand-primary, 0.5) !default;
 /* Placeholder panels */
 $o-panel-placeholder-border-width			: 2px !default;
 $o-panel-placeholder-border-radius			: 10px !default;
-$o-panel-placeholder-color					: #666 !default;
+$o-panel-placeholder-color					: #667085 !default;
 $o-panel-placeholder-font-weight			: bold !default;
-$o-panel-placeholder-border-color			: #ccc!default;
+$o-panel-placeholder-border-color			: #d0d5dd !default;
 $o-panel-placeholder-border-active-color	: $brand-primary !default;
-$o-panel-placeholder-bg						: #fcfcfc !default;
-$o-panel-placeholder-bg-active				: #f7f7f7 !default;
+$o-panel-placeholder-bg						: #fff !default;
+$o-panel-placeholder-bg-active				: #f9fafb !default;
 $o-panel-placeholder-padding				: 10px !default;
 
 /* Citations */
@@ -1407,10 +1430,10 @@ $o-qpool-finalVersion-color			: #14892c !default;
 $o-qpool-endOfLife-color			: #aaa !default;
 
 /* Process step component */
-$o-step-border						: 1px solid #e7e7e7 !default;
+$o-step-border						: 1px solid #e4e7ec !default;
 $o-step-border-radius				: $panel-border-radius !default;
 $o-step-border-header-padding		: 10px !default;
-$o-step-border-header-bg-color		: #fcfcfc;
+$o-step-border-header-bg-color		: #f9fafb;
 $o-step-border-content-padding			: $panel-body-padding !default;
 $o-step-border-width				: 4px !default;
 $o-step-milestone-size				: ($o-step-border-width * 4) !default;
@@ -1527,7 +1550,7 @@ $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
 
 /* User autentication */
-$o-panel-authentication-border	: 1px solid #e7e7e7 !default;
+$o-panel-authentication-border	: 1px solid #e4e7ec !default;
 $o-authentication-color-level1	: #793E02;
 $o-authentication-color-level2	: #0E375F;
 $o-authentication-color-level3	: #274E15;
@@ -1581,7 +1604,7 @@ $o-files-size-large								: #E82A0C;
 $o-file-upload-border-bottom-color				: $text-muted;
 $o-folder-row-thumbnail-size					: 30px !default;
 $o-folder-row-thumbnail-icon-size				: 22px !default;
-$o-folder-row-thumbnail-image-border			: 1px solid #e7e7e7 !default;
+$o-folder-row-thumbnail-image-border			: 1px solid #e4e7ec !default;
 $o-folder-row-thumbnail-folder-icon-color		: $brand-primary !default;
 $o-folder-card-thumbnail-height					: 172px !default;
 $o-folder-card-thumbnail-icon-color				: #ccc !default;
@@ -1715,10 +1738,10 @@ $o-export-area-rowelem-space-md				: 10px !default;
 /* Practice */
 $o-practice-play-main-border-color			: $brand-primary;
 $o-practice-play-main-bg-color				: rgba($brand-primary,0.1);
-$o-practice-play-bg-color					: #fcfcfc;
-$o-practice-play-border-color				: #e5e5e5;
+$o-practice-play-bg-color					: #f9fafb;
+$o-practice-play-border-color				: #e4e7ec;
 $o-practice-play-border-radius				: $border-radius-base !default;
-$o-practice-play-start-link-bg-color		: #F7F6F6;
+$o-practice-play-start-link-bg-color		: #f2f4f7;
 $o-practice-challenge-progress-bg-color		: $brand-primary;
 $o-practice-progress-not-bg-color			: #CCCCCC;
 $o-practice-progress-l1-bg-color			: $o-cn-style-cat-light-blue-color ;
@@ -1739,7 +1762,7 @@ $o-swiper-button-bg-color					: $btn-default-bg !default;
 $o-swiper-button-border						: 1px solid $btn-default-border !default;
 $o-swiper-button-border-radius				: $border-radius-base !default;
 $o-swiper-button-hover-color				: $brand-primary !default;
-$o-swiper-button-hover-box-shadow			: 0px 2px 4px rgba(0, 0, 0, 0.075) !default;
+$o-swiper-button-hover-box-shadow			: 0px 2px 6px rgba($btn-default-border, 0.5) !default;
 $o-swiper-button-disabled-opacity			: .35 !default;
 
 /* Glossary */
@@ -1789,17 +1812,19 @@ $o-dialog-cn-label-new-border-color			: $o-edu-type-standard-course-color;
 $o-dialog-cn-label-new-color				: o-a11y-color(#998100) !default;
 
 /* Card */
-$o-card-border								: 1px solid #cccccc !default;
-$o-card-border-radius						: 4px !default;
+$o-card-border								: 1px solid #e4e7ec !default;
+$o-card-border-radius						: $border-radius-base !default;
 $o-card-hover-color							: $brand-primary !default;
 $o-card-title-color							: $o-coursesite-meta-title-color !default;
-$o-card-bg-color							: #f5f5f5 !default;
+$o-card-bg-color							: #f9fafb !default;
+$o-card-box-shadow 							: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04) !default;
+$o-card-box-hover-shadow					: 0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04) !default;
 
 /* Performance Widget */
 $o-widget-min-width							: 260px !default;
 $o-widget-height							: 135px !default;
 $o-widget-padding							: 20px !default;
-$o-widget-border							: 1px solid #e7e7e7 !default;
+$o-widget-border							: 1px solid #e4e7ec !default;
 $o-widget-border-radius						: 4px !default;
 $o-widget-title-font-size					: 18px !default;
 $o-widget-title-font-weight					: bold !default;
@@ -1824,7 +1849,7 @@ $o-widgets-gap								: 10px !default;
 $o-dashboard-widget-padding						: 0 !default;
 $o-dashboard-widget-base-margin					: 15px !default;
 $o-dashboard-widget-content-margin				: 0 $o-dashboard-widget-base-margin !default;
-$o-dashboard-widget-border						: 1px solid #e7e7e7 !default;
+$o-dashboard-widget-border						: 1px solid #e4e7ec !default;
 $o-dashboard-widget-border-radius				: 4px !default;
 $o-dashboard-widget-bg-color						: $panel-bg !default;
 $o-dashboard-widget-header-margin				: 20px $o-dashboard-widget-base-margin !default;
