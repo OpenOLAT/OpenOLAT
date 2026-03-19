@@ -225,7 +225,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
+		if (implementation == null) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
+		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
@@ -242,10 +244,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
 		
+		List<String> relevantStatuses = new ArrayList<>(List.of(CurriculumElementStatus.preparation.name(),
+				CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name()));
+		if (implementation == null) {
+			relevantStatuses.add(CurriculumElementStatus.active.name());
+		}
 		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						List.of(CurriculumElementStatus.preparation.name(), CurriculumElementStatus.provisional.name(),
-								CurriculumElementStatus.confirmed.name(), CurriculumElementStatus.active.name()))));
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, relevantStatuses)));
 		tabs.add(relevantTab);
 		
 		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB, translate("filter.finished"),
