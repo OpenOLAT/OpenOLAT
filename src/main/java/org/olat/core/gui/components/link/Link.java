@@ -672,7 +672,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	/**
 	 * get the mouse position as event.command coded as x123y456 and appended to the UserRequest
 	 * catch it inside the event method with the ureq.getModuleUri() method.<br>
-	 * Uses prototype.js
+	 * Uses jQuery
 	 * @param b
 	 */
 	public void registerForMousePositionEvent(boolean b) {
@@ -682,7 +682,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	/**
 	 * register a javascript function to an event of this link
 	 * <br>
-	 * Uses prototype.js
+	 * Uses jQuery
 	 * @param event
 	 * @param handlerFunction: A javascript function name
 	 */

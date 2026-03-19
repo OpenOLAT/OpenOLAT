@@ -345,7 +345,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 							} else {	
 								nodeDeliveryOptions.setStandardMode(Boolean.FALSE);
 								reConfig.getDeliveryOptions().setOpenolatCss(Boolean.TRUE);
-								reConfig.getDeliveryOptions().setPrototypeEnabled(Boolean.TRUE);
 								reConfig.getDeliveryOptions().setHeight(height);
 							}
 							reConfig.getDeliveryOptions().setContentEncoding(contentEncoding);
@@ -369,7 +368,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 								} else {
 									nodeDeliveryOptions.setStandardMode(Boolean.FALSE);
 									nodeDeliveryOptions.setOpenolatCss(Boolean.TRUE);
-									nodeDeliveryOptions.setPrototypeEnabled(Boolean.TRUE);
 									nodeDeliveryOptions.setHeight(height);
 								}
 							}

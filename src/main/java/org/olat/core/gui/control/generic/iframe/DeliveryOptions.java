@@ -91,10 +91,22 @@ public class DeliveryOptions implements Cloneable, Serializable {
 		this.jQueryEnabled = jQueryEnabled;
 	}
 
+	/**
+	 * Don't use it, only for serialization backwards compatibility
+	 * 
+	 * @return
+	 */
+	@Deprecated
 	public Boolean getPrototypeEnabled() {
 		return prototypeEnabled;
 	}
 
+	/**
+	 * Don't use it, only for serialization backwards compatibility
+	 * 
+	 * @param prototypeEnabled
+	 */
+	@Deprecated
 	public void setPrototypeEnabled(Boolean prototypeEnabled) {
 		this.prototypeEnabled = prototypeEnabled;
 	}
@@ -141,7 +153,6 @@ public class DeliveryOptions implements Cloneable, Serializable {
 
 	public boolean rawContent() {
 		return (jQueryEnabled == null || !jQueryEnabled.booleanValue())
-				&& (prototypeEnabled == null || !prototypeEnabled.booleanValue())
 				&& (openolatCss == null || !openolatCss.booleanValue());
 	}
 
@@ -149,7 +160,6 @@ public class DeliveryOptions implements Cloneable, Serializable {
 	protected DeliveryOptions clone() {
 		DeliveryOptions config = new DeliveryOptions();
 		config.jQueryEnabled = jQueryEnabled;
-		config.prototypeEnabled = prototypeEnabled;
 		config.glossaryEnabled = glossaryEnabled;
 		config.height = height;
 		config.contentEncoding = contentEncoding;

@@ -86,7 +86,6 @@ public class IFrameDeliveryMapper implements Mapper {
 	private String customHeaderContent;
 	
 	private Boolean jQueryEnabled;
-	private Boolean prototypeEnabled;
 	private Boolean openolatCss;
 	
 	private transient boolean checkForInlineEvent;
@@ -119,11 +118,9 @@ public class IFrameDeliveryMapper implements Mapper {
 				rawContent = true;
 				openolatCss = false;
 				jQueryEnabled = false;
-				prototypeEnabled = false;
 				enableTextmarking = false;
 			} else {
 				jQueryEnabled = config.getjQueryEnabled();
-				prototypeEnabled = config.getPrototypeEnabled();
 				if(config.getGlossaryEnabled() != null) {
 					enableTextmarking = config.getGlossaryEnabled().booleanValue();
 				}
@@ -409,10 +406,6 @@ public class IFrameDeliveryMapper implements Mapper {
 				sb.appendJQuery();
 			}
 			
-			if(prototypeEnabled != null && prototypeEnabled.booleanValue() && !strictSanitize) {
-				sb.appendPrototype();
-			}
-			
 			// Load some iframe.js helper code
 			sb.append("\n<script>\n");
 			// Set the iframe id. Important to set before iframe.js is loaded.
@@ -656,10 +649,6 @@ public class IFrameDeliveryMapper implements Mapper {
 		
 		public void appendJQuery2Cond() {
 			appendStaticJs("js/jquery/jquery-3.7.1.min.js");
-		}
-
-		public void appendPrototype() {
-			appendStaticJs("js/prototype/prototype.js");
 		}
 		
 		public void appendJsMath() {

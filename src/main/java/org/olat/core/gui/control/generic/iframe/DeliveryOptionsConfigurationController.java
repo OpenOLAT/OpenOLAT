@@ -63,7 +63,8 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private String helpPage;
 	private final boolean readOnly;
 
-	private static final String[] jsKeys = new String[] {"none", "jQuery", "prototypejs" };
+	private static final String NONE_KEY = "none";
+	private static final String JQUERY_KEY = "jQuery";
 	private static final String[] cssKeys = new String[] {"none", "openolat" };
 	
 	private static final String[] keys = new String[]{ DeliveryOptions.CONFIG_HEIGHT_AUTO, "460", "480", 
@@ -187,10 +188,10 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		
 		uifactory.addSpacerElement("spacer.js", formLayout, false);
 
-		String[] jsValues = new String[] {
-				translate("option.js.none"), translate("option.js.jQuery"), translate("option.js.prototypejs")
-		};
-		jsOptionEl = uifactory.addRadiosVertical("option.js", formLayout, jsKeys, jsValues);
+		SelectionValues jsPK = new SelectionValues();
+		jsPK.add(SelectionValues.entry(NONE_KEY, translate("option.js.none")));
+		jsPK.add(SelectionValues.entry(JQUERY_KEY, translate("option.js.jQuery")));
+		jsOptionEl = uifactory.addRadiosVertical("option.js", formLayout, jsPK.keys(), jsPK.values());
 		jsOptionEl.addActionListener(FormEvent.ONCHANGE);
 		jsOptionEl.setEnabled(!readOnly);
 		
@@ -290,7 +291,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private void updateStandardMode() {
 		boolean standard = standardModeEl.isSelected(0);
 		if(standard) {
-			jsOptionEl.select(jsKeys[0], true);
+			jsOptionEl.select(NONE_KEY, true);
 			cssOptionEl.select(cssKeys[0], true);
 			glossarEl.select("on", false);
 			if(heightEl.isSelected(0)) {
@@ -309,14 +310,12 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		
 		if(cfg != null) {
 			if(cfg.getjQueryEnabled() != null && cfg.getjQueryEnabled().booleanValue()) {
-				jsOptionEl.select(jsKeys[1], true);//jQuery
-			} else if(cfg.getPrototypeEnabled() != null && cfg.getPrototypeEnabled().booleanValue()) {
-				jsOptionEl.select(jsKeys[2], true);//prototype
+				jsOptionEl.select(JQUERY_KEY, true);//jQuery
 			} else {
-				jsOptionEl.select(jsKeys[0], true);//default is none
+				jsOptionEl.select(NONE_KEY, true);//default is none
 			}
 		} else {
-			jsOptionEl.select(jsKeys[0], true);//default is none
+			jsOptionEl.select(NONE_KEY, true);//default is none
 		}
 		
 		Boolean glossarEnabled = (cfg == null ? null : cfg.getGlossaryEnabled());
@@ -430,7 +429,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			//standard mode
 			options.setStandardMode(Boolean.TRUE);
 			options.setjQueryEnabled(Boolean.FALSE);
-			options.setPrototypeEnabled(Boolean.FALSE);
 			options.setGlossaryEnabled(Boolean.FALSE);
 			options.setHeight(heightEl.getSelectedKey());
 			options.setOpenolatCss(Boolean.FALSE);
@@ -439,11 +437,9 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			//js
 			if(jsOptionEl.isSelected(0)) {
 				options.setjQueryEnabled(Boolean.FALSE);
-				options.setPrototypeEnabled(Boolean.FALSE);
 				options.setGlossaryEnabled(Boolean.FALSE);
 			} else {
 				options.setjQueryEnabled(jsOptionEl.isSelected(1));
-				options.setPrototypeEnabled(jsOptionEl.isSelected(2));
 				options.setGlossaryEnabled(glossarEl.isAtLeastSelected(1));
 			}
 			//css
@@ -456,7 +452,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private void persistRawOptions(DeliveryOptions options) {
 		options.setStandardMode(standardModeEl.isSelected(0));
 		options.setjQueryEnabled(jsOptionEl.isSelected(1));
-		options.setPrototypeEnabled(jsOptionEl.isSelected(2));
 		options.setGlossaryEnabled(glossarEl.isAtLeastSelected(1));
 		options.setHeight(heightEl.getSelectedKey());
 	}
