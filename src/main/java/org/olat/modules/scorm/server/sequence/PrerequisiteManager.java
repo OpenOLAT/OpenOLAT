@@ -22,7 +22,7 @@ package org.olat.modules.scorm.server.sequence;
 
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +30,14 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
-
-import bsh.EvalError;
-import bsh.Interpreter;
 
 /**
  * A class to handle prerequisites found for items in the manifest. Uses
@@ -48,7 +49,7 @@ public class PrerequisiteManager {
 	private static final Logger log = Tracing.createLoggerFor(PrerequisiteManager.class);
 	
 	// A hashtable of all key (scoIDs) and values (status)
-	private Map<String,String> _prereqTable = new Hashtable<>();
+	private Map<String,String> _prereqTable = new HashMap<>();
 	/**
 	 * the disk version of the model
 	 */
@@ -66,6 +67,10 @@ public class PrerequisiteManager {
 		if (!populateFromDisk(org)) {
 			log.error("could not load in tracking model: " + org);
 		}
+	}
+	
+	protected PrerequisiteManager() {
+
 	}
 
 	/**
@@ -130,7 +135,8 @@ public class PrerequisiteManager {
 	 */
 	public boolean checkPrerequisites(String prereq) {
 		try {
-			Interpreter i = new Interpreter(); // Construct an interpreter
+			final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+			
 			StringTokenizer st1 = new StringTokenizer(prereq, "&|()~");
 			StringTokenizer itemAndValue;
 			String aToken = "";
@@ -144,7 +150,7 @@ public class PrerequisiteManager {
 					}
 					// item exists in prerequisites table. Has it been completed
 					// or passed -grab the answer and declare the var for the interpreter
-					i.set(aToken.replaceAll("-", "_"), checkStatus(aToken));
+					engine.getContext().setAttribute(aToken.replaceAll("-", "_"), checkStatus(aToken), ScriptContext.ENGINE_SCOPE);
 				} else {
 					itemAndValue = new StringTokenizer(aToken, "=<>");
 					String anToken = itemAndValue.nextToken();
@@ -154,7 +160,7 @@ public class PrerequisiteManager {
 					// item exists in prerequisites table. Has it been
 					// completed or passed -grab the answer and declare
 					// the var for the interpreter...
-					i.set(anToken.replaceAll("-", "_"), getStatus(anToken));
+					engine.getContext().setAttribute(anToken.replaceAll("-", "_"), getStatus(anToken), ScriptContext.ENGINE_SCOPE);
 				}
 			}
 			
@@ -166,7 +172,7 @@ public class PrerequisiteManager {
 			prereq = prereq.replaceAll("=\\\"", "^");
 			prereq = prereq.replaceAll("\\\"", "\")");
 			prereq = prereq.replaceAll("\\^", "=\\\"");
-			prereq = prereq.replaceAll("=", ".equals(");
+			prereq = prereq.replaceAll("=", "==(");
 			
 			if (prereq.indexOf("@") != -1) {
 				List<String> v = new ArrayList<>();
@@ -197,15 +203,14 @@ public class PrerequisiteManager {
 					prereq = sb.toString();
 				}
 			}
-			prereq = prereq.replaceAll("@", ".equals(\"");
-			Object result = i.eval(prereq);
-			String a = result.toString();
-			boolean retVal = Boolean.valueOf(a).booleanValue();
-			if (log.isDebugEnabled()){
-				log.debug("eval: " + prereq + " result was: " + retVal);
+			prereq = prereq.replaceAll("@", "==(\"");
+			Object a = engine.eval(prereq);
+			log.debug("eval: {} result was: {}", prereq, a);
+			if(a instanceof Boolean bRes) {
+				return bRes.booleanValue();
 			}
-			return retVal;
-		} catch (EvalError ex) {
+			return Boolean.valueOf(a.toString()).booleanValue();
+		} catch(Exception ex) {
 			log.error("Could not parse prerequisites: ", ex);
 			/* __FIXME:gs:a:[pb] guido is it correct to send true in the exception case?
 			 * Could please leave a comment why you return true, although an exception occured. thx
