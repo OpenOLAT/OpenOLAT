@@ -175,7 +175,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_element_after { @include o-add-icon('arrow-down');}
 .o_icon_element_before { @include o-add-icon('arrow-up');}
 .o_icon_empty_indicator {  @include o-add-icon('search'); transform: scale(-1, 1);} 
-.o_icon_empty_objects { @include o-add-icon('clone');}
 .o_icon_enabled { @include o-add-icon('circle');}
 .o_icon_enlarge { @include o-add-icon('search-plus');}
 .o_icon_eportfolio_add { @include o-add-icon('puzzle-piece');}
