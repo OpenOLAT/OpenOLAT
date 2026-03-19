@@ -263,6 +263,7 @@ ul.o_dropdown {
 	.o_empty_action {
 		display: flex;
 		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 4px;
 		justify-content: center;
 		margin: 1em 0.5em 0.5em 0.5em;
