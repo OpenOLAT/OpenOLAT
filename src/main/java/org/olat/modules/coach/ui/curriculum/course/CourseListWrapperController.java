@@ -30,7 +30,6 @@ import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeEvent;
 import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.scope.ScopeSelection;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -63,7 +62,7 @@ public class CourseListWrapperController extends BasicController implements Acti
     private VelocityContainer mainVC;
     private ScopeSelection scopesSelection;
     private final TooledStackedPanel stackPanel;
-	private BreadcrumbedStackedPanel implementationsListStackPanel;
+	private TooledStackedPanel implementationsListStackPanel;
     
     private final Identity mentee;
     private final Object statEntry;
@@ -186,7 +185,8 @@ public class CourseListWrapperController extends BasicController implements Acti
 
 	private CurriculumElementListController doOpenImplementations(UserRequest ureq) {
 		if(implementationsListCtrl == null) {
-			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
+			implementationsListStackPanel = new TooledStackedPanel("myliststack", getTranslator(), this);
+			implementationsListStackPanel.setToolbarEnabled(false);
 			
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_IMPLEMENTATIONS_LIST), null);
 			implementationsListCtrl = new CurriculumElementListController(ureq, bwControl, implementationsListStackPanel, mentee, curriculumRefs, null,
