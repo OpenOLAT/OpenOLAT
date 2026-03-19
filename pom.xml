@@ -80,7 +80,7 @@
 		<io.undertow>2.3.23.Final</io.undertow>
 		<jackson.version>2.21.1</jackson.version>
 		<jackson.annotations.version>2.21</jackson.annotations.version>
-		<swagger.ui.version>5.32.0</swagger.ui.version>
+		<swagger.ui.version>5.32.1</swagger.ui.version>
 		<com.mysql.version>9.6.0</com.mysql.version>
 		<org.postgresql.version>42.7.10</org.postgresql.version>
 		<org.infinispan.version>16.1.2</org.infinispan.version>
