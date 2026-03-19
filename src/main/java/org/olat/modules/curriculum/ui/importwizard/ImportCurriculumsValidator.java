@@ -152,17 +152,40 @@ public class ImportCurriculumsValidator {
 		}
 		
 		// Validate uniqueness of identifiers within an implementation
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.ELEM);
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.EVENT);
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.COURSE);
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.TMPL);
+		validateUniqueElementIdentifiers(importedRows);
+		validateUniqueEventIdentifiers(importedRows);
 	}
-
-	private void validateUniqueIdentifiersInImplementation(List<ImportedRow> importedRows, CurriculumExportType type) {
+	
+	private void validateUniqueElementIdentifiers(List<ImportedRow> importedRows) {
 		Map<Identifier, ImportedRow> identifiersMap = new HashMap<>();
 		for(ImportedRow row:importedRows) {
-			if(row.type() == type) {
-				Identifier key = new Identifier(row.getImplementationIdentifier(), row.getIdentifier());
+			if(row.type() == CurriculumExportType.IMPL) {
+				identifiersMap.put(new Identifier(row.getCurriculumIdentifier(), row.getIdentifier()), row);
+			}
+		}
+		
+		for(ImportedRow row:importedRows) {
+			if(row.type() == CurriculumExportType.ELEM) {
+				Identifier key = new Identifier(row.getCurriculumIdentifier(), row.getIdentifier());
+				if(identifiersMap.containsKey(key)) {
+					notUniqueIdentifierError(row);
+					
+					ImportedRow obj = identifiersMap.get(key);
+					if(obj != null && obj.type() == CurriculumExportType.ELEM) {
+						notUniqueIdentifierError(obj);
+					}
+				} else {
+					identifiersMap.put(key, row);
+				}
+			}
+		}
+	}
+
+	private void validateUniqueEventIdentifiers(List<ImportedRow> importedRows) {
+		Map<Identifier, ImportedRow> identifiersMap = new HashMap<>();
+		for(ImportedRow row:importedRows) {
+			if(row.type() == CurriculumExportType.EVENT) {
+				Identifier key = new Identifier(row.getCurriculumIdentifier(), row.getIdentifier());
 				if(identifiersMap.containsKey(key)) {
 					notUniqueIdentifierError(row);
 					notUniqueIdentifierError(identifiersMap.get(key));
@@ -468,7 +491,7 @@ public class ImportCurriculumsValidator {
 					null, translate("error.content.not.allowed"));
 			allOk &= false;
 		} else if(type.getMaxRepositoryEntryRelations() == 1
-				&& importedRow.getNumResources(CurriculumExportType.COURSE) + importedRow.getNumResources(CurriculumExportType.TMPL) > 1) {
+				&& (importedRow.getNumResources(CurriculumExportType.COURSE) > 1 || importedRow.getNumResources(CurriculumExportType.TMPL) > 1)) {
 			importedRow.addValidationError(ImportCurriculumsCols.elementType, column,
 					null, translate("error.content.one.allowed"));
 			allOk &= false;
@@ -1091,10 +1114,10 @@ public class ImportCurriculumsValidator {
 	
 	
 	
-	public record Identifier(String implementationIdentifier, String identifier) {
+	public record Identifier(String curriculumIdentifier, String identifier) {
 		@Override
 		public int hashCode() {
-			return (implementationIdentifier == null ? 0 : implementationIdentifier.hashCode())
+			return (curriculumIdentifier == null ? 0 : curriculumIdentifier.hashCode())
 					+ (identifier == null ? 0 : identifier.hashCode());
 		}
 		
@@ -1104,7 +1127,7 @@ public class ImportCurriculumsValidator {
 				return true;
 			}
 			if(obj instanceof Identifier key) {
-				return implementationIdentifier != null && implementationIdentifier.equals(key.implementationIdentifier)
+				return curriculumIdentifier != null && curriculumIdentifier.equals(key.curriculumIdentifier)
 						&& identifier != null && identifier.equals(key.identifier);
 			}
 			return false;
