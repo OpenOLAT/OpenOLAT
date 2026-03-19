@@ -12,15 +12,21 @@
 				</div>
 			#end
 			<div class="o_start_inner">
+				#set($adminOpenNotRendered = 1)
 				#if($r.available("start") && $r.visible("start"))
 					$r.render("start")
 				#elseif($r.available("start.guest") && $r.visible("start.guest"))
 					$r.render("start.guest")
+				#elseif($r.available("start.admin") && $r.visible("start.admin"))
+					$r.render("start.admin")
+					#set($adminOpenRendered = 0)
 				#end
 				#if($r.available("leave") && $r.visible("leave"))
 					$r.render("leave")
+				#else
+					<span class="o_leave_space"></span>
 				#end
-				#if($r.available("start.admin") && $r.visible("start.admin"))
+				#if($adminOpenNotRendered && $r.available("start.admin") && $r.visible("start.admin"))
 					$r.render("start.admin")
 				#end
 			</div>

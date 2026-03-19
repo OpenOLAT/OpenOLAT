@@ -84,15 +84,26 @@
 					margin-bottom: math.div($o-radio-cards-gap, 2);
 				}
 				.o_start_inner {
-					>.o_button_call_to_action {
-						max-width: $o-ac-offers-container-max-width;
+					> .o_button_call_to_action {
+						max-width: 100%;
 						margin-top: 0;
-						flex-grow: 2;
+						justify-self: stretch;
 					}
 					
-					display: flex;
+					display: grid;
+					grid-template-columns: minmax(100px, $o-ac-offers-container-max-width) max-content;
 					gap: 20px;
 					align-items: center;
+					justify-items: center;
+					
+					// Only the leave action is available
+					&:not(:has(> :nth-child(2))) {
+						grid-template-columns: 1fr;
+						justify-items: start;
+						.o_leave_space {
+							display: none;
+						}
+					}
 				}
 			}
 			.o_start_wrapper {
@@ -100,15 +111,13 @@
 				container-name: o_start_wrapper;
 			}
 			@container o_start_wrapper (max-width: 440px) {
-				.o_start_inner {
-					flex-wrap: wrap;
-					justify-content: center;
-				}
-			}
-			@container o_start_wrapper (max-width: 660px) {
-				.o_start_inner:has(:nth-child(3))  {
-					flex-wrap: wrap;
-					justify-content: center;
+				.o_start_wrapper {
+					.o_start_inner {
+						grid-template-columns: 1fr;
+						.o_leave_space {
+							display: none;
+						}
+					}
 				}
 			}
 		}
