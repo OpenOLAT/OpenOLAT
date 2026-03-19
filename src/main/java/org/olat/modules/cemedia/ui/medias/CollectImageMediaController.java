@@ -21,16 +21,23 @@ package org.olat.modules.cemedia.ui.medias;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
+import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionData;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -39,10 +46,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.Quota;
@@ -84,6 +93,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private ObjectSelectionElement taxonomyLevelEl;
+	private FormLink generateAiLink;
 
 	private UploadMedia uploadMedia;
 	
@@ -94,6 +104,10 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 
 	private MediaRelationsController relationsCtrl;
 	
+	@Autowired
+	private AiModule aiModule;
+	@Autowired
+	private AiImageHelper aiImageHelper;
 	@Autowired
 	private ImageHandler fileHandler;
 	@Autowired
@@ -171,6 +185,12 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		}
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		if (aiModule.isImageDescriptionGeneratorEnabled()) {
+			generateAiLink = uifactory.addFormLink("ai.generate.metadata", buttonsCont, Link.BUTTON);
+			generateAiLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ai");
+			generateAiLink.setElementCssClass("o_button_ghost");
+			updateAiButtonVisibility();
+		}
 	}
 	
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
@@ -273,13 +293,154 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				titleEl.setValue(fileEl.getUploadFileName());
 				titleEl.getComponent().setDirty(true);
 			}
-			
+
 			titleEl.clearWarning();
 			if(fileEl.getUploadFile() != null && mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
 				titleEl.setWarningKey("warning.checksum.file");
 			}
+			updateAiButtonVisibility();
+		} else if (generateAiLink == source) {
+			doGenerateAiMetadata();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doGenerateAiMetadata() {
+		// Get the image file
+		File imageFile = null;
+		String filename = null;
+		if (uploadMedia != null) {
+			imageFile = uploadMedia.getFile();
+			filename = uploadMedia.getFilename();
+		} else if (fileEl.getUploadFile() != null) {
+			imageFile = fileEl.getUploadFile();
+			filename = fileEl.getUploadFileName();
+		} else if (mediaReference != null) {
+			MediaVersion currentVersion = mediaReference.getVersions().get(0);
+			VFSItem item = fileHandler.getImage(currentVersion);
+			if (item instanceof JavaIOItem jItem) {
+				imageFile = jItem.getBasefile();
+				filename = item.getName();
+			}
+		}
+
+		if (imageFile == null || filename == null) {
+			showWarning("ai.generate.no.image");
+			return;
+		}
+
+		// Check for SVG
+		String suffix = getSuffix(filename);
+		if ("svg".equalsIgnoreCase(suffix)) {
+			showWarning("ai.generate.svg.not.supported");
+			return;
+		}
+
+		// Get MIME type and prepare image
+		String mimeType = aiImageHelper.getMimeType(suffix);
+		if (mimeType == null) {
+			showWarning("ai.generate.error");
+			return;
+		}
+
+		String base64 = aiImageHelper.prepareImageBase64(imageFile, suffix);
+		if (base64 == null) {
+			showWarning("ai.generate.error");
+			return;
+		}
+
+		// Get the generator
+		AiImageDescriptionSPI generator = aiModule.getImageDescriptionGenerator();
+		if (generator == null) {
+			showWarning("ai.generate.not.configured");
+			return;
+		}
+
+		// Call the AI
+		AiImageDescriptionResponse response = generator.generateImageDescription(base64, mimeType, getLocale());
+		if (!response.isSuccess()) {
+			showWarning("ai.generate.failed", new String[] { StringHelper.escapeHtml(response.getError()) });
+			return;
+		}
+
+		AiImageDescriptionData data = response.getDescription();
+		if (data == null) {
+			showWarning("ai.generate.error");
+			return;
+		}
+
+		// Populate title when empty or filename-style (contains a dot extension like "IMG_1234.jpg")
+		if (data.getTitle() != null) {
+			String currentTitle = titleEl.getValue();
+			if (!StringHelper.containsNonWhitespace(currentTitle) || isFilenameLike(currentTitle)) {
+				titleEl.setValue(data.getTitle());
+			}
+		}
+		if (StringHelper.containsNonWhitespace(data.getDescription())
+				&& !StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
+			descriptionEl.setValue(data.getDescription());
+		}
+		if ((altTextEl.getValue() == null || altTextEl.getValue().isBlank()) && data.getAltText() != null) {
+			altTextEl.setValue(data.getAltText());
+		}
+
+		// Add AI-generated tags directly to the tag selection (lowercase, deduplicated)
+		Set<String> newTags = new LinkedHashSet<>();
+		for (String tag : data.getColorTags()) {
+			newTags.add(tag.toLowerCase());
+		}
+		for (String tag : data.getCategoryTags()) {
+			newTags.add(tag.toLowerCase());
+		}
+		for (String tag : data.getKeywords()) {
+			newTags.add(tag.toLowerCase());
+		}
+		tagsEl.addNewDisplayNames(newTags);
+
+		setFormWarning("ai.generate.metadata.done");
+	}
+
+	private void updateAiButtonVisibility() {
+		if (generateAiLink == null) return;
+		String filename = getCurrentFilename();
+		boolean supported = filename != null && isSupportedRasterImage(filename);
+		generateAiLink.setVisible(supported);
+	}
+
+	private String getCurrentFilename() {
+		if (uploadMedia != null) {
+			return uploadMedia.getFilename();
+		} else if (fileEl.getUploadFile() != null) {
+			return fileEl.getUploadFileName();
+		} else if (fileEl.getInitialFile() != null) {
+			return fileEl.getInitialFile().getName();
+		}
+		return null;
+	}
+
+	private boolean isSupportedRasterImage(String filename) {
+		if (filename == null) return false;
+		String suffix = getSuffix(filename);
+		if (suffix == null) return false;
+		return switch (suffix.toLowerCase()) {
+			case "jpg", "jpeg", "png", "gif", "webp" -> true;
+			default -> false;
+		};
+	}
+
+	private boolean isFilenameLike(String title) {
+		if (title == null) return false;
+		// Filename-style: contains a dot followed by a common image extension
+		return title.matches("(?i).*\\.(jpe?g|png|gif|webp|svg|bmp|tiff?)$");
+	}
+
+	private String getSuffix(String filename) {
+		if (filename == null) return null;
+		int dotPos = filename.lastIndexOf('.');
+		if (dotPos >= 0 && dotPos < filename.length() - 1) {
+			return filename.substring(dotPos + 1);
+		}
+		return null;
 	}
 
 	@Override

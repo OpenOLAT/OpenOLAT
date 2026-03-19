@@ -110,6 +110,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
 	org.olat.core.commons.modules.glossary.GlossaryItemManagerTest.class,
+	org.olat.core.commons.services.ai.AiImageHelperTest.class,
 	org.olat.core.commons.services.ai.AiModuleTest.class,
 	org.olat.core.commons.services.ai.AiPromptHelperTest.class,
 	org.olat.core.commons.services.ai.model.AiModelTest.class,

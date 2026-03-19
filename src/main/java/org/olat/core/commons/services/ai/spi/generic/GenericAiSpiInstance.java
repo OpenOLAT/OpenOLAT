@@ -27,9 +27,11 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiApiKeySPI;
+import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
 import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
 import org.olat.core.commons.services.ai.AiPromptHelper;
 import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -55,7 +57,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI {
+public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI, AiImageDescriptionSPI {
 	private static final Logger log = Tracing.createLoggerFor(GenericAiSpiInstance.class);
 
 	private final int instanceId;
@@ -69,6 +71,9 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 
 	private String mcGeneratorModel;
 	private ChatModel chatModel;
+
+	private String imageDescriptionModelName;
+	private ChatModel imageDescChatModel;
 
 	GenericAiSpiInstance(int instanceId, GenericAiSPI parent) {
 		this.instanceId = instanceId;
@@ -123,6 +128,7 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		this.apiKey = apiKey;
 		parent.setInstanceProperty(instanceId, "api.key", apiKey);
 		rebuildChatModel();
+		rebuildImageDescChatModel();
 	}
 
 	@Override
@@ -214,6 +220,54 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		return response;
 	}
 
+	// ------ AiImageDescriptionSPI ------
+
+	@Override
+	public void setImageDescriptionModel(String model) {
+		if (!Objects.equals(this.imageDescriptionModelName, model)) {
+			this.imageDescriptionModelName = model;
+			rebuildImageDescChatModel();
+		}
+	}
+
+	@Override
+	public String getImageDescriptionModel() {
+		return imageDescriptionModelName;
+	}
+
+	@Override
+	public List<String> getAvailableImageDescriptionModels() {
+		return getAvailableMCGeneratorModels();
+	}
+
+	@Override
+	public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) {
+		AiImageDescriptionResponse response = new AiImageDescriptionResponse();
+		if (imageDescChatModel == null) {
+			response.setError("AI provider is not properly configured.");
+			return response;
+		}
+		try {
+			AiPromptHelper promptHelper = parent.getAiPromptHelper();
+			SystemMessage systemMessage = promptHelper.createImageDescriptionSystemMessage(locale);
+			UserMessage userMessage = promptHelper.createImageDescriptionUserMessage(imageBase64, mimeType, locale);
+
+			ChatResponse chatResponse = imageDescChatModel.chat(systemMessage, userMessage);
+			String result = chatResponse.aiMessage().text();
+
+			if (log.isDebugEnabled()) {
+				log.debug("Generic AI [{}] response for image description:: {}", getName(), result);
+			}
+
+			response = promptHelper.parseImageDescriptionResult(result);
+
+		} catch (Exception e) {
+			log.warn("Error while creating an image description via generic AI service [{}]", getName(), e);
+			response.setError(e.getMessage());
+		}
+		return response;
+	}
+
 	// ------ Instance-specific getters / setters ------
 
 	public int getInstanceId() {
@@ -228,6 +282,7 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		this.baseUrl = baseUrl;
 		parent.setInstanceProperty(instanceId, "base.url", baseUrl);
 		rebuildChatModel();
+		rebuildImageDescChatModel();
 	}
 
 	public String getModels() {
@@ -289,6 +344,11 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 	private void rebuildChatModel() {
 		String modelName = StringHelper.containsNonWhitespace(mcGeneratorModel) ? mcGeneratorModel : getFirstModel();
 		chatModel = buildChatModel(apiKey, modelName);
+	}
+
+	private void rebuildImageDescChatModel() {
+		String modelName = StringHelper.containsNonWhitespace(imageDescriptionModelName) ? imageDescriptionModelName : getFirstModel();
+		imageDescChatModel = buildChatModel(apiKey, modelName);
 	}
 
 	private ChatModel buildChatModel(String key, String modelName) {

@@ -45,6 +45,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_add { @include o-add-icon('plus-circle');}
 .o_icon_add_member { @include o-add-icon('user-plus');}
 .o_icon_add_search { @include o-add-icon('search-plus');}
+.o_icon_ai { @include o-add-icon('wand-magic-sparkles');}
 .o_icon_arrow_right { @include o-add-icon('arrow-right');}
 .o_icon_arrow_up_right_from_square { @include o-add-icon('arrow-up-right-from-square');}
 .o_icon_assign_new_item { @include o-add-icon('arrows-turn-to-dots'); }

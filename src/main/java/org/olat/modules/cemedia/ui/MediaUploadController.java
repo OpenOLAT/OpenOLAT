@@ -23,10 +23,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
+import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionData;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -91,6 +98,10 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private AiModule aiModule;
+	@Autowired
+	private AiImageHelper aiImageHelper;
+	@Autowired
 	private MediaModule mediaModule;
 	@Autowired
 	private MediaService mediaService;
@@ -98,8 +109,9 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private TaxonomyService taxonomyService;
 
 	public MediaUploadController(UserRequest ureq, WindowControl wControl, FileElement fileEl, VFSLeaf selectedLeaf) {
-		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
-				Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale())));
+		super(ureq, wControl, null, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.fileEl = fileEl;
 		this.selectedLeaf = selectedLeaf;
 
@@ -277,8 +289,9 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		}
 		altTextEl.setVisible(handler != null && ImageHandler.IMAGE_TYPE.equals(handler.getType()));
 		updateUILicense();
+		doAutoGenerateAiMetadata(uploadedFile, fileEl != null ? fileEl.getUploadFileName() : selectedLeaf.getName());
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(fileEl == source) {
@@ -293,6 +306,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 			}
 			altTextEl.setVisible(handler != null && ImageHandler.IMAGE_TYPE.equals(handler.getType()));
 			updateUILicense();
+			doAutoGenerateAiMetadata(fileEl.getUploadFile(), fileEl.getUploadFileName());
 		} else {
 			updateUILicense();
 		}
@@ -329,6 +343,74 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 			}
 		}
 		return handler;
+	}
+
+	private void doAutoGenerateAiMetadata(File imageFile, String filename) {
+		if (imageFile == null || filename == null) return;
+		if (!aiModule.isImageDescriptionGeneratorEnabled()) return;
+
+		// Only for supported raster images
+		String suffix = getSuffix(filename);
+		if (suffix == null) return;
+		String mimeType = aiImageHelper.getMimeType(suffix);
+		if (mimeType == null) return;
+
+		String base64 = aiImageHelper.prepareImageBase64(imageFile, suffix);
+		if (base64 == null) return;
+
+		AiImageDescriptionSPI generator = aiModule.getImageDescriptionGenerator();
+		if (generator == null) return;
+
+		AiImageDescriptionResponse response = generator.generateImageDescription(base64, mimeType, getLocale());
+		if (!response.isSuccess() || response.getDescription() == null) return;
+
+		AiImageDescriptionData data = response.getDescription();
+
+		// Populate title if empty or filename-style
+		if (data.getTitle() != null) {
+			String currentTitle = titleEl.getValue();
+			if (!StringHelper.containsNonWhitespace(currentTitle) || isFilenameLike(currentTitle)) {
+				titleEl.setValue(data.getTitle());
+			}
+		}
+		if (StringHelper.containsNonWhitespace(data.getDescription())
+				&& !StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
+			descriptionEl.setValue(data.getDescription());
+		}
+		if (altTextEl.isVisible()
+				&& (altTextEl.getValue() == null || altTextEl.getValue().isBlank())
+				&& data.getAltText() != null) {
+			altTextEl.setValue(data.getAltText());
+		}
+
+		// Add tags
+		Set<String> newTags = new LinkedHashSet<>();
+		for (String tag : data.getColorTags()) {
+			newTags.add(tag.toLowerCase());
+		}
+		for (String tag : data.getCategoryTags()) {
+			newTags.add(tag.toLowerCase());
+		}
+		for (String tag : data.getKeywords()) {
+			newTags.add(tag.toLowerCase());
+		}
+		tagsEl.addNewDisplayNames(newTags);
+
+		setFormWarning("ai.generate.metadata.done");
+	}
+
+	private String getSuffix(String filename) {
+		if (filename == null) return null;
+		int dotPos = filename.lastIndexOf('.');
+		if (dotPos >= 0 && dotPos < filename.length() - 1) {
+			return filename.substring(dotPos + 1);
+		}
+		return null;
+	}
+
+	private boolean isFilenameLike(String title) {
+		if (title == null) return false;
+		return title.matches("(?i).*\\.(jpe?g|png|gif|webp|svg|bmp|tiff?)$");
 	}
 
 	@Override

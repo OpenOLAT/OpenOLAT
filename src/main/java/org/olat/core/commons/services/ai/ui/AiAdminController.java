@@ -188,6 +188,10 @@ public class AiAdminController extends BasicController {
 		if (deleteCandidate.getId().equals(configuredSpiId)) {
 			aiModule.setMCQuestionGeneratorConfig("", "");
 		}
+		String configuredImgDescSpiId = aiModule.getImgDescSpiId();
+		if (deleteCandidate.getId().equals(configuredImgDescSpiId)) {
+			aiModule.setImageDescriptionGeneratorConfig("", "");
+		}
 
 		deleteCandidate = null;
 		doRebuildAll(ureq);

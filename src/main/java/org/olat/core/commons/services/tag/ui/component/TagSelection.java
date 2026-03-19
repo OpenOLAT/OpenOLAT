@@ -46,6 +46,15 @@ public interface TagSelection extends FormItem {
 	public List<String> getDisplayNames();
 	
 	/**
+	 * Programmatically add new tags by display name. Tags that already exist
+	 * (either as selected or as previously added new tags) are skipped.
+	 * The UI is updated immediately.
+	 *
+	 * @param displayNames The tag display names to add
+	 */
+	public void addNewDisplayNames(Collection<String> displayNames);
+
+	/**
 	 * @param dirtyCheck false to suppress the dirty check when changing tags. Default: true
 	 */
 	public void setDirtyCheck(boolean dirtyCheck);

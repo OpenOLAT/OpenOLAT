@@ -26,9 +26,11 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiApiKeySPI;
+import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
 import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
 import org.olat.core.commons.services.ai.AiPromptHelper;
 import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.ui.GenericAiApiKeyAdminController;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -59,7 +61,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  *
  */
 @Service
-public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI {
+public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI, AiImageDescriptionSPI {
 	private static final Logger log = Tracing.createLoggerFor(OpenAiSPI.class);
 	private static final String SPI_NAME = "OpenAI";
 	private static final String SPI_ID = "OpenAI";
@@ -77,8 +79,10 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 
 	// Model name is managed by AiModule per feature, not stored here
 	private String mcGeneratorModel;
+	private String imageDescriptionModelName;
 
 	private ChatModel model;
+	private ChatModel imageDescModel;
 
 	@Autowired
 	AiPromptHelper aiPromptHelper;
@@ -103,6 +107,7 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 		apiKey = getStringPropertyValue(OPENAI_API_KEY, apiKey);
 		enabled = getBooleanPropertyValue(OPENAI_ENABLED);
 		rebuildModel();
+		rebuildImageDescModel();
 	}
 
 	private void rebuildModel() {
@@ -114,6 +119,18 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 					.build();
 		} else {
 			model = null;
+		}
+	}
+
+	private void rebuildImageDescModel() {
+		if (StringHelper.containsNonWhitespace(apiKey) && StringHelper.containsNonWhitespace(imageDescriptionModelName)) {
+			imageDescModel = OpenAiChatModel.builder()
+					.apiKey(apiKey)
+					.modelName(imageDescriptionModelName)
+					.maxCompletionTokens(2000)
+					.build();
+		} else {
+			imageDescModel = null;
 		}
 	}
 
@@ -131,6 +148,7 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 		this.apiKey = apiKey;
 		setStringProperty(OPENAI_API_KEY, apiKey, true);
 		rebuildModel();
+		rebuildImageDescModel();
 	}
 
 
@@ -258,6 +276,64 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 
 		} catch (Exception e) {
 			log.warn("Error while creating an MC question via AI service", e);
+			response.setError(e.getMessage());
+		}
+		return response;
+	}
+
+
+	/**********************
+	 * AiImageDescriptionSPI methods
+	 **********************/
+
+	@Override
+	public void setImageDescriptionModel(String model) {
+		if (!Objects.equals(this.imageDescriptionModelName, model)) {
+			this.imageDescriptionModelName = model;
+			rebuildImageDescModel();
+		}
+	}
+
+	@Override
+	public String getImageDescriptionModel() {
+		return imageDescriptionModelName;
+	}
+
+	@Override
+	public List<String> getAvailableImageDescriptionModels() {
+		if (!StringHelper.containsNonWhitespace(apiKey)) {
+			return List.of();
+		}
+		try {
+			return verifyApiKey(apiKey);
+		} catch (Exception e) {
+			log.warn("Could not fetch available models from OpenAI API", e);
+			return List.of();
+		}
+	}
+
+	@Override
+	public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) {
+		AiImageDescriptionResponse response = new AiImageDescriptionResponse();
+		if (imageDescModel == null) {
+			response.setError("AI provider is not properly configured.");
+			return response;
+		}
+		try {
+			SystemMessage systemMessage = aiPromptHelper.createImageDescriptionSystemMessage(locale);
+			UserMessage userMessage = aiPromptHelper.createImageDescriptionUserMessage(imageBase64, mimeType, locale);
+
+			ChatResponse chatResponse = imageDescModel.chat(systemMessage, userMessage);
+			String result = chatResponse.aiMessage().text();
+
+			if (log.isDebugEnabled()) {
+				log.debug("OpenAI chat response for image description:: " + result);
+			}
+
+			response = aiPromptHelper.parseImageDescriptionResult(result);
+
+		} catch (Exception e) {
+			log.warn("Error while creating an image description via OpenAI AI service", e);
 			response.setError(e.getMessage());
 		}
 		return response;

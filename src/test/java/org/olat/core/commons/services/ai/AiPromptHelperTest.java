@@ -28,6 +28,8 @@ import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionData;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiMCQuestionData;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 
@@ -281,5 +283,159 @@ public class AiPromptHelperTest {
 		AiMCQuestionsResponse response = helper.parseQuestionResult(input);
 		assertEquals(1, response.getQuestions().size());
 		assertEquals("Climate Change", response.getQuestions().get(0).getTitle().trim());
+	}
+
+
+	// ─── createImageDescriptionSystemMessage ──────────────────────────────────
+
+	@Test
+	public void createImageDescriptionSystemMessage_returnsMessage() {
+		SystemMessage msg = helper.createImageDescriptionSystemMessage(Locale.ENGLISH);
+		assertNotNull(msg);
+		assertTrue(msg.text().contains("metadata"));
+	}
+
+	@Test
+	public void createImageDescriptionSystemMessage_nullLocale_returnsMessage() {
+		SystemMessage msg = helper.createImageDescriptionSystemMessage(null);
+		assertNotNull(msg);
+	}
+
+
+	// ─── createImageDescriptionUserMessage ────────────────────────────────────
+
+	@Test
+	public void createImageDescriptionUserMessage_english_containsRules() {
+		UserMessage msg = helper.createImageDescriptionUserMessage("base64data", "image/jpeg", Locale.ENGLISH);
+		assertNotNull(msg);
+	}
+
+	@Test
+	public void createImageDescriptionUserMessage_german_containsLanguageInstruction() {
+		UserMessage msg = helper.createImageDescriptionUserMessage("base64data", "image/png", Locale.GERMAN);
+		assertNotNull(msg);
+	}
+
+	@Test
+	public void createImageDescriptionUserMessage_nullLocale_fallsBackToEnglish() {
+		UserMessage msg = helper.createImageDescriptionUserMessage("base64data", "image/jpeg", null);
+		assertNotNull(msg);
+	}
+
+
+	// ─── parseImageDescriptionResult ──────────────────────────────────────────
+
+	@Test
+	public void parseImageDescriptionResult_wellFormedResponse() {
+		String input = """
+				<image-description>
+				  <title>Sunset Over Mountains</title>
+				  <description>A beautiful sunset casting golden light over a mountain range with clouds.</description>
+				  <alt-text>Sunset over mountains</alt-text>
+				  <colors><color>orange</color><color>blue</color></colors>
+				  <categories><category>nature</category></categories>
+				  <keywords><keyword>sunset</keyword><keyword>mountains</keyword><keyword>landscape</keyword></keywords>
+				</image-description>
+				""";
+
+		AiImageDescriptionResponse response = helper.parseImageDescriptionResult(input);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+
+		AiImageDescriptionData data = response.getDescription();
+		assertNotNull(data);
+		assertEquals("Sunset Over Mountains", data.getTitle());
+		assertEquals("A beautiful sunset casting golden light over a mountain range with clouds.", data.getDescription());
+		assertEquals("Sunset over mountains", data.getAltText());
+		assertEquals(2, data.getColorTags().size());
+		assertTrue(data.getColorTags().contains("orange"));
+		assertTrue(data.getColorTags().contains("blue"));
+		assertEquals(1, data.getCategoryTags().size());
+		assertTrue(data.getCategoryTags().contains("nature"));
+		assertEquals(3, data.getKeywords().size());
+		assertTrue(data.getKeywords().contains("sunset"));
+		assertTrue(data.getKeywords().contains("mountains"));
+		assertTrue(data.getKeywords().contains("landscape"));
+	}
+
+	@Test
+	public void parseImageDescriptionResult_withPreamble_stillParsed() {
+		String input = """
+				Here is the image analysis:
+
+				<image-description>
+				  <title>City at Night</title>
+				  <description>An urban skyline illuminated at night.</description>
+				  <alt-text>City skyline at night</alt-text>
+				  <colors><color>black</color></colors>
+				  <categories><category>city</category></categories>
+				  <keywords><keyword>city</keyword></keywords>
+				</image-description>
+
+				Let me know if you need changes.
+				""";
+
+		AiImageDescriptionResponse response = helper.parseImageDescriptionResult(input);
+		assertNotNull(response.getDescription());
+		assertEquals("City at Night", response.getDescription().getTitle());
+	}
+
+	@Test
+	public void parseImageDescriptionResult_emptyInput_returnsResponseWithoutDescription() {
+		AiImageDescriptionResponse response = helper.parseImageDescriptionResult("");
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getDescription());
+	}
+
+	@Test
+	public void parseImageDescriptionResult_noImageDescriptionTag_returnsResponseWithoutDescription() {
+		AiImageDescriptionResponse response = helper.parseImageDescriptionResult("Just some random text");
+		assertNotNull(response);
+		assertNull(response.getDescription());
+	}
+
+	@Test
+	public void parseImageDescriptionResult_missingOptionalFields() {
+		String input = """
+				<image-description>
+				  <title>Minimal</title>
+				  <description></description>
+				  <alt-text></alt-text>
+				  <colors></colors>
+				  <categories></categories>
+				  <keywords></keywords>
+				</image-description>
+				""";
+
+		AiImageDescriptionResponse response = helper.parseImageDescriptionResult(input);
+		AiImageDescriptionData data = response.getDescription();
+		assertNotNull(data);
+		assertEquals("Minimal", data.getTitle());
+		assertEquals("", data.getDescription());
+		assertEquals("", data.getAltText());
+		assertTrue(data.getColorTags().isEmpty());
+		assertTrue(data.getCategoryTags().isEmpty());
+		assertTrue(data.getKeywords().isEmpty());
+	}
+
+	@Test
+	public void parseImageDescriptionResult_multipleColorsAndKeywords() {
+		String input = """
+				<image-description>
+				  <title>Test</title>
+				  <description>Test description</description>
+				  <alt-text>Test alt</alt-text>
+				  <colors><color>red</color><color>green</color><color>blue</color></colors>
+				  <categories><category>nature</category><category>animals</category></categories>
+				  <keywords><keyword>a</keyword><keyword>b</keyword><keyword>c</keyword><keyword>d</keyword><keyword>e</keyword></keywords>
+				</image-description>
+				""";
+
+		AiImageDescriptionResponse response = helper.parseImageDescriptionResult(input);
+		AiImageDescriptionData data = response.getDescription();
+		assertEquals(3, data.getColorTags().size());
+		assertEquals(2, data.getCategoryTags().size());
+		assertEquals(5, data.getKeywords().size());
 	}
 }
