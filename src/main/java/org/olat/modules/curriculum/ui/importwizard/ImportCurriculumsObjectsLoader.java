@@ -404,9 +404,11 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 				.filter(r -> r.type() == CurriculumExportType.IMPL || r.type() == CurriculumExportType.ELEM)
 				.collect(Collectors.toMap(ImportedRow::getIdentifier, r -> r, (u, v) -> u));
 		
-		Map<String, ImportedUserRow> usersMaps = users.stream()
-				.filter(r -> StringHelper.containsNonWhitespace(r.getUsername()))
-				.collect(Collectors.toMap(ImportedUserRow::getUsername, r -> r, (u, v) -> u));
+		Map<String, ImportedUserRow> usersMaps = users == null
+				? Map.of()
+				: users.stream()
+					.filter(r -> StringHelper.containsNonWhitespace(r.getUsername()))
+					.collect(Collectors.toMap(ImportedUserRow::getUsername, r -> r, (u, v) -> u));
 		
 		for(ImportedMembershipRow row:rows) {
 			if(StringHelper.containsNonWhitespace(row.getCurriculumIdentifier())) {

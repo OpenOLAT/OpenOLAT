@@ -538,7 +538,7 @@ public class ImportCurriculumsValidator {
 			importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translator.translate("error.not.exist", importedRow.getIdentifier()));
 		} else {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, entry);
-			if(!reSecurity.isAdministrativeUser()) {
+			if(!reSecurity.isEntryAdmin() && !reSecurity.isAdministrativeUser() && !reSecurity.isCurriculumManager()) {
 				String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translate("error.permissions"));
 			}
