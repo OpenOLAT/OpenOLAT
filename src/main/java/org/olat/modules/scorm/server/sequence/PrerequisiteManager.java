@@ -32,12 +32,12 @@ import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 /**
  * A class to handle prerequisites found for items in the manifest. Uses
@@ -135,7 +135,12 @@ public class PrerequisiteManager {
 	 */
 	public boolean checkPrerequisites(String prereq) {
 		try {
-			final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+			final ScriptEngine engine = new NashornScriptEngineFactory()
+					.getScriptEngine("--no-java");
+			if(engine == null) {
+				log.error("JavaScript engine not available");
+				return true;
+			}
 			
 			StringTokenizer st1 = new StringTokenizer(prereq, "&|()~");
 			StringTokenizer itemAndValue;

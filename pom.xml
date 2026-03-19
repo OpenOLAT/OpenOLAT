@@ -1885,6 +1885,12 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
+		<!-- Nashorn JavaScript engine is required by QtiWorks dependency to asciimath-parser but not included anymore since Java 15. -->
+		<dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+			<artifactId>nashorn-core</artifactId>
+			<version>15.7</version>
+		</dependency>
 		<!-- End dependency to qtiworks -->
 		<dependency>
 			<groupId>org.openolat.imscp</groupId>
