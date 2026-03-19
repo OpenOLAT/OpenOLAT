@@ -170,9 +170,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 		switch (variant) {
 			case standard -> renderStandardVariantIcon(sb, config);
-			case combined -> renderCombinedVariantIcon(sb, config);
 			case small -> renderSmallVariantOpen(sb, config);
-			default -> {}
 		}
 
 		// message
@@ -221,21 +219,10 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		}
 
 		switch (variant) {
+			case standard -> {}
 			case small -> renderSmallVariantClose(sb, config);
-			default -> {}
 		}
 
-		sb.append("</div>");
-	}
-
-	private static void renderCombinedVariantIcon(StringOutput sb, EmptyStateRenderConfig config) {
-		String indicatorIconCss = StringHelper.containsNonWhitespace(config.getIndicatorIconCss()) ?
-				config.getIndicatorIconCss() : "o_icon_empty_indicator";
-		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
-				config.getIconCss() : "o_icon_empty_objects";
-		
-		sb.append("<div class='o_empty_visual'><i class='o_icon ").append(indicatorIconCss).append("'></i>");
-		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
 		sb.append("</div>");
 	}
 
