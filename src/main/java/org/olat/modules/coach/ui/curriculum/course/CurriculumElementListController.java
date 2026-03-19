@@ -176,7 +176,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         this.assessedIdentity = assessedIdentity;
 
         initForm(ureq);
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, relevantTab);
         loadModel();
     }
 
