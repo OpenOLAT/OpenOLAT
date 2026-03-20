@@ -123,6 +123,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 	private static final String ALL_TAB = "All";
 	private static final String RELEVANT_TAB = "Relevant";
+	private static final String ACTIVE_TAB = "Active";
+	private static final String PREPARATION_TAB = "Preparation";
 	private static final String FINISHED_TAB = "Finished";
 	
 	static final String FILTER_STATUS = "Status";
@@ -181,7 +183,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         this.assessedIdentity = assessedIdentity;
 
         initForm(ureq);
-		tableEl.setSelectedFilterTab(ureq, relevantTab);
+		tableEl.setSelectedFilterTab(ureq, rootMode() ? relevantTab : allTab);
         loadModel();
     }
 	
@@ -280,18 +282,22 @@ public class CurriculumElementListController extends FormBasicController impleme
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
 		
-		List<String> relevantStatuses = new ArrayList<>();
-		relevantStatuses.add(CurriculumElementStatus.preparation.name());
 		if (rootMode()) {
+			List<String> relevantStatuses = new ArrayList<>();
+			relevantStatuses.add(CurriculumElementStatus.preparation.name());
 			relevantStatuses.add(CurriculumElementStatus.provisional.name());
 			relevantStatuses.add(CurriculumElementStatus.confirmed.name());
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, relevantStatuses)));
+			tabs.add(relevantTab);
+		} else {
+			tabs.add(FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB, translate("filter.active"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.active.name())))));
+			tabs.add(FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB, translate("filter.preparation"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.preparation.name())))));
 		}
-		if (!rootMode()) {
-			relevantStatuses.add(CurriculumElementStatus.active.name());
-		}
-		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, relevantStatuses)));
-		tabs.add(relevantTab);
 		
 		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB, translate("filter.finished"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
