@@ -31,36 +31,47 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 29.01.2021<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupListWrapperController extends BasicController implements Activateable2 {
+public class BusinessGroupListWrapperController extends BasicController implements Activateable2, GenericEventListener {
 	
-	private GroupAcceptReservationsController groupAcceptReservationsCtrl;
+	private GroupAcceptReservationsController acceptReservationsCtrl;
 	private BusinessGroupListController businessGroupListController;
 	
-	private VelocityContainer wrapper;
+	private VelocityContainer mainVC;
+	
+	@Autowired
+	private CoordinatorManager coordinator;
 
 	public BusinessGroupListWrapperController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		wrapper = createVelocityContainer("group_list_wrapper");
+		mainVC = createVelocityContainer("group_list_wrapper");
 		
-		groupAcceptReservationsCtrl = new GroupAcceptReservationsController(ureq, wControl, true);
-		listenTo(groupAcceptReservationsCtrl);
-		if (groupAcceptReservationsCtrl.hasReservations()) {
-			wrapper.put("groupAcceptReservations", groupAcceptReservationsCtrl.getInitialComponent());
+		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(BusinessGroup.class));
+		
+		acceptReservationsCtrl = new GroupAcceptReservationsController(ureq, wControl, true);
+		listenTo(acceptReservationsCtrl);
+		if (acceptReservationsCtrl.hasReservations()) {
+			mainVC.put("groupAcceptReservations", acceptReservationsCtrl.getInitialComponent());
 		}
 		
 		businessGroupListController = new BusinessGroupListController(ureq, wControl, "my");
 		listenTo(businessGroupListController);
 		
-		wrapper.put("myGroups", businessGroupListController.getInitialComponent());
+		mainVC.put("myGroups", businessGroupListController.getInitialComponent());
 
-		putInitialPanel(wrapper);
+		putInitialPanel(mainVC);
 	}
 
 	@Override
@@ -78,18 +89,47 @@ public class BusinessGroupListWrapperController extends BasicController implemen
 	}
 
 	@Override
+	protected void doDispose() {
+		coordinator.getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(BusinessGroup.class));
+        super.doDispose();
+	}
+	
+	@Override
+	public void event(Event event) {
+		 if (event instanceof BusinessGroupModifiedEvent e) {
+			 if (BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT.equals(e.getCommand()) && e.getAffectedRepositoryEntryKey() == null) {
+				if (getIdentity().getKey().equals(e.getAffectedIdentityKey())) {
+					updateAcceptReservations(true);
+				}
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		fireEvent(ureq, event);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == groupAcceptReservationsCtrl) {
+		if (source == acceptReservationsCtrl) {
 			businessGroupListController.reloadModel();
-			
-			if (!groupAcceptReservationsCtrl.hasReservations()) {
-				wrapper.remove(groupAcceptReservationsCtrl.getInitialComponent());
+			updateAcceptReservations(false);
+		}
+	}
+	
+	private void updateAcceptReservations(boolean reload) {
+		if (acceptReservationsCtrl != null) {
+			if (reload) {
+				businessGroupListController.reloadModel();
+				acceptReservationsCtrl.reload();
 			}
+			if (acceptReservationsCtrl.hasReservations()) {
+				mainVC.put("acceptReservations", acceptReservationsCtrl.getInitialComponent());
+			} else {
+				mainVC.remove("acceptReservations");
+			}
+			mainVC.setDirty(true);
 		}
 	}
 

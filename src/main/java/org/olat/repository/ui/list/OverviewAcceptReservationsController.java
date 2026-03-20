@@ -72,8 +72,10 @@ public class OverviewAcceptReservationsController extends BasicController {
 	private LightboxController lightboxCtrl;
 	private OverviewReservationDetailController detailCtrl;
 
-	private final List<OverviewReservationRow> rows;
+	private final List<OverviewReservationRow> rows = new ArrayList<>(1);
+	private final RepositoryEntryImageMapper reImageMapper;
 	private final MapperKey mapperThumbnailKey;
+	private final CurriculumElementImageMapper ceImageMapper;
 	private final MapperKey ceMapperKey;
 
 	@Autowired
@@ -84,6 +86,7 @@ public class OverviewAcceptReservationsController extends BasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private MapperService mapperService;
+
 
 	public OverviewAcceptReservationsController(UserRequest ureq, WindowControl wControl, boolean collapsible) {
 		super(ureq, wControl);
@@ -97,25 +100,28 @@ public class OverviewAcceptReservationsController extends BasicController {
 		infoPanel.setTitle(translate("overview.reservation.title"));
 		infoPanel.setInformations(mainVC);
 		infoPanel.setPersistedStatusId(ureq, "overview-accept-reservations-v1");
+		putInitialPanel(infoPanel);
 
-		RepositoryEntryImageMapper reImageMapper = RepositoryEntryImageMapper.mapper210x140();
+		reImageMapper = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, reImageMapper);
 
-		CurriculumElementImageMapper ceImageMapper = CurriculumElementImageMapper.mapper210x140();
+		ceImageMapper = CurriculumElementImageMapper.mapper210x140();
 		ceMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, ceImageMapper);
 
-		rows = new ArrayList<>();
-		loadReservations(reImageMapper, ceImageMapper);
+		reload();
+	}
+	
+	public void reload() {
+		rows.clear();
+		loadReservations();
 		updateUI();
-
-		putInitialPanel(infoPanel);
 	}
 
 	public boolean hasReservations() {
 		return !rows.isEmpty();
 	}
 
-	private void loadReservations(RepositoryEntryImageMapper reImageMapper, CurriculumElementImageMapper ceImageMapper) {
+	private void loadReservations() {
 		List<ResourceReservation> reservations = acService.getReservations(getIdentity());
 
 		List<ResourceReservation> participantReservations = reservations.stream()

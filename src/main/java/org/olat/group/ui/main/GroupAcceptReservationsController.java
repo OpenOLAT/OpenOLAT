@@ -62,7 +62,7 @@ public class GroupAcceptReservationsController extends BasicController {
 	private LightboxController lightboxCtrl;
 	private GroupReservationDetailController detailCtrl;
 
-	private final List<GroupReservationRow> rows;
+	private final List<GroupReservationRow> rows = new ArrayList<>(1);
 
 	@Autowired
 	private ACService acService;
@@ -80,12 +80,15 @@ public class GroupAcceptReservationsController extends BasicController {
 		infoPanel.setTitle(translate("group.reservation.title"));
 		infoPanel.setInformations(mainVC);
 		infoPanel.setPersistedStatusId(ureq, "group-accept-reservations-v1");
+		putInitialPanel(infoPanel);
 
-		rows = new ArrayList<>();
+		reload();
+	}
+	
+	public void reload() {
+		rows.clear();
 		loadReservations();
 		updateUI();
-
-		putInitialPanel(infoPanel);
 	}
 
 	public boolean hasReservations() {

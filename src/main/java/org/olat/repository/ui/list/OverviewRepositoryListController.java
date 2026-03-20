@@ -51,15 +51,18 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.site.CoachSite;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -69,6 +72,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.InPreparationQueries;
 import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
+import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.list.RepositoryEntryListConfig.RepositoryEntryListPresets;
 import org.olat.resource.accesscontrol.ACService;
@@ -110,6 +114,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	@Autowired
 	private ACService acService;
 	@Autowired
+	private CoordinatorManager coordinator;
+	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -149,6 +155,8 @@ public class OverviewRepositoryListController extends BasicController implements
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
+		coordinator.getCoordinator().getEventBus().registerFor(this, getIdentity(), OresHelper.lookupType(RepositoryEntry.class));
+		coordinator.getCoordinator().getEventBus().registerFor(this, getIdentity(), OresHelper.lookupType(CurriculumElement.class));
 		
 		putInitialPanel(mainPanel);
 	}
@@ -189,6 +197,21 @@ public class OverviewRepositoryListController extends BasicController implements
 		listenTo(acceptReservationsCtrl);
 		if (acceptReservationsCtrl.hasReservations()) {
 			mainVC.put("acceptReservations", acceptReservationsCtrl.getInitialComponent());
+		}
+	}
+	
+	private void reloadAcceptReservations(boolean reload) {
+		if (acceptReservationsCtrl != null) {
+			if (reload) {
+				entriesDirty = true;
+				acceptReservationsCtrl.reload();
+			}
+			if (acceptReservationsCtrl.hasReservations()) {
+				mainVC.put("acceptReservations", acceptReservationsCtrl.getInitialComponent());
+			} else {
+				mainVC.remove("acceptReservations");
+			}
+			mainVC.setDirty(true);
 		}
 	}
 
@@ -330,6 +353,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	@Override
 	protected void doDispose() {
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+		coordinator.getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(RepositoryEntry.class));
+		coordinator.getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(CurriculumElement.class));
         super.doDispose();
 	}
 	
@@ -341,6 +366,18 @@ public class OverviewRepositoryListController extends BasicController implements
 					|| ece.getChange() == Change.added || ece.getChange() == Change.deleted) {
 				entriesDirty = true;
 			}
+		} else if(event instanceof RepositoryEntryMembershipModifiedEvent e) {
+			if(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADD_PENDING.equals(e.getCommand())) {
+				if (getIdentity().getKey().equals(e.getIdentityKey())) {
+					reloadAcceptReservations(true);
+				}
+			}
+		} else if (event instanceof CurriculumElementMembershipEvent e) {
+			if (CurriculumElementMembershipEvent.MEMBER_RESERVATION_ADDED.equals(e.getCommand())) {
+				if (getIdentity().getKey().equals(e.getIdentityKey())) {
+					reloadAcceptReservations(true);
+				}
+			}
 		}
 	}
 
@@ -348,7 +385,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == acceptReservationsCtrl) {
 			if(event == OverviewAcceptReservationsController.RESERVATION_CHANGED_EVENT) {
-				entriesDirty = true;
+				reloadAcceptReservations(true);
 			}
 		} else if(implementationsListCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
