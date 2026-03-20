@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.List;
+
 import org.olat.core.gui.components.link.Link;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
@@ -28,7 +30,7 @@ import org.olat.resource.accesscontrol.ResourceReservation;
  */
 public class OverviewReservationRow {
 
-	private final ResourceReservation reservation;
+	private final List<ResourceReservation> reservations;
 	private final String displayName;
 	private final String externalRef;
 	private final String translatedType;
@@ -45,14 +47,14 @@ public class OverviewReservationRow {
 	public OverviewReservationRow(ResourceReservation reservation, String displayName, String externalRef,
 			String translatedType, String description, String thumbnailRelPath, boolean detailsAvailable,
 			Long repositoryEntryKey) {
-		this(reservation, displayName, externalRef, translatedType, description, thumbnailRelPath, detailsAvailable,
-				repositoryEntryKey, null);
+		this(List.of(reservation), displayName, externalRef, translatedType, description, thumbnailRelPath,
+				detailsAvailable, repositoryEntryKey, null);
 	}
 
-	public OverviewReservationRow(ResourceReservation reservation, String displayName, String externalRef,
+	public OverviewReservationRow(List<ResourceReservation> reservations, String displayName, String externalRef,
 			String translatedType, String description, String thumbnailRelPath, boolean detailsAvailable,
 			Long repositoryEntryKey, Long curriculumElementKey) {
-		this.reservation = reservation;
+		this.reservations = reservations;
 		this.displayName = displayName;
 		this.externalRef = externalRef;
 		this.translatedType = translatedType;
@@ -63,12 +65,16 @@ public class OverviewReservationRow {
 		this.curriculumElementKey = curriculumElementKey;
 	}
 
+	public List<ResourceReservation> getReservations() {
+		return reservations;
+	}
+
 	public ResourceReservation getReservation() {
-		return reservation;
+		return reservations.get(0);
 	}
 
 	public Long getKey() {
-		return reservation.getKey();
+		return reservations.get(0).getKey();
 	}
 
 	public String getDisplayName() {

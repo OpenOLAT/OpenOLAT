@@ -21,6 +21,7 @@ package org.olat.repository.ui.list;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -170,19 +171,40 @@ public class OverviewAcceptReservationsController extends BasicController {
 			Map<Long, CurriculumElement> resourceKeyToElement = curriculumService.getCurriculumElements(elementRefs).stream()
 					.collect(Collectors.toMap(e -> e.getResource().getKey(), Function.identity(), (a, b) -> a));
 
-			List<CurriculumElement> elements = new ArrayList<>(resourceKeyToElement.values());
-			Map<Long, VFSThumbnailInfos> ceThumbnails = ceImageMapper.getThumbnails(elements);
-			Map<Long, Set<RepositoryEntry>> entriesByElementKey = curriculumService.getCurriculumElementKeyToRepositoryEntries(elements);
-			Set<Long> elementKeysWithChildren = elements.stream()
+			Map<Long, CurriculumElement> keyToElement = resourceKeyToElement.values().stream()
+					.collect(Collectors.toMap(CurriculumElement::getKey, Function.identity(), (a, b) -> a));
+
+			Map<Long, CurriculumElement> rootByElementKey = new HashMap<>();
+			for (CurriculumElement element : resourceKeyToElement.values()) {
+				CurriculumElement root = element.getParent() == null ? element : curriculumService.getImplementationOf(element);
+				rootByElementKey.put(element.getKey(), root);
+				keyToElement.put(root.getKey(), root);
+			}
+
+			Map<Long, List<ResourceReservation>> reservationsByRootKey = new HashMap<>();
+			for (ResourceReservation reservation : ceReservations) {
+				CurriculumElement element = resourceKeyToElement.get(reservation.getResource().getKey());
+				if (element != null) {
+					CurriculumElement root = rootByElementKey.get(element.getKey());
+					reservationsByRootKey.computeIfAbsent(root.getKey(), k -> new ArrayList<>()).add(reservation);
+				}
+			}
+
+			List<CurriculumElement> rootElements = new ArrayList<>(reservationsByRootKey.size());
+			for (Long rootKey : reservationsByRootKey.keySet()) {
+				rootElements.add(keyToElement.get(rootKey));
+			}
+
+			Map<Long, VFSThumbnailInfos> ceThumbnails = ceImageMapper.getThumbnails(rootElements);
+			Map<Long, Set<RepositoryEntry>> entriesByElementKey = curriculumService.getCurriculumElementKeyToRepositoryEntries(rootElements);
+			Set<Long> elementKeysWithChildren = rootElements.stream()
 					.filter(e -> curriculumService.hasCurriculumElementChildren(e))
 					.map(CurriculumElement::getKey)
 					.collect(Collectors.toSet());
 
-			for (ResourceReservation reservation : ceReservations) {
-				CurriculumElement element = resourceKeyToElement.get(reservation.getResource().getKey());
-				if (element != null) {
-					addCurriculumElementRow(reservation, element, ceThumbnails, entriesByElementKey, elementKeysWithChildren);
-				}
+			for (Map.Entry<Long, List<ResourceReservation>> entry : reservationsByRootKey.entrySet()) {
+				CurriculumElement rootElement = keyToElement.get(entry.getKey());
+				addCurriculumElementRow(entry.getValue(), rootElement, ceThumbnails, entriesByElementKey, elementKeysWithChildren);
 			}
 		}
 
@@ -203,12 +225,12 @@ public class OverviewAcceptReservationsController extends BasicController {
 
 		OverviewReservationRow row = new OverviewReservationRow(reservation, entry.getDisplayname(),
 				entry.getExternalRef(), translatedType, entry.getDescription(), thumbUrl,
-				detailsAvailable, entry.getKey(), null);
+				detailsAvailable, entry.getKey());
 		addRowLinks(row);
 		rows.add(row);
 	}
 
-	private void addCurriculumElementRow(ResourceReservation reservation, CurriculumElement element,
+	private void addCurriculumElementRow(List<ResourceReservation> reservations, CurriculumElement element,
 			Map<Long, VFSThumbnailInfos> thumbnails, Map<Long, Set<RepositoryEntry>> entriesByElementKey,
 			Set<Long> elementKeysWithChildren) {
 		String translatedType = element.getType() != null ? element.getType().getDisplayName() : null;
@@ -222,7 +244,7 @@ public class OverviewAcceptReservationsController extends BasicController {
 				|| elementKeysWithChildren.contains(element.getKey())
 				|| !entriesByElementKey.getOrDefault(element.getKey(), Set.of()).isEmpty();
 
-		OverviewReservationRow row = new OverviewReservationRow(reservation, element.getDisplayName(),
+		OverviewReservationRow row = new OverviewReservationRow(reservations, element.getDisplayName(),
 				element.getIdentifier(), translatedType, element.getDescription(), thumbUrl,
 				detailsAvailable, null, element.getKey());
 		addRowLinks(row);
@@ -316,10 +338,11 @@ public class OverviewAcceptReservationsController extends BasicController {
 	}
 
 	private void doAccept(UserRequest ureq, OverviewReservationRow row) {
-		ResourceReservation reservation = acService.getReservation(getIdentity(),
-				row.getReservation().getResource());
-		if (reservation != null) {
-			acService.acceptReservationToResource(getIdentity(), reservation);
+		for (ResourceReservation rowReservation : row.getReservations()) {
+			ResourceReservation reservation = acService.getReservation(getIdentity(), rowReservation.getResource());
+			if (reservation != null) {
+				acService.acceptReservationToResource(getIdentity(), reservation);
+			}
 		}
 		rows.remove(row);
 		updateUI();
@@ -327,10 +350,11 @@ public class OverviewAcceptReservationsController extends BasicController {
 	}
 
 	private void doDecline(UserRequest ureq, OverviewReservationRow row) {
-		ResourceReservation reservation = acService.getReservation(getIdentity(),
-				row.getReservation().getResource());
-		if (reservation != null) {
-			acService.removeReservation(getIdentity(), getIdentity(), reservation, null);
+		for (ResourceReservation rowReservation : row.getReservations()) {
+			ResourceReservation reservation = acService.getReservation(getIdentity(), rowReservation.getResource());
+			if (reservation != null) {
+				acService.removeReservation(getIdentity(), getIdentity(), reservation, null);
+			}
 		}
 		rows.remove(row);
 		updateUI();
