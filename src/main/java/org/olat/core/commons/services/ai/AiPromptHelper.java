@@ -60,12 +60,7 @@ public class AiPromptHelper {
 	 * @return The locale if a supported language has been detected or NULL otherwise
 	 */
 	public Locale detectSupportedLocale(String input) {
-		Locale locale = textService.detectLocale(input);
-		if (locale != null
-				&& (locale.getLanguage().equals("en") || locale.getLanguage().equals("de"))) {
-			return locale;
-		}
-		return null;
+		return textService.detectLocale(input);
 	}
 
 	/**
@@ -75,12 +70,11 @@ public class AiPromptHelper {
 	 * @return The system message, or null if locale is unsupported
 	 */
 	public SystemMessage createQuestionSystemMessage(Locale locale) {
-		if (locale != null && locale.getLanguage().equals("en")) {
-			return SystemMessage.from("You are an assistant to create assessment questions based on text input.");
-		} else if (locale != null && locale.getLanguage().equals("de")) {
-			return SystemMessage.from("Du bist ein Helfer um Testfragen aus einem Text zu erstellen.");
-		}
-		return null;
+		return SystemMessage.from(
+				"You are an expert assessment designer. You create challenging multiple choice questions " +
+				"that test genuine understanding, not just surface recall. " +
+				"You always verify that correct answers are factually accurate and that wrong answers are " +
+				"genuinely incorrect. Wrong answers must be plausible distractors.");
 	}
 
 	/**
@@ -95,62 +89,46 @@ public class AiPromptHelper {
 	 * @return The user message, or null if locale is unsupported
 	 */
 	public UserMessage createChoiceQuestionUserMessage(String input, int number, int correct, int wrong, Locale locale) {
-		if (locale != null && locale.getLanguage().equals("en")) {
-			return UserMessage.from("""
-						Create %s different multiple choice question with %s correct and %s wrong answers.
-						Use the following format for each question:
+		String langName = (locale != null) ? locale.getDisplayLanguage(Locale.ENGLISH) : "English";
+		return UserMessage.from("""
+					Create %s different multiple choice questions with %s correct and %s wrong answers each.
 
-						<item>
-						 	<title>Title</title>
-						 	<topic>Topic</topic>
-						 	<subject>Subject area</subject>
-							<keywords>Keywords</keywords>
-						 	<question>Question</question>
-							<answers>
-								<correct>Correct answer</correct>
-								<correct>Correct answer</correct>
-								<wrong>Wrong answer</wrong>
-								<wrong>Wrong answer</wrong>
-								<wrong>Wrong answer</wrong>
-							</answers>
-						</item>
+					Rules for answer quality:
+					- CORRECT answers: Must be verifiably true based on the text. Double-check each one.
+					- WRONG answers: Must be clearly incorrect but plausible. Use these strategies:
+					  * Take a correct fact and introduce a subtle but meaningful change (e.g. wrong number, swapped name, changed date)
+					  * Invent a plausible-sounding but fictitious detail
+					  * Use a true statement from a different context that does not answer this specific question
+					- Each wrong answer must be unambiguously wrong — a knowledgeable person must be able to reject it.
+					- Each correct answer must be unambiguously correct — it must be fully supported by the text.
 
-						-----
+					Language and terminology rules:
+					- Generate all questions, answers, and metadata in %4$s.
+					- Use the exact terminology and wording from the input text — do NOT translate or rephrase the source material.
+					- Questions must be self-contained. Do NOT refer to "the text", "the passage", "the article", or similar. The input is the knowledge domain, not a reading comprehension exercise.
+					- XML tag names remain in English.
 
-						Use this text for the questions:
+					Use the following XML format for each question:
 
-						-----
+					<item>
+						<title>Title</title>
+						<topic>Topic</topic>
+						<subject>Subject area</subject>
+						<keywords>Keywords</keywords>
+						<question>Question</question>
+						<answers>
+							<correct>Correct answer</correct>
+							<wrong>Wrong answer</wrong>
+						</answers>
+					</item>
 
-						""".formatted(number, correct, wrong) + input);
-		} else if (locale != null && locale.getLanguage().equals("de")) {
-			return UserMessage.from("""
-						Erstelle %s verschiedene Multiple-Choice Fragen mit %s korrekten und %s falschen Antworten.
-						Benutze das folgende Format für jede einzelne Frage:
+					-----
 
-						<item>
-							<title>Titel</title>
-						 	<topic>Thema</topic>
-						 	<subject>Fachbereich</subject>
-							<keywords>Schlüsselwörter</keywords>
-							<question>Frage</question>
-							<answers>
-								<correct>Korrekte Antwort</correct>
-								<correct>Korrekte Antwort</correct>
-								<wrong>Falsche Antwort</wrong>
-								<wrong>Falsche Antwort</wrong>
-								<wrong>Falsche Antwort</wrong>
-							</answers>
-						</item>
+					Use this text for the questions:
 
-						-----
+					-----
 
-						Verwende diesen Text für die Fragen:
-
-						-----
-
-						""".formatted(number, correct, wrong) + input);
-		}
-		return null;
+					""".formatted(number, correct, wrong, langName) + input);
 	}
 
 	/**
@@ -227,25 +205,39 @@ public class AiPromptHelper {
 	public UserMessage createImageDescriptionUserMessage(String imageBase64, String mimeType, Locale locale) {
 		String langName = (locale != null) ? locale.getDisplayLanguage(Locale.ENGLISH) : "English";
 		String prompt = """
-				Analyze this image and generate the following metadata in XML format:
+				Analyze this image and generate structured metadata in XML format.
 
 				<image-description>
 				  <title>Short descriptive title</title>
-				  <description>Short paragraph describing the image, suitable for search</description>
-				  <alt-text>Very short alternative text</alt-text>
-				  <colors><color>Color name</color></colors>
+				  <description>Short paragraph describing the image</description>
+				  <alt-text>Accessible description for a blind person</alt-text>
+				  <subject>Subject area</subject>
+				  <orientation>horizontal</orientation>
+				  <colors><color>Dominant color</color></colors>
 				  <categories><category>Category</category></categories>
 				  <keywords><keyword>Keyword</keyword></keywords>
 				</image-description>
 
 				Rules:
-				- Title: short and concise (max 10 words)
-				- Description: a short paragraph (2-3 sentences) describing the image content in more detail, suitable for full-text search
-				- Alt text: very short accessible text (max 10 words, e.g. "Sunset over the ocean")
-				- Colors: 1-2 dominant colors in the image
-				- Categories: 1-3 from this list: nature, city, portrait, architecture, food, technology, abstract, animals, sport, education
-				- Keywords: 3-5 stock-photo-library-style tags
-				- Respond in %s
+				- Title: short and concise, max 10 words.
+				- Description: 2-3 sentences describing the image content in detail, suitable for full-text search.
+				- Alt text: describe the essence of the image so a blind person can understand what it shows. \
+				Do NOT repeat or paraphrase the title — provide a complementary description of the visual content \
+				(e.g. what is depicted, the scene, the mood, the composition).
+				- Subject: the academic or professional subject area the image belongs to \
+				(e.g. "Biology", "Computer Science", "Marketing", "History", "Mathematics", "Medicine", "Art"). \
+				Use one or two words. Use the most specific subject that fits.
+				- Orientation: exactly one of "horizontal", "vertical", or "square" based on the image aspect ratio.
+				- Colors: use ONLY if the image has a clearly dominant color appearance. \
+				If one color dominates, output one <color>. If two colors dominate, output two. \
+				If the image has no clear dominant color, output NO <color> elements at all. \
+				For black-and-white or grayscale images, output <color>b&w</color>.
+				- Categories: pick 1 dominant category from this list: nature, city, portrait, architecture, \
+				food, technology, abstract, animals, sport, education. Add a second ONLY if clearly needed. \
+				Use only 1 or 2 words per category.
+				- Keywords: 1-4 descriptive tags, stock-photo-library style. Always use singular form \
+				(e.g. "tree" not "trees", "person" not "people"), even when multiple instances appear in the image.
+				- Respond in %s.
 				""".formatted(langName);
 
 		return UserMessage.from(
@@ -272,6 +264,8 @@ public class AiPromptHelper {
 		data.setTitle(getNextElement(descBlock, "title"));
 		data.setDescription(getNextElement(descBlock, "description"));
 		data.setAltText(getNextElement(descBlock, "alt-text"));
+		data.setSubject(getNextElement(descBlock, "subject"));
+		data.setOrientation(getNextElement(descBlock, "orientation"));
 
 		String colorsBlock = getNextElement(descBlock, "colors");
 		for (String color : parseRepeatingElements(colorsBlock, "color")) {

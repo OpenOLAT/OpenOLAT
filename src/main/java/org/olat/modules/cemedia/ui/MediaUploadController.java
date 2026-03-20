@@ -67,7 +67,9 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.ui.medias.AbstractCollectMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
@@ -396,7 +398,33 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		}
 		tagsEl.addNewDisplayNames(newTags);
 
+		// Map AI subject to taxonomy level
+		if (StringHelper.containsNonWhitespace(data.getSubject())) {
+			mapSubjectToTaxonomy(data.getSubject());
+		}
+
 		setFormWarning("ai.generate.metadata.done");
+	}
+
+	private void mapSubjectToTaxonomy(String subject) {
+		List<TaxonomyRef> taxonomyRefs = mediaModule.getTaxonomyRefs();
+		if (taxonomyRefs.isEmpty()) return;
+
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+		String subjectLower = subject.trim().toLowerCase();
+		for (TaxonomyLevel level : levels) {
+			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+			if (displayName != null && subjectLower.equals(displayName.trim().toLowerCase())) {
+				taxonomyLevelEl.select(level.getKey().toString());
+				return;
+			}
+			// Also try the identifier as fallback
+			String identifier = level.getIdentifier();
+			if (identifier != null && subjectLower.equals(identifier.trim().toLowerCase())) {
+				taxonomyLevelEl.select(level.getKey().toString());
+				return;
+			}
+		}
 	}
 
 	private String getSuffix(String filename) {

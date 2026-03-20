@@ -197,7 +197,7 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 			AiPromptHelper promptHelper = parent.getAiPromptHelper();
 			Locale locale = promptHelper.detectSupportedLocale(input);
 			if (locale == null) {
-				response.setError("Could not detect language. Only DE and EN supported.");
+				response.setError("Could not detect language of the input text.");
 				return response;
 			}
 

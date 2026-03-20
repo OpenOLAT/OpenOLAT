@@ -36,6 +36,8 @@ public class AiImageDescriptionData {
 	private String title;
 	private String description;
 	private String altText;
+	private String subject;
+	private String orientation;
 	private List<String> colorTags = new ArrayList<>();
 	private List<String> categoryTags = new ArrayList<>();
 	private List<String> keywords = new ArrayList<>();
@@ -62,6 +64,22 @@ public class AiImageDescriptionData {
 
 	public void setAltText(String altText) {
 		this.altText = altText;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public String getOrientation() {
+		return orientation;
+	}
+
+	public void setOrientation(String orientation) {
+		this.orientation = orientation;
 	}
 
 	public List<String> getColorTags() {

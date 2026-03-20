@@ -254,7 +254,7 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 		try {
 			Locale locale = aiPromptHelper.detectSupportedLocale(input);
 			if (locale == null) {
-				response.setError("Could not detect language. Only DE and EN supported.");
+				response.setError("Could not detect language of the input text.");
 				return response;
 			}
 

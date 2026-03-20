@@ -28,6 +28,7 @@ import org.olat.core.commons.services.ai.AiSPI;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -61,6 +63,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private FormToggle mcEnabledEl;
 	private SingleSelection mcGeneratorSpiEl;
 	private FormItem mcGeneratorModelEl;
+	private FormLink mcTestLink;
 
 	// Image Description Generator elements — removed and re-added to maintain ordering
 	private SpacerElement imgDescSpacer;
@@ -68,9 +71,13 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private FormToggle imgDescEnabledEl;
 	private SingleSelection imgDescSpiEl;
 	private FormItem imgDescModelEl;
+	private FormLink imgDescTestLink;
 
 	// Buttons — removed and re-added to maintain ordering
 	private FormLayoutContainer buttonsCont;
+
+	// Test controller
+	private AiFeaturesTestController testCtrl;
 
 	@Autowired
 	private AiModule aiModule;
@@ -167,10 +174,30 @@ public class AiFeaturesAdminController extends FormBasicController {
 		} else if (source == imgDescSpiEl) {
 			doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
 		} else if (source == mcEnabledEl) {
-			updateMcVisibility();
+			if (mcEnabledEl.isOn()) {
+				doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
+			} else {
+				updateMcVisibility();
+			}
 		} else if (source == imgDescEnabledEl) {
-			updateImgDescVisibility();
+			if (imgDescEnabledEl.isOn()) {
+				doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
+			} else {
+				updateImgDescVisibility();
+			}
+		} else if (source == mcTestLink) {
+			doTestMcGenerator(ureq);
+		} else if (source == imgDescTestLink) {
+			doTestImgDescGenerator(ureq);
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == testCtrl) {
+			// test controller handles its own modal cleanup
+		}
+		super.event(ureq, source, event);
 	}
 
 	private void updateMcVisibility() {
@@ -178,6 +205,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 		mcGeneratorSpiEl.setVisible(on);
 		if (mcGeneratorModelEl != null) {
 			mcGeneratorModelEl.setVisible(on);
+		}
+		if (mcTestLink != null) {
+			mcTestLink.setVisible(on && hasSpiSelected(mcGeneratorSpiEl) && hasModelValue(mcGeneratorModelEl));
 		}
 	}
 
@@ -187,17 +217,27 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (imgDescModelEl != null) {
 			imgDescModelEl.setVisible(on);
 		}
+		if (imgDescTestLink != null) {
+			imgDescTestLink.setVisible(on && hasSpiSelected(imgDescSpiEl) && hasModelValue(imgDescModelEl));
+		}
 	}
 
 	private void doUpdateMcModelDropdown(String spiId) {
 		if (mcGeneratorModelEl != null) {
 			formLayout.remove(mcGeneratorModelEl);
 		}
+		if (mcTestLink != null) {
+			formLayout.remove(mcTestLink);
+		}
 		removeImgDescSection();
 		formLayout.remove(buttonsCont);
 
 		mcGeneratorModelEl = buildModelElement(spiId, "ai.feature.model",
 				getMcModelsForSpi(spiId), aiModule.getMCGeneratorModel());
+
+		mcTestLink = uifactory.addFormLink("mc.test", "mc.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
+		mcTestLink.setGhost(true);
+		mcTestLink.setIconLeftCSS("o_icon o_icon_ai");
 
 		reAddImgDescSection();
 		formLayout.add(buttonsCont);
@@ -208,10 +248,17 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (imgDescModelEl != null) {
 			formLayout.remove(imgDescModelEl);
 		}
+		if (imgDescTestLink != null) {
+			formLayout.remove(imgDescTestLink);
+		}
 		formLayout.remove(buttonsCont);
 
 		imgDescModelEl = buildModelElement(spiId, "ai.feature.image-description-generator.model",
 				getImgDescModelsForSpi(spiId), aiModule.getImgDescModel());
+
+		imgDescTestLink = uifactory.addFormLink("imgDesc.test", "imgDesc.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
+		imgDescTestLink.setGhost(true);
+		imgDescTestLink.setIconLeftCSS("o_icon o_icon_ai");
 
 		formLayout.add(buttonsCont);
 		updateImgDescVisibility();
@@ -220,6 +267,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private void removeImgDescSection() {
 		if (imgDescModelEl != null) {
 			formLayout.remove(imgDescModelEl);
+		}
+		if (imgDescTestLink != null) {
+			formLayout.remove(imgDescTestLink);
 		}
 		formLayout.remove(imgDescSpiEl);
 		formLayout.remove(imgDescEnabledEl);
@@ -234,6 +284,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 		formLayout.add(imgDescSpiEl);
 		if (imgDescModelEl != null) {
 			formLayout.add(imgDescModelEl);
+		}
+		if (imgDescTestLink != null) {
+			formLayout.add(imgDescTestLink);
 		}
 	}
 
@@ -270,28 +323,58 @@ public class AiFeaturesAdminController extends FormBasicController {
 	}
 
 	private List<String> getMcModelsForSpi(String spiId) {
+		return getModelsForSpi(spiId, AiMCQuestionGeneratorSPI.class,
+				AiMCQuestionGeneratorSPI::getAvailableMCGeneratorModels);
+	}
+
+	private List<String> getImgDescModelsForSpi(String spiId) {
+		return getModelsForSpi(spiId, AiImageDescriptionSPI.class,
+				AiImageDescriptionSPI::getAvailableImageDescriptionModels);
+	}
+
+	private <T> List<String> getModelsForSpi(String spiId, Class<T> featureClass,
+			java.util.function.Function<T, List<String>> modelGetter) {
 		if (!StringHelper.containsNonWhitespace(spiId) || "-".equals(spiId)) {
 			return List.of();
 		}
 		for (AiSPI spi : aiModule.getAiProviders()) {
-			if (spi.getId().equals(spiId) && spi instanceof AiMCQuestionGeneratorSPI generator) {
-				return generator.getAvailableMCGeneratorModels();
+			if (spi.getId().equals(spiId) && featureClass.isInstance(spi)) {
+				return modelGetter.apply(featureClass.cast(spi));
 			}
 		}
 		return List.of();
 	}
 
-	private List<String> getImgDescModelsForSpi(String spiId) {
-		if (!StringHelper.containsNonWhitespace(spiId) || "-".equals(spiId)) {
-			return List.of();
+	// ------ Test methods ------
+
+	private void doTestMcGenerator(UserRequest ureq) {
+		AiMCQuestionGeneratorSPI generator = getFormMcGenerator();
+		if (generator == null) {
+			showError("ai.feature.test.not.configured");
+			return;
 		}
-		for (AiSPI spi : aiModule.getAiProviders()) {
-			if (spi.getId().equals(spiId) && spi instanceof AiImageDescriptionSPI generator) {
-				return generator.getAvailableImageDescriptionModels();
-			}
-		}
-		return List.of();
+		ensureTestCtrl(ureq);
+		testCtrl.testMcGenerator(ureq, generator);
 	}
+
+	private void doTestImgDescGenerator(UserRequest ureq) {
+		AiImageDescriptionSPI generator = getFormImgDescGenerator();
+		if (generator == null) {
+			showError("ai.feature.test.not.configured");
+			return;
+		}
+		ensureTestCtrl(ureq);
+		testCtrl.testImgDescGenerator(ureq, generator);
+	}
+
+	private void ensureTestCtrl(UserRequest ureq) {
+		if (testCtrl == null) {
+			testCtrl = new AiFeaturesTestController(ureq, getWindowControl());
+			listenTo(testCtrl);
+		}
+	}
+
+	// ------ Validation and Save ------
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -378,6 +461,40 @@ public class AiFeaturesAdminController extends FormBasicController {
 			String key = singleSel.getSelectedKey();
 			if (!"-".equals(key)) {
 				return key;
+			}
+		}
+		return null;
+	}
+
+	private boolean hasModelValue(FormItem modelEl) {
+		return StringHelper.containsNonWhitespace(extractModelValue(modelEl));
+	}
+
+	private AiMCQuestionGeneratorSPI getFormMcGenerator() {
+		String spiId = getSelectedSpiId(mcGeneratorSpiEl);
+		String model = extractModelValue(mcGeneratorModelEl);
+		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
+			return null;
+		}
+		for (AiSPI spi : aiModule.getAiProviders()) {
+			if (spi.getId().equals(spiId) && spi.isEnabled() && spi instanceof AiMCQuestionGeneratorSPI generator) {
+				generator.setMCGeneratorModel(model);
+				return generator;
+			}
+		}
+		return null;
+	}
+
+	private AiImageDescriptionSPI getFormImgDescGenerator() {
+		String spiId = getSelectedSpiId(imgDescSpiEl);
+		String model = extractModelValue(imgDescModelEl);
+		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
+			return null;
+		}
+		for (AiSPI spi : aiModule.getAiProviders()) {
+			if (spi.getId().equals(spiId) && spi.isEnabled() && spi instanceof AiImageDescriptionSPI generator) {
+				generator.setImageDescriptionModel(model);
+				return generator;
 			}
 		}
 		return null;
