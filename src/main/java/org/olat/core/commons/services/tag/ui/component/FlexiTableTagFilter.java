@@ -47,7 +47,7 @@ public class FlexiTableTagFilter extends FlexiTableFilter implements FlexiTableE
 
 	private static final int MAX_EXPLANATION_LENGTH = 32;
 	
-	private final List<? extends TagInfo> allTags;
+	private List<? extends TagInfo> allTags;
 	
 	private List<String> value;
 	
@@ -60,6 +60,10 @@ public class FlexiTableTagFilter extends FlexiTableFilter implements FlexiTableE
 	
 	public List<? extends TagInfo> getAllTags() {
 		return allTags;
+	}
+	
+	public void updateAllTags(List<? extends TagInfo> allTags) {
+		this.allTags = new ArrayList<>(allTags);
 	}
 
 	@Override

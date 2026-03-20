@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.webFeed.Item;
@@ -32,7 +33,7 @@ import org.olat.modules.webFeed.Item;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class FeedItemRow {
+public class FeedItemRow implements Dated {
 
 	private final Item item;
 	private final FormLink feedEntryLink;
@@ -50,9 +51,18 @@ public class FeedItemRow {
 		this.feedEntryLink = feedEntryLink;
 		this.commentLink = commentLink;
 	}
+	
+	public Long getKey() {
+		return item.getKey();
+	}
 
 	public Item getItem() {
 		return item;
+	}
+	
+	@Override
+	public Date getDate() {
+		return item.getDate();
 	}
 
 	public Date getPublishDate() {

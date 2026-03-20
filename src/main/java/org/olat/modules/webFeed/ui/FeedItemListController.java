@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.commons.controllers.navigation.NavigationEvent;
 import org.olat.core.commons.controllers.navigation.YearNavigationController;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -120,12 +119,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FeedItemListController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
-	private List<Item> feedItems;
-	private List<FeedItemRow> itemRows;
 	private Item currentItem;
 	private Feed feedRss;
-	private List<Long> filteredItemKeys;
-	private List<FeedItemDTO> feedItemDTOList;
 	private Set<Long> selectedTagKeys;
 	private List<TagInfo> tagInfos;
 	private Publisher feedCommentPublisher;
@@ -148,6 +143,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 	private FlexiTableElement tableEl;
 	private FeedItemTableModel tableModel;
+	private FlexiTableTagFilter tagsFilter;
 
 	private final YearNavigationController naviCtrl;
 	private FormBasicController itemFormCtrl;
@@ -202,9 +198,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		this.selectedTagKeys = new HashSet<>();
 		this.feedCommentPublisher = feedCommentPublisher;
 
-		// loads and fills this.feedItems
-		loadFeedItems();
-
 		String rightColPage = velocity_root + "/right_column.html";
 		rightColFlc = FormLayoutContainer.createCustomFormLayout("right_column", getTranslator(), rightColPage);
 
@@ -220,18 +213,19 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		customItemFlc.contextPut("feed", feedRss);
 		customItemFlc.contextPut("callback", feedSecCallback);
 
-		naviCtrl = new YearNavigationController(ureq, wControl, getTranslator(), feedItems);
+		// Init + load model
+		initForm(ureq);
+		if (feedRss.isInternal()) {
+			initMultiSelectionTools(flc);
+		}
+		
+		naviCtrl = new YearNavigationController(ureq, wControl, getTranslator(), tableModel.getObjects());
 		listenTo(naviCtrl);
 		if (displayConfig == null) {
 			displayConfig = new FeedItemDisplayConfig(true, true, true);
 		}
 		if (displayConfig.isShowDateNavigation()) {
 			rightColFlc.put("navi", naviCtrl.getInitialComponent());
-		}
-
-		initForm(ureq);
-		if (feedRss.isInternal()) {
-			initMultiSelectionTools(flc);
 		}
 	}
 
@@ -265,7 +259,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		tableModel = new FeedItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setCssDelegate(tableModel);
 		tableEl.setCustomizeColumns(true);
 		if (feedRss.isInternal() && feedSecCallback.mayCreateItems()) {
 			tableEl.setMultiSelect(true);
@@ -288,7 +281,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			uifactory.addSpacerElement("spacer.external", formLayout, true);
 		}
 
-		loadModel();
+		loadModel(List.of());
 		initFilterTabs(ureq);
 		initFilters();
 		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list-" + feedRss.getKey());
@@ -299,7 +292,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	protected void initMultiSelectionTools(FormLayoutContainer formLayout) {
-		if (!tagInfos.isEmpty()) {
+		if (tagInfos != null && !tagInfos.isEmpty()) {
 			bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
 			bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			tableEl.addBatchButton(bulkAddTags);
@@ -322,28 +315,21 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			} else {
 				rightColFlc.getFormItemComponent().remove("sidebarTags");
 			}
+			if(tagsFilter != null) {
+				tagsFilter.updateAllTags(tagInfos);
+			}
 		}
 	}
 
-	private void loadFeedItems() {
-		feedItemDTOList = feedManager.loadFilteredItemsWithComRat(feedRss, filteredItemKeys, feedSecCallback, getIdentity());
+	public void loadModel(List<Long> naviItemKeys) {
+		List<FeedItemDTO> feedItemDTOList = feedManager.loadFilteredItemsWithComRat(feedRss, naviItemKeys, feedSecCallback, getIdentity());
 		feedItemDTOList.sort(Comparator.comparing(FeedItemDTO::item, new ItemPublishDateComparator()));
-		feedItems = new ArrayList<>(feedItemDTOList.stream().map(FeedItemDTO::item).toList());
-	}
-
-	public void loadModel() {
-		itemRows = new ArrayList<>();
-
-		loadFeedItems();
 		
-		List<Long> itemKeys = feedItemDTOList.stream()
-				.map(FeedItemDTO::item)
-				.map(Item::getKey).toList();
-		
-		List<FeedTag> feedTagsList = feedManager.getFeedTags(feedRss, itemKeys);
+		List<FeedTag> feedTagsList = feedManager.getFeedTags(feedRss);
 		Map<Long, List<FeedTag>> feedTagsMap = feedTagsList.stream()
 				.collect(Collectors.groupingBy(tag -> tag.getFeedItem().getKey()));
 
+		List<FeedItemRow> itemRows = new ArrayList<>(feedItemDTOList.size());
 		for (FeedItemDTO feedItemDTO : feedItemDTOList) {
 			Long numOfComments = feedItemDTO.numOfComments();
 			FormLink commentLink = uifactory.addFormLink("comments_" + feedItemDTO.item().getGuid(), "openCommentEntry", String.valueOf(numOfComments), null, null, Link.NONTRANSLATED);
@@ -432,12 +418,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			FlexiTableOneClickSelectionFilter myEntriesFilter = new FlexiTableOneClickSelectionFilter(translate("table.filter.my.entries"),
 					FeedItemFilter.OWNED.name(), myEntriesValues, true);
 			filters.add(myEntriesFilter);
-		}
 
-		tagInfos = feedManager.getTagInfos(feedRss, null);
-		FlexiTableTagFilter tagsFilter = new FlexiTableTagFilter(translate("table.filter.tags"),
-				FeedItemFilter.TAGS.name(), tagInfos, true);
-		filters.add(tagsFilter);
+			tagsFilter = new FlexiTableTagFilter(translate("table.filter.tags"),
+					FeedItemFilter.TAGS.name(), List.of(), true);
+			filters.add(tagsFilter);
+		}
 
 		FlexiTableTextFilter authorFilter = new FlexiTableTextFilter(translate("table.filter.author"),
 				FeedItemFilter.AUTHORS.name(), true);
@@ -472,15 +457,12 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 
 		List<FlexiTableFilter> filters = tableEl.getFilters();
-
 		for (FlexiTableFilter filter : filters) {
 			if (FeedItemFilter.OWNED.name().equals(filter.getFilter())) {
-				String value = filter.getValue();
-				filteredItemKeys = new ArrayList<>();
+				final String value = filter.getValue();
+				final String username = UserManager.getInstance().getUserDisplayName(getIdentity().getUser());
 				if (value != null && value.equals("owned")) {
-					itemRows.removeIf(r ->
-							r.getAuthor() == null
-									|| !r.getAuthor().equals(UserManager.getInstance().getUserDisplayName(getIdentity().getUser())));
+					itemRows.removeIf(r -> r.getAuthor() == null || !r.getAuthor().equals(username));
 				}
 			}
 			if (FeedItemFilter.TAGS.name().equals(filter.getFilter())) {
@@ -596,7 +578,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		Feed reloadedFeed = feedManager.loadFeed(feedItem.getFeed());
 		feedItem = feedManager.loadItem(feedItem.getKey());
 		if (feedItem != null) {
-			List<FeedTag> feedTags = feedManager.getFeedTags(feedRss, List.of(feedItem.getKey()));
+			List<FeedTag> feedTags = feedManager.getFeedItemTags(feedItem);
 			List<Tag> tags = feedTags.stream().map(FeedTag::getTag).toList();
 			String formattedTags = TagUIFactory.getFormattedTags(getLocale(), tags);
 			itemFlc.contextPut("formattedTags", formattedTags);
@@ -659,7 +641,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		// Reload feed and ensure the updated feed object is in view
-		reloadFeed();
+		//reloadFeed();
 
 		if (event == Event.CANCELLED_EVENT) {
 			deactivateAndCleanUp();
@@ -691,10 +673,12 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 	}
 
+	/*
 	private void reloadFeed() {
 		feedRss = feedManager.loadFeed(feedRss);
-		loadFeedItems();
+		loadModel();
 	}
+	*/
 
 	private void handleItemFormCtrlEvent(UserRequest ureq, Event event) {
 		if (event.equals(Event.CHANGED_EVENT)) {
@@ -722,7 +706,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 	private void updateOrAddItemToFeed(FileElement mediaFile) {
 		// Add the modified item if it is not part of the feed
-		if (!feedItems.contains(currentItem)) {
+		if (!tableModel.contains(currentItem)) {
 			addItemToFeed(mediaFile);
 		} else {
 			updateFeedItem(mediaFile);
@@ -743,7 +727,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void setUniqueURIsForUser() {
-		if (feedItems != null && feedItems.size() == 1) {
+		if (tableModel.getRowCount() <= 1) {
 			helper.setURIs(currentItem.getFeed());
 		}
 	}
@@ -801,7 +785,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		if (itemFormCtrl != null) {
 			updateTags();
 		}
-		loadModel();
+		loadModel(List.of());
 		loadSideBarTags();
 		initFilters();
 	}
@@ -871,14 +855,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void handleNavigationEvent(NavigationEvent navEvent) {
-		List<? extends Dated> selItems = navEvent.getSelectedItems();
-		filteredItemKeys = new ArrayList<>();
-		for (Dated selItem : selItems) {
-			if (selItem instanceof Item item) {
-				filteredItemKeys.add(item.getKey());
-			}
-		}
-		loadModel();
+		List<Long> selectedItemKeys = navEvent.getSelectedItems().stream()
+			.map(FeedItemRow.class::cast)
+			.map(FeedItemRow::getKey)
+			.toList();
+		loadModel(selectedItemKeys);
 	}
 
 	/**
@@ -887,7 +868,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	 * @param ureq
 	 */
 	private void loadTimelineTagsToggleOrRemove(UserRequest ureq) {
-		if (!itemRows.isEmpty() || toggleTimelineTags == null) {
+		if (tableModel.getRowCount() > 0 || toggleTimelineTags == null) {
 			loadTimelineTagsToggle(ureq);
 		} else {
 			removeTimelineTagsToggleAndSidebar();
@@ -973,7 +954,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		} else if (source == tableEl) {
 			if (event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
-				loadModel();
+				loadModel(List.of());
 			} else if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				FeedItemRow row = tableModel.getObject(se.getIndex());
@@ -999,7 +980,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 			if (tagFilter != null) {
 				doToggleTag(tagCmpEvent.getTagLink(), tagFilter);
-				loadModel();
+				loadModel(List.of());
 			}
 		}
 		super.event(ureq, source, event);
@@ -1040,7 +1021,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		removeAsListenerAndDispose(itemFormCtrl);
 
 		// check if still available, maybe deleted by other user in the meantime
-		if (feedItems.contains(feedItem)) {
+		if (tableModel.contains(feedItem)) {
 			lock = feedManager.acquireLock(feedRss, feedItem, getIdentity());
 			if (lock.isSuccess()) {
 				// reload to prevent stale object, then launch editor
@@ -1060,8 +1041,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			if (lock.isSuccess()) {
 				// remove the item from the naviCtr
 				naviCtrl.remove(itemToDelete);
-				// remove the item from the table
-				feedItems.remove(itemToDelete);
 				// permanently remove item
 				feedRss = feedManager.deleteItem(itemToDelete);
 

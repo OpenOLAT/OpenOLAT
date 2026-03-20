@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
@@ -34,7 +35,6 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedTag;
-import org.olat.modules.webFeed.FeedTagSearchParams;
 import org.olat.modules.webFeed.Item;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
@@ -95,11 +95,8 @@ public class FeedTagDAOTest extends OlatTestCase {
 		feedTagDAO.delete(feedTag);
 		dbInstance.commitAndCloseSession();
 
-		FeedTagSearchParams params = new FeedTagSearchParams();
-		params.setFeedKey(feedTag.getFeed().getKey());
-		List<FeedTag> tags = feedTagDAO.loadTags(params);
-
-		assertThat(tags).isEmpty();
+		List<FeedTag> tags = feedTagDAO.loadFeedTags(feedTag.getFeed().getKey());
+		Assertions.assertThat(tags).isEmpty();
 	}
 
 	@Test
@@ -124,11 +121,8 @@ public class FeedTagDAOTest extends OlatTestCase {
 		feedTagDAO.delete(feed1);
 		dbInstance.commitAndCloseSession();
 
-		FeedTagSearchParams params = new FeedTagSearchParams();
-		params.setFeedKey(feed2.getKey());
-		List<FeedTag> tags = feedTagDAO.loadTags(params);
-
-		assertThat(tags).containsExactlyInAnyOrder(feedTag21, feedTag22);
+		List<FeedTag> tags = feedTagDAO.loadFeedTags(feed2.getKey());
+		Assertions.assertThat(tags).containsExactlyInAnyOrder(feedTag21, feedTag22);
 	}
 
 	@Test
@@ -152,11 +146,8 @@ public class FeedTagDAOTest extends OlatTestCase {
 		feedTagDAO.delete(feedItem1);
 		dbInstance.commitAndCloseSession();
 
-		FeedTagSearchParams params = new FeedTagSearchParams();
-		params.setFeedKey(feed.getKey());
-		List<FeedTag> tags = feedTagDAO.loadTags(params);
-
-		assertThat(tags).containsExactlyInAnyOrder(feedTag21, feedTag22);
+		List<FeedTag> tags = feedTagDAO.loadFeedTags(feed.getKey());
+		Assertions.assertThat(tags).containsExactlyInAnyOrder(feedTag21, feedTag22);
 	}
 
 	@Test
@@ -262,11 +253,8 @@ public class FeedTagDAOTest extends OlatTestCase {
 		FeedTag feedTag = feedTagDAO.create(feed, feedItem, tag);
 		dbInstance.commitAndCloseSession();
 
-		FeedTagSearchParams params = new FeedTagSearchParams();
-		params.setFeedKey(feed.getKey());
-		List<FeedTag> feedTags = feedTagDAO.loadTags(params);
-
-		assertThat(feedTags).containsExactlyInAnyOrder(feedTag);
+		List<FeedTag> feedTags = feedTagDAO.loadFeedTags(feed.getKey());
+		Assertions.assertThat(feedTags).containsExactlyInAnyOrder(feedTag);
 	}
 
 	@Test
@@ -294,17 +282,13 @@ public class FeedTagDAOTest extends OlatTestCase {
 		FeedTag feedTag32 = feedTagDAO.create(feed, feedItem3, tag2);
 		dbInstance.commitAndCloseSession();
 
-		// Set up search parameters to filter by specific feed items
-		FeedTagSearchParams params = new FeedTagSearchParams();
-		params.setFeedItemKeys(List.of(feedItem1.getKey(), feedItem3.getKey()));
-
-		// Load the tags based on the search parameters
-		List<FeedTag> feedTags = feedTagDAO.loadTags(params);
+		// Load the tags of item 1
+		List<FeedTag> feedTags = feedTagDAO.loadFeedItemTags(feedItem1.getKey());
 
 		// Verify that the correct tags are returned
 		// Also ensure tags for feedItem2 are not included
 		assertThat(feedTags)
-				.containsExactlyInAnyOrder(feedTag11, feedTag12, feedTag31, feedTag32)
-				.doesNotContain(feedTag21, feedTag22);
+				.containsExactlyInAnyOrder(feedTag11, feedTag12)
+				.doesNotContain(feedTag21, feedTag22, feedTag31, feedTag32);
 	}
 }
