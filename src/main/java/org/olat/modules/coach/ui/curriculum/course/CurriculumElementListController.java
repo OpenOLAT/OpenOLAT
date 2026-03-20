@@ -223,9 +223,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
 		if (implementation == null) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
+		}
+		if (implementation != null) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
@@ -244,9 +246,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
 		
-		List<String> relevantStatuses = new ArrayList<>(List.of(CurriculumElementStatus.preparation.name(),
-				CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name()));
+		List<String> relevantStatuses = new ArrayList<>();
+		relevantStatuses.add(CurriculumElementStatus.preparation.name());
 		if (implementation == null) {
+			relevantStatuses.add(CurriculumElementStatus.provisional.name());
+			relevantStatuses.add(CurriculumElementStatus.confirmed.name());
+		}
+		if (implementation != null) {
 			relevantStatuses.add(CurriculumElementStatus.active.name());
 		}
 		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
