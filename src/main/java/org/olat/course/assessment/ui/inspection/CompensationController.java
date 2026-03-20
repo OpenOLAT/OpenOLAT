@@ -29,6 +29,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
@@ -112,7 +113,9 @@ public class CompensationController extends StepFormBasicController {
 		tableModel = new CompensationListModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "compensations", tableModel, 25, true, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableMessageKey("info.no.disadvantage.compensation");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("info.no.disadvantage.compensation")
+				.build());
 	}
 	
 	private void loadModel() {

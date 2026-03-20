@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -134,7 +135,9 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		tableEl.setSearchEnabled(false);
 		tableEl.setNumOfRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-analysis-v1");
-		tableEl.setEmptyTableMessageKey("analysis.table.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("analysis.table.empty")
+				.build());
 		
 		VelocityContainer row = createVelocityContainer("analysis_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container

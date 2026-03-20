@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -514,7 +515,9 @@ public abstract class GroupByController extends FormBasicController implements F
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", getModel(), getTranslator(), flc);
 		tableEl.setElementCssClass("o_qual_hm o_qual_trend");
-		tableEl.setEmptyTableMessageKey("heatmap.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("heatmap.empty")
+				.build());
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setFooter(hasFooter());

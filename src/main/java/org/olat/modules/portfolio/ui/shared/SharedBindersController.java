@@ -28,6 +28,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -167,7 +168,9 @@ public class SharedBindersController extends FormBasicController implements Acti
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_binder_shared_items_listing");
-		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.sEmptyTable")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items-v2");
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();

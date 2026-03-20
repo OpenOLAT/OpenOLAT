@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
@@ -219,7 +220,9 @@ public abstract class ReportAccessController extends FormBasicController {
 		
 		if (accessTableEl != null) flc.remove(accessTableEl);
 		accessTableEl = uifactory.addTableElement(getWindowControl(), "reportaccess", accessDataModel, 25, true, getTranslator(), flc);
-		accessTableEl.setEmptyTableMessageKey("report.access.empty.table");
+		accessTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("report.access.empty.table")
+				.build());
 		accessTableEl.setNumOfRowsEnabled(false);
 		accessTableEl.setCustomizeColumns(false);
 		loadAccessDataModel();
@@ -367,7 +370,9 @@ public abstract class ReportAccessController extends FormBasicController {
 		membersTableModel = new ReportMemberTableModel(columnsModel, getLocale()); 
 		membersTableEl = uifactory.addTableElement(getWindowControl(), "memberstable", membersTableModel, 20, false, getTranslator(), membersLayout);
 		membersTableEl.setAndLoadPersistedPreferences(ureq, "quality-report-members-v2");
-		membersTableEl.setEmptyTableMessageKey("report.member.empty.table");
+		membersTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("report.member.empty.table")
+				.build());
 		membersTableEl.setSelectAllEnable(canEditReportMembers());
 		membersTableEl.setMultiSelect(canEditReportMembers());
 		

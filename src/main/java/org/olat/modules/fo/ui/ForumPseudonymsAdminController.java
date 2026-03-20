@@ -22,6 +22,7 @@ package org.olat.modules.fo.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -91,7 +92,10 @@ public class ForumPseudonymsAdminController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "pseudonyms", model, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_forum");
-		tableEl.setEmptyTableSettings("forum.empty", null, "o_forum_status_thread_icon");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("forum.empty")
+				.withIconCss("o_forum_status_thread_icon")
+				.build());
 		tableEl.setSearchEnabled(true);
 	}
 	

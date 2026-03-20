@@ -22,6 +22,7 @@ package org.olat.ims.lti13.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -144,9 +145,13 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		if(entry == null) {
-			tableEl.setEmptyTableMessageKey("tools.empty.groups");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("tools.empty.groups")
+					.build());
 		} else {
-			tableEl.setEmptyTableMessageKey("tools.empty.entries");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("tools.empty.entries")
+					.build());
 		}
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-tools-admin");
 	}

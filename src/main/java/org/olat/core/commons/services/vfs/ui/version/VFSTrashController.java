@@ -34,6 +34,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.ui.component.BytesCellRenderer;
 import org.olat.core.commons.services.vfs.ui.version.VersionsDeletedFileDataModel.VersionsDeletedCols;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -106,7 +107,10 @@ public class VFSTrashController extends FormBasicController {
 		
 		dataModel = new VersionsDeletedFileDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "orphansList", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("version.noDeletedFiles", null, "o_icon_files");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("version.noDeletedFiles")
+				.withIconCss("o_icon_files")
+				.build());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);

@@ -35,6 +35,7 @@ import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -311,9 +312,17 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (secCallback.canCreateNotes() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("note.list.empty.message", null, "o_icon_proj_note", "note.create", "o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("note.list.empty.message")
+					.withIconCss("o_icon_proj_note")
+					.withPrimaryButton("o_icon_add", "note.create", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("note.list.empty.message", null, "o_icon_proj_note");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("note.list.empty.message")
+					.withIconCss("o_icon_proj_note")
+					.build());
 		}
 		
 		if (bulkDeleteButton != null) {

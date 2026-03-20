@@ -19,6 +19,7 @@
  */
 package org.olat.modules.appointments.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
@@ -236,7 +237,9 @@ public class TopicGroupsController extends FormBasicController {
 		usersTableModel = new UserRestrictionTableModel(columnsModel, getLocale()); 
 		usersTableEl = uifactory.addTableElement(getWindowControl(), "users", usersTableModel, 20, false, getTranslator(), usersLayout);
 		usersTableEl.setAndLoadPersistedPreferences(ureq, "topic.groups.users.v2");
-		usersTableEl.setEmptyTableMessageKey("groups.users.empty.table");
+		usersTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("groups.users.empty.table")
+				.build());
 		usersTableEl.setSelectAllEnable(true);
 		usersTableEl.setMultiSelect(true);
 		

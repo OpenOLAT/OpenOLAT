@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -81,7 +82,10 @@ public class LiveStreamListController extends FormBasicController {
 		dataModel = new LiveStreamEventDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "livestream-upcoming");
-		tableEl.setEmptyTableSettings("table.empty", null, "o_icon_calendar");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty")
+				.withIconCss("o_icon_calendar")
+				.build());
 
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);

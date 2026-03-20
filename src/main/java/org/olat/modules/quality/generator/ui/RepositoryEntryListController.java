@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -107,7 +108,9 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 
 		tableModel = new RepositoryEntryListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("repository.entry.empty.table");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("repository.entry.empty.table")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, getTablePrefKey());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

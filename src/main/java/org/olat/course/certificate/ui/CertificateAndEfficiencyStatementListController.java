@@ -34,6 +34,7 @@ import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -330,7 +331,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_certificates_table");
-		tableEl.setEmptyTableSettings("table.statements.empty", null, "o_icon_statement");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.statements.empty")
+				.withIconCss("o_icon_statement")
+				.build());
 	}
 	
 	private void loadModel() {

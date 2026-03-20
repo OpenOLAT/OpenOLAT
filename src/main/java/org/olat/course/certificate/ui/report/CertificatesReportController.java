@@ -28,6 +28,7 @@ import java.util.Set;
 import org.olat.NewControllerFactory;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -136,7 +137,10 @@ public class CertificatesReportController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "certificates-reports-courses-list");
-		tableEl.setEmptyTableSettings("search.empty", null, "o_icon_certificate");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("search.empty")
+				.withIconCss("o_icon_certificate")
+				.build());
 		
 		generateReportButton = uifactory.addFormLink("report.certificates", "report.certificates", null, formLayout, Link.BUTTON);
 		

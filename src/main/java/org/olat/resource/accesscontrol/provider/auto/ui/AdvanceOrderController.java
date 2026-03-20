@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -91,7 +92,9 @@ public class AdvanceOrderController extends FormBasicController {
 
 		dataModel = new AdvanceOrderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("table.advanceOrder.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.advanceOrder.empty")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "advance-orders");
 		
 		initFilters();

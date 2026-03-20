@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -98,9 +99,10 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		tableModel = new TableModel(columnModel, userManager, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("empty.badges.table", null,
-				"o_icon_badge", null, null,
-				false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.badges.table")
+				.withIconCss("o_icon_badge")
+				.build(), false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-global");
 
 		updateUI();

@@ -22,6 +22,7 @@ package org.olat.modules.grading.ui.wizard;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -87,7 +88,9 @@ public class SearchResourceListController extends StepFormBasicController {
 		tableModel = new RepositoryFlexiTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "resources", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "graders-resources");
-		tableEl.setEmptyTableMessageKey("resources.noresources");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("resources.noresources")
+				.build());
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 	}

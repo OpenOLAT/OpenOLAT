@@ -250,8 +250,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//preload it
 			dataSource.load(null, null, 0, pageSize);
 		}
-		// Initialize empty state with standard message
-		setEmptyTableSettings("default.tableEmptyMessage", null, null);
+		setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("default.tableEmptyMessage")
+				.build());
 	}
 
 	@Override
@@ -2670,7 +2671,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void setEmptyStateConfig(EmptyStateConfig emptyStateConfig) {
-		setEmptyStateConfig(emptyStateConfig, false);
+		setEmptyStateConfig(emptyStateConfig, true);
 	}
 	
 	@Override
@@ -2683,31 +2684,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public EmptyStateConfig getEmptyStateConfig() {
 		return emptyStateConfig;
-	}
-
-	@Override
-	public void setEmptyTableMessageKey(String i18key) {
-		setEmptyTableSettings(i18key, null, null);
-	}
-
-	@Override
-	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss) {
-		setEmptyTableSettings(emptyMessagei18key, emptyTableHintKey, emptyTableIconCss, null, null, true);
-	}
-	
-	@Override
-	public void setEmptyTableSettings(String messageI18nKey, String hintI18nKey, String iconCss,
-									  String primaryButtonI18nKey, String primaryButtonLeftIconCss,
-									  boolean alwaysShowSearchFields, String... i18nArgs) {
-		EmptyStateConfig config = EmptyStateConfig.builder()
-				.withMessageI18nKey(messageI18nKey)
-				.withMessageI18nArgs(i18nArgs)
-				.withHintI18nKey(hintI18nKey)
-				.withHintI18nArgs(i18nArgs)
-				.withIconCss(iconCss)
-				.withPrimaryButton(primaryButtonLeftIconCss, primaryButtonI18nKey, null)
-				.build();
-		setEmptyStateConfig(config, alwaysShowSearchFields);
 	}
 
 	private void syncButtonComponents() {

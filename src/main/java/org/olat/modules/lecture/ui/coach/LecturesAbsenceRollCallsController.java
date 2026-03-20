@@ -28,6 +28,7 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -161,7 +162,9 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		
 		tableModel = new LecturesAbsenceRollCallsTableModel(columnsModel, userPropertyHandlers, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("empty.absences.list");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.absences.list")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "absences-rollcalls-list-" + secCallback.viewAs() + "-" + showTimeOnly);
 		
 		if(authorizedAbsenceEnabled && secCallback.canAuthorizeAbsence()) {

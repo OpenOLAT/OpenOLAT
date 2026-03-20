@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -133,7 +134,9 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		tableEl.setElementCssClass("o_import_course_nodes o_import_course_files_configuration");
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(false);
-		tableEl.setEmptyTableMessageKey("table.files.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.files.empty")
+				.build());
 	}
 	
 	/**

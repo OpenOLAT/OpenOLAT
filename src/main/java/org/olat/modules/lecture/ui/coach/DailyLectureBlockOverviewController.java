@@ -33,6 +33,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -216,7 +217,9 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setEmptyTableMessageKey("cockpit.lectures.day.list");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("cockpit.lectures.day.list")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "daily-lecture-blocks-overview-v2");
 		
 		initCloseButton(formLayout);

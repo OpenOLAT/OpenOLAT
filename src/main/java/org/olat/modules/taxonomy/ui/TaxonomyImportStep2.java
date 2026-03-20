@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -108,7 +109,9 @@ public class TaxonomyImportStep2 extends BasicStep {
 
 			tableElement = uifactory.addTableElement(getWindowControl(), "table", reviewTableModel, 15, false, getTranslator(), formLayout);
 			tableElement.setCustomizeColumns(true);
-			tableElement.setEmptyTableMessageKey("table.taxonomy.level.empty");
+			tableElement.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.taxonomy.level.empty")
+					.build());
 			tableElement.setNumOfRowsEnabled(true);
 			tableElement.setExportEnabled(false);
 			

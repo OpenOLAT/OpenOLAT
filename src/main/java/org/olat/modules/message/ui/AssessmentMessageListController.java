@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -145,7 +146,10 @@ public class AssessmentMessageListController extends FormBasicController impleme
 		tableEl = uifactory.addTableElement(getWindowControl(), "messages", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.addBatchButton(bulkDeleteButton);
 		tableEl.addBatchButton(bulkWithdrawButton);
-		tableEl.setEmptyTableSettings("table.nomessage", null, "o_icon_chat");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.nomessage")
+				.withIconCss("o_icon_chat")
+				.build());
 		tableEl.setElementCssClass("o_as_messages_list");
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);

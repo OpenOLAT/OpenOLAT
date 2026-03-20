@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -259,7 +260,9 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		contentTableEl = uifactory.addTableElement(getWindowControl(), "meetingContents", contentModel, 24, false, getTranslator(), formLayout);
 		contentTableEl.setCustomizeColumns(false);
 		contentTableEl.setNumOfRowsEnabled(false);
-		contentTableEl.setEmptyTableMessageKey("no.shared.contents");
+		contentTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.shared.contents")
+				.build());
 	}
 	
 	private void loadModel() {

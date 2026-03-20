@@ -24,6 +24,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.model.DeletedIdentity;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -105,7 +106,10 @@ public class DeletedUsersController extends FormBasicController {
 		tableModel = new DeletedUsersTableModel(new DeletedUserDataSource(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, true, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableSettings("error.no.user.found", null, "o_icon_user");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("error.no.user.found")
+				.withIconCss("o_icon_user")
+				.build());
 		tableEl.setExportEnabled(false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "deleted-user-list-v2");
 	}

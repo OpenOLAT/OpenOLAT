@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -262,7 +263,9 @@ public class CourseOverviewStep extends BasicStep {
 									
 			dataModel = new CopyCourseOverviewDataModel(columnsModel);
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-			tableEl.setEmptyTableMessageKey("table.empty");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty")
+					.build());
 			tableEl.setExportEnabled(false);
 			tableEl.setMultiSelect(false);
 			tableEl.setBordered(false);

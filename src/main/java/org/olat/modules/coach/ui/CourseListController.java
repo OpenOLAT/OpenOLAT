@@ -36,6 +36,7 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -327,8 +328,12 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setSearchEnabled(config.withToolbar());
 		tableEl.setNumOfRowsEnabled(config.withToolbar());
 		String[] emptyI18nArgs = getEmptyArgs();
-		tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon",
-				null, null, false, emptyI18nArgs);
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withMessageI18nKey("table.resources.empty")
+				.withMessageI18nArgs(emptyI18nArgs)
+				.withIconCss("o_CourseModule_icon")
+				.build();
+		tableEl.setEmptyStateConfig(emptyState, false);
 		
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container

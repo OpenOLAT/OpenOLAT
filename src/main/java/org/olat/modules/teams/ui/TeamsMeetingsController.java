@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -88,7 +89,10 @@ public class TeamsMeetingsController extends FormBasicController {
 
 		upcomingTableModel = new TeamsMeetingTableModel(columnsModel, getLocale());
 		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingMeetings", upcomingTableModel, getTranslator(), formLayout);
-		upcomingTableEl.setEmptyTableSettings("no.upcoming.meetings", null, "o_icon_calendar");
+		upcomingTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.upcoming.meetings")
+				.withIconCss("o_icon_calendar")
+				.build());
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));
@@ -104,7 +108,10 @@ public class TeamsMeetingsController extends FormBasicController {
 
 		pastTableModel = new TeamsMeetingTableModel(columnsModel, getLocale());
 		pastTableEl = uifactory.addTableElement(getWindowControl(), "pastMeetings", pastTableModel, getTranslator(), formLayout);
-		pastTableEl.setEmptyTableSettings("no.past.meetings", null, "o_icon_calendar");
+		pastTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.past.meetings")
+				.withIconCss("o_icon_calendar")
+				.build());
 				
 		FlexiTableSortOptions pastSortOptions = new FlexiTableSortOptions();
 		pastSortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));

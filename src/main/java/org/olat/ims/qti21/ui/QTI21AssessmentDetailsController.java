@@ -39,6 +39,7 @@ import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -298,7 +299,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("results.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("results.empty")
+				.build());
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {
 			if(courseNode != null) {

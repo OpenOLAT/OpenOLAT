@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
@@ -1688,9 +1689,17 @@ public class AuthorListController extends FormBasicController implements Activat
 			deletePermanentlyButton.setVisible(deletedTab == tab);
 		}
 		if(searchTab == tab) {
-			tableEl.setEmptyTableSettings("author.search.empty", "author.search.empty.hint", "o_CourseModule_icon");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("author.search.empty")
+					.withHintI18nKey("author.search.empty.hint")
+					.withIconCss("o_CourseModule_icon")
+					.build());
 		} else {
-			tableEl.setEmptyTableSettings("author.list.empty", "author.list.empty.hint", "o_CourseModule_icon");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("author.list.empty")
+					.withHintI18nKey("author.list.empty.hint")
+					.withIconCss("o_CourseModule_icon")
+					.build());
 		}
 	}
 	

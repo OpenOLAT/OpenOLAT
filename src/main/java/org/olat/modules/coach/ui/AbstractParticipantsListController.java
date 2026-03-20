@@ -33,6 +33,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -255,7 +256,10 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
         tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("default.tableEmptyMessage")
+				.withIconCss("o_icon_user")
+				.build());
         
         batchContactButton = uifactory.addFormLink("contact.link", formLayout, Link.BUTTON);
         batchContactButton.setIconLeftCSS("o_icon o_icon_mail");

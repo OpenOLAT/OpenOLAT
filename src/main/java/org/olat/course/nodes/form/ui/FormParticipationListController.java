@@ -36,6 +36,7 @@ import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -250,7 +251,10 @@ public class FormParticipationListController extends FormBasicController impleme
 		tableEl.setSortSettings(options);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, FormCourseNode.ICON_CSS);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("default.tableEmptyMessage")
+				.withIconCss(FormCourseNode.ICON_CSS)
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "course.element.form.v2");
 		
 		initFilters();

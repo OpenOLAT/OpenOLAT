@@ -22,6 +22,7 @@ package org.olat.ims.qti21.resultexport;
 import org.olat.core.commons.services.export.ui.ExportsListController;
 import org.olat.core.commons.services.export.ui.ExportsListSettings;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -44,7 +45,11 @@ public class QTI21ExportsListController extends ExportsListController {
 	protected void initTable(FlexiTableElement tableElement) {
 		super.initTable(tableElement);
 		
-		tableElement.setEmptyTableSettings("export.table.empty.message", "export.table.empty.hint", "o_filetype_zip");
+		tableElement.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("export.table.empty.message")
+				.withHintI18nKey("export.table.empty.hint")
+				.withIconCss("o_filetype_zip")
+				.build());
 	}
 
 }

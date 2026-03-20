@@ -28,6 +28,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -177,13 +178,16 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		tableEl.setElementCssClass("o_sel_badge_classes_list");
 
 		if (owner) {
-			tableEl.setEmptyTableSettings("empty.badges.table.owner", null,
-					"o_icon_badge", "form.create.new.badge", "o_icon_add",
-					false);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("empty.badges.table.owner")
+					.withIconCss("o_icon_badge")
+					.withPrimaryButton("o_icon_add", "form.create.new.badge", null)
+					.build(), false);
 		} else {
-			tableEl.setEmptyTableSettings("empty.badges.table", null,
-					"o_icon_badge", null, null,
-					false);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("empty.badges.table")
+					.withIconCss("o_icon_badge")
+					.build(), false);
 		}
 
 		createLink = uifactory.addFormLink("create", "form.create.new.badge", null, formLayout, Link.BUTTON);

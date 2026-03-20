@@ -32,6 +32,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -145,7 +146,10 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	}
 	
 	public void setEmptyMessage(String i18nKey) {
-		tableEl.setEmptyTableSettings(i18nKey, null, "o_icon_fileupload");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey(i18nKey)
+				.withIconCss("o_icon_fileupload")
+				.build());
 	}
 
 	@Override

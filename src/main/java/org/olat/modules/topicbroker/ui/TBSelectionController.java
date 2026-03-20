@@ -44,6 +44,7 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -380,10 +381,16 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		topicTableEl.setSearchEnabled(true);
 		
 		if (periodEvaluator.isBeforeSelectionPeriod()) {
-			topicTableEl.setEmptyTableSettings("topics.available.empty.message.selection.not.started",
-					"topics.available.empty.message.selection.not.started.hint", "o_icon_topicbroker");
+			topicTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("topics.available.empty.message.selection.not.started")
+					.withHintI18nKey("topics.available.empty.message.selection.not.started.hint")
+					.withIconCss("o_icon_topicbroker")
+					.build());
 		} else {
-			topicTableEl.setEmptyTableSettings("topics.available.empty.message.no.topics", null, "o_icon_topicbroker");
+			topicTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("topics.available.empty.message.no.topics")
+					.withIconCss("o_icon_topicbroker")
+					.build());
 		}
 
 		topicTableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);

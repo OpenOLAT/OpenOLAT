@@ -43,6 +43,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.date.DateComponentFactory;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -279,7 +280,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			FormLink addEntry = uifactory.addFormLink("feed.add.item", "feed.add.item", "feed.add.item", "", formLayout, Link.BUTTON);
 			addEntry.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			addEntry.setElementCssClass("o_sel_feed_add_item");
-			tableEl.setEmptyTableSettings("table.empty.message", null, null, "feed.add.item", "o_icon_add", false);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.message")
+				.withPrimaryButton("o_icon_add", "feed.add.item", null)
+				.build(), false);
 		} else {
 			uifactory.addSpacerElement("spacer.external", formLayout, true);
 		}

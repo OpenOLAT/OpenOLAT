@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.modules.forms.EvaluationFormDispatcher.EMAIL_PARTICIPATION_TYPE;
 import static org.olat.modules.forms.EvaluationFormDispatcher.PUBLIC_PARTICIPATION_TYPE;
 
@@ -288,12 +289,26 @@ public class ParticipationListController extends FormBasicController {
 	private void updateEmptyMessageUI() {
 		if (secCallback.canAddParticipants()) {
 			if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRoleEmail) {
-				tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.user.email.add", "o_icon_mail", false);
+				EmptyStateConfig emptyState = EmptyStateConfig.builder()
+						.withMessageI18nKey("participation.empty.table")
+						.withIconCss("o_icon_user")
+						.withPrimaryButton("o_icon_mail", "participation.user.email.add", null)
+						.build();
+				tableEl.setEmptyStateConfig(emptyState, false);
 			} else {
-				tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.add.participants", "o_icon_add_member", false);
+				EmptyStateConfig emptyState = EmptyStateConfig.builder()
+						.withMessageI18nKey("participation.empty.table")
+						.withIconCss("o_icon_user")
+						.withPrimaryButton("o_icon_add_member", "participation.add.participants", null)
+						.build();
+				tableEl.setEmptyStateConfig(emptyState, false);
 			}
 		} else {
-			tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", null, null, false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("participation.empty.table")
+					.withIconCss("o_icon_user")
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		}
 	}
 	

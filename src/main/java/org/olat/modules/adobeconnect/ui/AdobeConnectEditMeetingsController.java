@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -112,7 +113,10 @@ public class AdobeConnectEditMeetingsController extends FormBasicController {
 		
 		tableModel = new AdobeConnectMeetingTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("no.meeting.configured", null, "o_icon_calendar");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.meeting.configured")
+				.withIconCss("o_icon_calendar")
+				.build());
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), false));

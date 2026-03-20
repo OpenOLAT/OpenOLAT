@@ -20,6 +20,7 @@
  */
 package org.olat.modules.cemedia.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.util.StringHelper.EMPTY;
 
 import java.io.File;
@@ -606,9 +607,19 @@ public class MediaCenterController extends FormBasicController
 			default -> allTab;
 		};
 		if (withAddMedias && (allTab != null && tab == allTab)) {
-			tableEl.setEmptyTableSettings("media.list.empty.message", "media.empty.hint.readwrite", "o_icon_media", "browser.add", "o_icon_filehub_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("media.list.empty.message")
+					.withHintI18nKey("media.empty.hint.readwrite")
+					.withIconCss("o_icon_media")
+					.withPrimaryButton("o_icon_filehub_add", "browser.add", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("media.list.empty.message", "media.empty.hint.readonly", "o_icon_media");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("media.list.empty.message")
+					.withHintI18nKey("media.empty.hint.readonly")
+					.withIconCss("o_icon_media")
+					.build());
 		}
 
 		tableEl.setSelectedFilterTab(ureq, tab);

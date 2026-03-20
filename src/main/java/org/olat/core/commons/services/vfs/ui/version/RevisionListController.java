@@ -39,6 +39,7 @@ import org.olat.core.commons.services.vfs.ui.component.BytesCellRenderer;
 import org.olat.core.commons.services.vfs.ui.media.VFSRevisionMediaResource;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListDataModel.RevisionCols;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -142,7 +143,10 @@ public class RevisionListController extends FormBasicController {
 
 		tableModel = new RevisionListDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("version.noRevisions", null, "o_icon_files");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("version.noRevisions")
+				.withIconCss("o_icon_files")
+				.build());
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
 		sortOptions.setDefaultOrderBy(new SortKey(RevisionCols.nr.name(), false));
 		tableEl.setSortSettings(sortOptions);

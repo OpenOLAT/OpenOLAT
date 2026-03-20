@@ -20,6 +20,7 @@
  */
 package org.olat.repository.ui.list;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
@@ -287,9 +288,17 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		if (config.withSearch()) {
-			tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", "o_CourseModule_icon");			
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.search.empty")
+					.withHintI18nKey("table.search.empty.hint")
+					.withIconCss("o_CourseModule_icon")
+					.build());
 		} else {
-			tableEl.setEmptyTableSettings("table.list.empty", "table.list.empty.hint", "o_CourseModule_icon");			
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.list.empty")
+					.withHintI18nKey("table.list.empty.hint")
+					.withIconCss("o_CourseModule_icon")
+					.build());
 		}
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container

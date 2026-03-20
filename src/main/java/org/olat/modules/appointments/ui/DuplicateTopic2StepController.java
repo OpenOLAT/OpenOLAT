@@ -19,6 +19,7 @@
  */
 package org.olat.modules.appointments.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.util.DateUtils.toDate;
 import static org.olat.core.util.DateUtils.toLocalDateTime;
@@ -206,7 +207,9 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		dataModel = new AppointmentInputDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "appointments-duplicate");
-		tableEl.setEmptyTableMessageKey("table.empty.appointments");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.appointments")
+				.build());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 	}

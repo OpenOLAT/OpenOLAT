@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -207,7 +208,10 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
-		threadTable.setEmptyTableSettings("forum.empty", null, "o_forum_status_thread_icon");
+		threadTable.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("forum.empty")
+				.withIconCss("o_forum_status_thread_icon")
+				.build());
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));

@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -143,7 +144,10 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings(getTableEmptyI18nKey(), null, getIconCssClass());
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey(getTableEmptyI18nKey())
+				.withIconCss(getIconCssClass())
+				.build());
 		
 		String linkI18n = getLinkNumberI18nKey();
 		link = uifactory.addFormLink("link", linkI18n, null, formLayout, Link.LINK | Link.NONTRANSLATED);

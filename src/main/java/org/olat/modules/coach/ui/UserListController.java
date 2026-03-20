@@ -25,6 +25,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -115,7 +116,10 @@ public class UserListController extends FormBasicController implements Activatea
 		model = new StudentsTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("default.tableEmptyMessage")
+				.withIconCss("o_icon_user")
+				.build());
 
 		UserSession usess = ureq.getUserSession();
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(usess.getRoles());

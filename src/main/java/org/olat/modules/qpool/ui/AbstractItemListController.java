@@ -40,6 +40,7 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -239,7 +240,11 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 		itemsTable.setExportEnabled(true);
 		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey + "-v2");
-		itemsTable.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_qpool", null, null, false);
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withMessageI18nKey("default.tableEmptyMessage")
+				.withIconCss("o_icon_qpool")
+				.build();
+		itemsTable.setEmptyStateConfig(emptyState, false);
 		
 		VelocityContainer detailsVC = createVelocityContainer("item_list_details");
 		itemsTable.setDetailsRenderer(detailsVC, this);

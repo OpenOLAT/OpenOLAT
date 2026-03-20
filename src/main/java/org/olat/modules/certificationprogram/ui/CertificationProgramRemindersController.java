@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -135,9 +136,17 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 		if(secCallback.canEditCertificationProgram()) {
-			tableEl.setEmptyTableSettings("table.reminder.empty", "table.reminder.empty.hint", "o_icon_reminder", "add.reminder", "o_icon_add", true);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.reminder.empty")
+					.withHintI18nKey("table.reminder.empty.hint")
+					.withIconCss("o_icon_reminder")
+					.withPrimaryButton("o_icon_add", "add.reminder", null)
+					.build());
 		} else {
-			tableEl.setEmptyTableSettings("table.reminder.empty", null, "o_icon_reminder");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.reminder.empty")
+					.withIconCss("o_icon_reminder")
+					.build());
 		}
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, prefsId.toString());

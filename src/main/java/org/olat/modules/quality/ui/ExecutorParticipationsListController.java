@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.modules.quality.QualityExecutorParticipationStatus.FUTURE;
 import static org.olat.modules.quality.QualityExecutorParticipationStatus.OVER;
 import static org.olat.modules.quality.QualityExecutorParticipationStatus.PARTICIPATED;
@@ -119,7 +120,9 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		tableEl = uifactory.addTableElement(getWindowControl(), "user-participations", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_exec_list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-executor-participation");
-		tableEl.setEmptyTableMessageKey("executor.participation.empty.table");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("executor.participation.empty.table")
+				.build());
 	}
 	
 	@Override

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -138,7 +139,9 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 		tableEl.setElementCssClass("o_import_course_nodes o_import_course_nodes_configuration");
 		tableEl.setMultiSelect(false);
 		tableEl.setSelectAllEnable(false);
-		tableEl.setEmptyTableMessageKey("table.course.node.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.course.node.empty")
+				.build());
 	}
 	
 	private void loadModel() {

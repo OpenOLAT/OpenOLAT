@@ -26,6 +26,7 @@ import java.util.Map;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -133,7 +134,9 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(SEBTemplateCols.name.name(), true));
 		tableEl.setSortSettings(sortOptions);
-		tableEl.setEmptyTableMessageKey("seb.template.table.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("seb.template.table.empty")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "seb-templates-admin");
 	}
 

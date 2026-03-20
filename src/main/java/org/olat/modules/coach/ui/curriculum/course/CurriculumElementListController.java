@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -210,7 +211,9 @@ public class CurriculumElementListController extends FormBasicController impleme
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
         tableEl.setElementCssClass("o_curriculumtable");
         tableEl.setCustomizeColumns(true);
-        tableEl.setEmptyTableMessageKey("table.curriculum.empty");
+        tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+                .withMessageI18nKey("table.curriculum.empty")
+                .build());
         tableEl.setCssDelegate(this);
         // Don't persist preferences, persisted sort kill the tree representation
         

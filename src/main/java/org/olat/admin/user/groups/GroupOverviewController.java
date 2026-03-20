@@ -33,6 +33,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -149,7 +150,12 @@ public class GroupOverviewController extends FormBasicController {
 		if(canEdit) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
-			tableEl.setEmptyTableSettings("table.empty.hint", null, "o_icon_group", "add.groups", "o_icon_add", false);					
+			EmptyStateConfig emptyStateWithBtn = EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty.hint")
+					.withIconCss("o_icon_group")
+					.withPrimaryButton("o_icon_add", "add.groups", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyStateWithBtn, false);
 			
 			leaveLink = uifactory.addFormLink("table.leave", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(leaveLink);
@@ -157,7 +163,11 @@ public class GroupOverviewController extends FormBasicController {
 			addGroups = uifactory.addFormLink("add.groups", formLayout, Link.BUTTON);
 			addGroups.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		} else {
-			tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, false);	
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty")
+					.withIconCss("o_icon_group")
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		}
 	}
 

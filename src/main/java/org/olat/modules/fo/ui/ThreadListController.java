@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -168,9 +169,17 @@ public class ThreadListController extends FormBasicController {
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
 		if(foCallback.mayOpenNewThread()) {
-			threadTable.setEmptyTableSettings("forum.empty", "forum.empty.hint", "o_forum_status_thread_icon", "msg.create", "o_forum_status_thread_icon", true);
+			threadTable.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("forum.empty")
+					.withHintI18nKey("forum.empty.hint")
+					.withIconCss("o_forum_status_thread_icon")
+					.withPrimaryButton("o_forum_status_thread_icon", "msg.create", null)
+					.build());
 		} else {
-			threadTable.setEmptyTableSettings("forum.empty", null, "o_forum_status_thread_icon");
+			threadTable.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("forum.empty")
+					.withIconCss("o_forum_status_thread_icon")
+					.build());
 		}
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));

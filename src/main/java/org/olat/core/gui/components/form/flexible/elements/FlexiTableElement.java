@@ -580,7 +580,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 *
 	 * @param emptyStateConfig the configuration object containing details for the empty state setup.
 	 */
-	void setEmptyStateConfig(EmptyStateConfig emptyStateConfig);
+	public void setEmptyStateConfig(EmptyStateConfig emptyStateConfig);
 
 	/**
 	 * Configures the empty state for a view or component with the given configuration.
@@ -589,36 +589,6 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param alwaysShowSearchFields a flag indicating whether search fields should always be visible, even when the empty state is displayed
 	 */
 	public void setEmptyStateConfig(EmptyStateConfig emptyStateConfig, boolean alwaysShowSearchFields);
-	
-	/**
-	 * Set the message displayed when the table is empty and the table header
-	 * and table options such as search, sort etc are hidden. If null (default)
-	 * the empty table is shown.
-	 * 
-	 * @deprecated Use {@link #setEmptyStateConfig(EmptyStateConfig, boolean)} instead.
-	 */
-	@Deprecated
-	public void setEmptyTableMessageKey(String i18key);
-
-	/**
-	 * Configure the empty table screen with custom message, hint text and
-	 * background icon and define the next primary user action.
-	 * 
-	 * @deprecated Use {@link #setEmptyStateConfig(EmptyStateConfig, boolean)} instead.
-	 */
-	@Deprecated
-	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss);
-
-	/**
-	 * Configure the empty table screen with custom message, hint text and
-	 * background icon and define the next primary user action.
-	 * 
-	 * @deprecated Use {@link #setEmptyStateConfig(EmptyStateConfig, boolean)} instead.
-	 */
-	@Deprecated
-	public void setEmptyTableSettings(String messageI18nKey, String hintI18nKey, String iconCss, 
-									  String primaryButtonI18nKey, String primaryButtonLeftIconCss, 
-									  boolean showAlwaysSearchFields, String... i18nArgs);
 	
 	/**
 	 * Add a button or an other component in the "button grouped"

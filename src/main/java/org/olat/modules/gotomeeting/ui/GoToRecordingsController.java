@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -86,7 +87,9 @@ public class GoToRecordingsController extends FormBasicController {
 		}
 		tableModel.setObjects(recordings);
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", tableModel, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("recordings.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("recordings.empty")
+				.build());
 		tableEl.setCustomizeColumns(false);
 	}
 

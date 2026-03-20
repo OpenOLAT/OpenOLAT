@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -128,7 +129,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		tableEl.setSearchEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_taxonomy_listing");
-		tableEl.setEmptyTableMessageKey("table.taxonomy.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.taxonomy.empty")
+				.build());
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("taxonomy_row");

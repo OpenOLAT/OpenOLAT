@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -191,9 +192,18 @@ public class CourseReminderListController extends FormBasicController
 		addButton.setVisible(addVisible);
 		
 		if (addVisible) {
-			tableEl.setEmptyTableSettings("empty.reminders.message", "empty.reminders.hint", "o_icon o_icon_reminder", "add.reminder", "o_icon o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("empty.reminders.message")
+					.withHintI18nKey("empty.reminders.hint")
+					.withIconCss("o_icon o_icon_reminder")
+					.withPrimaryButton("o_icon o_icon_add", "add.reminder", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("empty.reminders.message", null, "o_icon o_icon_reminder");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("empty.reminders.message")
+					.withIconCss("o_icon o_icon_reminder")
+					.build());
 		}
 	}
 	

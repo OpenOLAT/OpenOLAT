@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
@@ -209,7 +210,10 @@ public class DataCollectionListController extends FormBasicController
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-data-collection");
-		tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", null);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.search.empty")
+				.withHintI18nKey("table.search.empty.hint")
+				.build());
 		tableEl.setSearchEnabled(true);
 	}
 	

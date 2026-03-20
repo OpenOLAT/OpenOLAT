@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -256,7 +257,10 @@ public class GroupSelectionController extends FormBasicController {
 		
 		groupTableModel = new ENEditGroupTableModel(columnsModel, getTranslator());
 		groupTableElement = uifactory.addTableElement(getWindowControl(), "entries", groupTableModel, getTranslator(), formLayout);
-		groupTableElement.setEmptyTableSettings("groupselection.noentries", null, "o_icon_group");
+		groupTableElement.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("groupselection.noentries")
+				.withIconCss("o_icon_group")
+				.build());
 		groupTableElement.setMultiSelect(true);		
 		groupTableElement.setSelectAllEnable(true);
 		groupTableElement.setCustomizeColumns(true);

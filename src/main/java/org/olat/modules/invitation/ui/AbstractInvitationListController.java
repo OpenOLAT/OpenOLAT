@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -153,7 +154,10 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		
 		tableModel = initTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("noinvitations", null, "o_icon_message_open", null, null, false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("noinvitations")
+				.withIconCss("o_icon_message_open")
+				.build());
 		tableEl.setExportEnabled(true);
 		tableEl.setElementCssClass("o_sel_invitations_list");
 		tableEl.setMultiSelect(!readOnly);

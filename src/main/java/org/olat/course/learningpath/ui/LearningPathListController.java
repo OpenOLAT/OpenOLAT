@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -217,7 +218,9 @@ public class LearningPathListController extends FormBasicController implements T
 		dataModel = new LearningPathDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_lp_list");
-		tableEl.setEmptyTableMessageKey("table.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "learning-path-list");
 		tableEl.setBordered(true);
 		tableEl.setNumOfRowsEnabled(false);

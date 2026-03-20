@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -196,7 +197,10 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmptyTableSettings("table.search.curriculum.empty", null, "o_icon_curriculum_element");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.search.curriculum.empty")
+				.withIconCss("o_icon_curriculum_element")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-search-manage");
 		
 		initFilters();

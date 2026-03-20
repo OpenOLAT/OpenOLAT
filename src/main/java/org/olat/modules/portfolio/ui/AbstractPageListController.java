@@ -271,7 +271,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		tableEl.setElementCssClass(cssClass);
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 			.withMessageI18nKey("table.sEmptyTable").build();
-		tableEl.setEmptyStateConfig(emptyStateConfig);
+		tableEl.setEmptyStateConfig(emptyStateConfig, false);
 		tableEl.setPageSize(24);
 		rowVC.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		rowVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);

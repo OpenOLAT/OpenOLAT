@@ -32,6 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -152,7 +153,10 @@ public class MembersTableController extends FormBasicController {
 		membersModel.setObjects(membersList);
 		membersModel.setCurriculumInfos(curriculumInfos);
 		membersTable = uifactory.addTableElement(getWindowControl(), "table", membersModel, pageSize, false, getTranslator(), formLayout);
-		membersTable.setEmptyTableSettings("nomembers", null, "o_icon_user");
+		membersTable.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("nomembers")
+				.withIconCss("o_icon_user")
+				.build());
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		membersTable.setExportEnabled(false);
 		membersTable.setElementCssClass("o_sel_member_list");

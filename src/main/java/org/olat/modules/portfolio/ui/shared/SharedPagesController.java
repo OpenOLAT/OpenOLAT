@@ -28,6 +28,7 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -178,7 +179,9 @@ public class SharedPagesController extends FormBasicController implements Activa
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_binder_shared_bookmark_pages_listing");
-		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.sEmptyTable")
+				.build());
 		tableEl.setPageSize(24);
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-bookmark-pages-v2");
 		

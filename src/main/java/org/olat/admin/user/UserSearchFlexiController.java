@@ -39,6 +39,7 @@ import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
@@ -511,7 +512,9 @@ public class UserSearchFlexiController extends FormBasicController {
 		
 		if(showTable) {
 			tableEl.setVisible(true);
-			tableEl.setEmptyTableMessageKey("error.no.user.found");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("error.no.user.found")
+					.build());
 			userTableModel.setObjects(users);
 			tableEl.reset(true, true, true);
 			flc.contextPut("showButton","true");

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
 
 import java.util.ArrayList;
@@ -387,9 +388,17 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");		
 		if(secCallback.canNewCurriculumElement(curriculum)) {
-			tableEl.setEmptyTableSettings("table.curriculum.element.empty", "table.curriculum.element.empty.hint", "o_icon_curriculum_element", "add.curriculum.element", "o_icon_add", true);
-		} else {			
-			tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.curriculum.element.empty")
+					.withHintI18nKey("table.curriculum.element.empty.hint")
+					.withIconCss("o_icon_curriculum_element")
+					.withPrimaryButton("o_icon_add", "add.curriculum.element", null)
+					.build());
+		} else {
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.curriculum.element.empty")
+					.withIconCss("o_icon_curriculum_element")
+					.build());
 		}
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);

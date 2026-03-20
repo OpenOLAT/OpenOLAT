@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -115,7 +116,10 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 		
 		dataModel = new CurriculumLearningPathRepositoryDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("table.empty.repository", null, "o_CourseModule_icon");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.repository")
+				.withIconCss("o_CourseModule_icon")
+				.build());
 		tableEl.setExportEnabled(true);
 		
 		loadModel();

@@ -48,6 +48,7 @@ import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -333,9 +334,17 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (secCallback.canCreateNotes() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("table.search.empty", null, "o_icon_proj_appointment", "appointment.create", "o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("table.search.empty")
+					.withIconCss("o_icon_proj_appointment")
+					.withPrimaryButton("o_icon_add", "appointment.create", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("table.search.empty", null, "o_icon_proj_appointment");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.search.empty")
+					.withIconCss("o_icon_proj_appointment")
+					.build());
 		}
 	}
 

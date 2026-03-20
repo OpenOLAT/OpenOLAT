@@ -32,6 +32,7 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -225,7 +226,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		int pageSize = printView ? 32000 : 20;
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, pageSize, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
-		tableEl.setEmptyTableMessageKey("empty.table.participant.list");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.table.participant.list")
+				.build());
 		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-" + prefsId);
 	}

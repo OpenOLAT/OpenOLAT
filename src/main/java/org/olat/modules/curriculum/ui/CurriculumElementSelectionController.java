@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -134,7 +135,10 @@ public class CurriculumElementSelectionController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");
-		tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.curriculum.element.empty")
+				.withIconCss("o_icon_curriculum_element")
+				.build());
 		tableEl.setSearchEnabled(true);
 		tableEl.setMultiSelect(true);
 		

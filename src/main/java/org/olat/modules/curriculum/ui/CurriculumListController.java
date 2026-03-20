@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -111,7 +112,10 @@ public class CurriculumListController extends FormBasicController implements Act
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.curriculum.empty")
+				.withIconCss("o_icon_curriculum_element")
+				.build());
 		tableEl.setFilters("activity", getFilters(), false);
 		if(assessedIdentity.equals(getIdentity())) {
 			tableEl.setSelectedFilterKey("active");

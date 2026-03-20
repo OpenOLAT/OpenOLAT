@@ -33,6 +33,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -354,7 +355,9 @@ public class PFCoachController extends FormBasicController implements Assessment
 		initFilters();
 		initFiltersPresets();
 		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v3");
-		dropboxTable.setEmptyTableMessageKey("table.empty");
+		dropboxTable.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty")
+				.build());
 		
 		downloadLink = uifactory.addFormLink("download.link", formLayout, Link.BUTTON);
 		dropboxTable.addBatchButton(downloadLink);

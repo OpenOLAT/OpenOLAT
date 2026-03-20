@@ -32,6 +32,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -204,7 +205,10 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setElementCssClass("o_sel_certificates");
-		tableEl.setEmptyTableSettings("table.statements.empty", null, "o_icon_certificate");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.statements.empty")
+				.withIconCss("o_icon_certificate")
+				.build());
 		VelocityContainer rowVC = createVelocityContainer("certificate_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, THUMBNAIL_MAPPER_ID,

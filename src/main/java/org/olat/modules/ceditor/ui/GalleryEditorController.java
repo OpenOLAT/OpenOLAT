@@ -27,6 +27,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -168,8 +169,12 @@ public class GalleryEditorController extends FormBasicController implements Page
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new GalleryCssDelegate());
-		tableEl.setEmptyTableSettings("gallery.no.image", null, "o_icon_image",
-				"addremove.add.text", "o_icon_add", false);
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withMessageI18nKey("gallery.no.image")
+				.withIconCss("o_icon_image")
+				.withPrimaryButton("o_icon_add", "addremove.add.text", null)
+				.build();
+		tableEl.setEmptyStateConfig(emptyState, false);
 
 		galleryImages = new GalleryRunController.GalleryImages(new ArrayList<>());
 		String mapperUrl = registerCacheableMapper(ureq, "gallery-" + galleryPart.getId(),

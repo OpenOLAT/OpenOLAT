@@ -29,6 +29,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -122,7 +123,9 @@ public class FindingConfirmationController extends FormBasicController {
 		usersTableModel = new UserRestrictionTableModel(columnsModel, getLocale()); 
 		usersTableEl = uifactory.addTableElement(getWindowControl(), "users", usersTableModel, 20, false, getTranslator(), formLayout);
 		usersTableEl.setAndLoadPersistedPreferences(ureq, "finding.confirmation.v2");
-		usersTableEl.setEmptyTableMessageKey("finding.confirmation.empty.table");
+		usersTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("finding.confirmation.empty.table")
+				.build());
 		usersTableEl.setSelectAllEnable(true);
 		usersTableEl.setMultiSelect(true);
 		

@@ -38,6 +38,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -278,7 +279,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		memberListModel = new MemberListTableModel(columnsModel, getLocale(), imModule.isOnlineStatusEnabled());
 		membersTable = uifactory.addTableElement(getWindowControl(), "memberList", memberListModel, 20, false, getTranslator(), formLayout);
-		membersTable.setEmptyTableSettings("nomembers", null, "o_icon_user", null, null, false);
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withMessageI18nKey("nomembers")
+				.withIconCss("o_icon_user")
+				.build();
+		membersTable.setEmptyStateConfig(emptyState, false);
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName() + "-v3");
 		membersTable.setSearchEnabled(true);
 		
