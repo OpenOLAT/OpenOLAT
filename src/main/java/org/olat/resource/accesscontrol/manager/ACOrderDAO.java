@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.Query;
@@ -74,6 +76,14 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ACOrderDAO {
+	
+	private static final Set<String> findNativeOrderItemsOrderBys = Set.of("order_id", "total_currency_code", "total_amount",
+			"cancellation_fee_amount", "billing_address_key", "billing_address_organisation_key", "billing_address_identity_key",
+			"billing_address_identifier", "purchase_order_number", "comment", "creationdate", "o_status", "delivery_id",
+			"total_lines_amount", "cancellation_fee_lines_amount", "resDisplaynames", "labels ", "cost_center_names",
+			"cost_center_accounts", "trxStatus", "trxMethodIds", "pspTrxStatus", "checkoutTrxStatus", "checkoutTrxPaypalStatus",
+			"delivery_ident_id", "delivery_ident_name", "delivery_user_id");
+
 
 	@Autowired
 	private DB dbInstance;
@@ -307,6 +317,8 @@ public class ACOrderDAO {
 			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
 			boolean filterAdjustedAmount, boolean filterAddressProposal, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
+		
+		Set<String> allowedOrderBys = new HashSet<>(findNativeOrderItemsOrderBys);
 
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
@@ -340,6 +352,7 @@ public class ACOrderDAO {
 			  .append("  ,delivery_user.user_id as delivery_user_id");
 			if(userPropertyHandlers != null) {
 				for(UserPropertyHandler handler:userPropertyHandlers) {
+					allowedOrderBys.add(handler.getDatabaseColumnName());
 					sb.append(" ,delivery_user.").append(handler.getDatabaseColumnName()).append(" as ")
 					  .append(handler.getName());
 				}
@@ -431,7 +444,7 @@ public class ACOrderDAO {
 		}
 
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-			sb.appendOrderBy(orderBy[0]);
+			sb.appendOrderBy(allowedOrderBys, orderBy[0]);
 		}
 
 		Query query = dbInstance.getCurrentEntityManager()

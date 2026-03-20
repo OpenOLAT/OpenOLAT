@@ -22,6 +22,7 @@ package org.olat.modules.quality.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.TypedQuery;
 
@@ -51,6 +52,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 class QualityParticipationDAO {
+	
+	private static final Set<String> loadExecutorParticipationsOrderBys = Set.of("participationKey", "identifier", "executionStatus",
+			"start", "deadline", "title", "topicType", "typeName", "topic", "previousTitle");
+
 	
 	@Autowired
 	private DB dbInstance;
@@ -133,7 +138,7 @@ class QualityParticipationDAO {
 		}
 		return Long.valueOf(0);
 	}
-
+	
 	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
 			QualityExecutorParticipationSearchParams searchParam, int firstResult, int maxResults, SortKey... orderBy) {
 		if (searchParam == null) return new ArrayList<>();
@@ -185,7 +190,7 @@ class QualityParticipationDAO {
 		appendFrom(sb);
 		appendWhereClause(sb, searchParam);
 		
-		appendExecutorParticipationOrderBy(sb, orderBy);
+		appendExecutorParticipationOrderBy(sb, loadExecutorParticipationsOrderBys, orderBy);
 
 		TypedQuery<QualityExecutorParticipation> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityExecutorParticipation.class);
@@ -254,8 +259,9 @@ class QualityParticipationDAO {
 		}
 	}
 
-	private void appendExecutorParticipationOrderBy(QueryBuilder sb, SortKey... orderBy) {
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+	private void appendExecutorParticipationOrderBy(QueryBuilder sb, Set<String> allowedKeys, SortKey... orderBy) {
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null
+				&& allowedKeys.contains(orderBy[0].getKey())) {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
 			sb.append(" order by ");

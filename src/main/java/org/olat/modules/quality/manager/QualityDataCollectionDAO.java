@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
@@ -69,6 +70,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QualityDataCollectionDAO {
+	
+	private static final Set<String> loadDataCollectionsOrderBys = Set.of("key", "status", "title", "start", "deadline", "qualitativeFeedback", "creationDate", "generatorKey",
+			"generatorTitle", "formName", "topicType", "typeName", "topic", "topicRepositoryKey", "topicRepositoryExternalRef", "topicCurriculumElementKey",
+			"topicCurriculumElementIdentifier", "topicCurriculumElementCurriculumKey", "previousTitle", "publicParticipationIdentifier", "numberParticipants",
+			"toDosDone", "toDos");
 	
 	@Autowired
 	private DB dbInstance;
@@ -448,6 +454,8 @@ public class QualityDataCollectionDAO {
 		List<Long> counts = query.getResultList();
 		return Math.toIntExact(counts.get(0));
 	}
+	
+
 
 	List<QualityDataCollectionView> loadDataCollections(Translator translator,
 			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
@@ -532,7 +540,7 @@ public class QualityDataCollectionDAO {
 		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
 		appendWhereClause(sb, searchParams);
 		
-		appendOrderBy(sb, orderBy);
+		appendOrderBy(sb, loadDataCollectionsOrderBys, orderBy);
 
 		TypedQuery<QualityDataCollectionView> query = dbInstance.getCurrentEntityManager().
 				createQuery(sb.toString(), QualityDataCollectionView.class);
@@ -844,8 +852,9 @@ public class QualityDataCollectionDAO {
 		}
 	}
 
-	private void appendOrderBy(QueryBuilder sb, SortKey... orderBy) {
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+	private void appendOrderBy(QueryBuilder sb, Set<String> allowedValues, SortKey... orderBy) {
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null
+				&& allowedValues.contains(orderBy[0].getKey())) {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
 			sb.append(" order by ");

@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.persistence;
 
+import java.util.Set;
+
 /**
  * Provide some help to build native SQL queries for Oracle, MySQL and PostreSQL.
  * 
@@ -128,12 +130,14 @@ public class NativeQueryBuilder {
 		return this;
 	}
 	
-	public NativeQueryBuilder appendOrderBy(SortKey orderBy) {
-		sb.append(" order by ").append(orderBy.getKey());
-		if(orderBy.isAsc()) {
-			sb.append(" asc");
-		} else {
-			sb.append(" desc");
+	public NativeQueryBuilder appendOrderBy(Set<String> allowedkeys, SortKey orderBy) {
+		if(allowedkeys.contains(orderBy.getKey())) {
+			sb.append(" order by ").append(orderBy.getKey());
+			if(orderBy.isAsc()) {
+				sb.append(" asc");
+			} else {
+				sb.append(" desc");
+			}
 		}
 		return this;
 	}

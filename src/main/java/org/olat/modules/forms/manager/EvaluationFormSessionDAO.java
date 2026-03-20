@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -90,8 +89,7 @@ class EvaluationFormSessionDAO {
 		return query.getResultList().get(0);
 	}
 	
-	List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
-			SortKey... orderBy) {
+	List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults) {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session");
@@ -106,8 +104,6 @@ class EvaluationFormSessionDAO {
 		}
 		sb.append(" where session.key in (").append(filter.getSelectKeys()).append(")");
 		
-		appendOrderBy(sb, orderBy);
-
 		TypedQuery<EvaluationFormSession> query = dbInstance.getCurrentEntityManager().
 				createQuery(sb.toString(), EvaluationFormSession.class);
 		filter.addParameters(query);
@@ -119,27 +115,6 @@ class EvaluationFormSessionDAO {
 		}
 		
 		return query.getResultList();
-	}
-	
-	private void appendOrderBy(StringBuilder sb, SortKey... orderBy) {
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-			String sortKey = orderBy[0].getKey();
-			boolean asc = orderBy[0].isAsc();
-			sb.append(" order by ");
-			sb.append(sortKey);
-			appendAsc(sb, asc);
-		} else {
-			sb.append(" order by session.key asc ");
-		}
-	}
-	
-	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
-		if(asc) {
-			sb.append(" asc");
-		} else {
-			sb.append(" desc");
-		}
-		return sb;
 	}
 	
 	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipationRef participation) {

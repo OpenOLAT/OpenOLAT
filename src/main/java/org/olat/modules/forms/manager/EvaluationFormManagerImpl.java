@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -411,9 +410,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
-			SortKey... orderBy) {
-		return evaluationFormSessionDao.loadSessionsFiltered(filter, firstResult, maxResults, orderBy);
+	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults) {
+		return evaluationFormSessionDao.loadSessionsFiltered(filter, firstResult, maxResults);
 	}
 
 	@Override
