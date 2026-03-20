@@ -874,6 +874,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				filteredItemKeys.add(item.getKey());
 			}
 		}
+		loadModel();
 	}
 
 	/**
