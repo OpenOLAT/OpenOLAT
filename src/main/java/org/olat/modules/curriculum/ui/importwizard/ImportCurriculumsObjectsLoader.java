@@ -144,7 +144,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		}
 		
 		// Load the curriculum elements
-		Map<String,ImportedRow> elements = new HashMap<>();
+		Map<String,ImportedRow> elementsMap = new HashMap<>();
 		Map<LevelKey,ImportedRow> levelElementsMap = new HashMap<>();
 		for(ImportedRow importedRow:importedRows) {
 			if(importedRow.type() == CurriculumExportType.ELEM) {
@@ -158,7 +158,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 				
 				loadElement(importedRow, curriculumsMap, typesMap);
 				if(StringHelper.containsNonWhitespace(importedRow.getIdentifier())) {
-					elements.put(importedRow.getIdentifier(), importedRow);
+					elementsMap.put(importedRow.getIdentifier(), importedRow);
 				}
 			}
 		}
@@ -250,8 +250,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		}
 	}
 	
-	private RepositoryEntry loadRepositoryEntry(ImportedRow importedRow,
-			Map<String,ImportedRow> curriculumsMap) {
+	private RepositoryEntry loadRepositoryEntry(ImportedRow importedRow, Map<String,ImportedRow> curriculumsMap) {
 		
 		List<RepositoryEntry> entries = repositoryService.loadRepositoryEntriesByExternalRef(importedRow.getIdentifier());
 		RepositoryEntry entry = null;
@@ -276,7 +275,24 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		// Map curriculum
 		if(StringHelper.containsNonWhitespace(importedRow.getCurriculumIdentifier())) {
 			importedRow.setCurriculumRow(curriculumsMap.get(importedRow.getCurriculumIdentifier()));
-		} 
+		}
+		
+		// Map elements
+		if(StringHelper.containsNonWhitespace(importedRow.getCurriculumIdentifier())) {
+			importedRow.setCurriculumRow(curriculumsMap.get(importedRow.getCurriculumIdentifier()));
+		}
+		
+		if(entry != null && importedRow.getCurriculumElementParentRow() != null) {
+			if(importedRow.getCurriculumElementParentRow().getCurriculumElement() == null) {
+				importedRow.setStatus(ImportCurriculumsStatus.NEW);
+			} else if(entry != null) {
+				List<RepositoryEntry> currentEntries = curriculumService
+						.getRepositoryEntries(importedRow.getCurriculumElementParentRow().getCurriculumElement());
+				if(!currentEntries.contains(entry)) {
+					importedRow.setStatus(ImportCurriculumsStatus.NEW);
+				}
+			}
+		}
 		
 		return entry;
 	}
