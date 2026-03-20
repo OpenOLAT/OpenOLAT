@@ -387,6 +387,9 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 
 		// Add tags
 		Set<String> newTags = new LinkedHashSet<>();
+		if (StringHelper.containsNonWhitespace(data.getOrientation())) {
+			newTags.add(data.getOrientation().toLowerCase());
+		}
 		for (String tag : data.getColorTags()) {
 			newTags.add(tag.toLowerCase());
 		}

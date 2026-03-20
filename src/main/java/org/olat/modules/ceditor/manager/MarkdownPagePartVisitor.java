@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -62,12 +63,18 @@ import org.commonmark.renderer.html.DefaultUrlSanitizer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
+import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionData;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
@@ -90,11 +97,17 @@ import org.olat.modules.ceditor.ui.MarkdownImportController;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaCenterLicenseHandler;
 import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * CommonMark AST visitor that converts top-level block nodes into
@@ -460,6 +473,8 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 					LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 					licenseService.createDefaultLicense(media, licenseHandler, author);
 				}
+				// Enrich media with AI-generated metadata
+				doAutoGenerateAiMetadata(media, imageFile, filename, mediaService);
 			}
 
 			MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -533,6 +548,110 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			return "image" + suffix;
 		}
 		return imageFile.getName();
+	}
+
+	private void doAutoGenerateAiMetadata(Media media, File imageFile, String filename, MediaService mediaService) {
+		try {
+			AiModule aiModule = CoreSpringFactory.getImpl(AiModule.class);
+			if (!aiModule.isImageDescriptionGeneratorEnabled()) return;
+
+			AiImageHelper aiImageHelper = CoreSpringFactory.getImpl(AiImageHelper.class);
+			String suffix = getSuffix(filename);
+			if (suffix == null) return;
+			String mimeType = aiImageHelper.getMimeType(suffix);
+			if (mimeType == null) return;
+
+			String base64 = aiImageHelper.prepareImageBase64(imageFile, suffix);
+			if (base64 == null) return;
+
+			AiImageDescriptionSPI generator = aiModule.getImageDescriptionGenerator();
+			if (generator == null) return;
+
+			Locale locale = translator != null ? translator.getLocale() : Locale.ENGLISH;
+			AiImageDescriptionResponse response = generator.generateImageDescription(base64, mimeType, locale);
+			if (!response.isSuccess() || response.getDescription() == null) return;
+
+			AiImageDescriptionData data = response.getDescription();
+
+			// Update title if current title looks like a filename
+			if (StringHelper.containsNonWhitespace(data.getTitle())) {
+				String currentTitle = media.getTitle();
+				if (!StringHelper.containsNonWhitespace(currentTitle) || isFilenameLike(currentTitle)) {
+					media.setTitle(data.getTitle());
+				}
+			}
+			if (StringHelper.containsNonWhitespace(data.getDescription())) {
+				media.setDescription(data.getDescription());
+			}
+			if (StringHelper.containsNonWhitespace(data.getAltText())) {
+				media.setAltText(data.getAltText());
+			}
+			mediaService.updateMedia(media);
+
+			// Add tags
+			List<String> tags = new ArrayList<>();
+			if (StringHelper.containsNonWhitespace(data.getOrientation())) {
+				tags.add(data.getOrientation().toLowerCase());
+			}
+			for (String tag : data.getColorTags()) {
+				tags.add(tag.toLowerCase());
+			}
+			for (String tag : data.getCategoryTags()) {
+				tags.add(tag.toLowerCase());
+			}
+			for (String tag : data.getKeywords()) {
+				tags.add(tag.toLowerCase());
+			}
+			if (!tags.isEmpty()) {
+				mediaService.updateTags(author, media, tags);
+			}
+
+			// Map AI subject to taxonomy level
+			if (StringHelper.containsNonWhitespace(data.getSubject())) {
+				mapSubjectToTaxonomy(media, data.getSubject(), mediaService);
+			}
+		} catch (Exception e) {
+			log.warn("Failed to auto-generate AI metadata for image: {}", filename, e);
+		}
+	}
+
+	private void mapSubjectToTaxonomy(Media media, String subject, MediaService mediaService) {
+		MediaModule mediaModule = CoreSpringFactory.getImpl(MediaModule.class);
+		List<TaxonomyRef> taxonomyRefs = mediaModule.getTaxonomyRefs();
+		if (taxonomyRefs.isEmpty()) return;
+
+		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+		String subjectLower = subject.trim().toLowerCase();
+
+		for (TaxonomyLevel level : levels) {
+			if (translator != null) {
+				String displayName = TaxonomyUIFactory.translateDisplayName(translator, level);
+				if (displayName != null && subjectLower.equals(displayName.trim().toLowerCase())) {
+					mediaService.updateTaxonomyLevels(media, List.of(new TaxonomyLevelRefImpl(level.getKey())));
+					return;
+				}
+			}
+			String identifier = level.getIdentifier();
+			if (identifier != null && subjectLower.equals(identifier.trim().toLowerCase())) {
+				mediaService.updateTaxonomyLevels(media, List.of(new TaxonomyLevelRefImpl(level.getKey())));
+				return;
+			}
+		}
+	}
+
+	private String getSuffix(String filename) {
+		if (filename == null) return null;
+		int dotPos = filename.lastIndexOf('.');
+		if (dotPos >= 0 && dotPos < filename.length() - 1) {
+			return filename.substring(dotPos + 1);
+		}
+		return null;
+	}
+
+	private boolean isFilenameLike(String title) {
+		if (title == null) return false;
+		return title.matches("(?i).*\\.(jpe?g|png|gif|webp|svg|bmp|tiff?)$");
 	}
 
 	private File decodeDataUriImage(String dataUri) {
