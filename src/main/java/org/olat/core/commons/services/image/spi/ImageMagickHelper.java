@@ -264,53 +264,54 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		String line;
 
 		InputStream stderr = proc.getErrorStream();
-		InputStreamReader iserr = new InputStreamReader(stderr);
-		BufferedReader berr = new BufferedReader(iserr);
-		line = null;
-		try {
-			while ((line = berr.readLine()) != null) {
-				errors.append(line);
-			}
-		} catch (IOException e) {
-			//
-		}
+		try (InputStreamReader iserr = new InputStreamReader(stderr)) {
+					BufferedReader berr = new BufferedReader(iserr);
+					line = null;
+					try {
+						while ((line = berr.readLine()) != null) {
+							errors.append(line);
+						}
+					} catch (IOException e) {
+						//
+					}
 		
-		InputStream stdout = proc.getInputStream();
-		InputStreamReader isr = new InputStreamReader(stdout);
-		BufferedReader br = new BufferedReader(isr);
-		line = null;
-		try {
-			while ((line = br.readLine()) != null) {
-				output.append(line);
-			}
-		} catch (IOException e) {
-			//
-		}
+					InputStream stdout = proc.getInputStream();
+					InputStreamReader isr = new InputStreamReader(stdout);
+					BufferedReader br = new BufferedReader(isr);
+					line = null;
+					try {
+						while ((line = br.readLine()) != null) {
+							output.append(line);
+						}
+					} catch (IOException e) {
+						//
+					}
 
-		if (log.isDebugEnabled()) {
-			log.debug("Error: {}", errors.toString());
-			log.debug("Output: {}", output.toString());
-		}
+					if (log.isDebugEnabled()) {
+						log.debug("Error: {}", errors.toString());
+						log.debug("Output: {}", output.toString());
+					}
 
-		try {
-			int exitValue = proc.waitFor();
-			if (exitValue == 0) {
-				rv = extractSizeFromOutput(thumbnailFile, output);
-				if (rv == null) {
-					// sometimes verbose info of convert is in stderr
-					rv = extractSizeFromOutput(thumbnailFile, errors);
-				}
-			} else {
-				log.warn("Error: {}", errors.toString());
-				log.warn("Output: {}", output.toString());
-			}
-		} catch (InterruptedException e) {
-			//
+					try {
+						int exitValue = proc.waitFor();
+						if (exitValue == 0) {
+							rv = extractSizeFromOutput(thumbnailFile, output);
+							if (rv == null) {
+								// sometimes verbose info of convert is in stderr
+								rv = extractSizeFromOutput(thumbnailFile, errors);
+							}
+						} else {
+							log.warn("Error: {}", errors.toString());
+							log.warn("Output: {}", output.toString());
+						}
+					} catch (InterruptedException e) {
+						//
+					}
+					if(rv == null) {
+						log.warn("Could not generate thumbnail: {}", thumbnailFile);
+					}
+					return rv;
 		}
-		if(rv == null) {
-			log.warn("Could not generate thumbnail: {}", thumbnailFile);
-		}
-		return rv;
 	}
 	/**
 	 * Extract informations from the process:<br/>
