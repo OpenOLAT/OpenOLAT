@@ -57,12 +57,13 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			List<CurriculumElementStatus> status = getFilteredStatus(filters);
-			if(status == null || status.isEmpty()) {
+			List<Long> productKeys = getFilteredProductKeys(filters);
+			if((status == null || status.isEmpty()) && (productKeys == null || productKeys.isEmpty())) {
 				setUnfilteredObjects();
 			} else {
 				List<CourseCurriculumTreeWithViewsRow> filteredRows = new ArrayList<>(backupRows.size());
 				for(CourseCurriculumTreeWithViewsRow row:backupRows) {
-					if(acceptStatus(status, row)) {
+					if(acceptStatus(status, row) && acceptProduct(productKeys, row)) {
 						filteredRows.add(row);
 					}
 				}
@@ -79,7 +80,13 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 		CurriculumElementStatus elementStatus = row.getCurriculumElementStatus();
 		return status.contains(elementStatus);
 	}
-	
+
+	private boolean acceptProduct(List<Long> productKeys, CourseCurriculumTreeWithViewsRow row) {
+		if(productKeys == null || productKeys.isEmpty()) return true;
+
+		return productKeys.contains(row.getCurriculumKey());
+	}
+
 	private List<CurriculumElementStatus> getFilteredStatus(List<FlexiTableFilter> filters) {
 		List<CurriculumElementStatus> status = null;
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, CurriculumElementListController.FILTER_STATUS);
@@ -92,6 +99,19 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 			}
 		}
 		return status;
+	}
+
+	private List<Long> getFilteredProductKeys(List<FlexiTableFilter> filters) {
+		FlexiTableFilter productFilter = FlexiTableFilter.getFilter(filters, CurriculumElementListController.FILTER_PRODUCT);
+		if (productFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(Long::valueOf)
+						.toList();
+			}
+		}
+		return null;
 	}
 	
 	@Override
@@ -134,6 +154,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 				: curriculum.getCurriculumElementIdentifier();
 			case calendars -> curriculum.getCalendarsLink();
 			case product -> curriculum.getCurriculumDisplayName();
+			case begin -> curriculum.getCurriculumElementBeginDate();
+			case end -> curriculum.getCurriculumElementEndDate();
 			case completion -> curriculum.getCompletionItem();
 			default -> "ERROR";
 		};
@@ -158,6 +180,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 		displayName("table.header.curriculum.element.display.name"),
 		identifier("table.header.curriculum.element.identifier"),
 		product("table.header.product"),
+		begin("table.header.begin.date"),
+		end("table.header.end.date"),
 		completion("table.header.completion"),
 		calendars("table.header.calendars");
 		

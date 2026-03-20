@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
@@ -81,6 +82,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.curriculum.course.CurriculumElementWithViewsDataModel.ElementViewCols;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -124,6 +126,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private static final String FINISHED_TAB = "Finished";
 	
 	static final String FILTER_STATUS = "Status";
+	static final String FILTER_PRODUCT = "Product";
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab relevantTab;
@@ -208,6 +211,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.product));
 		}
 		
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.begin,
+        		new DateFlexiCellRenderer(getLocale())));
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.end,
+        		new DateFlexiCellRenderer(getLocale())));
+
         if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
         }
@@ -246,7 +254,22 @@ public class CurriculumElementListController extends FormBasicController impleme
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
 		filters.add(statusFilter);
-		
+
+		if (rootMode()) {
+			SelectionValues productValues = new SelectionValues();
+			for (CurriculumRef ref : curriculumRefList) {
+				Curriculum curriculum = curriculumService.getCurriculum(ref);
+				if (curriculum != null) {
+					productValues.add(SelectionValues.entry(String.valueOf(curriculum.getKey()), curriculum.getDisplayName()));
+				}
+			}
+			if (productValues.size() > 1) {
+				FlexiTableMultiSelectionFilter productFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
+						FILTER_PRODUCT, productValues, true);
+				filters.add(productFilter);
+			}
+		}
+
 		tableEl.setFilters(true, filters, false, false);
 	}
     
