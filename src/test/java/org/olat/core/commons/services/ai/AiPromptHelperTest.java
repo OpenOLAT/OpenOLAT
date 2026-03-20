@@ -62,24 +62,21 @@ public class AiPromptHelperTest {
 	public void createQuestionSystemMessage_english() {
 		SystemMessage msg = helper.createQuestionSystemMessage(Locale.ENGLISH);
 		assertNotNull(msg);
-		assertTrue(msg.text().contains("assessment questions"));
+		assertTrue(msg.text().contains("multiple choice questions"));
 	}
 
 	@Test
-	public void createQuestionSystemMessage_german() {
+	public void createQuestionSystemMessage_anyLocale_returnsEnglishMessage() {
 		SystemMessage msg = helper.createQuestionSystemMessage(Locale.GERMAN);
 		assertNotNull(msg);
-		assertTrue(msg.text().contains("Testfragen"));
+		assertTrue(msg.text().contains("multiple choice questions"));
 	}
 
 	@Test
-	public void createQuestionSystemMessage_unsupportedLocale_returnsNull() {
-		assertNull(helper.createQuestionSystemMessage(Locale.FRENCH));
-	}
-
-	@Test
-	public void createQuestionSystemMessage_nullLocale_returnsNull() {
-		assertNull(helper.createQuestionSystemMessage(null));
+	public void createQuestionSystemMessage_nullLocale_returnsMessage() {
+		SystemMessage msg = helper.createQuestionSystemMessage(null);
+		assertNotNull(msg);
+		assertTrue(msg.text().contains("multiple choice questions"));
 	}
 
 
@@ -94,27 +91,36 @@ public class AiPromptHelperTest {
 		assertTrue(text.contains("2 correct"));
 		assertTrue(text.contains("3 wrong"));
 		assertTrue(text.contains("some text"));
+		assertTrue(text.contains("in English"));
 	}
 
 	@Test
-	public void createChoiceQuestionUserMessage_german_containsFormattedNumbers() {
+	public void createChoiceQuestionUserMessage_german_containsLanguageInstruction() {
 		UserMessage msg = helper.createChoiceQuestionUserMessage("ein Text", 2, 1, 2, Locale.GERMAN);
 		assertNotNull(msg);
 		String text = msg.singleText();
-		assertTrue(text.contains("2 verschiedene Multiple-Choice Fragen"));
-		assertTrue(text.contains("1 korrekten"));
-		assertTrue(text.contains("2 falschen"));
+		assertTrue(text.contains("2 different multiple choice question"));
+		assertTrue(text.contains("1 correct"));
+		assertTrue(text.contains("2 wrong"));
 		assertTrue(text.contains("ein Text"));
+		assertTrue(text.contains("in German"));
 	}
 
 	@Test
-	public void createChoiceQuestionUserMessage_unsupportedLocale_returnsNull() {
-		assertNull(helper.createChoiceQuestionUserMessage("text", 1, 1, 1, Locale.FRENCH));
+	public void createChoiceQuestionUserMessage_french_containsLanguageInstruction() {
+		UserMessage msg = helper.createChoiceQuestionUserMessage("un texte", 1, 1, 1, Locale.FRENCH);
+		assertNotNull(msg);
+		String text = msg.singleText();
+		assertTrue(text.contains("in French"));
+		assertTrue(text.contains("un texte"));
 	}
 
 	@Test
-	public void createChoiceQuestionUserMessage_nullLocale_returnsNull() {
-		assertNull(helper.createChoiceQuestionUserMessage("text", 1, 1, 1, null));
+	public void createChoiceQuestionUserMessage_nullLocale_fallsBackToEnglish() {
+		UserMessage msg = helper.createChoiceQuestionUserMessage("text", 1, 1, 1, null);
+		assertNotNull(msg);
+		String text = msg.singleText();
+		assertTrue(text.contains("in English"));
 	}
 
 
