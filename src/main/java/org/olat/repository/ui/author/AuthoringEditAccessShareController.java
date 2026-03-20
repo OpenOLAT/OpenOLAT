@@ -409,9 +409,12 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	private void initLeaveOption(FormItemContainer formLayout) {
+		String afterEnddateLabel = isCourse()
+				? translate("rentry.leave.after.enddate")
+				: translate("rentry.leave.after.enddate.status");
 		String[] leaveValues = new String[]{
 				translate("rentry.leave.atanytime"),
-				translate("rentry.leave.after.enddate"),
+				afterEnddateLabel,
 				translate("rentry.leave.never")
 		};
 

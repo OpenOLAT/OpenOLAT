@@ -20,21 +20,19 @@
 package org.olat.course.run.leave;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseModule;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryService;
 
 /**
@@ -44,8 +42,6 @@ import org.olat.repository.RepositoryService;
  *
  */
 public class ConfirmLeaveController extends FormBasicController {
-
-	private FormLink leaveButton;
 
 	private final RepositoryEntry entry;
 
@@ -61,46 +57,44 @@ public class ConfirmLeaveController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
+		if(formLayout instanceof FormLayoutContainer formLayoutContainer) {
+			boolean isCourseStandalone = CourseModule.ORES_TYPE_COURSE.equals(entry.getOlatResource().getResourceableTypeName())
+					&& entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone;
+			String leaveMessage = isCourseStandalone ? translate("course.leave.message") : translate("course.leave.message.content");
+			formLayoutContainer.contextPut("leaveMessage", leaveMessage);
 
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 			formLayout.add("confirm", layoutCont);
 			layoutCont.setRootForm(mainForm);
 
-			uifactory.addStaticTextElement("rows", "course.leave.entry", StringHelper.escapeHtml(entry.getDisplayname()), layoutCont);
+			uifactory.addStaticTextElement("rows", entry.getOlatResource().getResourceableTypeName(), StringHelper.escapeHtml(entry.getDisplayname()), layoutCont);
 
-			String[] acknowledge = new String[] { translate("course.leave.confirmation") };
-			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
+			String type = translate(entry.getOlatResource().getResourceableTypeName());
+			String[] acknowledge = new String[] { translate("course.leave.acknowledge", type) };
+			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" }, acknowledge);
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
-			leaveButton = uifactory.addFormLink("course.leave.button", buttonsCont, Link.BUTTON);
+			uifactory.addFormSubmitButton("course.leave.button", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		acknowledgeEl.clearError();
-		if(!acknowledgeEl.isAtLeastSelected(1)) {
+		if (!acknowledgeEl.isAtLeastSelected(1)) {
 			acknowledgeEl.setErrorKey("details.delete.acknowledge.error");
-			return false;
-		}else{
-			return true;
+			allOk &= false;
 		}
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(leaveButton == source) {
-			if(validateFormLogic(ureq)) {
-				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		}
+		
+		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

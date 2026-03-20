@@ -131,7 +131,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	
 	@Override
 	protected String getLeaveText(boolean withFee) {
-		return translate("sign.out");
+		return translate("sign.out.type", translate(entry.getOlatResource().getResourceableTypeName()));
 	}
 	
 	@Override
@@ -179,7 +179,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	private void doConfirmLeave(UserRequest ureq) {
 		if (guardModalController(leaveDialogBox)) return;
 
-		String title = translate("sign.out");
+		String title = translate("sign.out.type", translate(entry.getOlatResource().getResourceableTypeName()));
 		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), entry);
 		listenTo(leaveDialogBox);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(), true, title);
