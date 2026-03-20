@@ -471,7 +471,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 
 	private void initTabPane(UserRequest ureq) {
-		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> createDashBoard(uureq).getInitialComponent());
+		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> createDashboard(uureq).getInitialComponent());
 		
 		// Implementations
 		if(canChildren) {
@@ -591,7 +591,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 	}
 	
-	private DashboardController createDashBoard(UserRequest ureq) {
+	private DashboardController createDashboard(UserRequest ureq) {
 		removeAsListenerAndDispose(overviewCtrl);
 		removeAsListenerAndDispose(offersWidgetCtrl);
 		removeAsListenerAndDispose(coursesWidgetCtrl);
@@ -599,7 +599,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
-		overviewCtrl = new DashboardController(ureq, subControl, this.getClass().getName());
+		overviewCtrl = new DashboardController(ureq, subControl, "dashboard.curriculum.element");
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		

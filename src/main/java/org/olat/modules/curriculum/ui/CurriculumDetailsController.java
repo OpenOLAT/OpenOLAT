@@ -266,7 +266,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		removeAsListenerAndDispose(implementationWidgetCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		
-		overviewCtrl = new DashboardController(ureq, getWindowControl(), this.getClass().getName());
+		overviewCtrl = new DashboardController(ureq, getWindowControl(), "dashboard.curriculum");
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		

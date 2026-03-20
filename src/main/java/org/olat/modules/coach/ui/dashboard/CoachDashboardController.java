@@ -46,7 +46,7 @@ public class CoachDashboardController extends BasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CoachMainController.class, getLocale(), getTranslator()));
 		
-		dashbordCtrl = new DashboardController(ureq, wControl, this.getClass().getName());
+		dashbordCtrl = new DashboardController(ureq, wControl, "dashboard.coaching");
 		listenTo(dashbordCtrl);
 		putInitialPanel(dashbordCtrl.getInitialComponent());
 		

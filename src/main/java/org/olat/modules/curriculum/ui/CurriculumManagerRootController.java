@@ -158,7 +158,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	}
 	
 	private void initDashboard(UserRequest ureq) {
-		overviewCtrl = new DashboardController(ureq, getWindowControl(), this.getClass().getName());
+		overviewCtrl = new DashboardController(ureq, getWindowControl(), "dashboard.course.planner");
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		

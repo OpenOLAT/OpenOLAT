@@ -180,7 +180,7 @@ public class DashboardEditController extends BasicController {
 		DashboardPrefs prefs = buildCurrentPrefs();
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		guiPrefs.putAndSave(DashboardController.class, dashboardId, prefs);
-		log.debug("Dashboard '{}' personal preferences saved: {}", dashboardId, prefs.getEnabledWidgets());
+		log.debug("Dashboard '{}' personal preferences saved: enabled={}, disabled={}", dashboardId, prefs.getEnabledWidgets(), prefs.getDisabledWidgets());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
@@ -201,8 +201,8 @@ public class DashboardEditController extends BasicController {
 	private void doSaveSystemDefault(UserRequest ureq) {
 		DashboardPrefs prefs = buildCurrentPrefs();
 		dashboardSystemDefaultsManager.saveSystemDefault(dashboardId, prefs);
-		log.info("Dashboard '{}' system default saved by identity::{} with widgets: {}",
-				dashboardId, getIdentity().getKey(), prefs.getEnabledWidgets());
+		log.info("Dashboard '{}' system default saved by identity::{}: enabled={}, disabled={}",
+				dashboardId, getIdentity().getKey(), prefs.getEnabledWidgets(), prefs.getDisabledWidgets());
 		showInfo("dashboard.system.default.saved");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -218,20 +218,21 @@ public class DashboardEditController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	/**
-	 * Build a {@link DashboardPrefs} from the current enabled widgets list
-	 * in the Velocity context.
-	 */
 	private DashboardPrefs buildCurrentPrefs() {
 		@SuppressWarnings("unchecked")
 		List<Widget> enabled = (List<Widget>) mainVC.getContext().get("enabledWidgets");
-		List<String> names = new ArrayList<>();
-		if (enabled != null) {
-			for (Widget w : enabled) {
-				names.add(w.getName());
-			}
+		@SuppressWarnings("unchecked")
+		List<Widget> disabled = (List<Widget>) mainVC.getContext().get("disabledWidgets");
+		return new DashboardPrefs(toNameList(enabled), toNameList(disabled));
+	}
+
+	private List<String> toNameList(List<Widget> widgets) {
+		if (widgets == null) return List.of();
+		List<String> names = new ArrayList<>(widgets.size());
+		for (Widget w : widgets) {
+			names.add(w.getName());
 		}
-		return new DashboardPrefs(names);
+		return names;
 	}
 
 	/**

@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * User preferences for a dashboard, stored as XML in GuiPreferences.
- * Contains the ordered list of enabled widget names.
+ * Contains the ordered list of enabled widget names and the list of disabled widget names.
  *
  * Initial date: Mar 06, 2026<br>
  * @author gnaegi, https://www.frentix.com
@@ -32,20 +32,31 @@ import java.util.List;
 public class DashboardPrefs {
 
 	private List<String> enabledWidgets;
+	private List<String> disabledWidgets;
 
 	public DashboardPrefs() {
 		this.enabledWidgets = new ArrayList<>();
+		this.disabledWidgets = new ArrayList<>();
 	}
 
-	public DashboardPrefs(List<String> enabledWidgets) {
+	public DashboardPrefs(List<String> enabledWidgets, List<String> disabledWidgets) {
 		this.enabledWidgets = new ArrayList<>(enabledWidgets);
+		this.disabledWidgets = new ArrayList<>(disabledWidgets);
 	}
 
 	public List<String> getEnabledWidgets() {
-		return enabledWidgets;
+		return enabledWidgets != null ? enabledWidgets : List.of();
 	}
 
 	public void setEnabledWidgets(List<String> enabledWidgets) {
 		this.enabledWidgets = enabledWidgets;
+	}
+
+	public List<String> getDisabledWidgets() {
+		return disabledWidgets != null ? disabledWidgets : List.of();
+	}
+
+	public void setDisabledWidgets(List<String> disabledWidgets) {
+		this.disabledWidgets = disabledWidgets;
 	}
 }
