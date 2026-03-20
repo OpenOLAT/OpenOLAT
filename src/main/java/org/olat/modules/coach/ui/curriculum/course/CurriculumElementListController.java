@@ -181,6 +181,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setSelectedFilterTab(ureq, relevantTab);
         loadModel();
     }
+	
+	private boolean rootMode() {
+		return implementation == null;
+	}
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -200,6 +204,10 @@ public class CurriculumElementListController extends FormBasicController impleme
         elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
         columnsModel.addFlexiColumnModel(elementIdentifierCol);
 
+		if (rootMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.product));
+		}
+		
         if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
         }
@@ -207,7 +215,7 @@ public class CurriculumElementListController extends FormBasicController impleme
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
         }
 
-        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale(), implementation != null);
+        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale(), !rootMode());
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
         tableEl.setElementCssClass("o_curriculumtable");
         tableEl.setCustomizeColumns(true);
@@ -226,11 +234,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
-		if (implementation == null) {
+		if (rootMode()) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
 		}
-		if (implementation != null) {
+		if (!rootMode()) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
@@ -251,11 +259,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		List<String> relevantStatuses = new ArrayList<>();
 		relevantStatuses.add(CurriculumElementStatus.preparation.name());
-		if (implementation == null) {
+		if (rootMode()) {
 			relevantStatuses.add(CurriculumElementStatus.provisional.name());
 			relevantStatuses.add(CurriculumElementStatus.confirmed.name());
 		}
-		if (implementation != null) {
+		if (!rootMode()) {
 			relevantStatuses.add(CurriculumElementStatus.active.name());
 		}
 		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),

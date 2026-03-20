@@ -133,6 +133,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 				? curriculum.getRepositoryEntryExternalRef()
 				: curriculum.getCurriculumElementIdentifier();
 			case calendars -> curriculum.getCalendarsLink();
+			case product -> curriculum.getCurriculumDisplayName();
 			case completion -> curriculum.getCompletionItem();
 			default -> "ERROR";
 		};
@@ -156,6 +157,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 		key("table.header.key"),
 		displayName("table.header.curriculum.element.display.name"),
 		identifier("table.header.curriculum.element.identifier"),
+		product("table.header.product"),
 		completion("table.header.completion"),
 		calendars("table.header.calendars");
 		

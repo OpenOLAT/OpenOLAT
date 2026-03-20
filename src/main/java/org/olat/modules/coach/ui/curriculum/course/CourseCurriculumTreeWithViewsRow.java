@@ -65,6 +65,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	private OLATResource olatResource;
 	private RepositoryEntryMyView repositoryEntry;
 	private final CurriculumElement element;
+	private final String curriculumDisplayName;
 	private final CurriculumElementType elementType;
 	
 	private String shortenedDescription;
@@ -84,6 +85,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	
 	public CourseCurriculumTreeWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
 		this.element = element;
+		this.curriculumDisplayName = element != null ? element.getCurriculum().getDisplayName() : null;
 		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		this.curriculumMembership = curriculumMembership;
@@ -106,6 +108,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 		this.representationalName = representationalName;
 		parentKey = null;
 		element = null;
+		curriculumDisplayName = null;
 		elementType = null;
 		curriculumMembership = null;
 		curriculumMember = false;
@@ -124,6 +127,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 
 		parentKey = null;
 		element = null;
+		curriculumDisplayName = null;
 		elementType = null;
 		curriculumMembership = null;
 		curriculumMember = false;
@@ -133,6 +137,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	public CourseCurriculumTreeWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership,
 				RepositoryEntryMyView repositoryEntryView, boolean alone) {
 		this.element = element;
+		this.curriculumDisplayName = element != null ? element.getCurriculum().getDisplayName() : null;
 		this.elementType = element.getType();
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
@@ -219,7 +224,11 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 			return null;
 		}
 	}
-	
+
+	public String getCurriculumDisplayName() {
+		return curriculumDisplayName;
+	}
+
 	public Long getCurriculumElementKey() {
 		return element == null ? null : element.getKey();
 	}
