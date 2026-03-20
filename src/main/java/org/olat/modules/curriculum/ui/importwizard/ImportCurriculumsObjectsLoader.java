@@ -285,9 +285,10 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		if(entry != null && importedRow.getCurriculumElementParentRow() != null) {
 			if(importedRow.getCurriculumElementParentRow().getCurriculumElement() == null) {
 				importedRow.setStatus(ImportCurriculumsStatus.NEW);
-			} else if(entry != null) {
-				List<RepositoryEntry> currentEntries = curriculumService
-						.getRepositoryEntries(importedRow.getCurriculumElementParentRow().getCurriculumElement());
+			} else {
+				List<RepositoryEntry> currentEntries =  importedRow.type() == CurriculumExportType.TMPL
+						? curriculumService.getRepositoryTemplates(importedRow.getCurriculumElementParentRow().getCurriculumElement())
+						: curriculumService.getRepositoryEntries(importedRow.getCurriculumElementParentRow().getCurriculumElement());
 				if(!currentEntries.contains(entry)) {
 					importedRow.setStatus(ImportCurriculumsStatus.NEW);
 				}
