@@ -134,6 +134,7 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(SEBTemplateCols.name.name(), true));
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setEmptyTableMessageKey("seb.template.table.empty");
+		tableEl.setAndLoadPersistedPreferences(ureq, "seb-templates-admin");
 	}
 
 	@Override
