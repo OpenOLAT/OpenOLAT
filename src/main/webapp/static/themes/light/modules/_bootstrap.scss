@@ -117,8 +117,8 @@ body .modal-body {
 
 /* ---- Focus states ---- */
 .form-control:focus {
-	box-shadow: 0 0 0 3px rgba($brand-primary, 0.12);
-	border-color: $brand-primary;
+	box-shadow: 0 0 0 3px rgba($input-border-focus, 0.15);
+	border-color: $input-border-focus;
 }
 /* ---- Transitions for modern behavior ---- */
 @media (prefers-reduced-motion: no-preference) {
