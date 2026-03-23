@@ -534,8 +534,11 @@ public class ImportCurriculumsValidator {
 		
 		// Identifier matches a repository entry
 		if(entry == null) {
-			String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
-			importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			// Empty external ref is identified by the validateIdentifier
+			if(StringHelper.containsNonWhitespace(importedRow.getIdentifier())) {
+				String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			}
 		} else {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, entry);
 			if(!reSecurity.isEntryAdmin() && !reSecurity.isAdministrativeUser() && !reSecurity.isCurriculumManager()) {

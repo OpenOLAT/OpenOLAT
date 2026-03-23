@@ -219,8 +219,14 @@ public class GuiStackNiceImpl implements GuiStack {
 			inset.contextPut("wider", Boolean.FALSE);
 			inset.contextPut("orientation", CalloutOrientation.bottom.name());
 		}
-		modalPanel.pushContent(inset);
-		modalLayers++;
+		
+		if(settings != null && settings.isTopModal()) {
+			topModalPanel.pushContent(inset);
+			topModalLayers++;
+		} else {
+			modalPanel.pushContent(inset);
+			modalLayers++;
+		}
 	}
 
 	@Override

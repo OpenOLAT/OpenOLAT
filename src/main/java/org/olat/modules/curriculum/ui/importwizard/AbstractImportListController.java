@@ -58,7 +58,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
@@ -429,7 +431,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		listenTo(validationCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				validationCtrl.getInitialComponent(), targetId, "", true, "");
+				validationCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -443,7 +445,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		listenTo(validationListCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				validationListCtrl.getInitialComponent(), targetId, "", true, "");
+				validationListCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -456,7 +458,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		listenTo(toolsCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), targetId, "", true, "");
+				toolsCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

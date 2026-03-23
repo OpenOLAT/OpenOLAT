@@ -38,7 +38,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Organisation;
@@ -240,7 +242,7 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 			listenTo(validationCtrl);
 		
 			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					validationCtrl.getInitialComponent(), targetId, "", true, "");
+					validationCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}

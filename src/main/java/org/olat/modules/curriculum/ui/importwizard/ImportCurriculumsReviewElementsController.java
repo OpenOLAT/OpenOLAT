@@ -82,7 +82,8 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 				new ImportValueCellRenderer(ImportCurriculumsCols.implementationIdentifier, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.objectType,
 				new ImportValueCellRenderer(ImportCurriculumsCols.objectType, getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.level));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.level,
+				new ImportValueCellRenderer(ImportCurriculumsCols.level, getLocale())));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.displayName,
 				new ImportValueCellRenderer(ImportCurriculumsCols.displayName, getLocale())));
