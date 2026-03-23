@@ -25,9 +25,9 @@ package org.olat.course.run.leave;
  */
 public record LeaveCourseParticipation(
 		Origin origin,
-		boolean enrollmentGroup,
-		boolean delistingPermitted,
-		int linkedCourseCount) {
+		boolean groupLeavingAllowed,
+		int linkedCourseCount,
+		boolean enrollmentDelistingPermitted) {
 
 	public enum Origin {
 		DIRECT,

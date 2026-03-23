@@ -95,14 +95,14 @@ public class RepositoryEntryLeaveCourseContext implements LeaveCourseContext {
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		if (repositoryService.hasRole(identity, repositoryEntry, "participant")) {
-			result.add(new LeaveCourseParticipation(Origin.DIRECT, false, false, 1));
+			result.add(new LeaveCourseParticipation(Origin.DIRECT, true, 1, true));
 		}
 
 		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(
 				repositoryEntry, identity, List.of(CurriculumRoles.participant));
 		if (!curriculumElements.isEmpty()) {
-			result.add(new LeaveCourseParticipation(Origin.CPL, false, false, 1));
+			result.add(new LeaveCourseParticipation(Origin.CPL, true, 1, true));
 		}
 
 		boolean isCourse = CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName());
@@ -137,10 +137,12 @@ public class RepositoryEntryLeaveCourseContext implements LeaveCourseContext {
 
 			BusinessGroupRelationDAO businessGroupRelationDAO = CoreSpringFactory.getImpl(BusinessGroupRelationDAO.class);
 			for (BusinessGroup group : groups) {
+				boolean groupLeavingAllowed = businessGroupService.isAllowToLeaveBusinessGroup(identity, group).isAllowToLeave();
+				int linkedCourseCount = businessGroupRelationDAO.countResources(group);
 				boolean isEnrollment = isCourse && enrollmentDelistingByGroupKey.containsKey(group.getKey());
 				boolean delisting = isCourse && enrollmentDelistingByGroupKey.getOrDefault(group.getKey(), false);
-				int linkedCourseCount = businessGroupRelationDAO.countResources(group);
-				result.add(new LeaveCourseParticipation(Origin.GROUP, isEnrollment, delisting, linkedCourseCount));
+				boolean enrollmentDelistingPermitted = !isEnrollment || delisting;
+				result.add(new LeaveCourseParticipation(Origin.GROUP, groupLeavingAllowed, linkedCourseCount, enrollmentDelistingPermitted));
 			}
 		}
 

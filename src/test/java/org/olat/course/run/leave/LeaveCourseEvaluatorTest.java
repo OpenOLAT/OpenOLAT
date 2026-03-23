@@ -323,19 +323,37 @@ public class LeaveCourseEvaluatorTest {
 		}
 	}
 
+	@Test
+	public void evaluate_groupLeavingNotAllowed_hidden() {
+		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, List.of(groupLeavingNotAllowed()), RepositoryEntryStatusEnum.published, null, NOW);
+		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
+	}
+
+	@Test
+	public void evaluate_groupLeavingAllowed_enabled() {
+		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, List.of(group(false, 1)), RepositoryEntryStatusEnum.published, null, NOW);
+		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.ENABLED);
+	}
+
 	private LeaveCourseParticipation direct() {
-		return new LeaveCourseParticipation(Origin.DIRECT, false, false, 1);
+		return new LeaveCourseParticipation(Origin.DIRECT, true, 1, true);
 	}
 
 	private LeaveCourseParticipation cpl() {
-		return new LeaveCourseParticipation(Origin.CPL, false, false, 1);
+		return new LeaveCourseParticipation(Origin.CPL, true, 1, true);
 	}
 
 	private LeaveCourseParticipation enrollmentGroup(boolean delistingPermitted, int linkedCourseCount) {
-		return new LeaveCourseParticipation(Origin.GROUP, true, delistingPermitted, linkedCourseCount);
+		return new LeaveCourseParticipation(Origin.GROUP, true, linkedCourseCount, delistingPermitted);
 	}
 
-	private LeaveCourseParticipation group(boolean enrollmentGroup, int linkedCourseCount) {
-		return new LeaveCourseParticipation(Origin.GROUP, enrollmentGroup, false, linkedCourseCount);
+	private LeaveCourseParticipation group(boolean enrollmentDelistingPermitted, int linkedCourseCount) {
+		return new LeaveCourseParticipation(Origin.GROUP, true, linkedCourseCount, enrollmentDelistingPermitted);
+	}
+
+	private LeaveCourseParticipation groupLeavingNotAllowed() {
+		return new LeaveCourseParticipation(Origin.GROUP, false, 1, true);
 	}
 }

@@ -31,6 +31,7 @@ import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.run.leave.LeaveCourseParticipation.Origin;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
@@ -93,7 +94,7 @@ public class CourseRuntimeLeaveCourseContext implements LeaveCourseContext {
 		List<LeaveCourseParticipation> result = new ArrayList<>();
 
 		if (userCourseEnv.isMemberParticipant()) {
-			result.add(new LeaveCourseParticipation(Origin.DIRECT, false, false, 1));
+			result.add(new LeaveCourseParticipation(Origin.DIRECT, true, 1, true));
 		}
 
 		List<BusinessGroup> groups = userCourseEnv.getParticipatingGroups();
@@ -120,16 +121,20 @@ public class CourseRuntimeLeaveCourseContext implements LeaveCourseContext {
 			}, rootNode, true).visitAll();
 
 			BusinessGroupRelationDAO businessGroupRelationDAO = CoreSpringFactory.getImpl(BusinessGroupRelationDAO.class);
+			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			var identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 			for (BusinessGroup group : groups) {
+				boolean groupLeavingAllowed = businessGroupService.isAllowToLeaveBusinessGroup(identity, group).isAllowToLeave();
+				int linkedCourseCount = businessGroupRelationDAO.countResources(group);
 				boolean isEnrollment = enrollmentDelistingByGroupKey.containsKey(group.getKey());
 				boolean delisting = enrollmentDelistingByGroupKey.getOrDefault(group.getKey(), false);
-				int linkedCourseCount = businessGroupRelationDAO.countResources(group);
-				result.add(new LeaveCourseParticipation(Origin.GROUP, isEnrollment, delisting, linkedCourseCount));
+				boolean enrollmentDelistingPermitted = !isEnrollment || delisting;
+				result.add(new LeaveCourseParticipation(Origin.GROUP, groupLeavingAllowed, linkedCourseCount, enrollmentDelistingPermitted));
 			}
 		}
 
 		if (curriculumParticipant) {
-			result.add(new LeaveCourseParticipation(Origin.CPL, false, false, 1));
+			result.add(new LeaveCourseParticipation(Origin.CPL, true, 1, true));
 		}
 
 		return result;

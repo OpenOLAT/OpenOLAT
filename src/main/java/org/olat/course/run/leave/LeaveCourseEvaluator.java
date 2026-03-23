@@ -54,10 +54,13 @@ public class LeaveCourseEvaluator {
 			if (p.origin() == LeaveCourseParticipation.Origin.CPL) {
 				return LeaveCourseStatus.HIDDEN;
 			}
+			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && !p.groupLeavingAllowed()) {
+				return LeaveCourseStatus.HIDDEN;
+			}
 			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && p.linkedCourseCount() > 1) {
 				return LeaveCourseStatus.HIDDEN;
 			}
-			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && p.enrollmentGroup() && !p.delistingPermitted()) {
+			if (p.origin() == LeaveCourseParticipation.Origin.GROUP && !p.enrollmentDelistingPermitted()) {
 				return LeaveCourseStatus.HIDDEN;
 			}
 		}
