@@ -119,28 +119,28 @@ public class LeaveCourseEvaluatorTest {
 	@Test
 	public void evaluate_enrollmentGroupMultipleCourses_hidden() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(enrollmentGroup(false, 2)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(enrollmentGroup(2, false)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
 	}
 
 	@Test
 	public void evaluate_enrollmentGroupDelistingNotPermitted_hidden() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(enrollmentGroup(false, 1)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(enrollmentGroup(1, false)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
 	}
 
 	@Test
 	public void evaluate_groupSingleCourse_enabled() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(group(false, 1)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(group(true, 1)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.ENABLED);
 	}
 
 	@Test
 	public void evaluate_enrollmentGroupDelistingPermitted_enabled() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(enrollmentGroup(true, 1)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(enrollmentGroup(1, true)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.ENABLED);
 	}
 
@@ -161,28 +161,28 @@ public class LeaveCourseEvaluatorTest {
 	@Test
 	public void evaluate_cplAndBlockedGroup_hidden() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(cpl(), enrollmentGroup(false, 2)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(cpl(), enrollmentGroup(2, false)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
 	}
 
 	@Test
 	public void evaluate_blockedGroupAndDirect_hidden() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(enrollmentGroup(false, 2), direct()), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(enrollmentGroup(2, false), direct()), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
 	}
 
 	@Test
 	public void evaluate_enrollmentGroupMultipleCoursesAndEnrollmentSingleCourse_hidden() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(enrollmentGroup(false, 2), enrollmentGroup(false, 1)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(enrollmentGroup(2, false), enrollmentGroup(1, false)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
 	}
 
 	@Test
 	public void evaluate_allRolesBlocked_hidden() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(cpl(), enrollmentGroup(false, 2), group(false, 2)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(cpl(), enrollmentGroup(2, false), group(false, 2)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.HIDDEN);
 	}
 
@@ -333,7 +333,7 @@ public class LeaveCourseEvaluatorTest {
 	@Test
 	public void evaluate_groupLeavingAllowed_enabled() {
 		LeaveCourseContext ctx = ctx(RepositoryEntryRuntimeType.standalone, RepositoryEntryAllowToLeaveOptions.atAnyTime,
-				false, false, List.of(group(false, 1)), RepositoryEntryStatusEnum.published, null, NOW);
+				false, false, List.of(group(true, 1)), RepositoryEntryStatusEnum.published, null, NOW);
 		assertThat(sut.evaluate(ctx)).isEqualTo(LeaveCourseStatus.ENABLED);
 	}
 
@@ -345,12 +345,12 @@ public class LeaveCourseEvaluatorTest {
 		return new LeaveCourseParticipation(Origin.CPL, true, 1, true);
 	}
 
-	private LeaveCourseParticipation enrollmentGroup(boolean delistingPermitted, int linkedCourseCount) {
+	private LeaveCourseParticipation enrollmentGroup(int linkedCourseCount, boolean delistingPermitted) {
 		return new LeaveCourseParticipation(Origin.GROUP, true, linkedCourseCount, delistingPermitted);
 	}
 
-	private LeaveCourseParticipation group(boolean enrollmentDelistingPermitted, int linkedCourseCount) {
-		return new LeaveCourseParticipation(Origin.GROUP, true, linkedCourseCount, enrollmentDelistingPermitted);
+	private LeaveCourseParticipation group(boolean groupLeavingAllowed, int linkedCourseCount) {
+		return new LeaveCourseParticipation(Origin.GROUP, groupLeavingAllowed, linkedCourseCount, true);
 	}
 
 	private LeaveCourseParticipation groupLeavingNotAllowed() {
