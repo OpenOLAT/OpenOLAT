@@ -427,6 +427,9 @@ public class PageRunController extends BasicController implements TooledControll
 		if (lockEntry != null && lockEntry.isSuccess()) {
 			// release lock
 			doReleaseLock();
+			if(dirtyMarker) {
+				markAsNews();
+			}
 		}
 		coordinator.getCoordinator().getEventBus().deregisterFor(this, lockOres);
         super.doDispose();
@@ -782,6 +785,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private void doRunPage(UserRequest ureq) {
 		if(dirtyMarker) {
 			loadModel(ureq, false);
+			markAsNews();
 		}
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		editLink(true);
