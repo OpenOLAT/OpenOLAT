@@ -142,4 +142,15 @@ public class LDAPLoginTest extends OlatRestTestCase {
 
 		syncConfiguration.setLdapUserLoginAttribute(currentLoginAttr);
 	}
+	
+	@Test
+	public void userBindLoginWithSpecialCharacters() throws Exception {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+
+		LDAPError errors = new LDAPError();
+		Attributes attrs = ldapManager.bindUser("printer", "olat", errors);
+		Assert.assertNotNull(attrs);
+		Assert.assertEquals("Print(er)", attrs.get("sn").get());
+		Assert.assertTrue(errors.isEmpty());
+	}
 }

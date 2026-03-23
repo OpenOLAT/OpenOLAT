@@ -21,10 +21,16 @@ package org.olat.ldap.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -36,6 +42,7 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
 import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
+
 
 /**
  * 
@@ -140,5 +147,20 @@ public class LDAPDAOTest extends OlatTestCase {
 			.hasSize(2)
 			.map(LDAPGroup::getCommonName)
 			.containsExactlyInAnyOrder("ldapopenolat", "ldaporganisation");
+	}
+	
+	@Test
+	public void searchUserWithSpecialCharacters() throws NamingException {	
+		LdapContext ctx = ldapManager.bindSystem();
+		String filter = ldapDao.buildSearchUserFilter("sn", "Print(er)");
+
+		List<Attributes> ldapUserAttrs = new ArrayList<>();
+		ldapDao.searchInLdap(result -> ldapUserAttrs.add(result.getAttributes()),
+				filter, syncConfiguration.getUserAttributes(), ctx);
+		Assertions.assertThat(ldapUserAttrs)
+			.hasSize(1);
+		Attributes attributes = ldapUserAttrs.get(0);
+		Attribute givenName = attributes.get("givenname");
+		Assert.assertEquals("Print(name)", givenName.get().toString());
 	}
 }

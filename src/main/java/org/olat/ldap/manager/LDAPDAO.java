@@ -348,7 +348,7 @@ public class LDAPDAO {
 			// merge preconfigured filter (e.g. object class, group filters) with username using AND rule
 			filter.append("(&").append(ldapUserFilter);	
 		}
-		filter.append("(").append(attribute).append("=").append(uid).append(")");
+		filter.append("(").append(attribute).append("=").append(escapeSearchAttribute(uid)).append(")");
 		if (ldapUserFilter != null) {
 			filter.append(")");	
 		}
@@ -372,7 +372,7 @@ public class LDAPDAO {
 		filter.append("(|");
 		for(int i=0; i<attributes.size(); i++) {
 			String attribute = attributes.get(i);
-			filter.append("(").append(attribute).append("=").append(uid).append(")");
+			filter.append("(").append(attribute).append("=").append(escapeSearchAttribute(uid)).append(")");
 			
 		}
 		filter.append(")");
@@ -532,6 +532,23 @@ public class LDAPDAO {
 			filter = filter.replace("\\,", "\\5c,");
 		}
 		return filter;
+	}
+	
+	/**
+	 * This is a first stage escaping. The whole filter with escaped with the part
+	 * in configuration against , character.
+	 * 
+	 * @param value
+	 * @return Escaped value
+	 */
+	public static String escapeSearchAttribute(String value) {
+		if(StringHelper.containsNonWhitespace(value)) {
+			value = value.replace("*", "\\2a")
+					.replace("(", "\\28")
+					.replace(")", "\\29")
+					.replace("\0", "\\00");
+		}
+		return value;
 	}
 
 	private int pageSize() {

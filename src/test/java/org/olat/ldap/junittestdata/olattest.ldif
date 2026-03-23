@@ -413,6 +413,19 @@ sn: Walderer
 uid: swalderer
 userPassword: olat
 
+dn: cn=printer,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: printer
+givenname: Print(name)
+labeleduri: https://www.openolat.com/printer
+mail: printer@openolat.com
+o: Informatik
+sn: Print(er)
+uid: printer
+userPassword: olat
 
 dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
 objectclass: top
@@ -461,6 +474,7 @@ objectclass: groupOfNames
 cn: LDAP, with CN
 member: uid=jmartin,ou=person,dc=olattest,dc=org
 member: cn=Walderer\, Selena,ou=person,dc=olattest,dc=org
+
 
 
 
