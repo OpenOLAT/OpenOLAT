@@ -65,9 +65,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	private TextElement location;
 	private SingleSelection dateTypesEl;
 	private SingleSelection publicDatesEl;
-	private DateChooser startDateEl;
-	private DateChooser endDateEl;
-	private FormLayoutContainer privateDatesCont;
+	private DateChooser privateDatesEl;
 	
 	private final boolean readOnly;
 	private RepositoryEntry repositoryEntry;
@@ -112,7 +110,6 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		this.usedInWizard = true;
 		readOnly = false;
 		initForm(ureq);
-		initEventListeners();
 	}
 
 	/**
@@ -144,13 +141,6 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			buttonContainer.setElementCssClass("o_sel_repo_save_details");
 			uifactory.addFormSubmitButton("submit", buttonContainer);
 			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-		}
-	}
-	
-	private void initEventListeners() {
-		if (startDateEl != null && endDateEl != null) {
-			startDateEl.addActionListener(FormEvent.ONCHANGE);
-			endDateEl.addActionListener(FormEvent.ONCHANGE);
 		}
 	}
 	
@@ -235,25 +225,18 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 						}
 					});
 		}
-
-		String privateDatePage = velocity_root + "/cycle_dates.html";
-		privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
-		privateDatesCont.setRootForm(mainForm);
-		privateDatesCont.setLabel("cif.private.dates", null);
-		formLayout.add("private.date", privateDatesCont);
 		
-		startDateEl = uifactory.addDateChooser("date.start", "cif.date.from", null, privateDatesCont);
-		startDateEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
-		startDateEl.setEnabled(!readOnly);
-		endDateEl = uifactory.addDateChooser("date.end", "cif.date.to", null, privateDatesCont);
-		endDateEl.setElementCssClass("o_sel_repo_lifecycle_validto");
-		endDateEl.setEnabled(!readOnly);
+		privateDatesEl = uifactory.addDateChooser("date.start", "cif.private.dates", null, formLayout);
+		privateDatesEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
+		privateDatesEl.setSecondDate(true);
+		privateDatesEl.setSeparator("to.separator");
+		privateDatesEl.setEnabled(!readOnly);
 		
 		if(repositoryEntry.getLifecycle() != null) {
 			RepositoryEntryLifecycle lifecycle = repositoryEntry.getLifecycle();
 			if(lifecycle.isPrivateCycle()) {
-				startDateEl.setDate(lifecycle.getValidFrom());
-				endDateEl.setDate(lifecycle.getValidTo());
+				privateDatesEl.setDate(lifecycle.getValidFrom());
+				privateDatesEl.setSecondDate(lifecycle.getValidTo());
 			} else {
 				String key = lifecycle.getKey().toString();
 				for(String publicKey:publicKeys) {
@@ -273,13 +256,13 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			String type = dateTypesEl.getSelectedKey();
 			if("none".equals(type)) {
 				publicDatesEl.setVisible(false);
-				privateDatesCont.setVisible(false);
+				privateDatesEl.setVisible(false);
 			} else if("public".equals(type)) {
 				publicDatesEl.setVisible(true);
-				privateDatesCont.setVisible(false);
+				privateDatesEl.setVisible(false);
 			} else if("private".equals(type)) {
 				publicDatesEl.setVisible(false);
-				privateDatesCont.setVisible(true);
+				privateDatesEl.setVisible(true);
 			}
 		}
 	}
@@ -297,6 +280,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 					publicDatesEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}	
+			}
+		}
+		
+		if (privateDatesEl != null ) {
+			privateDatesEl.clearError();
+			if (privateDatesEl.getDate() != null && privateDatesEl.getSecondDate() != null && privateDatesEl.getDate().after(privateDatesEl.getSecondDate())) {
+				privateDatesEl.setErrorKey("form.error.first.after.second.date");
+				allOk &= false;
 			}
 		}
 
@@ -324,13 +315,13 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
-		} else if (source == startDateEl) {
-			if (!dateMoved && startDateEl.getDate() != null && startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
-				Date startDate = startDateEl.getDate();
-				long difference = startDate.getTime() - startDateEl.getInitialDate().getTime();
-				Date endDate = endDateEl.getDate();
+		} else if (source == privateDatesEl) {
+			if (!dateMoved && privateDatesEl.getDate() != null && privateDatesEl.getInitialDate() != null && privateDatesEl.getSecondDate() != null) {
+				Date startDate = privateDatesEl.getDate();
+				long difference = startDate.getTime() - privateDatesEl.getInitialDate().getTime();
+				Date endDate = privateDatesEl.getSecondDate();
 				endDate.setTime(endDate.getTime() + difference);
-				endDateEl.setDate(endDate);
+				privateDatesEl.setSecondDate(endDate);
 				dateMoved = true;
 			}
 		}
@@ -355,8 +346,8 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 					repositoryEntry.setLifecycle(cycle);
 				}
 			} else if("private".equals(type)) {
-				Date start = startDateEl.getDate();
-				Date end = endDateEl.getDate();
+				Date start = privateDatesEl.getDate();
+				Date end = privateDatesEl.getSecondDate();
 				RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
 				if(cycle == null || !cycle.isPrivateCycle()) {
 					String softKey = "lf_" + repositoryEntry.getSoftkey();
@@ -409,22 +400,18 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 					break;
 				case "private":
 					context.setExecutionType(ExecutionType.beginAndEnd);
-					context.setBeginDate(startDateEl.getDate());
-					context.setEndDate(endDateEl.getDate());
+					context.setBeginDate(privateDatesEl.getDate());
+					context.setEndDate(privateDatesEl.getSecondDate());
 					
-					long difference = startDateEl.getDateDifference();
-					if (difference == 0) {
-						difference = endDateEl.getDateDifference();
-					}
+					long difference = privateDatesEl.getDateDifference();
 					context.setDateDifference(difference);
 					
 					break;
 			}
 			
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 	
 	public void loadFromContext(CopyCourseContext context) {
@@ -433,16 +420,17 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		}
 		
 		if (context.getExecutionType() != null) {
+			privateDatesEl.addActionListener(FormEvent.ONCHANGE);
 			switch (context.getExecutionType()) {
 				case none:
 					dateTypesEl.select("none", true);
 					break;
 				case beginAndEnd: 
 					dateTypesEl.select("private", true);
-					startDateEl.setDate(context.getBeginDate());
-					endDateEl.setDate(context.getEndDate());
-					if (startDateEl.getInitialDate() == null) {
-						startDateEl.setInitialDate(context.getInitialBeginDate());
+					privateDatesEl.setDate(context.getBeginDate());
+					privateDatesEl.setSecondDate(context.getEndDate());
+					if (privateDatesEl.getInitialDate() == null) {
+						privateDatesEl.setInitialDate(context.getInitialBeginDate());
 					}
 					break;
 				case semester: 
