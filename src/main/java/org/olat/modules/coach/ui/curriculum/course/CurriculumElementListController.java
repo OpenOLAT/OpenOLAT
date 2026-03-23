@@ -149,7 +149,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 
     private RepositoryEntryDetailsController detailsCtrl;
     private CurriculumElementCalendarController calendarsCtrl;
-    private CurriculumElementListController curriculumElementListCtrl;
 
     @Autowired
     private RepositoryService repositoryService;
@@ -644,11 +643,12 @@ public class CurriculumElementListController extends FormBasicController impleme
     	List<CurriculumRef> curriculumRef = List.of(curriculumElement.getCurriculum());
 
     	WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CourseListWrapperController.CMD_IMPLEMENTATION, row.getKey()), null);
-		curriculumElementListCtrl = new CurriculumElementListController(ureq, bwControl, stackPanel, assessedIdentity, curriculumRef, curriculumElement,
-				curriculumSecurityCallback, roleSecurityCallback, false);
-		listenTo(curriculumElementListCtrl);
+		CurriculumElementDrillDownController drillDownCtrl = new CurriculumElementDrillDownController(ureq, bwControl, 
+				stackPanel, assessedIdentity, curriculumRef, curriculumElement, curriculumSecurityCallback, 
+				roleSecurityCallback);
+		listenTo(drillDownCtrl);
 		
-		stackPanel.pushController(curriculumElement.getDisplayName(), curriculumElementListCtrl);
+		stackPanel.pushController(curriculumElement.getDisplayName(), drillDownCtrl);
     }
 
     private void doOpenCalendars(UserRequest ureq, CourseCurriculumTreeWithViewsRow row) {
