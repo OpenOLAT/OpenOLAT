@@ -111,7 +111,6 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			} else {
 				// Duplicate
 				notUniqueIdentifierError(importedRow);
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			}
 			
 			String organisationIdentifier = importedRow.getOrganisationIdentifier();
@@ -255,7 +254,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		List<RepositoryEntry> entries = repositoryService.loadRepositoryEntriesByExternalRef(importedRow.getIdentifier());
 		RepositoryEntry entry = null;
 		if(entries.isEmpty()) {
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
+			// will be validated later
 		} else if(entries.size() == 1) {
 			if(importedRow.type() == CurriculumExportType.COURSE) {
 				importedRow.setCourse(entries.get(0));
@@ -269,7 +268,6 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		} else {
 			// Duplicate
 			notUniqueIdentifierError(importedRow);
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 		}
 
 		// Map curriculum
@@ -323,7 +321,6 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		} else {
 			// Duplicate
 			notUniqueIdentifierError(importedRow);
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 		}
 
 		return lectureBlock;
@@ -366,7 +363,6 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		} else {
 			// Duplicate
 			notUniqueIdentifierError(importedRow);
-			importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 		}
 		
 		// Map curriculum element type

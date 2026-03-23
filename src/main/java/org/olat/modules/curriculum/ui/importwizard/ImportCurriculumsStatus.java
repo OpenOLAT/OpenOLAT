@@ -29,7 +29,6 @@ public enum ImportCurriculumsStatus {
 	
 	NEW,
 	MODIFIED,
-	NO_CHANGES,
-	ERROR
+	NO_CHANGES
 
 }

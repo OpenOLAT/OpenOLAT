@@ -135,8 +135,7 @@ implements FilterableFlexiTableModel {
 	private boolean acceptStatus(Set<String> status, ImportedRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
-		if((row.getStatus() == ImportCurriculumsStatus.ERROR && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_WITH_ERRORS))
-				|| (row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))) {
+		if(row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED)) {
 			return true;
 		}
 		

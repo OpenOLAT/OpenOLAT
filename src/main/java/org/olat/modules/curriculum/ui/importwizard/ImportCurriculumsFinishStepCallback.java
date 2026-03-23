@@ -493,7 +493,6 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	private boolean isIgnored(AbstractImportRow importedRow) {
 		if(importedRow.isIgnored()
 				|| importedRow.getStatus() == ImportCurriculumsStatus.NO_CHANGES
-				|| importedRow.getStatus() == ImportCurriculumsStatus.ERROR
 				|| importedRow.getValidationStatistics().errors() > 0) {
 			log.debug("Curriculum not imported: status: {}, errors: {}, to ignore: {}",
 					importedRow.getStatus(), importedRow.getValidationStatistics().errors(), importedRow.isIgnored());

@@ -147,7 +147,7 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 	
 	private void loadErrorMessage(List<ImportedRow> rows) {
 		long numOfErrors = rows.stream()
-			.filter(row -> row.getStatus() == ImportCurriculumsStatus.ERROR || row.getValidationStatistics().errors() > 0)
+			.filter(row -> row.getValidationStatistics().errors() > 0)
 			.count();
 
 		if(numOfErrors > 0) {

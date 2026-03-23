@@ -235,31 +235,15 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		AbstractImportRow importedRow = tableModel.getObject(pos);
 		String cssClass = null;
 		if(importedRow != null) {
-			if(importedRow.getStatus() == ImportCurriculumsStatus.ERROR) {
+			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
+			if(statistics.errors() > 0) {
 				cssClass = "o_import_error";
-			} else {
-				CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
-				if(importedRow.getStatus() == ImportCurriculumsStatus.NEW) {
-					if(statistics.errors() > 0) {
-						cssClass = "o_import_error";
-					} else if(importedRow.isIgnored()) {
-						cssClass = "o_import_ignored";
-					} else {
-						cssClass = "o_import_new";
-					}
-				} else if(importedRow.getStatus() == ImportCurriculumsStatus.MODIFIED) {
-					if(statistics.errors() > 0) {
-						cssClass = "o_import_error";
-					} else if(importedRow.isIgnored()) {
-						cssClass = "o_import_ignored";
-					} else {
-						cssClass = "o_import_changed";
-					}
-				} else if(importedRow.isIgnored()) {
-					cssClass = "o_import_ignored";
-				} else if(statistics.changes() > 0) {
-					cssClass = "o_import_changed";
-				} 
+			} else if(importedRow.isIgnored()) {
+				cssClass = "o_import_ignored";
+			} else if(importedRow.getStatus() == ImportCurriculumsStatus.NEW) {
+				cssClass = "o_import_new";
+			} else if(importedRow.getStatus() == ImportCurriculumsStatus.MODIFIED || statistics.changes() > 0) {
+				cssClass = "o_import_changed";
 			}
 		}
 		return cssClass;
@@ -313,7 +297,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	
 	protected void loadErrorMessage(List<? extends AbstractImportRow> rows, String suffix) {
 		long numOfErrors = rows.stream()
-				.filter(row -> row.getStatus() == ImportCurriculumsStatus.ERROR || row.getValidationStatistics().errors() > 0)
+				.filter(row -> row.getValidationStatistics().errors() > 0)
 				.count();
 
 		if(numOfErrors > 0) {
@@ -404,9 +388,9 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		for(AbstractImportRow row:rows) {
 			if(row.getIgnoreEl() == null) continue;
 			
-			boolean enabled = !row.hasValidationErrors() && row.getStatus() != ImportCurriculumsStatus.ERROR;
+			boolean enabled = !row.hasValidationErrors();
 			for(ImportedRow parentRow=row.getCurriculumElementParentRow(); parentRow != null && !parentRow.hasValidationErrors(); parentRow=parentRow.getCurriculumElementParentRow()) {
-				enabled &= !parentRow.isIgnored() && !parentRow.hasValidationErrors() && parentRow.getStatus() != ImportCurriculumsStatus.ERROR;
+				enabled &= !parentRow.isIgnored() && !parentRow.hasValidationErrors();
 			}
 			
 			if(enabled && !row.getIgnoreEl().isEnabled()) {

@@ -234,8 +234,6 @@ public class ImportCurriculumsValidator {
 			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
 			if(statistics.changes() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
-			} else if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
@@ -310,8 +308,6 @@ public class ImportCurriculumsValidator {
 			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
 			if(statistics.changes() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
-			} else if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
@@ -365,9 +361,9 @@ public class ImportCurriculumsValidator {
 		}
 		
 		if(importedRow.getStatus() == null) {
-			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
-			if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
+			CurriculumImportedStatistics stats = importedRow.getValidationStatistics();
+			if(stats.changes() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
