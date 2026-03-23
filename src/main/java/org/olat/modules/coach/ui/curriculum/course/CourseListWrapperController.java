@@ -105,7 +105,7 @@ public class CourseListWrapperController extends BasicController implements Acti
 					name, hint, "o_icon o_icon-fw o_icon_curriculum"));
 			}
 			
-			scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.implementations.list"),
+			scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.education.products"),
 					null, "o_icon o_icon-fw o_icon_curriculum"));
 		}
 		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
