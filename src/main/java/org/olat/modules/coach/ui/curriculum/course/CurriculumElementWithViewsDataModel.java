@@ -156,6 +156,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 			case product -> curriculum.getCurriculumDisplayName();
 			case begin -> curriculum.getCurriculumElementBeginDate();
 			case end -> curriculum.getCurriculumElementEndDate();
+			case titleOfLearningResource -> curriculum.getRepositoryEntryDisplayName();
 			case completion -> curriculum.getCompletionItem();
 			default -> "ERROR";
 		};
@@ -182,6 +183,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumT
 		product("table.header.product"),
 		begin("table.header.begin.date"),
 		end("table.header.end.date"),
+		titleOfLearningResource("table.header.repository.entry.displayName"),
 		completion("table.header.completion"),
 		calendars("table.header.calendars");
 		

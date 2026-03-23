@@ -216,6 +216,10 @@ public class CurriculumElementListController extends FormBasicController impleme
         		new DateFlexiCellRenderer(getLocale())));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.end,
         		new DateFlexiCellRenderer(getLocale())));
+		
+		if (!rootMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, ElementViewCols.titleOfLearningResource));
+		}
 
         if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
@@ -384,8 +388,8 @@ public class CurriculumElementListController extends FormBasicController impleme
                 CurriculumElement element = elementWithViews.getCurriculumElement();
                 CurriculumElementMembership elementMembership = elementWithViews.getCurriculumMembership();
 
-                if (elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
-                    CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(element, elementMembership, 0);
+				if (elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
+					CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(element, elementMembership, 0);
                     forgeCalendarsLink(row);
                     rows.add(row);
                     potentialParentRows.put(elementWithViews.getKey(), row);
