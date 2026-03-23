@@ -89,6 +89,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			List<String> occupancyValues = List.of();
 			List<CurriculumElementStatus> status = List.of();
 			boolean withOffersOnly = false;
+			boolean pendingMembershipsOnly = false;
 			Long searchLong = StringHelper.isLong(searchString) ? Long.valueOf(searchString) : null;
 			searchString = StringHelper.containsNonWhitespace(searchString) ? searchString.toLowerCase() : null;
 			Date begin = null;
@@ -125,6 +126,11 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			if (offerFilter instanceof FlexiTableOneClickSelectionFilter extendedFilter) {
 				withOffersOnly = extendedFilter.isSelected();
 			}
+
+			FlexiTableFilter pendingFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_PENDING_MEMBERSHIPS);
+			if (pendingFilter instanceof FlexiTableOneClickSelectionFilter extendedFilter) {
+				pendingMembershipsOnly = extendedFilter.isSelected();
+			}
 			
 			FlexiTableFilter pFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_PERIOD);
 			if (pFilter instanceof FlexiTableDateRangeFilter dateRangeFilter) {
@@ -148,7 +154,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 						&& acceptTypes(row, typesKeys)
 						&& acceptWithOffers(row, withOffersOnly)
 						&& acceptOccupancyStatus(row, occupancyValues)
-						&& acceptDateRange(row, begin, end);
+						&& acceptDateRange(row, begin, end)
+						&& acceptPendingMemberships(row, pendingMembershipsOnly);
 				row.setAcceptedByFilter(accept);
 				if(accept) {
 					filteredRows.add(row);
@@ -212,7 +219,14 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		}
 		return true;
 	}
-	
+
+	private boolean acceptPendingMemberships(CurriculumElementRow row, boolean pendingMembershipsOnly) {
+		if (pendingMembershipsOnly) {
+			return row.getNumOfPending() > 0;
+		}
+		return true;
+	}
+
 	private boolean acceptOccupancyStatus(CurriculumElementRow row, List<String> statusList) {
 		if(statusList == null || statusList.isEmpty()) return true;
 		

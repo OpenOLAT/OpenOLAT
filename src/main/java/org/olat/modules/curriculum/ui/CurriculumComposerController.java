@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
 
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -61,6 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActi
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -143,6 +144,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
+	private static final String PENDING_MEMBERSHIPS_TAB_ID = "PendingMemberships";
 
 	static final String FILTER_TYPE = "Type";
 	static final String FILTER_OFFER = "Offer";
@@ -156,6 +158,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	static final String FILTER_OCCUPANCY_STATUS_FREE_SEATS = "FreeSeats";
 	static final String FILTER_OCCUPANCY_STATUS_FULLY_BOOKED = "Full";
 	static final String FILTER_OCCUPANCY_STATUS_OVERBOOKED = "Overbooked";
+	static final String FILTER_PENDING_MEMBERSHIPS = "PendingMemberships";
 	
 	protected static final String CMD_MEMBERS = "members";
 	protected static final String CMD_PENDING = "pending";
@@ -483,6 +486,13 @@ public class CurriculumComposerController extends FormBasicController implements
 				FILTER_PERIOD, true, false, getLocale());
 		filters.add(periodFilter);
 		
+		if(config.isImplementationsOnly()) {
+			SelectionValues pendingValues = new SelectionValues();
+			pendingValues.add(SelectionValues.entry("true", translate("filter.pending.memberships")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.pending.memberships"),
+					FILTER_PENDING_MEMBERSHIPS, pendingValues, true));
+		}
+		
 		if(config.isWithMixMaxColumn()) {
 			SelectionValues occupancyValues = new SelectionValues();
 			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_NOT_SPECIFIED, translate("filter.occupancy.status.not.specified")));
@@ -494,7 +504,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			FlexiTableMultiSelectionFilter occupanyFilter = new FlexiTableMultiSelectionFilter(translate("filter.occupancy.status"),
 					FILTER_OCCUPANCY_STATUS, occupancyValues, true);
 			filters.add(occupanyFilter);
-			
 		}
 		
 		tableEl.setFilters(true, filters, true, false);
@@ -535,7 +544,15 @@ public class CurriculumComposerController extends FormBasicController implements
 		relevantTab.setFiltersExpanded(true);
 		tabs.add(relevantTab);
 		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
-		
+
+		if(config.isImplementationsOnly()) {
+			FlexiFiltersTab pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_MEMBERSHIPS_TAB_ID, translate("filter.pending.memberships"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_PENDING_MEMBERSHIPS, "true")));
+			pendingTab.setFiltersExpanded(true);
+			tabs.add(pendingTab);
+			map.put(PENDING_MEMBERSHIPS_TAB_ID.toLowerCase(), pendingTab);
+		}
+
 		for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
 			if(status == CurriculumElementStatus.deleted
 					|| (rootElement != null && (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))
@@ -837,7 +854,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			doOpenCurriculumElementDetails(ureq, row, subEntries);
 		} else if(rootElement == null) {
 			CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(elementKey));
-			if(element != null && element.getCurriculum().equals(curriculum) && element.getParent() != null) {
+			if(element != null && (curriculum == null || element.getCurriculum().equals(curriculum)) && element.getParent() != null) {
 				List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
 				CurriculumElementRow implementationRow = tableModel.getCurriculumElementRowByKey(parentLine.get(0).getKey());
 				if(implementationRow != null) {
