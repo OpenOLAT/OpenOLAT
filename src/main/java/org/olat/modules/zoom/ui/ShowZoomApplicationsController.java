@@ -81,31 +81,40 @@ public class ShowZoomApplicationsController extends BasicController {
             return null;
         }
 
-        ICourse course;
         String linkText;
 
         switch (applicationType) {
             case courseElement:
-                course = CourseFactory.loadCourse(ltiContext.getEntry());
-                CourseNode courseNode = course.getRunStructure().getNode(ltiContext.getSubIdent());
-                if (courseNode == null) {
-                    log.warn("Course node ({}, {}) referenced in LTI context doesn't exist",
-                            ltiContext.getEntry(), ltiContext.getSubIdent());
+                try {
+                    ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
+                    CourseNode courseNode = course.getRunStructure().getNode(ltiContext.getSubIdent());
+                    if (courseNode == null) {
+                        log.warn("Course node ({}, {}) referenced in LTI context doesn't exist",
+                                ltiContext.getEntry(), ltiContext.getSubIdent());
+                        return null;
+                    }
+                    String courseElementName = StringHelper.xssScan(courseNode.getShortName());
+                    String courseName = StringHelper.xssScan(course.getCourseTitle());
+                    linkText = getTranslator().translate("zoom.profile.application.courseElement", courseElementName, courseName);
+                    link.setCustomDisplayText(linkText);
+                    businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey())
+                            .append("][CourseNode:").append(ltiContext.getSubIdent()).append("]");
+                } catch (Exception e) {
+                    log.warn("Failed to load course for Zoom application in course element: " + e.getMessage());
                     return null;
                 }
-                String courseElementName = StringHelper.xssScan(courseNode.getShortName());
-                String courseName = StringHelper.xssScan(course.getCourseTitle());
-                linkText = getTranslator().translate("zoom.profile.application.courseElement", courseElementName, courseName);
-                link.setCustomDisplayText(linkText);
-                businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey())
-                        .append("][CourseNode:").append(ltiContext.getSubIdent()).append("]");
                 break;
             case courseTool:
-                course = CourseFactory.loadCourse(ltiContext.getEntry());
-                linkText = getTranslator().translate("zoom.profile.application.courseTool",
-                        StringHelper.xssScan(course.getCourseTitle()));
-                link.setCustomDisplayText(linkText);
-                businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey()).append("][zoom:0]");
+                try {
+                    ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
+                    String courseTitle = StringHelper.xssScan(course.getCourseTitle());
+                    linkText = getTranslator().translate("zoom.profile.application.courseTool", courseTitle);
+                    link.setCustomDisplayText(linkText);
+                    businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey()).append("][zoom:0]");
+                } catch (Exception e) {
+                    log.warn("Failed to load course for Zoom application: " + e.getMessage());
+                    return null;
+                }
                 break;
             case groupTool:
                 linkText = getTranslator().translate("zoom.profile.application.groupTool",

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -89,7 +90,7 @@ public class Model extends DefaultFlexiTableDataModel<Identity> {
 			}
 			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
 				if (usernameEmailNotInOrganisation.contains(ident.getName())) {
-					value= "<span title=\"" + usernameEmailNotInOrganisationWarning + "\"><i class=\"o_icon o_icon_warn\"></i> " + value + "</span>";
+					value= "<span title=\"" + usernameEmailNotInOrganisationWarning + "\"><i class=\"o_icon o_icon_warn\"></i> " + StringHelper.escapeHtml(value) + "</span>";
 				}
 			}
 			return value;

@@ -241,7 +241,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 
 		File uploadedFile = null;
 		String uploadedFilename = "";
-		if (selectedLeaf != null) {
+		if (selectedLeaf != null && selectedLeaf.getRelPath() != null) {
 			uploadedFile = VFSManager.olatRootFile(selectedLeaf.getRelPath());
 			uploadedFilename = selectedLeaf.getName();
 		} else if (fileEl != null && fileEl.getUploadFile() != null) {
