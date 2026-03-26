@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -20,6 +23,7 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -29,28 +33,29 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
-import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
 import org.olat.modules.selectus.model.PositionAttributeDefinition;
@@ -82,6 +87,8 @@ import org.olat.modules.selectus.ui.position.PositionsDataModel;
 import org.olat.modules.selectus.ui.position.PositionsDataModel.Fields;
 import org.olat.modules.selectus.ui.report.ReportGenerator;
 import org.olat.modules.selectus.ui.report.ReportGeneratorResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -96,6 +103,9 @@ public class PositionListController extends FormBasicController implements Toole
 	
 	private static final String PREFS_ID = "recruitingPositionFlexiList-v3.1";
 	public static final int CUSTOM_ATTRIBUTES_COLS_OFFSET = 50000;
+
+	public static final String FILTER_STATUS_KEY = "status";
+	public static final String FILTER_ORGANISATION_KEY = "organisation";
 	
 	private Link addPosition;
 	private Link searchButton;
@@ -114,9 +124,9 @@ public class PositionListController extends FormBasicController implements Toole
 	private PositionConfirmDeleteAnonymousController confirmDeleteAnonymousController;
 	private PositionConfirmDeletePermanentlyController confirmDeletePermanentlyController;
 	
-	private final List<PositionStatus> filterStatus;
+	private final Roles roles;
 	private final RecruitingSecurityCallback secCallback;
-	private final List<OrganisationUnit> organisationUnits;
+	private final List<Organisation> organisations;
 	private final List<PositionAttributeDefinition> globalAttributes;
 
 	@Autowired @Qualifier("reportGenerator")
@@ -125,25 +135,30 @@ public class PositionListController extends FormBasicController implements Toole
 	private RecruitingModule recruitingModule;
 	@Autowired
 	private RecruitingService recruitingService;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public PositionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RecruitingSecurityCallback secCallback) {
 		super(ureq, wControl, "position_list");
 		
+		roles = ureq.getUserSession().getRoles();
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		
-		filterStatus = getFilterStatus();
 		globalAttributes = recruitingService.getGlobalAttributeDefinition();
 		if(globalAttributes.size() > 1) {
 			Collections.sort(globalAttributes, new PositionAttributeDefinitionComparator());
 		}
 		
-		if(recruitingModule.isOrganisationUnitEnabled()) {
-			organisationUnits = recruitingService.getOrganisationUnits(getIdentity(), ureq.getUserSession().getRoles());
+		if(organisationModule.isEnabled()) {
+			organisations = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.selectusmanager);
 		} else {
-			organisationUnits = Collections.emptyList();
+			organisations = List.of(organisationService.getDefaultOrganisation());
 		}
 
 		initForm(ureq);
@@ -204,7 +219,7 @@ public class PositionListController extends FormBasicController implements Toole
 		}
 		
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getTranslator(), getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "positions", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
@@ -225,7 +240,6 @@ public class PositionListController extends FormBasicController implements Toole
 	}
 	
 	public void initColumnsModel(FlexiTableColumnModel columnsModel, String action, Locale locale) {
-
 		for(int i=0; i<globalAttributes.size(); i++) {
 			PositionAttributeDefinition definition = globalAttributes.get(i);
 			PositionAttributeDefinitionTypeEnum type = definition.getTypeEnum();
@@ -257,7 +271,32 @@ public class PositionListController extends FormBasicController implements Toole
 	}
 	
 	private void initFilters() {
-		//TODO Flexi QL
+		tableEl.setSearchEnabled(true);
+
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// Position status
+		SelectionValues statusKV = new SelectionValues();
+		for(PositionStatus status: getFilterStatus()) {
+			statusKV.add(SelectionValues.entry(status.name(), translate("status." + status.name())));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.position.status"),
+				FILTER_STATUS_KEY, statusKV, true));
+		
+		if(organisationModule.isEnabled()) {
+			SelectionValues organisationsKV = new SelectionValues();
+			for(Organisation organisation: organisations) {
+				organisationsKV.add(SelectionValues.entry(organisation.getKey().toString(), StringHelper.escapeHtml(organisation.getDisplayName())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.organisation.unit"),
+					FILTER_ORGANISATION_KEY, organisationsKV, true));
+		}
+		
+		for(PositionAttributeDefinition globalAttribute:globalAttributes) {
+			//TODO custom attributes
+		}
+		
+		tableEl.setFilters(true, filters, true, true);
 	}
 	
 	public int getNumOfPositions() {
@@ -279,8 +318,10 @@ public class PositionListController extends FormBasicController implements Toole
 	}
 
 	public void loadModel() {
-		List<PositionStatus> defaultStatus = new ArrayList<>(filterStatus);
-		positionsDataModel.flexiSearch(null, null, defaultStatus);
+		List<PositionLightWithStatistics> positions = recruitingService
+				.getPositionsLightWithStatistics(getIdentity(), roles, globalAttributes, getLocale());
+		positionsDataModel.setObjects(positions);
+		positionsDataModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
 	}
 	
@@ -326,8 +367,7 @@ public class PositionListController extends FormBasicController implements Toole
 		if(downloadReportButton == source) {
 			doDownloadReport(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				PositionLight position = positionsDataModel.getObject(se.getIndex());
 				if(SELECT_POSITION.equals(cmd)) {
@@ -339,19 +379,16 @@ public class PositionListController extends FormBasicController implements Toole
 				} else if("delete".equals(cmd)) {
 					confirmDelete(ureq, position);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+			} else if(event instanceof FlexiTableSearchEvent ftse) {
 				doSearch(ftse.getSearch());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private boolean doSearch(String searchString) {
-		List<PositionStatus> envelopStatus = new ArrayList<>(filterStatus);
-		boolean hasErrors = positionsDataModel.flexiSearch(searchString, null, envelopStatus);
+	private void doSearch(String searchString) {
+		positionsDataModel.filter(searchString, tableEl.getFilters());
 		tableEl.reset(true, true, false);
-		return hasErrors;
 	}
 
 	@Override
@@ -403,8 +440,7 @@ public class PositionListController extends FormBasicController implements Toole
 				cleanUp();
 			}
 		} else if(copyPositionController == source) {
-			if(event instanceof NewPositionEvent) {
-				NewPositionEvent ep = (NewPositionEvent)event;
+			if(event instanceof NewPositionEvent ep) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				fireEvent(ureq, new SelectPositionEvent(ep.getNewPosition(), true));
 				cleanUp();

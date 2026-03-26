@@ -12,6 +12,47 @@
 
 	<alias alias="salutationGenerator" name="salutationGenerator${salutation.generator}"/>
 	
+	
+	<!-- The selectus configuration parent node -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="order" value="7300" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.admin.sysinfo.CoreFunctionsController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="selectusconfig" />
+		<property name="nodeIdentifierIfParent" value="selectusParent" />
+		<property name="translationPackage" value="org.olat.modules.selectus.ui" />
+		<property name="i18nActionKey" value="menu.config" />
+		<property name="i18nDescriptionKey" value="menu.config.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>	 
+	
+	<!-- Reporting -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7307" />
+		<property name="navigationKey" value="reporting" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.selectus.ui.report.ReportAdminController"/>
+			</bean>
+		</property>
+		<property name="i18nActionKey" value="menu.reporting"/>
+		<property name="i18nDescriptionKey" value="menu.reporting.alt"/>
+		<property name="translationPackage" value="org.olat.modules.selectus.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="selectusParent" /> 
+	</bean>	
+	
 	<alias alias="reportGenerator" name="reportGenerator${report.generator}"/>
 
 	<bean id="changePositionStatusTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">

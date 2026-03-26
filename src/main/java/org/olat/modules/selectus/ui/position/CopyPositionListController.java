@@ -99,7 +99,7 @@ public class CopyPositionListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(copyColumn);
 
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getTranslator(), getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "positions", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
@@ -130,13 +130,6 @@ public class CopyPositionListController extends FormBasicController {
 				.withMessageI18nKey("position.list.empty")
 				.build());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

@@ -102,7 +102,7 @@ public class ChoosePositionController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(copyColumn);
 
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getTranslator(), getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getLocale());
 		positionsDataModel.setExcludedPositions(importCommittee.getExcludedPositions());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
