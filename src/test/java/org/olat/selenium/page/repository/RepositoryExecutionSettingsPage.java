@@ -46,11 +46,11 @@ public class RepositoryExecutionSettingsPage {
 		browser.findElement(radioPrivateBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		By validFromBy = By.cssSelector(".o_sel_repo_lifecycle_validfrom .o_date_picker input[type='text']");
+		By validFromBy = By.cssSelector(".o_sel_repo_lifecycle_validfrom .o_first_date .o_date_picker input[type='text']");
 		String validFromStr = OOGraphene.formatDate(validFrom, locale);
 		browser.findElement(validFromBy).sendKeys(validFromStr);
 		
-		By validToBy = By.cssSelector(".o_sel_repo_lifecycle_validto .o_date_picker input[type='text']");
+		By validToBy = By.cssSelector(".o_sel_repo_lifecycle_validfrom .o_second_date .o_date_picker input[type='text']");
 		String validToStr = OOGraphene.formatDate(validTo, locale);
 		browser.findElement(validToBy).click();
 		browser.findElement(validToBy).sendKeys(validToStr);

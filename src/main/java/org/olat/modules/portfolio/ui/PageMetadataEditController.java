@@ -832,8 +832,6 @@ public class PageMetadataEditController extends FormBasicController {
 					&& StringHelper.containsNonWhitespace(assignmentsTemplatesEl.getSelectedKey())) {
 				String templateKey = assignmentsTemplatesEl.getSelectedKey();
 				assignment = assignmentTemplatesMap.get(templateKey);
-			} else {
-				assignment = null;
 			}
 			updateForAssignmentTemplate(assignment);
 		} else if(assignmentDocUploadEl == source) {

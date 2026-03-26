@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
@@ -40,6 +41,7 @@ import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -112,8 +114,13 @@ public class ImportCurriculumsFinishStepCallbackTest extends OlatTestCase {
 		for(ImportedRow row:data.elementsRows()) {
 			validator.validate(row);
 		}
+
+		Set<String> membershipsUsernames = data.membershipsRows().stream()
+				.filter(r -> StringHelper.containsNonWhitespace(r.getUsername()))
+				.map(ImportedMembershipRow::getUsername)
+				.collect(Collectors.toSet());
 		for(ImportedUserRow row:data.usersRows()) {
-			validator.validate(row);
+			validator.validate(row, membershipsUsernames);
 		}
 		for(ImportedMembershipRow row:data.membershipsRows()) {
 			validator.validate(row);

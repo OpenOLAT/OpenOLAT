@@ -34,6 +34,7 @@ import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -312,9 +313,17 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (secCallback.canCreateDecisions() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("decision.list.empty.message", null, "o_icon_proj_decision", "decision.create", "o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("decision.list.empty.message")
+					.withIconCss("o_icon_proj_decision")
+					.withPrimaryButton("o_icon_add", "decision.create", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("decision.list.empty.message", null, "o_icon_proj_decision");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("decision.list.empty.message")
+					.withIconCss("o_icon_proj_decision")
+					.build());
 		}
 		
 		if (bulkDeleteButton != null) {

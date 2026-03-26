@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -410,7 +411,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		tableModel = new IdentityAssessmentOverviewTableModel(columnsModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 250, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmptyTableMessageKey("nodesoverview.emptylist");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("nodesoverview.emptylist")
+				.build());
 		tableEl.setMultiSelect(nodesSelectable);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setNumOfRowsEnabled(false);

@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 
-import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.junit.Before;
@@ -32,6 +31,7 @@ import org.junit.Test;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.CodeLanguage;
 import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.model.TableContent;
@@ -57,7 +57,7 @@ public class MarkdownPagePartVisitorTest {
 	@Before
 	public void setUp() {
 		parser = Parser.builder()
-			.extensions(List.of(TablesExtension.create()))
+			.extensions(MarkdownImportService.markdownExtensions())
 			.build();
 	}
 
@@ -75,7 +75,7 @@ public class MarkdownPagePartVisitorTest {
 
 	private VisitorResult convertWithWarnings(String markdown, Map<String, String> mathBlocks) {
 		Node document = parser.parse(markdown);
-		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, mathBlocks);
+		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, mathBlocks, null);
 		document.accept(visitor);
 		return new VisitorResult(visitor.getParts(), visitor.getWarnings());
 	}
@@ -272,6 +272,149 @@ public class MarkdownPagePartVisitorTest {
 		assertThat(settings.getAlertBoxSettings().isShowAlertBox()).isTrue();
 	}
 
+	// --- BlockQuote admonition tests ---
+
+	@Test
+	public void testBlockQuoteAdmonitionNote() {
+		List<PagePart> parts = convert("> [!NOTE]\n> This is a note");
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.note);
+		assertThat(alertBox.isWithIcon()).isTrue();
+		// Marker should not appear in content
+		assertThat(parts.get(0).getContent()).doesNotContain("[!NOTE]");
+		assertThat(parts.get(0).getContent()).contains("This is a note");
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionWarning() {
+		List<PagePart> parts = convert("> [!WARNING]\n> Be careful");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.warning);
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionTip() {
+		List<PagePart> parts = convert("> [!TIP]\n> A helpful tip");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.tip);
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionImportant() {
+		List<PagePart> parts = convert("> [!IMPORTANT]\n> Read this");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.important);
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionCaution() {
+		List<PagePart> parts = convert("> [!CAUTION]\n> Danger zone");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.error);
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionInfo() {
+		List<PagePart> parts = convert("> [!INFO]\n> Information");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.info);
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionSuccess() {
+		List<PagePart> parts = convert("> [!SUCCESS]\n> It worked");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.success);
+	}
+
+	@Test
+	public void testBlockQuotePlainFallback() {
+		List<PagePart> parts = convert("> Just a plain quote");
+
+		assertThat(parts).hasSize(1);
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.note);
+		assertThat(settings.getAlertBoxSettings().getTitle()).isNull();
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionMultiline() {
+		String md = "> [!WARNING]\n> First line\n> Second line\n> Third line";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).doesNotContain("[!WARNING]");
+		assertThat(content).contains("First line");
+		assertThat(content).contains("Second line");
+		assertThat(content).contains("Third line");
+		TextSettings settings = ContentEditorXStream.fromXml(parts.get(0).getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.warning);
+	}
+
+	// --- Extension tests ---
+
+	@Test
+	public void testStrikethrough() {
+		List<PagePart> parts = convert("This is ~~deleted~~ text");
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(parts.get(0).getContent()).contains("<del>deleted</del>");
+	}
+
+	@Test
+	public void testTaskList() {
+		String md = "- [x] Done task\n- [ ] Open task";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("type=\"checkbox\"");
+		assertThat(content).contains("checked");
+		assertThat(content).contains("Done task");
+		assertThat(content).contains("Open task");
+	}
+
+	@Test
+	public void testAutolink() {
+		List<PagePart> parts = convert("Visit https://www.openolat.org for more");
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(parts.get(0).getContent()).contains("href=\"https://www.openolat.org\"");
+	}
+
+	@Test
+	public void testFootnotes() {
+		String md = "Text with a footnote[^1].\n\n[^1]: This is the footnote.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).isNotEmpty();
+		// Footnote reference should produce sup element or footnote markup
+		String allContent = parts.stream()
+			.map(PagePart::getContent)
+			.reduce("", (a, b) -> a + " " + b);
+		assertThat(allContent).contains("footnote");
+	}
+
 	// --- Lists ---
 
 	@Test
@@ -316,7 +459,7 @@ public class MarkdownPagePartVisitorTest {
 		VisitorResult result = convertWithWarnings("<div>raw html</div>");
 
 		assertThat(result.parts()).isEmpty();
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 	}
 
 	// --- Math blocks ---
@@ -387,6 +530,46 @@ public class MarkdownPagePartVisitorTest {
 		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
 	}
 
+	// --- Data URI image tests ---
+
+	@Test
+	public void testDataUriImageUnsupportedMimeType() {
+		// WebP is not in ImageHandler.mimeTypes, should produce a warning
+		VisitorResult result = convertWithWarnings("![icon](data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.datauri.type"));
+	}
+
+	@Test
+	public void testDataUriImageNonBase64Rejected() {
+		// Plain text data URI (no ;base64) should be rejected
+		VisitorResult result = convertWithWarnings("![img](data:image/png,rawdata)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.datauri.encoding"));
+	}
+
+	@Test
+	public void testDataUriImageMalformedNoComma() {
+		VisitorResult result = convertWithWarnings("![img](data:image/png;base64)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.datauri.malformed"));
+	}
+
+	@Test
+	public void testDataUriImageMalformedBase64() {
+		VisitorResult result = convertWithWarnings("![img](data:image/png;base64,!!!notbase64!!!)");
+
+		assertThat(result.parts()).hasSize(1);
+		assertThat(result.parts().get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.datauri.base64"));
+	}
+
 	// --- Complex document ---
 
 	@Test
@@ -444,7 +627,7 @@ public class MarkdownPagePartVisitorTest {
 		VisitorResult result = convertWithWarnings("<script>alert('xss')</script>");
 
 		assertThat(result.parts()).isEmpty();
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 	}
 
 	@Test
@@ -503,7 +686,7 @@ public class MarkdownPagePartVisitorTest {
 		VisitorResult result = convertWithWarnings("<div class=\"evil\">content</div>");
 
 		assertThat(result.parts()).isEmpty();
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 	}
 
 	@Test
@@ -511,7 +694,7 @@ public class MarkdownPagePartVisitorTest {
 		VisitorResult result = convertWithWarnings("<iframe src=\"https://evil.com\"></iframe>");
 
 		assertThat(result.parts()).isEmpty();
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 	}
 
 	@Test
@@ -519,7 +702,7 @@ public class MarkdownPagePartVisitorTest {
 		VisitorResult result = convertWithWarnings("<form action=\"https://evil.com\"><input type=\"text\"></form>");
 
 		assertThat(result.parts()).isEmpty();
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 	}
 
 	@Test
@@ -601,7 +784,7 @@ public class MarkdownPagePartVisitorTest {
 		assertThat(result.parts().get(1)).isInstanceOf(ParagraphPart.class);
 		assertThat(result.parts().get(1).getContent()).contains("Safe paragraph");
 		// Script block was skipped
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 		// No part contains script
 		for (PagePart part : result.parts()) {
 			assertThat(part.getContent()).doesNotContain("<script>");
@@ -678,7 +861,7 @@ public class MarkdownPagePartVisitorTest {
 		VisitorResult result = convertWithWarnings("<style>body{background:url('javascript:alert(1)')}</style>");
 
 		assertThat(result.parts()).isEmpty();
-		assertThat(result.warnings()).anyMatch(w -> w.contains("HTML block skipped"));
+		assertThat(result.warnings()).anyMatch(w -> w.contains("import.markdown.warn.html.skipped"));
 	}
 
 	// --- Markdown formatting is preserved ---
@@ -712,6 +895,61 @@ public class MarkdownPagePartVisitorTest {
 		// Code span content is escaped by CommonMark
 		assertThat(content).contains("<code>");
 		assertThat(content).doesNotContain("<script>");
+	}
+
+	// --- Extension security tests ---
+
+	@Test
+	public void testStrikethroughWithScriptIsEscaped() {
+		List<PagePart> parts = convert("~~<script>alert('xss')</script>~~");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<del>");
+		assertThat(content).doesNotContain("<script>");
+		assertThat(content).contains("&lt;script&gt;");
+	}
+
+	@Test
+	public void testTaskListWithScriptIsEscaped() {
+		List<PagePart> parts = convert("- [x] <script>alert('xss')</script>");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).doesNotContain("<script>");
+		assertThat(content).contains("&lt;script&gt;");
+	}
+
+	@Test
+	public void testAutolinkDoesNotLinkJavascript() {
+		List<PagePart> parts = convert("Visit javascript:alert(1) for fun");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		// javascript: must not become a clickable link
+		assertThat(content).doesNotContain("href=\"javascript:");
+		assertThat(content).doesNotContain("<a");
+	}
+
+	@Test
+	public void testBlockQuoteAdmonitionWithScriptIsEscaped() {
+		List<PagePart> parts = convert("> [!WARNING]\n> <script>alert('xss')</script>");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).doesNotContain("<script>");
+		assertThat(content).contains("&lt;script&gt;");
+	}
+
+	@Test
+	public void testFootnoteWithScriptIsEscaped() {
+		String md = "Text[^1].\n\n[^1]: <script>alert('xss')</script>";
+		List<PagePart> parts = convert(md);
+
+		String allContent = parts.stream()
+			.map(PagePart::getContent)
+			.reduce("", (a, b) -> a + " " + b);
+		assertThat(allContent).doesNotContain("<script>");
 	}
 
 	@Test

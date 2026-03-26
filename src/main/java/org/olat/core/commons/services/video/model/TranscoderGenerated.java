@@ -36,6 +36,7 @@ public class TranscoderGenerated {
 	private Integer width;
 	private Integer height;
 	private Integer resolution;
+	private String subtitlesUrl;
 
 	public Integer getStatus() {
 		return status;
@@ -83,5 +84,13 @@ public class TranscoderGenerated {
 
 	public void setSize(Long size) {
 		this.size = size;
+	}
+
+	public String getSubtitlesUrl() {
+		return subtitlesUrl;
+	}
+
+	public void setSubtitlesUrl(String subtitlesUrl) {
+		this.subtitlesUrl = subtitlesUrl;
 	}
 }

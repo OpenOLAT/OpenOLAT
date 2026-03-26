@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -110,7 +111,9 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		
 		model = new CurriculumElementTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("table.type.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.type.empty")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-el-types");
 	}
 	

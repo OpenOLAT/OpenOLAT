@@ -44,12 +44,15 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoManagerImpl;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -86,6 +89,8 @@ public class VideoResourceEditController extends FormBasicController {
 	private TextElement urlEl;
 	private StaticTextElement typeEl;
 	private FileElement uploadFileEl;
+	private DialogBoxController confirmSubtitleDialogCtrl;
+	private boolean pendingReplaceVideo;
 	
 	public VideoResourceEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry){
 		super(ureq, wControl);
@@ -227,20 +232,52 @@ public class VideoResourceEditController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (confirmSubtitleDialogCtrl == source) {
+			if (pendingReplaceVideo) {
+				pendingReplaceVideo = false;
+				boolean deleteSubtitles = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+				doReplaceVideo(ureq, deleteSubtitles);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if(urlEl != null) {
 			doReplaceURLAndUpdateMetadata();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (uploadFileEl != null && uploadFileEl.getUploadFile() != null && uploadFileEl.isUploadSuccess()) {
-			queueDeleteTranscoding();
-			int height = doReplaceFileAndUpdateMetadata();
-			queueCreateTranscoding(height);
-			typeEl.setValue(translate("admin.menu.title"));
-			typeEl.setVisible(true);
-			showInfo("video.replaced");
+			if (VideoTranscodingMode.service.equals(videoModule.getVideoTranscodingMode())
+					&& !videoManager.getAllTracks(videoResource).isEmpty()) {
+				pendingReplaceVideo = true;
+				confirmSubtitleDialogCtrl = activateYesNoDialog(ureq,
+						translate("video.replace.subtitle.confirm.title"),
+						translate("video.replace.subtitle.confirm.text"),
+						confirmSubtitleDialogCtrl);
+			} else {
+				doReplaceVideo(ureq, false);
+			}
 		} else {
 			typeEl.setVisible(false);
 			showWarning("video.not.replaced");
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
+	}
+
+	private void doReplaceVideo(UserRequest ureq, boolean deleteExistingSubtitles) {
+		if (deleteExistingSubtitles) {
+			for (String lang : videoManager.getAllTracks(videoResource).keySet()) {
+				videoManager.removeTrack(videoResource, lang);
+			}
+		}
+		queueDeleteTranscoding();
+		int height = doReplaceFileAndUpdateMetadata();
+		queueCreateTranscoding(height);
+		typeEl.setValue(translate("admin.menu.title"));
+		typeEl.setVisible(true);
+		showInfo("video.replaced");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

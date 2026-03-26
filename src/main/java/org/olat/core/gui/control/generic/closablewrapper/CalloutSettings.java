@@ -29,30 +29,36 @@ public class CalloutSettings {
 	
 	private final boolean arrow;
 	private final boolean wider;
+	private final boolean topModal;
 	private final String title;
 	private final CalloutOrientation orientation;
 	
 	public CalloutSettings() {
-		this(true, CalloutOrientation.bottom, false, null);
+		this(true, CalloutOrientation.bottom, false, null, false);
 	}
 	
 	public CalloutSettings(String title) {
-		this(true, CalloutOrientation.bottom, false, title);
+		this(true, CalloutOrientation.bottom, false, title, false);
 	}
 	
 	public CalloutSettings(CalloutOrientation orientation) {
-		this(true, orientation, false, null);
+		this(true, orientation, false, null, false);
 	}
 	
 	public CalloutSettings(boolean arrow) {
-		this(arrow, CalloutOrientation.bottom, false, null);
+		this(arrow, CalloutOrientation.bottom, false, null, false);
 	}
 	
 	public CalloutSettings(boolean arrow, CalloutOrientation orientation, boolean wider, String title) {
+		this(arrow, orientation, wider, title, false);	
+	}
+	
+	public CalloutSettings(boolean arrow, CalloutOrientation orientation, boolean wider, String title, boolean topModal) {
 		this.orientation = orientation;
 		this.arrow = arrow;
 		this.wider = wider;
 		this.title = title;
+		this.topModal = topModal;	
 	}
 	
 	public boolean isArrow() {
@@ -61,6 +67,10 @@ public class CalloutSettings {
 	
 	public boolean isWider() {
 		return wider;
+	}
+	
+	public boolean isTopModal() {
+		return topModal;
 	}
 	
 	public String getTitle() {

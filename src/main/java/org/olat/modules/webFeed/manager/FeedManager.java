@@ -143,7 +143,9 @@ public abstract class FeedManager {
 	 * @param feedItemKeys
 	 * @return list of tags for a feed/feedItem
 	 */
-	public abstract List<FeedTag> getFeedTags(Feed feed, List<Long> feedItemKeys);
+	public abstract List<FeedTag> getFeedTags(Feed feed);
+	
+	public abstract List<FeedTag> getFeedItemTags(Item item);
 
 	/**
 	 * update or create tag information for feedItem

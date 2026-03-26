@@ -154,6 +154,9 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		if (scaledSize != null) {
 			sb.append(" width=\"").append(scaledSize.getWidth()).append("\"");
 			sb.append(" height=\"").append(scaledSize.getHeight()).append("\"");
+		} else if ("image/svg+xml".equals(ic.getMimeType())){
+			// support for SVG images that do not have dimensions set
+			sb.append(" width=\"100%\"");			
 		}
 
 		String mapperUrl = ic.getMapperUrl();

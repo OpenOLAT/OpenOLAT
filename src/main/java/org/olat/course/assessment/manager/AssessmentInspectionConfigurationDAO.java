@@ -100,6 +100,7 @@ public class AssessmentInspectionConfigurationDAO {
 		String query = """
 				select config from courseassessmentinspectionconfig as config
 				inner join fetch config.repositoryEntry as entry
+				left join fetch config.safeExamBrowserTemplate as sebTemplate
 				where config.key=:configurationKey""";
 		
 		List<AssessmentInspectionConfiguration> configurations = dbInstance.getCurrentEntityManager()

@@ -33,6 +33,7 @@ mvn compile -pl :openolat-lms -q
 5. **Never access `bcroot/` directly** — always use VFS (`VFSManager`, `VFSContainer`, `VFSLeaf`)
 6. **Never use string concatenation in JPQL** — always use named parameters (`:paramName`)
 7. **Always deregister EventBus listeners** in `doDispose()`
+8. **Always use `HttpClientService`** for outbound HTTP requests — never use `java.net.http.HttpClient`, other HTTP libraries, or instantiate Apache `HttpClient` directly
 
 ## Project Layout
 

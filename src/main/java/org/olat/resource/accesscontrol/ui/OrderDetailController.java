@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -303,7 +304,10 @@ public class OrderDetailController extends FormBasicController {
 		
 		dataModel = new OrderItemsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderItemList", dataModel, 25, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings(translate("orders.empty"), null, "o_ac_order_status_prepayment_icon");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("orders.empty")
+				.withIconCss("o_ac_order_status_prepayment_icon")
+				.build());
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 	}

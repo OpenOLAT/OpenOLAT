@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -89,9 +88,7 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 	private SingleSelection runtimeTypeEl;
 	private SingleSelection executionPeriodEl;
 	private SingleSelection publicDatesEl;
-	private FormLayoutContainer privateDatesCont;
-	private DateChooser startDateEl;
-	private DateChooser endDateEl;
+	private DateChooser privateDatesEl;
 	private ObjectSelectionElement subjectsEl;
 	private SingleSelection implementationFormatEl;
 	private ObjectSelectionElement administrativeAccessEl;
@@ -225,20 +222,10 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 					}
 				});
 
-		String privateDatePage = Util.getPackageVelocityRoot(RepositoryService.class) + "/cycle_dates.html";
-		privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
-		privateDatesCont.setRootForm(mainForm);
-		privateDatesCont.setLabel("cif.private.dates", null);
-		formLayout.add("private.date", privateDatesCont);
-
-		startDateEl = uifactory.addDateChooser("date.start", "cif.date.from", null, privateDatesCont);
-		endDateEl = uifactory.addDateChooser("date.end", "cif.date.to", null, privateDatesCont);
-
-		if (startDateEl != null && endDateEl != null) {
-			startDateEl.addActionListener(FormEvent.ONCHANGE);
-			endDateEl.addActionListener(FormEvent.ONCHANGE);
-		}
-
+		privateDatesEl = uifactory.addDateChooser("date.start", "cif.private.dates", null, formLayout);
+		privateDatesEl.setSecondDate(true);
+		privateDatesEl.setSeparator("to.separator");
+		
 		updateExecutionPeriodVisibility();
 	}
 
@@ -291,13 +278,13 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 			String type =  executionPeriodEl.getSelectedKey();
 			if ("none".equals(type)) {
 				publicDatesEl.setVisible(false);
-				privateDatesCont.setVisible(false);
+				privateDatesEl.setVisible(false);
 			} else if("public".equals(type)) {
 				publicDatesEl.setVisible(true);
-				privateDatesCont.setVisible(false);
+				privateDatesEl.setVisible(false);
 			} else if("private".equals(type)) {
 				publicDatesEl.setVisible(false);
-				privateDatesCont.setVisible(true);
+				privateDatesEl.setVisible(true);
 			}
 		}
 	}
@@ -367,6 +354,14 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 				allOk &= false;
 			}
 		}
+		if (privateDatesEl != null) {
+			privateDatesEl.clearError();
+			if (privateDatesEl.isEnabled() && privateDatesEl.isVisible()
+					&& privateDatesEl.getDate() != null && privateDatesEl.getSecondDate() != null && privateDatesEl.getDate().after(privateDatesEl.getSecondDate())) {
+				privateDatesEl.setErrorKey("form.error.first.after.second.date");
+				allOk &= false;
+			}
+		}
 		
 		allOk &= RepositoyUIFactory.validateOrganisationEl(administrativeAccessEl);
 
@@ -398,8 +393,8 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 				}
 			} else if ("private".equals(type)) {
 				String softKey = "lf_" + entry.getSoftkey();
-				Date startDate = startDateEl.getDate();
-				Date endDate = endDateEl.getDate();
+				Date startDate = privateDatesEl.getDate();
+				Date endDate = privateDatesEl.getSecondDate();
 				lifecycle = lifecycleDao.create(title, softKey, true, startDate, endDate);
 			}
 		}

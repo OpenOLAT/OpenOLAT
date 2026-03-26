@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
@@ -183,8 +182,7 @@ public interface EvaluationFormManager {
 	
 	public Long loadSessionsCount(SessionFilter filter);
 	
-	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
-			SortKey... orderBy);
+	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults);
 
 	public EvaluationFormSession updateSession(EvaluationFormSession session, String email, String firstname, String lastname,
 			String age, String gender, String orgUnit, String studySubject);

@@ -41,12 +41,14 @@ public class CoachDashboardController extends BasicController {
 	private DashboardController dashbordCtrl;
 	private CourseWidgetController courseCoachCtrl;
 	private CoachLectureBlocksWidgetController lectureBlocksCtrl;
+	
+	private boolean hasWidgets = false;
 
 	public CoachDashboardController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CoachMainController.class, getLocale(), getTranslator()));
 		
-		dashbordCtrl = new DashboardController(ureq, wControl, this.getClass().getName());
+		dashbordCtrl = new DashboardController(ureq, wControl, "dashboard.coaching");
 		listenTo(dashbordCtrl);
 		putInitialPanel(dashbordCtrl.getInitialComponent());
 		
@@ -59,12 +61,18 @@ public class CoachDashboardController extends BasicController {
 			listenTo(lectureBlocksCtrl);
 			lectureBlocksCtrl.reload();
 			dashbordCtrl.addWidget("lectureBlocks", translate("lectures.title"), lectureBlocksCtrl, BentoBoxSize.box_4_1);
+			
+			hasWidgets = true;
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	public boolean hasWidgets() {
+		return hasWidgets;
 	}
 	
 	public void reload() {

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui.importwizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -100,7 +103,8 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 		DefaultFlexiColumnModel statusCol = new DefaultFlexiColumnModel(ImportCurriculumsCols.status,
 				new ImportStatusCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(statusCol);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.infosWarnings));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.infosWarnings,
+				new ImportStatisticsCellRenderer(true, false)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.ignore));
 		
 		int i=0;
@@ -176,18 +180,19 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 
 	private void loadModel() {
 		List<ImportedUserRow> rows = context.getImportedUsersRows();
+		Set<String> membershipsUsernames = context.getImportedMembershipsUsernames();
 		if(rows == null) {
 			rows = List.of();
 		} else {
 			ImportCurriculumsObjectsLoader loader = context.getLoader();
 			loader.loadUsers(rows);
-			
+
 			ImportCurriculumsValidator validator = context.getValidator();
 			for(ImportedUserRow row:rows) {
 				if(importUsersPasswords) {
 					validator.validatePassword(row);
 				}
-				validator.validate(row);
+				validator.validate(row, membershipsUsernames);
 			}
 			validator.validateUsersUniqueUsernames(rows);
 			
@@ -240,7 +245,7 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 			listenTo(validationCtrl);
 		
 			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					validationCtrl.getInitialComponent(), targetId, "", true, "");
+					validationCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}

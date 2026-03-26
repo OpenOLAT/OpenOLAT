@@ -195,7 +195,7 @@ canonical translations used throughout the application.
 | Portfolio task | Portfolioaufgabe | Devoir portfolio |  | Attivit\u00E0 del portfolio |
 | Practice | \u00DCbung | Exercice |  | Prova |
 | Questionnaire | Fragebogen | Questionnaire | Cuestionario | Questionario |
-| SCORM learning content | SCORM-Lerninhalt | Contenu did. SCORM | Contenido did\u00E1ctico SCORM | Contenuto didattico SCORM |
+| SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 |
 | Selection | Auswahl | S\u00E9lection |  | Selezione |
 | Self-test | Selbsttest | Auto-test | Auto-Test | Autotest |
 | Structure | Struktur | Structure | Estructura | Struttura |
@@ -223,7 +223,7 @@ canonical translations used throughout the application.
 | PDF | PDF | PDF | PDF | PDF |
 | PowerPoint | PowerPoint | Powerpoint | PowerPoint | PowerPoint |
 | Resource folder | Ressourcenordner | Dossier de ressources | Carpeta de recursos | Cartella delle risorse |
-| Sound | Musik | Son | Sonido | Musica |
+| Audio | Audio |  |  |  |
 | Test (QTI 1.2 - no longer supported) | Test (QTI 1.2 - nicht mehr unterst\u00FCtzt) | Test (QTI 1.2 - n'est plus support\u00E9) | Test | Test (QTI 1.2 - non pi\u00F9 supportato) |
 | Wiki page | Wiki Seite | Page wiki |  | Pagina wiki |
 | Word | Word | Word | Word | Word |

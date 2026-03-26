@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -135,7 +136,9 @@ public class SliderTrendController extends FormBasicController {
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
 		tableEl.setElementCssClass("o_qual_trend");
-		tableEl.setEmptyTableMessageKey("slider.trend.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("slider.trend.empty")
+				.build());
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 	}

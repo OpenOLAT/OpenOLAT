@@ -275,16 +275,17 @@ public class FragmentRendererHelper {
 				if (collapsible) {
 					String collapsingId = FragmentRendererHelper.buildCollapsingId(fragmentId);
 					FragmentRendererHelper.openCollapseLink(null, collapsingId, sb, fragmentId, numberOfItems, "o_alert_text o_alert_collapse_title");
-					sb.append(title).append("</a>");
+					StringHelper.escapeHtml(sb, title);
+					sb.append("</a>");
 					FragmentRendererHelper.openCollapseLink(collapsingId, collapsingId, sb, fragmentId, numberOfItems,"o_alert_collapse_icon");
 					sb.append("<i class='o_icon o_icon-lg o_icon_details_expand' aria-hidden='true'> </i>");
 					sb.append("<i class='o_icon o_icon-lg o_icon_details_collaps' aria-hidden='true'> </i>");
 					//TODO a11y title/sr-only 
 					sb.append("</a>");
 				} else {
-					sb.append("<div class='o_alert_text'>")
-							.append(title)
-							.append("</div>");
+					sb.append("<div class='o_alert_text'>");
+					StringHelper.escapeHtml(sb, title);
+					sb.append("</div>");
 				}
 			}
 			sb.append("</div>");

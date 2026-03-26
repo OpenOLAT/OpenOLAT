@@ -27,6 +27,8 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
@@ -127,7 +129,13 @@ public class VideoListingController extends FormBasicController implements Activ
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_video_listing");
-		tableEl.setEmptyTableSettings("video.site.empty", isAuthor ? "video.site.empty.hint" : null, "o_icon_video");
+		EmptyStateConfigBuilder emptyStateBuilder = EmptyStateConfig.builder()
+				.withMessageI18nKey("video.site.empty")
+				.withIconCss("o_icon_video");
+		if (isAuthor) {
+			emptyStateBuilder.withHintI18nKey("video.site.empty.hint");
+		}
+		tableEl.setEmptyStateConfig(emptyStateBuilder.build());
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("video_cell");
 		row.contextPut("imgUrl", imgKey.getUrl());

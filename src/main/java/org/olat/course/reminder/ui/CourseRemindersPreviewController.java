@@ -29,6 +29,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
@@ -107,7 +108,10 @@ public class CourseRemindersPreviewController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortSettings(options);
-		tableEl.setEmptyTableSettings("send.no.members", null, "o_icon_reminder");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("send.no.members")
+				.withIconCss("o_icon_reminder")
+				.build());
 	}
 	
 	private void loadModel() {

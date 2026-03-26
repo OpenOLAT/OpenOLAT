@@ -194,5 +194,4 @@ public class AbstractImportRow {
 		
 		return new CurriculumImportedStatistics(errors, warnings, changes);
 	}
-
 }

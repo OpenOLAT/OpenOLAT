@@ -155,7 +155,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 			EmptyStateConfig emptyState = EmptyStateConfig.builder()
 					.withIconCss("o_scorm_icon")
 					.withIndicatorIconCss("o_icon_deleted")
-					.withMessageI18nKey("error.scorm.deleted.node")
+					.withMessageI18nKey("error.content.deleted.node")
 					.build();
 			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
 			emptyStateCmp.setTranslator(getTranslator());
@@ -281,7 +281,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 	}
 	
 	private void doSetMissingResourcesWarning(UserRequest ureq) {
-		String text = translate("error.cprepoentrymissing.user");
+		String text = translate("error.resource.deleted.user");
 		MessageController missingCtrl = MessageUIFactory.createWarnMessage(ureq, getWindowControl(), null, text);
 		listenTo(missingCtrl);
 		main.setContent(missingCtrl.getInitialComponent());

@@ -37,6 +37,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
+import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -125,6 +126,7 @@ public class ResourceInfoHelper {
 	public static void populateEntrySeoMetadata(SeoMetadata seo, RepositoryEntry entry,
 			String canonicalUrl, Locale locale, Translator taxonomyTranslator,
 			RepositoryService repositoryService) {
+		seo.resetMetadata();
 		List<TaxonomyLevel> levels = repositoryService.getTaxonomy(entry);
 		String metaDesc = buildMetaDescription(entry, locale, taxonomyTranslator, levels);
 		if (StringHelper.containsNonWhitespace(metaDesc)) {
@@ -215,8 +217,15 @@ public class ResourceInfoHelper {
 
 		JSONObject provider = new JSONObject();
 		provider.put("@type", "Organization");
-		Organisation defaultOrg = CoreSpringFactory.getImpl(OrganisationService.class).getDefaultOrganisation();
-		provider.put("name", defaultOrg.getDisplayName());
+		String organisationName = null;
+		OAIPmhModule oaiPmhModule = CoreSpringFactory.getImpl(OAIPmhModule.class);
+		if (StringHelper.containsNonWhitespace(oaiPmhModule.getSeoOrganisationName())) {
+			organisationName = oaiPmhModule.getSeoOrganisationName();
+		} else {
+			Organisation defaultOrg = CoreSpringFactory.getImpl(OrganisationService.class).getDefaultOrganisation();
+			organisationName = defaultOrg.getDisplayName();
+		}
+		provider.put("name", organisationName);
 		provider.put("url", Settings.getServerContextPathURI());
 		jsonLd.put("provider", provider);
 

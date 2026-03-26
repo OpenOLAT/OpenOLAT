@@ -197,7 +197,7 @@ public class SectionEditController extends FormBasicController {
 			dbInstance.commit();
 			fireEvent(ureq, Event.DONE_EVENT);
 			
-			PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
+			PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(section.getBinder());
 			if(publishingInfos != null) {
 				notificationsManager.markPublisherNews(publishingInfos.context(), null, false);
 			}

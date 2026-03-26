@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
@@ -1769,9 +1770,19 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void updateEmptyMessage() {
 		if (VFSStatus.YES == currentContainer.canWrite()) {
-			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readwrite", "o_filetype_folder", "browser.add", "o_icon_filehub_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("folder.empty")
+					.withHintI18nKey("folder.empty.hint.readwrite")
+					.withIconCss("o_filetype_folder")
+					.withPrimaryButton("o_icon_filehub_add", "browser.add", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readonly", "o_filetype_folder");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("folder.empty")
+					.withHintI18nKey("folder.empty.hint.readonly")
+					.withIconCss("o_filetype_folder")
+					.build());
 		}
 	}
 	

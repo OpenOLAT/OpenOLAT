@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -105,7 +106,9 @@ public class OrganisationUnitsAdminController extends FormBasicController {
 		tableEl.setVisible(enabled);
 		tableEl.setMultiSelect(true);
 		tableEl.setElementCssClass("o_sel_org_units");
-		tableEl.setEmptyTableMessageKey("table.empty.organisation");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.organisation")
+				.build());
 		
 		addOrgUnitButton = uifactory.addFormLink("add.organisation.unit", formLayout, Link.BUTTON);
 		addOrgUnitButton.setElementCssClass("o_sel_org_unit_add");

@@ -542,14 +542,20 @@ public class AssessmentTestSessionDAO {
 	 * @param identity The assessed identity
 	 * @return The last test session with a finish or termination time, not exploded, not cancelled
 	 */
-	public AssessmentTestSession getLastUserTestSession(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry, IdentityRef identity) {
+	public AssessmentTestSession getLastUserTestSession(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry,
+			IdentityRef identity, boolean includeFinished) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey")
-		  .append(" and session.testEntry.key=:testEntryKey and session.terminationTime is not null")
-		  .append(" and session.exploded=false and session.cancelled=false");
+		  .append(" and session.exploded=false and session.cancelled=false")
+		  .append(" and session.testEntry.key=:testEntryKey");
+		if(includeFinished) {
+			sb.append(" and (session.finishTime is not null or session.terminationTime is not null)");
+		} else {
+			sb.append(" and session.terminationTime is not null");
+		}
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {

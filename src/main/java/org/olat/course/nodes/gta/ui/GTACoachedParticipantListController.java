@@ -70,6 +70,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -169,6 +170,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTACoachedParticipantListController extends GTACoachedListController {
 	
 	public static final String MARKED_TAB_ID = "Marked";
+	private static final String FILTER_MARKED = "marked";
 	public static final String ALL_TAB_ID = "All";
 	public static final String RELEVANT_TAB_ID = "Relevant";
 	public static final String EXCLUDED_TAB_ID = "Excluded";
@@ -294,6 +296,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		return tableEl.getSelectedFilterTab() == markedTab;
 	}
 
+	private boolean isMarkedOnClickFilterActive() {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_MARKED);
+		if (filter instanceof FlexiTableExtendedFilter extFilter) {
+			List<String> values = extFilter.getValues();
+			return values != null && values.contains(FILTER_MARKED);
+		}
+		return false;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
@@ -415,14 +426,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	protected final void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
 		
-		markedTab = FlexiFiltersTabFactory.tabWithFilters(MARKED_TAB_ID, translate("filter.marked"),
-				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_OBLIGATION,
-								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
-						FlexiTableFilterValue.valueOf(
-								AssessedIdentityListState.FILTER_MEMBERS,
-								List.of(ParticipantType.member.name()))));
+		markedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MARKED_TAB_ID, translate("filter.marked"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_MARKED, FILTER_MARKED)));
 		markedTab.setFiltersExpanded(true);
 		tabs.add(markedTab);
 
@@ -470,8 +475,13 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private void initFilters() {
-		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
-		
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		SelectionValues favoritesValues = new SelectionValues();
+		favoritesValues.add(SelectionValues.entry(FILTER_MARKED, translate("filter.marked")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.marked"),
+				FILTER_MARKED, favoritesValues, true));
+
 		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
 			SelectionValues obligationValues = new SelectionValues();
 			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
@@ -616,7 +626,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		
 		List<CoachedIdentityRow> rows = new ArrayList<>(assessableIdentities.size());
-		boolean markedOnly = MARKED_TAB_ID.equals(tableEl.getSelectedFilterTab().getId());
+		boolean markedOnly = MARKED_TAB_ID.equals(tableEl.getSelectedFilterTab().getId())
+				|| isMarkedOnClickFilterActive();
 		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
 			IdentityMark mark = identityToMarks.get(assessableIdentity.getIdentityKey());
 			if (markedOnly && mark == null) {

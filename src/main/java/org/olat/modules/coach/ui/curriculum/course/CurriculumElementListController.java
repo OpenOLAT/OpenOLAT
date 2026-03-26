@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -41,11 +42,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
@@ -79,6 +82,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.curriculum.course.CurriculumElementWithViewsDataModel.ElementViewCols;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -119,9 +123,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 	private static final String ALL_TAB = "All";
 	private static final String RELEVANT_TAB = "Relevant";
+	private static final String ACTIVE_TAB = "Active";
+	private static final String PREPARATION_TAB = "Preparation";
 	private static final String FINISHED_TAB = "Finished";
 	
 	static final String FILTER_STATUS = "Status";
+	static final String FILTER_PRODUCT = "Product";
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab relevantTab;
@@ -142,7 +149,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 
     private RepositoryEntryDetailsController detailsCtrl;
     private CurriculumElementCalendarController calendarsCtrl;
-    private CurriculumElementListController curriculumElementListCtrl;
 
     @Autowired
     private RepositoryService repositoryService;
@@ -176,9 +182,13 @@ public class CurriculumElementListController extends FormBasicController impleme
         this.assessedIdentity = assessedIdentity;
 
         initForm(ureq);
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, rootMode() ? relevantTab : allTab);
         loadModel();
     }
+	
+	private boolean rootMode() {
+		return implementation == null;
+	}
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -198,6 +208,19 @@ public class CurriculumElementListController extends FormBasicController impleme
         elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
         columnsModel.addFlexiColumnModel(elementIdentifierCol);
 
+		if (rootMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.product));
+		}
+		
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.begin,
+        		new DateFlexiCellRenderer(getLocale())));
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.end,
+        		new DateFlexiCellRenderer(getLocale())));
+		
+		if (!rootMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, ElementViewCols.titleOfLearningResource));
+		}
+
         if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
         }
@@ -205,11 +228,13 @@ public class CurriculumElementListController extends FormBasicController impleme
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
         }
 
-        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale());
+        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale(), !rootMode());
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
         tableEl.setElementCssClass("o_curriculumtable");
         tableEl.setCustomizeColumns(true);
-        tableEl.setEmptyTableMessageKey("table.curriculum.empty");
+        tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+                .withMessageI18nKey("table.curriculum.empty")
+                .build());
         tableEl.setCssDelegate(this);
         // Don't persist preferences, persisted sort kill the tree representation
         
@@ -222,15 +247,34 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
+		if (rootMode()) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
+		}
+		if (!rootMode()) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
+		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
 		filters.add(statusFilter);
-		
+
+		if (rootMode()) {
+			SelectionValues productValues = new SelectionValues();
+			for (CurriculumRef ref : curriculumRefList) {
+				Curriculum curriculum = curriculumService.getCurriculum(ref);
+				if (curriculum != null) {
+					productValues.add(SelectionValues.entry(String.valueOf(curriculum.getKey()), curriculum.getDisplayName()));
+				}
+			}
+			if (productValues.size() > 1) {
+				FlexiTableMultiSelectionFilter productFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
+						FILTER_PRODUCT, productValues, true);
+				filters.add(productFilter);
+			}
+		}
+
 		tableEl.setFilters(true, filters, false, false);
 	}
     
@@ -241,11 +285,22 @@ public class CurriculumElementListController extends FormBasicController impleme
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
 		
-		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						List.of(CurriculumElementStatus.preparation.name(), CurriculumElementStatus.provisional.name(),
-								CurriculumElementStatus.confirmed.name(), CurriculumElementStatus.active.name()))));
-		tabs.add(relevantTab);
+		if (rootMode()) {
+			List<String> relevantStatuses = new ArrayList<>();
+			relevantStatuses.add(CurriculumElementStatus.preparation.name());
+			relevantStatuses.add(CurriculumElementStatus.provisional.name());
+			relevantStatuses.add(CurriculumElementStatus.confirmed.name());
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, relevantStatuses)));
+			tabs.add(relevantTab);
+		} else {
+			tabs.add(FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB, translate("filter.active"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.active.name())))));
+			tabs.add(FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB, translate("filter.preparation"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.preparation.name())))));
+		}
 		
 		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB, translate("filter.finished"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
@@ -333,8 +388,8 @@ public class CurriculumElementListController extends FormBasicController impleme
                 CurriculumElement element = elementWithViews.getCurriculumElement();
                 CurriculumElementMembership elementMembership = elementWithViews.getCurriculumMembership();
 
-                if (elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
-                    CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(element, elementMembership, 0);
+				if (elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
+					CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(element, elementMembership, 0);
                     forgeCalendarsLink(row);
                     rows.add(row);
                     potentialParentRows.put(elementWithViews.getKey(), row);
@@ -524,7 +579,7 @@ public class CurriculumElementListController extends FormBasicController impleme
             if (event instanceof SelectionEvent se) {
                 CourseCurriculumTreeWithViewsRow row = tableModel.getObject(se.getIndex());
                 doSelect(ureq, row);
-            } else if(event instanceof FlexiTableFilterTabEvent) {
+            } else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
             	tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
             	tableEl.reset(true, true, true);
             }
@@ -592,11 +647,12 @@ public class CurriculumElementListController extends FormBasicController impleme
     	List<CurriculumRef> curriculumRef = List.of(curriculumElement.getCurriculum());
 
     	WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CourseListWrapperController.CMD_IMPLEMENTATION, row.getKey()), null);
-		curriculumElementListCtrl = new CurriculumElementListController(ureq, bwControl, stackPanel, assessedIdentity, curriculumRef, curriculumElement,
-				curriculumSecurityCallback, roleSecurityCallback, false);
-		listenTo(curriculumElementListCtrl);
+		CurriculumElementDrillDownController drillDownCtrl = new CurriculumElementDrillDownController(ureq, bwControl, 
+				stackPanel, assessedIdentity, curriculumRef, curriculumElement, curriculumSecurityCallback, 
+				roleSecurityCallback);
+		listenTo(drillDownCtrl);
 		
-		stackPanel.pushController(curriculumElement.getDisplayName(), curriculumElementListCtrl);
+		stackPanel.pushController(curriculumElement.getDisplayName(), drillDownCtrl);
     }
 
     private void doOpenCalendars(UserRequest ureq, CourseCurriculumTreeWithViewsRow row) {

@@ -23,14 +23,11 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.webFeed.Item;
 
 /**
  * Initial date: Mai 21, 2024
@@ -38,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class FeedItemTableModel extends DefaultFlexiTableDataModel<FeedItemRow>
-implements FlexiTableCssDelegate, SortableFlexiTableDataModel<FeedItemRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<FeedItemRow> {
 
 	private static final ItemsCols[] COLS = ItemsCols.values();
 	private final Locale locale;
@@ -47,25 +44,19 @@ implements FlexiTableCssDelegate, SortableFlexiTableDataModel<FeedItemRow>, Filt
 		super(columnModel);
 		this.locale = locale;
 	}
-
-	@Override
-	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		//
+	
+	public boolean contains(Item item) {
+		if(item == null || item.getKey() == null) return false;
+		return getObjects().stream()
+				.anyMatch(row -> item.getKey().equals(row.getKey()));
 	}
-
-	@Override
-	public String getWrapperCssClass(FlexiTableRendererType type) {
-		return "";
-	}
-
-	@Override
-	public String getTableCssClass(FlexiTableRendererType type) {
-		return "";
-	}
-
-	@Override
-	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		return "";
+	
+	public Item getItem(Item item) {
+		final Long key = item.getKey();
+		FeedItemRow itemRow = getObjects().stream()
+				.filter(row -> key.equals(row.getItem().getKey()))
+				.findFirst().orElse(null);
+		return itemRow == null ? null : itemRow.getItem();
 	}
 	
 	public FeedItemRow getItemByKey(Long key) {

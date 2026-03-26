@@ -26,25 +26,25 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.NullOrder;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
+import org.olat.modules.curriculum.ui.component.RelevanceSortDelegate;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
 /**
- * 
+ *
  * Initial date: 31 oct. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModelDelegate<CurriculumElementRow> {
+public class CurriculumComposerTableSortDelegate extends RelevanceSortDelegate<CurriculumElementRow> {
 
 	private static final ElementCols[] COLS = ElementCols.values();
-	
+
 	public CurriculumComposerTableSortDelegate(SortKey orderBy, CurriculumComposerTableModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
-	
+
 	@Override
 	protected void sort(List<CurriculumElementRow> rows) {
 		int columnIndex = getColumnIndex();
@@ -60,17 +60,17 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 			super.sort(rows);
 		}
 	}
-	
+
 	private class ResourcesComparator implements Comparator<CurriculumElementRow> {
 		@Override
 		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
 			if(o1 == null || o2 == null) {
 				return compareNullObjects(o1, o2);
 			}
-			
+
 			long r1 = o1.getNumOfResources();
 			long r2 = o2.getNumOfResources();
-			
+
 			int c = Long.compare(r1, r2);
 			if(c == 0) {
 				c = compareString(o1.getDisplayName(), o2.getDisplayName());
@@ -82,7 +82,7 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 			return c;
 		}
 	}
-	
+
 	private class AvailabilityComparator implements Comparator<CurriculumElementRow> {
 		@Override
 		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
@@ -101,12 +101,12 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 			if (a1 == null || a2 == null) {
 				return compareNullObjects(a1, a2, NullOrder.NULLS_ALWAYS_LAST);
 			}
-			
+
 			int c = Integer.compare(a1.ordinal(), a2.ordinal());
 			if (c != 0) {
 				return c;
 			}
-			
+
 			long n1 = an1.numAvailable();
 			long n2 = an2.numAvailable();
 			return Long.compare(n1, n2);

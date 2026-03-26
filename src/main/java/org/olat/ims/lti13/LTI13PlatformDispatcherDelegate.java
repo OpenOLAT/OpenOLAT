@@ -197,11 +197,8 @@ public class LTI13PlatformDispatcherDelegate {
 			}
 			
 			if(isRedirectUriAllowed(redirectUri, ltiContext)) {
-				Map<String,String> params = new HashMap<>();
-				params.put("state", state);
 				String idToken = generateIdToken(identity, loginHint, messageHint, ltiContext, contentItem, nonce);
-				params.put("id_token", idToken);
-				sendFormRedirect(request, response, redirectUri, params);
+				sendFormRedirect(request, response, redirectUri, state, idToken);
 			} else {
 				DispatcherModule.sendBadRequest("Unregistered redirect_uri " + redirectUri, response);
 			}
@@ -592,19 +589,16 @@ public class LTI13PlatformDispatcherDelegate {
 		builder.claim(LTI13Constants.Claims.RESOURCE_LINK.url(), resourceLink);
 	}
 	
-	private void sendFormRedirect(HttpServletRequest request, HttpServletResponse response, String redirectUri, Map<String,String> params) {
+	private void sendFormRedirect(HttpServletRequest request, HttpServletResponse response, String redirectUri, String state, String idToken) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<!DOCTYPE html>\n");
 		sb.append("<html lang=\"en\">\n");
 		sb.append(" <head><title>Redirect</title></head>\n");
 		sb.append("<body><h4>Loading...</h4>\n");
-		sb.append("<form action=\"").append(redirectUri).append("\" name=\"ltiAuthForm\" id=\"ltiAuthForm\" method=\"post\" enctype=\"application/x-www-form-urlencoded\">\n");
-		if(!params.isEmpty()) {
-		    for(Map.Entry<String,String> param:params.entrySet()) {
-		    	String key = param.getKey();
-		    	String value = param.getValue();
-		    	sb.append("  <input type=\"hidden\" name=\"").append(key).append("\" value=\"").append(value).append("\"/>\n");
-		    }
+		sb.append("<form action=\"").append(minimalEscape(redirectUri)).append("\" name=\"ltiAuthForm\" id=\"ltiAuthForm\" method=\"post\" enctype=\"application/x-www-form-urlencoded\">\n");
+		sb.append("  <input type=\"hidden\" name=\"id_token\" value=\"").append(idToken).append("\"/>\n");
+		if(StringHelper.containsNonWhitespace(state)) {
+		    sb.append("  <input type=\"hidden\" name=\"state\" value=\"").append(minimalEscape(state)).append("\"/>\n");
 		}
 		sb.append("Wait</form>\n");
 		sb.append("<script>\n");
@@ -621,6 +615,21 @@ public class LTI13PlatformDispatcherDelegate {
 			log.error("failed redirect {}", unlikely.getMessage());
 			DispatcherModule.sendBadRequest("Redirect failed " + unlikely.getMessage(), response);
 		}
+	}
+	
+	/**
+	 * Escape some illegal characters in a form or an URL like <, >. It is not meant
+	 * as a real encoder but escape only illegal characters which breaks the HTML code
+	 * of the redirect. It preserves most of the others characters to prevent compatibility
+	 * issues with LTI 1.3 providers and tools.
+	 * 
+	 * @param value The value to escpae
+	 * @return An escaped value
+	 */
+	private String minimalEscape(String value) {
+		return value.replace("<", "%3C")
+				.replace(">", "%3E")
+				.replace("\"", "%22");
 	}
 	
 	/////////////////////////

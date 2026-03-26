@@ -44,6 +44,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -600,7 +601,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setEmptyTableMessageKey("empty.table.lectures.blocks.admin");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.table.lectures.blocks.admin")
+				.build());
 		tableEl.setSearchEnabled(true);
 		tableEl.setCssDelegate(this);
 		

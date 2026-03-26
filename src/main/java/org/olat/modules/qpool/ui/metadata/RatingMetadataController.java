@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -68,7 +69,9 @@ public class RatingMetadataController extends FormBasicController {
 		ratingInfosModel = new RatingInfosDataModel(ratingInfosColumnsModel);
 		ratingInfosTable = uifactory.addTableElement(getWindowControl(), "details_ratings", ratingInfosModel, getTranslator(), formLayout);
 		ratingInfosTable.setCustomizeColumns(false);
-		ratingInfosTable.setEmptyTableMessageKey("rating.empty.table");
+		ratingInfosTable.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("rating.empty.table")
+				.build());
 
 	}
 	

@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -132,7 +133,9 @@ public class IssueCourseBadgeController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.reset();
 		tableEl.reloadData();
-		tableEl.setEmptyTableMessageKey("empty.recipient.table");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.recipient.table")
+				.build());
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);

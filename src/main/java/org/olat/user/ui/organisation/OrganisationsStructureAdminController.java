@@ -29,6 +29,7 @@ import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -127,7 +128,9 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_organisations_listing");
-		tableEl.setEmptyTableMessageKey("table.organisation.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.organisation.empty")
+				.build());
 		tableEl.setRootCrumb(new RootCrumb(translate("table.tree.root")));
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);

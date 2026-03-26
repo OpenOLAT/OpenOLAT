@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -139,7 +140,10 @@ public class LifecycleAdminController extends FormBasicController {
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortEnabled(true);
-		tableEl.setEmptyTableSettings("lifecycle.table.empty.desc", null, "o_icon_calendar");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("lifecycle.table.empty.desc")
+				.withIconCss("o_icon_calendar")
+				.build());
 
 		initFiltersPresets(ureq);
 

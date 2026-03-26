@@ -302,9 +302,14 @@ public class RepositoryEntryWebService {
 	@Operation(summary = "Get references", description = "Get references")
 	@ApiResponse(responseCode = "200", description = "The elements", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))),
-			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))) })	
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getReferences() {
+	public Response getReferences(@Context HttpServletRequest request) {
+		if(!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
 		List<ReferenceInfos> infos = referenceManager.getReferencesInfos(List.of(entry), null);
 		RepositoryEntryVO[] voArray = new RepositoryEntryVO[infos.size()];
 		for(int i=0; i<infos.size(); i++) {
@@ -319,8 +324,13 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "200", description = "The elements", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))) })	
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCurriculumElements() {
+	public Response getCurriculumElements(@Context HttpServletRequest request) {
+		if(!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
 		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(entry);
 		CurriculumElementVO[] voArray = new CurriculumElementVO[curriculumElements.size()];
 		for( int i=curriculumElements.size(); i-->0; ) {
@@ -342,6 +352,7 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "200", description = "Owners of the repository entry", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "403", description = "Not enough permissions")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@Context HttpServletRequest request) {
@@ -1371,7 +1382,11 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "200", description = "The level put")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
-	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
 		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
 		for(TaxonomyLevel level:levels) {
 			if(level.getKey().equals(taxonomyLevelKey)) {
@@ -1392,7 +1407,11 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "200", description = "The level was removed")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
-	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
 		if(level == null) {
 			return Response.ok(Status.NOT_FOUND).build();

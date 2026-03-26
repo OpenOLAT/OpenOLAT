@@ -43,6 +43,19 @@ public class SeoMetadata {
 	private String structuredDataJson;
 
 	public SeoMetadata() {
+		resetMetadata();	
+	}
+	
+	/**
+	 * Reset everything except the robotsMetaContent
+	 */
+	public void resetMetadata() {
+		metaDescription = null;
+		metaKeywords = null;
+		metaOrganisationName = null;
+		ogImageUrl = null;
+		structuredDataJson = null;		
+		
 		OAIPmhModule oaiPmhModule = CoreSpringFactory.getImpl(OAIPmhModule.class);
 		if (oaiPmhModule != null && oaiPmhModule.isSearchEngineEnabled()) {
 			if (StringHelper.containsNonWhitespace(oaiPmhModule.getSeoKeywords())) {

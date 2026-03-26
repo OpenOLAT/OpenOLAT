@@ -714,7 +714,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		Boolean visibility;
 		AssessmentEntryStatus assessmentStatus;
 		String correctionMode = getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
-		if(IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
+		if(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 			assessmentStatus = AssessmentEntryStatus.inReview;
 			visibility = Boolean.FALSE;
 		} else {

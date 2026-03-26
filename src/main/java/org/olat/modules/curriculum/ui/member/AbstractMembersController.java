@@ -494,7 +494,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		boolean canManagerUsers = secCallback.canManageCurriculumElementUsers(curriculumElement);
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null,
 				withEdit && canManagerUsers, withAcceptDecline && canManagerUsers, canManagerUsers,
-				true, false, true, true, true, canManagerUsers, false);
+				true, false, true, true, true, canManagerUsers, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, curriculumElement, elements, member, config);
 		detailsCtrl.setUserObject(row);

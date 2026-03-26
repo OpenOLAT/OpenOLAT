@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -79,7 +80,9 @@ public class PoolsMetadataController extends FormBasicController {
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);
 		poolInfosTable = uifactory.addTableElement(getWindowControl(), "details_pools", poolInfosModel, getTranslator(), formLayout);
 		poolInfosTable.setCustomizeColumns(false);
-		poolInfosTable.setEmptyTableMessageKey("sharing.pools.empty.table");
+		poolInfosTable.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("sharing.pools.empty.table")
+				.build());
 	}
 	
 	public void setItem(QuestionItem item) {

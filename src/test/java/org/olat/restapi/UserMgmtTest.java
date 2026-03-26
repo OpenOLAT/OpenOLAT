@@ -26,7 +26,6 @@
 
 package org.olat.restapi;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -63,6 +62,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -508,7 +508,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<UserVO> vos = parseUserArray(response.getEntity());
 		
-		assertThat(vos)
+		Assertions.assertThat(vos)
 			.map(UserVO::getKey)
 			.contains(inactiveIdentity.getKey())
 			.doesNotContain(loginDeniedIdentity.getKey());
@@ -1559,9 +1559,9 @@ public class UserMgmtTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testUpdateRoles() throws IOException, URISyntaxException {
+	public void testUpdateRolesAsAdmin() throws IOException, URISyntaxException {
 		//create an author
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-1");
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");
@@ -1569,6 +1569,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);
 		roles.setUserManager(true);
+		roles.setSystemAdmin(true);
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
@@ -1581,14 +1582,100 @@ public class UserMgmtTest extends OlatRestTestCase {
 		
 		//check the roles
 		Roles reloadRoles = securityManager.getRoles(author);
+		Assert.assertFalse(reloadRoles.isGuestOnly());
+		Assert.assertFalse(reloadRoles.isInvitee());
 		Assert.assertTrue(reloadRoles.isAuthor());
 		Assert.assertFalse(reloadRoles.isGroupManager());
-		Assert.assertFalse(reloadRoles.isGuestOnly());
 		Assert.assertFalse(reloadRoles.isLearnResourceManager());
-		Assert.assertFalse(reloadRoles.isInvitee());
-		Assert.assertFalse(reloadRoles.isAdministrator());
 		Assert.assertFalse(reloadRoles.isPoolManager());
+		Assert.assertFalse(reloadRoles.isCurriculumManager());
 		Assert.assertTrue(reloadRoles.isUserManager());
+		Assert.assertFalse(reloadRoles.isAdministrator());
+		Assert.assertTrue(reloadRoles.isSystemAdmin());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUpdateRolesAsUserManager() throws IOException, URISyntaxException {
+		//create an author
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-2");
+		dbInstance.commitAndCloseSession();
+		
+		IdentityWithLogin userManager = JunitTestHelper.createAndPersistRndUser("usermanager-1");
+		organisationService.addMember(userManager.getIdentity(), OrganisationRoles.usermanager, userManager.getIdentity());
+		dbInstance.commitAndCloseSession();
+				
+		RestConnection conn = new RestConnection(userManager);
+		
+		RolesVO roles = new RolesVO();
+		roles.setAuthor(true);
+		roles.setUserManager(true);
+		roles.setCurriculumManager(true);
+		roles.setOlatAdmin(true);
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/roles").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, roles);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RolesVO modRoles = conn.parse(response, RolesVO.class);
+		Assert.assertNotNull(modRoles);
+		
+		//check the roles
+		Roles reloadRoles = securityManager.getRoles(user);
+		Assert.assertFalse(reloadRoles.isGuestOnly());
+		Assert.assertFalse(reloadRoles.isInvitee());
+		Assert.assertTrue(reloadRoles.isAuthor());
+		Assert.assertFalse(reloadRoles.isGroupManager());
+		Assert.assertFalse(reloadRoles.isLearnResourceManager());
+		Assert.assertFalse(reloadRoles.isPoolManager());
+		Assert.assertFalse(reloadRoles.isCurriculumManager());
+		Assert.assertFalse(reloadRoles.isUserManager());
+		Assert.assertFalse(reloadRoles.isAdministrator());
+		Assert.assertFalse(reloadRoles.isSystemAdmin());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUpdateRolesAsRolesManager() throws IOException, URISyntaxException {
+		//create an author
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-3");
+		dbInstance.commitAndCloseSession();
+		
+		IdentityWithLogin rolesManager = JunitTestHelper.createAndPersistRndUser("rolesmanager-1");
+		organisationService.addMember(rolesManager.getIdentity(), OrganisationRoles.rolesmanager, rolesManager.getIdentity());
+		dbInstance.commitAndCloseSession();
+				
+		RestConnection conn = new RestConnection(rolesManager);
+		
+		RolesVO roles = new RolesVO();
+		roles.setAuthor(true);
+		roles.setUserManager(true);
+		roles.setCurriculumManager(true);
+		roles.setOlatAdmin(true);
+		
+		//get roles of author
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/roles").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, roles);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RolesVO modRoles = conn.parse(response, RolesVO.class);
+		Assert.assertNotNull(modRoles);
+		
+		//check the roles
+		Roles reloadRoles = securityManager.getRoles(user);
+		Assert.assertFalse(reloadRoles.isGuestOnly());
+		Assert.assertFalse(reloadRoles.isInvitee());
+		Assert.assertTrue(reloadRoles.isAuthor());
+		Assert.assertFalse(reloadRoles.isGroupManager());
+		Assert.assertFalse(reloadRoles.isLearnResourceManager());
+		Assert.assertFalse(reloadRoles.isPoolManager());
+		Assert.assertTrue(reloadRoles.isCurriculumManager());
+		Assert.assertTrue(reloadRoles.isUserManager());
+		Assert.assertFalse(reloadRoles.isAdministrator());
+		Assert.assertFalse(reloadRoles.isSystemAdmin());
 		conn.shutdown();
 	}
 	

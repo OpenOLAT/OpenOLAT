@@ -54,6 +54,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -366,9 +367,19 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (secCallback.canCreateFiles() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("file.list.empty.message", "file.empty.hint.readwrite", "o_icon_proj_file", "file.upload", "o_icon_filehub_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("file.list.empty.message")
+					.withHintI18nKey("file.empty.hint.readwrite")
+					.withIconCss("o_icon_proj_file")
+					.withPrimaryButton("o_icon_filehub_add", "file.upload", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("file.list.empty.message", "file.empty.hint.readonly", "o_icon_proj_file");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("file.list.empty.message")
+					.withHintI18nKey("file.empty.hint.readonly")
+					.withIconCss("o_icon_proj_file")
+					.build());
 		}
 		
 		if (bulkDeleteButton != null) {

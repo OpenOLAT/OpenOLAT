@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -95,7 +96,9 @@ public class QuestionOriginReportTableController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list");
-		tableEl.setEmptyTableMessageKey("search.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("search.empty")
+				.build());
 		
 		generateReportButton = uifactory.addFormLink("report.question.to.course", "report.question.to.course", null, formLayout, Link.BUTTON);
 	}

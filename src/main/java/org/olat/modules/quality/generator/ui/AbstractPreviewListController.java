@@ -34,6 +34,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -227,7 +228,11 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		dataModel = new PreviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "qm-previews");
-		tableEl.setEmptyTableSettings("preview.empty.table", getEmptyTableHintKey(), "o_icon_qual_preview");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("preview.empty.table")
+				.withHintI18nKey(getEmptyTableHintKey())
+				.withIconCss("o_icon_qual_preview")
+				.build());
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(PreviewCols.start.name(), true));

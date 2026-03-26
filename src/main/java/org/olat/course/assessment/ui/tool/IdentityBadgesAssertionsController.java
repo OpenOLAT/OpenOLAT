@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -143,7 +144,10 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 		VelocityContainer rowVC = createVelocityContainer("badge_row_1");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
-		tableEl.setEmptyTableSettings("empty.badge.asssertion", null, "o_icon_badge");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.badge.asssertion")
+				.withIconCss("o_icon_badge")
+				.build());
 	}
 	
 	@Override

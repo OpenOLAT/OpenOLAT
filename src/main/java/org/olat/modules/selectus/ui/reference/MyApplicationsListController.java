@@ -8,6 +8,7 @@ package org.olat.modules.selectus.ui.reference;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -65,7 +66,9 @@ public class MyApplicationsListController extends FormBasicController implements
 		
 		tableModel = new MyApplicationsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "applicationsList", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("my.applications.list.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("my.applications.list.empty")
+				.build());
 	}
 	
 	public int loadModel() {

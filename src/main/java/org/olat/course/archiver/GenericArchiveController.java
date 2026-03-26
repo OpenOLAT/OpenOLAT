@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -125,7 +126,9 @@ public class GenericArchiveController extends FormBasicController {
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
-			tableEl.setEmptyTableMessageKey("nodesoverview.nonodes");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("nodesoverview.nonodes")
+					.build());
 			
 			selectButton = uifactory.addFormLink("archive", formLayout, Link.BUTTON);
 			if(withOptions) {

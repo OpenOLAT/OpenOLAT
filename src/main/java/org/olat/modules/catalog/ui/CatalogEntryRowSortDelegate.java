@@ -52,7 +52,7 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 		switch(CatalogEntryDataModel.COLS[columnIndex]) {
 			case title: Collections.sort(rows, (r1, r2) -> compareString(r1.getTitle(), r2.getTitle())); break;
 			case lifecycleSoftkey: Collections.sort(rows, new LifecycleComparator()); break;
-			case lifecycleLabel: Collections.sort(rows, (r1, r2) -> compareString(r1.getLifecycleLabel(), r2.getLifecycleLabel())); break;
+			case lifecycleLabel: Collections.sort(rows, new LifecycleDescriptionComarator()); break;
 			case lifecycleStart: Collections.sort(rows, new DateNullAlwaysLastComparator(CatalogEntryRow::getLifecycleStart)); break;
 			case lifecycleEnd: Collections.sort(rows, new DateNullAlwaysLastComparator(CatalogEntryRow::getLifecycleEnd)); break;
 			default: super.sort(rows);
@@ -83,6 +83,21 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 			
 			return c;
 		}
+	}
+	
+	private class LifecycleDescriptionComarator implements Comparator<CatalogEntryRow> {
+		
+		@Override
+		public int compare(CatalogEntryRow o1, CatalogEntryRow o2) {
+			int c = compareString(o1.getLifecycleLabel(), o2.getLifecycleLabel());
+			
+			if (c == 0) {
+				c = compareString(o1.getLifecycleSoftKey(), o2.getLifecycleSoftKey());
+			}
+			
+			return c;
+		}
+		
 	}
 	
 	private class PriorityComparator implements Comparator<CatalogEntryRow> {

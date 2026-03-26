@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -212,7 +213,9 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		
 		waitingListDataModel = new TBParticipantDataModel(waitingListColumnsModel, getLocale());
 		waitingListTableEl = uifactory.addTableElement(getWindowControl(), "waitinglisttable", waitingListDataModel, 20, false, getTranslator(), formLayout);
-		waitingListTableEl.setEmptyTableMessageKey("participants.empty.waiting.list");
+		waitingListTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("participants.empty.waiting.list")
+				.build());
 		waitingListTableEl.setCustomizeColumns(false);
 		waitingListTableEl.setNumOfRowsEnabled(false);
 		
@@ -231,7 +234,9 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		
 		noSelectionDataModel = new TBParticipantDataModel(noSelectionColumnsModel, getLocale());
 		noSelectionTableEl = uifactory.addTableElement(getWindowControl(), "noselectiontable", noSelectionDataModel, 20, false, getTranslator(), formLayout);
-		noSelectionTableEl.setEmptyTableMessageKey("participants.empty.no.selection");
+		noSelectionTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("participants.empty.no.selection")
+				.build());
 		noSelectionTableEl.setCustomizeColumns(false);
 		noSelectionTableEl.setNumOfRowsEnabled(false);
 	}

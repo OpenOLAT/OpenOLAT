@@ -753,7 +753,7 @@ A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_iqsurv`
 
-### SCORM learning content
+### SCORM 1.2
 
 A course element (building block) that can be added to a course structure.
 
@@ -961,7 +961,7 @@ A type of learning resource that can be created or imported in the authoring are
 
 *Canonical key:* `org.olat.repository:FileResource.SHAREDFOLDER`
 
-### Sound
+### Audio
 
 A type of learning resource that can be created or imported in the authoring area.
 

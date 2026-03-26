@@ -122,9 +122,8 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedMember
 	private boolean acceptStatus(Set<String> status, ImportedMembershipRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
-		if((row.getStatus() == ImportCurriculumsStatus.ERROR && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_WITH_ERRORS))
-				|| (row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))
-				|| (row.getStatus() == ImportCurriculumsStatus.NEW && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))) {
+		if((row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))
+				|| (row.getStatus() == ImportCurriculumsStatus.NEW && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_NEW))) {
 			return true;
 		}
 		
@@ -187,7 +186,7 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedMember
 		return switch(COLS[col]) {
 			case rowNum -> Integer.valueOf(importedRow.getRowNum());
 			case status -> importedRow.getStatus();
-			case infos, infosWarnings, infosErrors -> importedRow.getValidationResultsLink();
+			case infos, infosWarnings, infosErrors -> importedRow.getValidationStatistics();
 			case ignore -> importedRow.getIgnoreEl();
 			case curriculumIdentifier -> importedRow.getCurriculumIdentifier();
 			case implementationIdentifier -> importedRow.getImplementationIdentifier();

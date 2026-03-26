@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -87,7 +88,10 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 
 		tableModel = new CopyElementDetailsLectureBlocksTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "lecturesBlocksTable", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("empty.lectures.blocks", null, "o_icon_calendar", null, null, false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.lectures.blocks")
+				.withIconCss("o_icon_calendar")
+				.build(), false);
 	}
 	
 	private void loadModel() {

@@ -58,7 +58,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
@@ -233,31 +235,15 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		AbstractImportRow importedRow = tableModel.getObject(pos);
 		String cssClass = null;
 		if(importedRow != null) {
-			if(importedRow.getStatus() == ImportCurriculumsStatus.ERROR) {
+			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
+			if(statistics.errors() > 0) {
 				cssClass = "o_import_error";
-			} else {
-				CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
-				if(importedRow.getStatus() == ImportCurriculumsStatus.NEW) {
-					if(statistics.errors() > 0) {
-						cssClass = "o_import_error";
-					} else if(importedRow.isIgnored()) {
-						cssClass = "o_import_ignored";
-					} else {
-						cssClass = "o_import_new";
-					}
-				} else if(importedRow.getStatus() == ImportCurriculumsStatus.MODIFIED) {
-					if(statistics.errors() > 0) {
-						cssClass = "o_import_error";
-					} else if(importedRow.isIgnored()) {
-						cssClass = "o_import_ignored";
-					} else {
-						cssClass = "o_import_changed";
-					}
-				} else if(importedRow.isIgnored()) {
-					cssClass = "o_import_ignored";
-				} else if(statistics.changes() > 0) {
-					cssClass = "o_import_changed";
-				} 
+			} else if(importedRow.isIgnored()) {
+				cssClass = "o_import_ignored";
+			} else if(importedRow.getStatus() == ImportCurriculumsStatus.NEW) {
+				cssClass = "o_import_new";
+			} else if(importedRow.getStatus() == ImportCurriculumsStatus.MODIFIED || statistics.changes() > 0) {
+				cssClass = "o_import_changed";
 			}
 		}
 		return cssClass;
@@ -311,7 +297,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	
 	protected void loadErrorMessage(List<? extends AbstractImportRow> rows, String suffix) {
 		long numOfErrors = rows.stream()
-				.filter(row -> row.getStatus() == ImportCurriculumsStatus.ERROR || row.getValidationStatistics().errors() > 0)
+				.filter(row -> row.getValidationStatistics().errors() > 0)
 				.count();
 
 		if(numOfErrors > 0) {
@@ -361,13 +347,14 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 							doOpenValidationCallout(ureq, selectedRow, col, targetId);
 						}
 					}
+				} else if(ImportStatisticsCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
+					String targetId = ImportStatisticsCellRenderer.getId(se.getIndex());
+					AbstractImportRow selectedRow = tableModel.getObject(se.getIndex());
+					doOpenValidationResultsCallout(ureq, selectedRow, targetId);
 				}
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				filterModel();
 			}
-		} else if(source instanceof FormLink link && cmdValidationResults.equals(link.getCmd())
-				&& link.getUserObject() instanceof AbstractImportRow importedRow) {
-			doOpenValidationResultsCallout(ureq, importedRow, link.getFormDispatchId());
 		} else if(source instanceof MultipleSelectionElement check
 				&& check.getUserObject() instanceof ImportedRow importedRow) {
 			doIgnore(importedRow, check.isAtLeastSelected(1));
@@ -402,9 +389,9 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		for(AbstractImportRow row:rows) {
 			if(row.getIgnoreEl() == null) continue;
 			
-			boolean enabled = !row.hasValidationErrors() && row.getStatus() != ImportCurriculumsStatus.ERROR;
+			boolean enabled = !row.hasValidationErrors();
 			for(ImportedRow parentRow=row.getCurriculumElementParentRow(); parentRow != null && !parentRow.hasValidationErrors(); parentRow=parentRow.getCurriculumElementParentRow()) {
-				enabled &= !parentRow.isIgnored() && !parentRow.hasValidationErrors() && parentRow.getStatus() != ImportCurriculumsStatus.ERROR;
+				enabled &= !parentRow.isIgnored() && !parentRow.hasValidationErrors();
 			}
 			
 			if(enabled && !row.getIgnoreEl().isEnabled()) {
@@ -429,7 +416,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		listenTo(validationCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				validationCtrl.getInitialComponent(), targetId, "", true, "");
+				validationCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -442,8 +429,8 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		validationListCtrl = new ValidationResultListController(ureq, getWindowControl(), values);
 		listenTo(validationListCtrl);
 	
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				validationListCtrl.getInitialComponent(), targetId, "", true, "");
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), validationListCtrl.getInitialComponent(),
+				targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -456,7 +443,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		listenTo(toolsCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), targetId, "", true, "");
+				toolsCtrl.getInitialComponent(), targetId, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

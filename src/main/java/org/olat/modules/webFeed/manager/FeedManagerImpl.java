@@ -78,7 +78,6 @@ import org.olat.modules.webFeed.ExternalFeedFetcher;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedTag;
-import org.olat.modules.webFeed.FeedTagSearchParams;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.RSSFeed;
 import org.olat.modules.webFeed.SyndFeedMediaResource;
@@ -623,11 +622,15 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public List<FeedTag> getFeedTags(Feed feed, List<Long> feedItemKeys) {
-		FeedTagSearchParams searchParams = new FeedTagSearchParams();
-		searchParams.setFeedKey(feed.getKey());
-		searchParams.setFeedItemKeys(feedItemKeys);
-		return feedTagDAO.loadTags(searchParams);
+	public List<FeedTag> getFeedTags(Feed feed) {
+		if(feed == null || feed.getKey() == null) return new ArrayList<>(1);
+		return feedTagDAO.loadFeedTags(feed.getKey());
+	}
+
+	@Override
+	public List<FeedTag> getFeedItemTags(Item item) {
+		if(item == null || item.getKey() == null) return new ArrayList<>(1);
+		return feedTagDAO.loadFeedItemTags(item.getKey());
 	}
 
 	@Override
@@ -635,12 +638,9 @@ public class FeedManagerImpl extends FeedManager {
 		Item reloadedFeedItem = loadItem(feedItem.getKey());
 		if (reloadedFeedItem == null) return;
 
-		FeedTagSearchParams searchParams = new FeedTagSearchParams();
-		searchParams.setFeedItemKeys(List.of(reloadedFeedItem.getKey()));
-		List<FeedTag> feedTags = feedTagDAO.loadTags(searchParams);
+		List<FeedTag> feedTags = feedTagDAO.loadFeedItemTags(reloadedFeedItem.getKey());
 		List<Tag> currentTags = feedTags.stream().map(FeedTag::getTag).toList();
 		List<Tag> tags = tagService.getOrCreateTags(displayNames);
-
 		for (Tag tag : tags) {
 			if (!currentTags.contains(tag)) {
 				feedTagDAO.create(reloadedFeedItem.getFeed(), reloadedFeedItem, tag);
@@ -662,9 +662,7 @@ public class FeedManagerImpl extends FeedManager {
 				continue;
 			}
 
-			FeedTagSearchParams searchParams = new FeedTagSearchParams();
-			searchParams.setFeedItemKeys(List.of(reloadedFeedItem.getKey()));
-			List<FeedTag> feedTags = feedTagDAO.loadTags(searchParams);
+			List<FeedTag> feedTags = feedTagDAO.loadFeedItemTags(reloadedFeedItem.getKey());
 			List<Tag> currentTags = feedTags.stream().map(FeedTag::getTag).toList();
 			List<Tag> tags = tagService.getOrCreateTags(displayNames);
 
@@ -684,9 +682,7 @@ public class FeedManagerImpl extends FeedManager {
 				continue;
 			}
 
-			FeedTagSearchParams searchParams = new FeedTagSearchParams();
-			searchParams.setFeedItemKeys(List.of(reloadedFeedItem.getKey()));
-			List<FeedTag> feedTags = feedTagDAO.loadTags(searchParams);
+			List<FeedTag> feedTags = feedTagDAO.loadFeedItemTags(reloadedFeedItem.getKey());
 			List<Tag> tags = tagService.getOrCreateTags(displayNames);
 
 			for (FeedTag feedTag : feedTags) {

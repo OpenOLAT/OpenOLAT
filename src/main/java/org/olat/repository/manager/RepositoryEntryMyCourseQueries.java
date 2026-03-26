@@ -818,6 +818,8 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case lifecycleLabel:
 					sb.append(" order by case when lifecycle.privateCycle = false and lifecycle.label <> '' then lifecycle.label end ");
+					appendAsc(sb, asc).append(" nulls last");
+					sb.append(", case when lifecycle.privateCycle = false and lifecycle.softKey <> '' then lifecycle.softKey end ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case lifecycleSoftkey:

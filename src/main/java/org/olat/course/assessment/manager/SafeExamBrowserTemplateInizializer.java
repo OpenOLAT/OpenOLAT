@@ -46,7 +46,7 @@ public class SafeExamBrowserTemplateInizializer {
 			return;
 		}
 		
-		assessmentModeManager.getDefaultSafeExamBrowserConfiguration();
+		assessmentModeManager.getDefaultSafeExamBrowserTemplate().getSafeExamBrowserConfiguration();
 	}
 	
 }

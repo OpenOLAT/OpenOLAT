@@ -25,5 +25,5 @@ package org.olat.core.gui.components.emptystate;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public enum EmptyStateVariant {
-	standard, combined, small
+	standard, small
 }

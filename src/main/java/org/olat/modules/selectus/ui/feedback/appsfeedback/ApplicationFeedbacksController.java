@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -31,9 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.SalutationGenerator;
@@ -42,6 +40,8 @@ import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.ApplicationFeedbacksTableModel.AppFeedCols;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -90,7 +90,9 @@ public class ApplicationFeedbacksController extends FormBasicController implemen
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_feedback_list");
-		tableEl.setEmptyTableMessageKey("app.feedbacks.emtpy");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("app.feedbacks.emtpy")
+				.build());
 		tableEl.setPageSize(20);
 		tableEl.setNumOfRowsEnabled(false);
 		

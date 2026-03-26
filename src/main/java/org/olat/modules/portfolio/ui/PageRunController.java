@@ -433,6 +433,9 @@ public class PageRunController extends BasicController implements TooledControll
 		if (lockEntry != null && lockEntry.isSuccess()) {
 			// release lock
 			doReleaseLock();
+			if(dirtyMarker) {
+				markAsNews();
+			}
 		}
 		coordinator.getCoordinator().getEventBus().deregisterFor(this, lockOres);
         super.doDispose();
@@ -798,6 +801,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private void doRunPage(UserRequest ureq) {
 		if(dirtyMarker) {
 			loadModel(ureq, false);
+			markAsNews();
 		}
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		editLink(true);
@@ -871,7 +875,16 @@ public class PageRunController extends BasicController implements TooledControll
 	private void doImportMarkdownContents(UserRequest ureq, MarkdownImportDoneEvent mdEvent) {
 		if (mdEvent.hasWarnings()) {
 			Translator mdTranslator = Util.createPackageTranslator(MarkdownImportController.class, getLocale());
-			getWindowControl().setWarning(mdTranslator.translate("import.markdown.warnings", String.join("\n", mdEvent.getWarnings())));
+			StringBuilder sb = new StringBuilder();
+			sb.append("<br><ul>");
+			for (String warning : mdEvent.getWarnings()) {
+				String[] parts = warning.split("\t");
+				String translated = mdTranslator.translate(parts[0],
+						java.util.Arrays.copyOfRange(parts, 1, parts.length));
+				sb.append("<li>").append(translated).append("</li>");
+			}
+			sb.append("</ul>");
+			getWindowControl().setError(mdTranslator.translate("import.markdown.warnings", sb.toString()));
 		}
 		dirtyMarker = true;
 		pageEditCtrl.loadModel(ureq);

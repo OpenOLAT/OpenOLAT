@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
@@ -111,7 +112,9 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 
 		tableModel = new CurriculumElementListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("curriculum.element.empty.table");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("curriculum.element.empty.table")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, getTablePrefsKey());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

@@ -195,13 +195,13 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry re = getReferencedRepositoryEntry();
 		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
-			addStatusErrorDescription("error.scorm.deleted.edit", "error.scorm.deleted.edit",
+			addStatusErrorDescription("error.content.deleted", "error.content.deleted",
 					ScormEditController.PANE_TAB_CPCONFIG, sdList, StatusDescription.WARNING);
 		}
 
 		boolean hasScormReference = ScormEditController.hasScormReference(getModuleConfiguration());
 		if (!hasScormReference) {
-			addStatusErrorDescription("error.noreference.short", "error.noreference.long",
+			addStatusErrorDescription("error.no.content.selected", "error.noreference.long",
 					ScormEditController.PANE_TAB_CPCONFIG, sdList, StatusDescription.ERROR);
 		}
 		
@@ -345,7 +345,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 							} else {	
 								nodeDeliveryOptions.setStandardMode(Boolean.FALSE);
 								reConfig.getDeliveryOptions().setOpenolatCss(Boolean.TRUE);
-								reConfig.getDeliveryOptions().setPrototypeEnabled(Boolean.TRUE);
 								reConfig.getDeliveryOptions().setHeight(height);
 							}
 							reConfig.getDeliveryOptions().setContentEncoding(contentEncoding);
@@ -369,7 +368,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 								} else {
 									nodeDeliveryOptions.setStandardMode(Boolean.FALSE);
 									nodeDeliveryOptions.setOpenolatCss(Boolean.TRUE);
-									nodeDeliveryOptions.setPrototypeEnabled(Boolean.TRUE);
 									nodeDeliveryOptions.setHeight(height);
 								}
 							}

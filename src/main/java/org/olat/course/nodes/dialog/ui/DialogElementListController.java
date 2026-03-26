@@ -31,6 +31,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -194,9 +195,16 @@ public class DialogElementListController extends FormBasicController implements 
 			FormLink uploadButton = uifactory.addFormLink(DIALOG_UPLOAD_FILE, "uploadFile", null, null, flc, Link.BUTTON);
 			uploadButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			uploadButton.setElementCssClass("o_sel_dialog_upload");
-			tableEl.setEmptyTableSettings("table.empty.message", null, "o_dialog_icon", DIALOG_UPLOAD_FILE, "o_icon_add", false);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty.message")
+					.withIconCss("o_dialog_icon")
+					.withPrimaryButton("o_icon_add", DIALOG_UPLOAD_FILE, null)
+					.build());
 		} else {
-			tableEl.setEmptyTableSettings("table.empty.message", null, "o_dialog_icon");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty.message")
+					.withIconCss("o_dialog_icon")
+					.build());
 		}
 	}
 

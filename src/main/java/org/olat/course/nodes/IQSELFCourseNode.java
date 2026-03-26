@@ -314,7 +314,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 			AssessmentTestSession testSession = CoreSpringFactory.getImpl(QTI21Service.class)
-					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity);
+					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity, false);
 			if(testSession != null) {
 				Float score = testSession.getScore() == null ? null : testSession.getScore().floatValue();
 				BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);

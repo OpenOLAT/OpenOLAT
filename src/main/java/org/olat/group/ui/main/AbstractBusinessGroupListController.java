@@ -36,6 +36,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -252,9 +253,17 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 
 		initButtons(formLayout, ureq);
 		if (createButton == null) {
-			tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, showAlwaysSearch);		
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty")
+					.withIconCss("o_icon_group")
+					.build(), showAlwaysSearch);
 		} else {
-			tableEl.setEmptyTableSettings("table.empty", "create.group.description", "o_icon_group", "create.group", "o_icon_add", showAlwaysSearch);					
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty")
+					.withHintI18nKey("create.group.description")
+					.withIconCss("o_icon_group")
+					.withPrimaryButton("o_icon_add", "create.group", null)
+					.build(), showAlwaysSearch);
 		}
 		
 		initFilterTabs();

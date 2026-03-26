@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 
 /**
  * 
@@ -34,11 +35,13 @@ import org.olat.core.gui.control.WindowControl;
  *
  */
 public class ValidationResultListController extends FormBasicController {
-	
+
+	private final Formatter formatter;
 	private final List<CurriculumImportedValue> values;
 	
 	public ValidationResultListController(UserRequest ureq, WindowControl wControl, List<CurriculumImportedValue> values) {
 		super(ureq, wControl, "validation_results");
+		formatter = Formatter.getInstance(getLocale());
 
 		this.values = values;
 		initForm(ureq);
@@ -60,6 +63,11 @@ public class ValidationResultListController extends FormBasicController {
 		
 		List<CurriculumImportedValue> changes = values.stream()
 				.filter(v -> v.isChanged())
+				.map(val -> {
+					CurriculumImportedValue formattedValue = new CurriculumImportedValue(val.getColumn());
+					formattedValue.setChanged(ValidationResultController.valueToString(val.getBeforeValue(), formatter), ValidationResultController.valueToString(val.getAfterValue(), formatter));
+					return formattedValue;
+				})
 				.toList();
 		flc.contextPut("changes", changes);
 	}

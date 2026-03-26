@@ -1,22 +1,22 @@
 <fieldset class="o_form form-horizontal clearfix">
 	<legend>$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_SCORM_Learning_Content/")
-	$r.translate("header")</legend>
+	$r.translate("scorm.header")</legend>
 	
 	#if ($showPreviewButton)
 		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("chosencp")</label>
+			<label class="control-label col-sm-3">$r.translate("scorm.label")</label>
 			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</p></div>
 		</div>
 		<div class="form-group">
-			<div class="col-sm-offset-3 col-sm-9">$r.render("command.changecp")</div>
+			<div class="col-sm-offset-3 col-sm-9">$r.render("command.replace")</div>
 		</div>	
 	#else
 		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("chosencp")</label>
+			<label class="control-label col-sm-3">$r.translate("scorm.label")</label>
 			<div class="col-sm-9"><p class="form-control-static">$chosencp</p></div>
 		</div>
 		<div class="form-group">
-			<div class="col-sm-offset-3 col-sm-9">$r.render("command.importcp")</div>
+			<div class="col-sm-offset-3 col-sm-9">$r.render("command.select.import")</div>
 		</div>	
 	#end	
 </fieldset>

@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -165,7 +166,9 @@ public class RemindersStep extends BasicStep {
 			
 			tableModel = new CourseReminderTableModel(columnsModel);
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-			tableEl.setEmptyTableMessageKey("reminders.not.datedependant");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("reminders.not.datedependant")
+					.build());
 			
 			loadModel(formLayout);
 		}

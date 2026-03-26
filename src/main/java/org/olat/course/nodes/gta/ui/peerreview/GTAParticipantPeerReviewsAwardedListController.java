@@ -32,6 +32,7 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -153,7 +154,9 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "awarded.reviews", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableMessageKey("table.awarded.reviews.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.awarded.reviews.empty")
+				.build());
 	}
 	
 	private void initInformations(InfoPanelItem panel) {

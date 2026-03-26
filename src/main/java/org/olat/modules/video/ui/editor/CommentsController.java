@@ -83,7 +83,6 @@ public class CommentsController extends BasicController {
 		Translator tableTranslator = Util.createPackageTranslator(AbstractFlexiTableRenderer.class, ureq.getLocale());
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig
 				.builder()
-				.withIconCss("o_icon_empty_objects")
 				.withIndicatorIconCss("o_icon_empty_indicator")
 				.withMessageTranslated(tableTranslator.translate("default.tableEmptyMessage"))
 				.build();

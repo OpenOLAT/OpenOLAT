@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
@@ -210,6 +209,6 @@ public interface AssessmentModeManager {
 
 	public Map<Long, Long> getSafeExamBrowserTemplateUsageCounts();
 
-	public SafeExamBrowserConfiguration getDefaultSafeExamBrowserConfiguration();
+	public SafeExamBrowserTemplate getDefaultSafeExamBrowserTemplate();
 
 }

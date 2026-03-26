@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -188,7 +189,10 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setEmptyTableSettings(emptyI18nKey, null, "o_icon_calendar");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey(emptyI18nKey)
+				.withIconCss("o_icon_calendar")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-v3-".concat(id));
 	}
 	

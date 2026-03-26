@@ -19,21 +19,17 @@
  */
 package org.olat.modules.webFeed.manager;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedTag;
-import org.olat.modules.webFeed.FeedTagSearchParams;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.FeedTagImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,47 +173,30 @@ public class FeedTagDAO {
 
 		return query.getResultList();
 	}
-
-
-	/**
-	 * load Tags based on searchParameters, such as feedKey and feedItemKey
-	 * @param searchParams
-	 * @return
-	 */
-	public List<FeedTag> loadTags(FeedTagSearchParams searchParams) {
-		QueryBuilder qb = new QueryBuilder();
-		qb.append("select feedTag from feedtag feedTag");
-		qb.append(" inner join fetch feedTag.tag tag");
-		qb.append(" left join fetch feedTag.feedItem feedItem");
-		qb.append(" left join fetch feedTag.feed feed");
-
-		if (searchParams.getFeedKey() != null) {
-			qb.and().append("feedTag.feed.key = :feedKey");
-		}
-		if (searchParams.getFeedItemKeys() != null && !searchParams.getFeedItemKeys().isEmpty()) {
-			qb.and().append("feedTag.feedItem.key in :feedItemKeys");
-		}
-
-		TypedQuery<FeedTag> query = dbInstance.getCurrentEntityManager()
-				.createQuery(qb.toString(), FeedTag.class);
-		if (searchParams.getFeedKey() != null) {
-			query.setParameter("feedKey", searchParams.getFeedKey());
-		}
-
-		List<FeedTag> tags;
-		if (searchParams.getFeedItemKeys() != null && !searchParams.getFeedItemKeys().isEmpty()) {
-			tags = new ArrayList<>();
-			Collection<List<Long>> chunks = PersistenceHelper.chunks(new ArrayList<>(searchParams.getFeedItemKeys()), 3);
-			for(List<Long> chunk:chunks) {
-				query.setParameter("feedItemKeys", chunk);
-				List<FeedTag> chunkedTags = query.getResultList();
-				if(chunkedTags != null && !chunkedTags.isEmpty()) {
-					tags.addAll(chunkedTags);
-				}
-			}
-		} else {
-			tags = query.getResultList();
-		}
-		return tags;
+	
+	public List<FeedTag> loadFeedTags(Long feedKey) {
+		String query = """
+				select feedTag from feedtag feedTag
+				inner join fetch feedTag.tag tag
+				inner join fetch feedTag.feedItem feedItem
+				inner join fetch feedTag.feed feed
+				where feed.key = :feedKey""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, FeedTag.class)
+				.setParameter("feedKey", feedKey)
+				.getResultList();
+	}
+	
+	public List<FeedTag> loadFeedItemTags(Long itemKey) {
+		String query = """
+				select feedTag from feedtag feedTag
+				inner join fetch feedTag.tag tag
+				inner join fetch feedTag.feedItem feedItem
+				inner join fetch feedTag.feed feed
+				where feedItem.key = :itemKey""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, FeedTag.class)
+				.setParameter("itemKey", itemKey)
+				.getResultList();
 	}
 }

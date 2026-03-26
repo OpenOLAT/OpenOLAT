@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -190,7 +191,9 @@ public class AbsenceNoticesListController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setNumOfRowsEnabled(true);
-		tableEl.setEmptyTableMessageKey("empty.notices.list");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.notices.list")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "absences-list-v3-" + tableId + "-" + secCallback.viewAs());
 		
 		if(authorizedEnabled && secCallback.canAuthorizeAbsence()) {

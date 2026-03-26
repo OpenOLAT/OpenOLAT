@@ -33,6 +33,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -222,7 +223,10 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("certificates.empty.table", null, "o_icon_certificate");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("certificates.empty.table")
+				.withIconCss("o_icon_certificate")
+				.build());
 		
 		VelocityContainer row = createVelocityContainer("certificate_row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container

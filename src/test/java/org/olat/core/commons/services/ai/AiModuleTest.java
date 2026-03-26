@@ -26,8 +26,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Test;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,17 +80,61 @@ public class AiModuleTest extends OlatTestCase {
 		@Override public List<String> getAvailableMCGeneratorModels() { return List.of(); }
 	}
 
+	/** Minimal SPI that also implements AiImageDescriptionSPI */
+	private static class ImageDescSpi extends SimpleAiSpi implements AiImageDescriptionSPI {
+		private String model;
+
+		ImageDescSpi(String id, boolean enabled) {
+			super(id, enabled);
+		}
+
+		@Override public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) { return null; }
+		@Override public void setImageDescriptionModel(String model) { this.model = model; }
+		@Override public String getImageDescriptionModel() { return model; }
+		@Override public List<String> getAvailableImageDescriptionModels() { return List.of(); }
+	}
+
+	/** Minimal SPI that implements both feature interfaces */
+	private static class DualFeatureSpi extends SimpleAiSpi implements AiMCQuestionGeneratorSPI, AiImageDescriptionSPI {
+		private String mcModel;
+		private String imgModel;
+
+		DualFeatureSpi(String id, boolean enabled) {
+			super(id, enabled);
+		}
+
+		@Override public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number) { return null; }
+		@Override public void setMCGeneratorModel(String model) { this.mcModel = model; }
+		@Override public String getMCGeneratorModel() { return mcModel; }
+		@Override public List<String> getAvailableMCGeneratorModels() { return List.of(); }
+
+		@Override public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) { return null; }
+		@Override public void setImageDescriptionModel(String model) { this.imgModel = model; }
+		@Override public String getImageDescriptionModel() { return imgModel; }
+		@Override public List<String> getAvailableImageDescriptionModels() { return List.of(); }
+	}
+
 	@Autowired
 	private AiModule module;
 
-	/** Set mcGeneratorSpiId and mcGeneratorModel via the module's config method,
-	 *  bypassing property persistence by directly manipulating fields via reflection. */
+	/** Set mcGeneratorSpiId and mcGeneratorModel via reflection. */
 	private void setConfig(String spiId, String model) throws Exception {
 		var spiIdField = AiModule.class.getDeclaredField("mcGeneratorSpiId");
 		spiIdField.setAccessible(true);
 		spiIdField.set(module, spiId);
 
 		var modelField = AiModule.class.getDeclaredField("mcGeneratorModel");
+		modelField.setAccessible(true);
+		modelField.set(module, model);
+	}
+
+	/** Set imgDescSpiId and imgDescModel via reflection. */
+	private void setImgDescConfig(String spiId, String model) throws Exception {
+		var spiIdField = AiModule.class.getDeclaredField("imgDescSpiId");
+		spiIdField.setAccessible(true);
+		spiIdField.set(module, spiId);
+
+		var modelField = AiModule.class.getDeclaredField("imgDescModel");
 		modelField.setAccessible(true);
 		modelField.set(module, model);
 	}
@@ -245,5 +291,116 @@ public class AiModuleTest extends OlatTestCase {
 
 		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
 		assertEquals(2, result.size());
+	}
+
+
+	// ─── isImageDescriptionGeneratorEnabled ───────────────────────────────────
+
+	@Test
+	public void isImageDescriptionGeneratorEnabled_noSpiIdConfigured_returnsFalse() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		setImgDescConfig(null, null);
+
+		assertFalse(module.isImageDescriptionGeneratorEnabled());
+	}
+
+	@Test
+	public void isImageDescriptionGeneratorEnabled_spiIdNotMatchingAnyProvider_returnsFalse() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		setImgDescConfig("Unknown", "gpt-4o");
+
+		assertFalse(module.isImageDescriptionGeneratorEnabled());
+	}
+
+	@Test
+	public void isImageDescriptionGeneratorEnabled_matchingSpiButDisabled_returnsFalse() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", false)));
+		setImgDescConfig("OpenAI", "gpt-4o");
+
+		assertFalse(module.isImageDescriptionGeneratorEnabled());
+	}
+
+	@Test
+	public void isImageDescriptionGeneratorEnabled_spiDoesNotImplementInterface_returnsFalse() throws Exception {
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
+		setImgDescConfig("OpenAI", "gpt-4o");
+
+		assertFalse(module.isImageDescriptionGeneratorEnabled());
+	}
+
+	@Test
+	public void isImageDescriptionGeneratorEnabled_allConditionsMet_returnsTrue() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		setImgDescConfig("OpenAI", "gpt-4o");
+
+		assertTrue(module.isImageDescriptionGeneratorEnabled());
+	}
+
+
+	// ─── getImageDescriptionGenerator ─────────────────────────────────────────
+
+	@Test
+	public void getImageDescriptionGenerator_noSpiIdConfigured_returnsNull() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		setImgDescConfig(null, null);
+
+		assertNull(module.getImageDescriptionGenerator());
+	}
+
+	@Test
+	public void getImageDescriptionGenerator_spiDisabled_returnsNull() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", false)));
+		setImgDescConfig("OpenAI", "gpt-4o");
+
+		assertNull(module.getImageDescriptionGenerator());
+	}
+
+	@Test
+	public void getImageDescriptionGenerator_properlyConfigured_returnsGeneratorWithModelSet() throws Exception {
+		ImageDescSpi spi = new ImageDescSpi("OpenAI", true);
+		module.setSpringProviders(List.of(spi));
+		setImgDescConfig("OpenAI", "gpt-4o");
+
+		AiImageDescriptionSPI generator = module.getImageDescriptionGenerator();
+		assertNotNull(generator);
+		assertEquals("gpt-4o", generator.getImageDescriptionModel());
+	}
+
+
+	// ─── isAiEnabled with image description ───────────────────────────────────
+
+	@Test
+	public void isAiEnabled_onlyImgDescEnabled_returnsTrue() throws Exception {
+		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		setConfig(null, null);
+		setImgDescConfig("OpenAI", "gpt-4o");
+
+		assertTrue(module.isAiEnabled());
+	}
+
+	@Test
+	public void isAiEnabled_bothDisabled_returnsFalse() throws Exception {
+		module.setSpringProviders(List.of(new DualFeatureSpi("OpenAI", true)));
+		setConfig(null, null);
+		setImgDescConfig(null, null);
+
+		assertFalse(module.isAiEnabled());
+	}
+
+
+	// ─── getEnabledSPIsFor with AiImageDescriptionSPI ─────────────────────────
+
+	@Test
+	public void getEnabledSPIsFor_imageDescriptionFeature_returnsOnlyMatching() {
+		module.setSpringProviders(List.of(
+				new MCGeneratorSpi("MC", true),
+				new ImageDescSpi("Img", true),
+				new DualFeatureSpi("Both", true)
+		));
+
+		List<AiSPI> result = module.getEnabledSPIsFor(AiImageDescriptionSPI.class);
+		assertEquals(2, result.size());
+		assertTrue(result.stream().anyMatch(s -> s.getId().equals("Img")));
+		assertTrue(result.stream().anyMatch(s -> s.getId().equals("Both")));
 	}
 }

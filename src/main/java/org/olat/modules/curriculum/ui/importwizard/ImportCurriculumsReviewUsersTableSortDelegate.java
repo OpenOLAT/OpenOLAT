@@ -75,11 +75,7 @@ public class ImportCurriculumsReviewUsersTableSortDelegate extends SortableFlexi
 		private ImportCurriculumsStatus normalizeStatus(ImportedUserRow o) {
 			ImportCurriculumsStatus s = o.getStatus();
 			if(s == null) {
-				if(o.hasValidationErrors()) {
-					s = ImportCurriculumsStatus.ERROR;
-				} else {
-					s = ImportCurriculumsStatus.NO_CHANGES;
-				}
+				s = ImportCurriculumsStatus.NO_CHANGES;
 			}
 			return s;
 		}

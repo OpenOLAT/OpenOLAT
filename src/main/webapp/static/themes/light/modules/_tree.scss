@@ -282,6 +282,14 @@
 		}
 	}
 }
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	.o_tree {
+		li > div a {
+			transition: background-color 0.12s ease, color 0.12s ease;
+		}
+	}
+}
 
 .o_offcanvas {
 	.o_tree {

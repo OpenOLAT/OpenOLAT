@@ -29,6 +29,7 @@ import java.util.function.Function;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -264,7 +265,9 @@ public class MSStatisticController extends FormBasicController {
 		dataModel = new MSStatisticDataModel(columnsModel, translate("tool.stats.table.footer"), getTranslator());
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
-		tableEl.setEmptyTableMessageKey("tool.stats.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("tool.stats.empty")
+				.build());
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortSettings(options);
 		tableEl.setExportEnabled(true);

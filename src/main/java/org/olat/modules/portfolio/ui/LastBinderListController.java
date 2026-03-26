@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -92,7 +93,9 @@ public class LastBinderListController extends FormBasicController implements Fle
 		tableEl.setSearchEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_portfolio_last_binders");
-		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.sEmptyTable")
+				.build());
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("binder_row");

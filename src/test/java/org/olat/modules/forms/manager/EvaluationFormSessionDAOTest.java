@@ -27,7 +27,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
@@ -35,7 +34,6 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
-import org.olat.modules.forms.ui.SessionSelectionModel.SessionSelectionCols;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -172,8 +170,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
-		SortKey sortKey = new SortKey(SessionSelectionCols.email.name(), true);
-		List<EvaluationFormSession> loadedSessions = sut.loadSessionsFiltered(filter, 0, -1, sortKey);
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsFiltered(filter, 0, -1);
 		
 		assertThat(loadedSessions).containsExactlyInAnyOrder(session1);
 	}

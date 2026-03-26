@@ -53,4 +53,8 @@ public interface SafeExamBrowserTemplate extends ModifiedInfo, CreateInfo {
 
 	String getSafeExamBrowserConfigPListKey();
 
+	String getSafeExamBrowserHint();
+
+	void setSafeExamBrowserHint(String hint);
+
 }

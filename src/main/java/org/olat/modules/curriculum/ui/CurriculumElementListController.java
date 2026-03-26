@@ -37,6 +37,7 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -246,7 +247,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_curriculumtable");
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.curriculum.empty")
+				.withIconCss("o_icon_curriculum_element")
+				.build());
 		tableEl.setCssDelegate(this);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v5.1-"
@@ -323,7 +327,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private void loadModel() {
 		if(config.preparationWarning() && rootElement != null && rootElement.getElementStatus() == CurriculumElementStatus.preparation) {
 			tableModel.setObjects(List.of());
-			tableEl.setEmptyTableSettings("warning.preparation.title", "warning.preparation.desc", "o_icon_curriculum");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("warning.preparation.title")
+				.withHintI18nKey("warning.preparation.desc")
+				.withIconCss("o_icon_curriculum")
+				.build());
 			return;
 		}
 		

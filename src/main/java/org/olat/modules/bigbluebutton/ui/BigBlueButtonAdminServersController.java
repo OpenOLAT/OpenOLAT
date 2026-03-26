@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -83,7 +84,9 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 		
 		serversTableEl = uifactory.addTableElement(getWindowControl(), "servers", serversTableModel, 10, false, getTranslator(), formLayout);
 		serversTableEl.setCustomizeColumns(true);
-		serversTableEl.setEmptyTableMessageKey("bigbluebutton.servers.empty");
+		serversTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("bigbluebutton.servers.empty")
+				.build());
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.all.instances"), "all"));

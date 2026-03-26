@@ -28,6 +28,7 @@ import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -199,7 +200,9 @@ public class ContactTracingLocationListController extends FormBasicController {
         tableEl.setMultiSelect(true);
         tableEl.setSelectAllEnable(true);
         tableEl.setShowAllRowsEnabled(true);
-        tableEl.setEmptyTableMessageKey("contact.tracing.location.table.empty");
+        tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+                .withMessageI18nKey("contact.tracing.location.table.empty")
+                .build());
         tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingLocationListController.class.getCanonicalName());
 
         // Create link to add a new location and import locations

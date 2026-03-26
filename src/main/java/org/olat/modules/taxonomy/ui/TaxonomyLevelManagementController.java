@@ -29,6 +29,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -133,7 +134,9 @@ public class TaxonomyLevelManagementController extends FormBasicController {
 		tableModel = new TaxonomyLevelCompetenceTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableMessageKey("table.management.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.management.empty")
+				.build());
 		tableEl.setMultiSelect(multiSelect);
 		tableEl.setSelectAllEnable(multiSelect);
 		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-management");

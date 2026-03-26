@@ -24,6 +24,9 @@ import java.util.List;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -58,6 +61,7 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsContext;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileStep;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFinishStepCallback;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
+import org.olat.modules.curriculum.ui.widgets.RootImplementationWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
@@ -98,6 +102,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private RootImplementationWidgetController implementationWidgetCtrl;
 	private CertificationProgramListController certificationProgramListCtrl;
 
 	@Autowired
@@ -120,9 +125,17 @@ public class CurriculumManagerRootController extends BasicController implements 
 		
 		mainVC = createVelocityContainer("manager_overview");
 		
-		importButton= LinkFactory.createLink("curriculum.import", "curriculum.import", getTranslator(), mainVC, this, Link.BUTTON);
+		Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("commands", getTranslator());
+		commandsDropdown.setDomReplaceable(false);
+		commandsDropdown.setButton(true);
+		commandsDropdown.setOrientation(DropdownOrientation.right);
+		commandsDropdown.setVisible(secCallback.canImportCurriculums());
+		mainVC.put("commands", commandsDropdown);
+		
+		importButton= LinkFactory.createLink("curriculum.import", "curriculum.import", getTranslator(), mainVC, this, Link.LINK);
 		importButton.setIconLeftCSS("o_icon o_icon_import");
 		importButton.setVisible(secCallback.canImportCurriculums());
+		commandsDropdown.addComponent(importButton);
 		
 		searchFieldCtrl = new CurriculumSearchHeaderController(ureq, getWindowControl());
 		listenTo(searchFieldCtrl);
@@ -158,17 +171,23 @@ public class CurriculumManagerRootController extends BasicController implements 
 	}
 	
 	private void initDashboard(UserRequest ureq) {
-		overviewCtrl = new DashboardController(ureq, getWindowControl(), this.getClass().getName());
+		overviewCtrl = new DashboardController(ureq, getWindowControl(), "dashboard.course.planner");
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
 		listenTo(overviewCtrl);
 		
+		if(secCallback.canViewImplementations()) {
+			implementationWidgetCtrl = new RootImplementationWidgetController(ureq, getWindowControl(), secCallback);
+			listenTo(implementationWidgetCtrl);
+			overviewCtrl.addWidget("implementations", translate("curriculum.implementations"), implementationWidgetCtrl, BentoBoxSize.box_4_1);
+		}
+
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new CurriculumLectureBlocksWidgetController(ureq, getWindowControl());
 			lectureBlocksWidgetCtrl.reload();
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
-		
+
 		mainVC.put("dashboard", overviewCtrl.getInitialComponent());
 	}
 
@@ -209,7 +228,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 			if(event == Event.DONE_EVENT) {
 				doSearch(ureq, searchFieldCtrl.getSearchString());
 			}
-		} else if(lectureBlocksWidgetCtrl == source || lecturesCtrl == source) {
+		} else if(implementationWidgetCtrl == source || lectureBlocksWidgetCtrl == source || lecturesCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
@@ -324,7 +343,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	
 	private CurriculumReportsController doOpenReports(UserRequest ureq) {
 		toolbarPanel.popUpToRootController(ureq);
-		removeAsListenerAndDispose(lecturesCtrl);
+		removeAsListenerAndDispose(reportsCtrl);
 		
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setCurriculumAdmin(getIdentity());

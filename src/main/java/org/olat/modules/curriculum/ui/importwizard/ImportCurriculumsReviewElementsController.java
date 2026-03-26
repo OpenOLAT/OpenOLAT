@@ -73,7 +73,8 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.status,
 				new ImportStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.infos));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.infos,
+				new ImportStatisticsCellRenderer(true, true)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.ignore));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.curriculumIdentifier,
@@ -82,7 +83,8 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 				new ImportValueCellRenderer(ImportCurriculumsCols.implementationIdentifier, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.objectType,
 				new ImportValueCellRenderer(ImportCurriculumsCols.objectType, getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.level));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.level,
+				new ImportValueCellRenderer(ImportCurriculumsCols.level, getLocale())));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.displayName,
 				new ImportValueCellRenderer(ImportCurriculumsCols.displayName, getLocale())));

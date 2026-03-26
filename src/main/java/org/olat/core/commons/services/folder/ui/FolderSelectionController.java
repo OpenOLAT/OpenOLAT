@@ -40,6 +40,7 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -167,7 +168,11 @@ public class FolderSelectionController extends FormBasicController implements Fi
 		tableEl.setAndLoadPersistedPreferences(ureq, "folder.selection");
 		tableEl.setCssDelegate(this);
 		tableEl.sort(FolderCols.title.name(), true);
-		tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readonly", "o_filetype_folder");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("folder.empty")
+				.withHintI18nKey("folder.empty.hint.readonly")
+				.withIconCss("o_filetype_folder")
+				.build());
 	}
 	
 	private void loadModel() {

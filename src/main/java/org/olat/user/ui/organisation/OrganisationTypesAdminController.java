@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -92,7 +93,9 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 		
 		model = new OrganisationTypesDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("table.organisation.type.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.organisation.type.empty")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "org-types");
 	}
 	

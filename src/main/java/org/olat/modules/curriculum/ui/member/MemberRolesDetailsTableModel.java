@@ -47,6 +47,13 @@ implements FlexiTableFooterModel {
 	private final String footerHeader;
 	private final boolean showModifications;
 	
+	/**
+	 * 
+	 * @param columnModel The columns model
+	 * @param showModifications Only show the state if there is a modication
+	 * @param showCurrentState
+	 * @param footerHeader
+	 */
 	public MemberRolesDetailsTableModel(FlexiTableColumnModel columnModel, boolean showModifications, String footerHeader) {
 		super(columnModel);
 		this.footerHeader = footerHeader;
@@ -106,7 +113,8 @@ implements FlexiTableFooterModel {
 	
 	private GroupMembershipStatus getStatus(CurriculumRoles role, MemberRolesDetailsRow detailsRow) {
 		GroupMembershipStatus status = detailsRow.getModificationStatus(role);
-		if(status == null) {
+		GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
+		if(status == null || !GroupMembershipStatus.allowedAsNextStep(currentStatus, status, role)) {
 			status = detailsRow.getStatus(role);
 		}
 		return status;

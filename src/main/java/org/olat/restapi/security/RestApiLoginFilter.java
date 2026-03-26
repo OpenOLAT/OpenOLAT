@@ -63,6 +63,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.RestModule;
@@ -224,6 +225,12 @@ public class RestApiLoginFilter implements Filter {
 	}
 	
 	private int doAuthentication(HttpServletRequest request, HttpServletResponse response, String requestURI, String username, String pwd) {
+		// Block login after 5x failed
+		final LoginModule loginModule = CoreSpringFactory.getImpl(LoginModule.class);
+		if(loginModule.isLoginBlocked(username)) {
+			return AuthHelper.LOGIN_DENIED;
+		}
+				
 		final RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		final RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
@@ -250,6 +257,8 @@ public class RestApiLoginFilter implements Filter {
 			//Forge a new security token
 			String token = securityBean.generateToken(identity, request.getSession());
 			response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
+		} else {
+			loginModule.registerFailedLoginAttempt(username);
 		}
 		
 		return loginStatus;	

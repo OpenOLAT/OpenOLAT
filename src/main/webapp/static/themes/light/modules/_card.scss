@@ -3,7 +3,8 @@
 %o_card,
 .o_card {
 	border: $o-card-border;
-	border-radius: $o-card-border-radius;
+	border-radius: $o-card-border-radius;	
+	box-shadow: $o-card-box-shadow;
 	
 	.o_card_title {
 		a {
@@ -14,12 +15,15 @@
 	
 	&:hover {
 		border: 1px solid $o-card-hover-color;
-		border-radius: 3px;
+		box-shadow: $o-card-box-hover-shadow; 
 		.o_card_title {
 			a {
 				color: $o-card-hover-color;
 			}
 		}
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		transition: box-shadow 0.2s ease, border-color 0.2s ease;
 	}
 	
 	.o_card_radio_select {
@@ -426,20 +430,25 @@
 
 	.o_dashboard_edit_item {
 		transition: filter 0.15s ease;
+		border: 1px solid transparent;
 
-		&:hover,
-		&.gu-mirror {
-			filter: brightness(0.95);
+
+		&:hover {
+			filter: brightness(0.95);		
+			border: 1px solid $input-border-focus;
+			border-radius: $o-dashboard-widget-border-radius;
 		}
-		&.gu-mirror {
-			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+		&.sortable-drag {
+			filter: brightness(1);		
+			border-radius: $o-dashboard-widget-border-radius;
+			box-shadow: 0 4px 12px rgba($input-border-focus,0.15);
 		}
 		&.gu-transit {
 			.o_dashboard_edit_item_inner {
 				visibility: hidden;
 			}
-			border: 2px dashed rgba($input-border-focus, 0.5);
-			background-color: rgba($input-border-focus, 0.05);
+			border: 1px dashed darken($input-border-focus,10%);
+			background-color: rgba($input-border-focus, 0.5);
 			border-radius: $o-dashboard-widget-border-radius;
 		}
 	}
@@ -531,7 +540,6 @@
 		margin-left: 12px;
 		white-space: nowrap;
 		color: $link-color;
-		font-size: 2em;
 
 		&:hover {
 			color: $link-hover-color;

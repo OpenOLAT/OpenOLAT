@@ -25,6 +25,8 @@ import java.util.Locale;
 import org.olat.admin.user.SendTokenToUserForm;
 import org.olat.basesecurity.Authentication;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -116,12 +118,21 @@ public class PasskeyListController extends FormBasicController {
 		tableEl.setLabel("passkeys", null);
 		tableEl.setNumOfRowsEnabled(false);
 		if(identityToModify.equals(getIdentity())) {
-			tableEl.setEmptyTableSettings("table.empty.passkeys", null, "o_icon_password");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty.passkeys")
+					.withIconCss("o_icon_password")
+					.build());
 			newPasskeyButton = uifactory.addFormLink("new.passkey", formLayout, Link.BUTTON);
 			newPasskeyButton.setIconLeftCSS("o_icon o_ac_token_icon");
 		} else {
 			String actionKey = canSendPasswordLink ? "send.invitation.link" : null;
-			tableEl.setEmptyTableSettings("table.empty.passkeys.admin", null, "o_icon_password", actionKey, null, false);
+			EmptyStateConfigBuilder builder = EmptyStateConfig.builder()
+					.withMessageI18nKey("table.empty.passkeys.admin")
+					.withIconCss("o_icon_password");
+			if(actionKey != null) {
+				builder.withPrimaryButton(null, actionKey, null);
+			}
+			tableEl.setEmptyStateConfig(builder.build(), false);
 		}
 	}
 	

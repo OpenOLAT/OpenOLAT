@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -154,7 +155,9 @@ public class NotificationListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setEmptyTableMessageKey("mark.no.unread");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("mark.no.unread")
+				.build());
 		
 		List<FlexiTableFilter> filters = new ArrayList<>(5);
 		filters.add(new FlexiTableFilter(translate("notifications.show.read"), "read"));
@@ -232,7 +235,9 @@ public class NotificationListController extends FormBasicController {
 		}
 		
 		//if(!filterMsg.equals(currentMsg)) {
-			tableEl.setEmptyTableMessageKey(filterMsg);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey(filterMsg)
+					.build());
 		//}
 	}
 	

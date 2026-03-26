@@ -637,6 +637,50 @@ public class ServletUtil {
 		response.setHeader("Pragma", "no-cache");
 		response.setDateHeader("Expires", 0);
 	}
+
+	/**
+	 * Serve a public, cacheable string response (e.g. sitemap.xml, robots.txt)
+	 * without creating an HTTP session. Sets Cache-Control: public and prevents
+	 * the JSESSIONID cookie from being set, which is important for search engine
+	 * crawlers like Googlebot.
+	 *
+	 * @param request the HTTP request
+	 * @param response the HTTP response
+	 * @param content the string content to serve
+	 * @param contentType the content type (e.g. "application/xml", "text/plain")
+	 * @param cacheMaxAge cache duration in seconds (e.g. 3600 for 1 hour)
+	 */
+	public static void servePublicContent(HttpServletRequest request, HttpServletResponse response,
+			String content, String contentType, long cacheMaxAge) throws IOException {
+		// Prevent JSESSIONID cookie from being sent to crawlers:
+		// 1. Invalidate any new session created by the servlet/filter chain
+		jakarta.servlet.http.HttpSession session = request.getSession(false);
+		if (session != null && session.isNew()) {
+			session.invalidate();
+		}
+		// 2. Reset the response to clear any Set-Cookie headers already buffered
+		//    by the container. This must happen before the response is committed.
+		if (!response.isCommitted()) {
+			response.reset();
+		}
+
+		response.setContentType(contentType);
+		response.setCharacterEncoding("UTF-8");
+		// Public caching for search engine crawlers
+		response.setHeader("Cache-Control", "public, max-age=" + cacheMaxAge);
+		long now = System.currentTimeMillis();
+		response.setDateHeader("Expires", now + (cacheMaxAge * 1000));
+		// Remove no-cache pragma if set by filters
+		response.setHeader("Pragma", "");
+
+		if (content == null) {
+			content = "";
+		}
+		byte[] bytes = content.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		response.setContentLength(bytes.length);
+		response.getOutputStream().write(bytes);
+		response.getOutputStream().flush();
+	}
 	
 	/**
 	 * Return a context-relative path, beginning with a "/", that represents the

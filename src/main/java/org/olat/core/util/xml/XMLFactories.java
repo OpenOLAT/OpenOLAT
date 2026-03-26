@@ -19,7 +19,11 @@
  */
 package org.olat.core.util.xml;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -28,6 +32,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.ctc.wstx.stax.WstxOutputFactory;
@@ -91,5 +97,24 @@ public class XMLFactories {
 		parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
 		parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
 		return parser;
+	}
+	
+	public static final DocumentBuilder newSVGDocumentBuilder()
+			throws ParserConfigurationException {
+		DocumentBuilder builder = newDocumentBuilderFactory().newDocumentBuilder();
+		builder.setEntityResolver(new SVGEntityResolver());
+		return builder;
+	}
+	
+	private static class SVGEntityResolver implements EntityResolver {
+		@Override
+		public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+			String systemId_ = systemId.toLowerCase();
+			if (systemId_.endsWith("svg11.dtd")) {
+				InputStream in = getClass().getResourceAsStream("/org/olat/core/util/xml/_resources/svg11-flat-20110816.dtd");
+				return new InputSource(in);
+			}
+			return null;
+		}
 	}
 }

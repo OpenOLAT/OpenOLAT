@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * 
@@ -82,7 +83,12 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			final String certificates = getFiltered(filters, CourseListController.FILTER_CERTIFICATES);
 			final List<String> assessment = getFilteredList(filters, CourseListController.FILTER_ASSESSMENT);
 			final List<String> status = getFilteredList(filters, CourseListController.FILTER_STATUS);
-			final List<String> resourcesTypesList = getFilteredList(filters, CourseListController.FILTER_RESOURCE_TYPE);
+			List<String> resourcesTypesList = getFilteredList(filters, CourseListController.FILTER_RESOURCE_TYPE);
+			if(resourcesTypesList != null && resourcesTypesList.contains("others")) {
+				resourcesTypesList = new ArrayList<>(resourcesTypesList);
+				resourcesTypesList.remove("others");
+				resourcesTypesList.addAll(RepositoryHandlerFactory.getInstance().getOtherTypes());
+			}
 			final Set<String> resourcesTypes = resourcesTypesList == null ? Set.of() : Set.copyOf(resourcesTypesList);
 			final List<String> curriculumsKeysList = getFilteredList(filters, CourseListController.FILTER_CURRICULUM);
 			final Set<String> curriculumsKeys = curriculumsKeysList == null ? Set.of() : Set.copyOf(curriculumsKeysList);
@@ -158,30 +164,28 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	private boolean acceptAssessment(List<String> refs, CourseStatEntryRow entry) {
 		if(refs == null || refs.isEmpty()) return true;
 		
-		return refs.stream().anyMatch(ref -> {
-			return switch(ref) {
-				// Passed
-				case CourseListController.ASSESSMENT_PASSED_NONE
-					-> entry.getSuccessStatus().numPassed() == 0;
-				case CourseListController.ASSESSMENT_PASSED_PARTIALLY
-					-> entry.getSuccessStatus().numPassed() > 0
-						&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
-				case CourseListController.ASSESSMENT_PASSED_ALL
-					-> entry.getSuccessStatus().numPassed() > 0
-						&& entry.getSuccessStatus().numFailed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
-				
-				// Not passed
-				case CourseListController.ASSESSMENT_NOT_PASSED_NONE
-					-> entry.getSuccessStatus().numFailed() == 0;
-				case CourseListController.ASSESSMENT_NOT_PASSED_PARTIALLY
-					-> entry.getSuccessStatus().numFailed() > 0
-						&& (entry.getSuccessStatus().numPassed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
-				case CourseListController.ASSESSMENT_NOT_PASSED_ALL
-					-> entry.getSuccessStatus().numFailed() > 0
-						&& entry.getSuccessStatus().numPassed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
-				default -> false;
-			};
-		});
+		return refs.stream().anyMatch(ref -> (switch(ref) {
+			// Passed
+			case CourseListController.ASSESSMENT_PASSED_NONE
+				-> entry.getSuccessStatus().numPassed() == 0;
+			case CourseListController.ASSESSMENT_PASSED_PARTIALLY
+				-> entry.getSuccessStatus().numPassed() > 0
+					&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+			case CourseListController.ASSESSMENT_PASSED_ALL
+				-> entry.getSuccessStatus().numPassed() > 0
+					&& entry.getSuccessStatus().numFailed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
+			
+			// Not passed
+			case CourseListController.ASSESSMENT_NOT_PASSED_NONE
+				-> entry.getSuccessStatus().numFailed() == 0;
+			case CourseListController.ASSESSMENT_NOT_PASSED_PARTIALLY
+				-> entry.getSuccessStatus().numFailed() > 0
+					&& (entry.getSuccessStatus().numPassed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+			case CourseListController.ASSESSMENT_NOT_PASSED_ALL
+				-> entry.getSuccessStatus().numFailed() > 0
+					&& entry.getSuccessStatus().numPassed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
+			default -> false;
+		}));
 	}
 	
 	private boolean acceptLastVisit(String ref, LocalDateTime now, CourseStatEntryRow entry) {
@@ -379,7 +383,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != assessmentTool
+					&& this != infos;
 		}
 
 		@Override

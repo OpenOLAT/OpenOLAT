@@ -144,8 +144,7 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedUserRo
 	private boolean acceptStatus(Set<String> status, ImportedUserRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
-		if((row.getStatus() == ImportCurriculumsStatus.ERROR && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_WITH_ERRORS))
-				|| (row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED))) {
+		if(row.getStatus() == ImportCurriculumsStatus.MODIFIED && status.contains(ImportCurriculumsReviewCurriculumsController.STATUS_MODIFIED)) {
 			return true;
 		}
 		
@@ -206,7 +205,7 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedUserRo
 			return switch(COLS[col]) {
 				case rowNum -> Integer.valueOf(userRow.getRowNum());
 				case status -> userRow.getStatus();
-				case infos, infosWarnings, infosErrors -> userRow.getValidationResultsLink();
+				case infos, infosWarnings, infosErrors -> userRow.getValidationStatistics();
 				case ignore -> userRow.getIgnoreEl();
 				case tools -> Boolean.valueOf(userRow.getIgnoreEl() != null && userRow.getIgnoreEl().isEnabled());
 				case organisationIdentifier -> userRow.getOrganisationIdentifier();

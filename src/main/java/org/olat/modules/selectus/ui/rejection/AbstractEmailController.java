@@ -13,6 +13,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -28,8 +29,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingTableOption;
@@ -51,6 +50,7 @@ import org.olat.modules.selectus.ui.components.EmailedIconCellRenderer;
 import org.olat.modules.selectus.ui.components.MultiRatingCellRenderer;
 import org.olat.modules.selectus.ui.components.TooltipCellRenderer;
 import org.olat.modules.selectus.ui.rejection.SelectFormEmailDataModel.Fields;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -213,7 +213,9 @@ public abstract class AbstractEmailController extends StepFormBasicController im
 				secCallback.canSeeApplicationAdministrativeCategories());
 		applicationsDataModel = new SelectFormEmailDataModel(rows, mailLog, ratings, committee, appToCategories, getTranslator(), columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "applications", applicationsDataModel, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("rejection.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("rejection.empty")
+					.build());
 		
 		if(showDecision) {
 			tableEl.setCssDelegate(this);

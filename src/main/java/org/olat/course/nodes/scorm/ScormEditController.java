@@ -122,7 +122,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 
 	// NLS support:
 	
-	private static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
 	private static final String NLS_NO_CP_CHOSEN = "no.cp.chosen";
 	
 	private Panel main;
@@ -162,9 +161,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		main = new Panel("cpmain");
 		cpConfigurationVc = this.createVelocityContainer("edit");
 		
-		chooseCPButton = LinkFactory.createButtonSmall("command.importcp", cpConfigurationVc, this);
+		chooseCPButton = LinkFactory.createButtonSmall("command.select.import", cpConfigurationVc, this);
 		chooseCPButton.setElementCssClass("o_sel_scorm_choose_repofile");
-		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
+		changeCPButton = LinkFactory.createButtonSmall("command.replace", cpConfigurationVc, this);
 		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
 		
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
@@ -177,7 +176,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 			RepositoryEntry re = getScormCPReference(config, false);
 			if (re == null) { // we cannot display the entries name, because the repository entry had been deleted 
 												// between the time when it was chosen here, and now				
-				showError(NLS_ERROR_CPREPOENTRYMISSING);
+				showError("error.resource.deleted");
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				cpConfigurationVc.contextPut(VC_CHOSENCP, translate(NLS_NO_CP_CHOSEN));
 			} else {
@@ -244,10 +243,10 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					ScormCPFileResource.TYPE_NAME, defaultOrganisations, translate("command.choosecp"));			
+					ScormCPFileResource.TYPE_NAME, defaultOrganisations, translate("command.select"));
 			listenTo(searchController);
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.importcp"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.select.import"));
 			listenTo(cmc);
 			cmc.activate();
 		} else if (source == previewLink){
@@ -257,7 +256,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 			if (re == null) { // we cannot preview it, because the repository entry
 												// had been deleted between the time when it was
 												// chosen here, and now				
-				showError("error.cprepoentrymissing");
+				showError("error.resource.deleted");
 			} else {
 				File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 				boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);

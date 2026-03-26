@@ -1814,6 +1814,7 @@ create table o_as_seb_template (
    a_safeexambrowserconfig_xml mediumtext,
    a_safeexambrowserconfig_plist mediumtext,
    a_safeexambrowserconfig_pkey varchar(255),
+   a_safeexambrowserhint mediumtext,
    primary key (id)
 );
 

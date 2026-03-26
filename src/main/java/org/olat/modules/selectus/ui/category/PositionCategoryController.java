@@ -10,6 +10,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -148,7 +149,9 @@ public class PositionCategoryController extends FormBasicController implements P
 	private void setDefaultTableElementSettings(FlexiTableElement tableEl) {
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableMessageKey("category.table.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("category.table.empty")
+				.build());
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(CategoryCols.category.name(), true)));
 	}
 	

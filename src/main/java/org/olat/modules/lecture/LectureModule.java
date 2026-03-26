@@ -158,8 +158,6 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private String assessmentModeSebDefault;
 	@Value("${lecture.assessment.mode.seb.download}")
 	private String assessmentModeSebDownload;
-	@Value("${lecture.assessment.mode.seb.hint}")
-	private String assessmentModeSebHint;
 
 	@Value("${lecture.owner.can.view.all.courses.curriculum:true}")
 	private boolean ownerCanViewAllCoursesInCurriculum;
@@ -420,7 +418,6 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		assessmentModeSebKeys = getStringPropertyValue(ASSESSMENT_MODE_SEB_KEYS, assessmentModeSebKeys);
 		assessmentModeSebDefault = getStringPropertyValue(ASSESSMENT_MODE_SEB_DEFAULT, assessmentModeSebDefault);
 		assessmentModeSebDownload = getStringPropertyValue(ASSESSMENT_MODE_SEB_DOWNLOAD, assessmentModeSebDownload);
-		assessmentModeSebHint = getStringPropertyValue(ASSESSMENT_MODE_SEB_HINT, assessmentModeSebHint);
 	}
 
 	@Override
@@ -680,15 +677,6 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setAssessmentModeSebDownload(boolean download) {
 		assessmentModeSebDownload = download ? "true" : "false";
 		setStringProperty(ASSESSMENT_MODE_SEB_DOWNLOAD, assessmentModeSebDownload, true);
-	}
-
-	public String getAssessmentModeSebHint() {
-		return assessmentModeSebHint;
-	}
-
-	public void setAssessmentModeSebHint(String hint) {
-		this.assessmentModeSebHint = hint;
-		setStringProperty(ASSESSMENT_MODE_SEB_HINT, hint, true);
 	}
 
 	public boolean isOwnerCanViewAllCoursesInCurriculum() {

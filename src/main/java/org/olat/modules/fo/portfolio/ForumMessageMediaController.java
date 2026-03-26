@@ -81,7 +81,7 @@ public class ForumMessageMediaController extends BasicController {
 			for (VFSItem attachment : attachments) {
 				if(attachment instanceof VFSLeaf file) {
 					DownloadComponent downlC = new DownloadComponent("download"+i, file, true,
-							file.getName() + " (" + String.valueOf(file.getSize() / 1024) + " KB)", null,
+							StringHelper.escapeHtml(file.getName()) + " (" + String.valueOf(file.getSize() / 1024) + " KB)", null,
 							CSSHelper.createFiletypeIconCssClassFor(file.getName()));
 					mainVC.put("download"+i, downlC);
 					attachmentsToShow.add(file);

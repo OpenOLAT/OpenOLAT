@@ -307,8 +307,10 @@ public class OpenOLATServlet extends HttpServlet {
 			RequestDispatcher dispatcher = request.getRequestDispatcher(redirectUri);
 			dispatcher.forward(request, response);
 		} else if(dispatchers.containsKey(dispatcherName)) {
-			I18nManager.attachI18nInfoToThread(request);
 			Dispatcher dispatcher = dispatchers.get(dispatcherName);
+			if (dispatcher.isSessionRequired()) {
+				I18nManager.attachI18nInfoToThread(request);
+			}
 			dispatcher.execute(request, response);
 		} else {
 			String dmzPath = "/" + Settings.getLoginPath();

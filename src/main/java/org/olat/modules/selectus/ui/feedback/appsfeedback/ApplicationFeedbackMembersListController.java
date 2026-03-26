@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -231,7 +232,9 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 		membersFeedbackTableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		membersFeedbackTableEl.setExportEnabled(false);
 		membersFeedbackTableEl.setElementCssClass("o_sel_position_reference_list");
-		membersFeedbackTableEl.setEmptyTableMessageKey("apps.feedbacks.members.emtpy");
+		membersFeedbackTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("apps.feedbacks.members.emtpy")
+				.build());
 		membersFeedbackTableEl.setPageSize(20);
 		
 		addMemberButton = uifactory.addFormLink("add.feedback", formLayout, Link.BUTTON);

@@ -1,17 +1,24 @@
-$r.render("dragula")
+$r.render("sortable")
 <div class="o_dashboard_edit">
-	<h3>$r.translate("dashboard.enabled.widgets")</h3>
+	<div class="o_header_with_buttons">
+		<h3>$r.translate("dashboard.enabled.widgets")</h3>
+		<div class="o_button_group o_button_group_right">
+			#if($r.available("adminMenu"))
+				$r.render("adminMenu")
+			#end
+		</div>
+	</div>
+	<div id="o_dashboard_edit_live" class="sr-only" aria-live="polite" aria-atomic="true">#if($r.isNotEmpty($announcement))$r.escapeHtml($announcement)#end</div>
 	<div class="o_dashboard_edit_active_area o_bento_container">
-		<div id="o_dashboard_enabled" class="o_bento o_dashboard_edit_list o_drake">
+		<div id="o_dashboard_enabled" class="o_bento o_dashboard_edit_list">
 				#foreach($widget in $enabledWidgets)
 					<div class="o_bento_box $widget.getCss() o_dashboard_edit_item" data-widget-name="$widget.getName()">
 						<div class="o_dashboard_widget o_bento_content o_dashboard_edit_item_inner">
-							<div class="o_dashboard_edit_header">
-								<span class="o_dashboard_edit_title">$!widget.getTitle()</span>
-								<a href="javascript:;" onclick="${r.openJavaScriptCommand('remove-widget')}, 'widget', '$widget.getName()'); return false;"
-								   class="o_dashboard_edit_remove" title="$r.translate('dashboard.remove')">
-									<i class="o_icon o_icon_trash"></i>
-								</a>
+							<div class="o_dashboard_edit_header o_header_with_buttons">
+								<h4 class="o_dashboard_edit_title">$!widget.getTitle()</h4>
+								<div class="o_button_group o_button_group_right">
+									$r.render("remove_${widget.getName()}")
+								</div>
 							</div>
 							<div class="o_dashboard_edit_drag_zone">
 								<div class="o_dashboard_edit_drag_label">
@@ -29,6 +36,10 @@ $r.render("dragula")
 								<div class="o_skeleton_bar o_skeleton_bar_long"></div>
 								<div class="o_skeleton_bar o_skeleton_bar_short"></div>
 							</div>
+							<div class="o_button_group o_button_group_right">
+								$r.render("up_${widget.getName()}")
+								$r.render("down_${widget.getName()}")
+							</div>
 						</div>
 					</div>
 				#end
@@ -38,9 +49,6 @@ $r.render("dragula")
 		$r.render("dashboard.reset")
 		$r.render("dashboard.save")
 		$r.render("dashboard.cancel")
-		#if($r.available("adminMenu"))
-			$r.render("adminMenu")
-		#end
 	</div>
 	#if($disabledWidgets && $disabledWidgets.size() > 0)
 	<div class="o_dashboard_edit_section">
@@ -50,13 +58,10 @@ $r.render("dragula")
 				<div class="o_bento_box $widget.getCss() o_dashboard_edit_item o_dashboard_edit_item_disabled" data-widget-name="$widget.getName()">
 					<div class="o_dashboard_widget o_bento_content o_dashboard_edit_item_inner">
 						<div class="o_dashboard_edit_header">
-							<span class="o_dashboard_edit_title">$!widget.getTitle()</span>
+							<h4 class="o_dashboard_edit_title">$!widget.getTitle()</h4>
 						</div>
 						<div class="o_dashboard_edit_drag_zone">
-							<a href="javascript:;" onclick="${r.openJavaScriptCommand('add-widget')}, 'widget', '$widget.getName()'); return false;"
-							   class="btn o_button_ghost" title="$r.translate('dashboard.add')">
-								<i class="o_icon o_icon_add"></i> $r.translate("dashboard.add")
-							</a>
+							$r.render("add_${widget.getName()}")
 						</div>
 						<div class="o_skeleton">
 							<div class="o_skeleton_bar o_skeleton_bar_short"></div>
@@ -78,16 +83,28 @@ $r.render("dragula")
 <script>
 "use strict";
 jQuery(function() {
-	destroyDrakes();
-	var container = jQuery('#o_dashboard_enabled').get(0);
-	if (container) {
-		var drake = dragula([container], {
-		}).on('drop', function(el, target, source, sibling) {
-			var draggedName = el.getAttribute('data-widget-name');
-			var siblingName = sibling ? sibling.getAttribute('data-widget-name') : '';
-			${r.openJavaScriptCommand('drop-widget')}, 'dragged', draggedName, 'sibling', siblingName);
-		});
-		registerDrake(drake);
+	var container = document.getElementById('o_dashboard_enabled');
+	if (!container) return;
+
+	function markDirty() {
+		setFlexiFormDirty('$formId');
 	}
+
+	Sortable.create(container, {
+		animation: 150,
+		ghostClass: 'gu-transit',
+		draggable: '.o_dashboard_edit_item',
+		onEnd: function(evt) {
+			var draggedName = evt.item.getAttribute('data-widget-name');
+			var sibling = evt.item.nextElementSibling;
+			var siblingName = sibling ? sibling.getAttribute('data-widget-name') || '' : '';
+			markDirty();
+			/* send state change to controller, response re-renders move buttons */
+			o_ffXHREvent('$formName','$formId','$editContId','$eventFieldId','2',false,false,false,false,'fcid','drop-widget','draggedName',draggedName,'siblingName',siblingName);
+		}
+	});
 });
 </script>
+
+
+

@@ -19,9 +19,13 @@
  */
 package org.olat.modules.curriculum.ui.widgets;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.ui.component.RelevanceSortable;
 
 /**
  * 
@@ -29,12 +33,15 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ImplementationRow implements OLATResourceable {
-	
+public class ImplementationRow implements OLATResourceable, RelevanceSortable {
+
 	private Long key;
 	private String externalRef;
 	private String displayName;
 	private String status;
+	private CurriculumElementStatus elementStatus;
+	private Date beginDate;
+	private Date endDate;
 	private String executionPeriod;
 	private String translatedTechnicalType;
 	private Long resourceableId;
@@ -74,7 +81,34 @@ public class ImplementationRow implements OLATResourceable {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
+	@Override
+	public CurriculumElementStatus getElementStatus() {
+		return elementStatus;
+	}
+
+	public void setElementStatus(CurriculumElementStatus elementStatus) {
+		this.elementStatus = elementStatus;
+	}
+
+	@Override
+	public Date getBeginDate() {
+		return beginDate;
+	}
+
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
+	}
+
+	@Override
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
 	public String getExecutionPeriod() {
 		return executionPeriod;
 	}

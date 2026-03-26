@@ -29,6 +29,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +61,9 @@ public class GenericAiSPI extends AbstractSpringModule {
 
 	@Autowired
 	private AiPromptHelper aiPromptHelper;
+
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Autowired
 	public GenericAiSPI(CoordinatorManager coordinatorManager) {
@@ -185,5 +189,9 @@ public class GenericAiSPI extends AbstractSpringModule {
 
 	AiPromptHelper getAiPromptHelper() {
 		return aiPromptHelper;
+	}
+
+	HttpClientService getHttpClientService() {
+		return httpClientService;
 	}
 }

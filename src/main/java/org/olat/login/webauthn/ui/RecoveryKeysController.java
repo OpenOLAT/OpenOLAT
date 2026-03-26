@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,10 @@ public class RecoveryKeysController extends FormBasicController {
 	
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator creator = getResultControllerCreator();
-		openInNewBrowserWindow(ureq, creator, true);
+		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager()
+				.createNewUnauthenticatedPopupWindowFor(ureq, creator);
+		pbw.setForPrint(true);
+		pbw.open(ureq);
 	}
 	
 	private ControllerCreator getResultControllerCreator() {

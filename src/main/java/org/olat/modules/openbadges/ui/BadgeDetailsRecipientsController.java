@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -115,7 +116,9 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		tableModel = new TableModel(columnModel, userManager, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("form.recipients.none");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("form.recipients.none")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-recipients");
 	}
 

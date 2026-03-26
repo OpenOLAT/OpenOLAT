@@ -429,9 +429,9 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date recurrenceEnd = cal.getTime();
 		String rule = calendarManager.getRecurrenceRule("WEEKLY", recurrenceEnd, false);
 		Assert.assertNotNull(rule);
-		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228T000000Z;COUNT=-1", rule);
+		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228T000000Z", rule);
 	}
-	
+
 	@Test
 	public void getWeeklyRecurrenceRuleAllDay() {
 		Calendar cal = Calendar.getInstance();
@@ -439,7 +439,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date recurrenceEnd = cal.getTime();
 		String rule = calendarManager.getRecurrenceRule("WEEKLY", recurrenceEnd, true);
 		Assert.assertNotNull(rule);
-		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228;COUNT=-1", rule);
+		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228", rule);
 	}
 	
 	@Test
@@ -635,6 +635,31 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	throws IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
 		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("RecurenceLocalDate.ics");
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		ZonedDateTime startDate = ZonedDateTime.of(2025, 9, 10, 10, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime endDate = ZonedDateTime.of(2025, 10, 17, 10, 0, 0, 0, ZoneId.systemDefault());
+		
+		List<KalendarEvent> recurringEvents = calendarManager.getEvents(importedCalendar.getKalendar(), startDate, endDate, true);
+		Assert.assertEquals(6, recurringEvents.size());
+		
+		List<KalendarEvent> recurringRecurEvents =  recurringEvents.stream()
+				.filter(event -> event instanceof KalendarRecurEvent)
+				.toList();
+		Assert.assertEquals(6, recurringRecurEvents.size());
+	}
+	
+	@Test
+	public void calendarRecurringEventUntilLocalDateIllegalCount()
+	throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("RecurenceLocalDateIllegalCount.ics");
 		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
 		String calendarName = UUID.randomUUID().toString().replace("-", "");
 		

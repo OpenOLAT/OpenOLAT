@@ -42,7 +42,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserEnabled;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
@@ -95,10 +94,9 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected FormLayoutContainer sebConfigCont;
 
 	private List<SafeExamBrowserTemplate> templates;
+	private String defaultSafeExamBrowserHint;
 	private SafeExamBrowserEnabled configuration;
 	
-	@Autowired
-	private AssessmentModule assessmentModule;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
@@ -122,8 +120,11 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		SafeExamBrowserConfiguration sebConfig = configuration.getSafeExamBrowserConfiguration();
 		if(sebConfig == null) {
-			// create a default configuration
-			sebConfig = assessmentModeMgr.getDefaultSafeExamBrowserConfiguration();
+			SafeExamBrowserTemplate defaultTemplate = assessmentModeMgr.getDefaultSafeExamBrowserTemplate();
+			sebConfig = defaultTemplate.getSafeExamBrowserConfiguration();
+			defaultSafeExamBrowserHint = defaultTemplate.getSafeExamBrowserHint();
+		} else {
+			defaultSafeExamBrowserHint = assessmentModeMgr.getDefaultSafeExamBrowserTemplate().getSafeExamBrowserHint();
 		}
 		
 		FormLayoutContainer enableCont = FormLayoutContainer.createDefaultFormLayout("enable.container", getTranslator());
@@ -373,6 +374,14 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 				if(sebConfig != null) {
 					updateConfigurationValues(sebConfig);
 				}
+				String configPListKey = selectedTemplate.getSafeExamBrowserConfigPListKey();
+				safeExamBrowserConfigKeyEl.setValue(configPListKey != null ? configPListKey : "");
+				String templateHint = selectedTemplate.getSafeExamBrowserHint();
+				safeExamBrowserHintEl.setValue(templateHint != null ? templateHint : "");
+				
+				if(StringHelper.containsNonWhitespace(sebConfig.getLinkToQuit())) {
+					linkToQuitEl.setExampleKey("noTransOnlyParam", new String[] { sebConfig.getLinkToQuit() });
+				}
 			}
 		}
 
@@ -443,8 +452,9 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 
 		// Both
 		safeExamBrowserHintEl.setVisible(enabled);
-		if(enabled && !StringHelper.containsNonWhitespace(safeExamBrowserHintEl.getValue())) {
-			safeExamBrowserHintEl.setValue(assessmentModule.getSafeExamBrowserHint());
+		safeExamBrowserHintEl.setEnabled(isEditable() && !(inConfig && useTemplate));
+		if(enabled && !(inConfig && useTemplate) && !StringHelper.containsNonWhitespace(safeExamBrowserHintEl.getValue())) {
+			safeExamBrowserHintEl.setValue(defaultSafeExamBrowserHint != null ? defaultSafeExamBrowserHint : "");
 		}
 	}
 
@@ -576,18 +586,20 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 				configuration.setSafeExamBrowserKey(safeExamBrowserKeyEl.getValue());
 				configuration.setSafeExamBrowserConfiguration(null);
 				configuration.setSafeExamBrowserTemplate(null);
+				configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 			} else if(configSourceEl.isKeySelected("template") && templateEl.isOneSelected()) {
 				configuration.setSafeExamBrowserKey(null);
 				SafeExamBrowserTemplate selectedTemplate = getSelectedTemplate();
 				configuration.setSafeExamBrowserTemplate(selectedTemplate);
 				configuration.setSafeExamBrowserConfigDownload(downloadConfigEl.isOneSelected() && downloadConfigEl.isKeySelected("true"));
+				configuration.setSafeExamBrowserHint(null);
 			} else {
 				configuration.setSafeExamBrowserKey(null);
 				configuration.setSafeExamBrowserTemplate(null);
 				configuration.setSafeExamBrowserConfiguration(getConfiguration());
 				configuration.setSafeExamBrowserConfigDownload(downloadConfigEl.isOneSelected() && downloadConfigEl.isKeySelected("true"));
+				configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 			}
-			configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 		} else {
 			configuration.setSafeExamBrowserKey(null);
 			configuration.setSafeExamBrowserHint(null);

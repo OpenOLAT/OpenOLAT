@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -308,7 +309,9 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		additionalTableEl = uifactory.addTableElement(getWindowControl(), "attributes", additionalTableModel, 24, false, getTranslator(), formLayout);
 		additionalTableEl.setNumOfRowsEnabled(false);
 		additionalTableEl.setCustomizeColumns(false);
-		additionalTableEl.setEmptyTableMessageKey(position == null ? "no.custom.global.attributes" : "no.custom.attributes");
+		additionalTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey(position == null ? "no.custom.global.attributes" : "no.custom.attributes")
+					.build());
 		additionalTableEl.setElementCssClass("o_edit_ml_table");
 		
 		FormSubmit saveButton = uifactory.addFormSubmitButton("save", formLayout);

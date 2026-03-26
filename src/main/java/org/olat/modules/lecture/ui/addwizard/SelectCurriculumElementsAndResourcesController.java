@@ -33,6 +33,7 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -140,7 +141,10 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		entriesTableEl.setRendererType(FlexiTableRendererType.custom);
 		entriesTableEl.setNumOfRowsEnabled(false);
 		entriesTableEl.setCssDelegate(new CSSEntriesDelegate());
-		entriesTableEl.setEmptyTableSettings("empty.course.list", null, "o_CourseModule_icon");
+		entriesTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.course.list")
+				.withIconCss("o_CourseModule_icon")
+				.build());
 		
 		VelocityContainer row = new VelocityContainer(null, "vc_row1", velocity_root + "/entry_1.html",
 				getTranslator(), this);

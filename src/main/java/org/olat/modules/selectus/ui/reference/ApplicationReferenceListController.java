@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -170,7 +171,9 @@ public class ApplicationReferenceListController extends FormBasicController {
 		expertTableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		expertTableEl.setExportEnabled(false);
 		expertTableEl.setElementCssClass("o_sel_position_expert_list");
-		expertTableEl.setEmptyTableMessageKey("recommendation.list.add.expert.empty");
+		expertTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("recommendation.list.add.expert.empty")
+				.build());
 		expertTableEl.setPageSize(20);
 
 		addExpertButton = uifactory.addFormLink("add.expert", formLayout, Link.BUTTON);
@@ -200,7 +203,9 @@ public class ApplicationReferenceListController extends FormBasicController {
 		recommendationTableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		recommendationTableEl.setExportEnabled(false);
 		recommendationTableEl.setElementCssClass("o_sel_position_reference_list");
-		recommendationTableEl.setEmptyTableMessageKey("recommendation.list.add.referee.empty");
+		recommendationTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("recommendation.list.add.referee.empty")
+				.build());
 		recommendationTableEl.setPageSize(20);
 		
 		addReferenceButton = uifactory.addFormLink("add.recommendation", formLayout, Link.BUTTON);
@@ -230,7 +235,9 @@ public class ApplicationReferenceListController extends FormBasicController {
 		comparativeExpertTableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		comparativeExpertTableEl.setExportEnabled(false);
 		comparativeExpertTableEl.setElementCssClass("o_sel_position_comparative_experts_list");
-		comparativeExpertTableEl.setEmptyTableMessageKey("recommendation.list.add.comparative.expert.empty");
+		comparativeExpertTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("recommendation.list.add.comparative.expert.empty")
+				.build());
 		comparativeExpertTableEl.setPageSize(20);
 		
 		addComparativeExpertButton = uifactory.addFormLink("add.comparative.expert", formLayout, Link.BUTTON);

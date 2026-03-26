@@ -42,7 +42,7 @@ public class CertificationProgramDashboardController extends BasicController {
 	public CertificationProgramDashboardController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
 		super(ureq, wControl);
 		
-		dashboardCtrl = new DashboardController(ureq, wControl, this.getClass().getName());
+		dashboardCtrl = new DashboardController(ureq, wControl, "dashboard.certification.program");
 		listenTo(dashboardCtrl);
 		
 		activeMembersCtrl = new ActiveMembersWidgetController(ureq, getWindowControl(), certificationProgram);

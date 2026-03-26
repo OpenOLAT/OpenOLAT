@@ -529,6 +529,7 @@ public class CurriculumElementDAO {
 		  .append(" from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
+		  .append(" inner join fetch el.resource resource")
 		  .append(" left join fetch el.type curElementType")
 		  .append(" left join el.parent parentEl")
 		  .append(" left join curriculum.organisation organis")

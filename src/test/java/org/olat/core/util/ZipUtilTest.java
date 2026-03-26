@@ -83,6 +83,23 @@ public class ZipUtilTest extends OlatTestCase {
 		Assert.assertTrue(success);
 		targetDir.deleteSilently();
 	}
+	
+	@Test
+	public void unzipNonStrictFileToDir() throws Exception {
+		URL url = ZipUtilTest.class.getResource("Slide.zip");
+		File zipFile = new File(url.toURI());
+		
+		VFSContainer tmpDir = VFSManager.olatRootContainer(FolderConfig.getRelativeTmpDir());
+		tmpDir.setLocalSecurityCallback(new FullAccessCallback());
+		VFSContainer targetDir = tmpDir.createChildContainer("zip" + CodeHelper.getForeverUniqueID());
+		
+		boolean success = ZipUtil.unzipNonStrict(zipFile, targetDir, (Identity)null, false);
+		Assert.assertFalse(success);
+		
+		VFSItem img = tmpDir.resolve("IMG_1489.png");
+		Assert.assertNull(img);
+		targetDir.deleteSilently();
+	}
 
 	@Test
 	public void unzipFileToDir() throws Exception {

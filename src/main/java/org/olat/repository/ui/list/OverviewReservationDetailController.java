@@ -48,6 +48,7 @@ import org.olat.modules.curriculum.ui.CurriculumElementRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,7 +91,7 @@ public class OverviewReservationDetailController extends BasicController {
 				MapperKey ceMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, ceImageMapper);
 
 				List<MembershipRow> curriculumElementRows = buildMembershipRows(element,
-						reImageMapper, reMapperKey, ceImageMapper, ceMapperKey);
+						row.getReservations(), reImageMapper, reMapperKey, ceImageMapper, ceMapperKey);
 				if (!curriculumElementRows.isEmpty()) {
 					mainVC.contextPut("curriculumElementRows", curriculumElementRows);
 				}
@@ -100,27 +101,39 @@ public class OverviewReservationDetailController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	private List<MembershipRow> buildMembershipRows(CurriculumElement element,
-			RepositoryEntryImageMapper reImageMapper, MapperKey reMapperKey,
-			CurriculumElementImageMapper ceImageMapper, MapperKey ceMapperKey) {
+	private List<MembershipRow> buildMembershipRows(CurriculumElement element, List<ResourceReservation> reservations,
+			RepositoryEntryImageMapper reImageMapper, MapperKey reMapperKey, CurriculumElementImageMapper ceImageMapper,
+			MapperKey ceMapperKey) {
+		Set<Long> pendingElementKeys = reservations.stream()
+				.map(r -> r.getResource().getResourceableId())
+				.collect(Collectors.toSet());
+
 		Collator collator = Collator.getInstance(getLocale());
 
 		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
 		List<CurriculumElement> sortedDescendants = sortedByComparator(descendants, element);
+		List<CurriculumElement> pendingDescendants = sortedDescendants.stream()
+				.filter(d -> pendingElementKeys.contains(d.getKey()))
+				.toList();
 
-		Map<Long, VFSThumbnailInfos> ceThumbnails = ceImageMapper.getThumbnails(sortedDescendants);
+		Map<Long, VFSThumbnailInfos> ceThumbnails = ceImageMapper.getThumbnails(pendingDescendants);
 
 		List<CurriculumElement> allElements = new ArrayList<>();
-		allElements.add(element);
-		allElements.addAll(sortedDescendants);
+		if (pendingElementKeys.contains(element.getKey())) {
+			allElements.add(element);
+		}
+		allElements.addAll(pendingDescendants);
 		Map<Long, Set<RepositoryEntry>> entriesByElementKey = curriculumService.getCurriculumElementKeyToRepositoryEntries(allElements);
 
-		List<RepositoryEntry> mainCourses = new ArrayList<>(entriesByElementKey.getOrDefault(element.getKey(), Set.of()));
-		mainCourses.sort(Comparator.comparing(RepositoryEntry::getDisplayname, collator));
+		List<RepositoryEntry> mainCourses = List.of();
+		if (pendingElementKeys.contains(element.getKey())) {
+			mainCourses = new ArrayList<>(entriesByElementKey.getOrDefault(element.getKey(), Set.of()));
+			mainCourses.sort(Comparator.comparing(RepositoryEntry::getDisplayname, collator));
+		}
 
 		Map<Long, List<RepositoryEntry>> coursesByDescKey = new HashMap<>();
 		List<RepositoryEntry> allCourses = new ArrayList<>(mainCourses);
-		for (CurriculumElement desc : sortedDescendants) {
+		for (CurriculumElement desc : pendingDescendants) {
 			List<RepositoryEntry> courses = new ArrayList<>(entriesByElementKey.getOrDefault(desc.getKey(), Set.of()));
 			courses.sort(Comparator.comparing(RepositoryEntry::getDisplayname, collator));
 			coursesByDescKey.put(desc.getKey(), courses);
@@ -136,7 +149,7 @@ public class OverviewReservationDetailController extends BasicController {
 					toMembershipRows(mainCourses, reThumbnails, reMapperKey)));
 		}
 
-		for (CurriculumElement desc : sortedDescendants) {
+		for (CurriculumElement desc : pendingDescendants) {
 			List<RepositoryEntry> courses = coursesByDescKey.get(desc.getKey());
 			String translatedType = desc.getType() != null ? desc.getType().getDisplayName() : null;
 			VFSThumbnailInfos ceThumbnail = ceThumbnails.get(desc.getKey());

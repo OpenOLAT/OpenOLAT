@@ -39,10 +39,12 @@ public class AssessmentInspectionWizardPage {
 	}
 	
 	public AssessmentInspectionWizardPage selectCourseElement(String name) {
-		By selecBy = By.xpath("//div[contains(@class,'o_sel_assessment_inspection_select_node')]//table//tr[td/div/a/span[text()[contains(.,'" + name + "')]]]/td/input[@name='tb_ms'][@type='radio']");
-		OOGraphene.waitElement(selecBy, browser);
-		browser.findElement(selecBy).click();
+		By selectBy = By.xpath("//div[contains(@class,'o_sel_assessment_inspection_select_node')]//table//tr[td/div/a/span[text()[contains(.,'" + name + "')]]]/td/input[@name='tb_ms'][@type='radio']");
+		OOGraphene.waitElement(selectBy, browser).click();
 		
+		By selectedBy = By.xpath("//div[contains(@class,'o_sel_assessment_inspection_select_node')]//table//tr[@class='o_row_selected']/td/div/a/span[text()[contains(.,'" + name + "')]]");
+		OOGraphene.waitElement(selectedBy, browser);
+
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.className("o_sel_assessment_inspection_select_participants"), browser);
 		return this;

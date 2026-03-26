@@ -33,6 +33,7 @@ import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -124,7 +125,12 @@ public class CourseArchiveListController extends ExportsListController implement
 	protected void initTable(FlexiTableElement tableElement) {
 		super.initTable(tableElement);
 		
-		tableElement.setEmptyTableSettings("course.archive.empty", null, "o_icon_coursearchive", "course.archive.empty.action", "o_icon_add", false);
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withMessageI18nKey("course.archive.empty")
+				.withIconCss("o_icon_coursearchive")
+				.withPrimaryButton("o_icon_add", "course.archive.empty.action", null)
+				.build();
+		tableElement.setEmptyStateConfig(emptyState, false);
 	}
 
 	@Override

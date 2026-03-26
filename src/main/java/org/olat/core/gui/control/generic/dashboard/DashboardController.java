@@ -59,8 +59,8 @@ public class DashboardController extends BasicController {
 
 	private final String dashboardId;
 	private final List<Widget> allWidgets = new ArrayList<>();
-	private List<String> enabledWidgetNames = null;
-	private List<String> systemDefaultEnabledWidgetNames = null;
+	private DashboardPrefs prefs;
+	private DashboardPrefs systemDefaultPrefs;
 	private final List<Widget> enabledWidgets = new ArrayList<>();
 	private final Map<String, Widget> widgetsByName = new HashMap<>();
 
@@ -68,13 +68,6 @@ public class DashboardController extends BasicController {
 
 	@Autowired
 	private DashboardSystemDefaultsManager dashboardSystemDefaultsManager;
-
-	/**
-	 * Creates a dashboard without edit support (backward compatible).
-	 */
-	public DashboardController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
 
 	/**
 	 * Creates a dashboard with edit support.
@@ -92,11 +85,10 @@ public class DashboardController extends BasicController {
 			editLink = LinkFactory.createButton("dashboard.edit", mainVC, this);
 			editLink.setGhost(true);
 			editLink.setIconLeftCSS("o_icon o_icon_edit");
-			// load from the users preferences and system defaults
-			enabledWidgetNames = loadEnabledNames(ureq);
-			systemDefaultEnabledWidgetNames = loadSystemDefaultEnabledNames();
+			prefs = loadPrefs(ureq);
+			systemDefaultPrefs = loadSystemDefaultPrefs();
 			log.debug("Dashboard '{}' initialized: personal={}, systemDefault={}", dashboardId,
-					enabledWidgetNames != null, systemDefaultEnabledWidgetNames != null);
+					prefs != null, systemDefaultPrefs != null);
 		}
 
 		mainVC.contextPut("hasWidgets", Boolean.FALSE);
@@ -142,82 +134,73 @@ public class DashboardController extends BasicController {
 		if (source == editCtrl) {
 			cleanUpEdit();
 			if (event == Event.CHANGED_EVENT) {
-				reloadAndApplyConfiguration(ureq);				
+				reloadAndApplyConfiguration(ureq);
 			}
 		}
 	}
 
-	private List<String> loadEnabledNames(UserRequest ureq) {
+	private DashboardPrefs loadPrefs(UserRequest ureq) {
 		if (dashboardId == null) return null;
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		Object stored = guiPrefs.get(DashboardController.class, dashboardId);
-		if (stored instanceof DashboardPrefs prefs) {
-			return prefs.getEnabledWidgets();
+		if (stored instanceof DashboardPrefs storedPrefs) {
+			return storedPrefs;
 		}
 		return null;
 	}
 
-	private List<String> loadSystemDefaultEnabledNames() {
+	private DashboardPrefs loadSystemDefaultPrefs() {
 		if (dashboardId == null) return null;
-		DashboardPrefs prefs = dashboardSystemDefaultsManager.loadSystemDefault(dashboardId);
-		if (prefs != null) {
-			return prefs.getEnabledWidgets();
-		}
-		return null;
+		return dashboardSystemDefaultsManager.loadSystemDefault(dashboardId);
 	}
 
 	private void reloadAndApplyConfiguration(UserRequest ureq) {
-		enabledWidgetNames = loadEnabledNames(ureq);
-		systemDefaultEnabledWidgetNames = loadSystemDefaultEnabledNames();
+		prefs = loadPrefs(ureq);
+		systemDefaultPrefs = loadSystemDefaultPrefs();
 		applyConfiguration();
 	}
 
 	private void applyConfiguration() {
+		ResolvedWidgets resolved = resolveWidgets(getEffectivePrefs(prefs, systemDefaultPrefs));
 		enabledWidgets.clear();
-		// Cascade: personal > system default > all widgets
-		List<String> effectiveNames = enabledWidgetNames;
-		if (effectiveNames == null) {
-			effectiveNames = systemDefaultEnabledWidgetNames;
-		}
-		if (effectiveNames != null) {
-			for (String name : effectiveNames) {
-				Widget w = widgetsByName.get(name);
-				if (w != null) {
-					enabledWidgets.add(w);
-				}
-			}
-		} else {
-			enabledWidgets.addAll(allWidgets);
-		}
+		enabledWidgets.addAll(resolved.enabled());
 	}
 
 	private void doEdit(UserRequest ureq) {
 		cleanUpEdit();
+		ResolvedWidgets resolved = resolveWidgets(getEffectivePrefs(loadPrefs(ureq), loadSystemDefaultPrefs()));
+		editCtrl = new DashboardEditController(ureq, getWindowControl(), dashboardId, resolved.enabled(), resolved.disabled());
+		listenTo(editCtrl);
+		mainPanel.setContent(editCtrl.getInitialComponent());
+	}
 
-		// Cascade: personal > system default > all widgets
-		List<String> effectiveNames = loadEnabledNames(ureq);
-		if (effectiveNames == null) {
-			effectiveNames = loadSystemDefaultEnabledNames();
-		}
+	private DashboardPrefs getEffectivePrefs(DashboardPrefs personal, DashboardPrefs systemDefault) {
+		return personal != null ? personal : systemDefault;
+	}
+
+	private record ResolvedWidgets(List<Widget> enabled, List<Widget> disabled) {}
+
+	private ResolvedWidgets resolveWidgets(DashboardPrefs effectivePrefs) {
 		List<Widget> enabled = new ArrayList<>();
 		List<Widget> disabled = new ArrayList<>();
-		if (effectiveNames != null) {
-			for (String name : effectiveNames) {
+		if (effectivePrefs != null) {
+			for (String name : effectivePrefs.getEnabledWidgets()) {
 				Widget w = widgetsByName.get(name);
-				if (w != null) enabled.add(w);
+				if (w != null) {
+					enabled.add(w);
+				}
 			}
 			for (Widget w : allWidgets) {
-				if (!effectiveNames.contains(w.getName())) {
+				if (effectivePrefs.getDisabledWidgets().contains(w.getName())) {
 					disabled.add(w);
+				} else if (!enabled.contains(w)) {
+					enabled.add(w);
 				}
 			}
 		} else {
 			enabled.addAll(allWidgets);
 		}
-
-		editCtrl = new DashboardEditController(ureq, getWindowControl(), dashboardId, enabled, disabled);
-		listenTo(editCtrl);
-		mainPanel.setContent(editCtrl.getInitialComponent());
+		return new ResolvedWidgets(enabled, disabled);
 	}
 
 	private void cleanUpEdit() {

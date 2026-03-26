@@ -311,7 +311,8 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		  .append(" from cepage as page")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch section.binder as binder")
-		  .append(" left join evaluationformsession as evasession on (page.body.key = evasession.pageBody.key)")
+		  .append(" left join evaluationformsurvey as evasurvey on (page.body.key = evasurvey.resId and evasurvey.resName='portfolio-evaluation')")
+		  .append(" left join evaluationformsession as evasession on (evasurvey.key = evasession.survey.key)")
 		  .append(" where binder.key=:binderKey and evasession.status='done' and evasession.submissionDate>=:compareDate");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()

@@ -18,6 +18,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -215,7 +216,9 @@ public class PositionMailCenterController extends FormBasicController {
 		tableModel = new PositionMailCenterDataModel(getTranslator(), columnsModel, mailTemplates);
 		tableEl = uifactory.addTableElement(getWindowControl(), "log", tableModel, 40, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
-		tableEl.setEmptyTableMessageKey("rejection.table.log.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("rejection.table.log.empty")
+				.build());
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(Fields.logCreationDate.name(), false));
 		tableEl.setAndLoadPersistedPreferences(ureq, COLUMN_PREFS);

@@ -40,6 +40,7 @@ import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -514,9 +515,17 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (getSecurityCallback().canCreateToDoTasks() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task", "task.create", "o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey(getEmptyMessageI18nKey())
+					.withIconCss("o_icon_todo_task")
+					.withPrimaryButton("o_icon_add", "task.create", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey(getEmptyMessageI18nKey())
+					.withIconCss("o_icon_todo_task")
+					.build());
 		}
 		
 		if (bulkDeleteButton != null) {

@@ -580,10 +580,17 @@ public class QItemQueriesDAO {
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
 					break;
-				default:
+				case "key", "identifier", "masterIdentifier", "title", "topic", "creationDate",
+						"lastModified", "educationalContext", "difficulty", "stdevDifficulty",
+						"differentiation", "numOfAnswerAlternatives", "usage", "educationalLearningTime",
+						"type", "format", "itemVersion", "status", "statusLastModified", "license",
+						"editable", "correctionTime", "language", "maxScore":
 					sb.append(itemDbRef).append(".").append(sortKey);
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
+					break;
+				default:
+					sb.append(" order by item.key asc ");
 					break;
 			}
 		} else {

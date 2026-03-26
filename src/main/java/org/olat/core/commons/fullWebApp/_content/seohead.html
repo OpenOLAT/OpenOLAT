@@ -18,7 +18,11 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="$r.escapeHtml($seo.canonicalUrl)">
 <meta property="og:title" content="$r.escapeHtml($windowTitle.getValue())">
+#if($seo.metaOrganisationName)
+<meta property="og:site_name" content="$r.escapeHtml($seo.metaOrganisationName)">
+#else 
 <meta property="og:site_name" content="$r.translate("page.appname")">
+#end
 <meta property="og:locale" content="$r.getLanguageCode()">
 #if($seo.metaDescription)
 <meta property="og:description" content="$r.escapeHtml($seo.metaDescription)">

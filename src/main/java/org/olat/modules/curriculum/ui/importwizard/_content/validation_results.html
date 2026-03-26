@@ -20,7 +20,7 @@
 	<h4><i class='o_icon o_icon-fw o_icon_changes'> </i> $r.translate("changed.values")</h4>
 	<ul>
 	#foreach($change in $changes)
-		<li>$change.column : "$r.escapeHtml($change.beforeValue)"/"$r.escapeHtml($change.afterValue)"</li>
+		<li>$change.column : "$change.beforeValue"/"$change.afterValue"</li>
 	#end
 	</ul>
 #end

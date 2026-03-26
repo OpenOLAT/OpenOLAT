@@ -129,10 +129,9 @@ public class RecentlyPublishedHandler implements CatalogLauncherHandler {
 		}
 		
 		if (config.getResourceTypes() != null && !config.getResourceTypes().isEmpty()) {
-			String types = repositoryHandlerFactory.getOrderRepositoryHandlers().stream()
+			String types = repositoryHandlerFactory.getMainOrderRepositoryHandlers().stream()
 					.map(handler -> handler.getHandler().getSupportedType())
 					.filter(type -> config.getResourceTypes().contains(type))
-					.sorted((t1, t2) -> repositoyTranslator.translate(t1).compareTo(repositoyTranslator.translate(t2)))
 					.map(type -> "<i class=\"" + "o_icon o_icon-fw ".concat(RepositoyUIFactory.getIconCssClass(type)) + "\"> </i>" + repositoyTranslator.translate(type))
 					.collect(Collectors.joining(", "));
 			if (StringHelper.containsNonWhitespace(types)) {

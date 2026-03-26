@@ -28,6 +28,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -140,7 +141,12 @@ public class DialogElementListEditController extends FormBasicController {
 		tableModel = new DialogElementsTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setPageSize(25);
-		tableEl.setEmptyTableSettings("table.empty.message", null, "o_dialog_icon", "dialog.upload.file", "o_icon_add", false);
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.message")
+				.withIconCss("o_dialog_icon")
+				.withPrimaryButton("o_icon_add", "dialog.upload.file", null)
+				.build();
+		tableEl.setEmptyStateConfig(emptyState, false);
 	}
 	
 	protected void loadModel() {

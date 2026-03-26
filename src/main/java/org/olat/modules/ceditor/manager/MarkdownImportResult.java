@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Result of a markdown-to-page conversion and persistence.
  *
- * @param warnings   Human-readable warning messages for partial conversion issues
+ * @param warnings   Warning i18n keys with tab-separated arguments for partial conversion issues
  *
  * Initial date: 2026-03-11<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com

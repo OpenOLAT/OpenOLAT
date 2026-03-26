@@ -905,7 +905,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				ZonedDateTime occurenceDate = CalendarUtils.convertTemporal(localDate, calendarModule.getDefaultZoneId());
 				Recur<Temporal> recur = new Recur.Builder<>(new Recur<>(recurenceValue))
 						.until(occurenceDate)
-						.count(-1)
+						.count(null)
 						.build();
 				calEvent.setRecurrenceRule(recur.toString());
 			} else {
@@ -1114,7 +1114,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
 				String rRule = rootEvent.getRecurrenceRule();
 				
-				//iCal4j 3: RRULE:FREQ=DAILY;UNTIL=20250306;COUNT=-1
+				//iCal4j: RRULE:FREQ=DAILY;UNTIL=20250306
 				Temporal occurenceDate;
 				if(kalendarEvent.isAllDayEvent()) {
 					occurenceDate = occurenceDateTime.toLocalDate()
@@ -1125,7 +1125,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				}
 				Recur<Temporal> recur = new Recur.Builder<>(new Recur<>(rRule))
 					.until(occurenceDate)
-					.count(-1)
+					.count(null)
 					.build();
 				RRule<Temporal> rrule = new RRule<>(recur);
 				rootEvent.setRecurrenceRule(rrule.getValue());
@@ -1545,7 +1545,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 							.withSecond(0);
 					recurrenceEndStr = CalendarDateFormat.FLOATING_DATE_TIME_FORMAT.format(recurrenceEndDateTime) + "Z";
 				}
-				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurrenceEndStr).append(";COUNT=-1");
+				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurrenceEndStr);
 			}
 			
 			try {

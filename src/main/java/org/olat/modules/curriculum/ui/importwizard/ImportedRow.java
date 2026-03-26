@@ -149,7 +149,8 @@ public class ImportedRow extends AbstractImportRow {
 	}
 	
 	public boolean isNew() {
-		return (type == CurriculumExportType.CUR && curriculum == null)
+		return (type == null)
+				|| (type == CurriculumExportType.CUR && curriculum == null)
 				|| (type == CurriculumExportType.IMPL && curriculumElement == null)
 				|| (type == CurriculumExportType.ELEM && curriculumElement == null)
 				|| (type == CurriculumExportType.EVENT && lectureBlock == null);
@@ -342,6 +343,15 @@ public class ImportedRow extends AbstractImportRow {
 			templateRows = new ArrayList<>(3);
 		}
 		templateRows.add(row);
+	}
+	
+	public void clearRepositoryEntries() {
+		if(courseRows != null) {
+			courseRows = new ArrayList<>(3);
+		}
+		if(templateRows != null) {
+			templateRows = new ArrayList<>(3);
+		}
 	}
 	
 	private void addSubElementRow(ImportedRow row) {

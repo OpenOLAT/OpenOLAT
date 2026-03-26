@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -191,7 +192,11 @@ public class MediaRelationsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(!delaySave);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("table.empty.shares", "table.empty.shares.desc", "o_icon_share_alt", null, null, false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.shares")
+				.withHintI18nKey("table.empty.shares.desc")
+				.withIconCss("o_icon_share_alt")
+				.build(), false);
 		
 		initFilter();
 		initFiltersPresets();

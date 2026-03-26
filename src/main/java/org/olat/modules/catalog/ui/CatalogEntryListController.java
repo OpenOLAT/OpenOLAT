@@ -46,6 +46,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -118,6 +119,7 @@ import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumInfoHelper;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -352,7 +354,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(listParams.isWithSearch());
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", "o_CourseModule_icon");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.search.empty")
+				.withHintI18nKey("table.search.empty.hint")
+				.withIconCss("o_CourseModule_icon")
+				.build());
 		tableEl.setElementCssClass("o_coursetable");
 		// Is (more or less) the same visualization as row_1.html
 		VelocityContainer row = createVelocityContainer("catalog_entry_row");
@@ -1086,19 +1092,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 			getWindow().setTitle(windowTitle);
 			// SEO: set per-entry meta data for catalog detail pages
 			SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
-			String metaDesc = ResourceInfoHelper.buildMetaDescription(curriculumElement, getLocale(), getTranslator());
-			if (StringHelper.containsNonWhitespace(metaDesc)) {
-				seo.setMetaDescription(metaDesc);
-			}
-			if (searchParams.isWebPublish()) {
-				seo.setCanonicalUrl(CatalogBCFactory.get(true).getOfferUrl(curriculumElement.getResource()));
-				if (entry != null) {
-					String ogImageUrl = ResourceInfoHelper.buildOgImageUrl(entry, repositoryService);
-					if (ogImageUrl != null) {
-						seo.setOgImageUrl(ogImageUrl);
-					}
-				}
-			}
+			String canonicalUrl = searchParams.isWebPublish()
+					? CatalogBCFactory.get(true).getOfferUrl(curriculumElement.getResource()) : null;
+			CurriculumInfoHelper.populateSeoMetadata(seo, curriculumElement, entry,
+					canonicalUrl, getLocale(), getTranslator(), repositoryService);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();

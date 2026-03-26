@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -95,7 +96,12 @@ public class RegistrationPasskeyListController extends FormBasicController {
 		tableEl.setLabel("passkeys", null);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("table.empty.registration.passkeys", "table.empty.registration.passkeys.hint", "o_icon_password", "new.passkey", null, false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.registration.passkeys")
+				.withHintI18nKey("table.empty.registration.passkeys.hint")
+				.withIconCss("o_icon_password")
+				.withPrimaryButton("o_icon_add", "new.passkey", null)
+				.build(), false);
 	}
 
 	@Override

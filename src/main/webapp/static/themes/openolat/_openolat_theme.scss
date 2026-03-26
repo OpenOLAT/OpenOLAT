@@ -88,7 +88,7 @@
 		.o_navbar-nav>li>a {
 		    background: rgba(255,255,255,0.5);
 		    color: #2d2926;
-		    border-radius: 5px;
+		    border-radius: $border-radius-base;
 		    padding: 5px 10px;
 		    margin: 10px;
     
@@ -146,7 +146,7 @@
 	
 }
 #o_footer_wrapper {
-	border-top: 1px solid #e6e6e6;
+	border-top: 1px solid #eaecf0;
 }
 
  

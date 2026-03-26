@@ -36,6 +36,7 @@ import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionListDataModel.ContextualSubscriptionListCols;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -187,7 +188,10 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	}
 
 	private void initEmptyTableSettings() {
-		tableEl.setEmptyTableSettings("subs.list.empty.message", null, "o_icon_notification");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("subs.list.empty.message")
+				.withIconCss("o_icon_notification")
+				.build());
 	}
 
 	private Map<Subscriber, SubscriptionInfo> initSubsInfoMap(Date compareDate) {

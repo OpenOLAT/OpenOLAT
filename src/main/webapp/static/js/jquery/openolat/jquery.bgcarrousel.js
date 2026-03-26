@@ -54,6 +54,11 @@
 
         }, params );
 
+		// User does not want animations? stop right there
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		  	return;
+		}
+
 		// Query not defined? - stop right there
     	if (this.settings.query == null || this.settings.images.length == 0) return;
 

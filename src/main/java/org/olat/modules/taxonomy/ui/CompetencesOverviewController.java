@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -303,7 +304,10 @@ public class CompetencesOverviewController extends FormBasicController implement
 		tableEl.setCustomizeColumns(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "competences_overview");
 		tableEl.setSearchEnabled(true);
-		tableEl.setEmptyTableSettings("competences.empty.table", null, "o_icon_competences");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("competences.empty.table")
+				.withIconCss("o_icon_competences")
+				.build());
 				
 		// Set rootcrumb
 		rootCrumb = new CompetencesOverviewTableRow(getTranslator());

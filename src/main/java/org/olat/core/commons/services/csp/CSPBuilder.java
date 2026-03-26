@@ -69,8 +69,7 @@ public class CSPBuilder {
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getFormAction));
 		scriptSrc = new ScriptSrcDirective("script-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC,
 				securityModule.getContentSecurityPolicyScriptSrc(),
-				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getScriptSrcUrls),
-				securityModule.isAllowUnsafeEval());
+				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getScriptSrcUrls));
 		styleSrc = new Directive("style-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC,
 				securityModule.getContentSecurityPolicyStyleSrc(),
 				null);
@@ -218,10 +217,8 @@ public class CSPBuilder {
 		
 		private boolean allowUnsafeEval = false;
 
-		public ScriptSrcDirective(String name, String baseDirective, String configuredDirective, String providersDirectives,
-				boolean allowUnsafeEval) {
+		public ScriptSrcDirective(String name, String baseDirective, String configuredDirective, String providersDirectives) {
 			super(name, baseDirective, configuredDirective, providersDirectives);
-			this.allowUnsafeEval = allowUnsafeEval;
 		}
 		
 		public boolean isAllowUnsafeEval() {

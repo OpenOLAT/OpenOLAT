@@ -37,6 +37,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -326,7 +327,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		tableModel = new GradingAssignmentsTableModel(columnsModel,
 				userPropertyHandlers, assessedUserPropertyHandlers, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "assignments", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("table.assignments.empty", null, FlexiTableElement.TABLE_EMPTY_ICON);		
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.assignments.empty")
+				.build());
 		tableEl.setElementCssClass("o_sel_grading_assignments_list");
 		tableEl.setExportEnabled(true);
 		String id = "grading-assignments-list-v2-" + (testEntry == null ? "coaching" : testEntry.getKey());
@@ -577,7 +580,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		RepositoryEntry referenceEntry = assessment.getReferenceEntry();
 		
 		AssessmentTestSession session = qtiService
-				.getLastAssessmentTestSessions(entry, courseNode.getIdent(), referenceEntry, assessedIdentity);
+				.getLastAssessmentTestSessions(entry, courseNode.getIdent(), referenceEntry, assessedIdentity, true);
 		if(session == null) {
 			gradingService.deactivateAssignment(assignment);
 			showWarning("warning.assignement.deactivated");

@@ -1798,7 +1798,84 @@ String safeHtml = filter.filter(userInput);
 
 ---
 
-## 30. Common Patterns & Best Practices
+## 30. HTTP Client Service
+
+All outbound HTTP requests in OpenOlat **must** go through the centralized `HttpClientService` (`org.olat.core.util.httpclient.HttpClientService`). Do not use the native Java HTTP client (`java.net.http.HttpClient`), any other third-party HTTP client library, or instantiate Apache `HttpClient` directly.
+
+### Why
+
+The `HttpClientService` is the single point of configuration for all outbound HTTP traffic. It ensures that:
+
+- **Proxy settings** are applied consistently (proxy URL, port, credentials, exclusion list) — configured via `http.proxy.*` properties
+- **Timeouts** are standardized (connect, request, socket) — configured via `http.connect.*` properties
+- **Credentials** for basic authentication are handled uniformly
+- **Database connections** are freed before making outbound calls (`dbInstance.commit()` is called internally) to avoid holding a DB connection while waiting for an external service
+
+### Configuration Properties
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `http.connect.timeout` | 30000 | Connection timeout in ms |
+| `http.connect.request.timeout` | 30000 | Connection request timeout in ms |
+| `http.connect.socket.timeout` | 30000 | Socket timeout in ms |
+| `http.proxy.url` | — | Proxy host |
+| `http.proxy.port` | 8080 | Proxy port |
+| `http.proxy.exclusion` | — | Comma-separated list of hosts to bypass proxy |
+| `http.proxy.user` / `http.proxy.pwd` | — | Proxy authentication credentials |
+
+### Usage
+
+In Spring-managed beans, inject the service:
+
+```java
+@Autowired
+private HttpClientService httpClientService;
+```
+
+In controllers or non-Spring-managed classes:
+
+```java
+HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
+```
+
+Create a client and execute a request:
+
+```java
+// Simple one-off request
+try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+    HttpGet request = new HttpGet("https://api.example.com/data");
+    try (CloseableHttpResponse response = httpClient.execute(request)) {
+        // handle response
+    }
+}
+
+// With basic authentication
+try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(
+        "api.example.com", 443, "user", "password", true)) {
+    // use client for multiple requests
+}
+
+// Custom builder for additional configuration
+HttpClientBuilder builder = httpClientService.createHttpClientBuilder();
+builder.setDefaultHeaders(List.of(new BasicHeader("Authorization", "Bearer " + token)));
+try (CloseableHttpClient httpClient = builder.build()) {
+    // use client
+}
+```
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `createHttpClient()` | Simple client with default config (timeouts + proxy) |
+| `createHttpClientBuilder()` | Builder for customization before building |
+| `createHttpClientBuilder(host, port, user, password)` | Builder with basic auth credentials |
+| `createThreadSafeHttpClient(redirect)` | Pooled client for concurrent use |
+| `createThreadSafeHttpClient(host, port, user, password, redirect)` | Pooled client with basic auth |
+
+---
+
+## 31. Common Patterns & Best Practices
 
 ### Choosing the Right Controller Type
 
@@ -1877,7 +1954,7 @@ Key conventions from best-practice modules:
 
 ---
 
-## 31. Testing Infrastructure
+## 32. Testing Infrastructure
 
 Multi-layered testing: unit tests, Spring integration tests, REST API tests, and Selenium browser tests.
 
@@ -1934,7 +2011,7 @@ Key conventions:
 
 ---
 
-## 32. About
+## 33. About
 
 ### OpenOlat
 

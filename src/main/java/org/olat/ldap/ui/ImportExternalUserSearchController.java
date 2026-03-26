@@ -21,6 +21,7 @@ import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -159,7 +160,9 @@ public class ImportExternalUserSearchController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 24, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(withMultiSelection);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableMessageKey("table.user.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.user.empty")
+				.build());
 		tableEl.setSelectAllEnable(withMultiSelection);
 		tableEl.setAndLoadPersistedPreferences(ureq, "import-ldap-search");
 		

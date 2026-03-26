@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
 import org.olat.modules.curriculum.ui.component.MinMaxParticipants;
+import org.olat.modules.curriculum.ui.component.RelevanceSortable;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -41,7 +42,7 @@ import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvai
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementRow implements ComparableCurriculumElementRow {
+public class CurriculumElementRow implements ComparableCurriculumElementRow, RelevanceSortable {
 	
 	private boolean hasChildren;
 	private CurriculumElementRow parent;
@@ -176,7 +177,12 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		CurriculumElementStatus status = element.getElementStatus();
 		return status == null ? CurriculumElementStatus.active : status;
 	}
-	
+
+	@Override
+	public CurriculumElementStatus getElementStatus() {
+		return getStatus();
+	}
+
 	public Long getCurriculumElementTypeKey() {
 		return elementType == null ? null : elementType.getKey();
 	}

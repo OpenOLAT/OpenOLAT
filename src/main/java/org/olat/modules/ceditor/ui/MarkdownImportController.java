@@ -176,7 +176,7 @@ public class MarkdownImportController extends FormBasicController {
 			markdown = markdownTextEl.getValue();
 		}
 
-		MarkdownImportResult result = markdownImportService.convertAndPersist(markdown, page, getIdentity(), basePath);
+		MarkdownImportResult result = markdownImportService.convertAndPersist(markdown, page, getIdentity(), basePath, getLocale());
 		fireEvent(ureq, new MarkdownImportDoneEvent(result.warnings()));
 	}
 

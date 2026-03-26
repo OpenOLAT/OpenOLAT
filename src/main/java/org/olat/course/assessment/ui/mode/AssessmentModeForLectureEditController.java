@@ -482,16 +482,17 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 						}
 					}
 				}
+				SafeExamBrowserTemplate defaultTemplate = assessmentModeMgr.getDefaultSafeExamBrowserTemplate();
 				if (!withTemplate) {
 					if (configuration == null) {
-						configuration = assessmentModeMgr.getDefaultSafeExamBrowserConfiguration();
+						configuration = defaultTemplate.getSafeExamBrowserConfiguration();
 					}
 					assessmentMode.setSafeExamBrowserConfiguration(configuration);
 				}
-				
+
 				boolean safeExamBrowserConfigDownload = lectureModule.isAssessmentModeSebDownload();
 				assessmentMode.setSafeExamBrowserConfigDownload(safeExamBrowserConfigDownload);
-				String safeExamBrowserHint = lectureModule.getAssessmentModeSebHint();
+				String safeExamBrowserHint = defaultTemplate.getSafeExamBrowserHint();
 				assessmentMode.setSafeExamBrowserHint(safeExamBrowserHint);
 				assessmentMode.setSafeExamBrowserKey(null);
 			} else {
@@ -580,16 +581,13 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 				params.setKey(Long.valueOf(sebTemplateEl.getSelectedKey()));
 				List<SafeExamBrowserTemplate> templates = assessmentModeMgr.getSafeExamBrowserTemplates(params);
 				if (!templates.isEmpty()) {
-					SafeExamBrowserConfiguration sebConfig = templates.get(0).getSafeExamBrowserConfiguration();
-					if (sebConfig != null) {
-						configuration = new SafeExamBrowserConfigurationWrapper(sebConfig);
-					}
+					configuration = new SafeExamBrowserConfigurationWrapper(templates.get(0));
 				}
 			}
 		}
 		if (configuration == null) {
-			SafeExamBrowserConfiguration sebConfig = assessmentModeMgr.getDefaultSafeExamBrowserConfiguration();
-			configuration = new SafeExamBrowserConfigurationWrapper(sebConfig);
+			SafeExamBrowserTemplate template = assessmentModeMgr.getDefaultSafeExamBrowserTemplate();
+			configuration = new SafeExamBrowserConfigurationWrapper(template);
 		}
 		
 		safeExamBrowserConfigurationCtrl = new SafeExamBrowserConfigurationController(ureq, getWindowControl(), configuration);
@@ -603,12 +601,12 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	
 	private class SafeExamBrowserConfigurationWrapper implements SafeExamBrowserEnabled {
 		
-		private final SafeExamBrowserConfiguration sebConfig;
-		
-		public SafeExamBrowserConfigurationWrapper(SafeExamBrowserConfiguration sebConfig) {
-			this.sebConfig = sebConfig;
+		private final SafeExamBrowserTemplate sebTemplate;
+
+		public SafeExamBrowserConfigurationWrapper(SafeExamBrowserTemplate sebTemplate) {
+			this.sebTemplate = sebTemplate;
 		}
-	
+
 		@Override
 		public boolean isSafeExamBrowser() {
 			return true;
@@ -641,7 +639,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 
 		@Override
 		public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration() {
-			return sebConfig;
+			return sebTemplate.getSafeExamBrowserConfiguration();
 		}
 
 		@Override
@@ -651,12 +649,12 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 
 		@Override
 		public String getSafeExamBrowserConfigPList() {
-			return null;
+			return sebTemplate.getSafeExamBrowserConfigPList();
 		}
 
 		@Override
 		public String getSafeExamBrowserConfigPListKey() {
-			return null;
+			return sebTemplate.getSafeExamBrowserConfigPListKey();
 		}
 
 		@Override
@@ -671,7 +669,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 
 		@Override
 		public String getSafeExamBrowserHint() {
-			return lectureModule.getAssessmentModeSebHint();
+			return sebTemplate.getSafeExamBrowserHint();
 		}
 
 		@Override

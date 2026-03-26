@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -125,7 +126,9 @@ public class CopyPositionListController extends FormBasicController {
 				PositionStatus.closed.name(), renderer));
 
 		tableEl.setFilters("", filters, true);
-		tableEl.setEmptyTableMessageKey("position.list.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("position.list.empty")
+				.build());
 	}
 
 	@Override

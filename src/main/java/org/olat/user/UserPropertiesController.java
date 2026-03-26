@@ -89,7 +89,7 @@ public class UserPropertiesController extends BasicController {
 
 		List<Property> l = pm.listProperties(displayedIdentity, null, null, null, null);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(getTranslator().translate("error.no.props.found"), null, TableController.TABLE_EMPTY_ICON);
+		tableConfig.setTableEmptyMessage(getTranslator().translate("error.no.props.found"), null, null);
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.category", 0, null, getLocale()));

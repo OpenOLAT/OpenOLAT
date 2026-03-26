@@ -22,6 +22,7 @@ package org.olat.ims.lti13.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -87,7 +88,9 @@ public class LTI13AdminPlatformsController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableMessageKey("platforms.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("platforms.empty")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-platforms-admin");
 	}
 	

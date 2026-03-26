@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -85,7 +86,9 @@ public class AdobeConnectShareDocumentsController extends FormBasicController {
 		contentTableEl = uifactory.addTableElement(getWindowControl(), "meetingContents", contentModel, 24, false, getTranslator(), formLayout);
 		contentTableEl.setCustomizeColumns(false);
 		contentTableEl.setMultiSelect(true);
-		contentTableEl.setEmptyTableMessageKey("no.contents");
+		contentTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.contents")
+				.build());
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", formLayout);

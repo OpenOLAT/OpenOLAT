@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -86,7 +87,9 @@ public class ResetDataCourseElementsSelectionController extends StepFormBasicCon
 		
 		dataModel = new ResetDataCourseElementsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("table.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty")
+				.build());
 		tableEl.setSelection(true, true, true);
 		tableEl.setSelectAllEnable(false);
 	}

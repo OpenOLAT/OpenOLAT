@@ -32,6 +32,7 @@ import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
@@ -49,6 +50,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -66,6 +68,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQueries {
+	
+	private static final Logger log = Tracing.createLoggerFor(IdentityPowerSearchQueriesImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -672,7 +676,12 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				sb.append(" order by ident.plannedDeletionDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
 			default:
-				sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");
+				if(userPropertiesConfig.getPropertyHandler(orderBy.getKey()) != null) {
+					sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");
+				} else {
+					log.warn("Try to order by with illegal key: {}", orderBy);
+					sb.append(" order by lower(user.id ").append(orderBy.isAsc() ? "asc" : "desc");
+				}
 				break;
 		}
 	}

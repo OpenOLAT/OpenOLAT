@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -191,7 +192,9 @@ public class PositionFeedbacksController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_position_reference_list");
-		tableEl.setEmptyTableMessageKey("apps.feedbacks.emtpy");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("apps.feedbacks.emtpy")
+				.build());
 		tableEl.setPageSize(20);
 		tableEl.setSearchEnabled(true);
 		initFilters();

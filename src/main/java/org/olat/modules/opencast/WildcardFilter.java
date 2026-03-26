@@ -31,30 +31,42 @@ import org.olat.core.util.StringHelper;
  *
  */
 class WildcardFilter implements Predicate<Object> {
-	
+
 	private final String searchValue;
 	private final Function<Object, String> stringifier;
-	private final boolean wildcard;
-	
+	private final String[] segments;
+
 	WildcardFilter(String searchValue, Function<Object, String> stringifier) {
 		this.stringifier = stringifier;
-		this.wildcard = searchValue.contains("*");
-		this.searchValue = wildcard
-				? ".*" + searchValue.toLowerCase().replaceAll("\\*", ".*") + ".*"
-				: searchValue.toLowerCase();
+		if (searchValue.contains("*")) {
+			this.searchValue = null;
+			this.segments = searchValue.toLowerCase().split("\\*", -1);
+		} else {
+			this.searchValue = searchValue.toLowerCase();
+			this.segments = null;
+		}
 	}
 
 	@Override
 	public boolean test(Object object) {
-		// No search value
-		if (!StringHelper.containsNonWhitespace(searchValue)) return true;
-			
+		if (segments == null && !StringHelper.containsNonWhitespace(searchValue)) return true;
+
 		String value = stringifier.apply(object);
 		if (value != null) {
 			String lowerCaseValue = value.toLowerCase();
-			return wildcard? lowerCaseValue.matches(searchValue): lowerCaseValue.indexOf(searchValue) > -1;
+			return segments != null ? matchesWildcard(lowerCaseValue) : lowerCaseValue.indexOf(searchValue) > -1;
 		}
 		return false;
+	}
+
+	private boolean matchesWildcard(String lowerCaseValue) {
+		int pos = 0;
+		for (String segment : segments) {
+			int idx = lowerCaseValue.indexOf(segment, pos);
+			if (idx < 0) return false;
+			pos = idx + segment.length();
+		}
+		return true;
 	}
 
 }

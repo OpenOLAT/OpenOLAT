@@ -39,6 +39,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -297,7 +298,9 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		int paging = withPrint ? 20 : -1;
 		FlexiTableElement table = uifactory.addTableElement(getWindowControl(), "table", model, paging, false, getTranslator(), formLayout);
 		table.setCustomizeColumns(false);
-		table.setEmptyTableMessageKey("empty.lectures.list");
+		table.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.lectures.list")
+				.build());
 		table.setFooter(true);
 		return new AggregatedTable(table, model);
 	}

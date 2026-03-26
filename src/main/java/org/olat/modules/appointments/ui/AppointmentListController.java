@@ -19,6 +19,7 @@
  */
 package org.olat.modules.appointments.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
@@ -285,7 +286,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 		dataModel = new AppointmentDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, getPersistedPreferencesId());
-		tableEl.setEmptyTableMessageKey("table.empty.appointments");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.appointments")
+				.build());
 
 		tableEl.setElementCssClass("o_appointments o_list");
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);

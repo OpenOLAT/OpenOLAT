@@ -60,12 +60,13 @@ public class SequencerModel extends XMLDocument {
 	 * Comment for <code>ITEM_COMPLETED</code>
 	 */
 	public static final String ITEM_COMPLETED = "completed";
-	protected static final String ITEM_INCOMPLETE = "incomplete";
+	public static final String ITEM_INCOMPLETE = "incomplete";
 	/**
 	 * Comment for <code>ITEM_PASSED</code>
 	 */
 	public static final String ITEM_PASSED = "passed";
-	protected static final String ITEM_FAILED = "failed";
+	public static final String ITEM_FAILED = "failed";
+	
 	protected static final String MANIFEST_MODIFIED = "manifest_last_modified";
 
 	/**

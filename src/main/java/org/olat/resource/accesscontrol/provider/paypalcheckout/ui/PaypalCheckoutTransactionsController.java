@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -120,7 +121,9 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 		
 		dataModel = new PaypalCheckoutTransactionDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "results", dataModel, 25, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("paypal.transactions.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("paypal.transactions.empty")
+				.build());
 		tableEl.setCustomizeColumns(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);

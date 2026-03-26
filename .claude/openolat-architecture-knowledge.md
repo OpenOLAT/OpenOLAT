@@ -215,7 +215,19 @@ Pattern: idempotent sub-tasks tracked via `UpgradeHistoryData.setBooleanDataValu
 
 State persisted in `olatdata/system/installed_upgrades.xml` and `installed_database_upgrades.xml`.
 
-## 21. Key Conventions
+## 21. HTTP Client Service
+
+All outbound HTTP requests **must** use `HttpClientService` (`org.olat.core.util.httpclient`). Never use `java.net.http.HttpClient`, other HTTP libraries, or instantiate Apache `HttpClient` directly.
+
+- `@Autowired HttpClientService` in Spring beans, `CoreSpringFactory.getImpl()` in controllers
+- `createHttpClient()` — simple client with default timeouts + proxy
+- `createHttpClientBuilder()` — for customization before `.build()`
+- `createThreadSafeHttpClient(redirect)` — pooled client for concurrent use
+- Variants with `(host, port, user, password)` for basic auth
+- Internally commits DB transaction before outbound call to free connection
+- Config: `http.connect.timeout`, `http.connect.request.timeout`, `http.connect.socket.timeout` (all 30s default), `http.proxy.*`
+
+## 22. Key Conventions
 
 - Always use `listenTo()` for child controllers
 - Always `removeAsListenerAndDispose()` before replacing controllers

@@ -310,6 +310,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
 <div class="nav-group">
 <div class="nav-group-label">Best Practices &amp; Testing</div>
+<a href="#httpclient">HTTP Client Service</a>
 <a href="#patterns">Patterns &amp; Best Practices</a>
 <a href="#testing">Testing Infrastructure</a>
 </div>
@@ -3163,7 +3164,83 @@ String safeHtml = filter.filter(userInput);
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="patterns">30. Common Patterns &amp; Best Practices</h2>
+<h2 id="httpclient">30. HTTP Client Service</h2>
+
+<p>All outbound HTTP requests in OpenOlat <strong>must</strong> go through the centralized <code>HttpClientService</code> (<code>org.olat.core.util.httpclient.HttpClientService</code>). Do not use the native Java HTTP client (<code>java.net.http.HttpClient</code>), any other third-party HTTP client library, or instantiate Apache <code>HttpClient</code> directly.</p>
+
+<h3>Why</h3>
+
+<p>The <code>HttpClientService</code> is the single point of configuration for all outbound HTTP traffic. It ensures that:</p>
+<ul>
+<li><strong>Proxy settings</strong> are applied consistently (proxy URL, port, credentials, exclusion list) &mdash; configured via <code>http.proxy.*</code> properties</li>
+<li><strong>Timeouts</strong> are standardized (connect, request, socket) &mdash; configured via <code>http.connect.*</code> properties</li>
+<li><strong>Credentials</strong> for basic authentication are handled uniformly</li>
+<li><strong>Database connections</strong> are freed before making outbound calls (<code>dbInstance.commit()</code> is called internally) to avoid holding a DB connection while waiting for an external service</li>
+</ul>
+
+<h3>Configuration Properties</h3>
+
+<table>
+<thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>http.connect.timeout</code></td><td>30000</td><td>Connection timeout in ms</td></tr>
+<tr><td><code>http.connect.request.timeout</code></td><td>30000</td><td>Connection request timeout in ms</td></tr>
+<tr><td><code>http.connect.socket.timeout</code></td><td>30000</td><td>Socket timeout in ms</td></tr>
+<tr><td><code>http.proxy.url</code></td><td>&mdash;</td><td>Proxy host</td></tr>
+<tr><td><code>http.proxy.port</code></td><td>8080</td><td>Proxy port</td></tr>
+<tr><td><code>http.proxy.exclusion</code></td><td>&mdash;</td><td>Comma-separated list of hosts to bypass proxy</td></tr>
+<tr><td><code>http.proxy.user</code> / <code>http.proxy.pwd</code></td><td>&mdash;</td><td>Proxy authentication credentials</td></tr>
+</tbody>
+</table>
+
+<h3>Usage</h3>
+
+<p>In Spring-managed beans, inject the service:</p>
+<pre><code><span class="kw">@Autowired</span>
+<span class="kw">private</span> HttpClientService httpClientService;</code></pre>
+
+<p>In controllers or non-Spring-managed classes:</p>
+<pre><code>HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.<span class="kw">class</span>);</code></pre>
+
+<p>Create a client and execute a request:</p>
+<pre><code><span class="cmt">// Simple one-off request</span>
+<span class="kw">try</span> (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+    HttpGet request = <span class="kw">new</span> HttpGet(<span class="str">"https://api.example.com/data"</span>);
+    <span class="kw">try</span> (CloseableHttpResponse response = httpClient.execute(request)) {
+        <span class="cmt">// handle response</span>
+    }
+}
+
+<span class="cmt">// With basic authentication</span>
+<span class="kw">try</span> (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(
+        <span class="str">"api.example.com"</span>, 443, <span class="str">"user"</span>, <span class="str">"password"</span>, <span class="kw">true</span>)) {
+    <span class="cmt">// use client for multiple requests</span>
+}
+
+<span class="cmt">// Custom builder for additional configuration</span>
+HttpClientBuilder builder = httpClientService.createHttpClientBuilder();
+builder.setDefaultHeaders(List.of(<span class="kw">new</span> BasicHeader(<span class="str">"Authorization"</span>, <span class="str">"Bearer "</span> + token)));
+<span class="kw">try</span> (CloseableHttpClient httpClient = builder.build()) {
+    <span class="cmt">// use client</span>
+}</code></pre>
+
+<h3>Available Methods</h3>
+
+<table>
+<thead><tr><th>Method</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>createHttpClient()</code></td><td>Simple client with default config (timeouts + proxy)</td></tr>
+<tr><td><code>createHttpClientBuilder()</code></td><td>Builder for customization before building</td></tr>
+<tr><td><code>createHttpClientBuilder(host, port, user, password)</code></td><td>Builder with basic auth credentials</td></tr>
+<tr><td><code>createThreadSafeHttpClient(redirect)</code></td><td>Pooled client for concurrent use</td></tr>
+<tr><td><code>createThreadSafeHttpClient(host, port, user, password, redirect)</code></td><td>Pooled client with basic auth</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="patterns">31. Common Patterns &amp; Best Practices</h2>
 
 <h3>Choosing the Right Controller Type</h3>
 <table>
@@ -3245,7 +3322,7 @@ getWindowControl().pushFullScreen(editorCtrl, <span class="str">"o_editor_body"<
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="testing">31. Testing Infrastructure</h2>
+<h2 id="testing">32. Testing Infrastructure</h2>
 
 <p>OpenOlat uses a multi-layered testing approach: unit tests, Spring integration tests, REST API tests, and browser-based Selenium tests.</p>
 
@@ -3323,7 +3400,7 @@ getWindowControl().pushFullScreen(editorCtrl, <span class="str">"o_editor_body"<
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="about">32. About</h2>
+<h2 id="about">33. About</h2>
 
 <h3>OpenOlat</h3>
 <p>

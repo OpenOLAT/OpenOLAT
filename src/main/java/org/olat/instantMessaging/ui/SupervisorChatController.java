@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -200,7 +201,10 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		tableModel = new SupervisorChatDataModel(columnsModel, getIdentity(), getTranslator());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "chats", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("table.nochats", null, "o_icon_chat");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.nochats")
+				.withIconCss("o_icon_chat")
+				.build());
 		tableEl.setElementCssClass("o_im_supervised_list");
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);

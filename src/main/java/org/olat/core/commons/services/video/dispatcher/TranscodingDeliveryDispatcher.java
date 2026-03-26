@@ -20,12 +20,14 @@
 package org.olat.core.commons.services.video.dispatcher;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
@@ -39,7 +41,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.text.TextService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.commons.services.video.MovieService;
@@ -55,14 +59,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoManagerImpl;
+import org.olat.modules.video.manager.VideoSubtitlesHelper;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
 import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.repository.RepositoryEntry;
@@ -114,6 +121,12 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	
 	@Autowired
 	private MovieService movieService;
+	
+	@Autowired
+	private TextService textService;
+
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -320,8 +333,8 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	}
 
 	private void handleNotifyResult(HttpServletResponse response, TranscoderJobResult result) throws IOException {
-		if (result.getGenerated() == null || !StringHelper.containsNonWhitespace(result.getGenerated().getUrl())) {
-			log.warn("Conversion job result: 'generated.url' missing");
+		if (!resultHasDataUrl(result)) {
+			log.warn("Conversion job result: no data");
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
@@ -347,8 +360,29 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 				break;
 		}
 	}
+	
+	private boolean resultHasDataUrl(TranscoderJobResult result) {
+		if (result.getGenerated() == null) {
+			return false;
+		}
+		
+		if (StringHelper.containsNonWhitespace(result.getGenerated().getUrl())) {
+			return true;
+		}
+		
+		if (StringHelper.containsNonWhitespace(result.getGenerated().getSubtitlesUrl())) {
+			return true;
+		}
+		
+		return false;
+	}
 
 	private void handleConversionResult(TranscoderJobResult result) {
+		if (!StringHelper.containsNonWhitespace(result.getGenerated().getUrl())) {
+			log.warn("Missing 'generated.url'");
+			return;
+		}
+		
 		VFSMetadata metadata = vfsMetadataDao.loadMetadata(result.getReferenceId());
 		if (metadata == null) {
 			log.warn("Missing metadata for conversion job result [uuid={}]", result.getUuid());
@@ -396,6 +430,66 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		OLATResource videoResource = entry.getOlatResource();
 		if (videoResource == null) {
 			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());
+			return;
+		}
+
+		handleVideoTranscodingSubtitles(result, videoResource);
+		handleVideoTranscodingMedia(result, videoResource, status);
+	}
+
+	private void handleVideoTranscodingSubtitles(TranscoderJobResult result, OLATResource videoResource) {
+		String subtitlesUrl = result.getGenerated().getSubtitlesUrl();
+		if (!StringHelper.containsNonWhitespace(subtitlesUrl)) {
+			return;
+		}
+		
+		VFSContainer masterContainer = videoManager.getMasterContainer(videoResource);
+		String tmpTrackName = VideoManagerImpl.TRACK + "tmp" + VideoManager.DOT + VideoManager.FILETYPE_VTT;
+		File masterFolder = ((LocalFolderImpl) masterContainer).getBasefile();
+		File tmpFile = new File(masterFolder, tmpTrackName);
+
+		try {
+			download(subtitlesUrl, tmpFile);
+			String text = FileUtils.load(tmpFile, "UTF-8");
+			Locale locale = textService.detectLocale(text);
+			if (locale == null) {
+				log.warn("Cannot find locale for subtitles [uuid={}]", result.getUuid());
+				return;
+			}
+			String trackName = VideoManagerImpl.TRACK + locale.getLanguage() + VideoManager.DOT + VideoManager.FILETYPE_VTT;
+			VFSItem oldFile = masterContainer.resolve(trackName);
+			if (oldFile instanceof VFSLeaf && oldFile.exists()) {
+				log.info("Subtitle file exists. Ignoring request. [videoResource={}, trackName={}]", videoResource, trackName);
+				tmpFile.delete();
+				return;
+			}
+
+			if (VideoSubtitlesHelper.isVtt(tmpFile)) {
+				VFSLeaf target = VFSManager.resolveOrCreateLeafFromPath(masterContainer, trackName);
+				VFSManager.copyContent(tmpFile, target, null);
+				log.debug("Stored VTT subtitles [videoResource={}, trackName={}]",
+						videoResource.getResourceableId(), trackName);
+			} else if (VideoSubtitlesHelper.isConvertibleSrt(tmpFile)) {
+				VFSLeaf newTrack = masterContainer.createChildLeaf(trackName);
+				try (FileInputStream fileInputStream = new FileInputStream(tmpFile)) {
+					VideoSubtitlesHelper.convertSrtToVtt(fileInputStream, newTrack.getOutputStream(false));
+					vfsRepositoryService.itemSaved(newTrack, null);
+					log.debug("Converted SRT file to VTT subtitles [videoResource={}, trackName={}]", 
+							videoResource.getResourceableId(), trackName);
+				} catch (Exception e) {
+					log.error("Cannot convert non-VTT to VTT", e);
+				}
+			}
+		} catch (IOException e) {
+			log.warn("Failed to download subtitles for video [uuid={}]", result.getUuid(), e);
+		}
+
+		tmpFile.delete();
+	}
+	
+	private void handleVideoTranscodingMedia(TranscoderJobResult result, OLATResource videoResource, int status) {
+		String url = result.getGenerated().getUrl();
+		if (!StringHelper.containsNonWhitespace(url)) {
 			return;
 		}
 
@@ -489,16 +583,19 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	}
 
 	private void download(TranscoderJobResult result, File targetFile) throws IOException {
-		String url = result.getGenerated().getUrl();
+		download(result.getGenerated().getUrl(), targetFile);
+	}
+	
+	private void download(String url, File targetFile) throws IOException {
 		HttpGet get = new HttpGet(url);
 		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
 			 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode != HttpServletResponse.SC_OK) {
-				log.warn("File download: [uuid={}, statusCode={}]", result.getUuid(), statusCode);
+				log.warn("File download: [url={}, statusCode={}]", url, statusCode);
 				throw new IOException("Failed to download");
 			} else {
-				log.debug("File download: [uuid={}, statusCode={}]", result.getUuid(), statusCode);
+				log.debug("File download: [url={}, statusCode={}]", url, statusCode);
 			}
 
 			InputStream inputStream = httpResponse.getEntity().getContent();

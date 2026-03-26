@@ -41,6 +41,7 @@ create table o_as_seb_template (
    a_safeexambrowserconfig_xml clob,
    a_safeexambrowserconfig_plist clob,
    a_safeexambrowserconfig_pkey varchar2(255 char),
+   a_safeexambrowserhint clob,
    primary key (id)
 );
 

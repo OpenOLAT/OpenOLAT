@@ -32,6 +32,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -173,9 +174,10 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		tableEl.setRowRenderer(rowVC, this);
 		tableEl.setSortEnabled(true);
 		tableEl.setSearchEnabled(false);
-		tableEl.setEmptyTableSettings("empty.badges.table", null,
-				"o_icon_badge", null, null,
-				false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.badges.table")
+				.withIconCss("o_icon_badge")
+				.build(), false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-course");
 	}
 

@@ -44,17 +44,30 @@ public class ImportStatusCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof ImportCurriculumsStatus status) {
-			switch(status) {
-				case NO_CHANGES: target.append(translator.translate("status.no.changes")); break;
-				case MODIFIED: renderStatus(target, "status.changed", "o_icon_changes"); break;
-				case NEW: renderStatus(target, "status.new", "o_icon_plus"); break;
-				case ERROR: renderStatus(target, "status.error", "o_icon_validation_error"); break;
+			Object rowObject = source.getFormItem().getTableDataModel().getObject(row);
+			if(rowObject instanceof AbstractImportRow importedRow) {
+				target.append("<span>");
+				CurriculumImportedStatistics stats = importedRow.getValidationStatistics();
+				if(stats != null) {
+					if(stats.errors() > 0) {
+						renderIcon(target, "o_icon_validation_error");
+					} else if(stats.warnings() > 0) {
+						renderIcon(target, "o_icon_validation_warning");
+					}
+				}
+				
+				String i18nKey = "status.no.changes";
+				if(status == ImportCurriculumsStatus.NEW) {
+					i18nKey = "status.new";
+				} else if(status == ImportCurriculumsStatus.MODIFIED) {
+					i18nKey = "status.changed";
+				} 
+				target.append(translator.translate(i18nKey)).append("</span>");
 			}
 		}
 	}
 	
-	private void renderStatus(StringOutput target, String i18nKey, String iconCssClass) {
-		target.append("<span><i class='o_icon o_icon-fw ").append(iconCssClass).append("'> </i> ")
-			.append(translator.translate(i18nKey)).append("</span>");
+	private void renderIcon(StringOutput target, String iconCssClass) {
+		target.append("<i class='o_icon o_icon-fw ").append(iconCssClass).append("'> </i> ");
 	}
 }

@@ -1,4 +1,4 @@
-<h3 class="o_wikimod_heading">$page.getPageName().replace("_"," ")</h3>
+<h3 class="o_wikimod_heading">$r.escapeHtml($page.getPageName().replace("_"," "))</h3>
 
 $r.render("versions")
 

@@ -1,0 +1,77 @@
+#if($error)
+  <div class="o_warning" style="margin-bottom: 1rem;">
+    <h5>Error</h5>
+    <p>$r.escapeHtml($error)</p>
+  </div>
+#end
+
+#if($testType == "mc")
+  <h3 style="margin-bottom: 0.5rem;">Input text</h3>
+  <div style="background: #f5f5f5; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9em; color: #555;">
+    $r.escapeHtml($inputText)
+  </div>
+
+  #if($mcData)
+    <h3 style="margin-bottom: 0.5rem;">Generated question</h3>
+    <div style="background: #eef6ee; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem;">
+      <strong>Title:</strong> $r.escapeHtml($mcData.title)
+    </div>
+    #if($mcData.topic)
+    <div style="background: #f8f8f8; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem;">
+      <strong>Topic:</strong> $r.escapeHtml($mcData.topic)
+    </div>
+    #end
+    #if($mcData.keywords)
+    <div style="background: #f8f8f8; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem;">
+      <strong>Keywords:</strong> $r.escapeHtml($mcData.keywords)
+    </div>
+	#end
+	<hr />
+    <div style="background: #f8f8f8; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem;">
+      <strong>Question:</strong> $r.escapeHtml($mcData.question)
+    </div>
+    <div style="padding: 0.5rem 0;">
+      <strong style="color: #2e7d32;">Correct answers:</strong>
+      <ul style="margin: 0.25rem 0 0 1.5rem;">
+        #foreach($answer in $mcData.correctAnswers)
+          <li style="color: #2e7d32;">$r.escapeHtml($answer)</li>
+        #end
+      </ul>
+    </div>
+    <div style="padding: 0.5rem 0;">
+      <strong style="color: #c62828;">Wrong answers:</strong>
+      <ul style="margin: 0.25rem 0 0 1.5rem;">
+        #foreach($answer in $mcData.wrongAnswers)
+          <li style="color: #c62828;">$r.escapeHtml($answer)</li>
+        #end
+      </ul>
+    </div>
+  #end
+#end
+
+#if($testType == "imgdesc")
+  <h3 style="margin-bottom: 0.5rem;">Input image</h3>
+  <div style="text-align: center; margin-bottom: 1rem;">
+    <img src="data:image/jpeg;base64,$inputImageBase64" style="max-width: 256px; border-radius: 4px; border: 1px solid #ddd;" alt="Test image"/>
+  </div>
+
+  #if($imgData)
+    <h3 style="margin-bottom: 0.5rem;">Generated description</h3>
+    <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
+      <tr><td style="width: 130px;"><strong>Title</strong></td><td>$r.escapeHtml($imgData.title)</td></tr>
+      <tr><td><strong>Description</strong></td><td>$r.escapeHtml($imgData.description)</td></tr>
+      <tr><td><strong>Alt text</strong></td><td>$r.escapeHtml($imgData.altText)</td></tr>
+      <tr><td><strong>Subject</strong></td><td>#if($imgData.subject)<span class="o_tag o_taxonomy" style="margin: 0 2px;">$r.escapeHtml($imgData.subject)</span>#end</td></tr>
+      <tr><td><strong>Orientation</strong></td><td>#if($imgData.orientation)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($imgData.orientation)</span>#end</td></tr>
+      <tr><td><strong>Color tags</strong></td><td>
+        #foreach($tag in $imgData.colorTags)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($tag)</span>#end
+      </td></tr>
+      <tr><td><strong>Category tags</strong></td><td>
+        #foreach($tag in $imgData.categoryTags)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($tag)</span>#end
+      </td></tr>
+      <tr><td><strong>Keywords</strong></td><td>
+        #foreach($kw in $imgData.keywords)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($kw)</span>#end
+      </td></tr>
+    </table>
+  #end
+#end

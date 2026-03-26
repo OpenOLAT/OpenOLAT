@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -375,7 +376,9 @@ public class EditMembershipStep2 extends BasicStep {
 			}
 			
 			FlexiTableElement tableElement = uifactory.addTableElement(getWindowControl(), "editMembershipReviewTable", tableModel, -1, false, getTranslator(), formLayout);
-			tableElement.setEmptyTableMessageKey("review.no.changes");
+			tableElement.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("review.no.changes")
+					.build());
 			tableElement.setCustomizeColumns(false);		
 			
 			

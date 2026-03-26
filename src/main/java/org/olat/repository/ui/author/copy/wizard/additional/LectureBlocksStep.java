@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -168,7 +169,9 @@ public class LectureBlocksStep extends BasicStep {
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 			tableEl.setExportEnabled(false);
 			tableEl.setMultiSelect(false);
-			tableEl.setEmptyTableMessageKey("empty.table.lectures.blocks.admin");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("empty.table.lectures.blocks.admin")
+					.build());
 			
 			FlexiTableSortOptions options = new FlexiTableSortOptions();
 			options.setDefaultOrderBy(new SortKey(BlockCols.dateChooser.name(), false));

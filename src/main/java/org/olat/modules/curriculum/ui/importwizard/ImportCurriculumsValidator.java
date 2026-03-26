@@ -22,9 +22,11 @@ package org.olat.modules.curriculum.ui.importwizard;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -83,6 +85,7 @@ public class ImportCurriculumsValidator {
 	public static final String DEFAULT = "DEFAULT";
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final Set<String> curriculumsNoPermissions = new HashSet<>();
 
 	@Autowired
 	private UserManager userManager;
@@ -152,17 +155,40 @@ public class ImportCurriculumsValidator {
 		}
 		
 		// Validate uniqueness of identifiers within an implementation
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.ELEM);
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.EVENT);
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.COURSE);
-		validateUniqueIdentifiersInImplementation(importedRows, CurriculumExportType.TMPL);
+		validateUniqueElementIdentifiers(importedRows);
+		validateUniqueEventIdentifiers(importedRows);
 	}
-
-	private void validateUniqueIdentifiersInImplementation(List<ImportedRow> importedRows, CurriculumExportType type) {
+	
+	private void validateUniqueElementIdentifiers(List<ImportedRow> importedRows) {
 		Map<Identifier, ImportedRow> identifiersMap = new HashMap<>();
 		for(ImportedRow row:importedRows) {
-			if(row.type() == type) {
-				Identifier key = new Identifier(row.getImplementationIdentifier(), row.getIdentifier());
+			if(row.type() == CurriculumExportType.IMPL) {
+				identifiersMap.put(new Identifier(row.getCurriculumIdentifier(), row.getIdentifier()), row);
+			}
+		}
+		
+		for(ImportedRow row:importedRows) {
+			if(row.type() == CurriculumExportType.ELEM) {
+				Identifier key = new Identifier(row.getCurriculumIdentifier(), row.getIdentifier());
+				if(identifiersMap.containsKey(key)) {
+					notUniqueIdentifierError(row);
+					
+					ImportedRow obj = identifiersMap.get(key);
+					if(obj != null && obj.type() == CurriculumExportType.ELEM) {
+						notUniqueIdentifierError(obj);
+					}
+				} else {
+					identifiersMap.put(key, row);
+				}
+			}
+		}
+	}
+
+	private void validateUniqueEventIdentifiers(List<ImportedRow> importedRows) {
+		Map<Identifier, ImportedRow> identifiersMap = new HashMap<>();
+		for(ImportedRow row:importedRows) {
+			if(row.type() == CurriculumExportType.EVENT) {
+				Identifier key = new Identifier(row.getCurriculumIdentifier(), row.getIdentifier());
 				if(identifiersMap.containsKey(key)) {
 					notUniqueIdentifierError(row);
 					notUniqueIdentifierError(identifiersMap.get(key));
@@ -211,15 +237,13 @@ public class ImportCurriculumsValidator {
 			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
 			if(statistics.changes() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
-			} else if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
 		}
 	}
 	
-	public void validate(ImportedUserRow importedRow) {
+	public void validate(ImportedUserRow importedRow, Set<String> membershipsUsernames) {
 		// User properties inclusive username
 		for(int i=0; i<userPropertyHandlers.size(); i++) {
 			UserPropertyHandler handler = userPropertyHandlers.get(i);
@@ -247,6 +271,13 @@ public class ImportCurriculumsValidator {
 							String description = validationDescriptionToString(errors);
 							importedRow.addValidationError(handler.getName(), column, null, description);
 						}
+					}
+					
+					// Not used in memberships sheet
+					if(!membershipsUsernames.contains(importedRow.getUsername())) {
+						String sheet = translate("export.members");
+						String description = translator.translate("error.not.exist.sheet", sheet);
+						importedRow.addValidationError(handler.getName(), column, null, description);
 					}
 				} else if(!handler.isValidValue(user, value, validationError, translator.getLocale())) {
 					String description = translate(validationError.getErrorKey());
@@ -287,8 +318,6 @@ public class ImportCurriculumsValidator {
 			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
 			if(statistics.changes() > 0) {
 				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
-			} else if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
@@ -342,9 +371,9 @@ public class ImportCurriculumsValidator {
 		}
 		
 		if(importedRow.getStatus() == null) {
-			CurriculumImportedStatistics statistics = importedRow.getValidationStatistics();
-			if(statistics.errors() > 0) {
-				importedRow.setStatus(ImportCurriculumsStatus.ERROR);
+			CurriculumImportedStatistics stats = importedRow.getValidationStatistics();
+			if(stats.changes() > 0) {
+				importedRow.setStatus(ImportCurriculumsStatus.MODIFIED);
 			} else {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
@@ -365,10 +394,13 @@ public class ImportCurriculumsValidator {
 		}
 		
 		validateIdentifier(importedRow, EditCurriculumElementMetadataController.IDENTIFIER_MAX_LENGTH);
+
+		// Permissions on curriculum
+		validateCurriculumPermissions(importedRow);
 		
 		// Level only for element
 		if(importedRow.type() == CurriculumExportType.ELEM) {
-			validateLevel(importedRow);
+			validateMandatory(importedRow, importedRow.getLevel(), ImportCurriculumsCols.level);
 		}
 		
 		// Curriculum
@@ -468,7 +500,7 @@ public class ImportCurriculumsValidator {
 					null, translate("error.content.not.allowed"));
 			allOk &= false;
 		} else if(type.getMaxRepositoryEntryRelations() == 1
-				&& importedRow.getNumResources(CurriculumExportType.COURSE) + importedRow.getNumResources(CurriculumExportType.TMPL) > 1) {
+				&& (importedRow.getNumResources(CurriculumExportType.COURSE) > 1 || importedRow.getNumResources(CurriculumExportType.TMPL) > 1)) {
 			importedRow.addValidationError(ImportCurriculumsCols.elementType, column,
 					null, translate("error.content.one.allowed"));
 			allOk &= false;
@@ -504,18 +536,26 @@ public class ImportCurriculumsValidator {
 		validateCurriculumAndImplementation(importedRow);
 		
 		// Level
-		validateLevel(importedRow);
+		if(importedRow.getCurriculumElementParentRow() == null
+				|| importedRow.getCurriculumElementParentRow().type() == CurriculumExportType.ELEM) {
+			validateMandatory(importedRow, importedRow.getLevel(), ImportCurriculumsCols.level);
+		}
 
 		// Identifier
 		validateIdentifier(importedRow, 255);
+		// Permissions on curriculum
+		validateCurriculumPermissions(importedRow);
 		
 		// Identifier matches a repository entry
 		if(entry == null) {
-			String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
-			importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			// Empty external ref is identified by the validateIdentifier
+			if(StringHelper.containsNonWhitespace(importedRow.getIdentifier())) {
+				String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			}
 		} else {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, entry);
-			if(!reSecurity.isAdministrativeUser()) {
+			if(!reSecurity.isEntryAdmin() && !reSecurity.isAdministrativeUser() && !reSecurity.isCurriculumManager()) {
 				String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column, null, translate("error.permissions"));
 			}
@@ -530,10 +570,16 @@ public class ImportCurriculumsValidator {
 		}
 		
 		// Object type matches repository entry runtime type
-		if(entry != null && ((importedRow.type() == CurriculumExportType.TMPL && entry.getRuntimeType() != RepositoryEntryRuntimeType.template)
-				|| (importedRow.type() == CurriculumExportType.COURSE && entry.getRuntimeType() != RepositoryEntryRuntimeType.curricular))) {
+		if(entry != null && importedRow.type() == CurriculumExportType.TMPL && entry.getRuntimeType() != RepositoryEntryRuntimeType.template) {
 			String column = translate(ImportCurriculumsCols.objectType.i18nHeaderKey());
 			importedRow.addValidationError(ImportCurriculumsCols.objectType, column, null, translate("error.wrong.runtime.type"));
+		} else if(entry != null && importedRow.type() == CurriculumExportType.COURSE && entry.getRuntimeType() != RepositoryEntryRuntimeType.curricular) {
+			String column = translate(ImportCurriculumsCols.objectType.i18nHeaderKey());
+			if(roles.isAdministrator() && entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone) {
+				importedRow.addValidationWarning(ImportCurriculumsCols.objectType, column, null, translate("error.wrong.runtime.type"));
+			} else {
+				importedRow.addValidationError(ImportCurriculumsCols.objectType, column, null, translate("error.wrong.runtime.type"));
+			}
 		}
 
 		// Dates
@@ -587,6 +633,9 @@ public class ImportCurriculumsValidator {
 		}
 		
 		validateIdentifier(importedRow, 255);
+
+		// Permissions on curriculum
+		validateCurriculumPermissions(importedRow);
 
 		// Reference to course
 		String referenceColumn = translate(ImportCurriculumsCols.referenceIdentifier.i18nHeaderKey());
@@ -690,6 +739,7 @@ public class ImportCurriculumsValidator {
 			} else if(!hasOrganisationPermission(importedRow.getOrganisation())) {
 				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
 						null, translate("error.permissions"));
+				curriculumsNoPermissions.add(importedRow.getIdentifier());
 			} else if(importedRow.getCurriculum() != null && !Objects.equals(importedRow.getCurriculum().getOrganisation(), importedRow.getOrganisation())) {
 				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
 						null, translate("error.no.update"));
@@ -761,19 +811,27 @@ public class ImportCurriculumsValidator {
 			} 
 		}
 		
-		if(validateMandatory(importedRow, importedRow.getImplementationIdentifier(), ImportCurriculumsCols.identifier)) {
+		if(validateMandatory(importedRow, importedRow.getIdentifier(), ImportCurriculumsCols.identifier)) {
 			String sheet = translate("export.implementations");
 			String column = translate(ImportCurriculumsCols.identifier.i18nHeaderKey());
-			if(importedRow.getImplementationRow() == null) {
+			if(importedRow.getElementRow() == null) {
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
-						null, translator.translate("error.not.exist", importedRow.getImplementationIdentifier()));
-			} else if(importedRow.getImplementationRow().hasValidationErrors()) {
+						null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			} else if(importedRow.getElementRow().hasValidationErrors()) {
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
 						null, translator.translate("error.precent.errors", sheet));
-			} else if(importedRow.getImplementationRow().isIgnored()) {
+			} else if(importedRow.getElementRow().isIgnored()) {
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
 						null, translator.translate("error.ignored.in.sheet", sheet));
-			} 
+			} else if(importedRow.getElementRow() != null && importedRow.getElementRow().type() == CurriculumExportType.ELEM
+					&& importedRow.getElementRow().getImplementationRow() != importedRow.getImplementationRow()) {
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
+						null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			} else if(importedRow.getElementRow() != null && importedRow.getElementRow().type() == CurriculumExportType.IMPL
+					&& importedRow.getElementRow() != importedRow.getImplementationRow()) {
+				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
+						null, translator.translate("error.not.exist", importedRow.getIdentifier()));
+			}
 		}
 	}
 	
@@ -782,11 +840,6 @@ public class ImportCurriculumsValidator {
 		boolean allOk = validateMandatory(importedRow, importedRow.getIdentifier(), ImportCurriculumsCols.identifier);
 		allOk &= validateLength(importedRow, importedRow.getIdentifier(), maxLength, ImportCurriculumsCols.identifier);
 		return allOk;
-	}
-	
-	private void validateLevel(ImportedRow importedRow) {
-		// Identifier / external ref.
-		validateMandatory(importedRow, importedRow.getLevel(), ImportCurriculumsCols.level);
 	}
 	
 	private boolean hasOrganisationPermission(Organisation organisation) {
@@ -901,6 +954,14 @@ public class ImportCurriculumsValidator {
 			allOk &= false;
 		}
 		return allOk;
+	}
+	
+	private void validateCurriculumPermissions(ImportedRow importedRow) {
+		if(StringHelper.containsNonWhitespace(importedRow.getCurriculumIdentifier())
+				&& curriculumsNoPermissions.contains(importedRow.getCurriculumIdentifier())) {
+			String column = translate(ImportCurriculumsCols.curriculumIdentifier.i18nHeaderKey());
+			importedRow.addValidationError(ImportCurriculumsCols.curriculumIdentifier, column, null, translate("error.permissions"));
+		}
 	}
 	
 	private boolean validateLength(ImportedRow importedRow, String val, int maxLength, ImportCurriculumsCols col) {
@@ -1029,6 +1090,7 @@ public class ImportCurriculumsValidator {
 			importedRow.addValidationError(ImportCurriculumsCols.objectType, column,
 					translate("error.no.value"), translate("error.value.required"));
 		}
+		importedRow.setStatus(ImportCurriculumsStatus.NEW);
 	}
 	
 	private void changes(ImportedRow importedRow, Object currentValue, Object newValue, ImportCurriculumsCols col) {
@@ -1091,10 +1153,10 @@ public class ImportCurriculumsValidator {
 	
 	
 	
-	public record Identifier(String implementationIdentifier, String identifier) {
+	public record Identifier(String curriculumIdentifier, String identifier) {
 		@Override
 		public int hashCode() {
-			return (implementationIdentifier == null ? 0 : implementationIdentifier.hashCode())
+			return (curriculumIdentifier == null ? 0 : curriculumIdentifier.hashCode())
 					+ (identifier == null ? 0 : identifier.hashCode());
 		}
 		
@@ -1104,7 +1166,7 @@ public class ImportCurriculumsValidator {
 				return true;
 			}
 			if(obj instanceof Identifier key) {
-				return implementationIdentifier != null && implementationIdentifier.equals(key.implementationIdentifier)
+				return curriculumIdentifier != null && curriculumIdentifier.equals(key.curriculumIdentifier)
 						&& identifier != null && identifier.equals(key.identifier);
 			}
 			return false;

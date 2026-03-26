@@ -24,11 +24,13 @@
 		
 		const inputHolderId = this.settings.inputHolderId;
 		const formDispatchFieldId = this.settings.formDispatchFieldId;
-		var wrapperId = 'paintw_' + inputHolderId;
-		var canvas = new fabric.Canvas('paint_' + inputHolderId, {
+		const wrapperId = 'paintw_' + inputHolderId;
+		const canvas = new fabric.Canvas('paint_' + inputHolderId, {
 			isDrawingMode: false,
 			preserveObjectStacking: true
 		});
+		canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+
 		fabric.Object.prototype.erasable = true;
 		fabric.Object.prototype.transparentCorners = false;
 		fabric.Object.prototype.cornerColor = '#2980b9';
@@ -45,11 +47,16 @@
 		initColors();
 		initClear();
 		
+		var isSendFormDirty = true;
 		var jsonState = jQuery('#op_' + inputHolderId + '_json').val();
 		var hasJsonState = !(typeof jsonState == "undefined") && jsonState.length > 0;
 		var parsedJsonState = null;
 		if(hasJsonState) {
-			parsedJsonState = JSON.parse(jsonState);
+			try {
+				parsedJsonState = JSON.parse(jsonState);
+			} catch(e) {
+				if(window.console) console.log('Cannot parse saved JSON file', e);
+			}
 		}
 		
 		if(isStateful(jsonState, parsedJsonState)) { // if already drawn, starts with select tool
@@ -65,8 +72,8 @@
 		
 		drawBrush();
 		
-		var selectionChanged = function(e) {
-			var obj = e.target;
+		const selectionChanged = function(e) {
+			const obj = e.selected[0];
 			if("textbox" === obj.type) {
 				setBrushColor(obj.fill);
 				setBrushWidth(obj.fontSize);
@@ -79,7 +86,7 @@
 		canvas.on('selection:updated', selectionChanged);
 		
 		// save object model and png
-		var save = function() {
+		const save = function() {
 			try {
 				var objects = canvas.getObjects();
 				var image = canvas.toDataURL('png');
@@ -107,18 +114,22 @@
 		
 		// restore state
 		if(hasJsonState) {
-			canvas.loadFromJSON(parsedJsonState, function() {
-				canvas.renderAll(); 
-			}, function(o, object) {
+			isSendFormDirty = false;
+			canvas.loadFromJSON(parsedJsonState, function(o, object) {
 				if(object.isType("circle")) {
 					object.setControlsVisibility({ ml: false, mb: false, mr: false, mt: false, mtr: false });
 				}
+			}).then(function() {
+				canvas.renderAll();
+				isSendFormDirty = true;
 			});
 		}
 		
 		function flexiFormDirty() {
 			try {
-				setFlexiFormDirty(formDispatchFieldId);
+				if(isSendFormDirty) {
+					setFlexiFormDirty(formDispatchFieldId);
+				}
 			} catch(e) {
 				if(window.console) console.log(e);
 			}
@@ -150,7 +161,7 @@
 				canvas.isDrawingMode = false;
 				var obj = canvas.getActiveObject();
 				if(obj != null) {
-					obj.bringToFront();
+					canvas.bringObjectToFront(obj);
 					canvas.renderAll();
 				}
 				save();
@@ -161,7 +172,7 @@
 				canvas.isDrawingMode = false;
 				var obj = canvas.getActiveObject();
 				if(obj != null) {
-					obj.sendToBack();
+					canvas.sendObjectToBack(obj);
 					canvas.renderAll();
 				}
 				save();
@@ -189,7 +200,7 @@
 					strokeUniform: true
 			    });
 				canvas.add(textbox);
-				textbox.bringToFront();
+				canvas.bringObjectToFront(textbox);
 				canvas.setActiveObject(textbox);
 			});
 				
@@ -211,7 +222,7 @@
 			    });
 				circle.setControlsVisibility({ ml: false, mb: false, mr: false, mt: false, mtr: false });
 				canvas.add(circle);
-				circle.bringToFront();
+				canvas.bringObjectToFront(circle);
 				canvas.setActiveObject(circle);
 			});
 				
@@ -233,7 +244,7 @@
 					strokeUniform: true
 			    });
 				canvas.add(rect);
-				rect.bringToFront();
+				canvas.bringObjectToFront(rect);
 				canvas.setActiveObject(rect);
 			});
 			
@@ -253,7 +264,7 @@
 					strokeUniform: true
 			    });
 				canvas.add(ellipse);
-				ellipse.bringToFront();
+				canvas.bringObjectToFront(ellipse);
 				canvas.setActiveObject(ellipse);
 			});
 		}
@@ -319,7 +330,7 @@
 				selectTool(this);
 
 		        canvas.isDrawingMode = true;
-				canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
+				canvas.freeDrawingBrush = new EraserBrush(canvas);
 		        canvas.freeDrawingBrush.width = getBrushWidth();
 			});
 

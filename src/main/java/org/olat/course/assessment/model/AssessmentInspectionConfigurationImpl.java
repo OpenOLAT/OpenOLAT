@@ -303,6 +303,9 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 
 	@Override
 	public String getSafeExamBrowserHint() {
+		if(safeExamBrowserTemplate != null) {
+			return safeExamBrowserTemplate.getSafeExamBrowserHint();
+		}
 		return safeExamBrowserHint;
 	}
 

@@ -81,6 +81,9 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 	@Column(name="a_safeexambrowserconfig_pkey", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserConfigPlistKey;
 
+	@Column(name="a_safeexambrowserhint", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserHint;
+
 	@Override
 	public Long getKey() {
 		return key;
@@ -186,6 +189,16 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 
 	public void setSafeExamBrowserConfigPListKey(String key) {
 		this.safeExamBrowserConfigPlistKey = key;
+	}
+
+	@Override
+	public String getSafeExamBrowserHint() {
+		return safeExamBrowserHint;
+	}
+
+	@Override
+	public void setSafeExamBrowserHint(String hint) {
+		this.safeExamBrowserHint = hint;
 	}
 
 	@Override

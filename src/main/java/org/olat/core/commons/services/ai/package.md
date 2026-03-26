@@ -12,13 +12,16 @@ Key features:
 
 - Multi-provider support (OpenAI, Anthropic Claude, generic OpenAI-compatible servers)
 - Per-feature provider + model configuration
+- AI-powered MC question generation from text input
+- AI-powered image description generation (title, alt text, tags, keywords) with vision models
 - Generic providers for self-hosted servers (vLLM, Ollama, LiteLLM, etc.) — added dynamically, multiple instances
 - Shared prompt construction and response parsing via `AiPromptHelper`
+- Image preprocessing (scaling, base64 encoding) via `AiImageHelper`
 - LangChain4j for chat model abstraction and model catalog APIs
 
 ## 1. Class Diagram
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 520" font-family="'SF Mono','Cascadia Code','Fira Code','Consolas',monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 640" font-family="'SF Mono','Cascadia Code','Fira Code','Consolas',monospace">
   <style>
     .box { stroke-width: 1.2; rx: 4; ry: 4; }
     .box-iface    { fill: #ecfdf5; stroke: #16a34a; }
@@ -42,7 +45,7 @@ Key features:
     </marker>
   </defs>
 
-  <!-- ── Interfaces ── -->
+  <!-- ── Interfaces (row 1) ── -->
   <rect class="box box-iface" x="10" y="8" width="200" height="100"/>
   <text class="cls-stereo" x="110" y="24" text-anchor="middle">&#171;interface&#187;</text>
   <text class="cls-title" x="110" y="40" text-anchor="middle">AiSPI</text>
@@ -68,89 +71,107 @@ Key features:
   <text class="cls-text" x="558" y="78">+ verifyApiKey(String) : List</text>
   <text class="cls-text" x="558" y="90">+ getAdminTitleI18nKey()</text>
 
-  <!-- ── Implementations ── -->
-  <rect class="box box-class" x="10" y="148" width="240" height="72"/>
-  <text class="cls-title" x="130" y="168" text-anchor="middle">OpenAiSPI</text>
-  <line class="sep" x1="10" y1="176" x2="250" y2="176"/>
-  <text class="cls-text" x="18" y="192">@Service, AbstractSpringModule</text>
-  <text class="cls-text" x="18" y="206">OpenAiChatModel + OpenAiModelCatalog</text>
+  <!-- ── Feature interface (row 1b) ── -->
+  <rect class="box box-iface" x="240" y="118" width="280" height="100"/>
+  <text class="cls-stereo" x="380" y="134" text-anchor="middle">&#171;interface&#187;</text>
+  <text class="cls-title" x="380" y="150" text-anchor="middle">AiImageDescriptionSPI</text>
+  <line class="sep" x1="240" y1="158" x2="520" y2="158"/>
+  <text class="cls-text" x="248" y="174">+ generateImageDescription()</text>
+  <text class="cls-text" x="248" y="188">+ setImageDescriptionModel(String)</text>
+  <text class="cls-text" x="248" y="202">+ getAvailableImageDescriptionModels()</text>
 
-  <rect class="box box-class" x="280" y="148" width="240" height="72"/>
-  <text class="cls-title" x="400" y="168" text-anchor="middle">AnthropicAiSPI</text>
-  <line class="sep" x1="280" y1="176" x2="520" y2="176"/>
-  <text class="cls-text" x="288" y="192">@Service, AbstractSpringModule</text>
-  <text class="cls-text" x="288" y="206">AnthropicChatModel + ModelCatalog</text>
+  <!-- ── Implementations (row 2) ── -->
+  <rect class="box box-class" x="10" y="248" width="240" height="72"/>
+  <text class="cls-title" x="130" y="268" text-anchor="middle">OpenAiSPI</text>
+  <line class="sep" x1="10" y1="276" x2="250" y2="276"/>
+  <text class="cls-text" x="18" y="292">@Service, AbstractSpringModule</text>
+  <text class="cls-text" x="18" y="306">OpenAiChatModel + OpenAiModelCatalog</text>
 
-  <rect class="box box-class" x="550" y="148" width="240" height="72"/>
-  <text class="cls-title" x="670" y="168" text-anchor="middle">GenericAiSPI</text>
-  <line class="sep" x1="550" y1="176" x2="790" y2="176"/>
-  <text class="cls-text" x="558" y="192">@Service, factory/registry</text>
-  <text class="cls-text" x="558" y="206">+ createInstance() / deleteInstance()</text>
+  <rect class="box box-class" x="280" y="248" width="240" height="72"/>
+  <text class="cls-title" x="400" y="268" text-anchor="middle">AnthropicAiSPI</text>
+  <line class="sep" x1="280" y1="276" x2="520" y2="276"/>
+  <text class="cls-text" x="288" y="292">@Service, AbstractSpringModule</text>
+  <text class="cls-text" x="288" y="306">AnthropicChatModel + ModelCatalog</text>
 
-  <rect class="box box-class" x="550" y="240" width="240" height="72"/>
-  <text class="cls-title" x="670" y="260" text-anchor="middle">GenericAiSpiInstance</text>
-  <line class="sep" x1="550" y1="268" x2="790" y2="268"/>
-  <text class="cls-text" x="558" y="284">implements AiSPI+AiApiKeySPI+MCGen</text>
-  <text class="cls-text" x="558" y="298">OpenAiChatModel with custom baseUrl</text>
+  <rect class="box box-class" x="550" y="248" width="240" height="72"/>
+  <text class="cls-title" x="670" y="268" text-anchor="middle">GenericAiSPI</text>
+  <line class="sep" x1="550" y1="276" x2="790" y2="276"/>
+  <text class="cls-text" x="558" y="292">@Service, factory/registry</text>
+  <text class="cls-text" x="558" y="306">+ createInstance() / deleteInstance()</text>
 
-  <!-- ── Core services ── -->
-  <rect class="box box-service" x="10" y="340" width="340" height="86"/>
-  <text class="cls-stereo" x="180" y="356" text-anchor="middle">&#171;service&#187;</text>
-  <text class="cls-title" x="180" y="372" text-anchor="middle">AiModule</text>
-  <line class="sep" x1="10" y1="380" x2="350" y2="380"/>
-  <text class="cls-text" x="18" y="396">+ getAiProviders() : List&lt;AiSPI&gt;</text>
-  <text class="cls-text" x="18" y="410">+ getMCQuestionGenerator()</text>
-  <text class="cls-text" x="18" y="424">+ isMCQuestionGeneratorEnabled()</text>
+  <rect class="box box-class" x="550" y="340" width="240" height="72"/>
+  <text class="cls-title" x="670" y="360" text-anchor="middle">GenericAiSpiInstance</text>
+  <line class="sep" x1="550" y1="368" x2="790" y2="368"/>
+  <text class="cls-text" x="558" y="384">AiSPI+ApiKey+MCGen+ImgDesc</text>
+  <text class="cls-text" x="558" y="398">OpenAiChatModel with custom baseUrl</text>
 
-  <rect class="box box-service" x="380" y="340" width="300" height="86"/>
-  <text class="cls-stereo" x="530" y="356" text-anchor="middle">&#171;service&#187;</text>
-  <text class="cls-title" x="530" y="372" text-anchor="middle">AiPromptHelper</text>
-  <line class="sep" x1="380" y1="380" x2="680" y2="380"/>
-  <text class="cls-text" x="388" y="396">+ detectSupportedLocale(String)</text>
-  <text class="cls-text" x="388" y="410">+ createQuestionSystemMessage()</text>
-  <text class="cls-text" x="388" y="424">+ parseQuestionResult(String)</text>
+  <!-- ── Core services (row 3) ── -->
+  <rect class="box box-service" x="10" y="440" width="340" height="100"/>
+  <text class="cls-stereo" x="180" y="456" text-anchor="middle">&#171;service&#187;</text>
+  <text class="cls-title" x="180" y="472" text-anchor="middle">AiModule</text>
+  <line class="sep" x1="10" y1="480" x2="350" y2="480"/>
+  <text class="cls-text" x="18" y="496">+ getAiProviders() : List&lt;AiSPI&gt;</text>
+  <text class="cls-text" x="18" y="510">+ getMCQuestionGenerator()</text>
+  <text class="cls-text" x="18" y="524">+ getImageDescriptionGenerator()</text>
+  <text class="cls-text" x="18" y="538">+ isAiEnabled()</text>
 
-  <!-- ── Model classes ── -->
-  <rect class="box box-model" x="10" y="455" width="160" height="52"/>
-  <text class="cls-title" x="90" y="475" text-anchor="middle">AiResponse</text>
-  <line class="sep" x1="10" y1="483" x2="170" y2="483"/>
-  <text class="cls-text" x="18" y="498">+ isSuccess() / getError()</text>
+  <rect class="box box-service" x="380" y="440" width="300" height="100"/>
+  <text class="cls-stereo" x="530" y="456" text-anchor="middle">&#171;service&#187;</text>
+  <text class="cls-title" x="530" y="472" text-anchor="middle">AiPromptHelper</text>
+  <line class="sep" x1="380" y1="480" x2="680" y2="480"/>
+  <text class="cls-text" x="388" y="496">+ createQuestionSystemMessage()</text>
+  <text class="cls-text" x="388" y="510">+ createImageDescriptionSystemMessage()</text>
+  <text class="cls-text" x="388" y="524">+ parseQuestionResult(String)</text>
+  <text class="cls-text" x="388" y="538">+ parseImageDescriptionResult(String)</text>
 
-  <rect class="box box-model" x="200" y="455" width="220" height="52"/>
-  <text class="cls-title" x="310" y="475" text-anchor="middle">AiMCQuestionsResponse</text>
-  <line class="sep" x1="200" y1="483" x2="420" y2="483"/>
-  <text class="cls-text" x="208" y="498">+ getQuestions() : List</text>
+  <rect class="box box-service" x="710" y="440" width="150" height="72"/>
+  <text class="cls-stereo" x="785" y="456" text-anchor="middle">&#171;service&#187;</text>
+  <text class="cls-title" x="785" y="472" text-anchor="middle">AiImageHelper</text>
+  <line class="sep" x1="710" y1="480" x2="860" y2="480"/>
+  <text class="cls-text" x="718" y="496">+ prepareImageBase64()</text>
+  <text class="cls-text" x="718" y="510">+ getMimeType(String)</text>
 
-  <rect class="box box-model" x="450" y="455" width="220" height="52"/>
-  <text class="cls-title" x="560" y="475" text-anchor="middle">AiMCQuestionData</text>
-  <line class="sep" x1="450" y1="483" x2="670" y2="483"/>
-  <text class="cls-text" x="458" y="498">title, question, answers</text>
+  <!-- ── Model classes (row 4) ── -->
+  <rect class="box box-model" x="10" y="568" width="160" height="52"/>
+  <text class="cls-title" x="90" y="588" text-anchor="middle">AiResponse</text>
+  <line class="sep" x1="10" y1="596" x2="170" y2="596"/>
+  <text class="cls-text" x="18" y="612">+ isSuccess() / getError()</text>
+
+  <rect class="box box-model" x="200" y="568" width="220" height="52"/>
+  <text class="cls-title" x="310" y="588" text-anchor="middle">AiMCQuestionsResponse</text>
+  <line class="sep" x1="200" y1="596" x2="420" y2="596"/>
+  <text class="cls-text" x="208" y="612">+ getQuestions() : List</text>
+
+  <rect class="box box-model" x="450" y="568" width="230" height="52"/>
+  <text class="cls-title" x="565" y="588" text-anchor="middle">AiImageDescriptionResponse</text>
+  <line class="sep" x1="450" y1="596" x2="680" y2="596"/>
+  <text class="cls-text" x="458" y="612">+ getDescription() : Data</text>
 
   <!-- ── Arrows ── -->
   <!-- implements (dashed, open triangle) -->
-  <line class="arr arr-dash" x1="130" y1="148" x2="110" y2="108" marker-end="url(#oh)"/>
-  <line class="arr arr-dash" x1="400" y1="148" x2="380" y2="108" marker-end="url(#oh)"/>
-  <line class="arr arr-dash" x1="200" y1="158" x2="380" y2="108" marker-end="url(#oh)"/>
-  <line class="arr arr-dash" x1="280" y1="168" x2="240" y2="108" marker-end="url(#oh)"/>
-  <line class="arr arr-dash" x1="550" y1="250" x2="210" y2="108" marker-end="url(#oh)"/>
-  <line class="arr arr-dash" x1="600" y1="240" x2="520" y2="108" marker-end="url(#oh)"/>
-  <line class="arr arr-dash" x1="700" y1="240" x2="660" y2="94" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="130" y1="248" x2="110" y2="108" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="400" y1="248" x2="380" y2="108" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="200" y1="258" x2="380" y2="218" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="280" y1="268" x2="240" y2="218" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="550" y1="350" x2="210" y2="108" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="600" y1="340" x2="520" y2="108" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="600" y1="360" x2="520" y2="218" marker-end="url(#oh)"/>
+  <line class="arr arr-dash" x1="700" y1="340" x2="660" y2="94" marker-end="url(#oh)"/>
 
   <!-- GenericAiSPI creates GenericAiSpiInstance -->
-  <line class="arr" x1="670" y1="220" x2="670" y2="240" marker-end="url(#ah)"/>
-  <text class="arr-lbl" x="684" y="234">creates *</text>
+  <line class="arr" x1="670" y1="320" x2="670" y2="340" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="684" y="334">creates *</text>
 
   <!-- AiModule uses SPIs -->
-  <line class="arr arr-dash" x1="130" y1="340" x2="130" y2="220" marker-end="url(#ah)"/>
-  <text class="arr-lbl" x="140" y="285">uses</text>
-  <line class="arr arr-dash" x1="350" y1="370" x2="530" y2="370" marker-end="url(#ah)"/>
+  <line class="arr arr-dash" x1="130" y1="440" x2="130" y2="320" marker-end="url(#ah)"/>
+  <text class="arr-lbl" x="140" y="385">uses</text>
+  <line class="arr arr-dash" x1="350" y1="470" x2="530" y2="470" marker-end="url(#ah)"/>
 
   <!-- extends / contains -->
-  <line class="arr" x1="200" y1="480" x2="170" y2="480" marker-end="url(#oh)"/>
-  <text class="arr-lbl" x="180" y="474" text-anchor="middle">extends</text>
-  <polygon points="420,480 414,474 408,480 414,486" fill="#64748b"/>
-  <line class="arr" x1="420" y1="480" x2="450" y2="480"/>
-  <text class="arr-lbl" x="436" y="474">*</text>
+  <line class="arr" x1="200" y1="594" x2="170" y2="594" marker-end="url(#oh)"/>
+  <text class="arr-lbl" x="180" y="587" text-anchor="middle">extends</text>
+  <line class="arr" x1="450" y1="594" x2="170" y2="594" marker-end="url(#oh)"/>
+  <text class="arr-lbl" x="300" y="587" text-anchor="middle">extends</text>
 </svg>
 
 ### Roles of each class
@@ -159,14 +180,17 @@ Key features:
 |-------|---------------|
 | `AiSPI` | Base interface every provider must implement. Identity, enable/disable, admin UI factory. |
 | `AiMCQuestionGeneratorSPI` | Feature mixin for MC question generation. Providers implement this alongside `AiSPI`. |
+| `AiImageDescriptionSPI` | Feature mixin for image description generation (title, alt text, tags, keywords). Requires vision-capable models. |
 | `AiApiKeySPI` | Mixin for API-key-based providers. Enables the reusable `GenericAiApiKeyAdminController`. |
 | `OpenAiSPI` | OpenAI provider. `@Service` extending `AbstractSpringModule`. Uses `OpenAiChatModel` and `OpenAiModelCatalog`. |
 | `AnthropicAiSPI` | Anthropic Claude provider. Same pattern as `OpenAiSPI`. |
 | `GenericAiSPI` | Factory/registry for generic OpenAI-compatible instances. Stores config as numbered properties. Not an `AiSPI` itself. |
 | `GenericAiSpiInstance` | Single generic provider. Uses `OpenAiChatModel` with custom `baseUrl`. Created by `GenericAiSPI`. |
 | `AiModule` | Central module. Merges Spring providers + generic instances, stores per-feature provider/model config. Entry point for consumers. |
-| `AiPromptHelper` | Shared prompt construction (system + user messages) and XML response parsing. Used by all SPIs. |
-| `AiResponse` / `AiMCQuestionsResponse` / `AiMCQuestionData` | Response model classes. `AiResponse` holds error state, `AiMCQuestionsResponse` wraps a list of parsed `AiMCQuestionData`. |
+| `AiPromptHelper` | Shared prompt construction (system + user messages) and XML response parsing for both question and image description features. Used by all SPIs. |
+| `AiImageHelper` | Image preprocessing service. Scales images to max 1024px and base64-encodes them for vision API calls. |
+| `AiResponse` / `AiMCQuestionsResponse` / `AiMCQuestionData` | Response model for MC questions. `AiResponse` holds error state, `AiMCQuestionsResponse` wraps a list of parsed `AiMCQuestionData`. |
+| `AiImageDescriptionResponse` / `AiImageDescriptionData` | Response model for image descriptions. Wraps parsed metadata: title, description, alt text, color tags, category tags, keywords. |
 
 ## 2. Using the MC Question Generator
 
@@ -193,16 +217,50 @@ if (generator != null) {
 }
 ```
 
-## 3. Writing a Custom SPI
+## 3. Using the Image Description Generator
+
+```java
+@Autowired
+private AiModule aiModule;
+@Autowired
+private AiImageHelper aiImageHelper;
+
+// Check availability
+if (aiModule.isImageDescriptionGeneratorEnabled()) {
+    showAiButton();
+}
+
+// Generate description from an image file
+AiImageDescriptionSPI generator = aiModule.getImageDescriptionGenerator();
+if (generator != null) {
+    String base64 = aiImageHelper.prepareImageBase64(imageFile, "jpg");
+    String mimeType = aiImageHelper.getMimeType("jpg");
+    if (base64 != null && mimeType != null) {
+        AiImageDescriptionResponse response = generator.generateImageDescription(base64, mimeType, locale);
+        if (response.isSuccess()) {
+            AiImageDescriptionData data = response.getDescription();
+            // data.getTitle(), data.getDescription(), data.getAltText()
+            // data.getColorTags(), data.getCategoryTags(), data.getKeywords()
+        } else {
+            showError(response.getError());
+        }
+    }
+}
+```
+
+`AiImageHelper` handles scaling (max 1024px) and base64 encoding. Supports JPEG, PNG, GIF, and WebP.
+
+## 4. Writing a Custom SPI
 
 Extend `AbstractSpringModule`, implement `AiSPI` plus feature interfaces.
 If your provider uses an API key, also implement `AiApiKeySPI` to get the
-reusable `GenericAiApiKeyAdminController` for free.
+reusable `GenericAiApiKeyAdminController` for free. Implement
+`AiImageDescriptionSPI` for image description support (requires vision-capable models).
 
 ```java
 @Service
 public class MyAiSPI extends AbstractSpringModule
-        implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI {
+        implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI, AiImageDescriptionSPI {
 
     private static final String MY_API_KEY = "myai.api.key";
     private static final String MY_ENABLED = "myai.enabled";
@@ -266,27 +324,28 @@ public class MyAiSPI extends AbstractSpringModule
 }
 ```
 
-## 4. Adding a New Feature
+## 5. Adding a New Feature
 
 1. Define a feature interface in the root package (e.g. `AiTextSummarizerSPI`)
-2. Add feature config properties and methods to `AiModule` (follow the MC generator pattern)
+2. Add feature config properties and methods to `AiModule` (follow the MC generator / image description pattern)
 3. Implement in existing SPIs (`OpenAiSPI`, `AnthropicAiSPI`, `GenericAiSpiInstance`)
-4. Add UI config to `AiFeaturesAdminController`
+4. Add prompt construction and response parsing to `AiPromptHelper`
+5. Add UI config to `AiFeaturesAdminController`
 
-## 5. Configuration
+## 6. Configuration
 
 Each `AbstractSpringModule` persists config to `{userdata}/system/configuration/{FQCN}.properties`.
 
 | Module | Key properties |
 |--------|---------------|
-| `AiModule` | `ai.feature.mc-question-generator.spi`, `.model` |
+| `AiModule` | `ai.feature.mc-question-generator.spi`, `.model`, `ai.feature.image-description-generator.spi`, `.model` |
 | `OpenAiSPI` | `openai.api.key`, `openai.enabled` |
 | `AnthropicAiSPI` | `anthropic.api.key`, `anthropic.enabled` |
 | `GenericAiSPI` | `generic.instances=1,2`, `generic.{id}.name`, `.base.url`, `.api.key`, `.models`, `.enabled` |
 
 Defaults in `olat.properties`: `ai.openai.enabled=false`, `ai.openai.api.key=`, `ai.anthropic.enabled=false`, `ai.anthropic.api.key=`
 
-## 6. Admin UI
+## 7. Admin UI
 
 `AiAdminController` is a `BasicController` that orchestrates:
 
@@ -302,7 +361,7 @@ Defaults in `olat.properties`: `ai.openai.enabled=false`, `ai.openai.api.key=`, 
 | `GenericAiSpiAdminController` | Form for generic instances (base URL, models, optional API key) |
 | `AiFeaturesAdminController` | Per-feature SPI + model config |
 
-## 7. i18n Keys
+## 8. i18n Keys
 
 | Key | Usage |
 |-----|-------|

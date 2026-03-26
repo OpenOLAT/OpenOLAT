@@ -254,7 +254,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			sb.append("</a>").append("</p>", inForm);
 			
-			//on click() is part of prototype.js
+			//on click() is part of jQuery
 			if(link.isRegisterForMousePositionEvent()) {
 				jsSb.append(elementId).append(".click(function(event) {")
 			       .append(" jQuery('#").append(elementId).append("').each(function(index, el) {;")

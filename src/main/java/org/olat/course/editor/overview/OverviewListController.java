@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -261,7 +262,9 @@ public class OverviewListController extends FormBasicController implements Flexi
 			tableEl.setElementCssClass(tableEl.getElementCssClass() + " o_lp_edit");
 		}
 		tableEl.setCssDelegate(this);
-		tableEl.setEmptyTableMessageKey("table.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty")
+				.build());
 		tableEl.setExportEnabled(true);
 		boolean batchAction = usedModel == Model.EDITOR;
 		tableEl.setMultiSelect(batchAction);

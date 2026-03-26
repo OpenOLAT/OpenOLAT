@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -93,7 +94,11 @@ public class CopyElementDetailsResourcesController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "resourcesTable", tableModel, 20, false, getTranslator(), formLayout);
 		
 		String typeName = curriculumElement.getType() == null ? "-" : curriculumElement.getType().getDisplayName();
-		tableEl.setEmptyTableSettings("empty.resources", null, "o_CourseModule_icon", null, null, false, typeName);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.resources")
+				.withMessageI18nArgs(new String[]{ typeName })
+				.withIconCss("o_CourseModule_icon")
+				.build(), false);
 	}
 	
 	private void loadModel() {

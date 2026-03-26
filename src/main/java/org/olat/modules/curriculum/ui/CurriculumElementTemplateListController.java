@@ -28,6 +28,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -168,11 +169,19 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 			String[] emptyI18nArgs = {
 					StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 				};
-			tableEl.setEmptyTableSettings("table.templates.empty", "table.templates.empty.hint",
-					"o_CourseModule_icon", "add.template", "o_icon_add", true, emptyI18nArgs);
-		} else {			
-			// default empty message with out create hint
-			tableEl.setEmptyTableSettings("table.templates.empty", null, "o_CourseModule_icon");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.templates.empty")
+					.withMessageI18nArgs(emptyI18nArgs)
+					.withHintI18nKey("table.templates.empty.hint")
+					.withHintI18nArgs(emptyI18nArgs)
+					.withIconCss("o_CourseModule_icon")
+					.withPrimaryButton("o_icon_add", "add.template", null)
+					.build());
+		} else {
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.templates.empty")
+					.withIconCss("o_CourseModule_icon")
+					.build());
 		}
 	}
 
@@ -228,11 +237,22 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 				curriculumElementType == null ? "" : StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 			};
 		if(linkedCourses >= 1 || !secCallback.canManageCurriculumElementResources(curriculumElement)) {
-			tableEl.setEmptyTableSettings("table.templates.empty", "table.templates.empty.linked.hint",
-					"o_CourseModule_icon", null, null, true, emptyI18nArgs);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.templates.empty")
+					.withMessageI18nArgs(emptyI18nArgs)
+					.withHintI18nKey("table.templates.empty.linked.hint")
+					.withHintI18nArgs(emptyI18nArgs)
+					.withIconCss("o_CourseModule_icon")
+					.build());
 		} else {
-			tableEl.setEmptyTableSettings("table.templates.empty", "table.templates.empty.hint",
-					"o_CourseModule_icon", "add.template", "o_icon_add", true, emptyI18nArgs);
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("table.templates.empty")
+					.withMessageI18nArgs(emptyI18nArgs)
+					.withHintI18nKey("table.templates.empty.hint")
+					.withHintI18nArgs(emptyI18nArgs)
+					.withIconCss("o_CourseModule_icon")
+					.withPrimaryButton("o_icon_add", "add.template", null)
+					.build());
 		}
 		
 		if(addTemplateButton != null) {

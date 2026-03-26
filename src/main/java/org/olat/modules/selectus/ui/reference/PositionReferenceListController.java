@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -199,7 +200,9 @@ public class PositionReferenceListController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_position_recommendation_list");
-		tableEl.setEmptyTableMessageKey("recommendation.list.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("recommendation.list.empty")
+				.build());
 		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
 		tableEl.setMultiSelect(true);

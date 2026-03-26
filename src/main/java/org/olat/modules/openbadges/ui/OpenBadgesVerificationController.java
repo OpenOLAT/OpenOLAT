@@ -27,11 +27,16 @@ import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Base64;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -44,21 +49,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.manager.OpenBadgesManagerImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.modules.openbadges.v2.CryptographicKey;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.SignedJWT;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
@@ -67,6 +64,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.SignedJWT;
 
 /**
  * Controller for OpenBadges verification functionality
@@ -249,7 +250,7 @@ public class OpenBadgesVerificationController extends FormBasicController {
 		try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String xPathString = "//svg";
-            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(fileUpload.getUploadInputStream()));
+            Document document = XMLFactories.newSVGDocumentBuilder().parse(new InputSource(fileUpload.getUploadInputStream()));
             NodeList nodeList = (NodeList) xPath.compile(xPathString).evaluate(document, XPathConstants.NODESET);
             if (nodeList.getLength() != 1) {
                 throw new IllegalStateException("Node list does not have length 1");

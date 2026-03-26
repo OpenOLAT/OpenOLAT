@@ -288,12 +288,14 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.slider.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.qtiCopyPaste.js");
 			jsa.addRequiredStaticJsFile("js/jquery/openolat/jquery.paint.v2.js");
-			jsa.addRequiredStaticJsFile("js/fabricjs/paint.fabric.js");
+			jsa.addRequiredStaticJsFile("js/fabricjs/fabric.min.js");
+			jsa.addRequiredStaticJsFile("js/fabricjs/eraser.js");
 		} else {
 			jsa.addRequiredStaticJsFile("js/dragula/dragula.min.js");
 			jsa.addRequiredStaticJsFile("js/jquery/taboverride/jquery.taboverride.min.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.qti.min.js");
-			jsa.addRequiredStaticJsFile("js/fabricjs/paint.fabric.min.js");
+			jsa.addRequiredStaticJsFile("js/fabricjs/fabric.min.js");
+			jsa.addRequiredStaticJsFile("js/fabricjs/eraser.js");
 		}
 		
 		if(StringHelper.containsNonWhitespace(WebappHelper.getMathLiveCdn())) {

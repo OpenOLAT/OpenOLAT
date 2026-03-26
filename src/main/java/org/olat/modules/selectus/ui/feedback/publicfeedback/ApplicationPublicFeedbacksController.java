@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -89,7 +90,9 @@ public class ApplicationPublicFeedbacksController extends FormBasicController im
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_public_feedback_list");
-		tableEl.setEmptyTableMessageKey("public.feedback.list.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("public.feedback.list.empty")
+				.build());
 		tableEl.setPageSize(20);
 		tableEl.setNumOfRowsEnabled(false);
 		

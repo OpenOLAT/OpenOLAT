@@ -237,6 +237,12 @@
 		border-color: $o-button-ghost-hover-border-color;
 	}
 }
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	.o_button_ghost {
+		transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	}
+}
 
 /* Mega button */
 .btn.o_button_mega {

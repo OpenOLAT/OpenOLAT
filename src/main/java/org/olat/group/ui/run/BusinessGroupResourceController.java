@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -94,7 +95,10 @@ public class BusinessGroupResourceController extends FormBasicController {
 		tableModel = new RepositoryFlexiTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "resources", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "group-resources");
-		tableEl.setEmptyTableSettings("resources.noresources", null, "o_CourseModule_icon");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("resources.noresources")
+				.withIconCss("o_CourseModule_icon")
+				.build());
 		tableEl.setExportEnabled(true);
 	}
 	

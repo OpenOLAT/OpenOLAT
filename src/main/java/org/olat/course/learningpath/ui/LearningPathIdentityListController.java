@@ -33,6 +33,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -176,7 +177,10 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("table.empty.curriculum", null, "o_icon_user");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("table.empty.curriculum")
+				.withIconCss("o_icon_user")
+				.build());
 		tableEl.setExportEnabled(true);
 		initFilters();
 		

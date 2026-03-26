@@ -74,12 +74,12 @@ public class ValidationResultController extends FormBasicController {
 	
 	private void initFormChanges(FormItemContainer formLayout) {
 		String label = "<i class='o_icon o_icon_changes'> </i> " + translate("value.changed.label");
-		String values = translate("value.changed", valueToString(value.getBeforeValue()), valueToString(value.getAfterValue()));
+		String values = translate("value.changed", valueToString(value.getBeforeValue(), formatter), valueToString(value.getAfterValue(), formatter));
 		StaticTextElement el = uifactory.addStaticTextElement("changes", null, values, formLayout);
 		el.setLabel(label, null, false);
 	}
 	
-	private String valueToString(Object obj) {
+	protected static final String valueToString(Object obj, Formatter formatter) {
 		String val;
 		if(obj instanceof String string) {
 			val = string;
@@ -91,7 +91,7 @@ public class ValidationResultController extends FormBasicController {
 			val = formatter.formatTimeShort(localTime);
 		} else if(obj instanceof List<?> list) {
 			List<String> values = list.stream()
-					.map(this::valueToString)
+					.map(v -> valueToString(v, formatter))
 					.toList();
 			val = String.join("; ", values);
 		} else if(obj != null) {

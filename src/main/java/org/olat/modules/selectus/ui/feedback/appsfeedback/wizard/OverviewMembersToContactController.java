@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -95,7 +96,9 @@ public class OverviewMembersToContactController extends StepFormBasicController 
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_position_reference_list");
-		tableEl.setEmptyTableMessageKey("apps.feedbacks.emtpy");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("apps.feedbacks.emtpy")
+				.build());
 	}
 
 	@Override

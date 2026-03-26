@@ -123,6 +123,29 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	}
 	
 	@Override
+	public void addNewDisplayNames(Collection<String> displayNames) {
+		if (displayNames == null || displayNames.isEmpty()) {
+			return;
+		}
+		// Collect existing display names (lowercased) to avoid case-insensitive duplicates
+		Set<String> existingLower = new HashSet<>();
+		for (String existing : getDisplayNames()) {
+			existingLower.add(existing.toLowerCase());
+		}
+		boolean changed = false;
+		for (String name : displayNames) {
+			if (StringHelper.containsNonWhitespace(name) && !existingLower.contains(name.toLowerCase())) {
+				newTags.add(name);
+				existingLower.add(name.toLowerCase());
+				changed = true;
+			}
+		}
+		if (changed) {
+			updateDisplayUI();
+		}
+	}
+
+	@Override
 	public void setDirtyCheck(boolean dirtyCheck) {
 		this.dirtyCheck = dirtyCheck;
 	}

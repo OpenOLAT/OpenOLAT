@@ -66,7 +66,8 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.status,
 				new ImportStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.infos));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.infos,
+				new ImportStatisticsCellRenderer(true, true)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.ignore));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.displayName,
 				new ImportValueCellRenderer(ImportCurriculumsCols.displayName, getLocale())));
@@ -147,7 +148,7 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 	
 	private void loadErrorMessage(List<ImportedRow> rows) {
 		long numOfErrors = rows.stream()
-			.filter(row -> row.getStatus() == ImportCurriculumsStatus.ERROR || row.getValidationStatistics().errors() > 0)
+			.filter(row -> row.getValidationStatistics().errors() > 0)
 			.count();
 
 		if(numOfErrors > 0) {

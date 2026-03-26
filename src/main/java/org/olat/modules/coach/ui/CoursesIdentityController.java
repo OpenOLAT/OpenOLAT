@@ -35,6 +35,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -361,8 +362,11 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 		tableEl.setElementCssClass("o_coached_identity_courses");
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
-		
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("default.tableEmptyMessage")
+				.withIconCss("o_icon_user")
+				.build());
+
 		initFilters();
 		initFiltersPresets(ureq);
 		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v3.2");

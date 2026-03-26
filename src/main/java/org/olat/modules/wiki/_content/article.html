@@ -11,7 +11,7 @@
 #elseif($pageName == "O_error")
 	$r.translate("O_error")
 #else
-	$pageName.replace("_"," ")
+	$r.escapeHtml($pageName.replace("_"," "))
 #end
 </h3>
 <div class="o_wikimod-article-box o_user_content_block">

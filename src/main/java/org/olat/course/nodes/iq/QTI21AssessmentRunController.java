@@ -85,12 +85,12 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
-import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -892,14 +892,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		AssessmentTestSession session = null;
 		if(courseNode instanceof SelfAssessableCourseNode) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity());
+			session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity(), false);
 		} else {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 			if(userCourseEnv.isParticipant() && assessmentEntry.getAssessmentId() != null) {
 				session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
 			} else {
 				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity());
+				session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity(), false);
 			}
 		}
 		

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
@@ -23,9 +24,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.Reference;
@@ -34,6 +32,8 @@ import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.ReferenceStatusCellRenderer;
 import org.olat.modules.selectus.ui.reference.SelectForInvitationEmailDataModel.IRCols;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -79,7 +79,9 @@ public class AbstractInvitationEmailController extends StepFormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_position_invitation_list");
-		tableEl.setEmptyTableMessageKey("recommendation.list.empty");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("recommendation.list.empty")
+					.build());
 		tableEl.setPageSize(40);
 		if(!isSortKeyValid()) {
 			sortKey = new SortKey(IRCols.fullName.sortKey(), true);

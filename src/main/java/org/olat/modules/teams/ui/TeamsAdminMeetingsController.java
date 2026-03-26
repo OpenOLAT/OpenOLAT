@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -106,7 +107,10 @@ public class TeamsAdminMeetingsController extends FormBasicController {
 		
 		tableModel = new TeamsMeetingDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, 20, true, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("no.meetings", null, "o_icon_calendar");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.meetings")
+				.withIconCss("o_icon_calendar")
+				.build());
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));

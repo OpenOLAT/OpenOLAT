@@ -22,15 +22,17 @@ package org.olat.modules.ceditor.manager;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.apache.logging.log4j.Logger;
 import org.commonmark.ext.gfm.tables.TableBlock;
@@ -38,7 +40,6 @@ import org.commonmark.ext.gfm.tables.TableBody;
 import org.commonmark.ext.gfm.tables.TableCell;
 import org.commonmark.ext.gfm.tables.TableHead;
 import org.commonmark.ext.gfm.tables.TableRow;
-import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.BulletList;
@@ -61,8 +62,20 @@ import org.commonmark.node.ThematicBreak;
 import org.commonmark.renderer.html.DefaultUrlSanitizer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.olat.basesecurity.MediaServerModule;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
+import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionData;
+import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
@@ -83,8 +96,19 @@ import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
 import org.olat.modules.ceditor.ui.MarkdownImportController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaCenterLicenseHandler;
 import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaModule;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
+import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
  * CommonMark AST visitor that converts top-level block nodes into
@@ -108,23 +132,27 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 	private final ImageHandler imageHandler;
 	private final MediaServerModule mediaServerModule;
 	private final Map<String, String> mathBlocks;
+	private final Translator translator;
 
 	private final HtmlRenderer inlineRenderer;
-	private HttpClient httpClient;
+	private final HttpClientService httpClientService;
 
 	public MarkdownPagePartVisitor(Identity author, File basePath,
 			ImageHandler imageHandler, MediaServerModule mediaServerModule,
-			Map<String, String> mathBlocks) {
+			HttpClientService httpClientService,
+			Map<String, String> mathBlocks, Translator translator) {
 		this.author = author;
 		this.basePath = basePath;
 		this.imageHandler = imageHandler;
 		this.mediaServerModule = mediaServerModule;
+		this.httpClientService = httpClientService;
 		this.mathBlocks = mathBlocks;
+		this.translator = translator;
 		this.inlineRenderer = HtmlRenderer.builder()
 			.escapeHtml(true)
 			.sanitizeUrls(true)
 			.urlSanitizer(new DefaultUrlSanitizer(List.of("http", "https", "mailto")))
-			.extensions(List.of(TablesExtension.create()))
+			.extensions(MarkdownImportService.markdownExtensions())
 			.build();
 	}
 
@@ -212,6 +240,12 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 
 	@Override
 	public void visit(BlockQuote blockQuote) {
+		// Detect GitHub-style admonition [!TYPE]
+		MarkdownAdmonitionMapping.AdmonitionResult admonition =
+			MarkdownAdmonitionMapping.detectAdmonition(blockQuote);
+
+		AlertBoxType alertType = admonition != null ? admonition.type() : AlertBoxType.note;
+
 		String html = renderChildrenToHtml(blockQuote);
 
 		ParagraphPart part = new ParagraphPart();
@@ -219,8 +253,11 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		TextSettings textSettings = new TextSettings();
 		AlertBoxSettings alertBox = AlertBoxSettings.getPredefined();
 		alertBox.setShowAlertBox(true);
-		alertBox.setType(AlertBoxType.note);
-		alertBox.setWithIcon(true);
+		alertBox.setWithIcon(admonition != null);
+		alertBox.setType(alertType);
+		if (admonition != null && translator != null) {
+			alertBox.setTitle(translator.translate(alertType.getI18nKey()));
+		}
 		textSettings.setAlertBoxSettings(alertBox);
 		part.setLayoutOptions(ContentEditorXStream.toXml(textSettings));
 		parts.add(part);
@@ -246,7 +283,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 	public void visit(HtmlBlock htmlBlock) {
 		// HTML blocks are skipped entirely to prevent XSS and HTML injection.
 		// We only accept pure markdown content.
-		warnings.add("HTML block skipped (HTML is not allowed in markdown import).");
+		warnings.add("import.markdown.warn.html.skipped");
 	}
 
 	@Override
@@ -300,7 +337,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		}
 
 		if (numCols == 0 || numRows == 0) {
-			warnings.add("Empty table encountered; skipping.");
+			warnings.add("import.markdown.warn.table.empty");
 			return;
 		}
 
@@ -400,7 +437,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 
 		File imageFile = resolveImageFile(destination);
 		if (imageFile == null || !imageFile.exists()) {
-			warnings.add("Image not found: " + destination);
+			warnings.add("import.markdown.warn.image.not.found\t" + StringHelper.escapeHtml(destination));
 			ParagraphPart fallback = new ParagraphPart();
 			fallback.setContent("<p>" + (altText.isEmpty() ? destination : altText) + "</p>");
 			parts.add(fallback);
@@ -413,18 +450,42 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			if (mediaTitle.isBlank()) {
 				mediaTitle = filename;
 			}
-
-			Media media = imageHandler.createMedia(
-				mediaTitle, null, altText, imageFile, filename,
-				null, author, MediaLog.Action.IMPORTED
-			);
+			// check for duplicate media file, reuse same image that has already been uploaded
+			Media media = null;
+			MediaService mediaService = (MediaService) CoreSpringFactory.getImpl(MediaService.class); 
+			if (mediaService.isInMediaCenter(author, imageFile)) {
+				SearchMediaParameters params = new SearchMediaParameters();
+				String checksum = FileUtils.checksumSha256(imageFile);
+				params.setChecksum(checksum);
+				params.setIdentity(author);
+				params.setScope(Scope.ALL);
+				List<MediaWithVersion> versions =  mediaService.searchMedias(params);
+				if (versions.size() > 0) {
+					media = versions.get(0).media();
+				}
+			}
+			if (media == null && imageHandler != null) {
+				media = imageHandler.createMedia(
+					mediaTitle, null, altText, imageFile, filename,
+					null, author, MediaLog.Action.IMPORTED
+				);
+				// Set default license if license module is enabled for media center
+				LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
+				MediaCenterLicenseHandler licenseHandler = CoreSpringFactory.getImpl(MediaCenterLicenseHandler.class);
+				if (licenseModule.isEnabled(licenseHandler)) {
+					LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+					licenseService.createDefaultLicense(media, licenseHandler, author);
+				}
+				// Enrich media with AI-generated metadata
+				doAutoGenerateAiMetadata(media, imageFile, filename, mediaService);
+			}
 
 			MediaPart mediaPart = MediaPart.valueOf(author, media);
 			parts.add(mediaPart);
 			imageCount++;
 		} catch (Exception e) {
 			log.warn("Failed to import image: {}", destination, e);
-			warnings.add("Failed to import image: " + destination + " (" + e.getMessage() + ")");
+			warnings.add("import.markdown.warn.image.import.failed\t" + StringHelper.escapeHtml(destination) + "\t" + StringHelper.escapeHtml(e.getMessage()));
 		}
 	}
 
@@ -438,17 +499,16 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			return downloadRemoteImage(destination);
 		}
 
-		// Data URIs are not supported
+		// Data URIs: decode base64 payload to a temp file
 		if (destination.startsWith("data:")) {
-			warnings.add("Data URI images are not supported: " + destination.substring(0, Math.min(destination.length(), 40)) + "...");
-			return null;
+			return decodeDataUriImage(destination);
 		}
 
 		// Local file paths are only allowed when a basePath is provided (file upload).
 		// Without basePath (text paste), only remote URLs are supported to prevent
 		// arbitrary file reads from the server filesystem.
 		if (basePath == null) {
-			warnings.add("Local image paths are not supported when pasting text: " + destination);
+			warnings.add("import.markdown.warn.image.local.unsupported\t" + StringHelper.escapeHtml(destination));
 			return null;
 		}
 
@@ -462,11 +522,11 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		try {
 			File resolved = file.getCanonicalFile();
 			if (!resolved.toPath().startsWith(basePath.getCanonicalFile().toPath())) {
-				warnings.add("Image path outside allowed directory: " + destination);
+				warnings.add("import.markdown.warn.image.path.outside\t" + StringHelper.escapeHtml(destination));
 				return null;
 			}
 		} catch (Exception e) {
-			warnings.add("Cannot resolve image path: " + destination);
+			warnings.add("import.markdown.warn.image.path.resolve\t" + StringHelper.escapeHtml(destination));
 			return null;
 		}
 
@@ -482,16 +542,196 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 					return name;
 				}
 			} catch (Exception e) {
-				// fall through
+				log.debug("Could not extract filename from URL: {}", destination, e);
 			}
 		}
+		if (destination.startsWith("data:")) {
+			String mimeType = extractDataUriMimeType(destination);
+			String suffix = mimeTypeToSuffix(mimeType);
+			return "image" + suffix;
+		}
 		return imageFile.getName();
+	}
+
+	private void doAutoGenerateAiMetadata(Media media, File imageFile, String filename, MediaService mediaService) {
+		try {
+			AiModule aiModule = CoreSpringFactory.getImpl(AiModule.class);
+			if (!aiModule.isImageDescriptionGeneratorEnabled()) return;
+
+			AiImageHelper aiImageHelper = CoreSpringFactory.getImpl(AiImageHelper.class);
+			String suffix = getSuffix(filename);
+			if (suffix == null) return;
+			String mimeType = aiImageHelper.getMimeType(suffix);
+			if (mimeType == null) return;
+
+			String base64 = aiImageHelper.prepareImageBase64(imageFile, suffix);
+			if (base64 == null) return;
+
+			AiImageDescriptionSPI generator = aiModule.getImageDescriptionGenerator();
+			if (generator == null) return;
+
+			Locale locale = translator != null ? translator.getLocale() : Locale.ENGLISH;
+			AiImageDescriptionResponse response = generator.generateImageDescription(base64, mimeType, locale);
+			if (!response.isSuccess() || response.getDescription() == null) return;
+
+			AiImageDescriptionData data = response.getDescription();
+
+			// Update title if current title looks like a filename
+			if (StringHelper.containsNonWhitespace(data.getTitle())) {
+				String currentTitle = media.getTitle();
+				if (!StringHelper.containsNonWhitespace(currentTitle) || isFilenameLike(currentTitle)) {
+					media.setTitle(data.getTitle());
+				}
+			}
+			if (StringHelper.containsNonWhitespace(data.getDescription())) {
+				media.setDescription(data.getDescription());
+			}
+			if (StringHelper.containsNonWhitespace(data.getAltText())) {
+				media.setAltText(data.getAltText());
+			}
+			mediaService.updateMedia(media);
+
+			// Add tags
+			List<String> tags = new ArrayList<>();
+			if (StringHelper.containsNonWhitespace(data.getOrientation())) {
+				tags.add(data.getOrientation().toLowerCase());
+			}
+			for (String tag : data.getColorTags()) {
+				tags.add(tag.toLowerCase());
+			}
+			for (String tag : data.getCategoryTags()) {
+				tags.add(tag.toLowerCase());
+			}
+			for (String tag : data.getKeywords()) {
+				tags.add(tag.toLowerCase());
+			}
+			if (!tags.isEmpty()) {
+				mediaService.updateTags(author, media, tags);
+			}
+
+			// Map AI subject to taxonomy level
+			if (StringHelper.containsNonWhitespace(data.getSubject())) {
+				mapSubjectToTaxonomy(media, data.getSubject(), mediaService);
+			}
+		} catch (Exception e) {
+			log.warn("Failed to auto-generate AI metadata for image: {}", filename, e);
+		}
+	}
+
+	private void mapSubjectToTaxonomy(Media media, String subject, MediaService mediaService) {
+		MediaModule mediaModule = CoreSpringFactory.getImpl(MediaModule.class);
+		List<TaxonomyRef> taxonomyRefs = mediaModule.getTaxonomyRefs();
+		if (taxonomyRefs.isEmpty()) return;
+
+		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+		String subjectLower = subject.trim().toLowerCase();
+
+		for (TaxonomyLevel level : levels) {
+			if (translator != null) {
+				String displayName = TaxonomyUIFactory.translateDisplayName(translator, level);
+				if (displayName != null && subjectLower.equals(displayName.trim().toLowerCase())) {
+					mediaService.updateTaxonomyLevels(media, List.of(new TaxonomyLevelRefImpl(level.getKey())));
+					return;
+				}
+			}
+			String identifier = level.getIdentifier();
+			if (identifier != null && subjectLower.equals(identifier.trim().toLowerCase())) {
+				mediaService.updateTaxonomyLevels(media, List.of(new TaxonomyLevelRefImpl(level.getKey())));
+				return;
+			}
+		}
+	}
+
+	private String getSuffix(String filename) {
+		if (filename == null) return null;
+		int dotPos = filename.lastIndexOf('.');
+		if (dotPos >= 0 && dotPos < filename.length() - 1) {
+			return filename.substring(dotPos + 1);
+		}
+		return null;
+	}
+
+	private boolean isFilenameLike(String title) {
+		if (title == null) return false;
+		return title.matches("(?i).*\\.(jpe?g|png|gif|webp|svg|bmp|tiff?)$");
+	}
+
+	private File decodeDataUriImage(String dataUri) {
+		String mimeType = extractDataUriMimeType(dataUri);
+		if (mimeType == null || !ImageHandler.mimeTypes.contains(mimeType)) {
+			warnings.add("import.markdown.warn.datauri.type\t" + (mimeType != null ? mimeType : "unknown"));
+			return null;
+		}
+
+		int commaIdx = dataUri.indexOf(',');
+		if (commaIdx < 0) {
+			warnings.add("import.markdown.warn.datauri.malformed");
+			return null;
+		}
+
+		// Only accept base64 encoding
+		String header = dataUri.substring(0, commaIdx);
+		if (!header.contains(";base64")) {
+			warnings.add("import.markdown.warn.datauri.encoding");
+			return null;
+		}
+
+		String base64Data = dataUri.substring(commaIdx + 1);
+		try {
+			// Check estimated decoded size before allocating memory to prevent
+			// OutOfMemoryError from oversized payloads (base64 expands 3 bytes → 4 chars)
+			long estimatedBytes = (long) base64Data.length() * 3 / 4;
+			if (estimatedBytes > MAX_DOWNLOAD_BYTES) {
+				warnings.add("import.markdown.warn.datauri.toolarge\t" + (MAX_DOWNLOAD_BYTES / (1024 * 1024)));
+				return null;
+			}
+			byte[] decoded = Base64.getDecoder().decode(base64Data);
+
+			String suffix = mimeTypeToSuffix(mimeType);
+			Path tempFile = Files.createTempFile("md_img_", suffix);
+			Files.write(tempFile, decoded);
+			File file = tempFile.toFile();
+			file.deleteOnExit();
+			return file;
+		} catch (IllegalArgumentException e) {
+			warnings.add("import.markdown.warn.datauri.base64");
+			return null;
+		} catch (Exception e) {
+			log.warn("Failed to decode data URI image", e);
+			warnings.add("import.markdown.warn.datauri.decode.failed\t" + StringHelper.escapeHtml(e.getMessage()));
+			return null;
+		}
+	}
+
+	private String extractDataUriMimeType(String dataUri) {
+		// Format: data:<mime>;base64,<data> or data:<mime>,<data>
+		if (!dataUri.startsWith("data:")) {
+			return null;
+		}
+		int semicolonIdx = dataUri.indexOf(';');
+		int commaIdx = dataUri.indexOf(',');
+		int endIdx = semicolonIdx > 0 && (commaIdx < 0 || semicolonIdx < commaIdx) ? semicolonIdx : commaIdx;
+		if (endIdx <= 5) {
+			return null;
+		}
+		return dataUri.substring(5, endIdx).toLowerCase();
+	}
+
+	private static String mimeTypeToSuffix(String mimeType) {
+		if (mimeType == null) return ".png";
+		return switch (mimeType) {
+			case "image/gif" -> ".gif";
+			case "image/jpg", "image/jpeg" -> ".jpg";
+			case "image/svg+xml" -> ".svg";
+			default -> ".png";
+		};
 	}
 
 	private File downloadRemoteImage(String url) {
 		// Check domain allowlist via MediaServerModule (SSRF protection)
 		if (mediaServerModule != null && mediaServerModule.isRestrictedDomain(url)) {
-			warnings.add("Image download blocked (domain not on allowlist): " + url);
+			warnings.add("import.markdown.warn.image.domain.blocked\t" + StringHelper.escapeHtml(url));
 			return null;
 		}
 
@@ -505,49 +745,42 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			// Determine file extension from filename or default to .png
 			String suffix = filename.contains(".") ? filename.substring(filename.lastIndexOf('.')) : ".png";
 
-			if (httpClient == null) {
-				httpClient = HttpClient.newBuilder()
-					.followRedirects(HttpClient.Redirect.NORMAL)
-					.connectTimeout(Duration.ofSeconds(10))
-					.build();
-			}
-			HttpRequest request = HttpRequest.newBuilder()
-				.uri(uri)
-				.timeout(Duration.ofSeconds(30))
-				.GET()
-				.build();
-			HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+			HttpGet get = new HttpGet(uri);
+			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
+					CloseableHttpResponse response = httpClient.execute(get)) {
 
-			if (response.statusCode() != 200) {
-				warnings.add("Failed to download image (HTTP " + response.statusCode() + "): " + url);
-				return null;
-			}
+				int statusCode = response.getStatusLine().getStatusCode();
+				if (statusCode != 200) {
+					warnings.add("import.markdown.warn.image.download.http\t" + statusCode + "\t" + StringHelper.escapeHtml(url));
+					return null;
+				}
 
-			Path tempFile = Files.createTempFile("md_img_", suffix);
-			try (InputStream in = response.body()) {
-				// Enforce size limit to prevent disk exhaustion
-				long bytesWritten = 0;
-				byte[] buffer = new byte[8192];
-				try (var out = Files.newOutputStream(tempFile)) {
-					int read;
-					while ((read = in.read(buffer)) != -1) {
-						bytesWritten += read;
-						if (bytesWritten > MAX_DOWNLOAD_BYTES) {
-							Files.deleteIfExists(tempFile);
-							warnings.add("Image too large (max " + (MAX_DOWNLOAD_BYTES / (1024 * 1024)) + " MB): " + url);
-							return null;
+				Path tempFile = Files.createTempFile("md_img_", suffix);
+				try (InputStream in = response.getEntity().getContent()) {
+					// Enforce size limit to prevent disk exhaustion
+					long bytesWritten = 0;
+					byte[] buffer = new byte[8192];
+					try (var out = Files.newOutputStream(tempFile)) {
+						int read;
+						while ((read = in.read(buffer)) != -1) {
+							bytesWritten += read;
+							if (bytesWritten > MAX_DOWNLOAD_BYTES) {
+								Files.deleteIfExists(tempFile);
+								warnings.add("import.markdown.warn.image.download.toolarge\t" + (MAX_DOWNLOAD_BYTES / (1024 * 1024)) + "\t" + StringHelper.escapeHtml(url));
+								return null;
+							}
+							out.write(buffer, 0, read);
 						}
-						out.write(buffer, 0, read);
 					}
 				}
-			}
 
-			File downloaded = tempFile.toFile();
-			downloaded.deleteOnExit();
-			return downloaded;
+				File downloaded = tempFile.toFile();
+				downloaded.deleteOnExit();
+				return downloaded;
+			}
 		} catch (Exception e) {
 			log.warn("Failed to download remote image: {}", url, e);
-			warnings.add("Failed to download image: " + url);
+			warnings.add("import.markdown.warn.image.download.failed\t" + StringHelper.escapeHtml(url));
 			return null;
 		}
 	}

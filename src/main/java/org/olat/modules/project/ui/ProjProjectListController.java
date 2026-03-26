@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.modules.project.ProjectSecurityCallbackFactory.createDefaultCallback;
 
 import java.util.ArrayList;
@@ -486,11 +487,24 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (canCreateProject && !(tabNoActivity == tab || tabToDelete == tab || tabDone == tab || tabDeleted == tab)) {
-			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project", "project.create", "o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("project.list.empty.message")
+					.withIconCss("o_icon_proj_project")
+					.withPrimaryButton("o_icon_add", "project.create", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else if (canCreateTemplate && !(tabNoActivity == tab || tabToDelete == tab || tabDone == tab || tabDeleted == tab)) {
-			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project", "project.template.create", "o_icon_add", false);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withMessageI18nKey("project.list.empty.message")
+					.withIconCss("o_icon_proj_project")
+					.withPrimaryButton("o_icon_add", "project.template.create", null)
+					.build();
+			tableEl.setEmptyStateConfig(emptyState, false);
 		} else {
-			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project");
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("project.list.empty.message")
+					.withIconCss("o_icon_proj_project")
+					.build());
 		}
 		if (isBulkEnabled()) {
 			bulkDoneButton.setVisible(tabDone != tab  && tabDeleted != tab);

@@ -27,6 +27,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -167,7 +168,10 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		tableEl = uifactory.addTableElement(getWindowControl(), "consents", tableModel, 25, false, getTranslator(),
 				formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableSettings(!courseConfig.isDisclaimerEnabled() ? "error.no.consent.found.no.disclaimer" : "error.no.consent.found", null, "o_icon_disclaimer");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey(!courseConfig.isDisclaimerEnabled() ? "error.no.consent.found.no.disclaimer" : "error.no.consent.found")
+				.withIconCss("o_icon_disclaimer")
+				.build());
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
@@ -234,7 +238,10 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 					FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
 					String searchString = ftse.getSearch();
 					tableModel.search(searchString);
-					tableEl.setEmptyTableSettings("error.no.consent.found.filter", null, "o_icon_disclaimer");
+					tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+						.withMessageI18nKey("error.no.consent.found.filter")
+						.withIconCss("o_icon_disclaimer")
+						.build());
 				} else if (event.getCommand().equals(FlexiTableSearchEvent.RESET.getCommand())) {
 					tableModel.resetSearch();
 				}

@@ -18,6 +18,6 @@ X-OLAT-LINK:RepositoryEntry§https://kivik.frentix.com/auth/RepositoryEntr
  y/2850816§Course after§https://kivik.frentix.com/auth/RepositoryEntry/28
  50816§o_CourseModule_icon
 URL:https://kivik.frentix.com/auth/RepositoryEntry/2850816
-RRULE:FREQ=DAILY;UNTIL=20250306;COUNT=-1
+RRULE:FREQ=DAILY;UNTIL=20250306
 END:VEVENT
 END:VCALENDAR

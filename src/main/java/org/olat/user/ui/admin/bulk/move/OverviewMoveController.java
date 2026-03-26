@@ -33,6 +33,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -115,7 +116,10 @@ public class OverviewMoveController extends StepFormBasicController {
 		tableModel = new OverviewMoveTableModel(columnsModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableSettings("error.no.user.found", null, "o_icon_user");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("error.no.user.found")
+				.withIconCss("o_icon_user")
+				.build());
 		tableEl.setAndLoadPersistedPreferences(ureq, "overview_user_search_table-v2");
 	}
 	

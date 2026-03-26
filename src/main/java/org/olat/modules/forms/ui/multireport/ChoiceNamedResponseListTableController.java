@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -68,7 +69,9 @@ public class ChoiceNamedResponseListTableController extends FormBasicController 
 		tableEl = uifactory.addTableElement(getWindowControl(), "fullnames", tableModel, 500, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setEmptyTableMessageKey("warning.nobody.choose.answer");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("warning.nobody.choose.answer")
+				.build());
 	}
 	
 	private void loadModel() {

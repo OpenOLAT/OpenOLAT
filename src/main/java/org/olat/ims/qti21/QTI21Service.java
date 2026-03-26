@@ -384,9 +384,11 @@ public interface QTI21Service {
 	 * @param subIdent
 	 * @param testEntry
 	 * @param identity
+	 * @param includeFinished Include the finished but not terminated (participant reviews the questions)
 	 * @return
 	 */
-	public AssessmentTestSession getLastAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, IdentityRef identity);
+	public AssessmentTestSession getLastAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry,
+			IdentityRef identity, boolean includeFinished);
 	
 	/**
 	 * Retrieve the sessions for a test. It returns only the sessions of authenticated users (fetched).

@@ -28,6 +28,7 @@ import java.util.TimerTask;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -308,7 +309,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		
 		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, bigBlueButtonModule.isRecordingsPermanent(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", recordingTableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableMessageKey("no.recordings");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("no.recordings")
+				.build());
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 	}

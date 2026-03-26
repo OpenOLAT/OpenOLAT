@@ -22,10 +22,13 @@ package org.olat.modules.curriculum.ui;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -61,6 +64,7 @@ import org.olat.modules.curriculum.manager.CurriculumMemberQueries;
 import org.olat.modules.curriculum.model.CurriculumMemberWithElement;
 import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -367,16 +371,41 @@ public class CurriculumExport {
 			List<CurriculumElement> curriculumImplementations = curriculumService.getImplementations(curriculum, CurriculumElementStatus.notDeleted());
 			for(CurriculumElement implementation:curriculumImplementations) {
 				List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(implementation);
+				List<CurriculumElement> elements = sortElements(descendants);
+				
 				addContent(implementation, workbook, exportSheet);
-				for(CurriculumElement descendant:descendants) {
-					addContent(descendant,  workbook, exportSheet);
+				for(CurriculumElement element:elements) {
+					addContent(element,  workbook, exportSheet);
 				}
 				dbInstance.commitAndCloseSession();
 				allElements.add(implementation);
-				allElements.addAll(descendants);
+				allElements.addAll(elements);
 			}
 		}
 		return allElements;
+	}
+	
+	/**
+	 * Sort the elements like in UI
+	 */
+	private List<CurriculumElement> sortElements(List<CurriculumElement> elements) {
+		if(elements == null || elements.isEmpty()) return List.of();
+		
+		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
+		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
+		for(CurriculumElement element:elements) {
+			CurriculumElementRow row = new CurriculumElementRow(element, 0l, 0l, 0l, 0l, 0l, 0l, 0l, null, null, null, null);
+			rows.add(row);
+			keyToRows.put(element.getKey(), row);
+		}
+		//parent line
+		for(CurriculumElementRow row:rows) {
+			if(row.getParentKey() != null) {
+				row.setParent(keyToRows.get(row.getParentKey()));
+			}
+		}
+		Collections.sort(rows, new CurriculumElementTreeRowComparator(translator.getLocale()));
+		return rows.stream().map(CurriculumElementRow::getCurriculumElement).toList();
 	}
 	
 	private List<CurriculumElement> addImplementationsContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {

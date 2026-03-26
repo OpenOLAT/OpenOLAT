@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -116,7 +117,10 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("review.open.empty", null, "o_icon_status_in_review");
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("review.open.empty")
+				.withIconCss("o_icon_status_in_review")
+				.build());
 	}
 	
 	private void loadModel() {

@@ -20,6 +20,8 @@
 package org.olat.modules.curriculum.ui.importwizard;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -98,6 +100,15 @@ public class ImportCurriculumsContext {
 
 	public List<ImportedMembershipRow> getImportedMembershipsRows() {
 		return importedMembershipsRows;
+	}
+	
+	public Set<String> getImportedMembershipsUsernames() {
+		if(importedMembershipsRows == null) return Set.of();
+		
+		return importedMembershipsRows.stream()
+				.filter(r -> StringHelper.containsNonWhitespace(r.getUsername()))
+				.map(ImportedMembershipRow::getUsername)
+				.collect(Collectors.toSet());
 	}
 
 	public void setImportedMembershipsRows(List<ImportedMembershipRow> importedMembershipsRows) {
