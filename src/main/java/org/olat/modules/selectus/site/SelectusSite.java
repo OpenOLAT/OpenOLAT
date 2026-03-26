@@ -39,12 +39,12 @@ import org.olat.modules.selectus.ui.RecruitingSecurityCallbackImpl;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class RecruitingSite implements SiteInstance {
+public class SelectusSite implements SiteInstance {
 	
 	private DefaultNavElement curNavElem;
 	private NavElement origNavElem;
 	
-	public RecruitingSite(Locale locale) {
+	public SelectusSite(Locale locale) {
 		Translator trans = Util.createPackageTranslator(RecruitingMainController.class, locale);
 		origNavElem = new DefaultNavElement(null, trans.translate("topnav.home"), trans.translate("topnav.home.alt"), "o_site_recruiting");
 		curNavElem = new DefaultNavElement(origNavElem);

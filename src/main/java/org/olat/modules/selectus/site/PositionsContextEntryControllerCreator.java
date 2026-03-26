@@ -29,7 +29,7 @@ public class PositionsContextEntryControllerCreator extends DefaultContextEntryC
 
 	@Override
 	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
-		return RecruitingSite.class.getName();
+		return SelectusSite.class.getName();
 	}
 
 	@Override

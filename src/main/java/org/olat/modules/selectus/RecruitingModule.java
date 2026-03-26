@@ -21,18 +21,11 @@ import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.olat.user.propertyhandlers.UserPropertyUsageContext;
-import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
-import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.AuditService.NotificationIntervals;
 import org.olat.modules.selectus.manager.DecisionRubricSPI;
 import org.olat.modules.selectus.model.Country;
@@ -54,6 +47,13 @@ import org.olat.modules.selectus.site.PositionContextEntryControllerCreator;
 import org.olat.modules.selectus.site.PositionsContextEntryControllerCreator;
 import org.olat.modules.selectus.site.PublicFeedbackContextEntryControllerCreator;
 import org.olat.modules.selectus.ui.AcademicalDateFormat;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -66,7 +66,9 @@ import org.olat.modules.selectus.ui.AcademicalDateFormat;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class RecruitingModule extends AbstractSpringModule {
+public class RecruitingModule extends AbstractSpringModule implements ConfigOnOff {
+	
+	public static final String SELECTUS_ENABLED = "selectus.enabled";
 	
 	public static final String NONE = "none";
 	public static final String ALL = "all";
@@ -161,6 +163,9 @@ public class RecruitingModule extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(RecruitingModule.class);
 	private static final String RECRUITING_ORGANISATION_UNIT = "recruiting.organisation.unit";
 
+	@Value("${selectus.enabled:true}")
+	private boolean enabled;
+	
 	private int maxRating = 3;
 	@Value("${recruiting.rating.abstention:disabled}")
 	private String ratingAbstention;
@@ -1400,6 +1405,7 @@ public class RecruitingModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
+		updateProperties();
 		initContexts();
 		initOptions();
 		initUserPropertyConfiguration();
@@ -1846,10 +1852,27 @@ public class RecruitingModule extends AbstractSpringModule {
 		}
 		return defOption;
 	}
-
+	
 	@Override
 	protected void initFromChangedProperties() {
-		//
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String enabledObj = getStringPropertyValue(SELECTUS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			enabled = "true".equals(enabledObj);
+		}
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		setStringProperty(SELECTUS_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public boolean isAttachmenOnFileSystem() {

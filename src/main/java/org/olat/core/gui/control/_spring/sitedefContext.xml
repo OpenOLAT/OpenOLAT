@@ -97,7 +97,7 @@
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 	
-	<bean id="olatsites_recruiting" class="org.olat.modules.selectus.site.RecruitingSiteDef" scope="prototype" >
+	<bean id="olatsites_recruiting" class="org.olat.modules.selectus.site.SelectusSiteDef" scope="prototype" >
 		<property name="order" value="8" />
 		<property name="enabled" value="${site.selectus.enable}"/>
 		<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>

@@ -7,6 +7,7 @@ package org.olat.modules.selectus.site;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
@@ -14,7 +15,7 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
-
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.dispatcher.PublicFeedbackDispatcher;
 
 /**
@@ -24,17 +25,29 @@ import org.olat.modules.selectus.dispatcher.PublicFeedbackDispatcher;
  * <P>
  * Initial Date:  21 jul. 2010 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
-public class RecruitingSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class SelectusSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(!ureq.getUserSession().getRoles().isGuestOnly()
 				&& !StringHelper.containsNonWhitespace((String)ureq.getUserSession().getEntry(PublicFeedbackDispatcher.PUBLIC_FEEDBACK_ID))) {
 			Locale locale = ureq.getLocale();
-			return new RecruitingSite(locale);
+			return new SelectusSite(locale);
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		RecruitingModule selectusModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		return selectusModule.isEnabled() && super.isEnabled();
+	}
+	
+	@Override
+	public boolean isFeatureEnabled() {
+		RecruitingModule selectusModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		return selectusModule.isEnabled();
 	}
 }

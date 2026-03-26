@@ -7,6 +7,7 @@ package org.olat.modules.selectus.site;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
@@ -14,14 +15,14 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
-
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.dispatcher.AbstractRecruitingDispatcher;
 import org.olat.modules.selectus.dispatcher.PublicFeedbackDispatcher;
 
 /**
  * 
  * Initial date: 30 mars 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PublicFeedbackSiteDef extends AbstractSiteDefinition implements SiteDefinition {
@@ -34,5 +35,11 @@ public class PublicFeedbackSiteDef extends AbstractSiteDefinition implements Sit
 			return new PublicFeedbackSite(locale);
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		RecruitingModule selectusModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		return selectusModule.isEnabled() && super.isEnabled();
 	}
 }

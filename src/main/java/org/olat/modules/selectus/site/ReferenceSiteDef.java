@@ -7,13 +7,14 @@ package org.olat.modules.selectus.site;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
-
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.dispatcher.AbstractRecruitingDispatcher;
 import org.olat.modules.selectus.dispatcher.ReferenceDispatcher;
 
@@ -33,5 +34,11 @@ public class ReferenceSiteDef extends AbstractSiteDefinition implements SiteDefi
 			return new ReferenceSite(locale);
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		RecruitingModule selectusModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		return selectusModule.isEnabled() && super.isEnabled();
 	}
 }
