@@ -39,7 +39,7 @@ import org.olat.modules.selectus.model.attributes.PositionAttributeDefinitionCon
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="rapplicationlight")
-@Table(name="fx_r_application")
+@Table(name="o_selectus_application")
 @NamedQueries({
 	@NamedQuery(name="loadApplicationLightByKey", query="select app from rapplicationlight app where app.key=:key")
 })

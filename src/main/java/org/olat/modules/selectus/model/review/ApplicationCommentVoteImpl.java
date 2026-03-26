@@ -36,7 +36,7 @@ import org.olat.modules.selectus.model.ApplicationCommentVote;
  *
  */
 @Entity(name="rapplicationcommentvote")
-@Table(name="fx_r_app_comment_vote")
+@Table(name="o_selectus_app_comment_vote")
 public class ApplicationCommentVoteImpl implements ApplicationCommentVote, ModifiedInfo, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 3560725441552249579L;

@@ -68,7 +68,7 @@ import org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="rposition")
-@Table(name="fx_r_position")
+@Table(name="o_selectus_position")
 @NamedQuery(name="positionOrderedByCreationDate", query="select position from rposition position order by position.creationDate desc")
 public class PositionImpl implements Position, CreateInfo, Persistable {
 

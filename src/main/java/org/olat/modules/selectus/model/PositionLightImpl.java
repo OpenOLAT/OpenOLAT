@@ -35,7 +35,7 @@ import org.olat.core.util.StringHelper;
  *
  */
 @Entity(name="rpositionlight")
-@Table(name="fx_r_position")
+@Table(name="o_selectus_position")
 public class PositionLightImpl implements PositionLight, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 7846992495959711760L;

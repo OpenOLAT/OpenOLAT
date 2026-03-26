@@ -35,7 +35,7 @@ import org.olat.modules.selectus.model.ApplicationImpl;
  *
  */
 @Entity(name="rapplicationcomment")
-@Table(name="fx_r_app_comment")
+@Table(name="o_selectus_app_comment")
 public class ApplicationCommentImpl implements ApplicationComment, Persistable {
 
 	private static final long serialVersionUID = 1L;

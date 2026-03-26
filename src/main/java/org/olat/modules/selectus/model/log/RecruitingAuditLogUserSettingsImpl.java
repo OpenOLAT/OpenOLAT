@@ -35,7 +35,7 @@ import org.olat.modules.selectus.model.RecruitingAuditLogUserSettings;
  *
  */
 @Entity(name="recruitingauditlogusersettings")
-@Table(name="fx_r_audit_log_user_settings")
+@Table(name="o_selectus_audit_log_usettings")
 @NamedQueries({
 	@NamedQuery(name="enabledNotifications", query="select settings.identity from recruitingauditlogusersettings settings where settings.enabled=true")
 	

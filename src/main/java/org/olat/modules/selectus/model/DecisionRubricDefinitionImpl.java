@@ -29,7 +29,7 @@ import org.olat.core.id.Persistable;
  *
  */
 @Entity(name="rdecisionrubricdef")
-@Table(name="fx_r_decision_rubric_def")
+@Table(name="o_selectus_decision_rubric_def")
 public class DecisionRubricDefinitionImpl implements DecisionRubricDefinition, Persistable {
 
 	private static final long serialVersionUID = -5828320469403538035L;

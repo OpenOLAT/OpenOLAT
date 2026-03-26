@@ -5049,7 +5049,7 @@ create table o_feed_tag (
 
 
 
-create table fx_r_position (
+create table o_selectus_position (
    pos_id int8 not null,
    version int4 not null,
    creationdate timestamp default null,
@@ -5168,7 +5168,7 @@ create table fx_r_position (
    PRIMARY KEY (pos_id)
 );
 
-create table fx_r_pos_attribute_def (
+create table o_selectus_pos_attribute_def (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5188,7 +5188,7 @@ create table fx_r_pos_attribute_def (
    primary key (id)
 );
 
-create table fx_r_application (
+create table o_selectus_application (
    app_id int8 not null,
    version int4 not null,
    creationdate timestamp default null,
@@ -5325,7 +5325,7 @@ create table fx_r_application (
    PRIMARY KEY (app_id)
 );
 
-create table fx_r_app_attribute (
+create table o_selectus_app_attribute (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5336,7 +5336,7 @@ create table fx_r_app_attribute (
    primary key (id)
 );
 
-create table fx_r_attachment (
+create table o_selectus_attachment (
    attachment_id int8 not null,
    version int4 not null,
    creationdate date default null,
@@ -5347,7 +5347,7 @@ create table fx_r_attachment (
    PRIMARY KEY (attachment_id)
 );
 
-create table fx_r_committee_report (
+create table o_selectus_committee_report (
    id int8 not null,
    creationdate timestamp default null,
    lastmodified timestamp default null,
@@ -5363,7 +5363,7 @@ create table fx_r_committee_report (
    PRIMARY KEY (id)
 );
 
-create table fx_r_position_policy (
+create table o_selectus_position_policy (
   pol_id int8 not null,
   version int4 not null,
   creationdate timestamp default null,
@@ -5374,7 +5374,7 @@ create table fx_r_position_policy (
   primary key (pol_id)
 );
 
-create table fx_r_mail_template (
+create table o_selectus_mail_template (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5391,7 +5391,7 @@ create table fx_r_mail_template (
    primary key (id)
 );
 
-create table fx_r_application_notes (
+create table o_selectus_application_notes (
   notes_id int8 not null,
   version int4 not null,
   creationdate timestamp default null,
@@ -5401,7 +5401,7 @@ create table fx_r_application_notes (
   primary key (notes_id)
 );
 
-create table fx_r_public_feedback (
+create table o_selectus_public_feedback (
    id int8 not null,
    creationdate timestamp default null,
    last_modified timestamp default null,
@@ -5415,7 +5415,7 @@ create table fx_r_public_feedback (
    PRIMARY KEY (id)
 );
 
-create table fx_r_apps_feedback (
+create table o_selectus_apps_feedback (
    id int8 not null,
    creationdate timestamp default null,
    last_modified timestamp default null,
@@ -5433,7 +5433,7 @@ create table fx_r_apps_feedback (
    PRIMARY KEY (id)
 );
 
-create table fx_r_app_feedback (
+create table o_selectus_app_feedback (
    id int8 not null,
    creationdate timestamp default null,
    last_modified timestamp default null,
@@ -5449,7 +5449,7 @@ create table fx_r_app_feedback (
    PRIMARY KEY (id)
 );
 
-create table fx_r_rejection_email_log (
+create table o_selectus_rejection_email_log (
   log_id int8 not null,
   version int4 not null,
   status int4 not null,
@@ -5463,7 +5463,7 @@ create table fx_r_rejection_email_log (
   primary key (log_id)
 );
 
-create table fx_r_reference (
+create table o_selectus_reference (
    ref_id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5492,7 +5492,7 @@ create table fx_r_reference (
    primary key (ref_id)
 );
 
-create table fx_r_reference_comment (
+create table o_selectus_reference_comment (
    id int8 not null,
    creationdate timestamp default null,
    r_comment text,
@@ -5500,7 +5500,7 @@ create table fx_r_reference_comment (
    PRIMARY KEY (id)
 );
 
-create table fx_r_reference_to_app (
+create table o_selectus_reference_to_app (
    id bigserial,
    creationdate timestamp not null,
    fk_reference_id int8 not null,
@@ -5508,7 +5508,7 @@ create table fx_r_reference_to_app (
    PRIMARY KEY (id)
 );
 
-create table fx_r_decision_rubric_def (
+create table o_selectus_decision_rubric_def (
    def_id int8 not null,
    creationdate timestamp,
    lastmodified timestamp,
@@ -5521,7 +5521,7 @@ create table fx_r_decision_rubric_def (
    primary key (def_id)
 );
 
-create table fx_r_decision_rubric (
+create table o_selectus_decision_rubric (
    rubric_id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5532,7 +5532,7 @@ create table fx_r_decision_rubric (
    primary key (rubric_id)
 );
 
-create table fx_r_review_position_def (
+create table o_selectus_review_position_def (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5554,7 +5554,7 @@ create table fx_r_review_position_def (
    primary key (id)
 );
 
-create table fx_r_review_element_def (
+create table o_selectus_review_element_def (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5565,7 +5565,7 @@ create table fx_r_review_element_def (
    primary key (id)
 );
 
-create table fx_r_review_response (
+create table o_selectus_review_response (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5577,7 +5577,7 @@ create table fx_r_review_response (
    primary key (id)
 );
 
-create table fx_r_app_comment (
+create table o_selectus_app_comment (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5590,7 +5590,7 @@ create table fx_r_app_comment (
    primary key (id)
 );
 
-create table fx_r_app_comment_vote (
+create table o_selectus_app_comment_vote (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5600,7 +5600,7 @@ create table fx_r_app_comment_vote (
    primary key (id)
 );
 
-create table fx_r_category (
+create table o_selectus_category (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5610,7 +5610,7 @@ create table fx_r_category (
    primary key (id)
 );
 
-create table fx_r_app_category (
+create table o_selectus_app_category (
    id int8 not null,
    creationdate timestamp,
    r_administrative bool default false,
@@ -5619,7 +5619,7 @@ create table fx_r_app_category (
    primary key (id)
 );
 
-create table fx_r_assignment (
+create table o_selectus_assignment (
    id int8 not null,
    creationdate timestamp,
    fk_application_id int8,
@@ -5628,7 +5628,7 @@ create table fx_r_assignment (
 );
 
 
-create table fx_r_org_unit (
+create table o_selectus_org_unit (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5644,7 +5644,7 @@ create table fx_r_org_unit (
    primary key (id)
 );
 
-create table fx_r_org_unit_member (
+create table o_selectus_org_unit_member (
    id int8 not null,
    lastmodified timestamp,
    creationdate timestamp,
@@ -5654,7 +5654,7 @@ create table fx_r_org_unit_member (
    primary key (id)
 );
 
-create table fx_r_audit_log (
+create table o_selectus_audit_log (
    id int8 not null,
    creationdate timestamp not null,
    r_action varchar(32) not null,
@@ -5679,7 +5679,7 @@ create table fx_r_audit_log (
    primary key (id)
 );
 
-create table fx_r_audit_log_read (
+create table o_selectus_audit_log_read (
    id int8 not null,
    creationdate timestamp not null,
    r_read bool default true not null,
@@ -5688,7 +5688,7 @@ create table fx_r_audit_log_read (
    primary key (id)
 );
 
-create table fx_r_audit_log_user_settings (
+create table o_selectus_audit_log_usettings (
    id int8 not null,
    creationdate timestamp,
    lastmodified timestamp,
@@ -5698,7 +5698,7 @@ create table fx_r_audit_log_user_settings (
    primary key (id)
 );
 
-create table fx_r_audit_log_user_notifs (
+create table o_selectus_audit_log_u_notifs (
    id int8 not null,
    creationdate timestamp,
    r_last_mail_date timestamp,
@@ -7515,167 +7515,167 @@ alter table o_feed_tag add constraint tag_feed_item_idx foreign key (fk_feed_ite
 
 
 -- selectus
-alter table fx_r_application add constraint posid_to_app foreign key (fk_position_id) references fx_r_position (pos_id);
-alter table fx_r_application add constraint att_coveringid_to_app foreign key (fk_coveringletter_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_cvid_to_app foreign key (fk_curriculumvitae_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_publicationid_to_app foreign key (fk_publicationlist_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_researchid_to_app foreign key (fk_researchstatement_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_teachingid_to_app foreign key (fk_teachingstatement_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_leadershipid_to_app foreign key (fk_leadership_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_refereesid_to_app foreign key (fk_listofreferees_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_projectid_to_app foreign key (fk_projectlist_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_referenceid_to_app foreign key (fk_referenceletters_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_teachassessment_to_app foreign key (fk_teachingassessment_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_certofstudy_to_app foreign key (fk_certificateofstudy_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_degcertificates_to_app foreign key (fk_degreecertificates_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_dissertation_to_app foreign key (fk_dissertation_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_habilitation_to_app foreign key (fk_habilitation_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_clinicaldisciplines_to_app foreign key (fk_clinicaldisciplines_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_surgicaldisciplines_to_app foreign key (fk_surgicaldisciplines_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_reprints_to_app foreign key (fk_reprints_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_externalfunding_to_app foreign key (fk_externalfunding_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_publication1_to_app foreign key (fk_publication1_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_publication2_to_app foreign key (fk_publication2_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_publication3_to_app foreign key (fk_publication3_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_publication4_to_app foreign key (fk_publication4_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_publication5_to_app foreign key (fk_publication5_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_otherid_to_app foreign key (fk_otherdocument_id) references fx_r_attachment (attachment_id);
-alter table fx_r_application add constraint att_combined_to_app foreign key (fk_combineddocument_id) references fx_r_attachment (attachment_id);
+alter table o_selectus_application add constraint posid_to_app foreign key (fk_position_id) references o_selectus_position (pos_id);
+alter table o_selectus_application add constraint att_coveringid_to_app foreign key (fk_coveringletter_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_cvid_to_app foreign key (fk_curriculumvitae_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_publicationid_to_app foreign key (fk_publicationlist_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_researchid_to_app foreign key (fk_researchstatement_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_teachingid_to_app foreign key (fk_teachingstatement_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_leadershipid_to_app foreign key (fk_leadership_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_refereesid_to_app foreign key (fk_listofreferees_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_projectid_to_app foreign key (fk_projectlist_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_referenceid_to_app foreign key (fk_referenceletters_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_teachassessment_to_app foreign key (fk_teachingassessment_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_certofstudy_to_app foreign key (fk_certificateofstudy_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_degcertificates_to_app foreign key (fk_degreecertificates_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_dissertation_to_app foreign key (fk_dissertation_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_habilitation_to_app foreign key (fk_habilitation_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_clinicaldisciplines_to_app foreign key (fk_clinicaldisciplines_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_surgicaldisciplines_to_app foreign key (fk_surgicaldisciplines_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_reprints_to_app foreign key (fk_reprints_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_externalfunding_to_app foreign key (fk_externalfunding_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_publication1_to_app foreign key (fk_publication1_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_publication2_to_app foreign key (fk_publication2_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_publication3_to_app foreign key (fk_publication3_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_publication4_to_app foreign key (fk_publication4_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_publication5_to_app foreign key (fk_publication5_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_otherid_to_app foreign key (fk_otherdocument_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_application add constraint att_combined_to_app foreign key (fk_combineddocument_id) references o_selectus_attachment (attachment_id);
 
-alter table fx_r_application add constraint app_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_app_ident_idx on fx_r_application (fk_identity_id);
+alter table o_selectus_application add constraint app_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_app_ident_idx on o_selectus_application (fk_identity_id);
 
-alter table fx_r_app_attribute add constraint attr_to_attrdef foreign key (fk_definition_id) references fx_r_pos_attribute_def (id);
-create index attr_to_attrdef_idx on fx_r_app_attribute (fk_definition_id);
-alter table fx_r_app_attribute add constraint attr_to_app foreign key (fk_application_id) references fx_r_application (app_id);
-create index attr_to_app_idx on fx_r_app_attribute (fk_application_id);
-alter table fx_r_app_attribute add constraint attr_to_gpos_idx foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_attr_to_gpos_idx on fx_r_app_attribute (fk_position_id);
+alter table o_selectus_app_attribute add constraint attr_to_attrdef foreign key (fk_definition_id) references o_selectus_pos_attribute_def (id);
+create index attr_to_attrdef_idx on o_selectus_app_attribute (fk_definition_id);
+alter table o_selectus_app_attribute add constraint attr_to_app foreign key (fk_application_id) references o_selectus_application (app_id);
+create index attr_to_app_idx on o_selectus_app_attribute (fk_application_id);
+alter table o_selectus_app_attribute add constraint attr_to_gpos_idx foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_attr_to_gpos_idx on o_selectus_app_attribute (fk_position_id);
 
-alter table fx_r_assignment add constraint assign_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_assign_app_idx on fx_r_assignment (fk_application_id);
-alter table fx_r_assignment add constraint assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
-create index idx_assign_assignee_idx on fx_r_assignment (fk_assignee_id);
+alter table o_selectus_assignment add constraint assign_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_assign_app_idx on o_selectus_assignment (fk_application_id);
+alter table o_selectus_assignment add constraint assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+create index idx_assign_assignee_idx on o_selectus_assignment (fk_assignee_id);
 
-alter table fx_r_public_feedback add constraint pfeedback_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_pfeedback_app_idx on fx_r_public_feedback (fk_application_id);
+alter table o_selectus_public_feedback add constraint pfeedback_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_pfeedback_app_idx on o_selectus_public_feedback (fk_application_id);
 
-create index pfeedback_mail_idx on fx_r_public_feedback (r_email);
+create index pfeedback_mail_idx on o_selectus_public_feedback (r_email);
 
-alter table fx_r_apps_feedback add constraint appsfeedback_pos_idx foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_appsfeedback_pos_idx on fx_r_apps_feedback (fk_position_id);
+alter table o_selectus_apps_feedback add constraint appsfeedback_pos_idx foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_appsfeedback_pos_idx on o_selectus_apps_feedback (fk_position_id);
 
-alter table fx_r_app_feedback add constraint appfeedback_config_idx foreign key (fk_config_id) references fx_r_apps_feedback (id);
-create index idx_appfeedback_config_idx on fx_r_app_feedback (fk_config_id);
-alter table fx_r_app_feedback add constraint appfeedback_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_appfeedback_app_idx on fx_r_app_feedback (fk_application_id);
-alter table fx_r_app_feedback add constraint appfeedback_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_appfeedback_id_idx on fx_r_app_feedback (fk_identity_id);
+alter table o_selectus_app_feedback add constraint appfeedback_config_idx foreign key (fk_config_id) references o_selectus_apps_feedback (id);
+create index idx_appfeedback_config_idx on o_selectus_app_feedback (fk_config_id);
+alter table o_selectus_app_feedback add constraint appfeedback_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_appfeedback_app_idx on o_selectus_app_feedback (fk_application_id);
+alter table o_selectus_app_feedback add constraint appfeedback_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_appfeedback_id_idx on o_selectus_app_feedback (fk_identity_id);
 
-alter table fx_r_committee_report add constraint com_rep_to_pos_idx foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_com_rep_to_pos_idx on fx_r_committee_report (fk_position_id);
+alter table o_selectus_committee_report add constraint com_rep_to_pos_idx foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_com_rep_to_pos_idx on o_selectus_committee_report (fk_position_id);
 
 -- position
-alter table fx_r_position add constraint att_doc_1_to_att foreign key (fk_doc_1_id) references fx_r_attachment (attachment_id);
-alter table fx_r_position add constraint att_doc_2_to_att foreign key (fk_doc_2_id) references fx_r_attachment (attachment_id);
-alter table fx_r_position add constraint att_doc_3_to_att foreign key (fk_doc_3_id) references fx_r_attachment (attachment_id);
+alter table o_selectus_position add constraint att_doc_1_to_att foreign key (fk_doc_1_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_position add constraint att_doc_2_to_att foreign key (fk_doc_2_id) references o_selectus_attachment (attachment_id);
+alter table o_selectus_position add constraint att_doc_3_to_att foreign key (fk_doc_3_id) references o_selectus_attachment (attachment_id);
 
-alter table fx_r_position add constraint pos_review_def_idx foreign key (fk_review_definition_id) references fx_r_review_position_def (id);
-create index idx_pos_review_def_idx on fx_r_position (fk_review_definition_id);
+alter table o_selectus_position add constraint pos_review_def_idx foreign key (fk_review_definition_id) references o_selectus_review_position_def (id);
+create index idx_pos_review_def_idx on o_selectus_position (fk_review_definition_id);
 
-alter table fx_r_position_policy add constraint policy_to_pos foreign key (fk_position_id) references fx_r_position (pos_id);
-alter table fx_r_position_policy add constraint policy_to_identity foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_selectus_position_policy add constraint policy_to_pos foreign key (fk_position_id) references o_selectus_position (pos_id);
+alter table o_selectus_position_policy add constraint policy_to_identity foreign key (fk_identity_id) references o_bs_identity (id);
 
-alter table fx_r_mail_template add constraint mtemplate_pos_idx foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_mtemplate_pos_idx on fx_r_mail_template (fk_position_id);
+alter table o_selectus_mail_template add constraint mtemplate_pos_idx foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_mtemplate_pos_idx on o_selectus_mail_template (fk_position_id);
 
-alter table fx_r_pos_attribute_def add constraint posattrdef_to_pos foreign key (fk_position_id) references fx_r_position (pos_id);
-create index posattrdef_to_pos_idx on fx_r_pos_attribute_def (fk_position_id);
+alter table o_selectus_pos_attribute_def add constraint posattrdef_to_pos foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index posattrdef_to_pos_idx on o_selectus_pos_attribute_def (fk_position_id);
 
 
-alter table fx_r_application_notes add constraint app_notes_to_app foreign key (fk_application_id) references fx_r_application (app_id);
-alter table fx_r_application_notes add constraint app_notes_to_identity foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_selectus_application_notes add constraint app_notes_to_app foreign key (fk_application_id) references o_selectus_application (app_id);
+alter table o_selectus_application_notes add constraint app_notes_to_identity foreign key (fk_identity_id) references o_bs_identity (id);
 
-alter table fx_r_rejection_email_log  add constraint rejection_to_app foreign key (fk_application_id) references fx_r_application (app_id);
-alter table fx_r_rejection_email_log add constraint att_letter_to_maillog_idx foreign key (fk_letter_id) references fx_r_attachment (attachment_id);
-create index idx_att_letter_to_maillog_idx on fx_r_rejection_email_log (fk_letter_id);
+alter table o_selectus_rejection_email_log  add constraint rejection_to_app foreign key (fk_application_id) references o_selectus_application (app_id);
+alter table o_selectus_rejection_email_log add constraint att_letter_to_maillog_idx foreign key (fk_letter_id) references o_selectus_attachment (attachment_id);
+create index idx_att_letter_to_maillog_idx on o_selectus_rejection_email_log (fk_letter_id);
 
-alter table fx_r_reference add constraint att_letter_to_ref foreign key (fk_letter_id) references fx_r_attachment (attachment_id);
-create index idx_att_letter_to_ref_idx on fx_r_reference (fk_letter_id);
-alter table fx_r_reference add constraint application_to_ref foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_application_to_ref_idx on fx_r_reference (fk_application_id);
+alter table o_selectus_reference add constraint att_letter_to_ref foreign key (fk_letter_id) references o_selectus_attachment (attachment_id);
+create index idx_att_letter_to_ref_idx on o_selectus_reference (fk_letter_id);
+alter table o_selectus_reference add constraint application_to_ref foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_application_to_ref_idx on o_selectus_reference (fk_application_id);
 
-alter table fx_r_reference_comment add constraint ref_comm_to_ref_idx foreign key (fk_reference_id) references fx_r_reference (ref_id);
-create index idx_ref_comm_to_ref_idx on fx_r_reference_comment (fk_reference_id);
+alter table o_selectus_reference_comment add constraint ref_comm_to_ref_idx foreign key (fk_reference_id) references o_selectus_reference (ref_id);
+create index idx_ref_comm_to_ref_idx on o_selectus_reference_comment (fk_reference_id);
 
-alter table fx_r_reference_to_app add constraint ref_to_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_ref_to_app_idx on fx_r_reference_to_app (fk_application_id);
-alter table fx_r_reference_to_app add constraint ref_to_ref_idx foreign key (fk_reference_id) references fx_r_reference (ref_id);
-create index idx_ref_to_ref_idx on fx_r_reference_to_app (fk_reference_id);
+alter table o_selectus_reference_to_app add constraint ref_to_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_ref_to_app_idx on o_selectus_reference_to_app (fk_application_id);
+alter table o_selectus_reference_to_app add constraint ref_to_ref_idx foreign key (fk_reference_id) references o_selectus_reference (ref_id);
+create index idx_ref_to_ref_idx on o_selectus_reference_to_app (fk_reference_id);
 
-alter table fx_r_decision_rubric_def add constraint rubric_def_to_position_ref foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_rubric_def_to_position_idx on fx_r_decision_rubric_def (fk_position_id);
+alter table o_selectus_decision_rubric_def add constraint rubric_def_to_position_ref foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_rubric_def_to_position_idx on o_selectus_decision_rubric_def (fk_position_id);
 
-alter table fx_r_decision_rubric add constraint rubric_to_def_ref foreign key (fk_definition_id) references fx_r_decision_rubric_def (def_id);
-create index idx_rubric_to_def_idx on fx_r_decision_rubric (fk_definition_id);
-alter table fx_r_decision_rubric add constraint rubric_to_app_ref foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_rubric_to_app_idx on fx_r_decision_rubric (fk_application_id);
+alter table o_selectus_decision_rubric add constraint rubric_to_def_ref foreign key (fk_definition_id) references o_selectus_decision_rubric_def (def_id);
+create index idx_rubric_to_def_idx on o_selectus_decision_rubric (fk_definition_id);
+alter table o_selectus_decision_rubric add constraint rubric_to_app_ref foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_rubric_to_app_idx on o_selectus_decision_rubric (fk_application_id);
 
-alter table fx_r_org_unit_member add constraint org_unit_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_org_unit_ident_idx on fx_r_org_unit_member (fk_identity_id);
-alter table fx_r_org_unit_member add constraint org_unit_unit_idx foreign key (fk_org_unit_id) references fx_r_org_unit (id);
-create index idx_org_unit_unit_idx on fx_r_org_unit_member (fk_org_unit_id);
-alter table fx_r_position add constraint position_org_unit_idx foreign key (fk_org_unit_id) references fx_r_org_unit (id);
-create index idx_position_org_unit_idx on fx_r_position (fk_org_unit_id);
+alter table o_selectus_org_unit_member add constraint org_unit_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_org_unit_ident_idx on o_selectus_org_unit_member (fk_identity_id);
+alter table o_selectus_org_unit_member add constraint org_unit_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
+create index idx_org_unit_unit_idx on o_selectus_org_unit_member (fk_org_unit_id);
+alter table o_selectus_position add constraint position_org_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
+create index idx_position_org_unit_idx on o_selectus_position (fk_org_unit_id);
 
-alter table fx_r_review_element_def add constraint rev_el_pos_idx foreign key (fk_pos_rev_id) references fx_r_review_position_def (id);
-create index idx_rev_el_pos_idx on fx_r_review_element_def (fk_pos_rev_id);
+alter table o_selectus_review_element_def add constraint rev_el_pos_idx foreign key (fk_pos_rev_id) references o_selectus_review_position_def (id);
+create index idx_rev_el_pos_idx on o_selectus_review_element_def (fk_pos_rev_id);
 
-alter table fx_r_review_response add constraint rev_response_id_idx foreign key (fk_reviewer_id) references o_bs_identity (id);
-create index idx_rev_response_id_idx on fx_r_review_response (fk_reviewer_id);
-alter table fx_r_review_response add constraint rev_response_el_idx foreign key (fk_element_id) references fx_r_review_element_def (id);
-create index idx_rev_response_el_idx on fx_r_review_response (fk_element_id);
-alter table fx_r_review_response add constraint rev_response_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_rev_response_app_idx on fx_r_review_response (fk_application_id);
+alter table o_selectus_review_response add constraint rev_response_id_idx foreign key (fk_reviewer_id) references o_bs_identity (id);
+create index idx_rev_response_id_idx on o_selectus_review_response (fk_reviewer_id);
+alter table o_selectus_review_response add constraint rev_response_el_idx foreign key (fk_element_id) references o_selectus_review_element_def (id);
+create index idx_rev_response_el_idx on o_selectus_review_response (fk_element_id);
+alter table o_selectus_review_response add constraint rev_response_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_rev_response_app_idx on o_selectus_review_response (fk_application_id);
 
 -- comment
-alter table fx_r_app_comment add constraint app_com_author_id_idx foreign key (fk_author_id) references o_bs_identity (id);
-create index idx_app_com_author_id_idx on fx_r_app_comment (fk_author_id);
-alter table fx_r_app_comment add constraint app_com_reviewer_id_idx foreign key (fk_reviewer_id) references o_bs_identity (id);
-create index idx_app_com_reviewer_id_idx on fx_r_app_comment (fk_reviewer_id);
-alter table fx_r_app_comment add constraint app_comment_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_app_comment_app_idx on fx_r_app_comment (fk_application_id);
-alter table fx_r_app_comment add constraint app_com_app_com_idx foreign key (fk_app_comment_id) references fx_r_app_comment (id);
-create index idx_app_com_app_com_idx on fx_r_app_comment (fk_app_comment_id);
+alter table o_selectus_app_comment add constraint app_com_author_id_idx foreign key (fk_author_id) references o_bs_identity (id);
+create index idx_app_com_author_id_idx on o_selectus_app_comment (fk_author_id);
+alter table o_selectus_app_comment add constraint app_com_reviewer_id_idx foreign key (fk_reviewer_id) references o_bs_identity (id);
+create index idx_app_com_reviewer_id_idx on o_selectus_app_comment (fk_reviewer_id);
+alter table o_selectus_app_comment add constraint app_comment_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_app_comment_app_idx on o_selectus_app_comment (fk_application_id);
+alter table o_selectus_app_comment add constraint app_com_app_com_idx foreign key (fk_app_comment_id) references o_selectus_app_comment (id);
+create index idx_app_com_app_com_idx on o_selectus_app_comment (fk_app_comment_id);
 
-alter table fx_r_app_comment_vote add constraint app_com_voter_id_idx foreign key (fk_voter_id) references o_bs_identity (id);
-create index idx_app_com_voter_id_idx on fx_r_app_comment_vote (fk_voter_id);
-alter table fx_r_app_comment_vote add constraint vote_app_com_idx foreign key (fk_app_comment_id) references fx_r_app_comment (id);
-create index idx_vote_app_com_idx on fx_r_app_comment_vote (fk_app_comment_id);
+alter table o_selectus_app_comment_vote add constraint app_com_voter_id_idx foreign key (fk_voter_id) references o_bs_identity (id);
+create index idx_app_com_voter_id_idx on o_selectus_app_comment_vote (fk_voter_id);
+alter table o_selectus_app_comment_vote add constraint vote_app_com_idx foreign key (fk_app_comment_id) references o_selectus_app_comment (id);
+create index idx_vote_app_com_idx on o_selectus_app_comment_vote (fk_app_comment_id);
 
 -- category
-alter table fx_r_app_category add constraint app_cat_app_idx foreign key (fk_application_id) references fx_r_application (app_id);
-create index idx_app_cat_app_idx on fx_r_app_category (fk_application_id);
-alter table fx_r_app_category add constraint app_cat_cat_idx foreign key (fk_category_id) references fx_r_category (id);
-create index idx_app_cat_cat_idx on fx_r_app_category (fk_category_id);
-alter table fx_r_category add constraint cat_position_idx foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_cat_position_idx on fx_r_category (fk_position_id);
+alter table o_selectus_app_category add constraint app_cat_app_idx foreign key (fk_application_id) references o_selectus_application (app_id);
+create index idx_app_cat_app_idx on o_selectus_app_category (fk_application_id);
+alter table o_selectus_app_category add constraint app_cat_cat_idx foreign key (fk_category_id) references o_selectus_category (id);
+create index idx_app_cat_cat_idx on o_selectus_app_category (fk_category_id);
+alter table o_selectus_category add constraint cat_position_idx foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_cat_position_idx on o_selectus_category (fk_position_id);
 
 -- log
-create index idx_audit_to_app_idx on fx_r_audit_log (fk_application_id);
-alter table fx_r_audit_log add constraint audit_to_to_pos_idx foreign key (fk_position_id) references fx_r_position (pos_id);
-create index idx_audit_to_to_pos_idx on fx_r_audit_log (fk_position_id);
+create index idx_audit_to_app_idx on o_selectus_audit_log (fk_application_id);
+alter table o_selectus_audit_log add constraint audit_to_to_pos_idx foreign key (fk_position_id) references o_selectus_position (pos_id);
+create index idx_audit_to_to_pos_idx on o_selectus_audit_log (fk_position_id);
 
-alter table fx_r_audit_log_read add constraint log_read_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_log_read_id_idx on fx_r_audit_log_read (fk_identity_id);
-alter table fx_r_audit_log_read add constraint log_read_log_idx foreign key (fk_audit_log_id) references fx_r_audit_log (id);
-create index idx_log_read_log_idx on fx_r_audit_log_read (fk_audit_log_id);
+alter table o_selectus_audit_log_read add constraint log_read_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_log_read_id_idx on o_selectus_audit_log_read (fk_identity_id);
+alter table o_selectus_audit_log_read add constraint log_read_log_idx foreign key (fk_audit_log_id) references o_selectus_audit_log (id);
+create index idx_log_read_log_idx on o_selectus_audit_log_read (fk_audit_log_id);
 
-alter table fx_r_audit_log_user_settings add constraint log_settings_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_log_settings_id_idx on fx_r_audit_log_user_settings (fk_identity_id);
+alter table o_selectus_audit_log_usettings add constraint log_settings_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_log_settings_id_idx on o_selectus_audit_log_usettings (fk_identity_id);
 
-alter table fx_r_audit_log_user_notifs add constraint user_notifs_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_user_notifs_id_idx on fx_r_audit_log_user_notifs (fk_identity_id);
+alter table o_selectus_audit_log_u_notifs add constraint user_notifs_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_user_notifs_id_idx on o_selectus_audit_log_u_notifs (fk_identity_id);
 
 
 -- Hibernate Unique Key

@@ -34,7 +34,7 @@ import org.olat.modules.selectus.model.Category;
  *
  */
 @Entity(name="rapplicationcategory")
-@Table(name="fx_r_app_category")
+@Table(name="o_selectus_app_category")
 public class ApplicationCategoryImpl implements ApplicationCategory, Persistable {
 
 	private static final long serialVersionUID = -6661945156217430744L;

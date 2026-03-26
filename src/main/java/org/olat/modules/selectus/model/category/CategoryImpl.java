@@ -35,7 +35,7 @@ import org.olat.modules.selectus.model.PositionImpl;
  *
  */
 @Entity(name="rcategory")
-@Table(name="fx_r_category")
+@Table(name="o_selectus_category")
 @NamedQueries(
 	@NamedQuery(name="allSystemCategories", query="select cat from rcategory as cat where cat.position.key is null")	
 )

@@ -33,7 +33,7 @@ import org.olat.modules.selectus.model.ReferenceToApplication;
  *
  */
 @Entity(name="rreferencetoapp")
-@Table(name="fx_r_reference_to_app")
+@Table(name="o_selectus_reference_to_app")
 public class ReferenceToApplicationImpl implements ReferenceToApplication, Persistable {
 	
 	private static final long serialVersionUID = -2922709551695487573L;

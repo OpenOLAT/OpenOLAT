@@ -37,7 +37,7 @@ import org.olat.modules.selectus.model.PositionRole;
  *
  */
 @Entity(name="rpositionreviewdefinition")
-@Table(name="fx_r_review_position_def")
+@Table(name="o_selectus_review_position_def")
 public class PositionReviewDefinitionImpl implements PositionReviewDefinition, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = -4782097166222710284L;

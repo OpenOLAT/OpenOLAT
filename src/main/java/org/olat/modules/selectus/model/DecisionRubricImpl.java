@@ -30,7 +30,7 @@ import org.olat.core.util.StringHelper;
  *
  */
 @Entity(name="rdecisionrubric")
-@Table(name="fx_r_decision_rubric")
+@Table(name="o_selectus_decision_rubric")
 public class DecisionRubricImpl implements DecisionRubric, Persistable {
 
 	private static final long serialVersionUID = -3810274642995889964L;

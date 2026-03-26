@@ -31,7 +31,7 @@ import jakarta.persistence.Version;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="rnotes")
-@Table(name="fx_r_application_notes")
+@Table(name="o_selectus_application_notes")
 public class NotesImpl implements Persistable, CreateInfo, Notes {
 
 	private static final long serialVersionUID = 3119983861314839608L;

@@ -32,7 +32,7 @@ import org.olat.modules.selectus.model.ReferenceComment;
  *
  */
 @Entity(name="rreferencecomment")
-@Table(name="fx_r_reference_comment")
+@Table(name="o_selectus_reference_comment")
 public class ReferenceCommentImpl implements ReferenceComment, Persistable {
 	
 	private static final long serialVersionUID = -6566270226676708824L;

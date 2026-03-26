@@ -29,7 +29,7 @@ import org.olat.core.util.StringHelper;
  *
  */
 @Entity(name="rorganisationunit")
-@Table(name="fx_r_org_unit")
+@Table(name="o_selectus_org_unit")
 public class OrganisationUnitImpl implements OrganisationUnit {
 
 	private static final long serialVersionUID = -4523349350306944774L;

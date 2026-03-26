@@ -37,7 +37,7 @@ import org.olat.modules.selectus.model.PositionImpl;
  *
  */
 @Entity(name="rappsfeedback")
-@Table(name="fx_r_apps_feedback")
+@Table(name="o_selectus_apps_feedback")
 public class ApplicationsFeedbackConfigurationImpl implements ApplicationsFeedbackConfiguration, Persistable {
 
 	private static final long serialVersionUID = -4520443456692449610L;

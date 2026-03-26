@@ -34,7 +34,7 @@ import org.olat.core.id.Persistable;
  *
  */
 @Entity(name="racceptpolicy")
-@Table(name="fx_r_position_policy")
+@Table(name="o_selectus_position_policy")
 @NamedQueries({
 	@NamedQuery(name="policyByIdentityAndPosition", query="select policy from racceptpolicy policy where policy.identity.key=:identityKey and policy.position.key=:positionKey")
 })

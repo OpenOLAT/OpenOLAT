@@ -38,7 +38,7 @@ import org.olat.modules.selectus.model.RecruitingAuditLog;
  *
  */
 @Entity(name="recruitingauditlog")
-@Table(name="fx_r_audit_log")
+@Table(name="o_selectus_audit_log")
 public class RecruitingAuditLogImpl implements Persistable, RecruitingAuditLog {
 
 	private static Logger log = Tracing.createLoggerFor(RecruitingAuditLogImpl.class);

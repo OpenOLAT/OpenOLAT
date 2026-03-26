@@ -33,7 +33,7 @@ import org.olat.modules.selectus.model.attributes.PositionAttributeDefinitionXSt
  *
  */
 @Entity(name="posattributedefinition")
-@Table(name="fx_r_pos_attribute_def")
+@Table(name="o_selectus_pos_attribute_def")
 public class PositionAttributeDefinitionImpl implements PositionAttributeDefinition {
 
 	private static final long serialVersionUID = 5345742930551278225L;

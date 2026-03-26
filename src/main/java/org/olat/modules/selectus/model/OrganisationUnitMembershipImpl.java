@@ -32,7 +32,7 @@ import org.olat.core.id.Persistable;
  *
  */
 @Entity(name="rorganisationunitmember")
-@Table(name="fx_r_org_unit_member")
+@Table(name="o_selectus_org_unit_member")
 public class OrganisationUnitMembershipImpl implements OrganisationUnitMembership, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 4098141530116618550L;

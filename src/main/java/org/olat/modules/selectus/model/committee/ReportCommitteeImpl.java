@@ -32,7 +32,7 @@ import org.olat.modules.selectus.model.PositionImpl;
  *
  */
 @Entity(name="committeereport")
-@Table(name="fx_r_committee_report")
+@Table(name="o_selectus_committee_report")
 public class ReportCommitteeImpl implements ReportCommittee {
 	
 	private static final long serialVersionUID = -515588877729034234L;

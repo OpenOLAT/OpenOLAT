@@ -30,7 +30,7 @@ import org.olat.core.util.StringHelper;
  *
  */
 @Entity(name="rreviewelementdefinition")
-@Table(name="fx_r_review_element_def")
+@Table(name="o_selectus_review_element_def")
 public class ReviewElementDefinitionImpl implements ReviewElementDefinition, Persistable {
 
 	private static final long serialVersionUID = 8441946123708368757L;

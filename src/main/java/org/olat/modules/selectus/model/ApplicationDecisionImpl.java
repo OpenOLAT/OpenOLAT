@@ -32,7 +32,7 @@ import org.olat.core.id.Persistable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="rapplicationdecision")
-@Table(name="fx_r_application")
+@Table(name="o_selectus_application")
 public class ApplicationDecisionImpl implements Persistable {
 
 	private static final long serialVersionUID = 7241885035110830055L;

@@ -22,7 +22,7 @@ import org.olat.core.id.Persistable;
  *
  */
 @Entity(name="appattributelight")
-@Table(name="fx_r_app_attribute")
+@Table(name="o_selectus_app_attribute")
 public class ApplicationAttributeLightImpl implements ApplicationAttributeLight {
 
 	private static final long serialVersionUID = -1613399152840139167L;

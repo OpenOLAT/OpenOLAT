@@ -39,7 +39,7 @@ import org.olat.modules.selectus.model.RejectionEmailLogFull;
  *
  */
 @Entity(name="rrejectionlogfull")
-@Table(name="fx_r_rejection_email_log")
+@Table(name="o_selectus_rejection_email_log")
 @NamedQueries({
 	@NamedQuery(name="loadFullEmailLogByKey", query="select log from rrejectionlogfull log inner join fetch log.application app where log.key=:logKey")
 	

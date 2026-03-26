@@ -33,7 +33,7 @@ import org.olat.modules.selectus.model.PublicFeedback;
  *
  */
 @Entity(name="rpublicfeedback")
-@Table(name="fx_r_public_feedback")
+@Table(name="o_selectus_public_feedback")
 public class PublicFeedbackImpl implements PublicFeedback, Persistable  {
 
 	private static final long serialVersionUID = 7656394157067953689L;

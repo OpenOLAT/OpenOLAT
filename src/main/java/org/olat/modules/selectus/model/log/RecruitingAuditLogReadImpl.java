@@ -28,7 +28,7 @@ import org.olat.core.id.Persistable;
 import org.olat.modules.selectus.model.RecruitingAuditLog;
 
 @Entity(name="recruitingauditlogread")
-@Table(name="fx_r_audit_log_read")
+@Table(name="o_selectus_audit_log_read")
 public class RecruitingAuditLogReadImpl implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = 6662592807205792141L;

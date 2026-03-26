@@ -45,7 +45,7 @@ import org.olat.modules.selectus.model.ReferenceType;
  *
  */
 @Entity(name="rreference")
-@Table(name="fx_r_reference")
+@Table(name="o_selectus_reference")
 public class ReferenceImpl implements Reference, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 8908016638654225807L;

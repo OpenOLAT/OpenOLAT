@@ -39,7 +39,7 @@ import org.olat.modules.selectus.model.ReferenceStatus;
  *
  */
 @Entity(name="rappfeedback")
-@Table(name="fx_r_app_feedback")
+@Table(name="o_selectus_app_feedback")
 public class ApplicationFeedbackImpl implements ApplicationFeedback, Persistable  {
 
 	private static final long serialVersionUID = -2177105489965505163L;

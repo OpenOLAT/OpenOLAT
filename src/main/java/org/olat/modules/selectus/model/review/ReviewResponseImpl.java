@@ -35,7 +35,7 @@ import org.olat.modules.selectus.model.ApplicationLightImpl;
  *
  */
 @Entity(name="rreviewresponse")
-@Table(name="fx_r_review_response")
+@Table(name="o_selectus_review_response")
 public class ReviewResponseImpl implements ReviewResponse, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = -3773932740233787011L;

@@ -35,7 +35,7 @@ import org.olat.modules.selectus.model.ApplicationImpl;
  *
  */
 @Entity(name="appassignment")
-@Table(name="fx_r_assignment")
+@Table(name="o_selectus_assignment")
 public class ApplicationAssignmentImpl implements ApplicationAssignment, Persistable {
 
 	private static final long serialVersionUID = -6671442440081647140L;

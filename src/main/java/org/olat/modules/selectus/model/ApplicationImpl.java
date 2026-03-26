@@ -46,7 +46,7 @@ import org.olat.modules.selectus.ApplicationStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="rapplication")
-@Table(name="fx_r_application")
+@Table(name="o_selectus_application")
 @NamedQuery(name="lastApplicationByModificationAndPosition", query="select max(app.lastModified) from rapplication app where app.position.key=:positionKey and app.valid=true")
 @NamedQuery(name="numOfApplicationsByPositionAndMail", query="select count(app.id) from rapplication app where app.position.key=:positionKey and lower(app.person.email)=:mail")
 @NamedQuery(name="nextApplicationId", query="select max(app.id) from rapplication app where app.position=:position")

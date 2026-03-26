@@ -34,7 +34,7 @@ import org.olat.modules.selectus.model.RejectionEmailLog;
  *
  */
 @Entity(name="rrejectionlog")
-@Table(name="fx_r_rejection_email_log")
+@Table(name="o_selectus_rejection_email_log")
 public class RejectionEmailLogImpl implements RejectionEmailLog, Persistable {
 
 	private static final long serialVersionUID = 403498062232811200L;

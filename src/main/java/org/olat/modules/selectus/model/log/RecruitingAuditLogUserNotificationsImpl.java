@@ -32,7 +32,7 @@ import org.olat.core.id.Persistable;
  *
  */
 @Entity(name="recruitingauditlogusernotifications")
-@Table(name="fx_r_audit_log_user_notifs")
+@Table(name="o_selectus_audit_log_u_notifs")
 public class RecruitingAuditLogUserNotificationsImpl implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -3287889833197964061L;

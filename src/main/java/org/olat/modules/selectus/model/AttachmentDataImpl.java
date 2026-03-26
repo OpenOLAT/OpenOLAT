@@ -31,7 +31,7 @@ import jakarta.persistence.Version;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="rattachmentdata")
-@Table(name="fx_r_attachment")
+@Table(name="o_selectus_attachment")
 public class AttachmentDataImpl implements Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -3741636430048220733L;

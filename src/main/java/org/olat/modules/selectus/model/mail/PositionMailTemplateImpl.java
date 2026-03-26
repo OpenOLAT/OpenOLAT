@@ -35,7 +35,7 @@ import org.olat.modules.selectus.model.PositionMailTemplate;
  *
  */
 @Entity(name="rmailtemplate")
-@Table(name="fx_r_mail_template")
+@Table(name="o_selectus_mail_template")
 public class PositionMailTemplateImpl implements PositionMailTemplate, Persistable {
 
 	private static final long serialVersionUID = -4481170611901527715L;
