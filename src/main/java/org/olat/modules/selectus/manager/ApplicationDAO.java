@@ -609,6 +609,7 @@ public class ApplicationDAO {
 		StringBuilder sb = new StringBuilder(2048);
 		sb.append("select app from rapplication app ")
 		  .append(" inner join fetch app.position position")
+		  .append(" left join position.organisation orga")
 		  .append(" where app.valid=:valid ")
 		  .append(" and (lower(app.person.firstName) like :searchText or lower(app.person.lastName) like :searchText or lower(app.person.email) like :searchText)");
 		if(!positionDao.appendPositionPermission(sb, filters)) {

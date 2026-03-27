@@ -522,7 +522,9 @@ public class PositionListController extends FormBasicController implements Toole
 	}
 	
 	private void addPosition(UserRequest ureq) {
-		Position newPosition = recruitingService.createPosition();
+		//TODO selectus organisation
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		Position newPosition = recruitingService.createPosition(defaultOrganisation);
 		PositionRole positionRole = recruitingService.getRole(newPosition, getIdentity());
 		RecruitingPositionSecurityCallback positionSecCallback
 			= new RecruitingPositionSecurityCallbackImpl(secCallback, newPosition, getIdentity(), ureq.getUserSession().getRoles(), positionRole);

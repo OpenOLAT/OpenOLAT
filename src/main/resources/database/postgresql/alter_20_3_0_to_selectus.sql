@@ -118,6 +118,7 @@ create table o_selectus_position (
    rating_policy_link_label_3 varchar(1024),
    rating_policy_link_label_4 varchar(1024),
    fk_org_unit_id int8 default null,
+   fk_organisation_id int8 default null,
    PRIMARY KEY (pos_id)
 );
 
@@ -736,6 +737,9 @@ create index idx_mtemplate_pos_idx on o_selectus_mail_template (fk_position_id);
 
 alter table o_selectus_pos_attribute_def add constraint posattrdef_to_pos foreign key (fk_position_id) references o_selectus_position (pos_id);
 create index posattrdef_to_pos_idx on o_selectus_pos_attribute_def (fk_position_id);
+
+alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_pos_to_org_idx on o_selectus_position (fk_organisation_id);
 
 
 alter table o_selectus_application_notes add constraint app_notes_to_app foreign key (fk_application_id) references o_selectus_application (app_id);

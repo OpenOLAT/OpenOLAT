@@ -102,7 +102,7 @@ public class AnonymiseServiceImpl implements AnonymiseService {
 		}
 
 		if(!recruitingModule.isReportingKeepPositionOrgUnit()) {
-			position.setOrganisationUnit(null);
+			position.setOrganisation(null);
 		}
 	}
 	

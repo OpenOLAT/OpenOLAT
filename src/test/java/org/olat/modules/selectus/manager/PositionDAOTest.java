@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -30,6 +31,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.selectus.model.AcceptPolicyEnum;
 import org.olat.modules.selectus.model.AcceptPolicyImpl;
@@ -71,10 +73,20 @@ public class PositionDAOTest extends OlatTestCase {
 	@Autowired
 	private OrganisationService organisationService;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-app-cat-unit-test", "Org-app-cat-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
+	
 	@Test
 	public void testSavePosition() {
 		//create a position and save it
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("TR-808");
 		position.setPositionTitle("Prof.");
 		position.setShortTitle("Short title");
@@ -105,7 +117,7 @@ public class PositionDAOTest extends OlatTestCase {
 	@Test
 	public void testSavePositionWithCustomAttributes() {
 		//create a position and save it
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("TOA-1200");
 		position.setPositionTitle("Prof.");
 		position.setShortTitle("Short title");
@@ -140,7 +152,7 @@ public class PositionDAOTest extends OlatTestCase {
 	@Test
 	public void testDeletePosition() {
 		//create position and save it
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("TR-809");
 		position.setStatus("in preparation");
 		
@@ -164,7 +176,7 @@ public class PositionDAOTest extends OlatTestCase {
 	@Test
 	public void testFindPosition() {
 		//create position and save it
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("TR-809");
 		position.setStatus(PositionStatus.preparation.name());
 		positionDao.savePosition(position);
@@ -196,14 +208,14 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void findLastPosition() {
-		Position pos1 = positionDao.createPosition("none", "none");
+		Position pos1 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos1.setPlaningsNumber("MX-809");
 		pos1.setStatus(PositionStatus.preparation.name());
 		pos1 = positionDao.savePosition(pos1);
 		dbInstance.commitAndCloseSession();
 		
 		sleep(1200);
-		Position pos2 = positionDao.createPosition("none", "none");
+		Position pos2 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos2.setPlaningsNumber("MX-810");
 		pos2.setStatus(PositionStatus.preparation.name());
 		pos2 = positionDao.savePosition(pos2);
@@ -216,7 +228,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadPositionByKey() {
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos.setPlaningsNumber("MX-811");
 		pos.setStatus(PositionStatus.preparation.name());
 		pos = positionDao.savePosition(pos);
@@ -229,7 +241,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getLastApplicationModification() {
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos.setPlaningsNumber("MX-812");
 		pos.setStatus(PositionStatus.published.name());
 		pos = positionDao.savePosition(pos);
@@ -248,7 +260,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadPositionsToRemind() {
-		Position posToRemind = positionDao.createPosition("none", "none");
+		Position posToRemind = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		posToRemind.setPlaningsNumber("MZ-812");
 		posToRemind.setStatus(PositionStatus.publishedAndInScreening.name());
 		Calendar cal = Calendar.getInstance();
@@ -256,13 +268,13 @@ public class PositionDAOTest extends OlatTestCase {
 		posToRemind.setCommitteeReminderDate(cal.getTime());
 		posToRemind = positionDao.savePosition(posToRemind);
 		
-		Position closedPos = positionDao.createPosition("none", "none");
+		Position closedPos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		closedPos.setPlaningsNumber("MZ-813");
 		closedPos.setStatus(PositionStatus.closedAndNoRating.name());
 		closedPos.setCommitteeReminderDate(cal.getTime());
 		closedPos = positionDao.savePosition(closedPos);
 		
-		Position sentPos = positionDao.createPosition("none", "none");
+		Position sentPos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		sentPos.setPlaningsNumber("MZ-813");
 		sentPos.setStatus(PositionStatus.closedAndNoRating.name());
 		sentPos.setCommitteeReminderDate(cal.getTime());
@@ -281,7 +293,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadPositionsToRemind_notNow() {
-		Position posNotToRemind = positionDao.createPosition("none", "none");
+		Position posNotToRemind = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		posNotToRemind.setPlaningsNumber("MZ-812");
 		posNotToRemind.setStatus(PositionStatus.publishedAndInScreening.name());
 		Calendar cal = Calendar.getInstance();
@@ -300,12 +312,12 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void findPositions() {
-		Position publishedPos = positionDao.createPosition("none", "none");
+		Position publishedPos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		publishedPos.setPlaningsNumber("MX-813");
 		publishedPos.setStatus(PositionStatus.published.name());
 		publishedPos = positionDao.savePosition(publishedPos);
 		
-		Position closedPos = positionDao.createPosition("none", "none");
+		Position closedPos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		closedPos.setPlaningsNumber("MX-813");
 		closedPos.setStatus(PositionStatus.closed.name());
 		closedPos = positionDao.savePosition(closedPos);
@@ -342,12 +354,12 @@ public class PositionDAOTest extends OlatTestCase {
 	@Test
 	public void findParallelApplicationsLight() {
 		//position 1
-		Position pos1 = positionDao.createPosition("none", "none");
+		Position pos1 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos1.setPlaningsNumber("MX-814");
 		pos1.setStatus(PositionStatus.published.name());
 		pos1 = positionDao.savePosition(pos1);
 		//position 2
-		Position pos2 = positionDao.createPosition("none", "none");
+		Position pos2 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos2.setPlaningsNumber("MX-815");
 		pos2.setStatus(PositionStatus.published.name());
 		pos2 = positionDao.savePosition(pos2);
@@ -376,7 +388,7 @@ public class PositionDAOTest extends OlatTestCase {
 	public void findPositions_applicant() {
 		//position in preparation
 		for(PositionStatus status:PositionStatus.values()) {
-			Position pos = positionDao.createPosition("none", "none");
+			Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 			pos.setPlaningsNumber("MX-816-" + status);
 			pos.setStatus(status.name());
 			pos = positionDao.savePosition(pos);
@@ -415,7 +427,7 @@ public class PositionDAOTest extends OlatTestCase {
 		
 		//position in preparation
 		for(PositionStatus status:PositionStatus.values()) {
-			Position pos = positionDao.createPosition("none", "none");
+			Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 			pos.setPlaningsNumber("MX-817-" + status);
 			pos.setStatus(status.name());
 			pos = positionDao.savePosition(pos);
@@ -487,7 +499,7 @@ public class PositionDAOTest extends OlatTestCase {
 		//position in preparation
 		List<Position> positions = new ArrayList<>();
 		for(PositionStatus status:PositionStatus.values()) {
-			Position pos = positionDao.createPosition("none", "none");
+			Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 			pos.setPlaningsNumber("MX-818-" + status);
 			pos.setStatus(status.name());
 			pos = positionDao.savePosition(pos);
@@ -519,7 +531,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isInCommittee() {
-		Position publishedPos = positionDao.createPosition("none", "none");
+		Position publishedPos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		publishedPos.setPlaningsNumber("MX-830");
 		publishedPos.setStatus(PositionStatus.published.name());
 		publishedPos = positionDao.savePosition(publishedPos);
@@ -538,7 +550,7 @@ public class PositionDAOTest extends OlatTestCase {
 	public void acceptPositionPolicy() {
 		Identity committeeMember = JunitTestHelper.createAndPersistIdentityAsAuthor("Committee-pos-2-");
 		
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos.setPlaningsNumber("MX-819");
 		pos.setStatus(PositionStatus.publishedAndInScreening.name());
 		pos = positionDao.savePosition(pos);
@@ -567,7 +579,7 @@ public class PositionDAOTest extends OlatTestCase {
 	public void acceptPositionPolicy_messageToCommittee() {
 		Identity committeeMember = JunitTestHelper.createAndPersistIdentityAsAuthor("Committee-pos-2-");
 		
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos.setPlaningsNumber("MX-819");
 		pos.setStatus(PositionStatus.publishedAndInScreening.name());
 		pos = positionDao.savePosition(pos);
@@ -594,7 +606,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getMemberGroup() {
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		SecurityGroup committeeGroup = pos.getCommitteeGroup();
 		SecurityGroup headGroup = securityGroupDao.createAndPersistSecurityGroup();
 		pos.setCommitteeHeadGroup(headGroup);
@@ -619,7 +631,7 @@ public class PositionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void countMembers() {
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		Position savedPosition = positionDao.savePosition(pos);
 		dbInstance.commitAndCloseSession();
 		

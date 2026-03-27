@@ -23,7 +23,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
-
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.manager.MailFormatter;
 import org.olat.modules.selectus.manager.MailerSender;
@@ -45,7 +44,6 @@ import org.olat.modules.selectus.model.ExternalUserResults;
 import org.olat.modules.selectus.model.MailLogInfos;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.OrganisationUnit;
-import org.olat.modules.selectus.model.OrganisationUnitMembership;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionAndAttributeDefinition;
 import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
@@ -85,7 +83,7 @@ public interface RecruitingService {
 
 	public static final int ABSTENTION = -32;
 	
-	public Position createPosition();
+	public Position createPosition(Organisation organisation);
 	
 	public Position savePosition(Position position);
 	
@@ -638,69 +636,7 @@ public interface RecruitingService {
 	public DecisionRubric saveDecisionRubric(DecisionRubric decision);
 
 	public List<DecisionRubric> getDecisionRubric(Position position);
-	
-	
-	/**
-	 * Create a new organisation (transient)
-	 * 
-	 */
-	public OrganisationUnit createOrganisationUnit();
-	
-	public OrganisationUnit saveOrganisationUnit(OrganisationUnit orgUnit);
-	
-	/**
-	 * The whole list of organisation unit in the system.
-	 * @return
-	 */
-	public OrganisationUnit getOrganisationUnit(Long key);
-	
-	/**
-	 * The whole list of organisation units in the system.
-	 * @return The list of all organisation units in the system.
-	 */
-	public List<OrganisationUnit> getOrganisationUnits();
-	
-	/**
-	 * The list of organisations unit in the system a staff member
-	 * can see.
-	 * 
-	 * @return A list of organisations.
-	 */
-	public List<OrganisationUnit> getOrganisationUnits(IdentityRef identity, Roles roles);
-	
-	public boolean isOrganisationUnitNamesInUse(String name, OrganisationUnit current);
-	
-	public boolean isMemberOfOrganisationUnit(IdentityRef identity, OrganisationUnit organisationUnit);
-	
-	
-	/**
-	 * The whole list of organisations unit in the system.
-	 * 
-	 * @return The list of memberships
-	 */
-	public List<OrganisationUnitMembership> getOrganisationUnits(IdentityRef identity);
 
-	public OrganisationUnitMembership addOrganisationUnitMembership(Identity identity, OrganisationUnit unit);
-	
-	public void removeOrganisationUnitMembership(OrganisationUnitMembership membership);
-	
-	/**
-	 * Remove the organisation unit from the positions, remove memberships and delete
-	 * the organisation unit itself.
-	 * 
-	 * 
-	 * @param unit
-	 */
-	public int deleteOrganisationUnit(OrganisationUnit unit);
-	
-	/**
-	 * The list of organisation units will be merged with the target.
-	 * 
-	 * @param units
-	 * @param targetUnit
-	 */
-	public int mergeOrganisationUnits(List<OrganisationUnit> units, OrganisationUnit targetUnit);
-	
 	
 	public void sendMail(String to, String subject, String body);
 

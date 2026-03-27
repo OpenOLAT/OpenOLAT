@@ -9,9 +9,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,6 +42,18 @@ public class RejectionDAOTest extends OlatTestCase {
 	private RejectionDAO rejectionDao;
 	@Autowired
 	private ApplicationDAO applicationDao;
+	@Autowired
+	private OrganisationService organisationService;
+
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-selectus-service-unit-test", "Org-selectus-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void addLog() {
@@ -93,7 +109,7 @@ public class RejectionDAOTest extends OlatTestCase {
 	}
 	
 	private Position createRandomPosition(PositionStatus status) {
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("AC-323");
 		position.setPositionTitle("Log analyser");
 		position.setShortTitle("Logger with influx");

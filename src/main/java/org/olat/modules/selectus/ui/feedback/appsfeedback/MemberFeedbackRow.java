@@ -8,12 +8,11 @@ package org.olat.modules.selectus.ui.feedback.appsfeedback;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
-import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 
 /**
@@ -28,7 +27,7 @@ public class MemberFeedbackRow {
 	private final ApplicationFeedback feedback;
 	private final Application application;
 	private final Position position;
-	private final OrganisationUnit organisationUnit;
+	private final Organisation organisation;
 	private final ApplicationsFeedbackConfiguration config;
 	
 	public MemberFeedbackRow(ApplicationFeedback feedback, FormLink editLink) {
@@ -37,7 +36,7 @@ public class MemberFeedbackRow {
 		this.editLink = editLink;
 		this.application = feedback.getApplication();
 		this.position = application.getPosition();
-		this.organisationUnit = position.getOrganisationUnit();
+		this.organisation = position.getOrganisation();
 	}
 
 	public ApplicationFeedback getFeedback() {
@@ -52,8 +51,8 @@ public class MemberFeedbackRow {
 		return position;
 	}
 
-	public OrganisationUnit getOrganisationUnit() {
-		return organisationUnit;
+	public Organisation getOrganisation() {
+		return organisation;
 	}
 	
 	public Date getDeadline() {

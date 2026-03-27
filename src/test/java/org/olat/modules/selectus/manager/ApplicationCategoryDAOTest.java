@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import org.olat.core.id.Organisation;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationCategory;
 import org.olat.modules.selectus.model.Category;
@@ -22,6 +22,9 @@ import org.olat.modules.selectus.model.Person;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -40,7 +43,19 @@ public class ApplicationCategoryDAOTest extends OlatTestCase {
 	@Autowired
 	private ApplicationDAO applicationDao;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private ApplicationCategoryDAO applicationCategoryDao;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-app-cat-unit-test", "Org-app-cat-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void createApplicationCategory() {
@@ -209,7 +224,7 @@ public class ApplicationCategoryDAOTest extends OlatTestCase {
 	}
 	
 	private Position createRandomPosition(PositionStatus status) {
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("Lonely comment");
 		position.setPositionTitle("Comments");
 		position.setShortTitle("Pilot of comments");

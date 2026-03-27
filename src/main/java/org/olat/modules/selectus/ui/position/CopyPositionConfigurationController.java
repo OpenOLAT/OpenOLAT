@@ -320,7 +320,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		positionToCopy = recruitingService.getPosition(positionToCopy.getKey());
 		
-		Position position = recruitingService.createPosition();
+		Position position = recruitingService.createPosition(positionToCopy.getOrganisation());
 		doCommitFormValues(position);
 		doCopyPositionValues(position);
 		doCopyCustomTabs(position);
@@ -635,7 +635,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		}
 
 		position.setPlaningsNumber(idElement.getValue());
-		position.setOrganisationUnit(positionToCopy.getOrganisationUnit());
+		position.setOrganisation(positionToCopy.getOrganisation());
 
 		Date applicationDeadline = applicationDeadlineEl.getDate();
 		position.setApplicationDeadline(applicationDeadline);

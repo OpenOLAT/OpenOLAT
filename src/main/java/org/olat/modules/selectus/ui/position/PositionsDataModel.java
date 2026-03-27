@@ -10,7 +10,6 @@ import static org.olat.modules.selectus.ui.events.SelectPositionLightEvent.SELEC
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionAttributeDefinition;
 import org.olat.modules.selectus.model.PositionLight;
@@ -140,16 +138,6 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 		if(status == null || status.isEmpty()) return true;
 		return status.contains(row.getStatus());
 	}
-	
-	private boolean acceptDeadline(DateRange startRange, PositionLightWithStatistics row) {
-		if(startRange == null || (startRange.getStart() == null && startRange.getEnd() == null)) return true;
-		
-		Date deadline = row.getApplicationDeadline();
-		return deadline != null
-				&& (startRange.getStart() == null || deadline.compareTo(startRange.getStart()) >= 0)
-				&& (startRange.getEnd() == null || deadline.compareTo(startRange.getEnd()) <= 0);
-	}
-	
 
 	@Override
 	public String getUrl(Component source, Object object, String action) {
@@ -178,10 +166,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 				case numOfApplications: return position.getNumOfApplications() == null ? 0 : position.getNumOfApplications();
 				case numOfMaleApplications: return position.getNumOfMaleApplications() == null ? 0 : position.getNumOfMaleApplications();
 				case numOfFemaleApplications: return position.getNumOfFemaleApplications() == null ? 0 : position.getNumOfFemaleApplications();
-				case organisationUnit: {
-					OrganisationUnit orgUnit =  position.getOrganisationUnit();
-					return orgUnit == null ? null : orgUnit.getMLName(locale);
-				}
+				case organisationUnit: return position.getOrganisation() == null ? null : position.getOrganisation().getDisplayName();
 				default: return position;
 			}
 		}

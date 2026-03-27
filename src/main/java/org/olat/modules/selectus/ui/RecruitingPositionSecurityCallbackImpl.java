@@ -12,14 +12,12 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.FilterPermissions;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingSecurityCallback;
-import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.ApplicationShort;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionRole;
@@ -56,9 +54,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
 
 		olatAdmin = roles.isAdministrator();
-		author = roles.isSelectusManager() || position.getKey() == null || // selectus manager need to be in organisation
-				(position.getOrganisationUnit() != null
-					&& CoreSpringFactory.getImpl(RecruitingService.class).isMemberOfOrganisationUnit(identity, position.getOrganisationUnit()));
+		author = roles.isSelectusManager() || position.getKey() == null;
 	}
 	
 	@Override

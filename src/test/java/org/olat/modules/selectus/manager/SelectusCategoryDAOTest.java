@@ -10,8 +10,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,6 +40,18 @@ public class SelectusCategoryDAOTest extends OlatTestCase {
 	private PositionDAO positionDao;
 	@Autowired
 	private RecruitingService recruitingService;
+	@Autowired
+	private OrganisationService organisationService;
+
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-selectus-service-unit-test", "Org-selectus-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void createCategory() {
@@ -176,7 +192,7 @@ public class SelectusCategoryDAOTest extends OlatTestCase {
 	}
 	
 	private Position createRandomPosition(PositionStatus status) {
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("Cat. comment");
 		position.setPositionTitle("Comments");
 		position.setShortTitle("Pilot of comments");

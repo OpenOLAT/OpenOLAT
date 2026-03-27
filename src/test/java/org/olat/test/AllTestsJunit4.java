@@ -316,6 +316,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.selectus.manager.RejectionDAOTest.class,
 	org.olat.modules.selectus.manager.ReviewElementDefinitionDAOTest.class,
 	org.olat.modules.selectus.manager.ReviewResponseDAOTest.class,
+	org.olat.modules.selectus.manager.ReviewServiceTest.class,
 	org.olat.modules.selectus.manager.SalutationAndTitleTest.class,
 	org.olat.modules.selectus.model.PositionImplTest.class,
 	org.olat.modules.selectus.ui.RecruitingHelperTest.class,

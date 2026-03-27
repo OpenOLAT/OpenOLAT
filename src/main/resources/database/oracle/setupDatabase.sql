@@ -5213,6 +5213,7 @@ CREATE TABLE o_selectus_position (
   rating_policy_link_label_3 varchar(1024),
   rating_policy_link_label_4 varchar(1024),
   fk_org_unit_id number(20) default null,
+  fk_organisation_id number(20) default null,
   PRIMARY KEY (pos_id)
 );
 

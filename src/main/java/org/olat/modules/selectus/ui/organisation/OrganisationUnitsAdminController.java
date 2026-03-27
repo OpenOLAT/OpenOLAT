@@ -120,7 +120,7 @@ public class OrganisationUnitsAdminController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<OrganisationUnit> units = recruitingFrontendManager.getOrganisationUnits();
+		List<OrganisationUnit> units = null;//TODO load mail settings recruitingFrontendManager.getOrganisationUnits();
 		dataModel.setObjects(units);
 		tableEl.reset(true, true, true);
 	}
@@ -239,7 +239,7 @@ public class OrganisationUnitsAdminController extends FormBasicController {
 	}
 	
 	private void doDelete(OrganisationUnit unit) {
-		recruitingFrontendManager.deleteOrganisationUnit(unit);
+		//TODO selectus load mail settings recruitingFrontendManager.deleteOrganisationUnit(unit);
 		showInfo("deleted");
 	}
 }

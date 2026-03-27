@@ -9,8 +9,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,8 +43,19 @@ public class DecisionRubricDAOTest extends OlatTestCase {
 	@Autowired
 	private DecisionRubricDAO decisionRubricDao;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private RecruitingService recruitingFrontendManager;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-app-cat-unit-test", "Org-app-cat-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void createAndSaveDefinition() {
@@ -137,7 +152,7 @@ public class DecisionRubricDAOTest extends OlatTestCase {
 	}
 	
 	private Position createRandomPosition(PositionStatus status) {
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("Lonely rubric");
 		position.setPositionTitle("Rubricer");
 		position.setShortTitle("Pilot of rubric");

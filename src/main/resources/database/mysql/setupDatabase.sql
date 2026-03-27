@@ -5142,6 +5142,7 @@ create table o_selectus_position (
    rating_policy_link_label_3 text(1024),
    rating_policy_link_label_4 text(1024),
    fk_org_unit_id bigint default null,
+   fk_organisation_id bigint default null,
    PRIMARY KEY (pos_id)
 );
 
@@ -7363,6 +7364,8 @@ alter table o_selectus_position add constraint att_doc_2_to_att foreign key (fk_
 alter table o_selectus_position add constraint att_doc_3_to_att foreign key (fk_doc_3_id) references o_selectus_attachment (attachment_id);
 
 alter table o_selectus_position add constraint pos_review_def_idx foreign key (fk_review_definition_id) references o_selectus_review_position_def (id);
+
+alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
 
 alter table o_selectus_position_policy add constraint policy_to_pos foreign key (fk_position_id) references o_selectus_position (pos_id);
 alter table o_selectus_position_policy add constraint policy_to_identity foreign key (fk_identity_id) references o_bs_identity (id);

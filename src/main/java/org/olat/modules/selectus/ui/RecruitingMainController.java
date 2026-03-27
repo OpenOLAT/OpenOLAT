@@ -9,6 +9,7 @@ package org.olat.modules.selectus.ui;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -26,9 +27,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
@@ -44,6 +42,7 @@ import org.olat.modules.selectus.ui.events.SelectPositionEvent;
 import org.olat.modules.selectus.ui.events.SelectPositionLightEvent;
 import org.olat.modules.selectus.ui.position.PositionListOverviewController;
 import org.olat.modules.selectus.ui.report.PositionReportAttributesController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,12 +66,9 @@ public class RecruitingMainController extends BasicController implements Activat
 	private final PositionListOverviewController positionOverviewController;
 
 	@Autowired
-	private RecruitingModule recruitingModule;
-	@Autowired
-	private RecruitingService erFrontendManager;
+	private RecruitingService selectusService;
 	
 	private final RecruitingSecurityCallback secCallback;
-	
 	
 	public RecruitingMainController(UserRequest ureq, WindowControl wControl, RecruitingSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -116,19 +112,19 @@ public class RecruitingMainController extends BasicController implements Activat
 				positionOverviewController.reload();
 			} else if(event instanceof SelectPositionLightEvent) {
 				SelectPositionLightEvent spe = (SelectPositionLightEvent)event;
-				Position position = erFrontendManager.getPosition(spe.getPosition().getKey());
+				Position position = selectusService.getPosition(spe.getPosition().getKey());
 				selectPosition(ureq, position, null, PositionController.Tabs.applications, false, false, null);
 			}  else if(event instanceof SelectPositionEvent) {
 				SelectPositionEvent spe = (SelectPositionEvent)event;
 				Position position = spe.getPosition();
 				if(position != null && position.getKey() != null) {
-					position = erFrontendManager.getPosition(position.getKey());
+					position = selectusService.getPosition(position.getKey());
 					selectPosition(ureq, position, null, PositionController.Tabs.applications, false, spe.isEdit(), null);
 				}
 			} else if(event instanceof SelectApplicationEvent) {
 				SelectApplicationEvent sae = (SelectApplicationEvent)event;
 				Application appToSelect = sae.getApplication();
-				Position position = erFrontendManager.getPosition(appToSelect.getPosition().getKey());
+				Position position = selectusService.getPosition(appToSelect.getPosition().getKey());
 				selectPosition(ureq, position, appToSelect, PositionController.Tabs.applications, false, false, sae.getActivation());
 			}
 		} else if (source instanceof PositionController) {
@@ -189,7 +185,7 @@ public class RecruitingMainController extends BasicController implements Activat
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						currentOverviewController.activate(ureq, subEntries, entries.get(0).getTransientState());
 					} else {
-						Position position = erFrontendManager.getPosition(positionKey);
+						Position position = selectusService.getPosition(positionKey);
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						selectPosition(ureq, position, null, PositionController.Tabs.applications, false, false, subEntries);
 					}
@@ -209,7 +205,7 @@ public class RecruitingMainController extends BasicController implements Activat
 		if(!admin && positionOverviewController.getNumOfPositions() == 1 && !positionOverviewController.hasFeedbacks()) {
 			stackPanel.popUpToRootController(ureq);
 			Long positionKey = positionOverviewController.getPositionKeyAt(0);
-			Position position = erFrontendManager.getPosition(positionKey);
+			Position position = selectusService.getPosition(positionKey);
 			selectPosition(ureq, position, null, PositionController.Tabs.applications, false, false, null);
 		} else if(!admin && positionOverviewController.getNumOfPositions() == 0 && positionOverviewController.hasFeedbacks()) {
 			stackPanel.popUpToRootController(ureq);
@@ -246,7 +242,7 @@ public class RecruitingMainController extends BasicController implements Activat
 	
 	private List<AcceptPolicyEnum> policyToAccept(UserRequest ureq, Position position) {
 		UserSession usess = ureq.getUserSession();
-		List<AcceptPolicyEnum> policyToAcceptList = erFrontendManager.needToAcceptPositionPolicies(position, getIdentity());
+		List<AcceptPolicyEnum> policyToAcceptList = selectusService.needToAcceptPositionPolicies(position, getIdentity());
 		for(Iterator<AcceptPolicyEnum> policyIt=policyToAcceptList.iterator(); policyIt.hasNext(); ) {
 			AcceptPolicyEnum policy = policyIt.next();
 			Object accepted = usess.getEntry(RecruitingHelper.sessionKeyAcceptedPolicy(position, policy));
@@ -282,7 +278,7 @@ public class RecruitingMainController extends BasicController implements Activat
 		removeControllerListener(currentOverviewController);
 		removeAsListenerAndDispose(reportAttributesController);
 		
-		PositionRole positionRole = erFrontendManager.getRole(position, getIdentity());
+		PositionRole positionRole = selectusService.getRole(position, getIdentity());
 		RecruitingPositionSecurityCallback positionSecCallback
 			= new RecruitingPositionSecurityCallbackImpl(secCallback, position, getIdentity(), ureq.getUserSession().getRoles(), positionRole);
 		
@@ -318,12 +314,8 @@ public class RecruitingMainController extends BasicController implements Activat
 	
 	private boolean isAdministrator(Position position, UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles != null && (roles.isSelectusManager() || roles.isAdministrator())) {
-			return true;
-		}
-		//TODO selectus
-		if(roles != null && roles.isSelectusManager() && recruitingModule.isOrganisationUnitEnabled() && position.getOrganisationUnit() != null) {
-			return erFrontendManager.isMemberOfOrganisationUnit(getIdentity(), position.getOrganisationUnit());
+		if(position.getOrganisation() != null) {
+			return roles.hasSomeRoles(position.getOrganisation(), OrganisationRoles.selectusmanager);
 		}
 		return false;
 	}

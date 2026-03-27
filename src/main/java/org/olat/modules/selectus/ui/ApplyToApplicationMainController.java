@@ -485,8 +485,9 @@ public class ApplyToApplicationMainController extends MainLayoutBasicController 
 			final Identity headOfCommittee = recruitingService.getHeadOfCommittee(position);
 			final Identity secretary = recruitingService.getSecretary(position);
 			final String mailSignature;
-			if(position.getOrganisationUnit() != null && StringHelper.containsNonWhitespace(position.getOrganisationUnit().getMailSignature())) {
-				mailSignature = position.getOrganisationUnit().getMailSignature();
+			if(position.getOrganisation() != null) {
+				//TODO selectus load unit
+				mailSignature = position.getOrganisation().toString();
 			} else {
 				mailSignature = getTranslator().translate("email.signature");
 			}

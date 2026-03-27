@@ -21,6 +21,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -39,6 +43,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -47,8 +52,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.mail.MailHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.DocumentType;
 import org.olat.modules.selectus.RecruitingModule;
@@ -56,7 +59,6 @@ import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.manager.MailerSender;
 import org.olat.modules.selectus.model.Attachment;
 import org.olat.modules.selectus.model.MailSettingEnum;
-import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.PolicyLink;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionImpl;
@@ -66,8 +68,9 @@ import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
-import org.olat.modules.selectus.ui.comparator.OrganisationUnitComparator;
+import org.olat.modules.selectus.ui.comparator.OrganisationComparator;
 import org.olat.modules.selectus.ui.events.NewPositionSavedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
@@ -89,7 +92,7 @@ public class PositionEditProfileController extends FormBasicController implement
 	
 	private MultipleSelectionElement availableLanguageEls;
 	private TextElement idElement;
-	private SingleSelection orgUnitEl;
+	private SingleSelection organisationEl;
 	private List<TextElement> posTitleLanguagesEl = new ArrayList<>(2);
 	private List<TextElement> shortTitleLanguagesEl = new ArrayList<>(2);
 	private List<RichTextElement> descLanguagesEl = new ArrayList<>(2);
@@ -122,6 +125,10 @@ public class PositionEditProfileController extends FormBasicController implement
 	private RecruitingModule recruitingModule;
 	@Autowired
 	private RecruitingService erFrontendManager;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	private String[] statusKeys = new String[]{
 			PositionStatus.preparation.name(),
@@ -250,7 +257,7 @@ public class PositionEditProfileController extends FormBasicController implement
 		idElement.setEnabled(!readOnly);
 		idElement.setElementCssClass("o_sel_position_id");
 		
-		initOrganisationUnit(usess, formLayout);
+		initOrganisation(usess, formLayout);
 
 		for(Locale locale:positionLanguages) {
 			String lang = locale.getLanguage();
@@ -452,8 +459,8 @@ public class PositionEditProfileController extends FormBasicController implement
 		mailSettings.add(SelectionValues.entry(MailSettingEnum.system.name(), translate("mail.setting.system")));
 
 		if(recruitingModule.isOrganisationUnitEnabled()
-				&& (position.getOrganisationUnit() != null || (orgUnitEl != null && orgUnitEl.isOneSelected()))
-				&& orgUnitEl.isOneSelected() && !ORG_UNIT_EMPTY_KEY.equals(orgUnitEl.getSelectedKey())) {
+				&& (position.getOrganisation() != null || (organisationEl != null && organisationEl.isOneSelected()))
+				&& organisationEl.isOneSelected() && !ORG_UNIT_EMPTY_KEY.equals(organisationEl.getSelectedKey())) {
 			mailSettings.add(SelectionValues.entry(MailSettingEnum.organisationUnit.name(), translate("mail.setting.organisationUnit")));
 		}
 		
@@ -480,8 +487,8 @@ public class PositionEditProfileController extends FormBasicController implement
 			mockedPosition.setBccMail(position.getBccMail());
 			mockedPosition.setMailSetting(MailSettingEnum.valueOf(selectedSetting));
 			
-			OrganisationUnit orgUnit = getSelectedOrganisationUnit();
-			mockedPosition.setOrganisationUnit(orgUnit);
+			Organisation organisation = getSelectedOrganisation();
+			mockedPosition.setOrganisation(organisation);
 
 			String sender = recruitingModule.getStaffMail(mockedPosition);
 			String bcc = recruitingModule.getBccStaffMail(mockedPosition);
@@ -490,44 +497,32 @@ public class PositionEditProfileController extends FormBasicController implement
 		}
 	}
 	
-	private void initOrganisationUnit(UserSession usess, FormItemContainer formLayout) {
-		if(recruitingModule.isOrganisationUnitEnabled()) {
+	private void initOrganisation(UserSession usess, FormItemContainer formLayout) {
+		if(organisationModule.isEnabled()) {
 			Roles roles = usess.getRoles();
-			List<OrganisationUnit> units = erFrontendManager.getOrganisationUnits(getIdentity(), roles);
-			if(units.size() > 1) {
-				Collections.sort(units, new OrganisationUnitComparator(getLocale()));
+			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles, OrganisationRoles.selectusmanager, OrganisationRoles.administrator);
+			if(organisations.size() > 1) {
+				Collections.sort(organisations, new OrganisationComparator());
 			}
-			List<String> orgUnitKeys = new ArrayList<>();
-			List<String> orgUnitValues = new ArrayList<>();
+			SelectionValues organisationPK = new SelectionValues();
 			boolean optional = (roles.isSelectusManager() || roles.isAdministrator()) && !recruitingModule.isPositionOrgUnitEnabled();
 			if(optional) {
-				orgUnitKeys.add(ORG_UNIT_EMPTY_KEY);
-				orgUnitValues.add("-");
+				organisationPK.add(SelectionValues.entry(ORG_UNIT_EMPTY_KEY, "-"));
 			}
-			for(OrganisationUnit unit:units) {
-				orgUnitKeys.add(unit.getKey().toString());
-				orgUnitValues.add(unit.getName());
+			for(Organisation organisation:organisations) {
+				organisationPK.add(SelectionValues.entry(organisation.getKey().toString(), StringHelper.escapeHtml(organisation.getDisplayName())));
 			}
+			organisationEl = uifactory.addDropdownSingleselect("position_org_unit", "edit.position.orgUnit", formLayout,
+					organisationPK.keys(), organisationPK.values(), null);
+			organisationEl.addActionListener(FormEvent.ONCHANGE);
+			organisationEl.setMandatory(!optional);
+			organisationEl.setEnabled(!readOnly);
 
-			orgUnitEl = uifactory.addDropdownSingleselect("position_org_unit", "edit.position.orgUnit", formLayout,
-					orgUnitKeys.toArray(new String[orgUnitKeys.size()]), orgUnitValues.toArray(new String[orgUnitValues.size()]), null);
-			orgUnitEl.addActionListener(FormEvent.ONCHANGE);
-			orgUnitEl.setMandatory(!optional);
-			orgUnitEl.setEnabled(!readOnly);
-			
-			boolean found = false;
-			if(position.getOrganisationUnit() != null) {
-				String selectedUnitKey = position.getOrganisationUnit().getKey().toString();
-				for(String orgUnitKey:orgUnitKeys) {
-					if(orgUnitKey.equals(selectedUnitKey)) {
-						orgUnitEl.select(orgUnitKey, true);
-						found = true;
-						break;
-					}
-				}
-			}
-			if(!found && !orgUnitKeys.isEmpty()) {
-				orgUnitEl.select(orgUnitKeys.get(0), true);
+			if(position.getOrganisation() != null && organisationPK.containsKey(position.getOrganisation().getKey().toString())) {
+				String selectedUnitKey = position.getOrganisation().getKey().toString();
+				organisationEl.select(selectedUnitKey, true);
+			} else if(!organisationPK.isEmpty()) {
+				organisationEl.select(organisationPK.keys()[0], true);
 			}
 		}
 	}
@@ -728,10 +723,10 @@ public class PositionEditProfileController extends FormBasicController implement
 			}
 		}
 		
-		if(orgUnitEl != null) {
-			orgUnitEl.clearError();
-			if(orgUnitEl.isVisible() && !orgUnitEl.isOneSelected()) {
-				orgUnitEl.setErrorKey("form.legende.mandatory");
+		if(organisationEl != null) {
+			organisationEl.clearError();
+			if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
+				organisationEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -898,15 +893,17 @@ public class PositionEditProfileController extends FormBasicController implement
 	}
 	
 	private void prefillDepartment() {
-		if(orgUnitEl == null || departmentLanguagesEl == null ||
+		if(organisationEl == null || departmentLanguagesEl == null ||
 				departmentLanguagesEl.isEmpty() || !recruitingModule.isPositionPrefillDepartment()) return;
-		if(!orgUnitEl.isOneSelected() || ORG_UNIT_EMPTY_KEY.equals(orgUnitEl.getSelectedKey())) return;
+		if(!organisationEl.isOneSelected() || ORG_UNIT_EMPTY_KEY.equals(organisationEl.getSelectedKey())) return;
 		
+		//TODO selectus load mail settings 
+		/*
 		OrganisationUnit selectedUnit = null;
 		for(TextElement departmentEl:departmentLanguagesEl) {
 			if(!StringHelper.containsNonWhitespace(departmentEl.getValue())) {
 				if(selectedUnit == null) {
-					String selectOrgunitKey = orgUnitEl.getSelectedKey();
+					String selectOrgunitKey = organisationEl.getSelectedKey();
 					selectedUnit = erFrontendManager.getOrganisationUnit(Long.valueOf(selectOrgunitKey));
 				}
 
@@ -914,7 +911,7 @@ public class PositionEditProfileController extends FormBasicController implement
 				String unitName = selectedUnit.getMLName(locale);
 				departmentEl.setValue(unitName);
 			}
-		}
+		}*/
 	}
 	
 	private void removeDocument(Attachment attachment) {
@@ -939,17 +936,17 @@ public class PositionEditProfileController extends FormBasicController implement
 		return null;
 	}
 	
-	public OrganisationUnit getSelectedOrganisationUnit() {
-		OrganisationUnit orgUnit = null;
-		if(orgUnitEl != null && orgUnitEl.isVisible() && orgUnitEl.isOneSelected()) {
-			if(ORG_UNIT_EMPTY_KEY.equals(orgUnitEl.getSelectedKey())) {
-				orgUnit = null;
+	public Organisation getSelectedOrganisation() {
+		Organisation organisation = null;
+		if(organisationEl != null && organisationEl.isVisible() && organisationEl.isOneSelected()) {
+			if(ORG_UNIT_EMPTY_KEY.equals(organisationEl.getSelectedKey())) {
+				organisation = null;
 			} else {
-				orgUnit = erFrontendManager.getOrganisationUnit(Long.valueOf(orgUnitEl.getSelectedKey()));
+				organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
 
 			}
 		}
-		return orgUnit;
+		return organisation;
 	}
 
 	@Override
@@ -1006,8 +1003,8 @@ public class PositionEditProfileController extends FormBasicController implement
 		
 		position.setPlaningsNumber(idElement.getValue());
 		
-		OrganisationUnit orgUnit = getSelectedOrganisationUnit();
-		position.setOrganisationUnit(orgUnit);
+		Organisation organisation = getSelectedOrganisation();
+		position.setOrganisation(organisation);
 
 		for(TextElement departmentEl:departmentLanguagesEl) {
 			Locale locale = (Locale)departmentEl.getUserObject();
@@ -1135,7 +1132,7 @@ public class PositionEditProfileController extends FormBasicController implement
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (availableLanguageEls == source) {
 			updateAvailableMultiLanguagesFields();
-		} else if(orgUnitEl == source) {
+		} else if(organisationEl == source) {
 			prefillDepartment();
 			setMailSetting();
 			updateMailSettingUI();

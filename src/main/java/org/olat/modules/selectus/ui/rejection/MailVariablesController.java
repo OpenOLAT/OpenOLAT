@@ -48,8 +48,9 @@ public class MailVariablesController extends BasicController {
 		mainVC = createVelocityContainer("mail_variables");
 		List<VariablesCollection> variablesCollections = new ArrayList<>();
 		initPositionAttributes(variablesCollections, position);
-		if(recruitingModule.isOrganisationUnitEnabled() && position.getOrganisationUnit() != null) {
-			initOrganisationUnit(variablesCollections, position.getOrganisationUnit());
+		if(recruitingModule.isOrganisationUnitEnabled() && position.getOrganisation() != null) {
+			//TODO selectus load mail settings
+			//initOrganisationUnit(variablesCollections, position.getOrganisation());
 		}
 		
 		applicantDashboardUrl = applicantDashboardUrl && recruitingModule.isReferenceApplicantManagement()

@@ -92,7 +92,7 @@ public class MergeOrganisationUnitsController extends FormBasicController {
 		}
 		
 		if(targetUnit != null) {
-			erFrontendManager.mergeOrganisationUnits(unitsToMerge, targetUnit);
+			//TODO selectus load mail settings erFrontendManager.mergeOrganisationUnits(unitsToMerge, targetUnit);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -252,7 +252,7 @@ public class UZHReport implements ReportGenerator {
 			
 			// Position informations
 			row.addCell(col++, position.getPositionTitle(locale));
-			row.addCell(col++, position.getOrganisationUnit() == null ? "" : position.getOrganisationUnit().getMLName(locale));
+			row.addCell(col++, position.getOrganisation() == null ? "" : position.getOrganisation().getDisplayName());
 			row.addCell(col++, position.getDepartment(locale));
 			
 			// Global attributes

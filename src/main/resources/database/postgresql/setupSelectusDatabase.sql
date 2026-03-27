@@ -828,7 +828,6 @@ create index idx_user_notifs_id_idx on fx_r_audit_log_user_notifs (fk_identity_i
 
 
 -- rename
-
 alter table fx_r_position rename to o_selectus_position;
 alter table fx_r_pos_attribute_def rename to o_selectus_pos_attribute_def;
 alter table fx_r_application rename to o_selectus_application;
@@ -861,4 +860,10 @@ alter table fx_r_audit_log rename to o_selectus_audit_log;
 alter table fx_r_audit_log_read rename to o_selectus_audit_log_read;
 alter table fx_r_audit_log_user_settings rename to o_selectus_audit_log_usettings;
 alter table fx_r_audit_log_user_notifs rename to o_selectus_audit_log_u_notifs;
+
+-- alter
+
+alter table o_selectus_position add column fk_organisation_id int8 default null;
+alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_pos_to_org_idx on o_selectus_position (fk_organisation_id);
 

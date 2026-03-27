@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 
 /**
  * 
@@ -29,7 +30,7 @@ public interface PositionLight extends PositionRef, OLATResourceable, PositionCo
 	
 	public String getProfessorship();
 	
-	public OrganisationUnit getOrganisationUnit();
+	public Organisation getOrganisation();
 
 	public String getStatus();
 

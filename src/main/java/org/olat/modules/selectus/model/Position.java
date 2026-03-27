@@ -14,7 +14,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.OLATResourceable;
-
+import org.olat.core.id.Organisation;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentType;
 import org.olat.modules.selectus.model.position.TabConfiguration;
@@ -477,9 +477,9 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public void setPublicFeedbackDeadline(Date deadline);
 	
 	
-	public OrganisationUnit getOrganisationUnit();
+	public Organisation getOrganisation();
 	
-	public void setOrganisationUnit(OrganisationUnit organisationUnit);
+	public void setOrganisation(Organisation organisation);
 	
 	public boolean isCommitteeCommentEnabled();
 	

@@ -17,6 +17,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Persistable;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.selectus.DocumentEnum;
+import org.olat.modules.selectus.DocumentType;
+import org.olat.modules.selectus.model.position.TabConfiguration;
+import org.olat.modules.selectus.model.position.TabsConfiguration;
+import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
+import org.olat.modules.selectus.model.position.TabsConfigurationXStream;
+import org.olat.modules.selectus.model.review.PositionReviewDefinition;
+import org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -36,27 +58,6 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
-
-import org.apache.logging.log4j.Logger;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.basesecurity.SecurityGroupImpl;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Persistable;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
-
-import org.olat.modules.selectus.DocumentEnum;
-import org.olat.modules.selectus.DocumentType;
-import org.olat.modules.selectus.model.position.TabConfiguration;
-import org.olat.modules.selectus.model.position.TabsConfiguration;
-import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
-import org.olat.modules.selectus.model.position.TabsConfigurationXStream;
-import org.olat.modules.selectus.model.review.PositionReviewDefinition;
-import org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl;
 
 /**
  * 
@@ -349,6 +350,10 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@ManyToOne(targetEntity=OrganisationUnitImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_org_unit_id", nullable=true, insertable=true, updatable=true)
 	private OrganisationUnit organisationUnit;
+	
+	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_organisation_id", nullable=true, insertable=true, updatable=true)
+	private Organisation organisation;
 
 	@Embedded
 	@AttributeOverrides({
@@ -2055,14 +2060,22 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 		publicFeedbackDeadline = deadline;
 	}
 
-	@Override
 	public OrganisationUnit getOrganisationUnit() {
 		return organisationUnit;
 	}
 
-	@Override
 	public void setOrganisationUnit(OrganisationUnit organisationUnit) {
 		this.organisationUnit = organisationUnit;
+	}
+
+	@Override
+	public Organisation getOrganisation() {
+		return organisation;
+	}
+
+	@Override
+	public void setOrganisation(Organisation organisation) {
+		this.organisation = organisation;
 	}
 
 	@Override

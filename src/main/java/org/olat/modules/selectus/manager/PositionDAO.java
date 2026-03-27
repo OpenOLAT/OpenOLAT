@@ -28,14 +28,12 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentOption;
 import org.olat.modules.selectus.RecruitingModule;
@@ -63,6 +61,8 @@ import org.olat.modules.selectus.model.attributes.AttributeConfiguration;
 import org.olat.modules.selectus.model.attributes.PositionAttributeDefinitionConfiguration;
 import org.olat.modules.selectus.model.position.PositionLightWithMembership;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import jakarta.persistence.TypedQuery;
 
@@ -87,7 +87,7 @@ public class PositionDAO {
 	@Autowired
 	private RecruitingModule recruitingModule;
 
-	public Position createPosition(String refereeDocs, String expertDocs) {
+	public Position createPosition(String refereeDocs, String expertDocs, Organisation organisation) {
 		PositionImpl position = new PositionImpl();
 		position.setCreationDate(new Date());
 		position.setStatus(PositionStatus.preparation.name());
@@ -103,6 +103,8 @@ public class PositionDAO {
 		boolean project = recruitingModule.isApplicationProjectEnabled() && recruitingModule.isApplicationProjectEnabledDefault();
 		position.setApplicationProject(project);
 		position.setApplicationAcademicalBackground(true);
+		
+		position.setOrganisation(organisation);
 
 		Position lastCreatedPosition = findLastPosition();
 		if(lastCreatedPosition != null) {
@@ -159,12 +161,12 @@ public class PositionDAO {
 
 	public Position savePosition(Position position) {
 		if(position.getKey() == null) {
-			dbInstance.saveObject(position);
+			dbInstance.getCurrentEntityManager().persist(position);
 		} else {
-			dbInstance.updateObject(position);
+			position = dbInstance.getCurrentEntityManager().merge(position);
 		}
 		//reload unit
-		position.getOrganisationUnit();
+		position.getOrganisation();
 		position.getAttributesDefinitions().size();
 		return position;
 	}
@@ -556,7 +558,7 @@ public class PositionDAO {
 		  .append(" (select count(exOfficio.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" exOfficio")
 		  .append("    where exOfficio.securityGroup.key=position.exOfficioGroup.key and exOfficio.identity.key=:identityKey) as numOfExOfficios")
 		  .append(" from rpositionlight position")
-		  .append(" left join fetch position.organisationUnit orgUnit")
+		  .append(" left join fetch position.organisation orga")
 		  .append(" where position.valid=:posValid");
 		if(!appendPositionPermission(sb, filters)) {
 			return Collections.emptyList();
@@ -593,7 +595,7 @@ public class PositionDAO {
 		StringBuilder sb = new StringBuilder(2048);
 		sb.append("select position.key")
 		  .append(" from rpositionlight position")
-		  .append(" left join position.organisationUnit orgUnit")
+		  .append(" left join position.organisation orga")
 		  .append(" where position.valid=:posValid");
 		if(!appendPositionPermission(sb, filters)) {
 			return false;
@@ -618,7 +620,7 @@ public class PositionDAO {
 		  .append(" (select count(app2.key) from rapplication app2 where app2.valid=true and app2.position.key=position.key and app2.person.gender = 'm') as numOfMaleApps,")
 		  .append(" (select count(app3.key) from rapplication app3 where app3.valid=true and app3.position.key=position.key and app3.person.gender = 'f') as numOfFemaleApps")
 		  .append(" from rpositionlight position")
-		  .append(" left join fetch position.organisationUnit orgUnit")
+		  .append(" left join fetch position.organisation orga")
 		  .append(" where position.valid=:posValid");
 		if(!appendPositionPermission(sb, filters)) {
 			return Collections.emptyList();
@@ -697,8 +699,6 @@ public class PositionDAO {
 		return attrs;
 	}
 	
-	
-	
 	public boolean appendPositionPermission(StringBuilder sb, PositionStatusFilters filters) {
 		if(filters.isCommittee()) {
 			StringBuilder roleCondition = new StringBuilder(512);
@@ -737,18 +737,18 @@ public class PositionDAO {
 				sb.append(" and (")
 				  .append(roleCondition);
 				// organisation staff
-				if(filters.isOrganisationUnit()) {
+				if(filters.isOrganisation()) {
 					sb.append(" or ");
 					appendPositionPermissionOrganisationUnit(sb, filters);
 				}
 				sb.append(")");
-			} else if(filters.isOrganisationUnit()) {
+			} else if(filters.isOrganisation()) {
 				sb.append(" and ");
 				appendPositionPermissionOrganisationUnit(sb, filters);
 			} else {
 				return false;
 			}
-		} else if(filters.isOrganisationUnit()) {
+		} else if(filters.isOrganisation()) {
 			sb.append(" and ");
 			appendPositionPermissionOrganisationUnit(sb, filters);
 		} else if(filters.getFiltered().size() > 0) {
@@ -765,9 +765,9 @@ public class PositionDAO {
 	}
 	
 	private void appendPositionPermissionOrganisationUnit(StringBuilder sb, PositionStatusFilters filters) {
-		if(filters.isOrganisationUnit()) {
-			sb.append(" exists (select orgMember.key from rorganisationunitmember as orgMember where")
-			  .append("  orgMember.identity.key=:identityKey and orgMember.organisationUnit.key=position.organisationUnit.key");
+		if(filters.isOrganisation()) {
+			sb.append(" exists (select orgmember.key from bgroupmember as orgmember")
+			  .append("  where orgmember.identity.key=:identityKey and orga.group.key=orgmember.group.key");
 			if(filters.getFiltered().size() > 0) {
 				sb.append(" and position.status in (:status)");
 			}
@@ -776,7 +776,7 @@ public class PositionDAO {
 	}
 	
 	public void appendPositionPermission(TypedQuery<?> query, Identity identity, PositionStatusFilters filters) {
-		if(filters.isCommittee() || filters.isOrganisationUnit()) {
+		if(filters.isCommittee() || filters.isOrganisation()) {
 			query.setParameter("identityKey", identity.getKey());
 		}
 
@@ -823,6 +823,7 @@ public class PositionDAO {
 			if(wishedStatusFilters != null) {
 				filtered.addAll(wishedStatusFilters);
 			}
+			organisation = true;
 		} else {
 			if(roles.isSelectusManager()) {
 				//org staff -> they can see want they want within their organisation units

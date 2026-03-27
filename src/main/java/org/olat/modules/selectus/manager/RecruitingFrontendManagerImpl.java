@@ -48,15 +48,6 @@ import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
-import org.olat.modules.teams.manager.MicrosoftGraphDAO;
-import org.olat.modules.teams.model.TeamsErrors;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
-import org.olat.user.UserLifecycleManager;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.AnonymiseService;
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.DocumentType;
@@ -86,7 +77,6 @@ import org.olat.modules.selectus.model.ExternalUserResults;
 import org.olat.modules.selectus.model.MailLogInfos;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.OrganisationUnit;
-import org.olat.modules.selectus.model.OrganisationUnitMembership;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionAndAttributeDefinition;
 import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
@@ -112,6 +102,14 @@ import org.olat.modules.selectus.model.mail.SentEmailTemplates;
 import org.olat.modules.selectus.model.references.ReferenceSearchParameters;
 import org.olat.modules.selectus.model.review.PositionReviewDefinition;
 import org.olat.modules.selectus.model.review.ReviewElementDefinition;
+import org.olat.modules.teams.manager.MicrosoftGraphDAO;
+import org.olat.modules.teams.model.TeamsErrors;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
+import org.olat.user.UserLifecycleManager;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -221,10 +219,10 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 
 	@Override
-	public Position createPosition() {
+	public Position createPosition(Organisation organisation) {
 		String refereeDocs = recruitingModule.getDefaultPositionRefereeRecommendationDocs();
 		String expertDocs = recruitingModule.getDefaultPositionExpertRecommendationDocs();
-		return positionDao.createPosition(refereeDocs, expertDocs);
+		return positionDao.createPosition(refereeDocs, expertDocs, organisation);
 	}
 
 	@Override
@@ -848,8 +846,8 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 			String email = application.getPerson().getMail();
 			Long positionKey = position.getKey();
 			Long organisationKey = null;
-			if(scope == ParallelApplicationScope.organisation && position.getOrganisationUnit() != null) {
-				organisationKey = position.getOrganisationUnit().getKey();
+			if(scope == ParallelApplicationScope.organisation && position.getOrganisation() != null) {
+				organisationKey = position.getOrganisation().getKey();
 			}
 			apps = positionDao.findParallelApplicationsLight(email, positionKey, organisationKey);
 		} else {
@@ -861,8 +859,8 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public List<ParallelApplication> getParallelApplications(Position position, ParallelApplicationScope scope) {
 		Long organisationKey = null;
-		if(scope == ParallelApplicationScope.organisation && position.getOrganisationUnit() != null) {
-			organisationKey = position.getOrganisationUnit().getKey();
+		if(scope == ParallelApplicationScope.organisation && position.getOrganisation() != null) {
+			organisationKey = position.getOrganisation().getKey();
 		}
 		return positionDao.findParallelApplications(position.getKey(), organisationKey);
 	}
@@ -1880,77 +1878,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public List<DecisionRubric> getDecisionRubric(Position position) {
 		return decisionRubricDao.getDecisionRubric(position);
-	}
-
-	@Override
-	public OrganisationUnit createOrganisationUnit() {
-		return organisationUnitDao.createOrganisationUnit();
-	}
-
-	@Override
-	public OrganisationUnit saveOrganisationUnit(OrganisationUnit orgUnit) {
-		return organisationUnitDao.save(orgUnit);
-	}
-
-	@Override
-	public OrganisationUnit getOrganisationUnit(Long key) {
-		return organisationUnitDao.loadOrganisationUnitByKey(key);
-	}
-
-	@Override
-	public List<OrganisationUnit> getOrganisationUnits() {
-		return organisationUnitDao.findAllOrganisationUnits();
-	}
-
-	@Override
-	public List<OrganisationUnit> getOrganisationUnits(IdentityRef identity, Roles roles) {
-		return organisationUnitDao.findOrganisationUnits(identity, roles);
-	}
-
-	@Override
-	public boolean isOrganisationUnitNamesInUse(String name, OrganisationUnit current) {
-		return organisationUnitDao.isOrganisationUnitNamesInUse(name, current);
-	}
-
-	@Override
-	public boolean isMemberOfOrganisationUnit(IdentityRef identity, OrganisationUnit organisationUnit) {
-		return organisationUnitMembershipDao.isMemberOfOrganisationUnit(identity, organisationUnit);
-	}
-
-	@Override
-	public List<OrganisationUnitMembership> getOrganisationUnits(IdentityRef identity) {
-		return organisationUnitMembershipDao.findMemberships(identity);
-	}
-
-	@Override
-	public OrganisationUnitMembership addOrganisationUnitMembership(Identity identity, OrganisationUnit unit) {
-		return organisationUnitMembershipDao.createAndPersistMembership(identity, unit);
-	}
-
-	@Override
-	public int deleteOrganisationUnit(OrganisationUnit unitToDelete) {
-		int rows = positionDao.removeOrganisationUnit(unitToDelete);
-		rows += organisationUnitMembershipDao.deleteMembership(unitToDelete);
-		rows += organisationUnitDao.deleteOrganisationUnit(unitToDelete);
-		return rows;
-	}
-
-	@Override
-	public void removeOrganisationUnitMembership(OrganisationUnitMembership membership) {
-		organisationUnitMembershipDao.removeMembership(membership);
-	}
-
-	@Override
-	public int mergeOrganisationUnits(List<OrganisationUnit> units, OrganisationUnit targetUnit) {
-		int rows = positionDao.updateOrganisationUnits(units, targetUnit);
-		rows += organisationUnitMembershipDao.updateMembership(units, targetUnit);
-		dbInstance.commit();
-		for(OrganisationUnit unitToDelete:units) {
-			rows += organisationUnitMembershipDao.deleteMembership(unitToDelete);
-			rows += organisationUnitDao.deleteOrganisationUnit(unitToDelete);
-		}
-		dbInstance.commit();
-		return rows;
 	}
 
 	@Override

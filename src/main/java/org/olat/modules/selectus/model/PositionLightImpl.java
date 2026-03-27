@@ -8,6 +8,16 @@ package org.olat.modules.selectus.model;
 import java.util.Date;
 import java.util.Locale;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,14 +30,6 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.basesecurity.SecurityGroupImpl;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -88,6 +90,10 @@ public class PositionLightImpl implements PositionLight, CreateInfo, Persistable
 	@ManyToOne(targetEntity=OrganisationUnitImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_org_unit_id", nullable=true, insertable=true, updatable=true)
 	private OrganisationUnit organisationUnit;
+	
+	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_organisation_id", nullable=true, insertable=true, updatable=true)
+	private Organisation organisation;
 	
 	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_committeegroup", nullable=false, insertable=true, updatable=true)
@@ -213,9 +219,13 @@ public class PositionLightImpl implements PositionLight, CreateInfo, Persistable
 		return professorship;
 	}
 
-	@Override
 	public OrganisationUnit getOrganisationUnit() {
 		return organisationUnit;
+	}
+	
+	@Override
+	public Organisation getOrganisation() {
+		return organisation;
 	}
 
 	@Override

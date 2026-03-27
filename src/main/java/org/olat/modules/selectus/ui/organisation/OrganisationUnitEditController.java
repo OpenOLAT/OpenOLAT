@@ -161,7 +161,7 @@ public class OrganisationUnitEditController extends FormBasicController {
 		for(TextElement nameEl:nameEls) {
 			nameEl.clearError();
 			if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
-				boolean inUse = recruitingFrontendManager.isOrganisationUnitNamesInUse(nameEl.getValue(), organisationUnit);
+				boolean inUse = false; //TODO load mail settings recruitingFrontendManager.isOrganisationUnitNamesInUse(nameEl.getValue(), organisationUnit);
 				if(inUse) {
 					nameEl.setErrorKey("error.name.in.use");
 					allOk &= false;
@@ -214,7 +214,7 @@ public class OrganisationUnitEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(organisationUnit == null) {
-			organisationUnit = recruitingFrontendManager.createOrganisationUnit();
+			//TODO selectus load mail settings organisationUnit = recruitingFrontendManager.createOrganisationUnit();
 		}
 		
 		for(TextElement nameEl:nameEls) {
@@ -234,7 +234,7 @@ public class OrganisationUnitEditController extends FormBasicController {
 		}
 		organisationUnit.setMailSignature(mailSignatureEl.getValue());
 
-		organisationUnit = recruitingFrontendManager.saveOrganisationUnit(organisationUnit);
+		//TODO organisationUnit = recruitingFrontendManager.saveOrganisationUnit(organisationUnit);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -19,17 +19,17 @@ import org.olat.modules.selectus.model.PositionStatus;
  */
 public class PositionStatusFilters {
 	private final boolean committee;
-	private final boolean organisationUnit;
+	private final boolean organisation;
 	private final List<PositionStatus> filtered;
 	private final List<PositionStatus> committeeFiltered;
 	private final Map<PositionRole, List<PositionStatus>> filterPerRole;
 	
 	public PositionStatusFilters(boolean committee, List<PositionStatus> filtered, List<PositionStatus> committeeFiltered,
-			Map<PositionRole, List<PositionStatus>> filterPerRole, boolean organisationUnit) {
+			Map<PositionRole, List<PositionStatus>> filterPerRole, boolean organisation) {
 		this.committee = committee;
 		this.filtered = filtered;
 		this.filterPerRole = filterPerRole;
-		this.organisationUnit = organisationUnit;
+		this.organisation = organisation;
 		this.committeeFiltered = committeeFiltered;
 	}
 
@@ -37,8 +37,8 @@ public class PositionStatusFilters {
 		return committee;
 	}
 
-	public boolean isOrganisationUnit() {
-		return organisationUnit;
+	public boolean isOrganisation() {
+		return organisation;
 	}
 
 	public List<PositionStatus> getFiltered() {

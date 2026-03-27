@@ -78,8 +78,9 @@ public class DataProtectionStepController extends StepFormBasicController {
 	
 	private String getOrganisationUtilMail() {
 		String mail = null;
-		if(position.getOrganisationUnit() != null) {
-			mail = position.getOrganisationUnit().getStaffMail();
+		if(position.getOrganisation() != null) {
+			//TODO selectus load unit
+			mail = position.getOrganisation().toString();
 		}
 		if(!StringHelper.containsNonWhitespace(mail)) {
 			mail = recruitingModule.getStaffMail();
@@ -98,7 +99,7 @@ public class DataProtectionStepController extends StepFormBasicController {
 		
 		acceptTermsEl.clearError();
 		if(!acceptTermsEl.isMultiselect() || !acceptTermsEl.isSelected(0)) {
-			acceptTermsEl.setErrorKey("apply_application.acceptTerms.error", null);
+			acceptTermsEl.setErrorKey("apply_application.acceptTerms.error");
 			allOk = false;
 		}
 		

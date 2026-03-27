@@ -118,6 +118,7 @@ CREATE TABLE o_selectus_position (
   rating_policy_link_label_3 varchar(1024),
   rating_policy_link_label_4 varchar(1024),
   fk_org_unit_id number(20) default null,
+  fk_organisation_id number(20) default null,
   PRIMARY KEY (pos_id)
 );
 
@@ -660,6 +661,10 @@ create table o_selectus_org_unit_member (
    unique(fk_org_unit_id,fk_identity_id),
    primary key (id)
 );
+
+
+alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_pos_to_org_idx on o_selectus_position (fk_organisation_id);
 
 
 alter table o_selectus_application add constraint posid_to_app foreign key (fk_position_id) references o_selectus_position (pos_id);

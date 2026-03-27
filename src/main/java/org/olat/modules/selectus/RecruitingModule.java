@@ -22,6 +22,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -1940,19 +1941,21 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 			return MailSettingEnum.system;
 		}
 		
-		OrganisationUnit orgUnit = position.getOrganisationUnit();
+		Organisation orgUnit = position.getOrganisation();
 		if(isMailProPositionEnabled() && position.getMailSetting() != null) {
 			MailSettingEnum settings = position.getMailSetting();
 			if(settings == MailSettingEnum.position || settings == MailSettingEnum.system) {
 				return settings;
 			}
-			if(settings == MailSettingEnum.organisationUnit && orgUnit != null && orgUnit.isSystemConfiguration()) {
+			//TODO selectus load mail settings
+			if(settings == MailSettingEnum.organisationUnit && orgUnit != null /* && orgUnit.isSystemConfiguration() */) {
 				return MailSettingEnum.system;
 			}
 			return MailSettingEnum.organisationUnit;
 		}
 		
-		if(orgUnit != null && !orgUnit.isSystemConfiguration()) {
+		//TODO selectus load mail settings
+		if(orgUnit != null /* && !orgUnit.isSystemConfiguration() */) {
 			return MailSettingEnum.organisationUnit;
 		}
 		return MailSettingEnum.system;
@@ -1976,9 +1979,10 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		if(setting == MailSettingEnum.position) {
 			mail = position.getSenderMail();
 		}
+		//TODO selectus load mail settings
 		if(setting == MailSettingEnum.organisationUnit
-				|| (setting == MailSettingEnum.position && position.getOrganisationUnit() != null && !StringHelper.containsNonWhitespace(mail))) {
-			mail = position.getOrganisationUnit().getStaffMail();
+				|| (setting == MailSettingEnum.position && position.getOrganisation() != null && !StringHelper.containsNonWhitespace(mail))) {
+			//TODO  mail = position.getOrganisationt().getStaffMail();
 		}	
 		if(!StringHelper.containsNonWhitespace(mail)) {
 			mail = getStaffMail();
@@ -2010,7 +2014,8 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		if(setting == MailSettingEnum.position) {
 			mail = position.getBccMail();
 		} else if(setting == MailSettingEnum.organisationUnit) {
-			mail = position.getOrganisationUnit().getStaffBcc();
+			//TODO selectus load mail settings
+			//TODO mail = position.getOrganisation().getStaffBcc();
 		} else {
 			mail = getBccStaffMail();
 		}

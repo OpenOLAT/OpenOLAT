@@ -18,11 +18,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.ApplicationFeedback;
-import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 
@@ -84,15 +83,15 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FilterableFlexiTableM
 			case application: return RecruitingHelper.formatFullName(row.getApplication(), translator);
 			case submissionDeadline: return getSubmissionDeadline(row);
 			case myFeedback: return row.getEditLink();
-			case organisationUnit: return getOrganisationUnit(row.getOrganisationUnit());
+			case organisationUnit: return getOrganisation(row.getOrganisation());
 			case department: return row.getPosition().getMLDepartement(locale);
 			case planingsNumber: return row.getPosition().getPlaningsNumber();
 			default: return "ERROR";
 		}
 	}
 	
-	private String getOrganisationUnit(OrganisationUnit orgUnit) {
-		return orgUnit == null ? null : orgUnit.getMLName(locale);
+	private String getOrganisation(Organisation organisation) {
+		return organisation == null ? null : organisation.getDisplayName();
 	}
 	
 	private String getPositionTitle(Position position) {

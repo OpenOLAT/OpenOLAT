@@ -9,9 +9,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,18 @@ public class SelectusAssignmentDAOTest extends OlatTestCase {
 	private SelectusAssignmentDAO assignmentDao;
 	@Autowired
 	private ApplicationDAO applicationDao;
+	@Autowired
+	private OrganisationService organisationService;
+
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-selectus-service-unit-test", "Org-selectus-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void createAssignment() {
@@ -117,7 +132,7 @@ public class SelectusAssignmentDAOTest extends OlatTestCase {
 	}
 	
 	private Position createRandomPosition() {
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("Assignment-234");
 		position.setPositionTitle("Technician in automatic assignment");
 		position.setShortTitle("Pilot of robot");

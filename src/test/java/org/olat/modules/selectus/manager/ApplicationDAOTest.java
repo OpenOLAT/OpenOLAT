@@ -20,9 +20,12 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -63,6 +66,18 @@ public class ApplicationDAOTest extends OlatTestCase {
 	private PositionDAO positionDao;
 	@Autowired
 	private ApplicationDAO applicationDao;
+	@Autowired
+	private OrganisationService organisationService;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-app-unit-test", "Org-app-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 
 	@Test
 	public void testManagers() {
@@ -785,7 +800,7 @@ public class ApplicationDAOTest extends OlatTestCase {
 	}
 	
 	private Position createRandomPosition(PositionStatus status) {
-		Position position = positionDao.createPosition("none", "none");
+		Position position = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		position.setPlaningsNumber("AC-234");
 		position.setPositionTitle("Technician in robotic");
 		position.setShortTitle("Pilot of robot");

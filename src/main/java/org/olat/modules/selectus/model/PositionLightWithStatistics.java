@@ -8,6 +8,8 @@ package org.olat.modules.selectus.model;
 import java.util.Date;
 import java.util.Locale;
 
+import org.olat.core.id.Organisation;
+
 /**
  * 
  * Initial date: 20.08.2015<br>
@@ -159,8 +161,8 @@ public class PositionLightWithStatistics implements PositionLight {
 	}
 
 	@Override
-	public OrganisationUnit getOrganisationUnit() {
-		return position.getOrganisationUnit();
+	public Organisation getOrganisation() {
+		return position.getOrganisation();
 	}
 	
 	public Object getAdditionalValue(int index) {

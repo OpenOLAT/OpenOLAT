@@ -6,8 +6,12 @@
 package org.olat.modules.selectus.manager;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,11 +35,23 @@ public class PositionReviewDefinitionDAOTest extends OlatTestCase {
 	@Autowired
 	private PositionDAO positionDao;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private PositionReviewDefinitionDAO positionReviewDefinitionDao;
+
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-app-cat-unit-test", "Org-app-cat-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void createPositionToReviewDefinition() {
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos.setPlaningsNumber("MZ-910");
 		pos.setStatus(PositionStatus.publishedAndInScreening.name());
 		pos = positionDao.savePosition(pos);
@@ -53,7 +69,7 @@ public class PositionReviewDefinitionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createAndLoad() {
-		Position pos = positionDao.createPosition("none", "none");
+		Position pos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos.setPlaningsNumber("MZ-911");
 		pos.setStatus(PositionStatus.publishedAndInScreening.name());
 		
