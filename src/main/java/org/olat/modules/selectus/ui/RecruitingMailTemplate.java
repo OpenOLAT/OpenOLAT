@@ -16,18 +16,19 @@ import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.selectus.ApplicationFieldType;
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ApplicationShort;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionProfessorship;
 import org.olat.modules.selectus.model.Project;
@@ -140,8 +141,10 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 	private final Identity secretary;
 	private final Identity headOfCommittee;
 	private final SubjectAndBody subjectAndBody;
-	private final SalutationGenerator salutationGenerator;
+
 	private final RecruitingModule recruitingModule;
+	private final RecruitingService recruitingService;
+	private final SalutationGenerator salutationGenerator;
 
 	public RecruitingMailTemplate(Long key, String name, String label,
 			String subjectTemplate, String bodyTemplate, MailAttachment letterTemplate,
@@ -154,14 +157,17 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 		this.headOfCommittee = headOfCommittee;
 		this.salutationGenerator = salutationGenerator;
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		recruitingService = CoreSpringFactory.getImpl(RecruitingService.class);
 	}
 
 	@Override
 	public void putVariablesInMailContext(VelocityContext context, ApplicationShort app, List<? extends ApplicationShort> appList,
 			Reference reference, Identity member, List<ApplicationFeedback> feedbacks, ApplicationsFeedbackConfiguration feedbackConfiguration, Position position) {
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
+		
 		putVariables(context);
-		putPositionVariables(context, position);
-		putOrganisation(context, position.getOrganisation());
+		putPositionVariables(context, position, organisationSettings);
+		putOrganisation(context, organisationSettings);
 		if(app != null) {
 			putApplicationVariables(context, app);
 			putProjectVariables(context, app.getProject());
@@ -208,32 +214,29 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 		context.put("today", todayStr);
 	}
 	
-	private void putOrganisation(VelocityContext context, Organisation orgUnit) {
-		//TODO selectus load settings
-		/*
-		String mail = recruitingModule.getStaffMail(orgUnit);
+	private void putOrganisation(VelocityContext context, OrganisationUnit organisationSettings) {
+		String mail = recruitingModule.getStaffMail(organisationSettings);
 		context.put(ORG_UNIT_MAIL, nullToEmpty(mail));
 		
-		if(orgUnit == null) {
+		if(organisationSettings == null) {
 			context.put(ORG_UNIT_TITLE, "");
 			context.put(ORG_UNIT_SIGNATURE, "");
 			context.put(ORG_UNIT_URL, "");
 		} else {
-			context.put(ORG_UNIT_TITLE, orgUnit.getMLName(getLocale()));
+			context.put(ORG_UNIT_TITLE, organisationSettings.getMLName(getLocale()));
 			String mailSignature = "";
-			if(StringHelper.containsNonWhitespace(orgUnit.getMailSignature())) {
-				mailSignature = orgUnit.getMailSignature();
+			if(StringHelper.containsNonWhitespace(organisationSettings.getMailSignature())) {
+				mailSignature = organisationSettings.getMailSignature();
 			}
 			if(StringHelper.containsNonWhitespace(mailSignature) && subjectAndBody.isHtml()) {
 				mailSignature = Formatter.escWithBR(mailSignature).toString();
 			}
 			context.put(ORG_UNIT_SIGNATURE, mailSignature);
-			context.put(ORG_UNIT_URL, nullToEmpty(orgUnit.getUrl()));
+			context.put(ORG_UNIT_URL, nullToEmpty(organisationSettings.getUrl()));
 		}
-		*/
 	}
 	
-	private void putPositionVariables(VelocityContext context, Position position) {
+	private void putPositionVariables(VelocityContext context, Position position, OrganisationUnit organisationSettings) {
 		context.put("position", position);
 		context.put(POSITION_TITLE, position.getMLTitle(getLocale()));
 		context.put(POSITION_SHORT_TITLE, position.getShortTitle(getLocale()));
@@ -258,15 +261,13 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 		}
 		context.put(POSITION_PROFESSORSHIP, translatedProfessorship);
 		
-		if(position.getOrganisation() != null) {
-			Organisation orgUnit = position.getOrganisation();
-			//TODO selectus load mail settings
+		if(position.getOrganisation() != null && organisationSettings != null) {
 			String mailSignature = "";
-			//if(StringHelper.containsNonWhitespace(orgUnit.getMailSignature())) {
-			//	mailSignature = orgUnit.getMailSignature();
-			//} else {
+			if(StringHelper.containsNonWhitespace(organisationSettings.getMailSignature())) {
+				mailSignature = organisationSettings.getMailSignature();
+			} else {
 				mailSignature = translator.translate("email.signature");
-			//}
+			}
 			
 			if(StringHelper.containsNonWhitespace(mailSignature) && subjectAndBody.isHtml()) {
 				mailSignature = Formatter.escWithBR(mailSignature).toString();
@@ -299,7 +300,7 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 			context.put(POSITION_APPLICATION_DEADLINE_FR, "");
 		}
 
-		String mail = recruitingModule.getStaffMail(position);
+		String mail = recruitingModule.getStaffMail(position, organisationSettings);
 		context.put(POSITION_MAIL, nullToEmpty(mail));
 		
 		long days;

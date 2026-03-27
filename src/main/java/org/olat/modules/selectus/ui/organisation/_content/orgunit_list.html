@@ -1,19 +1,8 @@
 <div class="o_sel_org_units_admin">
-#if($r.available("enable.org.unit"))
-<fieldset class="o_block_bottom">
-	<legend>$r.translate("organisation.unit.admin.title")</legend>
-	$r.render("enable.org.unit")
-</fieldset>
-#end
-
 #if($r.visible("table"))
 <fieldset>
 	<legend>$r.translate("organisation.admin.list.title")</legend>
 	$r.render("table")
-	<div class="o_button_group">
-		$r.render("add.organisation.unit")
-		$r.render("merge.organisation.unit")
-	</div>
 </fieldset>
 #elseif($warningDisabled)
 <fieldset>

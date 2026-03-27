@@ -31,11 +31,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailerResult;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -51,6 +46,7 @@ import org.olat.modules.selectus.model.ApplicationShort;
 import org.olat.modules.selectus.model.AttachmentImpl;
 import org.olat.modules.selectus.model.BusinessInformations;
 import org.olat.modules.selectus.model.HighestDegreeType;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Person;
 import org.olat.modules.selectus.model.PersonGender;
 import org.olat.modules.selectus.model.PersonImpl;
@@ -70,6 +66,10 @@ import org.olat.modules.selectus.model.references.ReferenceImpl;
 import org.olat.modules.selectus.ui.PositionApplicationsController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import nu.validator.htmlparser.common.XmlViolationPolicy;
 import nu.validator.htmlparser.sax.HtmlParser;
@@ -321,7 +321,8 @@ public class ReferenceHelper {
 	public static String[] generateMailArguments(Identity headOfCommittee, Position position, Application application, Reference reference,
 			SalutationGenerator salutationGenerator, Translator translator) {
 		
-		String staffMail = CoreSpringFactory.getImpl(RecruitingModule.class).getStaffMail(position);
+		OrganisationUnit organisationSettings = CoreSpringFactory.getImpl(RecruitingService.class).getOrganisationUnit(position);
+		String staffMail = CoreSpringFactory.getImpl(RecruitingModule.class).getStaffMail(position, organisationSettings);
 		String refereeUrl = reference == null ? null : reference.getSubmissionUrl();
 		Locale locale = translator.getLocale();
 

@@ -34,9 +34,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentOption;
@@ -47,6 +44,7 @@ import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.Attachment;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
@@ -58,6 +56,8 @@ import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -84,6 +84,7 @@ public class ReferenceTabbedController extends BasicController {
 	private final Position position;
 	private final Application application;
 	private final List<Application> applicationsList;
+	private final OrganisationUnit organisationSettings;
 	private final RecruitingPositionSecurityCallback secCallback;
 
 	@Autowired
@@ -107,6 +108,7 @@ public class ReferenceTabbedController extends BasicController {
 		this.position = position;
 		application = recruitingService.getApplication(reference.getApplication());
 		applicationsList = recruitingService.getReferenceToApplicationsList(reference);
+		organisationSettings = recruitingService.getOrganisationUnit(position);
 		
 		this.secCallback = secCallback;
 		
@@ -230,7 +232,7 @@ public class ReferenceTabbedController extends BasicController {
 			headEmail = "";
 		}
 		String consentDate = Formatter.getInstance(getLocale()).formatDateLong(reference.getDateConsent());
-		String positionMail = recruitingModule.getStaffMail(position);
+		String positionMail = recruitingModule.getStaffMail(position, organisationSettings);
 
 		return new String[] {
 			applicantFullName,						// 0

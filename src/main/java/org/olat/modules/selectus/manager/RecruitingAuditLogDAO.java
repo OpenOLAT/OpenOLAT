@@ -8,22 +8,16 @@ package org.olat.modules.selectus.manager;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.user.UserImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationAssignment;
 import org.olat.modules.selectus.model.ApplicationAssignmentLight;
@@ -33,7 +27,6 @@ import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ApplicationImpl;
 import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.AttachmentImpl;
-import org.olat.modules.selectus.model.OrganisationUnitImpl;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionImpl;
 import org.olat.modules.selectus.model.PositionRef;
@@ -56,7 +49,14 @@ import org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl;
 import org.olat.modules.selectus.model.review.ReviewElementDefinitionImpl;
 import org.olat.modules.selectus.model.review.ReviewResponse;
 import org.olat.modules.selectus.model.review.ReviewResponseImpl;
+import org.olat.user.UserImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.thoughtworks.xstream.XStream;
+
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -81,16 +81,9 @@ public class RecruitingAuditLogDAO {
 		positionXStream.omitField(PositionImpl.class, "exOfficioGroup");
 		positionXStream.omitField(PositionImpl.class, "reviewDefinition");
 		
-		positionXStream.omitField(OrganisationUnitImpl.class, "creationDate");
-		positionXStream.omitField(OrganisationUnitImpl.class, "lastModified");
-		positionXStream.omitField(OrganisationUnitImpl.class, "name");
-		positionXStream.omitField(OrganisationUnitImpl.class, "nameDe");
-		positionXStream.omitField(OrganisationUnitImpl.class, "url");
-		positionXStream.omitField(OrganisationUnitImpl.class, "description");
-		positionXStream.omitField(OrganisationUnitImpl.class, "systemConfiguration");
-		positionXStream.omitField(OrganisationUnitImpl.class, "staffMail");
-		positionXStream.omitField(OrganisationUnitImpl.class, "staffBcc");
-		positionXStream.omitField(OrganisationUnitImpl.class, "mailSignature");
+		positionXStream.omitField(OrganisationImpl.class, "creationDate");
+		positionXStream.omitField(OrganisationImpl.class, "lastModified");
+		positionXStream.omitField(OrganisationImpl.class, "group");
 		
 		positionXStream.omitField(ApplicationAttributeImpl.class, "position");
 		positionXStream.omitField(ApplicationAttributeImpl.class, "application");
@@ -384,8 +377,9 @@ public class RecruitingAuditLogDAO {
 			sb.append(")");	
 		}
 		
-		if(params.isOrganisationUnit()) {
+		if(params.isOrganisation()) {
 			//limit to the organisation unit
+			//TODO selectus load mail settings
 			sb.and()
 			  .append(" exists (select orgMember.key from rorganisationunitmember as orgMember, rorganisationunit as org, rposition as pos where")
 			  .append("  orgMember.identity.key=:readerKey and orgMember.organisationUnit.key=org.key and pos.organisationUnit.key=org.key and pos.key=log.positionKey")
@@ -437,7 +431,7 @@ public class RecruitingAuditLogDAO {
 		if(params.getTarget() != null) {
 			query.setParameter("target", params.getTarget().name());
 		}
-		if(params.isUnreadOnly() || params.isOrganisationUnit()) {
+		if(params.isUnreadOnly() || params.isOrganisation()) {
 			query.setParameter("readerKey", identity.getKey());
 		}
 		return query;

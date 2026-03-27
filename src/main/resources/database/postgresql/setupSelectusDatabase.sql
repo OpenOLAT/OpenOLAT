@@ -855,7 +855,6 @@ alter table fx_r_category rename to o_selectus_category;
 alter table fx_r_app_category rename to o_selectus_app_category;
 alter table fx_r_assignment rename to o_selectus_assignment;
 alter table fx_r_org_unit rename to o_selectus_org_unit;
-alter table fx_r_org_unit_member rename to o_selectus_org_unit_member;
 alter table fx_r_audit_log rename to o_selectus_audit_log;
 alter table fx_r_audit_log_read rename to o_selectus_audit_log_read;
 alter table fx_r_audit_log_user_settings rename to o_selectus_audit_log_usettings;
@@ -866,4 +865,9 @@ alter table fx_r_audit_log_user_notifs rename to o_selectus_audit_log_u_notifs;
 alter table o_selectus_position add column fk_organisation_id int8 default null;
 alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
 create index idx_selectus_pos_to_org_idx on o_selectus_position (fk_organisation_id);
+
+alter table o_selectus_org_unit add column fk_organisation_id int8 default null;
+alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_ounit_to_org_idx on o_selectus_org_unit (fk_organisation_id);
+
 

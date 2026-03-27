@@ -33,12 +33,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.manager.MailerSender;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.ReferenceSendMailType;
 import org.olat.modules.selectus.model.SubjectAndBody;
@@ -132,8 +132,10 @@ public class TabsConfigurationDelegate {
 	public String getWarningReviewAndSubmit(Position position, Locale locale) {
 		String hintKey = "wizard.review_submit.warning";
 		RecruitingModule recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		RecruitingService recruitingService = CoreSpringFactory.getImpl(RecruitingService.class);
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
 		String[] i18nArguments = new String[] {
-			recruitingModule.getStaffMail(position)	// 0
+			recruitingModule.getStaffMail(position, organisationSettings)	// 0
 		};
 		Translator translator = Util.createPackageTranslator(RefereesStepController.class, locale);
 		return translator.translate(hintKey, i18nArguments);

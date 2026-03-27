@@ -8,17 +8,17 @@ package org.olat.modules.selectus.manager;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.TypedQuery;
-
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Roles;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.selectus.model.OrganisationUnit;
+import org.olat.modules.selectus.model.OrganisationUnitImpl;
+import org.olat.modules.selectus.model.PositionRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import org.olat.modules.selectus.model.OrganisationUnit;
-import org.olat.modules.selectus.model.OrganisationUnitImpl;
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -32,10 +32,11 @@ public class OrganisationUnitDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public OrganisationUnit createOrganisationUnit() {
+	public OrganisationUnit createOrganisationUnit(Organisation organisation) {
 		OrganisationUnitImpl unit = new OrganisationUnitImpl();
 		unit.setCreationDate(new Date());
 		unit.setLastModified(unit.getCreationDate());
+		unit.setOrganisation(organisation);
 		return unit;
 	}
 	
@@ -46,6 +47,33 @@ public class OrganisationUnitDAO {
 			unit = dbInstance.getCurrentEntityManager().merge(unit);
 		}
 		return unit;
+	}
+	
+	public OrganisationUnit loadOrganisationUnitByOrganisation(OrganisationRef organisation) {
+		String query = """
+				select orgunit from rorganisationunit orgunit
+				inner join fetch orgunit.organisation as org
+				where org.key=:organisationKey
+				order by orgunit.creationDate asc""";
+		List<OrganisationUnit> units = dbInstance.getCurrentEntityManager()
+			.createQuery(query, OrganisationUnit.class)
+			.setParameter("organisationKey", organisation.getKey())
+			.getResultList();
+		return units == null || units.isEmpty() ? null : units.get(0);
+	}
+	
+	public OrganisationUnit loadOrganisationUnitByPosition(PositionRef position) {
+		String query = """
+				select orgunit from rposition as pos
+				inner join pos.organisation as org
+				inner join rorganisationunit orgunit on (orgunit.organisation.key=org.key)
+				where pos.key=:positionKey
+				order by orgunit.creationDate asc""";
+		List<OrganisationUnit> units = dbInstance.getCurrentEntityManager()
+			.createQuery(query, OrganisationUnit.class)
+			.setParameter("positionKey", position.getKey())
+			.getResultList();
+		return units == null || units.isEmpty() ? null : units.get(0);
 	}
 	
 	public OrganisationUnit loadOrganisationUnitByKey(Long key) {
@@ -66,25 +94,6 @@ public class OrganisationUnitDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), OrganisationUnit.class)
 			.getResultList();
-	}
-	
-	public List<OrganisationUnit> findOrganisationUnits(IdentityRef identity, Roles roles) {
-		boolean limitByMembership = (!roles.isAdministrator() && !roles.isSelectusManager());
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select orgUnit from rorganisationunit orgUnit");
-		if(limitByMembership) {
-			sb.append(" where orgUnit.key in (select orgMember.organisationUnit.key from rorganisationunitmember as orgMember where")
-			  .append("  orgMember.identity.key=:identityKey")
-			  .append(" )");
-		}
-		
-		TypedQuery<OrganisationUnit> query = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), OrganisationUnit.class);
-		if(limitByMembership) {
-			query.setParameter("identityKey", identity.getKey());
-		}
-		return query.getResultList();
 	}
 	
 	public boolean isOrganisationUnitNamesInUse(String name,  OrganisationUnit current) {
@@ -108,7 +117,6 @@ public class OrganisationUnitDAO {
 		List<Long> keys = query.setFirstResult(0).setMaxResults(1).getResultList();
 		return keys == null || keys.isEmpty() || keys.get(0)== null ? false : keys.get(0) > 0;
 	}
-	
 	
 	public int deleteOrganisationUnit(OrganisationUnit unit) {
 		if(unit == null) return 0;//nothing to do

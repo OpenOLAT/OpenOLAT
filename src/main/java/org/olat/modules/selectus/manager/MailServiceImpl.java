@@ -24,10 +24,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -36,6 +32,7 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.ApplicationShort;
 import org.olat.modules.selectus.model.MailLogInfos;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionMailTemplate;
 import org.olat.modules.selectus.model.PositionRef;
@@ -55,6 +52,9 @@ import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.PositionMailCenterController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -301,7 +301,8 @@ public class MailServiceImpl implements MailService {
 	
 	private final SubjectAndBody rejectionTemplate(Position position, String templateName, Identity headOfCommittee, Locale templateLocale,
 			List<PositionMailTemplate> positionTemplates) {
-		String staffMail = recruitingModule.getStaffMail(position);
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
+		String staffMail = recruitingModule.getStaffMail(position, organisationSettings);
 		Translator translator = getMailTranslator(templateLocale);
 		
 		String headLastname = "";

@@ -91,7 +91,7 @@ public class MemberFeedbacksController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.submissionDeadline, new DateCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.myFeedback));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.organisationUnit));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.organisation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.department));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.planingsNumber));
 

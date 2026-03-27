@@ -179,8 +179,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Autowired
 	private ReferenceToApplicationDAO referenceToApplicationDao;
 	@Autowired
-	private OrganisationUnitMembershipDAO organisationUnitMembershipDao;
-	@Autowired
 	private ApplicationsFeedbackConfigurationDAO applicationsFeedbackConfigurationDao;
 	
 	@Autowired
@@ -416,11 +414,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 
 	@Override
-	public List<Position> getPositions(OrganisationUnit unit) {
-		return positionDao.loadPositionByOrganisationUnit(unit);
-	}
-
-	@Override
 	public List<Position> getPositions(PositionStatus... status) {
 		List<PositionStatus> statusList = new ArrayList<>();
 		for(PositionStatus state:status) {
@@ -599,7 +592,8 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 			String to = app.getPerson().getMail();
 			String bcc = null;
 			if(withBcc && recruitingModule.isSendBccForConfirmation()) {
-				bcc = recruitingModule.getBccStaffMail(position);
+				OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
+				bcc = recruitingModule.getBccStaffMail(position, organisationSettings);
 			}
 			new MailerSender(bcProvider, keyStore).send(to, bcc, app, null, position, null, null, null, null, template, mailerResult);
 			if(mailerResult.getReturnCode() != MailerResult.OK) {
@@ -787,27 +781,11 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public List<Application> searchApplications(String searchText, Identity identity, Roles roles, List<PositionStatus> status) {
-		if(!checkOrganisationUnitRole(roles)) {
-			return Collections.emptyList();
-		}
-		
 		if(status == null) {
 			status = new ArrayList<>();
 		}
 		PositionStatusFilters filters = positionDao.getPositionStatusFilters(identity, roles, status);
 		return applicationDao.searchApplications(searchText, identity, filters);
-	}
-	
-	/**
-	 * check in the case of a organisation unit staff member
-	 * @param roles
-	 * @return
-	 */
-	private boolean checkOrganisationUnitRole(Roles roles) {
-		if(!recruitingModule.isOrganisationUnitEnabled() && !roles.isSelectusManager() && !roles.isAdministrator()) {//TODO selectus default-org
-			return false;
-		}
-		return true;
 	}
 
 	@Override
@@ -1311,9 +1289,10 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		
 		if(mailToStaff != null) {
 			try {
+				OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
 				String body = mailToStaff.getBody(ident);
-				String to = recruitingModule.getStaffMail(position);
-				String from = recruitingModule.getStaffMail(position);
+				String to = recruitingModule.getStaffMail(position, organisationSettings);
+				String from = recruitingModule.getStaffMail(position, organisationSettings);
 				String subject = mailToStaff.getSubject(ident);
 
 				MailerResult mailerResult = new MailerResult();
@@ -1721,9 +1700,10 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public void sendRejectionMail(Position position, ApplicationLight application, ApplicationMailTemplate template, MailerResult result) {
+		OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
 		//send mail
 		String to = application.getPerson().getMail();
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, organisationSettings);
 		MailerSender mailSender = new MailerSender(bcProvider, keyStore);
 		SubjectAndBody content = mailSender.send(to, bcc, application, null, position, null, null, null, null, template, result);
 		
@@ -1747,9 +1727,10 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public Reference sendRefereeMail(Reference reference, ApplicationShort application, List<? extends ApplicationShort> applicationsList,
 			Position position, ApplicationMailTemplate template, ReferenceStatus nextStatus, boolean reminderByApplicant, MailerResult result) {
+		OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
 		//send mail
 		String to = reference.getEmail();
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, organisationSettings);
 		new MailerSender(bcProvider, keyStore).send(to, bcc, application, applicationsList, position, reference, null, null, null, template, result);
 		if(nextStatus != null) {
 			if(nextStatus == ReferenceStatus.sentAwaiting) {
@@ -1776,8 +1757,9 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public void sendToReference(Reference reference, ApplicationShort application, List<? extends ApplicationShort> applicationList,
 			Position position, ApplicationMailTemplate template) {
+		OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
 		String to = reference.getEmail();
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, organisationSettings);
 		MailerResult result = new MailerResult();
 		new MailerSender(bcProvider, keyStore).send(to, bcc, application, applicationList, position, reference, null, null, null, template, result);
 		if(result.isSuccessful()) {
@@ -1797,8 +1779,9 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		if(!StringHelper.containsNonWhitespace(to)) {
 			to = member.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, template.getLocale());
 		}
-		
-		String bcc = recruitingModule.getBccStaffMail(position);
+
+		OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
+		String bcc = recruitingModule.getBccStaffMail(position, organisationSettings);
 
 		new MailerSender(bcProvider, keyStore).send(to, bcc, null, applications, position, null, member, feedbacks, feedbackConfig, template, result);
 		log.info(Tracing.M_AUDIT, "Contact send to faculty member {} for position {}", member, position);
@@ -1831,8 +1814,9 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public void sendAssignmentNotificationMail(Position position, List<Identity> assignees, ApplicationMailTemplate template, MailerResult result) {
+		OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
 		//send mail
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, organisationSettings);
 		for(Identity assignee:assignees) {
 			String to = assignee.getUser().getProperty(UserConstants.EMAIL, Locale.ENGLISH);
 			if(StringHelper.containsNonWhitespace(to)) {
@@ -1881,6 +1865,36 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 
 	@Override
+	public OrganisationUnit createOrganisationUnit(Organisation organisation) {
+		OrganisationUnit unit = organisationUnitDao.loadOrganisationUnitByOrganisation(organisation);
+		if(unit == null) {
+			unit = organisationUnitDao.createOrganisationUnit(organisation);
+			dbInstance.commit();
+		}
+		return unit;
+	}
+
+	@Override
+	public OrganisationUnit getOrganisationUnit(PositionRef position) {
+		return organisationUnitDao.loadOrganisationUnitByPosition(position);
+	}
+
+	@Override
+	public OrganisationUnit getOrganisationUnit(Organisation organisation) {
+		return organisationUnitDao.loadOrganisationUnitByOrganisation(organisation);
+	}
+
+	@Override
+	public OrganisationUnit updateOrganisationUnit(OrganisationUnit settings) {
+		return organisationUnitDao.save(settings);
+	}
+	
+	@Override
+	public List<OrganisationUnit> getOrganisationUnits() {
+		return organisationUnitDao.findAllOrganisationUnits();
+	}
+
+	@Override
 	public String getPrivacyDisclaimerEmail(Identity identity) {
 		String email = null;
 		
@@ -1893,7 +1907,8 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 			if(positions.size() == 1) {
 				PositionLightWithStatistics positionStats = positions.get(0);
 				Position position = positionDao.loadPositionByKey(positionStats.getKey());
-				email = recruitingModule.getStaffMail(position);
+				OrganisationUnit organisationSettings = getOrganisationUnit(position);
+				email = recruitingModule.getStaffMail(position, organisationSettings);
 			}
 		}
 		

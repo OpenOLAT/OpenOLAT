@@ -5744,19 +5744,9 @@ create table o_selectus_org_unit (
    staffmail varchar(255),
    staffbcc varchar(255),
    mailsignature varchar(2000),
+   fk_organisation_id number(20),
    primary key (id)
 );
-
-create table o_selectus_org_unit_member (
-   id number(20) not null,
-   lastmodified date,
-   creationdate date,
-   fk_org_unit_id number(20) not null,
-   fk_identity_id number(20) not null,
-   unique(fk_org_unit_id,fk_identity_id),
-   primary key (id)
-);
-
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -7638,10 +7628,9 @@ create index idx_rubric_to_def_idx on o_selectus_decision_rubric (fk_definition_
 alter table o_selectus_decision_rubric add constraint rubric_to_app_ref foreign key (fk_application_id) references o_selectus_application (app_id);
 create index idx_rubric_to_app_idx on o_selectus_decision_rubric (fk_application_id);
 
-alter table o_selectus_org_unit_member add constraint org_unit_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_org_unit_ident_idx on o_selectus_org_unit_member (fk_identity_id);
-alter table o_selectus_org_unit_member add constraint org_unit_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
-create index idx_org_unit_unit_idx on o_selectus_org_unit_member (fk_org_unit_id);
+alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_ounit_to_org_idx on o_selectus_org_unit (fk_organisation_id);
+
 alter table o_selectus_position add constraint position_org_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
 create index idx_position_org_unit_idx on o_selectus_position (fk_org_unit_id);
 

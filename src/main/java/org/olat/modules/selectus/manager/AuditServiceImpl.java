@@ -331,7 +331,7 @@ public class AuditServiceImpl implements AuditService {
 				};
 			params.setPermittedTargets(targets);
 			if(!roles.isSelectusManager()) {
-				params.setOrganisationUnit(true);
+				params.setOrganisation(true);
 			}
 		} else {
 			List<PositionStatus> allStatus = new ArrayList<>();

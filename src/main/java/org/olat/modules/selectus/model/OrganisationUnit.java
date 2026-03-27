@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Persistable;
 
 /**
@@ -66,6 +67,8 @@ public interface OrganisationUnit extends Persistable, CreateInfo, ModifiedInfo 
 	public String getMailSignature();
 	
 	public void setMailSignature(String signature);
+	
+	public Organisation getOrganisation();
 	
 
 }

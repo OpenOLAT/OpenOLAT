@@ -87,10 +87,6 @@ public class PositionLightImpl implements PositionLight, CreateInfo, Persistable
 	@Column(name="applicationdeadline", nullable=true, insertable=true, updatable=false)
 	private Date applicationDeadline;
 	
-	@ManyToOne(targetEntity=OrganisationUnitImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_org_unit_id", nullable=true, insertable=true, updatable=true)
-	private OrganisationUnit organisationUnit;
-	
 	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_organisation_id", nullable=true, insertable=true, updatable=true)
 	private Organisation organisation;
@@ -219,10 +215,6 @@ public class PositionLightImpl implements PositionLight, CreateInfo, Persistable
 		return professorship;
 	}
 
-	public OrganisationUnit getOrganisationUnit() {
-		return organisationUnit;
-	}
-	
 	@Override
 	public Organisation getOrganisation() {
 		return organisation;

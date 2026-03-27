@@ -22,7 +22,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailerResult;
-
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -31,6 +30,7 @@ import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ApplicationShort;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.model.feedback.ApplicationFeedbackImpl;
@@ -91,7 +91,8 @@ public class FeedbackHelper {
 			ApplicationsFeedbackConfiguration feedbackConfig, Identity member,
 			SalutationGenerator salutationGenerator, Translator translator) {
 		
-		String staffMail = CoreSpringFactory.getImpl(RecruitingModule.class).getStaffMail(position);
+		OrganisationUnit organisationSettings = CoreSpringFactory.getImpl(RecruitingService.class).getOrganisationUnit(position);
+		String staffMail = CoreSpringFactory.getImpl(RecruitingModule.class).getStaffMail(position, organisationSettings);
 		String serverUrl = Settings.getServerContextPathURI();
 		Locale locale = translator.getLocale();
 

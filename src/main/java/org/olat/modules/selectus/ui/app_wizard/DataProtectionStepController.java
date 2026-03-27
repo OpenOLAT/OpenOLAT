@@ -17,12 +17,13 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -38,9 +39,12 @@ public class DataProtectionStepController extends StepFormBasicController {
 	private MultipleSelectionElement acceptTermsEl;
 	
 	private final Position position;
+	private final OrganisationUnit organisationSettings;
 	
 	@Autowired
 	private RecruitingModule recruitingModule;
+	@Autowired
+	private RecruitingService recruitingService;
 
 	public DataProtectionStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "dataprotection");
@@ -49,6 +53,7 @@ public class DataProtectionStepController extends StepFormBasicController {
 		
 		Application app = (Application)getFromRunContext(WizardConstants.APPLICATION);
 		position = app.getPosition();
+		organisationSettings = recruitingService.getOrganisationUnit(position);
 		initForm(ureq);
 	}
 	
@@ -56,6 +61,7 @@ public class DataProtectionStepController extends StepFormBasicController {
 		super(ureq, wControl, "dataprotection");
 		setTranslator(Util.createPackageTranslator(RecruitingMainController.class, getLocale(), getTranslator()));
 		this.position = position;
+		organisationSettings = recruitingService.getOrganisationUnit(position);
 		initForm(ureq);
 	}
 	
@@ -67,7 +73,7 @@ public class DataProtectionStepController extends StepFormBasicController {
 		acceptTermsEl.setElementCssClass("o_sel_accept_terms");
 		
 		String[] i18nArguments = new String[] {
-			recruitingModule.getStaffMail(position),
+			recruitingModule.getStaffMail(position, organisationSettings),
 			recruitingModule.getStaffMail(),
 			getOrganisationUtilMail(),
 			Settings.createServerURI(),

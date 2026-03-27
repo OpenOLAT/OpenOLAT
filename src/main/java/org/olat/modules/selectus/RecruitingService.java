@@ -98,14 +98,6 @@ public interface RecruitingService {
 	public Position getPosition(Long positionKey);
 	
 	/**
-	 * The list of positions hold by this organisation.
-	 * 
-	 * @param unit The unit which hold the positions.
-	 * @return A list of positions.
-	 */
-	public List<Position> getPositions(OrganisationUnit unit);
-	
-	/**
 	 * Return the last change in these position's applications
 	 * @param position
 	 * @return The date of the last modified application
@@ -639,6 +631,16 @@ public interface RecruitingService {
 
 	
 	public void sendMail(String to, String subject, String body);
+	
+	public OrganisationUnit createOrganisationUnit(Organisation organisation);
+	
+	public OrganisationUnit getOrganisationUnit(PositionRef position);
+	
+	public OrganisationUnit getOrganisationUnit(Organisation organisation);
+	
+	public OrganisationUnit updateOrganisationUnit(OrganisationUnit settings);
+	
+	public List<OrganisationUnit> getOrganisationUnits();
 
 	
 	public String getPrivacyDisclaimerEmail(Identity identity);

@@ -5,17 +5,16 @@
  */
 package org.olat.modules.selectus.manager;
 
+import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
+import org.olat.core.id.Organisation;
 import org.olat.modules.selectus.model.OrganisationUnit;
+import org.olat.modules.selectus.model.Position;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +30,17 @@ public class OrganisationUnitDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BaseSecurity securityManager;
+	private PositionDAO positionDao;
 	@Autowired
 	private OrganisationUnitDAO organisationUnitDao;
 	@Autowired
-	private OrganisationUnitMembershipDAO organisationUnitMembershipDao;
+	private OrganisationService organisationService;
 	
 	@Test
 	public void createOrganisationUnit() {
-		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit();
+		Organisation organisation = organisationService
+				.createOrganisation("Org-unit-1-test", "Org-unit-1-test", "", null, null, JunitTestHelper.getDefaultActor());
+		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit(organisation);
 		unit.setName("Unit");
 		unit.setNameDe("Einheit");
 		unit.setDescription("Unit description");
@@ -61,8 +62,10 @@ public class OrganisationUnitDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadOrganisationUnit_key() {
-		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit();
+	public void loadOrganisationUnitByKey() {
+		Organisation organisation = organisationService
+				.createOrganisation("Org-unit-2-test", "Org-unit-2-test", "", null, null, JunitTestHelper.getDefaultActor());
+		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit(organisation);
 		unit.setName("Unit alpha");
 		unit.setNameDe("Einheit alpha");
 		unit.setDescription("Unit description alpha");
@@ -86,8 +89,65 @@ public class OrganisationUnitDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadOrganisationUnitByOrganisation() {
+		Organisation organisation = organisationService
+				.createOrganisation("Org-unit-4-test", "Org-unit-4-test", "", null, null, JunitTestHelper.getDefaultActor());
+		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit(organisation);
+		unit.setName("Unit gamma");
+		unit.setNameDe("Einheit gamma");
+		unit.setDescription("Unit description gamma");
+		unit.setSystemConfiguration(false);
+		unit.setStaffBcc("bcc@frentix.com");
+		unit.setStaffMail("mail@frentix.com");
+		unit = organisationUnitDao.save(unit);
+		dbInstance.commitAndCloseSession();
+		
+		OrganisationUnit reloadedUnit = organisationUnitDao.loadOrganisationUnitByOrganisation(organisation);
+		Assert.assertNotNull(reloadedUnit);
+		Assert.assertEquals(unit, reloadedUnit);
+		Assert.assertNotNull(reloadedUnit.getOrganisation());
+		Assert.assertEquals(organisation, reloadedUnit.getOrganisation());
+	}
+	
+	@Test
+	public void loadOrganisationUnitByPosition() {
+		Organisation organisation = organisationService
+				.createOrganisation("Org-unit-5-test", "Org-unit-5-test", "", null, null, JunitTestHelper.getDefaultActor());
+		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit(organisation);
+		unit.setName("Unit theta");
+		unit.setNameDe("Einheit theta");
+		unit.setDescription("Unit description theta");
+		unit.setSystemConfiguration(false);
+		unit.setStaffBcc("bcc@frentix.com");
+		unit.setStaffMail("mail@frentix.com");
+		unit = organisationUnitDao.save(unit);
+		dbInstance.commitAndCloseSession();
+		
+		//create a position and save it
+		Position position = positionDao.createPosition("none", "none", organisation);
+		position.setPlaningsNumber("ORG-808");
+		position.setPositionTitle("Prof.");
+		position.setShortTitle("Short title");
+		position.setDepartment("Organisation for psychology");
+		position.setHomepage("http://www.asylum.com");
+		position.setApplicationDeadline(new Date());
+		position.setStatus("in preparation");
+		position.setDescription("The department of psychology ...");
+		positionDao.savePosition(position);
+		dbInstance.commitAndCloseSession();
+		
+		OrganisationUnit reloadedUnit = organisationUnitDao.loadOrganisationUnitByPosition(position);
+		Assert.assertNotNull(reloadedUnit);
+		Assert.assertEquals(unit, reloadedUnit);
+		Assert.assertNotNull(reloadedUnit.getOrganisation());
+		Assert.assertEquals(organisation, reloadedUnit.getOrganisation());
+	}
+	
+	@Test
 	public void findAllOrganisationunits() {
-		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit();
+		Organisation organisation = organisationService
+				.createOrganisation("Org-unit-3-test", "Org-unit-3-test", "", null, null, JunitTestHelper.getDefaultActor());
+		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit(organisation);
 		unit.setName("Unit beta");
 		unit.setNameDe("Einheit Beta");
 		unit.setDescription("Unit beta description");
@@ -100,89 +160,4 @@ public class OrganisationUnitDAOTest extends OlatTestCase {
 		Assert.assertFalse(allUnits.isEmpty());
 		Assert.assertTrue(allUnits.contains(unit));
 	}
-	
-	/**
-	 * Author / staff can see all organisation units
-	 */
-	@Test
-	@Ignore
-	public void findOrganisationUnits() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor("staff-m-2-" + UUID.randomUUID());
-		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit();
-		unit.setName("Unit permission");
-		unit = organisationUnitDao.save(unit);
-		organisationUnitMembershipDao.createAndPersistMembership(identity, unit);
-		
-		OrganisationUnit notUnit = organisationUnitDao.createOrganisationUnit();
-		notUnit.setName("Unit not permitted");
-		notUnit = organisationUnitDao.save(notUnit);
-		dbInstance.commitAndCloseSession();
-		
-		//load all units
-		Roles roles = Roles.userRoles();
-		List<OrganisationUnit> allUnits = organisationUnitDao.findOrganisationUnits(identity, roles);
-		Assert.assertNotNull(allUnits);
-		Assert.assertTrue(allUnits.size() >= 2);
-		Assert.assertTrue(allUnits.contains(unit));
-		Assert.assertTrue(allUnits.contains(notUnit));
-	}
-	
-	/**
-	 * Author / staff can see all organisation units
-	 */
-	@Test
-	@Ignore
-	public void findOrganisationUnits_author() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor("staff-m-2-" + UUID.randomUUID());
-		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit();
-		unit.setName("Unit permission");
-		unit = organisationUnitDao.save(unit);
-		organisationUnitMembershipDao.createAndPersistMembership(identity, unit);
-		
-		OrganisationUnit notUnit = organisationUnitDao.createOrganisationUnit();
-		notUnit.setName("Unit not permitted");
-		notUnit = organisationUnitDao.save(notUnit);
-		dbInstance.commitAndCloseSession();
-		
-		//load all units
-		Roles roles = securityManager.getRoles(identity);
-		List<OrganisationUnit> allUnits = organisationUnitDao.findOrganisationUnits(identity, roles);
-		Assert.assertNotNull(allUnits);
-		Assert.assertTrue(allUnits.size() >= 2);
-		Assert.assertTrue(allUnits.contains(unit));
-		Assert.assertTrue(allUnits.contains(notUnit));
-	}
-	
-	/**
-	 * Organisation unit author / staff can see only their organisation units
-	 */
-	/*
-	@Test
-	public void findOrganisationUnits_orgAuthor() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("staff-m-3");
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsAdmin("admin-2" + UUID.randomUUID());
-		dbInstance.commit();
-		Roles roles = Roles.administratorRoles();
-		securityManager.updateRoles(admin, identity, roles);
-		
-		OrganisationUnit unit = organisationUnitDao.createOrganisationUnit();
-		unit.setName("Unit permission");
-		unit = organisationUnitDao.save(unit);
-		organisationUnitMembershipDao.createAndPersistMembership(identity, unit);
-		
-		OrganisationUnit notUnit = organisationUnitDao.createOrganisationUnit();
-		notUnit.setName("Unit not permitted");
-		notUnit = organisationUnitDao.save(notUnit);
-		dbInstance.commitAndCloseSession();
-		
-		//load all units
-		Roles reloadRoles = securityManager.getRoles(identity);
-		List<OrganisationUnit> allUnits = organisationUnitDao.findOrganisationUnits(identity, reloadRoles);
-		Assert.assertNotNull(allUnits);
-		Assert.assertEquals(1, allUnits.size());
-		Assert.assertTrue(allUnits.contains(unit));
-		Assert.assertFalse(allUnits.contains(notUnit));
-	}
-	*/
-	
 }

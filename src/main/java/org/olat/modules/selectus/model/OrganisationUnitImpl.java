@@ -10,8 +10,11 @@ import java.util.Locale;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -19,6 +22,8 @@ import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 
@@ -74,6 +79,10 @@ public class OrganisationUnitImpl implements OrganisationUnit {
 	private String staffBcc;
 	@Column(name="mailsignature", nullable=true, unique=false, insertable=true, updatable=true)
 	private String mailSignature;
+	
+	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_organisation_id", nullable=true, insertable=true, updatable=true)
+	private Organisation organisation;
 	
 	@Override
 	public Long getKey() {
@@ -230,6 +239,15 @@ public class OrganisationUnitImpl implements OrganisationUnit {
 	}
 
 	@Override
+	public Organisation getOrganisation() {
+		return organisation;
+	}
+
+	public void setOrganisation(Organisation organisation) {
+		this.organisation = organisation;
+	}
+
+	@Override
 	public int hashCode() {
 		return getKey() == null ? 32576289 : getKey().hashCode();
 	}
@@ -239,8 +257,7 @@ public class OrganisationUnitImpl implements OrganisationUnit {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OrganisationUnitImpl) {
-			OrganisationUnitImpl unit = (OrganisationUnitImpl)obj;
+		if(obj instanceof OrganisationUnitImpl unit) {
 			return getKey() != null && getKey().equals(unit.getKey());
 		}
 		return super.equals(obj);

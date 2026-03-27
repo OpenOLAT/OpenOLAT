@@ -12,16 +12,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.position.TabConfiguration;
 import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 import org.olat.modules.selectus.ui.position.TabsConfigurationDelegate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -38,6 +39,8 @@ public class ApplicationAppliedController extends BasicController {
 	
 	@Autowired
 	private RecruitingModule recruitingModule;
+	@Autowired
+	private RecruitingService recruitingService;
 	@Autowired @Qualifier("salutationGenerator")
 	private SalutationGenerator salutationGenerator;
 
@@ -51,9 +54,10 @@ public class ApplicationAppliedController extends BasicController {
 	}
 	
 	public void setApplication(Application application) {
+		OrganisationUnit organisationSettings = this.recruitingService.getOrganisationUnit(application.getPosition());
 		String titleAndName = salutationGenerator.getTitleFullname(application, getLocale());
 		String titleLastName = salutationGenerator.getTitleLastName(application, getLocale());
-		String positionMail = recruitingModule.getStaffMail(application.getPosition());
+		String positionMail = recruitingModule.getStaffMail(application.getPosition(), organisationSettings);
 		String[] names = new String[] {
 			titleAndName, 							// 0
 			"",										// 1

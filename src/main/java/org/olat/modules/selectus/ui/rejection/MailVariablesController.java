@@ -9,22 +9,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.ApplicationFieldType;
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
 import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.Reference;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -35,22 +37,27 @@ import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 public class MailVariablesController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	
+
+	@Autowired
+	private RecruitingService selectusService;
 	@Autowired
 	private RecruitingModule recruitingModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public MailVariablesController(UserRequest ureq, WindowControl wControl, Position position,
 			boolean application, boolean applicationList, boolean applicantDashboardUrl,
 			Reference reference, ApplicationsFeedbackConfiguration feedbackConfiguration, 
 			boolean headOfCommittee, boolean secretary, boolean committeeMember) {
 		super(ureq, wControl);
+		OrganisationUnit organisationSettings = selectusService.getOrganisationUnit(position);
 		
 		mainVC = createVelocityContainer("mail_variables");
 		List<VariablesCollection> variablesCollections = new ArrayList<>();
-		initPositionAttributes(variablesCollections, position);
-		if(recruitingModule.isOrganisationUnitEnabled() && position.getOrganisation() != null) {
-			//TODO selectus load mail settings
-			//initOrganisationUnit(variablesCollections, position.getOrganisation());
+		initPositionAttributes(variablesCollections, position, organisationSettings);
+		if(organisationModule.isEnabled() && position.getOrganisation() != null) {
+			OrganisationUnit organisationUnit = selectusService.getOrganisationUnit(position);
+			initOrganisationUnit(variablesCollections, position.getOrganisation(), organisationUnit);
 		}
 		
 		applicantDashboardUrl = applicantDashboardUrl && recruitingModule.isReferenceApplicantManagement()
@@ -84,7 +91,7 @@ public class MailVariablesController extends BasicController {
 		//
 	}
 	
-	private void initPositionAttributes(List<VariablesCollection> variablesCollections, Position position) {
+	private void initPositionAttributes(List<VariablesCollection> variablesCollections, Position position, OrganisationUnit organisationSettings) {
 		VariablesCollection positionVariables = new VariablesCollection("explain.position.variables");
 		positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_TITLE, translate("explain.position.title")));
 		positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_SHORT_TITLE, translate("explain.position.short.title")));
@@ -104,7 +111,7 @@ public class MailVariablesController extends BasicController {
 		
 		positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_APPLICATION_DEADLINE, translate("explain.position.application.deadline")));
 		positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_MAIL_SIGNATURE, translate("explain.position.mail.signature")));
-		if(recruitingModule.isMailProPositionEnabled() && StringHelper.containsNonWhitespace(recruitingModule.getStaffMail(position))) {
+		if(recruitingModule.isMailProPositionEnabled() && StringHelper.containsNonWhitespace(recruitingModule.getStaffMail(position, organisationSettings))) {
 			positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_MAIL, translate("explain.position.mail")));
 		}
 		
@@ -117,17 +124,17 @@ public class MailVariablesController extends BasicController {
 		variablesCollections.add(positionVariables);
 	}
 	
-	private void initOrganisationUnit(List<VariablesCollection> variablesCollections, OrganisationUnit organisation) {
+	private void initOrganisationUnit(List<VariablesCollection> variablesCollections, Organisation organisation, OrganisationUnit settings) {
 		VariablesCollection organisationVariables = new VariablesCollection("explain.organisation.variables");
 		organisationVariables.add(new Variable(RecruitingMailTemplate.ORG_UNIT_TITLE, translate("explain.organisation.title")));
 		
-		if(StringHelper.containsNonWhitespace(organisation.getMailSignature())) {
+		if(settings != null && StringHelper.containsNonWhitespace(settings.getMailSignature())) {
 			organisationVariables.add(new Variable(RecruitingMailTemplate.ORG_UNIT_SIGNATURE, translate("explain.organisation.signature")));
 		}
-		if(StringHelper.containsNonWhitespace(recruitingModule.getStaffMail(organisation))) {
+		if(StringHelper.containsNonWhitespace(recruitingModule.getStaffMail(settings))) {
 			organisationVariables.add(new Variable(RecruitingMailTemplate.ORG_UNIT_MAIL, translate("explain.organisation.mail")));
 		}
-		if(StringHelper.containsNonWhitespace(organisation.getUrl())) {
+		if(settings != null && StringHelper.containsNonWhitespace(settings.getUrl())) {
 			organisationVariables.add(new Variable(RecruitingMailTemplate.ORG_UNIT_URL, translate("explain.organisation.url")));
 		}
 		variablesCollections.add(organisationVariables);

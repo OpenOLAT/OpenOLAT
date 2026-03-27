@@ -24,7 +24,6 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
@@ -212,21 +211,10 @@ public class PositionDAO {
 		dbInstance.getCurrentEntityManager().remove(reloadedDefinition);
 	}
 	
-	public int updateOrganisationUnits(List<OrganisationUnit> oldUnits, OrganisationUnit newUnit) {
-		if(oldUnits == null || oldUnits.isEmpty() || newUnit == null) return 0;//nothing to do
-		
-		List<Long> oldUnitKeys = PersistenceHelper.toKeys(oldUnits);
-		String q = "update rposition position set position.organisationUnit.key=:newUnitKey where position.organisationUnit.key in (:oldUnitKeys)";
-		return dbInstance.getCurrentEntityManager().createQuery(q)
-			.setParameter("newUnitKey", newUnit.getKey())
-			.setParameter("oldUnitKeys", oldUnitKeys)
-			.executeUpdate();
-	}
-	
 	public int removeOrganisationUnit(OrganisationUnit unitToRemove) {
 		if(unitToRemove == null) return 0;//nothing to do
 
-		String q = "update rposition position set position.organisationUnit.key=null where position.organisationUnit.key=:unitKey";
+		String q = "update rposition position set position.organisation.key=null where position.organisation.key=:unitKey";
 		return dbInstance.getCurrentEntityManager().createQuery(q)
 			.setParameter("unitKey", unitToRemove.getKey())
 			.executeUpdate();
@@ -236,7 +224,7 @@ public class PositionDAO {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select position from rposition position ")
 		  .append(" inner join fetch position.committeeGroup committee")
-		  .append(" left join fetch position.organisationUnit orgUnit")
+		  .append(" left join fetch position.organisation org")
 		  .append(" left join fetch position.reviewDefinition reviewDef")
 		  .append(" left join fetch position.committeeHeadGroup committeeHead")
 		  .append(" left join fetch position.secretaryGroup committeeSecretary")
@@ -257,7 +245,7 @@ public class PositionDAO {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select position from rposition position ")
 		  .append(" inner join fetch position.committeeGroup committee")
-		  .append(" inner join fetch position.organisationUnit orgUnit")
+		  .append(" inner join fetch position.organisation org")
 		  .append(" left join fetch position.reviewDefinition reviewDef")
 		  .append(" left join fetch position.committeeHeadGroup committeeHead")
 		  .append(" left join fetch position.secretaryGroup committeeSecretary")
@@ -273,7 +261,7 @@ public class PositionDAO {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select position from rposition position ")
 		  .append(" inner join fetch position.committeeGroup committee")
-		  .append(" left join fetch position.organisationUnit orgUnit")
+		  .append(" left join fetch position.organisation org")
 		  .append(" left join fetch position.reviewDefinition reviewDef")
 		  .append(" left join fetch position.committeeHeadGroup committeeHead")
 		  .append(" left join fetch position.secretaryGroup committeeSecretary")
@@ -480,7 +468,7 @@ public class PositionDAO {
 		  .append("  where app.position.key=position.key and lower(app.person.email)=:mail and app.valid=:valid")
 		  .append(" )");
 		if(organisationKey != null) {
-			sb.append(" and position.organisationUnit.key=:organisationKey");
+			sb.append(" and position.organisation.key=:organisationKey");
 		}
 		
 		TypedQuery<PositionLight> query = dbInstance.getCurrentEntityManager()
@@ -502,7 +490,7 @@ public class PositionDAO {
 		  .append("  where refApp.position.key=:refPosKey and lower(app.person.email)=lower(refApp.person.email) and refApp.valid=:valid")
 		  .append(" )");
 		if(organisationKey != null) {
-			sb.append(" and position.organisationUnit.key=:organisationKey");
+			sb.append(" and position.organisation.key=:organisationKey");
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -528,7 +516,7 @@ public class PositionDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select position from rposition position")
 		  .append(" inner join fetch position.committeeGroup committee")
-		  .append(" left join fetch position.organisationUnit orgUnit")
+		  .append(" left join fetch position.organisation org")
 		  .append(" left join fetch position.reviewDefinition reviewDef")
 		  .append(" left join fetch position.committeeHeadGroup committeeHead")
 		  .append(" left join fetch position.secretaryGroup committeeSecretary")
@@ -739,18 +727,18 @@ public class PositionDAO {
 				// organisation staff
 				if(filters.isOrganisation()) {
 					sb.append(" or ");
-					appendPositionPermissionOrganisationUnit(sb, filters);
+					appendPositionPermissionOrganisation(sb, filters);
 				}
 				sb.append(")");
 			} else if(filters.isOrganisation()) {
 				sb.append(" and ");
-				appendPositionPermissionOrganisationUnit(sb, filters);
+				appendPositionPermissionOrganisation(sb, filters);
 			} else {
 				return false;
 			}
 		} else if(filters.isOrganisation()) {
 			sb.append(" and ");
-			appendPositionPermissionOrganisationUnit(sb, filters);
+			appendPositionPermissionOrganisation(sb, filters);
 		} else if(filters.getFiltered().size() > 0) {
 			sb.append(" and position.status in (:status)");
 		}
@@ -764,7 +752,7 @@ public class PositionDAO {
 		return true;
 	}
 	
-	private void appendPositionPermissionOrganisationUnit(StringBuilder sb, PositionStatusFilters filters) {
+	private void appendPositionPermissionOrganisation(StringBuilder sb, PositionStatusFilters filters) {
 		if(filters.isOrganisation()) {
 			sb.append(" exists (select orgmember.key from bgroupmember as orgmember")
 			  .append("  where orgmember.identity.key=:identityKey and orga.group.key=orgmember.group.key");

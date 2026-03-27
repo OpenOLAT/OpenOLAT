@@ -19,18 +19,19 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentOption;
 import org.olat.modules.selectus.DocumentType;
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionMLHelper;
 import org.olat.modules.selectus.model.PositionProfessorship;
 import org.olat.modules.selectus.model.ReferenceSendMailType;
 import org.olat.modules.selectus.model.position.TabConfiguration;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -47,10 +48,13 @@ public class InstructionsController extends FormBasicController {
 	private final boolean withTitle;
 	private Position position;
 	private TabConfiguration configuration;
+	private OrganisationUnit organisationSettings;
 	private Map<DocumentEnum,List<DocumentType>> docTypes;
 	
 	@Autowired
 	private RecruitingModule recruitingModule;
+	@Autowired
+	private RecruitingService recruitingService;
 
 	public InstructionsController(UserRequest ureq, WindowControl wControl, Form rootForm, Position position, TabConfiguration configuration, boolean withTitle) {
 		super(ureq, wControl, "instructions", Util.createPackageTranslator(RecruitingMainController.class, ureq.getLocale()));
@@ -66,6 +70,7 @@ public class InstructionsController extends FormBasicController {
 		onlyPdfs = DocumentType.isOnlyPDFs(docTypes);
 		this.configuration = configuration;
 		this.position = position;
+		organisationSettings = recruitingService.getOrganisationUnit(position);
 		initForm(ureq);
 	}
 	
@@ -157,7 +162,7 @@ public class InstructionsController extends FormBasicController {
 			container.contextPut("positionTitle", StringHelper.escapeHtml(PositionMLHelper.getPositionMLTitle(position, getLocale())));
 			
 			String[] i18nArguments = new String[] {
-				recruitingModule.getStaffMail(position)	// 0
+				recruitingModule.getStaffMail(position, organisationSettings)	// 0
 			};
 			container.contextPut("i18nArguments", i18nArguments);
 			

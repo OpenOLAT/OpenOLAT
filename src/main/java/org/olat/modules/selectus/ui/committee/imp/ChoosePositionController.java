@@ -8,6 +8,7 @@ package org.olat.modules.selectus.ui.committee.imp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -27,8 +28,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.PositionAttributeDefinition;
@@ -39,6 +38,7 @@ import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.StatusCellRenderer;
 import org.olat.modules.selectus.ui.position.PositionsDataModel;
 import org.olat.modules.selectus.ui.position.PositionsDataModel.Fields;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,6 +58,8 @@ public class ChoosePositionController extends StepFormBasicController {
 	private RecruitingModule recruitingModule;
 	@Autowired
 	private RecruitingService recruitingService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public ChoosePositionController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form, ChoosePosition importCommittee) {
@@ -83,8 +85,8 @@ public class ChoosePositionController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.positionTitle));
-		if(recruitingModule.isOrganisationUnitEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.organisationUnit));
+		if(organisationModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.organisation));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.status, new StatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.deadline, new DateCellRenderer()));

@@ -59,6 +59,7 @@ import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.manager.MailerSender;
 import org.olat.modules.selectus.model.Attachment;
 import org.olat.modules.selectus.model.MailSettingEnum;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.PolicyLink;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionImpl;
@@ -114,6 +115,7 @@ public class PositionEditProfileController extends FormBasicController implement
 	private MultipleSelectionElement messageToCommitteeEnableEl;
 	
 	private Position position;
+	private OrganisationUnit organisationSettings;
 	private final boolean readOnly;
 	private final boolean newPosition;
 	
@@ -161,6 +163,7 @@ public class PositionEditProfileController extends FormBasicController implement
 		this.position = position;
 		this.newPosition = newPosition;
 		this.readOnly = readOnly;
+		organisationSettings = erFrontendManager.getOrganisationUnit(position);
 		
 		positionLanguages = recruitingModule.getPositionLocales();
 		positionLanguagesKeys = new String[positionLanguages.length];
@@ -382,11 +385,11 @@ public class PositionEditProfileController extends FormBasicController implement
 			mailSettingEl = uifactory.addDropdownSingleselect("mail.setting", "mail.setting", formLayout, new String[0], new String[0], null);
 			mailSettingEl.addActionListener(FormEvent.ONCHANGE);
 			mailSettingEl.setEnabled(!readOnly);
-
-			String senderMail = recruitingModule.getStaffMail(position);
+			
+			String senderMail = recruitingModule.getStaffMail(position, organisationSettings);
 			senderMailEl = uifactory.addTextElement("mail.sender", "mail.sender", 255, senderMail, formLayout);
 			senderMailEl.setEnabled(!readOnly);
-			String bccMail = recruitingModule.getBccStaffMail(position);
+			String bccMail = recruitingModule.getBccStaffMail(position, organisationSettings);
 			bccMailEl = uifactory.addTextElement("mail.bcc", "mail.bcc", 255, bccMail, formLayout);
 			bccMailEl.setVisible(recruitingModule.isSendBccForConfirmation());
 			bccMailEl.setEnabled(!readOnly);
@@ -435,7 +438,7 @@ public class PositionEditProfileController extends FormBasicController implement
 
 		// select mail settings
 		setMailSetting();
-		MailSettingEnum setting = recruitingModule.getMailSetting(position);
+		MailSettingEnum setting = recruitingModule.getMailSetting(position, organisationSettings);
 		mailSettingEl.select(setting.name(), true);
 		if(setting == MailSettingEnum.position) {
 			senderMailEl.setValue(position.getSenderMail());
@@ -458,7 +461,7 @@ public class PositionEditProfileController extends FormBasicController implement
 		SelectionValues mailSettings = new SelectionValues();
 		mailSettings.add(SelectionValues.entry(MailSettingEnum.system.name(), translate("mail.setting.system")));
 
-		if(recruitingModule.isOrganisationUnitEnabled()
+		if(organisationModule.isEnabled()
 				&& (position.getOrganisation() != null || (organisationEl != null && organisationEl.isOneSelected()))
 				&& organisationEl.isOneSelected() && !ORG_UNIT_EMPTY_KEY.equals(organisationEl.getSelectedKey())) {
 			mailSettings.add(SelectionValues.entry(MailSettingEnum.organisationUnit.name(), translate("mail.setting.organisationUnit")));
@@ -489,9 +492,10 @@ public class PositionEditProfileController extends FormBasicController implement
 			
 			Organisation organisation = getSelectedOrganisation();
 			mockedPosition.setOrganisation(organisation);
+			organisationSettings = erFrontendManager.getOrganisationUnit(organisation);
 
-			String sender = recruitingModule.getStaffMail(mockedPosition);
-			String bcc = recruitingModule.getBccStaffMail(mockedPosition);
+			String sender = recruitingModule.getStaffMail(mockedPosition, organisationSettings);
+			String bcc = recruitingModule.getBccStaffMail(mockedPosition, organisationSettings);
 			senderMailEl.setValue(sender);
 			bccMailEl.setValue(bcc);
 		}

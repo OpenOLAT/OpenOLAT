@@ -56,11 +56,12 @@ import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.manager.MailManagerImpl;
-
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ApplicationShort;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.Reference;
 import org.olat.modules.selectus.model.SubjectAndBody;
@@ -142,7 +143,8 @@ public class MailerSender {
 		try {
 			subjectBody = createWithContext(app, appList, reference, member, feedbacks, feedbackConfig, position, template, mailerResult);
 			// use staff mail from position (depends on org unit) as reply-to mail address
-			String staffMail = CoreSpringFactory.getImpl(RecruitingModule.class).getStaffMail(position);
+			OrganisationUnit organisationSettings = CoreSpringFactory.getImpl(RecruitingService.class).getOrganisationUnit(position);
+			String staffMail = CoreSpringFactory.getImpl(RecruitingModule.class).getStaffMail(position, organisationSettings);
 			send(staffMail, to, bcc, subjectBody.getSubject(), subjectBody.getBody(), subjectBody.getLetter(), mailerResult);
 		} catch(Exception e) {
 			log.error("", e);

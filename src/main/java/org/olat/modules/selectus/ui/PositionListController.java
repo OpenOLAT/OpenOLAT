@@ -187,8 +187,8 @@ public class PositionListController extends FormBasicController implements Toole
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.positionTitle, SELECT_POSITION));
-		if(recruitingModule.isOrganisationUnitEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.organisationUnit, SELECT_POSITION));
+		if(organisationModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.organisation, SELECT_POSITION));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.status, new StatusCellRenderer()));

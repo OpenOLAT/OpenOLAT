@@ -58,14 +58,14 @@ public class RecruitingModuleTest extends OlatTestCase {
 		position.setBccMail("sender-pos-bcc@frentix.com");
 		position.setMailSetting(MailSettingEnum.position);
 
-		String mail = recruitingModule.getStaffMail(position);
+		String mail = recruitingModule.getStaffMail(position, orgUnit);
 		Assert.assertEquals("sender-pos@frentix.com", mail);
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, orgUnit);
 		Assert.assertEquals("sender-pos-bcc@frentix.com", bcc);
 	}
 	
 	@Test
-	@Ignore //TODO selectus load mail settings
+	@Ignore //TODO selectus load mail
 	public void getStaffMail_position_atPosition_noBCC() {
 		OrganisationUnit orgUnit = new OrganisationUnitImpl();
 		orgUnit.setStaffMail("org-staff@frentix.com");
@@ -77,14 +77,13 @@ public class RecruitingModuleTest extends OlatTestCase {
 		position.setSenderMail("sender-pos@frentix.com");
 		position.setMailSetting(MailSettingEnum.position);
 
-		String mail = recruitingModule.getStaffMail(position);
+		String mail = recruitingModule.getStaffMail(position, orgUnit);
 		Assert.assertEquals("sender-pos@frentix.com", mail);
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, orgUnit);
 		Assert.assertNull(bcc);
 	}
 	
 	@Test
-	@Ignore //TODO selectus load mail settings
 	public void getStaffMail_organisation_noOrgBcc() {
 		OrganisationUnit orgUnit = new OrganisationUnitImpl();
 		orgUnit.setStaffMail("org-staff@frentix.com");
@@ -97,9 +96,9 @@ public class RecruitingModuleTest extends OlatTestCase {
 		position.setBccMail("sender-pos-bcc@frentix.com");
 		position.setMailSetting(MailSettingEnum.organisationUnit);
 
-		String mail = recruitingModule.getStaffMail(position);
+		String mail = recruitingModule.getStaffMail(position, orgUnit);
 		Assert.assertEquals("org-staff@frentix.com", mail);
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, orgUnit);
 		Assert.assertNull(bcc);
 	}
 	
@@ -116,9 +115,9 @@ public class RecruitingModuleTest extends OlatTestCase {
 		position.setSenderMail("sender-pos@frentix.com");
 		position.setMailSetting(MailSettingEnum.organisationUnit);
 
-		String mail = recruitingModule.getStaffMail(position);
+		String mail = recruitingModule.getStaffMail(position, orgUnit);
 		Assert.assertEquals("stephane.rosse@frentix.com", mail);
-		String bcc = recruitingModule.getBccStaffMail(position);
+		String bcc = recruitingModule.getBccStaffMail(position, orgUnit);
 		Assert.assertEquals("stephane.rosse.bcc@frentix.com", bcc);
 	}
 }

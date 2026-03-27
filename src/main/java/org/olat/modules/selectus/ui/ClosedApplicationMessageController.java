@@ -11,10 +11,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
+import org.olat.modules.selectus.RecruitingService;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -28,13 +29,17 @@ import org.olat.modules.selectus.model.Position;
 public class ClosedApplicationMessageController extends FormBasicController {
 	
 	private Position position;
+	private final OrganisationUnit organisationSettings;
 	
 	@Autowired
 	private RecruitingModule recruitingModule;
+	@Autowired
+	private RecruitingService recruitingService;
 	
 	public ClosedApplicationMessageController(UserRequest ureq, WindowControl wControl, Position position) {
 		super(ureq, wControl, "app_closed");
 		this.position = position;
+		organisationSettings = recruitingService.getOrganisationUnit(position);
 		initForm(ureq);
 	}
 	
@@ -55,7 +60,7 @@ public class ClosedApplicationMessageController extends FormBasicController {
 	private void setI18nArguments(FormLayoutContainer layoutCont) {
 		String[] i18nArguments = new String[] {
 			recruitingModule.getOfficeMail(),
-			recruitingModule.getStaffMail(position)
+			recruitingModule.getStaffMail(position, organisationSettings)
 		};
 		layoutCont.contextPut("i18nArguments", i18nArguments);
 	}

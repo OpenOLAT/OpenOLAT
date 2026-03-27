@@ -28,8 +28,8 @@ import org.olat.modules.selectus.model.OrganisationUnit;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrganisationUnitsAdminDataModel extends DefaultFlexiTableDataModel<OrganisationUnit>
-	implements SortableFlexiTableDataModel<OrganisationUnit> {
+public class OrganisationUnitsAdminDataModel extends DefaultFlexiTableDataModel<OrganisationSettingsRow>
+	implements SortableFlexiTableDataModel<OrganisationSettingsRow> {
 	
 	private final Locale locale;
 	private final Translator translator;
@@ -45,39 +45,47 @@ public class OrganisationUnitsAdminDataModel extends DefaultFlexiTableDataModel<
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<OrganisationUnit> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<OrganisationSettingsRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		OrganisationUnit unit = getObject(row);
+		OrganisationSettingsRow unit = getObject(row);
 		return getValueAt(unit, col);
 	}
 	
 	@Override
-	public Object getValueAt(OrganisationUnit row, int col) {
-		switch(OrgUnitCols.values()[col]) {
-			case name: return row.getName();
-			case nameDe: return row.getNameDe();
-			case nameFr: return row.getNameFr();
-			case staffMail: {
-				String mail = row.getStaffMail();
-				if(!row.isSystemConfiguration() && StringHelper.containsNonWhitespace(mail)) {
-					return mail;
-				}
-				return recruitingModule.getStaffMail(row);
-			}
-			case staffBcc: {
-				String bcc = row.isSystemConfiguration() ? recruitingModule.getBccStaffMail() : row.getStaffBcc();
-				if(StringHelper.containsNonWhitespace(bcc)) {
-					return bcc;
-				}
-				return translator.translate("organisation.staff.bcc.hint.nobbc");
-			}
-			default: return "ERROR";
+	public Object getValueAt(OrganisationSettingsRow row, int col) {
+		OrganisationUnit settings = row.setting();
+		return switch(OrgUnitCols.values()[col]) {
+			case name -> settings == null ? row.organisation().getDisplayName() : settings.getName();
+			case nameDe -> settings == null ? null : settings.getNameDe();
+			case nameFr -> settings == null ? null : settings.getNameFr();
+			case staffMail -> getStaffMail(settings);
+			case staffBcc -> getStaffBcc(settings);
+			case edit -> Boolean.TRUE;
+			default -> "ERROR";
+		};
+	}
+	
+	private String getStaffMail(OrganisationUnit settings) {
+		if(settings != null && !settings.isSystemConfiguration()
+				&& StringHelper.containsNonWhitespace(settings.getStaffMail())) {
+			return settings.getStaffMail();
 		}
+		return recruitingModule.getStaffMail(settings);
+	}
+	
+	private String getStaffBcc(OrganisationUnit setting) {
+		String bcc = setting == null || setting.isSystemConfiguration()
+				? recruitingModule.getBccStaffMail()
+				: setting.getStaffBcc();
+		if(StringHelper.containsNonWhitespace(bcc)) {
+			return bcc;
+		}
+		return translator.translate("organisation.staff.bcc.hint.nobbc");
 	}
 	
 	public enum OrgUnitCols implements FlexiSortableColumnDef {
@@ -86,7 +94,8 @@ public class OrganisationUnitsAdminDataModel extends DefaultFlexiTableDataModel<
 		nameDe("table.organisation.name.de"),
 		nameFr("table.organisation.name.fr"),
 		staffMail("table.organisation.staff.mail"),
-		staffBcc("table.organisation.staff.bcc");
+		staffBcc("table.organisation.staff.bcc"),
+		edit("table.organisation.staff.bcc");
 
 		private String i18nKey;
 		

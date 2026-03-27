@@ -23,7 +23,6 @@
 		<class>org.olat.modules.selectus.model.DecisionRubricImpl</class>
 		<class>org.olat.modules.selectus.model.DecisionRubricDefinitionImpl</class>
 		<class>org.olat.modules.selectus.model.OrganisationUnitImpl</class>
-		<class>org.olat.modules.selectus.model.OrganisationUnitMembershipImpl</class>
 		<class>org.olat.modules.selectus.model.assignment.ApplicationAssignmentImpl</class>
 		<class>org.olat.modules.selectus.model.committee.ReportCommitteeImpl</class>
 		<class>org.olat.modules.selectus.model.feedback.PublicFeedbackImpl</class>

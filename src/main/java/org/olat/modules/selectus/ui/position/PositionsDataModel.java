@@ -166,7 +166,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 				case numOfApplications: return position.getNumOfApplications() == null ? 0 : position.getNumOfApplications();
 				case numOfMaleApplications: return position.getNumOfMaleApplications() == null ? 0 : position.getNumOfMaleApplications();
 				case numOfFemaleApplications: return position.getNumOfFemaleApplications() == null ? 0 : position.getNumOfFemaleApplications();
-				case organisationUnit: return position.getOrganisation() == null ? null : position.getOrganisation().getDisplayName();
+				case organisation: return position.getOrganisation() == null ? null : position.getOrganisation().getDisplayName();
 				default: return position;
 			}
 		}
@@ -233,7 +233,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 		numOfApplications("edit.num_of_applications"),
 		numOfMaleApplications("edit.num_of_male_applications"),
 		numOfFemaleApplications("edit.num_of_female_applications"),
-		organisationUnit("table.header.organisation.unit");
+		organisation("table.header.organisation.unit");
 
 		private final String key;
 		

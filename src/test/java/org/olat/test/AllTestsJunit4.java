@@ -303,7 +303,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.selectus.manager.MailTemplateDAOTest.class,
 	org.olat.modules.selectus.manager.NotesDAOTest.class,
 	org.olat.modules.selectus.manager.OrganisationUnitDAOTest.class,
-	org.olat.modules.selectus.manager.OrganisationUnitMembershipDAOTest.class,
 	org.olat.modules.selectus.manager.PositionDAOTest.class,
 	org.olat.modules.selectus.manager.PositionReviewDefinitionDAOTest.class,
 	org.olat.modules.selectus.manager.RecruitingAuditLogDAOTest.class,

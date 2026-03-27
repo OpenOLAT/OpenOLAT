@@ -25,13 +25,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.mail.MailModule;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,8 +52,6 @@ public class OrganisationUnitEditController extends FormBasicController {
 	private OrganisationUnit organisationUnit;
 	private final Locale[] positionLanguages;
 
-	@Autowired
-	private MailModule mailModule;
 	@Autowired
 	private RecruitingModule recruitingModule;
 	@Autowired
@@ -212,11 +208,7 @@ public class OrganisationUnitEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		if(organisationUnit == null) {
-			//TODO selectus load mail settings organisationUnit = recruitingFrontendManager.createOrganisationUnit();
-		}
-		
+	protected void formOK(UserRequest ureq) {	
 		for(TextElement nameEl:nameEls) {
 			Locale locale = (Locale)nameEl.getUserObject();
 			organisationUnit.setName(nameEl.getValue(), locale);
@@ -234,7 +226,7 @@ public class OrganisationUnitEditController extends FormBasicController {
 		}
 		organisationUnit.setMailSignature(mailSignatureEl.getValue());
 
-		//TODO organisationUnit = recruitingFrontendManager.saveOrganisationUnit(organisationUnit);
+		organisationUnit = recruitingFrontendManager.updateOrganisationUnit(organisationUnit);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -66,12 +66,12 @@ public class RecruitingSecurityCallbackImpl implements RecruitingSecurityCallbac
 
 	@Override
 	public boolean canSearchPositionByOrgUnits() {
-		return recruitingModule.isOrganisationUnitEnabled() && (roles.isSelectusManager());//TODO selectus
+		return roles.isSelectusManager();
 	}
 
 	@Override
 	public boolean canSearchPositionByGlobalAttributes() {
-		return recruitingModule.isReportingEnabled() && (roles.isSelectusManager());//TODO selectus
+		return roles.isSelectusManager();
 	}
 
 	@Override

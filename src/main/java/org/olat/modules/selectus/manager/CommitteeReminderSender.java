@@ -22,15 +22,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
@@ -40,6 +37,9 @@ import org.olat.modules.selectus.model.mail.MailAttachment;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 /**
  * Send reminder email to committee member (with rating role)
@@ -61,17 +61,17 @@ public class CommitteeReminderSender {
 	@Autowired
 	private RecruitingModule recruitingModule;
 	@Autowired
-	private RecruitingService erFrontendManager;
+	private RecruitingService recruitingService;
 	@Autowired @Qualifier("salutationGenerator")
 	private SalutationGenerator salutationGenerator;
 	
 	public void sendCommitteeReminder() {
-		List<Position> positions = erFrontendManager.getPositionsToRemind();
+		List<Position> positions = recruitingService.getPositionsToRemind();
 		for(Position position:positions) {
 			PositionRole[] roles = recruitingModule.getRolesAllowedToRate();
-			List<Identity> committee = erFrontendManager.getCommittee(position, roles);
+			List<Identity> committee = recruitingService.getCommittee(position, roles);
 			Map<Long, Identity> committeeMap = committee.stream().collect(Collectors.toMap(Identity::getKey,  i -> i, (u, v) -> u));
-			List<UserRating> ratings = erFrontendManager.getRatings(position, committee);
+			List<UserRating> ratings = recruitingService.getRatings(position, committee);
 			for(UserRating rating:ratings) {
 				committeeMap.remove(rating.getCreator().getKey());
 			}
@@ -79,9 +79,9 @@ public class CommitteeReminderSender {
 				sendCommitteeReminder(position, committeeMap.values());
 			}
 			
-			position = erFrontendManager.getPosition(position.getKey());
+			position = recruitingService.getPosition(position.getKey());
 			position.setCommitteeReminderSentDate(new Date());
-			erFrontendManager.savePosition(position);
+			recruitingService.savePosition(position);
 			DBFactory.getInstance().commit();
 		}
 	}
@@ -90,17 +90,18 @@ public class CommitteeReminderSender {
 		Locale defaultPositionLocale = recruitingModule.getPositionDefaultLocale();
 		Translator translator = Util.createPackageTranslator(RecruitingHelper.class, defaultPositionLocale);
 
-		String staffMail = recruitingModule.getStaffMail(position);
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
+		String staffMail = recruitingModule.getStaffMail(position, organisationSettings);
 
 		String headLastname = null;
 		String headFirstname = null;
-		Identity headOfCommittee = erFrontendManager.getHeadOfCommittee(position);
+		Identity headOfCommittee = recruitingService.getHeadOfCommittee(position);
 		if(headOfCommittee != null) {
 			headLastname = headOfCommittee.getUser().getProperty(UserConstants.LASTNAME, defaultPositionLocale);
 			headFirstname = headOfCommittee.getUser().getProperty(UserConstants.FIRSTNAME, defaultPositionLocale);
 		}
 		
-		Identity secretary = erFrontendManager.getSecretary(position);
+		Identity secretary = recruitingService.getSecretary(position);
 		
 		long days;
 		String ratingDeadline = "";
@@ -138,7 +139,7 @@ public class CommitteeReminderSender {
 
 			ApplicationMailTemplate template = new RecruitingMailTemplate(null, null, null, subject, body, letter,
 					headOfCommittee, secretary, new SubjectAndBody(subject, body, letter), salutationGenerator, translator);
-			erFrontendManager.sendReminder(position, memberToRemind, template);
+			recruitingService.sendReminder(position, memberToRemind, template);
 			log.info(Tracing.M_AUDIT, "Send reminder to {} for {}", memberToRemind, position);
 			
 			String messageI18n = "audit.log.position.committee.reminder";

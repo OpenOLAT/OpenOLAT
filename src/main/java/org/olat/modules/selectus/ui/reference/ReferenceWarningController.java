@@ -18,13 +18,11 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.model.Reference;
@@ -32,6 +30,8 @@ import org.olat.modules.selectus.model.ReferenceRequestStatus;
 import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.ui.PositionController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -102,6 +102,7 @@ public class ReferenceWarningController extends BasicController {
 		} else {
 			application = reference.getApplication();
 		}
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
 
 		String applicantFullName = StringHelper.escapeHtml(salutationGenerator.getTitleFullname(application, applications, getLocale()));
 		String applicantLastName = StringHelper.escapeHtml(salutationGenerator.getTitleLastName(application, applications, getLocale()));
@@ -112,7 +113,7 @@ public class ReferenceWarningController extends BasicController {
 			headEmail = "";
 		}
 		String consentDate = Formatter.getInstance(getLocale()).formatDateLong(reference.getDateConsent());
-		String positionMail = recruitingModule.getStaffMail(position);
+		String positionMail = recruitingModule.getStaffMail(position, organisationSettings);
 		
 		return new String[] {
 			applicantFullName,						// 0

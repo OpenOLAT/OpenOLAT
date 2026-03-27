@@ -581,7 +581,6 @@ create table o_selectus_assignment (
    primary key (id)
 );
 
-
 create table o_selectus_org_unit (
    id bigint not null,
    lastmodified datetime,
@@ -595,16 +594,7 @@ create table o_selectus_org_unit (
    staffmail varchar(255),
    staffbcc varchar(255),
    mailsignature varchar(2000),
-   primary key (id)
-);
-
-create table o_selectus_org_unit_member (
-   id bigint not null,
-   lastmodified datetime,
-   creationdate datetime,
-   fk_org_unit_id bigint not null,
-   fk_identity_id bigint not null,
-   unique(fk_org_unit_id,fk_identity_id),
+   fk_organisation_id bigint,
    primary key (id)
 );
 
@@ -687,7 +677,6 @@ alter table o_selectus_category ENGINE = InnoDB;
 alter table o_selectus_app_category ENGINE = InnoDB;
 alter table o_selectus_assignment ENGINE = InnoDB;
 alter table o_selectus_org_unit ENGINE = InnoDB;
-alter table o_selectus_org_unit_member ENGINE = InnoDB;
 alter table o_selectus_audit_log ENGINE = InnoDB;
 alter table o_selectus_audit_log_read ENGINE = InnoDB;
 alter table o_selectus_audit_log_usettings ENGINE = InnoDB;
@@ -777,8 +766,8 @@ alter table o_selectus_decision_rubric_def add constraint rubric_def_to_position
 alter table o_selectus_decision_rubric add constraint rubric_to_def_ref foreign key (fk_definition_id) references o_selectus_decision_rubric_def (def_id);
 alter table o_selectus_decision_rubric add constraint rubric_to_app_ref foreign key (fk_application_id) references o_selectus_application (app_id);
 
-alter table o_selectus_org_unit_member add constraint org_unit_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
-alter table o_selectus_org_unit_member add constraint org_unit_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
+alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+
 alter table o_selectus_position add constraint position_org_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
 
 alter table o_selectus_review_element_def add constraint rev_el_pos_idx foreign key (fk_pos_rev_id) references o_selectus_review_position_def (id);

@@ -347,10 +347,6 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@JoinColumn(name="fk_review_definition_id", nullable=true, insertable=true, updatable=true)
 	private PositionReviewDefinition reviewDefinition;
 	
-	@ManyToOne(targetEntity=OrganisationUnitImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_org_unit_id", nullable=true, insertable=true, updatable=true)
-	private OrganisationUnit organisationUnit;
-	
 	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_organisation_id", nullable=true, insertable=true, updatable=true)
 	private Organisation organisation;
@@ -2058,14 +2054,6 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Override
 	public void setPublicFeedbackDeadline(Date deadline) {
 		publicFeedbackDeadline = deadline;
-	}
-
-	public OrganisationUnit getOrganisationUnit() {
-		return organisationUnit;
-	}
-
-	public void setOrganisationUnit(OrganisationUnit organisationUnit) {
-		this.organisationUnit = organisationUnit;
 	}
 
 	@Override

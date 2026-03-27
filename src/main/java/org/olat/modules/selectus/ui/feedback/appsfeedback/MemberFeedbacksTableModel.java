@@ -83,7 +83,7 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FilterableFlexiTableM
 			case application: return RecruitingHelper.formatFullName(row.getApplication(), translator);
 			case submissionDeadline: return getSubmissionDeadline(row);
 			case myFeedback: return row.getEditLink();
-			case organisationUnit: return getOrganisation(row.getOrganisation());
+			case organisation: return getOrganisation(row.getOrganisation());
 			case department: return row.getPosition().getMLDepartement(locale);
 			case planingsNumber: return row.getPosition().getPlaningsNumber();
 			default: return "ERROR";
@@ -122,7 +122,7 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FilterableFlexiTableM
 		application("table.header.feedback.application"),
 		submissionDeadline("table.header.reference.submission.deadline"),
 		myFeedback("table.header.feedback.my.feedback"),
-		organisationUnit("table.header.organisation.unit"),
+		organisation("table.header.organisation.unit"),
 		department("edit.department"),
 		planingsNumber("edit.position_id");
 		

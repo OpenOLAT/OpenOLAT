@@ -205,7 +205,7 @@ public class ApplicationFeedbackDAO {
 		sb.append("select feedback from rappfeedback as feedback")
 		  .append(" inner join fetch feedback.application as app")
 		  .append(" inner join fetch app.position as pos")
-		  .append(" left join fetch pos.organisationUnit as orgUnit")
+		  .append(" left join fetch pos.organisation as org")
 		  .append(" inner join fetch feedback.configuration as config")
 		  .append(" where feedback.identity.key=:memberKey");
 		

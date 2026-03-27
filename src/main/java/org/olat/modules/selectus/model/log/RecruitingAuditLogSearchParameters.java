@@ -28,7 +28,7 @@ public class RecruitingAuditLogSearchParameters {
 	private RecruitingAuditLog.ActionTarget target;
 	private Date from;
 	private Date until;
-	private boolean organisationUnit;
+	private boolean organisation;
 	private boolean unreadOnly = false;
 
 	public PositionRef getPosition() {
@@ -95,11 +95,11 @@ public class RecruitingAuditLogSearchParameters {
 		this.unreadOnly = unreadOnly;
 	}
 
-	public boolean isOrganisationUnit() {
-		return organisationUnit;
+	public boolean isOrganisation() {
+		return organisation;
 	}
 
-	public void setOrganisationUnit(boolean organisationUnit) {
-		this.organisationUnit = organisationUnit;
+	public void setOrganisation(boolean organisation) {
+		this.organisation = organisation;
 	}
 }

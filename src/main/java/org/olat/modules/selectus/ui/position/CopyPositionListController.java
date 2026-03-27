@@ -8,6 +8,7 @@ package org.olat.modules.selectus.ui.position;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -27,8 +28,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Position;
@@ -41,6 +40,7 @@ import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.StatusCellRenderer;
 import org.olat.modules.selectus.ui.events.NewPositionEvent;
 import org.olat.modules.selectus.ui.position.PositionsDataModel.Fields;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,6 +64,8 @@ public class CopyPositionListController extends FormBasicController {
 	private RecruitingModule recruitingModule;
 	@Autowired
 	private RecruitingService recruitingService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public CopyPositionListController(UserRequest ureq, WindowControl wControl, SortKey[] orderBys) {
 		super(ureq, wControl, "copy_position_list", Util.createPackageTranslator(RecruitingHelper.class, ureq.getLocale()));
@@ -80,8 +82,8 @@ public class CopyPositionListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.positionTitle));
-		if(recruitingModule.isOrganisationUnitEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.organisationUnit));
+		if(organisationModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.organisation));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.status, new StatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.deadline, new DateCellRenderer()));

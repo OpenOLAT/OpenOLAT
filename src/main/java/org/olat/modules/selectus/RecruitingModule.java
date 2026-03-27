@@ -162,7 +162,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	public static final String NEW_POSITION_EXCLUDE_ATTRIBUTES = "new.position.exclude.attributes";
 	
 	private static final Logger log = Tracing.createLoggerFor(RecruitingModule.class);
-	private static final String RECRUITING_ORGANISATION_UNIT = "recruiting.organisation.unit";
 
 	@Value("${selectus.enabled:true}")
 	private boolean enabled;
@@ -172,8 +171,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	private String ratingAbstention;
 	@Value("${recruiting.rejection.all.decision:disabled}")
 	private String rejectionAllDecisionsStep;
-	@Value("${recruiting.organisation.unit:disabled}")
-	private String organisationUnits;
 	
 	@Value("${recruiting.officeMail}")
 	private String officeMail;
@@ -1424,11 +1421,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	}
 	
 	private void initOptions() {
-		String organisationUnitObj = getStringPropertyValue(RECRUITING_ORGANISATION_UNIT, true);
-		if(StringHelper.containsNonWhitespace(organisationUnitObj)) {
-			organisationUnits = organisationUnitObj;
-		}
-
 		positionRolesAllowedToRate = PositionRole.valueOfArray(rolesAllowedToRate);
 		positionRolesAllowedToSeeRating = PositionRole.valueOfArray(rolesAllowedToSeeRating);
 		positionRolesAllowedToSeeRatingDuringRating = PositionRole.valueOfArray(rolesAllowedToSeeRatingDuringRating);
@@ -1936,7 +1928,7 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		return officeMail;
 	}
 	
-	public MailSettingEnum getMailSetting(Position position) {
+	public MailSettingEnum getMailSetting(Position position, OrganisationUnit organisationSettings) {
 		if(position == null) {
 			return MailSettingEnum.system;
 		}
@@ -1972,17 +1964,17 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		return staffMail;
 	}
 	
-	public String getStaffMail(Position position) {
-		MailSettingEnum setting = getMailSetting(position);
+	public String getStaffMail(Position position, OrganisationUnit organisationSettings) {
+		MailSettingEnum setting = getMailSetting(position, organisationSettings);
 		
 		String mail = null;
 		if(setting == MailSettingEnum.position) {
 			mail = position.getSenderMail();
 		}
-		//TODO selectus load mail settings
+		
 		if(setting == MailSettingEnum.organisationUnit
 				|| (setting == MailSettingEnum.position && position.getOrganisation() != null && !StringHelper.containsNonWhitespace(mail))) {
-			//TODO  mail = position.getOrganisationt().getStaffMail();
+			mail = organisationSettings.getStaffMail();
 		}	
 		if(!StringHelper.containsNonWhitespace(mail)) {
 			mail = getStaffMail();
@@ -2007,15 +1999,14 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		return bccStaffMail;
 	}
 	
-	public String getBccStaffMail(Position position) {
-		MailSettingEnum setting = getMailSetting(position);
+	public String getBccStaffMail(Position position, OrganisationUnit organisationSettings) {
+		MailSettingEnum setting = getMailSetting(position, organisationSettings);
 		
 		String mail = null;
 		if(setting == MailSettingEnum.position) {
 			mail = position.getBccMail();
 		} else if(setting == MailSettingEnum.organisationUnit) {
-			//TODO selectus load mail settings
-			//TODO mail = position.getOrganisation().getStaffBcc();
+			mail = organisationSettings.getStaffBcc();
 		} else {
 			mail = getBccStaffMail();
 		}
@@ -2056,15 +2047,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public boolean isRatingAbstentionEnabled() {
 		return "enabled".equals(ratingAbstention);
-	}
-	
-	public boolean isOrganisationUnitEnabled() {
-		return "enabled".equals(organisationUnits);
-	}
-	
-	public void setOrganisationUnitEnabled(boolean enabled) {
-		organisationUnits = enabled ? "enabled" : "disabled";
-		setStringProperty(RECRUITING_ORGANISATION_UNIT, organisationUnits, true);
 	}
 	
 	public boolean isRejectionAllDecisionsStepEnabled() {

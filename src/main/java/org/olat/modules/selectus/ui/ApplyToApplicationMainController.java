@@ -34,10 +34,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.user.UserManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -45,6 +41,7 @@ import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionMLHelper;
 import org.olat.modules.selectus.model.PositionStatus;
@@ -65,6 +62,9 @@ import org.olat.modules.selectus.ui.app_wizard.WizardConstants;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.events.SelectPositionEvent;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -133,9 +133,11 @@ public class ApplyToApplicationMainController extends MainLayoutBasicController 
 	}
 	
 	private void setI18nArguments(Position position) {
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
+		
 		String[] i18nArguments = new String[] {
 			recruitingModule.getOfficeMail(),
-			recruitingModule.getStaffMail(position)
+			recruitingModule.getStaffMail(position, organisationSettings)
 		};
 		layoutMainVC.contextPut("i18nArguments", i18nArguments);
 		String listUrl = RecruitingHelper.getLinkToPositionList();
@@ -478,10 +480,11 @@ public class ApplyToApplicationMainController extends MainLayoutBasicController 
 			final Application app = (Application)runContext.get(WizardConstants.APPLICATION);
 			final RefereeList referees = (RefereeList)runContext.get(WizardConstants.REVIEWERS);
 			final Position position = app.getPosition();
+			final OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
 			final String posTitle = position.getMLTitle(getLocale());
 			final String name = salutationGenerator.getTitleFullname(app, getLocale());
 			final String dearTitleAndName = salutationGenerator.getSalutation(app, getLocale());
-			final String staffMail = recruitingModule.getStaffMail(position);
+			final String staffMail = recruitingModule.getStaffMail(position, organisationSettings);
 			final Identity headOfCommittee = recruitingService.getHeadOfCommittee(position);
 			final Identity secretary = recruitingService.getSecretary(position);
 			final String mailSignature;
