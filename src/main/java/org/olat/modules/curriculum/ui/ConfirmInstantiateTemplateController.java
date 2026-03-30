@@ -142,7 +142,7 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 		
 		periodEl.clearError();
 		if (periodEl.getDate() != null && periodEl.getSecondDate() != null && periodEl.getDate().after(periodEl.getSecondDate())) {
-			periodEl.setErrorKey("error.first.date.after.second.date");
+			periodEl.setErrorKey("form.error.first.after.second.date");
 			allOk &= false;
 		}
 		

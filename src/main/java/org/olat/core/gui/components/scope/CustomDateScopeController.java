@@ -132,7 +132,7 @@ public class CustomDateScopeController extends FormBasicController {
 			daterangeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else if (daterangeEl.getDate().after(daterangeEl.getSecondDate())) {
-			daterangeEl.setErrorKey("error.date.to.befre.date.from");
+			daterangeEl.setErrorKey("form.error.first.after.second.date");
 			allOk &= false;
 		} else if (limit != null) {
 			DateRange dateRange = getDateRange();

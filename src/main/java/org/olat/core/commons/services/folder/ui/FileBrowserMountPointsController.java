@@ -88,9 +88,7 @@ public class FileBrowserMountPointsController extends BasicController {
 		Link link = LinkFactory.createCustomLink("cont_" + counter++, CMD_OPEN, null, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
 		link.setElementCssClass("btn btn-default o_button_mega");
 		link.setIconLeftCSS("o_icon o_icon-xl " + provider.getProvider().getIconCss());
-		String text = "<div class=\"o_mega_headline\">" + provider.getName() + "</div>";
-		text += "<div class=\"o_mega_subline\">" + "</div>";
-		link.setCustomDisplayText(text);
+		link.setCustomDisplayText(provider.getName());
 		link.setUserObject(provider.getProvider());
 		return link;
 	}

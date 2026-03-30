@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -135,11 +136,10 @@ public class CoachInformationsController extends FormBasicController
 		coachDropdown.addActionListener(FormEvent.ONCLICK);
 		flc.contextPut("coachDropDownName", coachDropdown.getName());
 		
-		sessionInformationWrappers = new ArrayList<>(coachInformations.getInformationTypes().size());
-		for (InformationType informationType: coachInformations.getInformationTypes()) {
-			SessionInformationWrapper wrapper = createWrapper(informationType);
-			sessionInformationWrappers.add(wrapper);
-		}
+		sessionInformationWrappers = Arrays.stream(InformationType.values())
+				.filter(informationType -> coachInformations.getInformationTypes().contains(informationType))
+				.map(this::createWrapper)
+				.toList();
 		flc.contextPut("wrappers", sessionInformationWrappers);
 	}
 

@@ -372,7 +372,7 @@
 					var color = getBrushColor();
 					var width = getBrushWidth();
 
-					var pointer = canvas.getPointer(o.e);
+					var pointer = canvas.getScenePoint(o.e);
 					var points = [ pointer.x, pointer.y, pointer.x, pointer.y ];
 					line = new fabric.Line(points, {
 						stroke: color,
@@ -388,7 +388,7 @@
 				if (!isLineDown) {
 					return;
 				}
-				var pointer = canvas.getPointer(o.e);
+				var pointer = canvas.getScenePoint(o.e);
 				line.set({ x2: pointer.x, y2: pointer.y });
 				canvas.renderAll();
 			});

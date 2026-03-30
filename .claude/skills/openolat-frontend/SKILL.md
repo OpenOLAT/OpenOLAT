@@ -116,7 +116,7 @@ Filter buttons: active state `o_filter_active` goes on the `<a>`, NOT the `<li>`
 
 **Form Elements:** All wrapped in `.form-group` with Bootstrap `.form-control` inputs. Radio cards use `.o_radio_cards`. Toggles use `.o_toggle`. Form errors: `<div class="o_error">` (block div, NOT span) below the input within `.form-group`.
 
-**Mega Buttons:** `ul.o_mega_buttons` (CSS Grid, auto-fill) > `li` > `button.btn.o_button_mega` (55px, flex row) > `i.o_icon` + `span` > `div.o_mega_headline` + `div` (description). Used in course element selection.
+**Mega Buttons:** `ul.o_mega_buttons` (CSS Grid, auto-fill) > `li` > `button.btn.o_button_mega` (55px, flex row) > `i.o_icon` + `span`. Used in course element selection.
 
 **Widgets:** `.o_widgets` (CSS Grid, auto-fill minmax 260px) > `.o_widget` (card with `.o_widget_header` + `.o_widget_content`). Types: `o_figure_widget`, `o_text_widget`, `o_table_widget`.
 

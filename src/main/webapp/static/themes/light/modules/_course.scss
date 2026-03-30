@@ -120,6 +120,7 @@
 	}
 	.o_text_block {
 		@include clearfix;
+		@extend %o_wrap_anywhere;
 		display: flex;
 		.o_text_block_items {
 			display: flex;

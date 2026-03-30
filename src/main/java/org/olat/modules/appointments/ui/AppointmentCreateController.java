@@ -639,7 +639,7 @@ public class AppointmentCreateController extends FormBasicController {
 					if(!validateFormItem(ureq, startEl) || !validateFormItem(ureq, endEl)) {
 						allOk &= false;
 					} else if(end.before(start)) {
-						endEl.setErrorKey("error.start.after.end");
+						endEl.setErrorKey("form.error.first.after.second.date.time");
 						allOk &= false;
 					}
 				}
@@ -656,7 +656,7 @@ public class AppointmentCreateController extends FormBasicController {
 				recurringFirstEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (recurringFirstEl.getDate().after(recurringFirstEl.getSecondDate())) {
-				recurringFirstEl.setErrorKey("error.start.after.end");
+				recurringFirstEl.setErrorKey("form.error.first.after.second.date.time");
 				allOk &= false;
 			}
 			

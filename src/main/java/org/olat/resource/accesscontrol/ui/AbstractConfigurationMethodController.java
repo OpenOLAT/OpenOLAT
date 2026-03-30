@@ -265,7 +265,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		
 		datesEl.clearError();
 		if (datesEl.getDate() != null && datesEl.getSecondDate() != null && datesEl.getDate().compareTo(datesEl.getSecondDate()) > 0) {
-			datesEl.setErrorKey("date.error");
+			datesEl.setErrorKey("form.error.first.after.second.date");
 			allOk = false;
 		}
 		

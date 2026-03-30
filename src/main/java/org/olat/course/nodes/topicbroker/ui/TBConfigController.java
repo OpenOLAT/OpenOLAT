@@ -348,7 +348,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 				selectionPeriodAbsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (selectionPeriodAbsEl.getDate().after(selectionPeriodAbsEl.getSecondDate())) {
-				selectionPeriodAbsEl.setErrorKey("error.first.date.after.second.date");
+				selectionPeriodAbsEl.setErrorKey("form.error.first.after.second.date");
 				allOk &= false;
 			}
 		}

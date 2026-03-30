@@ -230,8 +230,6 @@ ul.o_mega_buttons                      // CSS Grid container (auto-fill, respons
   > li > button.btn.o_button_mega      // 55px height, flex row
     > i.o_icon.o_icon_{name}           // Left icon
     > span                             // Text container
-      > div.o_mega_headline            // Bold title
-      > div                            // Description
 ```
 Used in course element selection screens (e.g., course Planner "Add Element").
 

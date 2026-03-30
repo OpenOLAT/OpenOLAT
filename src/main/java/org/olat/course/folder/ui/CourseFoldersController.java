@@ -109,9 +109,7 @@ public class CourseFoldersController extends BasicController implements Activate
 		Link link = LinkFactory.createCustomLink("cont_" + counter++, CMD_OPEN, null, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
 		link.setElementCssClass("btn btn-default o_button_mega o_sel_" + name.replace(" ", "_"));
 		link.setIconLeftCSS("o_icon o_icon-xl " + "o_filetype_folder");
-		String text = "<div class=\"o_mega_headline\">" + name + "</div>";
-		text += "<div class=\"o_mega_subline\">" + "</div>";
-		link.setCustomDisplayText(text);
+		link.setCustomDisplayText(name);
 		link.setUserObject(vfsContainer);
 		return link;
 	}

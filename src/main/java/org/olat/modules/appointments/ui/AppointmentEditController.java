@@ -489,7 +489,7 @@ public class AppointmentEditController extends FormBasicController {
 			Date start = startEl.getDate();
 			Date end = endEl.getDate();
 			if(end.before(start)) {
-				endEl.setErrorKey("error.start.after.end");
+				endEl.setErrorKey("form.error.first.after.second.date.time");
 				allOk &= false;
 			}
 		}

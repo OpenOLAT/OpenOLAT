@@ -373,16 +373,20 @@ public class EvaluationFormExcelExport {
 	
 	private void addSessionInformationsHeader(OpenXMLWorkbook workbook, Row row, AtomicInteger col,
 			SessionInformations sessionInformations) {
-		for (InformationType informationType: sessionInformations.getInformationTypes()) {
-			row.addCell(col.getAndIncrement(), informationType.name(), workbook.getStyles().getBottomAlignStyle());
+		for (InformationType informationType: InformationType.values()) {
+			if (sessionInformations.getInformationTypes().contains(informationType)) {
+				row.addCell(col.getAndIncrement(), informationType.name(), workbook.getStyles().getBottomAlignStyle());
+			}
 		}
 	}
 	
 	private void addCoachInformationsHeader(OpenXMLWorkbook workbook, Row row, AtomicInteger col,
 			CoachInformations coachInformations) {
-		for (InformationType informationType: coachInformations.getInformationTypes()) {
-			String name = informationType.name().replace("USER", "COACH");
-			row.addCell(col.getAndIncrement(), name, workbook.getStyles().getBottomAlignStyle());
+		for (InformationType informationType: InformationType.values()) {
+			if (coachInformations.getInformationTypes().contains(informationType)) {
+				String name = informationType.name().replace("USER", "COACH");
+				row.addCell(col.getAndIncrement(), name, workbook.getStyles().getBottomAlignStyle());
+			}
 		}
 	}
 	
@@ -454,12 +458,14 @@ public class EvaluationFormExcelExport {
 
 	private void addSessionInformations(OpenXMLWorkbook workbook, EvaluationFormSession session, Row row,
 			AtomicInteger col, SessionInformations sessionInformations) {
-		for (InformationType informationType: sessionInformations.getInformationTypes()) {
-			String value = SessionInformationsUIFactory.getValue(informationType, session);
-			if (StringHelper.containsNonWhitespace(value)) {
-				row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
+		for (InformationType informationType: InformationType.values()) {
+			if (sessionInformations.getInformationTypes().contains(informationType)) {
+				String value = SessionInformationsUIFactory.getValue(informationType, session);
+				if (StringHelper.containsNonWhitespace(value)) {
+					row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
+				}
+				col.getAndIncrement();
 			}
-			col.getAndIncrement();
 		}
 	}
 	
@@ -473,12 +479,14 @@ public class EvaluationFormExcelExport {
 			}
 		}
 		
-		for (InformationType informationType: coachInformations.getInformationTypes()) {
-			String value = SessionInformationsUIFactory.getValue(informationType, userInfo);
-			if (StringHelper.containsNonWhitespace(value)) {
-				row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
+		for (InformationType informationType: InformationType.values()) {
+			if (coachInformations.getInformationTypes().contains(informationType)) {
+				String value = SessionInformationsUIFactory.getValue(informationType, userInfo);
+				if (StringHelper.containsNonWhitespace(value)) {
+					row.addCell(col.get(), value, workbook.getStyles().getTopAlignStyle());
+				}
+				col.getAndIncrement();
 			}
-			col.getAndIncrement();
 		}
 	}
 

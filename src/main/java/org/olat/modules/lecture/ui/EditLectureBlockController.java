@@ -646,7 +646,7 @@ public class EditLectureBlockController extends FormBasicController {
 			dateEl.setErrorKey("error.min.duration");
 			allOk &= false;
 		} else if(dateEl.getDate().after(dateEl.getSecondDate())) {
-			dateEl.setErrorKey("error.start.after.end.date");
+			dateEl.setErrorKey("form.error.first.after.second.date.time");
 			allOk &= false;
 		}
 		

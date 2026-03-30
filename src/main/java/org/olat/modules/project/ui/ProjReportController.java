@@ -99,7 +99,7 @@ public class ProjReportController extends FormBasicController {
 		
 		dateRangeEl.clearError();
 		if (dateRangeEl.getDate() != null && dateRangeEl.getSecondDate() != null && dateRangeEl.getDate().after(dateRangeEl.getSecondDate())) {
-			dateRangeEl.setErrorKey("error.date.range.to.before.from");
+			dateRangeEl.setErrorKey("form.error.first.after.second.date");
 			allOk &= false;
 		}
 		

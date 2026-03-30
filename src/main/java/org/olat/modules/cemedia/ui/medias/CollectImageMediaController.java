@@ -398,6 +398,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		tagsEl.addNewDisplayNames(newTags);
 
 		setFormWarning("ai.generate.metadata.done");
+		markDirty();
 	}
 
 	private void updateAiButtonVisibility() {

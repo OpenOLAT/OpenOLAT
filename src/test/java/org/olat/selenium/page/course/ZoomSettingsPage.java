@@ -47,7 +47,11 @@ public class ZoomSettingsPage {
 	}
 	
 	public ZoomSettingsPage addProfile(String profile, String ltiKey) {
-		By addProfileBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration a.o_sel_zoom_admin_add_profile");
+		By profileTabBy = By.cssSelector("div.o_sel_zoom_segment a.o_sel_zoom_lti_pro_configurations_link");
+		OOGraphene.waitElement(profileTabBy, browser);
+		OOGraphene.click(profileTabBy, browser);
+		
+		By addProfileBy = By.cssSelector("fieldset.o_sel_zoom_admin_lti_pro_configurations a.o_sel_zoom_admin_add_profile");
 		OOGraphene.waitElement(addProfileBy, browser);
 		OOGraphene.click(addProfileBy, browser);
 		

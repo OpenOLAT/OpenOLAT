@@ -569,14 +569,8 @@ Renders stacked/layered content. LayeredPanel adds `o_layer_0`, `o_layer_1` clas
 .btn.o_button_call_to_action // Large, wide CTA button
 .btn.o_button_dirty         // Warning-colored (unsaved changes)
 
-// Mega buttons: grid container + flex button with icon, headline, description
-// Used in course element selection screens (e.g., course Planner)
+// Mega buttons
 .o_mega_buttons             // CSS Grid container (auto-fill, responsive 1-9 columns)
-  > li > button.btn.o_button_mega   // 55px height, flex row layout
-    > i.o_icon                      // Left icon
-    > span                          // Text container
-      > div.o_mega_headline         // Bold title
-      > div                         // Description text
 
 // Button groups
 .o_button_group       { text-align: center; }

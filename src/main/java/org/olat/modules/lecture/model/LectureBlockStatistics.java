@@ -154,7 +154,7 @@ public class LectureBlockStatistics {
 
 	public void addTotalDispensationLectures(long lectures) {
 		if(lectures > 0) {
-			totalDispensationLectures = lectures;
+			totalDispensationLectures += lectures;
 		}
 	}
 

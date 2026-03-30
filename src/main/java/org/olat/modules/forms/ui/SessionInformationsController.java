@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -105,11 +106,10 @@ public class SessionInformationsController extends FormBasicController implement
 			flc.remove(fillInButton);
 		}
 		
-		sessionInformationWrappers = new ArrayList<>();
-		for (InformationType informationType: sessionInformations.getInformationTypes()) {
-			SessionInformationWrapper wrapper = createWrapper(informationType);
-			sessionInformationWrappers.add(wrapper);
-		}
+		sessionInformationWrappers = Arrays.stream(InformationType.values())
+				.filter(informationType -> sessionInformations.getInformationTypes().contains(informationType))
+				.map(this::createWrapper)
+				.toList();
 		
 		fillInButton = uifactory.addFormLink("gi_" + CodeHelper.getRAMUniqueID(), "session.informations.fill.in",
 				"session.informations.fill.in.label", flc, Link.BUTTON);

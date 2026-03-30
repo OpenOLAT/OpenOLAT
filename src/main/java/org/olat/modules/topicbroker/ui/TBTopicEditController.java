@@ -365,6 +365,12 @@ public class TBTopicEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		beginEndEl.clearError();
+		if (beginEndEl.getDate() != null && beginEndEl.getSecondDate() != null && beginEndEl.getDate().after(beginEndEl.getSecondDate())) {
+			beginEndEl.setErrorKey("form.error.first.after.second.date");
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	

@@ -85,8 +85,8 @@ public class CreateAbsenceLeaveController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override
@@ -95,8 +95,9 @@ public class CreateAbsenceLeaveController extends FormBasicController {
 		
 		datesEl.clearError();
 		if((datesEl.getDate() != null && datesEl.getSecondDate() == null)
-				|| (datesEl.getDate() == null && datesEl.getSecondDate() != null)) {
-			datesEl.setErrorKey("form.legende.mandatory");
+				|| (datesEl.getDate() == null && datesEl.getSecondDate() != null)
+				|| (datesEl.getDate() != null && datesEl.getSecondDate() != null && datesEl.getDate().after(datesEl.getSecondDate()))) {
+			datesEl.setErrorKey("form.error.first.after.second.date");
 			allOk &= false;
 		}
 

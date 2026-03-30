@@ -95,6 +95,9 @@ public class UsersMembershipsReportController extends FormBasicController {
 		if(datesEl.getDate() == null || datesEl.getSecondDate() == null) {
 			datesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else if (datesEl.getDate().after(datesEl.getSecondDate())) {
+			datesEl.setErrorKey("form.error.first.after.second.date");
+			allOk &= false;
 		} else {
 			Date from = datesEl.getDate();
 			Date to = datesEl.getSecondDate();

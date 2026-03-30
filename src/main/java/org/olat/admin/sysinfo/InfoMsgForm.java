@@ -106,6 +106,20 @@ public class InfoMsgForm extends FormBasicController {
 	public void reset() {
 		msg.setValue("");
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		start.clearError();
+		if (start.isVisible() && start.isEnabled() && start.getDate() != null && start.getSecondDate() != null
+				&& start.getDate().compareTo(start.getSecondDate()) > 0) {
+			start.setErrorKey("form.error.first.after.second.date.time");
+			allOk = false;
+		}
+		
+		return allOk;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

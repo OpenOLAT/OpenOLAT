@@ -3681,8 +3681,8 @@ public class CourseElementTest extends Deployments {
 		administration
 			.openZoomSettings(false)
 			.enableZoom()
-			.addProfile(profile, "key-" + profile)
-			.saveConfiguration();
+			.saveConfiguration()
+			.addProfile(profile, "key-" + profile);
 		 
 		 OOGraphene.scrollTop(browser);
 		 

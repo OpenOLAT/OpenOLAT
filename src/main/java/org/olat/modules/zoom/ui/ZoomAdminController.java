@@ -50,11 +50,13 @@ public class ZoomAdminController extends BasicController implements Activateable
     private final VelocityContainer mainVC;
     private final SegmentViewComponent segmentView;
     private final Link configurationLink;
+    private final Link ltiProConfigurationsLink;
 
     @Autowired
     private LTI13Module lti13Module;
 
     private ZoomConfigurationController configController;
+    private ZoomLtiProConfigurationsController ltiProConfigurationsCtrl;
 
     public ZoomAdminController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl);
@@ -62,9 +64,14 @@ public class ZoomAdminController extends BasicController implements Activateable
         mainVC = createVelocityContainer("zoom_admin");
         segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
         configurationLink = LinkFactory.createLink("zoom.configuration", mainVC, this);
+        configurationLink.setElementCssClass("o_sel_zoom_configuration_link");
+        ltiProConfigurationsLink = LinkFactory.createLink("zoom.lti.pro.configurations", mainVC, this);
+        ltiProConfigurationsLink.setElementCssClass("o_sel_zoom_lti_pro_configurations_link");
 
         if (lti13Module.isEnabled()) {
-            doOpenConfiguration(ureq);
+            segmentView.addSegment(configurationLink, true);
+            segmentView.addSegment(ltiProConfigurationsLink, false);
+            doOpenConfiguration(ureq, null);
             mainVC.contextPut("isLtiAvailable", Boolean.TRUE);
         } else {
             mainVC.contextPut("isLtiAvailable", Boolean.FALSE);
@@ -73,7 +80,7 @@ public class ZoomAdminController extends BasicController implements Activateable
         putInitialPanel(mainVC);
     }
 
-    private void doOpenConfiguration(UserRequest ureq) {
+    private void doOpenConfiguration(UserRequest ureq, List<ContextEntry> entries) {
         removeAsListenerAndDispose(configController);
 
         WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0L), null);
@@ -81,16 +88,30 @@ public class ZoomAdminController extends BasicController implements Activateable
         listenTo(configController);
 
         mainVC.put("segmentCmp", configController.getInitialComponent());
+        configController.activate(ureq, entries, null);
+    }
+
+    private void doOpenLtiProConfigurations(UserRequest ureq, List<ContextEntry> entries) {
+        removeAsListenerAndDispose(ltiProConfigurationsCtrl);
+
+        WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("LtiProConfigurations", 0L), null);
+        ltiProConfigurationsCtrl = new ZoomLtiProConfigurationsController(ureq, bwControl);
+        listenTo(ltiProConfigurationsCtrl);
+
+        mainVC.put("segmentCmp", ltiProConfigurationsCtrl.getInitialComponent());
+        ltiProConfigurationsCtrl.activate(ureq, entries, null);
     }
 
     @Override
     protected void event(UserRequest ureq, Component source, Event event) {
         if (source == segmentView && event instanceof SegmentViewEvent) {
-            SegmentViewEvent sve = (SegmentViewEvent)event;
+            SegmentViewEvent sve = (SegmentViewEvent) event;
             String segmentCName = sve.getComponentName();
             Component clickedLink = mainVC.getComponent(segmentCName);
             if (clickedLink == configurationLink) {
-                doOpenConfiguration(ureq);
+                doOpenConfiguration(ureq, null);
+            } else if (clickedLink == ltiProConfigurationsLink) {
+                doOpenLtiProConfigurations(ureq, null);
             }
         }
     }
@@ -100,9 +121,13 @@ public class ZoomAdminController extends BasicController implements Activateable
         if (entries == null || entries.isEmpty()) return;
 
         String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+        List<ContextEntry> subEntries = entries.subList(1, entries.size());
         if ("Configuration".equalsIgnoreCase(type)) {
-            doOpenConfiguration(ureq);
+            doOpenConfiguration(ureq, subEntries);
             segmentView.select(configurationLink);
+        } else if ("LtiProConfigurations".equalsIgnoreCase(type)) {
+            doOpenLtiProConfigurations(ureq, subEntries);
+            segmentView.select(ltiProConfigurationsLink);
         }
     }
 }

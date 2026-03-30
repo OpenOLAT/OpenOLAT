@@ -1046,24 +1046,8 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>o_button_group_top</code></td><td>Remove top margin from button group</td></tr>
 <tr><td><code>o_button_group_bottom</code></td><td>Remove bottom margin from button group</td></tr>
 <tr><td><code>o_mega_buttons</code></td><td>CSS Grid container for mega buttons (responsive 1&ndash;9 columns)</td></tr>
-<tr><td><code>o_mega_buttons_centered</code></td><td>Center mega buttons using empty grid columns</td></tr>
 </tbody>
 </table>
-
-<h3>Mega Button DOM Structure</h3>
-<p>Mega buttons are rendered as a CSS Grid list. Each button contains an icon and a two-line label (headline + description). Used in course element selection dialogs.</p>
-<pre><code>&lt;ul class="o_mega_buttons"&gt;                    &lt;!-- CSS Grid, auto-fill --&gt;
-  &lt;li&gt;
-    &lt;button class="btn o_button_mega"&gt;          &lt;!-- 55px height, flex row --&gt;
-      &lt;i class="o_icon o_icon_courseelement"&gt;&lt;/i&gt;
-      &lt;span&gt;
-        &lt;div class="o_mega_headline"&gt;Title&lt;/div&gt;
-        &lt;div&gt;Description text&lt;/div&gt;
-      &lt;/span&gt;
-    &lt;/button&gt;
-  &lt;/li&gt;
-  ...
-&lt;/ul&gt;</code></pre>
 
 <!-- ==================== SECTION 21: MESSAGES ==================== -->
 <h2 id="css-messages">21. Messages &amp; Alerts</h2>

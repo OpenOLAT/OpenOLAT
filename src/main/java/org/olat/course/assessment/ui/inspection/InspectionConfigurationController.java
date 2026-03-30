@@ -113,7 +113,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		inspectionPeriodEl.setElementCssClass("o_sel_assessment_inspection_period");
 		inspectionPeriodEl.setSecondDate(true);
 		inspectionPeriodEl.setDateChooserTimeEnabled(true);
-		inspectionPeriodEl.setSeparator("configuration.inspection.period.separator");
+		inspectionPeriodEl.setSeparator("to.separator");
 		inspectionPeriodEl.setMandatory(true);
 		inspectionPeriodEl.addActionListener(FormEvent.ONCHANGE);
 		if(context.getEditedInspection() != null) {
@@ -163,7 +163,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 			allOk &= false;
 		} else if(inspectionPeriodEl.getDate() != null && inspectionPeriodEl.getSecondDate() != null) {
 			if(!inspectionPeriodEl.getSecondDate().after(inspectionPeriodEl.getDate())) {
-				inspectionPeriodEl.setErrorKey("error.from.to.date");
+				inspectionPeriodEl.setErrorKey("form.error.first.after.second.date.time");
 				allOk &= false;
 			} else if(inspectionPeriodEl.getSecondDate().before(ureq.getRequestTimestamp())) {
 				inspectionPeriodEl.setErrorKey("error.from.to.date.in.past");
