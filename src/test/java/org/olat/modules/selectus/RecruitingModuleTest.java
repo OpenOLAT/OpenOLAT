@@ -7,7 +7,6 @@ package org.olat.modules.selectus;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Organisation;
@@ -45,7 +44,6 @@ public class RecruitingModuleTest extends OlatTestCase {
 	}
 	
 	@Test
-	@Ignore //TODO selectus load mail settings
 	public void getStaffMail_position_atPosition() {
 		OrganisationUnit orgUnit = new OrganisationUnitImpl();
 		orgUnit.setStaffMail("org-staff@frentix.com");
@@ -65,7 +63,6 @@ public class RecruitingModuleTest extends OlatTestCase {
 	}
 	
 	@Test
-	@Ignore //TODO selectus load mail
 	public void getStaffMail_position_atPosition_noBCC() {
 		OrganisationUnit orgUnit = new OrganisationUnitImpl();
 		orgUnit.setStaffMail("org-staff@frentix.com");
@@ -103,7 +100,6 @@ public class RecruitingModuleTest extends OlatTestCase {
 	}
 	
 	@Test
-	@Ignore //TODO selectus need organisation implementation
 	public void getStaffMail_org_system() {
 		OrganisationUnit orgUnit = new OrganisationUnitImpl();
 		orgUnit.setStaffMail("org-staff@frentix.com");
@@ -116,8 +112,8 @@ public class RecruitingModuleTest extends OlatTestCase {
 		position.setMailSetting(MailSettingEnum.organisationUnit);
 
 		String mail = recruitingModule.getStaffMail(position, orgUnit);
-		Assert.assertEquals("stephane.rosse@frentix.com", mail);
+		Assert.assertEquals("selectus@openolat.com", mail);
 		String bcc = recruitingModule.getBccStaffMail(position, orgUnit);
-		Assert.assertEquals("stephane.rosse.bcc@frentix.com", bcc);
+		Assert.assertEquals("selectus.bcc@openolat.com", bcc);
 	}
 }
