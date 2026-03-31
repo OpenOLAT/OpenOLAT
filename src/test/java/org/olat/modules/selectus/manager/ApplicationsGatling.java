@@ -10,12 +10,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.AcademicalBackground;
 import org.olat.modules.selectus.model.Address;
@@ -27,6 +25,8 @@ import org.olat.modules.selectus.model.Person;
 import org.olat.modules.selectus.model.PersonMaritalStatus;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.Project;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,6 +46,7 @@ public class ApplicationsGatling extends OlatTestCase {
 	private RecruitingService recruitingFrontendManager;
 	
 	@Test
+	@Ignore
 	public void fillPosition() {
 		int numOfApplications = 1000;
 		Long positionKey = 207552512l;

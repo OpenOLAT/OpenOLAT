@@ -22,7 +22,6 @@ import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
@@ -308,8 +307,6 @@ public class PositionDAOTest extends OlatTestCase {
 		Assert.assertFalse(positionsToRemind.contains(posNotToRemind));
 	}
 	
-	//TODO getEstimatedSizeOfAttachment
-	
 	@Test
 	public void findPositions() {
 		Position publishedPos = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
@@ -436,7 +433,7 @@ public class PositionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//visible position
-		Roles roles = Roles.userRoles();//TODO selectus
+		Roles roles = securityManager.getRoles(committeeMember);
 		PositionStatusFilters cmFilters = positionDao.getPositionStatusFilters(committeeMember, roles, null);
 		List<PositionLightWithStatistics> openPositions = positionDao.findPositionsLightWithStatistics(committeeMember, cmFilters,
 				Collections.emptyList(), true, Locale.ENGLISH);
@@ -490,9 +487,8 @@ public class PositionDAOTest extends OlatTestCase {
 	
 
 	@Test
-	@Ignore //TODO selectus need organisations implementation
-	public void findPositions_staff() {
-		Identity staffMember = JunitTestHelper.createAndPersistIdentityAsAuthor("Staff-pos-1-");
+	public void findPositionsSelectusManager() {
+		Identity staffMember = JunitTestHelper.createAndPersistIdentityAsRndUser("Staff-pos-1-", defaultUnitTestOrganisation, "test21");
 		organisationService.addMember(organisationService.getDefaultOrganisation(), staffMember, OrganisationRoles.selectusmanager, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -511,7 +507,7 @@ public class PositionDAOTest extends OlatTestCase {
 		Roles roles = securityManager.getRoles(staffMember);
 		PositionStatusFilters staffFilters = positionDao.getPositionStatusFilters(staffMember, roles, null);
 		List<PositionLightWithStatistics> openPositions = positionDao.findPositionsLightWithStatistics(staffMember, staffFilters,
-				Collections.emptyList(), true, Locale.ENGLISH);
+				List.of(), true, Locale.ENGLISH);
 		Assert.assertNotNull(openPositions);
 		Assert.assertTrue(openPositions.size() >= PositionStatus.values().length);
 		
