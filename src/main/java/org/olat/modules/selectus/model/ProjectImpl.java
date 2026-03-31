@@ -5,12 +5,13 @@
  */
 package org.olat.modules.selectus.model;
 
+import java.io.Serializable;
 import java.util.Date;
+
+import org.olat.core.util.StringHelper;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -19,7 +20,9 @@ import org.olat.core.util.StringHelper;
  *
  */
 @Embeddable
-public class ProjectImpl implements Project {
+public class ProjectImpl implements Project, Serializable {
+	
+	private static final long serialVersionUID = 254185392207090679L;
 	
 	@Column(name="projecttitle", nullable=true, insertable=true, updatable=true)
 	private String title;

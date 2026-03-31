@@ -550,6 +550,17 @@ public class OOGraphene {
 		executeScript(browser, by, "return arguments[0].scrollIntoView({behavior:\"auto\", block: \"end\"});");
 	}
 	
+	/**
+	 * The method waits for the element specified by the by selector.
+	 * 
+	 * @param by The selector
+	 * @param browser The browser
+	 */
+	public static void waitAndScrollTo(By by, WebDriver browser) {
+		waitElementPresence(by, 5, browser);
+		scrollTo(by, browser);
+	}
+	
 	private static void executeScript(WebDriver browser, By by, String script) {
 		try {
 			WebElement element = browser.findElement(by);

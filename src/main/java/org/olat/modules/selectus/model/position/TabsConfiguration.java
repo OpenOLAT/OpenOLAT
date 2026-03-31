@@ -5,7 +5,7 @@
  */
 package org.olat.modules.selectus.model.position;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.olat.modules.selectus.RecruitingModule;
@@ -19,7 +19,7 @@ import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
  */
 public class TabsConfiguration {
 	
-	private Map<Tab,TabConfiguration> configurations = new EnumMap<>(Tab.class);
+	private Map<Tab,TabConfiguration> configurations = new HashMap<>();
 	
 	public TabConfiguration getConfiguration(Tab tab) {
 		return configurations.get(tab);

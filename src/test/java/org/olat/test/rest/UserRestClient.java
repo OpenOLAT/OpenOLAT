@@ -150,6 +150,23 @@ public class UserRestClient {
 		return user;
 	}
 	
+	public UserVO createSelectusManager(String name, boolean withAdministrator)
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
+		
+		UserVO user = createUser(restConnection, name, "Selectus", createRandomPwd());
+		
+		RolesVO roles = new RolesVO();
+		roles.setSelectusManager(true);
+		if(withAdministrator) {
+			roles.setOlatAdmin(withAdministrator);
+		}
+		updateRoles(restConnection, user, roles);
+
+		restConnection.shutdown();
+		return user;
+	}
+	
 	/**
 	 * Reuse the same administrator.
 	 * 

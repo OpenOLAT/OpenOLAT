@@ -437,7 +437,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation,
-				false, false, false, true, true, true, true, true, true, true, true);
+				false, false, false, true, true, true, true, true, true, true, true, true);
 		securityManager.updateRoles(id2, id1, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -453,6 +453,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(reloadRoles.isSystemAdmin());
 		Assert.assertTrue(reloadRoles.isPoolManager());
 		Assert.assertTrue(reloadRoles.isCurriculumManager());
+		Assert.assertTrue(reloadRoles.isSelectusManager());
 		Assert.assertTrue(reloadRoles.isUserManager());
 	}
 	
@@ -470,7 +471,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation,
-				false, false, false, true, false, false, true, true, false, false, false);
+				false, false, false, true, false, false, true, true, false, false, false, false);
 		securityManager.updateRoles(id2, id1, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -485,6 +486,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertFalse(reloadRoles.isAdministrator());
 		Assert.assertFalse(reloadRoles.isSystemAdmin());
 		Assert.assertFalse(reloadRoles.isPoolManager());
+		Assert.assertFalse(reloadRoles.isSelectusManager());
 		Assert.assertTrue(reloadRoles.isCurriculumManager());
 		Assert.assertTrue(reloadRoles.isUserManager());
 	}

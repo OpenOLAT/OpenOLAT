@@ -5,14 +5,15 @@
  */
 package org.olat.modules.selectus.model;
 
+import java.io.Serializable;
 import java.util.Date;
+
+import org.olat.core.util.StringHelper;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -24,8 +25,10 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Embeddable
-public class PersonImpl implements Person {
+public class PersonImpl implements Person, Serializable {
 
+	private static final long serialVersionUID = -7229774038913521642L;
+	
 	@Column(name="persontitle", nullable=true, insertable=true, updatable=true)
 	private String titleInternal;
 	@Column(name="gender", nullable=true, insertable=true, updatable=true)

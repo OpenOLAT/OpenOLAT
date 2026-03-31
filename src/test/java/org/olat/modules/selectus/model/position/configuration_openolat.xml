@@ -1,0 +1,64 @@
+<com.frentix.recruiting.model.position.TabsConfiguration>
+  <configurations class="enum-map" enum-type="com.frentix.recruiting.model.position.TabsConfiguration$Tab">
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>instructions</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>instructions</tab>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>personalData</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>personalData</tab>
+        <help>Please enter the requested personal data. Fields marked with an asterisk are mandatory.</help>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>academicalBackground</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>academicalBackground</tab>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>documents</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>documents</tab>
+        <help>For each requested document upload one single PDF file. Make sure that the PDF files are not password protected.</help>
+        <helpDe>Laden Sie für jedes benötigte Dokument eine einzelne PDF-Datei hoch. Stellen Sie sicher dass die Dateien nicht passwortgeschützt sind.</helpDe>
+        <helpFr>Pour chaque document demandé, téléchargez un seul fichier PDF. Assurez-vous que les fichiers PDF ne sont pas protégés par un mot de passe.</helpFr>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>project</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>project</tab>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>referees</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>referees</tab>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>reviewAndSubmit</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>reviewAndSubmit</tab>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+    <entry>
+      <com.frentix.recruiting.model.position.TabsConfiguration_-Tab>confirmation</com.frentix.recruiting.model.position.TabsConfiguration_-Tab>
+      <com.frentix.recruiting.model.position.TabConfiguration>
+        <tab>confirmation</tab>
+        <disabled>false</disabled>
+      </com.frentix.recruiting.model.position.TabConfiguration>
+    </entry>
+  </configurations>
+</com.frentix.recruiting.model.position.TabsConfiguration>

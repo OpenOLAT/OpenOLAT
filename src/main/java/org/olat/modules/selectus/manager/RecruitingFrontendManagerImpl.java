@@ -1876,6 +1876,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public OrganisationUnit getOrganisationUnit(PositionRef position) {
+		if(position == null || position.getKey() == null) return null;
 		return organisationUnitDao.loadOrganisationUnitByPosition(position);
 	}
 

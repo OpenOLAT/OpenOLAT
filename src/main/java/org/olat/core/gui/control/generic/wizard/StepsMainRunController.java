@@ -152,12 +152,17 @@ public class StepsMainRunController extends FormBasicController implements Gener
 
 	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
 			StepRunnerCallback cancel, String wizardTitle, String elementCssClass) {
-		this(ureq, control, startStep, finish, cancel, wizardTitle, elementCssClass, "");
+		this(ureq, control, startStep, finish, cancel, wizardTitle, "stepslayout", elementCssClass, "");
 	}
 	
 	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
 			StepRunnerCallback cancel, String wizardTitle, String elementCssClass, String contextHelpPage) {
-		super(ureq, control, "stepslayout");
+		this(ureq, control, startStep, finish, cancel, wizardTitle, "stepslayout", elementCssClass, contextHelpPage);
+	}
+	
+	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
+			StepRunnerCallback cancel, String wizardTitle, String stepsPage, String elementCssClass, String contextHelpPage) {
+		super(ureq, control, stepsPage);
 		this.finish = finish;
 		this.cancel = cancel;
 		this.startStep = startStep;
@@ -177,6 +182,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	
 	public StepsRunContext getRunContext() {
 		return stepsContext;
+	}
+	
+	public void setFinishTitle(String i18nKey) {
+		finishButton.setLinkTitle(i18nKey);
 	}
 
 	@Override

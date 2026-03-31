@@ -11,8 +11,8 @@ import java.util.Locale;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
@@ -24,11 +24,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.ApplyToApplicationMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -65,7 +64,7 @@ public class ApplicationSite implements SiteInstance {
 	}
 
 	@Override
-	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
+	public Controller createController(UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Apply", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 

@@ -108,3 +108,15 @@
 		border-radius: $border-radius-base;
 	}
 }
+
+.o_wizard.o_wizard_embedded {
+	max-width: 100%;
+	
+	.o_wizard_body {
+		position: relative;
+		
+	}
+}
+
+
+

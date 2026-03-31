@@ -318,6 +318,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.selectus.manager.ReviewServiceTest.class,
 	org.olat.modules.selectus.manager.SalutationAndTitleTest.class,
 	org.olat.modules.selectus.model.PositionImplTest.class,
+	org.olat.modules.selectus.model.position.TabsConfigurationXStreamTest.class,
 	org.olat.modules.selectus.ui.RecruitingHelperTest.class,
 	org.olat.modules.selectus.ui.components.DateCellRendererTest.class,
 	org.olat.modules.selectus.ui.title_generator.MpiwgSalutationGeneratorTest.class,

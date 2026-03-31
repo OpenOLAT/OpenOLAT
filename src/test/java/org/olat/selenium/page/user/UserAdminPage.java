@@ -20,6 +20,7 @@
 package org.olat.selenium.page.user;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -153,6 +154,13 @@ public class UserAdminPage {
 		userVo.setEmail(email);
 		userVo.setPassword(password);
 		return userVo;
+	}
+	
+	public static UserVO createRndUserVO(String usernamePrefix, String firstName, String lastName, String password) {
+		String uuid = UUID.randomUUID().toString();
+		String username = usernamePrefix + "-" + uuid;
+		String email = username + "@openolat.com";
+		return createUserVO(username, firstName, lastName, email, password) ;
 	}
 	
 	public UserViewPage fillUserForm(String username, String firstName, String lastName, String email, String password) {

@@ -5,6 +5,8 @@
  */
 package org.olat.modules.selectus.model;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -15,7 +17,9 @@ import jakarta.persistence.Embeddable;
  *
  */
 @Embeddable
-public class BusinessInformationsImpl implements BusinessInformations {
+public class BusinessInformationsImpl implements BusinessInformations, Serializable {
+	
+	private static final long serialVersionUID = 6752873356408045039L;
 	
 	@Column(name="organization", nullable=true, insertable=true, updatable=true)
 	private String organization;

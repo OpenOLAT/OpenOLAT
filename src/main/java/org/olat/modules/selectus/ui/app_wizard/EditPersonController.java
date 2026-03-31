@@ -37,8 +37,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.mail.MailHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.AddressOption;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.Address;
@@ -59,6 +57,8 @@ import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.olat.modules.selectus.ui.components.ReflectionStaticElement;
 import org.olat.modules.selectus.ui.components.SelectusUIFactory;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -139,6 +139,8 @@ public class EditPersonController extends FormBasicController {
 	private final TabConfiguration tabConfiguration;
 	private final List<String> excludedAttributes;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private RecruitingModule recruitingModule;
 	
@@ -1268,11 +1270,13 @@ public class EditPersonController extends FormBasicController {
 		keys.add("-");
 		values.add(translate("please.choose"));
 		
+		Translator countryTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
+		
 		Collator collator = Collator.getInstance(getLocale());
 		if(preferedCountries.length > 0) {
 			List<CountryItem> sortedPreferedCountries = new ArrayList<>();
 			for(Country country:preferedCountries) {
-				String translation = translate(country.i18nKey());
+				String translation = countryTranslator.translate(country.i18nKey());
 				sortedPreferedCountries.add(new CountryItem(country.key(), translation));
 			}
 			
@@ -1289,7 +1293,7 @@ public class EditPersonController extends FormBasicController {
 		
 		List<CountryItem> sortedCountries = new ArrayList<>();
 		for(Country country:countries) {
-			String translation = translate(country.i18nKey());
+			String translation = countryTranslator.translate(country.i18nKey());
 			sortedCountries.add(new CountryItem(country.key(), translation));
 		}
 		

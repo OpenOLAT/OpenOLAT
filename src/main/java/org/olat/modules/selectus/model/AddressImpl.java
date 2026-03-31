@@ -5,6 +5,8 @@
  */
 package org.olat.modules.selectus.model;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -19,7 +21,9 @@ import jakarta.persistence.Embeddable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Embeddable
-public class AddressImpl implements Address {
+public class AddressImpl implements Address, Serializable {
+
+	private static final long serialVersionUID = 1675700604295467121L;
 
 	@Column(name="addr_type", nullable=true, insertable=true, updatable=true)
 	private String typeStr;

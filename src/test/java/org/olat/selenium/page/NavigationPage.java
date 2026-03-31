@@ -36,6 +36,7 @@ import org.olat.selenium.page.qpool.QuestionPoolPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.CatalogAdminPage;
 import org.olat.selenium.page.repository.CatalogPage;
+import org.olat.selenium.page.selectus.PositionListPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
 import org.openqa.selenium.By;
@@ -163,6 +164,15 @@ public class NavigationPage {
 	public LibraryPage openLibrary(WebDriver currentBrowser) {
 		navigate(libraryBy);
 		return LibraryPage.getPage(currentBrowser);
+	}
+	
+	/**
+	 * Open the list of positions of the selectus module
+	 * @return
+	 */
+	public PositionListPage openPositionList() {
+		navigate(By.cssSelector("li.o_site_recruiting > a"));
+		return new PositionListPage(browser);
 	}
 
 	private void navigate(By linkBy) {

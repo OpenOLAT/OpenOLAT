@@ -84,6 +84,10 @@ public class RecruitingAuditLogDAO {
 		positionXStream.omitField(OrganisationImpl.class, "creationDate");
 		positionXStream.omitField(OrganisationImpl.class, "lastModified");
 		positionXStream.omitField(OrganisationImpl.class, "group");
+		positionXStream.omitField(OrganisationImpl.class, "type");
+		positionXStream.omitField(OrganisationImpl.class, "root");
+		positionXStream.omitField(OrganisationImpl.class, "parent");
+		positionXStream.omitField(OrganisationImpl.class, "children");
 		
 		positionXStream.omitField(ApplicationAttributeImpl.class, "position");
 		positionXStream.omitField(ApplicationAttributeImpl.class, "application");

@@ -643,7 +643,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RolesByOrganisation adminRoles = RolesByOrganisation.roles(defOrganisation,
-				false, false, false, false, true, true, true, true, true, true, true);
+				false, false, false, false, true, true, true, true, true, true, true, true);
 		securityManager.updateRoles(identity, identity, adminRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -674,6 +674,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.groupmanager));
 		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.poolmanager));
 		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.curriculummanager));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.selectusmanager));
 		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.usermanager));
 		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.sysadmin));
 		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.administrator));
@@ -1049,7 +1050,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Identity id = securityManager.findIdentityByLogin("vferro");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RolesByOrganisation adminRoles = RolesByOrganisation.roles(defOrganisation,
-				false, false, false, false, false, false, false, false, false, false, true);
+				false, false, false, false, false, false, false, false, false, false, false, true);
 		securityManager.updateRoles(id, id, adminRoles);
 		dbInstance.commitAndCloseSession();
 

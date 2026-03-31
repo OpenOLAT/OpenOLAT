@@ -19,7 +19,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
@@ -75,7 +75,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ApplyToApplicationMainController extends MainLayoutBasicController implements Activateable2 {
+public class ApplyToApplicationMainController extends BasicController implements Activateable2 {
 
 	private static final String MAIN_VC_PAGE = Util.getPackageVelocityRoot(ApplyToApplicationMainController.class) + "/apply_main.html";
 	
@@ -181,7 +181,8 @@ public class ApplyToApplicationMainController extends MainLayoutBasicController 
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Position", selectedPosition.getKey()), null);
 		}
 		addApplicationWizard = new StepsMainRunController(ureq, swControl, start, new FinishedCallback(),
-				new CancelCallback(), translate("add_application"), "o_sel"); /*"submit", "stepslayout_embedded",*/
+				new CancelCallback(), translate("add_application"), "stepslayout_embedded", "o_sel", null);
+		addApplicationWizard.setFinishTitle("submit");
 		listenTo(addApplicationWizard);
 
 		appliedController = new ApplicationAppliedController(ureq, getWindowControl());

@@ -5,6 +5,8 @@
  */
 package org.olat.modules.selectus.model;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -13,7 +15,9 @@ import jakarta.persistence.Embeddable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Embeddable
-public class PolicyLink {
+public class PolicyLink implements Serializable {
+	
+	private static final long serialVersionUID = -5437178904309823863L;
 	
 	@Column(name = "label")
 	private String label;

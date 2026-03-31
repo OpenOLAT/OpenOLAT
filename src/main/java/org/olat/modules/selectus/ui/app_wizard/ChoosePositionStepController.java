@@ -186,7 +186,7 @@ public class ChoosePositionStepController extends StepFormBasicController {
 		
 		positionSelection.clearError();
 		if(application.getPosition() == null && !positionSelection.isOneSelected()) {
-			positionSelection.setErrorKey("form.legende.mandatory", null);
+			positionSelection.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -215,12 +215,12 @@ public class ChoosePositionStepController extends StepFormBasicController {
 				}
 				
 				if(!foundLanguage) {
-					languagesSelection.setErrorKey("error.language", null);
+					languagesSelection.setErrorKey("error.language");
 					allOk &= false;
 				}
 			}	
 		} else {
-			languagesSelection.setErrorKey("form.legende.mandatory", null);
+			languagesSelection.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
