@@ -7,7 +7,6 @@ package org.olat.modules.selectus.manager;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,15 +26,14 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XMLFactories;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.springframework.stereotype.Service;
 
 /**
  * 
  * Initial date: 18.06.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -54,8 +52,8 @@ public class TemplatesCache {
 				TransformerFactory factory = XMLFactories.newTransformerFactory();
 				factory.setURIResolver(new ClasspathResourceURIResolver());
 				template = factory.newTemplates(sourceXslt);
-			} catch (IOException e) {
-				log.error("Cannot found stylesheet at: " + path, e);
+			} catch (Exception e) {
+				log.error("Cannot found stylesheet at: {} / {}", path, templateName, e);
 				return null;
 			}
 		} else {
@@ -66,7 +64,7 @@ public class TemplatesCache {
 					factory.setURIResolver(new ClasspathResourceURIResolver());
 					return factory.newTemplates(sourceXslt);
 				} catch(Exception e) {
-					log.error("", e);
+					log.error("Cannot read stylesheet: {}", name, e);
 					return null;
 				}
 			});

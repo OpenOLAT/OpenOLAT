@@ -1005,7 +1005,7 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 
 	@Value("${doc.in.combined:all}")
 	private String docInCombined;
-	@Value("${doc.combined.cover:v1}")
+	@Value("${doc.combined.cover:v2}")
 	private String docCombinedCover;
 	
 	@Value("${doc.types:pdf}")

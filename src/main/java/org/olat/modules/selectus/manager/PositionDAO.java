@@ -806,21 +806,13 @@ public class PositionDAO {
 					}
 				}
 			}
-		} else if(roles.isAdministrator()) {
+		} else if(roles.isAdministrator() || roles.isSelectusManager()) {
 			//administrator -> they can see want they want
 			if(wishedStatusFilters != null) {
 				filtered.addAll(wishedStatusFilters);
 			}
 			organisation = true;
 		} else {
-			if(roles.isSelectusManager()) {
-				//org staff -> they can see want they want within their organisation units
-				if(wishedStatusFilters != null) {
-					filtered.addAll(wishedStatusFilters);
-				}
-				organisation = true;
-			}
-			
 			//committee
 			committee = true;
 			//limited to published and in screening, closed and in screening
