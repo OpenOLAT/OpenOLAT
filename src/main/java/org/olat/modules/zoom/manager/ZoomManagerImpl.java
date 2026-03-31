@@ -440,7 +440,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     }
 
     @Override
-    public List<ZoomProfileDAO.ZoomProfileApplication> getProfileApplications(Long profileKey) {
+    public List<ZoomProfileApplication> getProfileApplications(Long profileKey) {
         return zoomProfileDao.getApplications(profileKey);
     }
 }

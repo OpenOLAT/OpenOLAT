@@ -26,6 +26,7 @@ import org.olat.core.id.User;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
+import org.olat.modules.zoom.manager.ZoomProfileApplication;
 import org.olat.modules.zoom.manager.ZoomProfileDAO;
 import org.olat.repository.RepositoryEntry;
 
@@ -91,7 +92,7 @@ public interface ZoomManager {
 
     String getMailDomainForUser(User user);
 
-    List<ZoomProfileDAO.ZoomProfileApplication> getProfileApplications(Long profileKey);
+    List<ZoomProfileApplication> getProfileApplications(Long profileKey);
 
     class ZoomConnectionResponse {
 

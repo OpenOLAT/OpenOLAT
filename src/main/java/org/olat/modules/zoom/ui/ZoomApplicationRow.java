@@ -19,7 +19,7 @@
  */
 package org.olat.modules.zoom.ui;
 
-import org.olat.modules.zoom.manager.ZoomProfileDAO;
+import org.olat.modules.zoom.manager.ZoomProfileApplication;
 
 /**
  * Table row for the Zoom applications detail view. Stores the raw application
@@ -32,16 +32,22 @@ import org.olat.modules.zoom.manager.ZoomProfileDAO;
  */
 public class ZoomApplicationRow {
 
-    private final ZoomProfileDAO.ZoomProfileApplication application;
+    private final ZoomProfileApplication application;
     private final String businessPath;
+    private final String groupDisplayText;
 
-    public ZoomApplicationRow(ZoomProfileDAO.ZoomProfileApplication application, String businessPath) {
+    public ZoomApplicationRow(ZoomProfileApplication application, String businessPath, String groupDisplayText) {
         this.application = application;
         this.businessPath = businessPath;
+        this.groupDisplayText = groupDisplayText;
     }
 
-    public ZoomProfileDAO.ZoomProfileApplication getApplication() {
+    public ZoomProfileApplication getApplication() {
         return application;
+    }
+
+    public String getGroupDisplayText() {
+        return groupDisplayText;
     }
 
     public String getBusinessPath() {

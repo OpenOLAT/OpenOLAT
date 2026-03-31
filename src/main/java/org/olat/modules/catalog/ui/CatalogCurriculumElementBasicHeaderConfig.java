@@ -103,6 +103,7 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 		}
 
 		leaveAvailable = true;
+		leaveEnabled = true;
 		Price cancellationFee = acService.getCancellationFee(curriculumElement.getResource(), curriculumElement.getBeginDate(), orders);
 		if (cancellationFee != null) {
 			leaveWithCancellationFee = true;

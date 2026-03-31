@@ -22,7 +22,6 @@ package org.olat.core.commons.services.image.spi;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -261,25 +260,18 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		FinalSize rv = null;
 		StringBuilder errors = new StringBuilder();
 		StringBuilder output = new StringBuilder();
-		String line;
 
-		InputStream stderr = proc.getErrorStream();
-		InputStreamReader iserr = new InputStreamReader(stderr);
-		BufferedReader berr = new BufferedReader(iserr);
-		line = null;
-		try {
+		try (BufferedReader berr = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+			String line;
 			while ((line = berr.readLine()) != null) {
 				errors.append(line);
 			}
 		} catch (IOException e) {
 			//
 		}
-		
-		InputStream stdout = proc.getInputStream();
-		InputStreamReader isr = new InputStreamReader(stdout);
-		BufferedReader br = new BufferedReader(isr);
-		line = null;
-		try {
+
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+			String line;
 			while ((line = br.readLine()) != null) {
 				output.append(line);
 			}
@@ -305,7 +297,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 				log.warn("Output: {}", output.toString());
 			}
 		} catch (InterruptedException e) {
-			//
+			log.warn("ImageMagick process interrupted for thumbnail: {}", thumbnailFile);
 		}
 		if(rv == null) {
 			log.warn("Could not generate thumbnail: {}", thumbnailFile);

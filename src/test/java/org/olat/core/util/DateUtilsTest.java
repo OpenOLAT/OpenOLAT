@@ -255,6 +255,52 @@ public class DateUtilsTest {
 	}
 	
 	@Test
+	public void parseTimeToMinutes() {
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(DateUtils.parseTimeToMinutes(null)).isEqualTo(0);
+		softly.assertThat(DateUtils.parseTimeToMinutes("")).isEqualTo(0);
+		softly.assertThat(DateUtils.parseTimeToMinutes("  ")).isEqualTo(0);
+		softly.assertThat(DateUtils.parseTimeToMinutes("1d 1h 1m")).isEqualTo(1501);
+		softly.assertThat(DateUtils.parseTimeToMinutes("2h 30m")).isEqualTo(150);
+		softly.assertThat(DateUtils.parseTimeToMinutes("1d")).isEqualTo(1440);
+		softly.assertThat(DateUtils.parseTimeToMinutes("3H")).isEqualTo(180);
+		softly.assertThat(DateUtils.parseTimeToMinutes("0m")).isEqualTo(0);
+		softly.assertThat(DateUtils.parseTimeToMinutes("0h")).isEqualTo(0);
+		softly.assertThat(DateUtils.parseTimeToMinutes("0d")).isEqualTo(0);
+		// Plain numbers treated as minutes
+		softly.assertThat(DateUtils.parseTimeToMinutes("5")).isEqualTo(5);
+		softly.assertThat(DateUtils.parseTimeToMinutes("15")).isEqualTo(15);
+		softly.assertThat(DateUtils.parseTimeToMinutes("120")).isEqualTo(120);
+		softly.assertThat(DateUtils.parseTimeToMinutes("030")).isEqualTo(30);
+		softly.assertAll();
+	}
+
+	@Test(expected = NumberFormatException.class)
+	public void parseTimeToMinutes_invalidUnit() {
+		DateUtils.parseTimeToMinutes("1x");
+	}
+
+	@Test(expected = NumberFormatException.class)
+	public void parseTimeToMinutes_negativeValue() {
+		DateUtils.parseTimeToMinutes("-1m");
+	}
+
+	@Test(expected = NumberFormatException.class)
+	public void parseTimeToMinutes_lettersOnly() {
+		DateUtils.parseTimeToMinutes("abc");
+	}
+
+	@Test(expected = NumberFormatException.class)
+	public void parseTimeToMinutes_unitOnly() {
+		DateUtils.parseTimeToMinutes("m");
+	}
+
+	@Test(expected = NumberFormatException.class)
+	public void parseTimeToMinutes_mixedInvalid() {
+		DateUtils.parseTimeToMinutes("1d -2h");
+	}
+
+	@Test
 	public void shouldDateToZonedDateTime() {
 		Date date = new GregorianCalendar(2020, 1, 25, 14, 30, 0).getTime();
 		ZonedDateTime toDate = DateUtils.toZonedDateTime(date, ZoneId.of("Europe/Zurich"));

@@ -52,7 +52,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
-import org.olat.modules.zoom.manager.ZoomProfileDAO;
+import org.olat.modules.zoom.manager.ZoomProfileApplication;
 import org.olat.modules.zoom.ui.ZoomApplicationsTableModel.ZoomApplicationCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -138,7 +138,7 @@ public class ShowZoomApplicationsController extends FormBasicController {
         applicationsTableEl.reset(true, true, true);
     }
 
-    private boolean isValid(ZoomProfileDAO.ZoomProfileApplication application) {
+    private boolean isValid(ZoomProfileApplication application) {
         LTI13Context ltiContext = application.getLti13Context();
         try {
             switch (application.getApplicationType()) {
@@ -159,11 +159,11 @@ public class ShowZoomApplicationsController extends FormBasicController {
         }
     }
 
-    private ZoomApplicationRow toRow(ZoomProfileDAO.ZoomProfileApplication application) {
-        return new ZoomApplicationRow(application, buildBusinessPath(application));
+    private ZoomApplicationRow toRow(ZoomProfileApplication application) {
+        return new ZoomApplicationRow(application, buildBusinessPath(application), buildGroupText(application));
     }
 
-    private String buildBusinessPath(ZoomProfileDAO.ZoomProfileApplication application) {
+    private String buildBusinessPath(ZoomProfileApplication application) {
         LTI13Context ltiContext = application.getLti13Context();
         ZoomManager.ApplicationType type = application.getApplicationType();
         switch (type) {
@@ -179,7 +179,7 @@ public class ShowZoomApplicationsController extends FormBasicController {
         }
     }
 
-    private static String buildDisplayText(ZoomProfileDAO.ZoomProfileApplication application, Translator translator) {
+    private static String buildDisplayText(ZoomProfileApplication application, Translator translator) {
         LTI13Context ltiContext = application.getLti13Context();
         ZoomManager.ApplicationType type = application.getApplicationType();
         if (type == null) {
@@ -211,6 +211,21 @@ public class ShowZoomApplicationsController extends FormBasicController {
             return null;
         }
     }
+    
+    private String buildGroupText(ZoomProfileApplication application) {
+        LTI13Context ltiContext = application.getLti13Context();
+        ZoomManager.ApplicationType type = application.getApplicationType();
+        if (type == null) {
+            return null;
+        }
+
+        if (type != ZoomManager.ApplicationType.groupTool) {
+            return null;
+        }
+
+        return translate("zoom.profile.application.groupTool",
+                StringHelper.xssScan(ltiContext.getBusinessGroup().getName()));
+    }
 
     public static class OpenBusinessPathEvent extends Event {
         private final String businessPath;
@@ -240,9 +255,13 @@ public class ShowZoomApplicationsController extends FormBasicController {
         public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
                 FlexiTableComponent source, URLBuilder ubu, Translator translator) {
             if (cellValue instanceof ZoomApplicationRow applicationRow) {
-                String displayText = buildDisplayText(applicationRow.getApplication(), translator);
-                if (StringHelper.containsNonWhitespace(displayText)) {
-                    target.append(StringHelper.escapeHtml(displayText));
+                if (StringHelper.containsNonWhitespace(applicationRow.getGroupDisplayText())) {
+                    target.append(applicationRow.getGroupDisplayText());
+                } else {
+                    String displayText = buildDisplayText(applicationRow.getApplication(), translator);
+                    if (StringHelper.containsNonWhitespace(displayText)) {
+                        target.append(displayText);
+                    }
                 }
             }
         }

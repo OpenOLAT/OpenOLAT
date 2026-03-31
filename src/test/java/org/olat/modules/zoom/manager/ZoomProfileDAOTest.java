@@ -103,7 +103,7 @@ public class ZoomProfileDAOTest extends OlatTestCase {
         zoomManager.initializeConfig(courseEntry, "2345", null,
                 ZoomManager.ApplicationType.courseElement, zoomProfile.getLtiTool().getClientId(), null);
 
-        List<ZoomProfileDAO.ZoomProfileApplication> applications = zoomProfileDAO.getApplications(zoomProfile.getKey());
+        List<ZoomProfileApplication> applications = zoomProfileDAO.getApplications(zoomProfile.getKey());
 
         Assert.assertNotNull(applications);
         Assert.assertEquals(2, applications.size());

@@ -507,7 +507,7 @@ public class DateUtils {
 	 * Returns 0 if the input is null or empty.
 	 */
 	public static long parseTimeToMinutes(String timeString) {
-		if (timeString == null || timeString.trim().isEmpty()) {
+		if (!StringHelper.containsNonWhitespace(timeString)) {
 			return 0;
 		}
 
@@ -518,26 +518,38 @@ public class DateUtils {
 			part = part.trim().toLowerCase();
 			if (part.isEmpty()) continue;
 
+			char lastChar = part.charAt(part.length() - 1);
+			if (Character.isDigit(lastChar)) {
+				int value = Integer.parseInt(part);
+				if (value < 0) {
+					throw new NumberFormatException("Negative value: " + part);
+				}
+				totalMinutes += value;
+				continue;
+			}
+
 			int value;
 			try {
 				value = Integer.parseInt(part.substring(0, part.length() - 1));
 			} catch (NumberFormatException e) {
-				continue;
+				throw new NumberFormatException("Invalid part: " + part);
+			}
+			if (value < 0) {
+				throw new NumberFormatException("Negative value: " + part);
 			}
 
-			char unit = part.charAt(part.length() - 1);
-			switch (unit) {
+			switch (lastChar) {
 				case 'd':
-					totalMinutes += (long) value * 24 * 60; // days to minutes
+					totalMinutes += (long) value * 24 * 60;
 					break;
 				case 'h':
-					totalMinutes += value * 60L;      // hours to minutes
+					totalMinutes += value * 60L;
 					break;
 				case 'm':
-					totalMinutes += value;           // already in minutes
+					totalMinutes += value;
 					break;
 				default:
-					throw new NumberFormatException("Invalid unit: " + unit);
+					throw new NumberFormatException("Invalid unit: " + lastChar);
 			}
 		}
 

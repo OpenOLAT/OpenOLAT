@@ -589,6 +589,7 @@ public class AppointmentCreateController extends FormBasicController {
 					DateUtils.parseTimeToMinutes(timeEl.getValue());
 				} catch (NumberFormatException e) {
 					timeEl.setErrorKey("error.time.format");
+					allOk &= false;
 				}
 			}
 		}

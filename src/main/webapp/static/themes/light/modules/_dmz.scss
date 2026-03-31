@@ -335,7 +335,9 @@ body.o_dmz {
 	fill: $link-hover-color;
 }
 
-
+.o_login_admin .o_login_roles legend {
+	display: inline-block;
+}
 
 .o_old_browser {
 	display: none;
