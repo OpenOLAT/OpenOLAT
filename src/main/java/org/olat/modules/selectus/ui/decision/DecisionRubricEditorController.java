@@ -256,19 +256,19 @@ public class DecisionRubricEditorController extends FormBasicController {
 		for(RubricDefinitionRow wrapper:dataModel.getObjects()) {
 			wrapper.getNameEl().clearError();
 			if(!StringHelper.containsNonWhitespace(wrapper.getNameEl().getValue())) {
-				wrapper.getNameEl().setErrorKey("form.general.error", null);
+				wrapper.getNameEl().setErrorKey("form.general.error");
 				allOk &= false;
 			}
 			
 			wrapper.getTypeEl().clearError();
 			if(!wrapper.getTypeEl().isOneSelected()) {
-				wrapper.getTypeEl().setErrorKey("form.general.error", null);
+				wrapper.getTypeEl().setErrorKey("form.general.error");
 				allOk &= false;
 			}
 			
 			wrapper.getWeightEl().clearError();
 			if(!wrapper.getWeightEl().isOneSelected()) {
-				wrapper.getWeightEl().setErrorKey("form.general.error", null);
+				wrapper.getWeightEl().setErrorKey("form.general.error");
 				allOk &= false;
 			}
 		}

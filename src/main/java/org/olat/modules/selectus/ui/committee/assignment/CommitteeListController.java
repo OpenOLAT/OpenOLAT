@@ -205,7 +205,7 @@ public class CommitteeListController extends StepFormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(tableEl.getMultiSelectedIndex().isEmpty()) {
-			tableEl.setErrorKey("form.legende.mandatory", null);
+			tableEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

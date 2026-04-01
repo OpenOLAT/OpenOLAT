@@ -95,7 +95,7 @@ public class ConfirmDeleteCategoryController extends FormBasicController {
 		
 		replacementCategoryEl.clearError();
 		if(!replacementCategoryEl.isOneSelected() || "-".equals(replacementCategoryEl.getSelectedKey())) {
-			replacementCategoryEl.setErrorKey("form.legende.mandatory", null);
+			replacementCategoryEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

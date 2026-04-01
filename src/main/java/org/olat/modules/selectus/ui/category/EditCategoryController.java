@@ -87,7 +87,7 @@ public class EditCategoryController extends FormBasicController {
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(nameEl.getValue().length() > nameEl.getMaxLength()) {
 			nameEl.setErrorKey("error.category.too.long", new String[] { Integer.toString(nameEl.getMaxLength()) });
@@ -95,7 +95,7 @@ public class EditCategoryController extends FormBasicController {
 		} else {
 			List<Category> categories = taggingService.getCategoriesByName(nameEl.getValue(), position);
 			if(categories != null && !categories.isEmpty() && !categories.contains(category)) {
-				nameEl.setErrorKey("error.category.already.exists", null);
+				nameEl.setErrorKey("error.category.already.exists");
 				allOk &= false;
 			}
 		}
