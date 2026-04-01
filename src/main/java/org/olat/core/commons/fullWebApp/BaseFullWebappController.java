@@ -670,16 +670,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				SiteInstance s = (SiteInstance) link.getUserObject();
 				//fix the state of the last tab/site
 				updateBusinessPath(ureq);
-				
-				HistoryPoint point = null;
-				if(siteToBusinessPath.containsKey(s)) {
-					point = siteToBusinessPath.get(s);
-				}
 				activateSite(s, ureq, null, true);
-				if(point != null) {
-					BusinessControlFactory.getInstance().addToHistory(ureq, point);
+				if(siteToBusinessPath.containsKey(s)) {
+					updateBusinessPath(ureq, s);
 				}
-				updateBusinessPath(ureq, s);
 			} else if (mC.equals("a")) { // activate dyntab
 				DTab dt = (DTab) link.getUserObject();
 				//fix the state of the last tab/site

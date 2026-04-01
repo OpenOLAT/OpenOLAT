@@ -64,6 +64,7 @@ import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.appointments.TopicToGroup;
+import org.olat.modules.appointments.ui.AppointmentsUIFactory;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -615,8 +616,8 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 
 	@Override
 	public ParticipationResult createParticipations(Appointment appointment, Collection<Identity> identities,
-													Identity createdBy, boolean multiParticipations, boolean autoConfirmation, boolean rejectIfConfirmed,
-													boolean sendParticipationNotificationToOrganizers, String comment) {
+			Identity createdBy, boolean multiParticipations, boolean autoConfirmation, boolean rejectIfConfirmed,
+			boolean checkDeadline, boolean sendParticipationNotificationToOrganizers, String comment) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
 		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
@@ -624,8 +625,11 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		if (appointments.isEmpty()) {
 			return ParticipationResult.APPOINTMENT_DELETED;
 		}
-		
+
 		Appointment reloadedAppointment = appointments.get(0);
+		if (checkDeadline && !AppointmentsUIFactory.checkEnrollmentDeadline(reloadedAppointment, new Date())) {
+			return ParticipationResult.DEADLINE_OVER;
+		}
 		if (!autoConfirmation && rejectIfConfirmed && Status.confirmed == reloadedAppointment.getStatus()) {
 			return ParticipationResult.APPOINTMENT_CONFIRMED;
 		}

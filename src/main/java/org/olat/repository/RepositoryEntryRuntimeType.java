@@ -44,6 +44,9 @@ public enum RepositoryEntryRuntimeType {
 			RepositoryEntryRuntimeType.embedded,
 			RepositoryEntryRuntimeType.curricular,
 			RepositoryEntryRuntimeType.template };
+	public static final RepositoryEntryRuntimeType[] CURRICULAR_STANDALONE = {
+			RepositoryEntryRuntimeType.standalone,
+			RepositoryEntryRuntimeType.curricular };
 
 	public static ILoggingAction loggingAction(RepositoryEntryRuntimeType status) {
 		return switch(status) {

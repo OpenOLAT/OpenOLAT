@@ -112,8 +112,8 @@ public class ProjectGroupController extends BasicController {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		boolean mayModifyMembers = !userCourseEnv.isCourseReadOnly();
-		projectLeaderController = new GroupController(ureq, getWindowControl(), mayModifyMembers, true, true, false, true, false,
-				group, GroupRoles.coach, courseEntry, searchAsRoles);
+		projectLeaderController = new GroupController(ureq, getWindowControl(), mayModifyMembers, false, true, true,
+				false, true, false, group, GroupRoles.coach, courseEntry, searchAsRoles);
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 		MailTemplate leaderAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(projectGroup, ureq.getIdentity());
@@ -122,8 +122,8 @@ public class ProjectGroupController extends BasicController {
 		projectLeaderController.setRemoveUserMailTempl(leaderAremoveUserMailTempl,false);
 
 		// Project Member Management
-		projectMemberController = new GroupController(ureq, getWindowControl(), mayModifyMembers, false, true, false, true, false,
-				group, GroupRoles.participant, courseEntry, searchAsRoles);
+		projectMemberController = new GroupController(ureq, getWindowControl(), mayModifyMembers, true, false, true,
+				false, true, false, group, GroupRoles.participant, courseEntry, searchAsRoles);
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users

@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
@@ -39,10 +40,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.ui.component.MinMaxParticipants;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -85,6 +88,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty() && filters.get(0) != null)) {	
 			List<Long> typesKeys = List.of();
+			Set<Long> taxonomyKeys = Set.of();
 			List<Long> curriculumsKeys = List.of();
 			List<String> occupancyValues = List.of();
 			List<CurriculumElementStatus> status = List.of();
@@ -146,6 +150,15 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 				occupancyValues = extendedFilter.getValues();
 			}
 			
+			FlexiTableFilter sFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_TAXONOMY);
+			if (sFilter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter) {
+				List<String> filterValues = multiSelectionFilter.getValues();
+				if (filterValues != null && !filterValues.isEmpty()) {
+					taxonomyKeys = filterValues.stream().filter(StringHelper::isLong).map(Long::valueOf)
+							.collect(Collectors.toSet());				
+				}
+			}
+			
 			List<CurriculumElementRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(CurriculumElementRow row:backupRows) {
 				boolean accept = (accept(row, searchLong) || accept(row, searchString))
@@ -155,7 +168,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 						&& acceptWithOffers(row, withOffersOnly)
 						&& acceptOccupancyStatus(row, occupancyValues)
 						&& acceptDateRange(row, begin, end)
-						&& acceptPendingMemberships(row, pendingMembershipsOnly);
+						&& acceptPendingMemberships(row, pendingMembershipsOnly)
+						&& acceptTaxonomy(row, taxonomyKeys);
 				row.setAcceptedByFilter(accept);
 				if(accept) {
 					filteredRows.add(row);
@@ -225,6 +239,14 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			return row.getNumOfPending() > 0;
 		}
 		return true;
+	}
+	
+	private boolean acceptTaxonomy(CurriculumElementRow row, Set<Long> taxonomyKeys) {
+		if(taxonomyKeys == null || taxonomyKeys.isEmpty()) return true;
+		
+		List<TaxonomyLevel> levels = row.getTaxonomyLevels();
+		return levels != null && !levels.isEmpty()
+				&& levels.stream().anyMatch(l -> taxonomyKeys.contains(l.getKey()));
 	}
 
 	private boolean acceptOccupancyStatus(CurriculumElementRow row, List<String> statusList) {
@@ -352,6 +374,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case learningProgress -> element.getLearningProgressLink();
 			case minMaxParticipants -> element.getMinMaxParticipants();
 			case availability -> element.getParticipantsAvailabilityNum();
+			case taxonomyLevels, taxonomyPaths -> element.getTaxonomyLevels();
 			default -> "ERROR";
 		};
 	}
@@ -394,7 +417,9 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		offers("table.header.offers"),
 		tools("table.header.tools"),
 		minMaxParticipants("table.header.minmax.participants"),
-		availability("table.header.availability");
+		availability("table.header.availability"),
+		taxonomyLevels("table.header.taxonomy.levels"),
+		taxonomyPaths("table.header.taxonomy.paths");
 		
 		private final String i18nKey;
 		

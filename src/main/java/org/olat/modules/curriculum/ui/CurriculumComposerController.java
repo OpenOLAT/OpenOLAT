@@ -95,6 +95,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -103,6 +104,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -128,8 +130,16 @@ import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.author.TaxonomyLevelRenderer;
+import org.olat.repository.ui.author.TaxonomyPathsRenderer;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
@@ -153,6 +163,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	static final String FILTER_OFFER = "Offer";
 	static final String FILTER_STATUS = "Status";
 	static final String FILTER_PERIOD = "Period";
+	static final String FILTER_TAXONOMY = "Taxonomy";
 	static final String FILTER_CURRICULUM = "Curriculum";
 	static final String FILTER_OCCUPANCY_STATUS = "Occupancy";
 	static final String FILTER_OCCUPANCY_STATUS_NOT_SPECIFIED = "NotSpecified";
@@ -199,6 +210,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private int counter;
 	private final boolean managed;
 	private boolean overrideManaged;
+	private final boolean taxonomyEnabled;
+	
 	private final String businessPath;
 	private final Curriculum curriculum;
 	private final CurriculumElement rootElement;
@@ -208,6 +221,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -227,6 +246,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			Curriculum curriculum, CurriculumElement rootElement, CurriculumComposerConfig config,
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl, "manage_curriculum_structure");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		
 		businessPath =  BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl());
 		this.toolbarPanel = toolbarPanel;
 		this.config = config;
@@ -234,6 +255,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
 		this.lecturesSecCallback = lecturesSecCallback;
+		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		if(curriculum != null) {
 			managed = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
@@ -357,6 +379,13 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 		
+		if (taxonomyEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.taxonomyLevels,
+					new TaxonomyLevelRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.taxonomyPaths,
+					new TaxonomyPathsRenderer(getLocale())));
+		}
+		
 		boolean withOptions = curriculum != null;
 		DefaultFlexiColumnModel calendarsCol = new DefaultFlexiColumnModel(withOptions, ElementCols.calendars);
 		calendarsCol.setIconHeader("o_icon o_icon-lg o_icon_calendar");
@@ -408,6 +437,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setSortEnabled(config.isFlat());
 		
 		initFilters(ureq);
 		initFiltersPresets();
@@ -430,12 +460,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private String getTablePrefsId() {
 		if(rootElement != null) {
-			return "curriculum-composer-v7";
+			return "curriculum-composer-v8";
 		}
 		if(curriculum != null) {
-			return "cur-implementations-v7";
+			return "cur-implementations-v8";
 		}
-		return "cur-otherlist-v7";
+		return "cur-otherlist-v8";
 	}
 	
 	private void initFilters(UserRequest ureq) {
@@ -488,6 +518,16 @@ public class CurriculumComposerController extends FormBasicController implements
 		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"),
 				FILTER_PERIOD, true, false, getLocale());
 		filters.add(periodFilter);
+		
+		if(taxonomyEnabled) {
+			List<TaxonomyRef> taxonomies = curriculumModule.getTaxonomyRefs();
+			if(taxonomies != null && !taxonomies.isEmpty()) {
+				List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomies);
+				SelectionValues taxonomyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
+				filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"),
+						FILTER_TAXONOMY, taxonomyValues, false));
+			}
+		}
 		
 		if(config.isImplementationsOnly()) {
 			SelectionValues pendingValues = new SelectionValues();
@@ -606,6 +646,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			rows.add(row);
 			keyToRows.put(element.getKey(), row);
 		}
+		loadTaxonomy( keyToRows, elements);
+		
 		//parent line
 		for(CurriculumElementRow row:rows) {
 			if(row.getParentKey() != null) {
@@ -613,10 +655,23 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
-		
+
 		tableModel.setObjects(rows);
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
+	}
+	
+	private void loadTaxonomy(Map<Long, CurriculumElementRow> keyToRows, List<CurriculumElementInfos> elements) {
+		if(!taxonomyEnabled) return;
+		
+		Map<Long, List<TaxonomyLevel>> relationToLevels = curriculumService.getCurriculumElementKeyToTaxonomyLevels(elements);
+		for(Map.Entry<Long, List<TaxonomyLevel>> entry:relationToLevels.entrySet()) {
+			CurriculumElementRow row = keyToRows.get(entry.getKey());
+			List<TaxonomyLevel> levels = entry.getValue();
+			if(row != null) {
+				row.setTaxonomyLevels(levels);
+			}
+		}
 	}
 	
 	private void loadViewOnlyImplementations(List<CurriculumElementInfos> elements) {
@@ -849,6 +904,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 
 	private void updateSortSettings(FlexiFiltersTab statusTab) {
+		if(!config.isFlat()) return;
+		
 		boolean isRelevantFlat = RELEVANT_TAB_ID.equalsIgnoreCase(statusTab.getId()) && config.isFlat();
 		List<FlexiTableSort> sorters = new ArrayList<>();
 		if(isRelevantFlat) {

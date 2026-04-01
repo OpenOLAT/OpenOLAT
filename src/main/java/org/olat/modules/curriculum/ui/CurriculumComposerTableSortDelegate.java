@@ -26,8 +26,13 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.NullOrder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.RelevanceSortDelegate;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -54,10 +59,48 @@ public class CurriculumComposerTableSortDelegate extends RelevanceSortDelegate<C
 				case beginDate: Collections.sort(rows,new DateNullAlwaysLastComparator(CurriculumElementRow::getBeginDate)); break;
 				case endDate: Collections.sort(rows, new DateNullAlwaysLastComparator(CurriculumElementRow::getEndDate)); break;
 				case availability: Collections.sort(rows, new AvailabilityComparator()); break;
+				case taxonomyLevels, taxonomyPaths: Collections.sort(rows, new TaxonomyLevelComparator(getLocale())); break;
 				default: super.sort(rows); break;
 			}
 		} else {
 			super.sort(rows);
+		}
+	}
+	
+	private class TaxonomyLevelComparator implements Comparator<CurriculumElementRow> {
+		
+		private final Comparator<TaxonomyLevel> levelComparator;
+		
+		public TaxonomyLevelComparator(Locale locale) {
+			Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
+			levelComparator = CatalogV2UIFactory.getTaxonomyLevelComparator(taxonomyTranslator);
+		}
+
+		@Override
+		public int compare(CurriculumElementRow t1, CurriculumElementRow t2) {
+			int c = 0;
+			if(!t1.hasTaxonomyLevels() && t2.hasTaxonomyLevels()) {
+				c = 1;
+			} else if(t1.hasTaxonomyLevels() && !t2.hasTaxonomyLevels()) {
+				c = -1;
+			} else {
+				if(t1.hasTaxonomyLevels() && t2.hasTaxonomyLevels()) {
+					List<TaxonomyLevel> r1 = t1.getTaxonomyLevels();
+					List<TaxonomyLevel> r2 = t2.getTaxonomyLevels();
+					for(int i=0; i<r1.size() && i<r2.size() && c == 0; i++) {
+						TaxonomyLevel level1 = r1.get(i);
+						TaxonomyLevel level2 = r2.get(i);
+						c = levelComparator.compare(level1, level2);
+					}
+				} else {
+					c = compareString(t1.getDisplayName(), t2.getDisplayName());
+				}
+				
+				if(!isAsc()) {
+					c = -1 * c;
+				}
+			}
+			return c;
 		}
 	}
 

@@ -1817,8 +1817,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status) {
+		// For legacy reasons, both courses of both runtime types are loaded
 		return getCurriculumElements(identity, roles, curriculum, status,
-				new RepositoryEntryRuntimeType[]{ RepositoryEntryRuntimeType.standalone },
+				RepositoryEntryRuntimeType.CURRICULAR_STANDALONE,
 				List.of(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant), false);
 	}
 

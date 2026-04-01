@@ -74,7 +74,7 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 		} else {
 			efficiencyStatementKey = efficiencyStatement.getKey();
 			passed = efficiencyStatement.getPassed();
-			score = efficiencyStatement.getScore();
+			score = efficiencyStatement.getWeightedScore() != null ? efficiencyStatement.getWeightedScore() : efficiencyStatement.getScore();
 			grade = efficiencyStatement.getGrade();
 			gradeSystemIdent = efficiencyStatement.getGradeSystemIdent();
 			performanceClassIdent = efficiencyStatement.getPerformanceClassIdent();

@@ -39,13 +39,14 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	private final BigDecimal score;
 	private final BigDecimal weightedScore;
 	private final BigDecimal maxScore;
+	private final BigDecimal weightedMaxScore;
 	private transient Overridable<Boolean> passedOverridable;
 	private final Boolean passed;
 	private final Boolean passedOriginal;
 	private final Date passedModificationDate;
 	
 	public AssessmentEntryScoringImpl(Long key, Long repositoryEntryKey, Double completion,
-			BigDecimal score, BigDecimal weightedScore, BigDecimal maxScore,
+			BigDecimal score, BigDecimal weightedScore, BigDecimal maxScore, BigDecimal weightedMaxScore,
 			Boolean passed, Boolean passedOriginal, Date passedModificationDate) {
 		this.key = key;
 		this.repositoryEntryKey = repositoryEntryKey;
@@ -53,6 +54,7 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 		this.score = score;
 		this.weightedScore = weightedScore;
 		this.maxScore = maxScore;
+		this.weightedMaxScore = weightedMaxScore;
 		this.passed = passed;
 		this.passedOriginal = passedOriginal;
 		this.passedModificationDate = passedModificationDate;
@@ -99,5 +101,10 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	public BigDecimal getMaxScore() {
 		return maxScore;
 	}
-	
+
+	@Override
+	public BigDecimal getWeightedMaxScore() {
+		return weightedMaxScore;
+	}
+
 }

@@ -193,7 +193,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		if(entries == null || entries.isEmpty()) {
+			addToHistory(ureq, getWindowControl());
+			return;
+		}
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Curriculum".equalsIgnoreCase(type)) {

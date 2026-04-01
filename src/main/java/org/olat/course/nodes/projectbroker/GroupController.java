@@ -127,6 +127,7 @@ public class GroupController extends BasicController {
 
 	private final boolean keepAtLeastOne;
 	private final boolean mayModifyMembers;
+	private final boolean isAddParticipant;
 
 	protected static final String COMMAND_REMOVEUSER = "removesubjectofgroup";
 	protected static final String COMMAND_IM = "im";
@@ -149,8 +150,8 @@ public class GroupController extends BasicController {
 	private DialogBoxController confirmDelete;
 
 	private TableController tableCtr;
-	private Link addUsersButton;
-	private Link addUserButton;
+	private Link importLink;
+	private Link addUserLink;
 	private Translator myTrans;
 
 	private MailTemplate addUserMailDefaultTempl, removeUserMailDefaultTempl, removeUserMailCustomTempl;
@@ -177,24 +178,17 @@ public class GroupController extends BasicController {
 	
 	private Object userObject;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param mayModifyMembers
-	 * @param keepAtLeastOne
-	 * @param enableTablePreferences
-	 * @param aSecurityGroup
-	 * @param enableUserSelection
-	 */	 
-	public GroupController(UserRequest ureq, WindowControl wControl, 
-			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			boolean allowDownload, boolean mandatoryEmail, Group group,  GroupRoles role, RepositoryEntry courseEntry, GroupRoles searchAsRole) {
+	public GroupController(UserRequest ureq, WindowControl wControl, boolean mayModifyMembers, boolean isAddParticipant,
+			boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection, boolean allowDownload,
+			boolean mandatoryEmail, Group group, GroupRoles role, RepositoryEntry courseEntry,
+			GroupRoles searchAsRole) {
 		super(ureq, wControl);
 		this.group = group;
 		this.role = role;
 		this.courseEntry = courseEntry;
 		this.searchAsRole = searchAsRole;
 		this.mayModifyMembers = mayModifyMembers;
+		this.isAddParticipant = isAddParticipant;
 		this.keepAtLeastOne = keepAtLeastOne;
 		this.mandatoryEmail = mandatoryEmail;
 		
@@ -217,11 +211,13 @@ public class GroupController extends BasicController {
 
 		groupmemberview = createVelocityContainer("index");
 
-		addUsersButton = LinkFactory.createButtonSmall("overview.addusers", groupmemberview, this);
-		addUsersButton.setElementCssClass("o_sel_group_import_users");
-		addUsersButton.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
-		addUserButton = LinkFactory.createButtonSmall("overview.adduser", groupmemberview, this);
-		addUserButton.setElementCssClass("o_sel_group_add_user");
+		importLink = LinkFactory.createButtonSmall("import", groupmemberview, this);
+		importLink.setElementCssClass("o_sel_group_import_users");
+		importLink.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
+		String aadUserI18nKey = isAddParticipant? "add.participant": "add.user";
+		addUserLink = LinkFactory.createButtonSmall("add.user", "add.user", aadUserI18nKey, groupmemberview, this);
+		addUserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+		addUserLink.setElementCssClass("o_sel_group_add_user");
 
 		if (mayModifyMembers) {
 			groupmemberview.contextPut("mayadduser", Boolean.TRUE);
@@ -279,10 +275,10 @@ public class GroupController extends BasicController {
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == addUserButton) {
+		if (source == addUserLink) {
 			if (!mayModifyMembers) throw new AssertException("not allowed to add a member!");
 			doAddUsers(ureq);
-		} else if (source == addUsersButton) {
+		} else if (source == importLink) {
 			if (!mayModifyMembers) throw new AssertException("not allowed to add members!");
 			doImportUsers(ureq);
 		}
@@ -478,8 +474,8 @@ public class GroupController extends BasicController {
 		listenTo(usc);
 		
 		Component usersearchview = usc.getInitialComponent();
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersearchview, true, translate("add.searchuser"));
+		String titleI18nKey = isAddParticipant ? "add.participant.to.topic" : "add.user.to.topic";
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersearchview, true, translate(titleI18nKey));
 		listenTo(cmc);
 		
 		cmc.activate();

@@ -223,7 +223,7 @@ public class FindingConfirmationController extends FormBasicController {
 		}
 		Collection<Identity> identities = securityManager.loadIdentityByKeys(addedIdentityKeys);
 		appointmentsService.createParticipations(appointment, identities, getIdentity(), topic.isMultiParticipation(),
-				topic.isAutoConfirmation(), false, sendParticipationNotificationToOrganizers, null);
+				topic.isAutoConfirmation(), false, false, sendParticipationNotificationToOrganizers, null);
 		
 		List<Participation> unselectedParticipations = new ArrayList<>();
 		for (Participation participation : participations) {

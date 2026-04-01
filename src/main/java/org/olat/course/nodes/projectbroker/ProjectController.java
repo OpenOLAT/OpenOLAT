@@ -86,7 +86,7 @@ public class ProjectController extends BasicController {
 		myTabbedPane.addTab(translate("tab.project.folder"), "o_sel_project_broker_folders", projectFolderController.getInitialComponent());
 		if (projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv, project)) {
 			projectGroupController = new ProjectGroupController(ureq, wControl, userCourseEnv, project, projectBrokerModuleConfiguration);
-			myTabbedPane.addTab(translate("tab.project.members"), "o_sel_project_broker_members", projectGroupController.getInitialComponent());
+			myTabbedPane.addTab(translate("tab.project.members.admin"), "o_sel_project_broker_members", projectGroupController.getInitialComponent());
 		}
 		contentVC.put("projectTabbedPane", myTabbedPane);
 		putInitialPanel(contentVC);

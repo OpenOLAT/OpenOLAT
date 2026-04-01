@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -491,8 +492,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			if (row.getCourseRepoKey() != null) {
 				AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(row.getCourseRepoKey());
 				if (scoring != null) {
-					row.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
-							scoring.getScore() != null ? scoring.getScore().floatValue() : null, scoring.getKey());
+					BigDecimal rowMaxScore = scoring.getWeightedMaxScore() != null ? scoring.getWeightedMaxScore() : scoring.getMaxScore();
+					BigDecimal rowScore = scoring.getWeightedScore() != null ? scoring.getWeightedScore() : scoring.getScore();
+					row.addToScore(rowMaxScore != null ? rowMaxScore.floatValue() : null,
+							rowScore != null ? rowScore.floatValue() : null, scoring.getKey());
 					row.setCompletion(scoring.getCompletion());
 				}
 			}
@@ -615,7 +618,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					efficiencyStatement.getTitle());
 			wrapper.setDisplayName(title);
 			wrapper.setPassed(efficiencyStatement.getPassed());
-			wrapper.setScore(efficiencyStatement.getScore());
+			Float flatScore = efficiencyStatement.getWeightedScore() != null ? efficiencyStatement.getWeightedScore() : efficiencyStatement.getScore();
+			wrapper.setScore(flatScore);
 			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
 					efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade(),
 					efficiencyStatement.getGradeSystemIdent()));

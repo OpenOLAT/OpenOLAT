@@ -527,6 +527,7 @@ public class AssessmentEntryDAO {
 		sb.append("     , ae.score");
 		sb.append("     , ae.weightedScore");
 		sb.append("     , ae.maxScore");
+		sb.append("     , ae.weightedMaxScore");
 		sb.append("     , ae.passed");
 		sb.append("     , ae.passedOriginal");
 		sb.append("     , ae.passedModificationDate");

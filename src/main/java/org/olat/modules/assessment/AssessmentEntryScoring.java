@@ -32,5 +32,7 @@ public interface AssessmentEntryScoring extends AssessmentEntryLight, Assessment
 	public Long getRepositoryEntryKey();
 	
 	public BigDecimal getMaxScore();
-	
+
+	public BigDecimal getWeightedMaxScore();
+
 }

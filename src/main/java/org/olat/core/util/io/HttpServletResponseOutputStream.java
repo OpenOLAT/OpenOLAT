@@ -270,4 +270,10 @@ public class HttpServletResponseOutputStream implements HttpServletResponse {
 			out.close();
 		}
 	}
+
+	@Override
+	public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
 }

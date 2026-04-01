@@ -670,7 +670,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	protected void initToolsMenuDelete(Dropdown toolsDropdown) {
 		boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
-		if(reSecurity.isEntryAdmin() && !deleteManaged) {
+		if(hasDeletePermissions() && !deleteManaged) {
 			toolsDropdown.addComponent(new Spacer("close-delete"));
 			
 			if(re.getEntryStatus() == RepositoryEntryStatusEnum.deleted || re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
@@ -1290,7 +1290,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		if (!reSecurity.isEntryAdmin()) {
+		if (!hasDeletePermissions()) {
 			throw new OLATSecurityException("Trying to delete, but not allowed: user = " + ureq.getIdentity());
 		}
 
@@ -1305,7 +1305,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doConfirmRestore(UserRequest ureq) {
-		if (!reSecurity.isEntryAdmin()) {
+		if (!hasDeletePermissions()) {
 			throw new OLATSecurityException("Trying to delete, but not allowed: user = " + ureq.getIdentity());
 		}
 		removeAsListenerAndDispose(confirmRestoreCtrl);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
 import org.olat.modules.curriculum.ui.component.MinMaxParticipants;
 import org.olat.modules.curriculum.ui.component.RelevanceSortable;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -60,6 +62,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow, Rel
 	private MinMaxParticipants minMaxParticipants;
 	private ParticipantsAvailabilityNum participantsAvailabilityNum;
 	private List<PriceMethod> accessPriceMethods;
+	private List<TaxonomyLevel> taxonomyLevels;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
@@ -321,6 +324,27 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow, Rel
 
 	public void setAccessPriceMethods(List<PriceMethod> accessPriceMethods) {
 		this.accessPriceMethods = accessPriceMethods;
+	}
+	
+	public boolean hasTaxonomyLevels() {
+		return taxonomyLevels != null && !taxonomyLevels.isEmpty();
+	}
+
+	public List<TaxonomyLevel> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+
+	public void addTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
+		if(taxonomyLevel != null) {
+			if(taxonomyLevels == null) {
+				taxonomyLevels = new ArrayList<>(3);
+			}
+			taxonomyLevels.add(taxonomyLevel);
+		}
+	}
+	
+	public void setTaxonomyLevels(List<TaxonomyLevel> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	@Override

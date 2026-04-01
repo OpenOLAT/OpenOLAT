@@ -37,6 +37,7 @@ public interface ParticipationResult {
 	static final ParticipationResult APPOINTMENT_FULL = new ParticipationResultImpl(Status.appointmentFull);
 	static final ParticipationResult APPOINTMENT_CONFIRMED = new ParticipationResultImpl(Status.appointmentConfirmed);
 	static final ParticipationResult NO_PARTICIPATIONS = new ParticipationResultImpl(Status.noParticipations);
+	static final ParticipationResult DEADLINE_OVER = new ParticipationResultImpl(Status.deadlineOver);
 	
 	static ParticipationResult of(Participation participation) {
 		return of(Collections.singletonList(participation));
@@ -51,7 +52,8 @@ public interface ParticipationResult {
 		appointmentDeleted,
 		appointmentFull,
 		appointmentConfirmed,
-		noParticipations
+		noParticipations,
+		deadlineOver
 	}
 	
 	public Status getStatus();
