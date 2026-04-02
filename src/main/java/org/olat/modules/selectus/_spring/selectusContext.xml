@@ -155,22 +155,10 @@
 	<bean class="org.olat.modules.selectus.ui.notifications.tool.ChangeNotificationsSettingsToolExtension" init-method="initExtensionPoints">
 		<property name="order" value="118" />
 		<property name="navigationKey" value="notificationssettings" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_notification" />
 		<property name="translationPackage" value="org.olat.modules.selectus.ui.notifications" />
 		<property name="i18nActionKey" value="change.notifications.settings"/>
 		<property name="i18nDescriptionKey" value="change.notifications.settings"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>
-			</list>
-		</property>
-	</bean>
-	
-	<bean class="org.olat.modules.selectus.ui.login.tool.ChangePasswordToolExtension" init-method="initExtensionPoints">
-		<property name="order" value="119" />
-		<property name="navigationKey" value="changepassword" />
-		<property name="translationPackage" value="org.olat.modules.selectus.ui.login" />
-		<property name="i18nActionKey" value="change.password"/>
-		<property name="i18nDescriptionKey" value="change.password"/>
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.home.HomeMainController</value>

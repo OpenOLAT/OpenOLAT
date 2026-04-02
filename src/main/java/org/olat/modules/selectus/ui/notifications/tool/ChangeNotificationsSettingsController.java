@@ -38,13 +38,16 @@ public class ChangeNotificationsSettingsController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(NotificationUserSettingsController.class, ureq.getLocale()));
 		
 		VelocityContainer mainVC = createVelocityContainer("change_settings");
+		mainVC.setDomReplacementWrapperRequired(false);
 		
 		notificationsSettingsLink = LinkFactory.createLink("change.notifications.settings", "change.notifications.settings", mainVC, this);
-		notificationsSettingsLink.setIconLeftCSS("o_icon o_icon_change_notifications_settings");
+		notificationsSettingsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_change_notifications_settings");
+		notificationsSettingsLink.setDomReplacementWrapperRequired(false);
 		mainVC.put("change.notifications.settings", notificationsSettingsLink);
 
 		StackedPanel p = new SimpleStackedPanel("notificationsSettingsPanel");
-		p.setContent(mainVC);
+		p.setDomReplacementWrapperRequired(false);
+		p.setContent(notificationsSettingsLink);
 		putInitialPanel(p);
 	}
 
