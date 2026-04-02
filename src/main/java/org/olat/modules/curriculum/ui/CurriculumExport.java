@@ -71,7 +71,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -329,9 +328,8 @@ public class CurriculumExport {
 				? curriculum.getOrganisation().getIdentifier()
 				: null;
 		row.addCell(col++, organisation);
-		
-		String lectures = curriculum.isLecturesEnabled() ? translator.translate("on") : translator.translate("off");
-		row.addCell(col++, lectures.toUpperCase());
+
+		row.addCell(col++, getOnOffValue(curriculum.isLecturesEnabled()));
 		row.addCell(col++, curriculum.getDescription());
 		row.addCell(col++, curriculum.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(col++, curriculum.getLastModified(), workbook.getStyles().getDateTimeStyle());
@@ -502,13 +500,13 @@ public class CurriculumExport {
 	
 	private String getTaxonomyLevels(CurriculumElement element) {
 		List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
-		if(levels == null || levels.isEmpty()) return null;
-		
-		List<String> displayNames = levels.stream()
-				.map(level -> level.getMaterializedPathIdentifiers())
-				.filter(Objects::nonNull)
-				.toList();
-		return String.join("; ", displayNames);
+		return formatTaxonomyLevels(levels);
+	}
+	
+	private String getOnOffValue(boolean val) {
+		return val
+				? CurriculumExportOnOff.ON.name()
+				: CurriculumExportOnOff.OFF.name();
 	}
 	
 	private String getValue(CurriculumCalendars val) {
@@ -593,13 +591,7 @@ public class CurriculumExport {
 	
 	private String getTaxonomyLevels(RepositoryEntry entry) {
 		List<TaxonomyLevel> levels = repositoryService.getTaxonomy(entry);
-		if(levels == null || levels.isEmpty()) return null;
-		
-		List<String> displayNames = levels.stream()
-				.map(level -> TaxonomyUIFactory.translateDisplayName(translator, level))
-				.filter(Objects::nonNull)
-				.toList();
-		return String.join("; ", displayNames);
+		return formatTaxonomyLevels(levels);
 	}
 	
 	private void addLectureBlockContent(LectureBlock lectureBlock, CurriculumElement element,
@@ -660,13 +652,7 @@ public class CurriculumExport {
 	
 	private String getTaxonomyLevels(LectureBlock lectureBlock) {
 		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);
-		if(levels == null || levels.isEmpty()) return null;
-		
-		List<String> displayNames = levels.stream()
-				.map(level -> TaxonomyUIFactory.translateDisplayName(translator, level))
-				.filter(Objects::nonNull)
-				.toList();
-		return String.join("; ", displayNames);
+		return formatTaxonomyLevels(levels);
 	}
 	
 	private void addInformations(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
@@ -696,6 +682,16 @@ public class CurriculumExport {
 		row.addCell(0, translator.translate("export.information.by"), workbook.getStyles().getHeaderStyle());
 		String fullname = userManager.getUserDisplayName(identity);
 		row.addCell(1, fullname, null);
+	}
+	
+	public static final String formatTaxonomyLevels(List<TaxonomyLevel> levels) {
+		if(levels == null || levels.isEmpty()) return null;
+
+		List<String> displayNames = levels.stream()
+				.map(level -> level.getMaterializedPathIdentifiers())
+				.filter(Objects::nonNull)
+				.toList();
+		return String.join("; ", displayNames);
 	}
 	
 	public static final String formatRole(String role) {

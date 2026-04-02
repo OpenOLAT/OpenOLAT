@@ -646,7 +646,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private void saveOrUpdateI18nItemForTaxonomyLevel(TaxonomyLevel level, TaxonomyImportContext context) {
 		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
 		List<Locale> locales = context.getNameDescriptionByLanguage().keySet().stream()
-				.map(key -> LocaleUtils.toLocale(key.toLowerCase()))
+				.map(key -> LocaleUtils.toLocale(standardizeLocaleCase(key)))
 				.collect(Collectors.toList());
 		String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + level.getI18nSuffix();
 		String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + level.getI18nSuffix();
@@ -683,6 +683,21 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				}
 			}
 		}
+	}
+	
+	private String standardizeLocaleCase(String val) {
+		String[] valArr = val.split("_");
+		StringBuilder sb = new StringBuilder();
+		if(valArr.length >= 1) {
+			sb.append(valArr[0].toLowerCase());
+		}
+		if(valArr.length >= 2) {
+			sb.append("_").append(valArr[1].toUpperCase());
+		}
+		if(valArr.length >= 3) {
+			sb.append("_").append(valArr[2].toUpperCase());
+		}
+		return sb.toString();
 	}
 	    
     private static class CancelCallback implements StepRunnerCallback {
