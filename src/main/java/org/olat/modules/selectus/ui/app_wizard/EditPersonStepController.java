@@ -16,8 +16,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-
+import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Application;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -31,6 +32,9 @@ import org.olat.modules.selectus.model.Application;
 public class EditPersonStepController extends StepFormBasicController {
 
 	private final EditPersonController editPersonController;
+	
+	@Autowired
+	private RecruitingService recruitingService;
 	
 	public EditPersonStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -53,8 +57,6 @@ public class EditPersonStepController extends StepFormBasicController {
 		//
 	}
 
-
-
 	@Override
 	public FormItem getStepFormItem() {
 		return editPersonController.getInitialFormItem();
@@ -75,8 +77,11 @@ public class EditPersonStepController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		Application app = (Application)getFromRunContext(WizardConstants.APPLICATION);
 		app.setLanguage(ureq.getLocale().getLanguage());
+		if(app.getKey() == null) {
+			app = recruitingService.saveTempApplication(app, false);
+		}
 		editPersonController.commitChanges(app);
-
+		addToRunContext(WizardConstants.APPLICATION, app);
 		logAudit("Apply personal datas: " + app.toString(), null);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

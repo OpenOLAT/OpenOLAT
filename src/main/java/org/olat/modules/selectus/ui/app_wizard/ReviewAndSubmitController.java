@@ -1,5 +1,4 @@
 /**
-
  * <p>
  * Copyright (c) frentix GmbH<br>
  * http://www.frentix.com<br>
@@ -22,12 +21,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.AddressOption;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentOption;
@@ -54,6 +52,8 @@ import org.olat.modules.selectus.ui.RecruitingPositionSecurityCallbackForApplica
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate.Details;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.position.TabsConfigurationDelegate;
+import org.olat.user.propertyhandlers.CountryCodePropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -87,6 +87,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 	
 	private String[] jobAdsKeys;
 	private String[] jobAdsValues;
+	private Translator countryTranslator;
 
 	private final AddressOption privateOption;
 	private final AddressOption businessOption;
@@ -117,6 +118,8 @@ public class ReviewAndSubmitController extends FormBasicController {
 				customAttributesDelegateList.add(new ApplicationAttributesDelegate(customTab.attributesTab()));
 			}
 		}
+		
+		countryTranslator = Util.createPackageTranslator(CountryCodePropertyHandler.class, getLocale());
 
 		mapperBaseURL = registerCacheableMapper(ureq, ReviewAndSubmitController.class.getSimpleName(),
 				new ApplicationDocumentMapper(new RecruitingPositionSecurityCallbackForApplicant()));
@@ -451,7 +454,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 		Country country = Country.country(countryKey);
 		String translation;
 		if(country != null) {
-			translation = translate(country.i18nKey());
+			translation = countryTranslator.translate(country.i18nKey());
 		} else {
 			translation = countryKey;
 		}
@@ -867,7 +870,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 		if(acceptTermsEl != null) {
 			acceptTermsEl.clearError();
 			if(!acceptTermsEl.isMultiselect() || !acceptTermsEl.isSelected(0)) {
-				acceptTermsEl.setErrorKey("apply_application.acceptTerms.error", null);
+				acceptTermsEl.setErrorKey("apply_application.acceptTerms.error");
 				allOk = false;
 			}
 		}
