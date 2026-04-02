@@ -30,9 +30,8 @@ public class SumCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 
-		if(cellValue instanceof Double) {
+		if(cellValue instanceof Double val) {
 			synchronized(sumFormat) {
-				double val = ((Double)cellValue).doubleValue();
 				target.append(sumFormat.format(val));
 			}
 		}

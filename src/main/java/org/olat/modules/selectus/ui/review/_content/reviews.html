@@ -114,10 +114,10 @@
 					<div class="col-sm-12"><h4>$r.escapeHtml($element.label)</h4></div>
 				#elseif($element.type == "text" && $r.available(${element.item.component.componentName}))
 					<div class="col-sm-12">
-					$r.render("${element.item.component.componentName}_LABEL", "$f.getItemId($element.item.component.componentName)")
+					$r.render("${element.item.component.componentName}", "label")
 					<div class="o_tab_override">$r.escapeHtml($element.stringValue)</div></div>
 				#elseif($element.type == "slider" && $r.available(${element.item.component.componentName}))
-					$r.render("${element.item.component.componentName}_LABEL", "$f.getItemId($element.item.component.componentName)", "col-sm-3")
+					$r.render("${element.item.component.componentName}", "label", "col-sm-3")
 					<div class="col-sm-9">$r.render(${element.item})</div>
 				#end
 				</div>

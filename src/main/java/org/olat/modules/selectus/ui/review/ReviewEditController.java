@@ -140,10 +140,9 @@ public class ReviewEditController extends FormBasicController {
 	
 	private FormItem initTextElement(ReviewElementDefinition element, ReviewResponse response, FormItemContainer formLayout) {
 		String comment = response == null ? "" : response.getStringValue();
-		TextAreaElement textEl = uifactory.addTextAreaElement("ed_text_" + CodeHelper.getRAMUniqueID(), "label", MAX_TEXT_LENGTH, 4, 60, false, false, false, comment, formLayout);
+		TextAreaElement textEl = uifactory.addTextAreaElement("ed_text_" + CodeHelper.getRAMUniqueID(), "label", MAX_TEXT_LENGTH, 4, 60, false, true, false, comment, formLayout);
 		textEl.setUserObject(element);
 		textEl.setLabel(element.getLabel(), null, false);
-		//TODO selectus textEl.setTabOverride(true);
 		textEls.add(textEl);
 		return textEl;
 	}

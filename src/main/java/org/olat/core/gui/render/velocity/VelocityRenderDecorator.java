@@ -1133,9 +1133,13 @@ public class VelocityRenderDecorator implements Closeable {
 		return Formatter.formatBytes(bytes);
 	}
 	
+	public String formatDouble(Double value) {
+		String string = Formatter.formatDouble(value);
+		return string == null ? "" : string;
+	}
 
 	/**
-	 * Wrapp given html code with a wrapper an add code to transform latex
+	 * Wrap given html code with a wrapper an add code to transform latex
 	 * formulas to nice visual characters on the client side. The latex formulas
 	 * must be within an HTML element that has the class 'math' attached.
 	 * 

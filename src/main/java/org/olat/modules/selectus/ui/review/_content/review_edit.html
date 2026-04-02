@@ -17,16 +17,16 @@
 		<div class="form-group clearfix">
 		#if($uiElement.type == "text")
 			<div class="col-sm-12">
-				$r.render("${uiElement.item.component.componentName}_LABEL", "$f.getItemId($uiElement.item.component.componentName)")
+				$r.render("${uiElement.item.component.componentName}", "label")
 				<div>$r.render($uiElement.item)</div>
 				#if($f.hasError(${uiElement.item.component.componentName}))
-					$r.render("${uiElement.item.component.componentName}_ERROR")
+					$r.render("${uiElement.item.component.componentName}","error")
 				#end
 			</div>
 		#elseif($uiElement.type == "title")
 			<div class="col-sm-12"><h3>$r.escapeHtml($uiElement.label)</h3></div>
 		#else
-			$r.render("${uiElement.item.component.componentName}_LABEL", "$f.getItemId($uiElement.item.component.componentName)", "col-sm-3")
+			$r.render("${uiElement.item.component.componentName}", "label", "col-sm-3")
 			<div class="col-sm-8">$r.render(${uiElement.item})</div>
 			<div class="col-sm-1">
 			#if($r.isTrue(${uiElement.getItem().getComponent().hasValue()}))

@@ -140,11 +140,10 @@ public class PositionEditAdditionalSelectAttributeController extends FormBasicCo
 		}
 		
 		String options = getOptionsForTextArea();
-		optionsEl = uifactory.addTextAreaElement("select.options", "select.options", 255000, 8, 60, false, false, false, options, formLayout);
+		optionsEl = uifactory.addTextAreaElement("select.options", "select.options", 255000, 8, 60, false, true, false, options, formLayout);
 		if(positionLanguages.size() > 1) {
 			optionsEl.setExampleKey("custom.attribute.options.help", getPositionLangages());
 		}
-		//TODO selectus optionsEl.setTabOverride(true);
 		
 		SelectionValues displayValues = new SelectionValues();
 		displayValues.add(SelectionValues.entry(Display.dropdown.name(), translate("select.display.dropdown")));
