@@ -678,9 +678,13 @@ public class PositionController extends BasicController implements TooledControl
 	}
 	
 	private Controller activate(UserRequest ureq, Tabs selectedTab) {
-		if(currentContent instanceof TooledController) {
-			//TODO selectus ((TooledController)currentContent).removeTools();
+		if(currentContent instanceof PositionCommitteeController pcc) {
+			pcc.removeTools();
+		} else if(currentContent instanceof PositionEditController pec) {
+			pec.removeTools();
 		}
+		
+		
 		Controller content = getController(ureq, selectedTab);
 		if(content instanceof TooledController) {
 			((TooledController)content).initTools();

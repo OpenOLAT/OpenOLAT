@@ -112,7 +112,6 @@ public class PositionListOverviewController extends BasicController implements T
 		if(hasPositions || hasFeedbacks) {
 			segmentButtonsCmp.addButton(positionLogButton, false);
 		}
-		stackPanel.addTool(segmentButtonsCmp, Align.segment);
 
 		mainPanel = new SimpleStackedPanel("positionsOverview");
 		putInitialPanel(mainPanel);

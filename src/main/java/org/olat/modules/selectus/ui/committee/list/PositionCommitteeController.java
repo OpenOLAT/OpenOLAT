@@ -380,15 +380,11 @@ public class PositionCommitteeController extends FormBasicController implements 
 		}
 	}
 	
-	//TODO selectus
-	/*
-	@Override
 	public void removeTools() {
 		stackPanel.removeTool(addMember);
 		stackPanel.removeTool(mailToCommittee);
 		stackPanel.removeTool(importCommitteeLink);
 	}
-	*/
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

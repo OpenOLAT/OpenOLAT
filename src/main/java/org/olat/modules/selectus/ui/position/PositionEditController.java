@@ -159,13 +159,9 @@ public class PositionEditController extends BasicController implements Activatea
 		stackPanel.addTool(buttonsGroup, false);
 	}
 
-	//TODO selectus
-	/*
-	@Override
 	public void removeTools() {
 		stackPanel.removeTool(buttonsGroup);
 	}
-	*/
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

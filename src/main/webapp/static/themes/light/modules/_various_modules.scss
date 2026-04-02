@@ -1064,11 +1064,19 @@ div.o_reminder_custom_email {
 }
 
 /* Segmented view wrapper */
-.o_segments.btn-group a span {
+.o_segments.btn-group a > span {
 	overflow: hidden;
 	display: block;
 	text-overflow: ellipsis;
+	
+	&.badge {
+		display: block;
+		position: absolute;
+		right: 5px;
+		top: 7px;
+	}
 }
+
 .o_segments_content {
 	margin-top: $line-height-computed;
 }

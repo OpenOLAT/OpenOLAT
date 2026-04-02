@@ -399,6 +399,16 @@
 	
 	.o_tools_segments {
     	margin: 0 auto -1.1em auto;
+		
+		a > span {
+			display: inline-block;
+		}
+		a > span.badge {
+			display: inline-block;
+			position: initial;
+			margin: 0 0 0 5px;
+			font-size: 12px;
+		}
 	}
 	
 	.o_tools_segments.o_tools_segments_alone {

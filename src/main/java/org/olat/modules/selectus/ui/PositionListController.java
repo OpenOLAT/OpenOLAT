@@ -275,6 +275,15 @@ public class PositionListController extends FormBasicController implements Toole
 
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
+		if(organisationModule.isEnabled()) {
+			SelectionValues organisationsKV = new SelectionValues();
+			for(Organisation organisation: organisations) {
+				organisationsKV.add(SelectionValues.entry(organisation.getKey().toString(), StringHelper.escapeHtml(organisation.getDisplayName())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.organisations"),
+					FILTER_ORGANISATION_KEY, organisationsKV, true));
+		}
+		
 		// Position status
 		SelectionValues statusKV = new SelectionValues();
 		for(PositionStatus status: getFilterStatus()) {
@@ -282,15 +291,6 @@ public class PositionListController extends FormBasicController implements Toole
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.position.status"),
 				FILTER_STATUS_KEY, statusKV, true));
-		
-		if(organisationModule.isEnabled()) {
-			SelectionValues organisationsKV = new SelectionValues();
-			for(Organisation organisation: organisations) {
-				organisationsKV.add(SelectionValues.entry(organisation.getKey().toString(), StringHelper.escapeHtml(organisation.getDisplayName())));
-			}
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.organisation.unit"),
-					FILTER_ORGANISATION_KEY, organisationsKV, true));
-		}
 		
 		for(PositionAttributeDefinition globalAttribute:globalAttributes) {
 			//TODO custom attributes
