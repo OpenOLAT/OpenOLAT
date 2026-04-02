@@ -505,7 +505,7 @@ public class CurriculumExport {
 		if(levels == null || levels.isEmpty()) return null;
 		
 		List<String> displayNames = levels.stream()
-				.map(level -> TaxonomyUIFactory.translateDisplayName(translator, level))
+				.map(level -> level.getMaterializedPathIdentifiers())
 				.filter(Objects::nonNull)
 				.toList();
 		return String.join("; ", displayNames);

@@ -670,10 +670,16 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				SiteInstance s = (SiteInstance) link.getUserObject();
 				//fix the state of the last tab/site
 				updateBusinessPath(ureq);
-				activateSite(s, ureq, null, true);
+				
+				HistoryPoint point = null;
 				if(siteToBusinessPath.containsKey(s)) {
-					updateBusinessPath(ureq, s);
+					point = siteToBusinessPath.get(s);
 				}
+				activateSite(s, ureq, null, true);
+				if(point != null) {
+					BusinessControlFactory.getInstance().addToHistory(ureq, point);
+				}
+				updateBusinessPath(ureq, s);
 			} else if (mC.equals("a")) { // activate dyntab
 				DTab dt = (DTab) link.getUserObject();
 				//fix the state of the last tab/site
@@ -1175,7 +1181,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				// bs != null since clicked previously
 				GuiStack gsh = bs.getGuiStackHandle();
 				doActivateSite(si, gsh);
-				if(siteToBusinessPath.containsValue(si)) {
+				if(siteToBusinessPath.containsKey(si)) {
 					ureq.getUserSession().addToHistory(ureq, siteToBusinessPath.get(si));
 				}
 			} else if (state.getDtab() != null && !state.getDtab().getController().isDisposed()) {
@@ -1855,7 +1861,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			String businessPath = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getAsString();
 			HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
 			int index = businessPath.indexOf(':');
-			if(index > 0 && point != null && point.getBusinessPath() != null) {
+			if(index > 0 && point != null && point.getBusinessPath() != null) {	
 				String start = businessPath.substring(0, index);
 				if(!point.getBusinessPath().startsWith(start)) {
 					//if a controller has not set its business path, don't pollute the mapping
@@ -1863,8 +1869,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 					siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
 					return BusinessControlFactory.getInstance().getAsRestPart(entries, true);
 				}
-				List<ContextEntry> entries = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getEntries();
+				
+				WindowControl wControl = siteToBornSite.get(site).getController().getWindowControlForDebug();
+				List<ContextEntry> entries = wControl.getBusinessControl().getEntries();
 				businessPath = BusinessControlFactory.getInstance().getAsRestPart(entries, true);
+				BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
 			}
 			
 			siteToBusinessPath.put(site, point);

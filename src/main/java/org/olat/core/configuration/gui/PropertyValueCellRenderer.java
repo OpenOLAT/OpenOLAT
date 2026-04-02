@@ -66,7 +66,8 @@ public class PropertyValueCellRenderer implements FlexiCellRenderer{
 		"vc.openmeetings.adminpassword",
 		"vc.teams.api.secret",		
 		"vc.vitero.adminpassword",
-		"websms.password"
+		"websms.password",
+		"admin.login.oauth.clientsecret"
 	};
 	
 	
