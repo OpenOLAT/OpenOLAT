@@ -125,6 +125,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_column { @include o-add-icon('align-justify');}
 .o_icon_columns { @include o-add-icon('columns');}
 .o_icon_commands { @include o-add-icon('ellipsis-v');}
+.o_icon_committee { @include o-add-icon('users'); }
 .o_icon_container { @include o-add-icon('columns');}
 .o_icon_copy { @include o-add-icon('copy');}
 .o_icon_course_previous { @include o-add-icon('chevron-left');}

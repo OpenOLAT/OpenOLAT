@@ -15,7 +15,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.olat.modules.forms.ui.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationModule;
 
 /**
@@ -41,7 +41,7 @@ public class RefereeDisclaimerController extends FormBasicController {
 	private boolean readOnly;
 	
 	public RefereeDisclaimerController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, null, "disclaimer", Util.createPackageTranslator(DisclaimerController.class, ureq.getLocale()));
+		super(ureq, wControl, null, "disclaimer", Util.createPackageTranslator(DisclaimerFormController.class, ureq.getLocale()));
 		readOnly = false;
 		initForm(ureq);
 	}

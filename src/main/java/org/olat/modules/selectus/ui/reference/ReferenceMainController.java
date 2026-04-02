@@ -24,13 +24,11 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.registration.DisclaimerFormController;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.model.Reference;
@@ -38,7 +36,10 @@ import org.olat.modules.selectus.model.ReferenceRequestStatus;
 import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.PrivacyDisclaimerController;
 import org.olat.modules.selectus.ui.RecruitingPositionSecurityCallbackForReviewer;
+import org.olat.registration.DisclaimerFormController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,7 +55,7 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 	
 	private CloseableModalController cmc;
 	private RefereeDisclaimerController disclaimerCtr;
-	//TODO selectus private PrivacyDisclaimerController privacyDisclaimerCtr;
+	private PrivacyDisclaimerController privacyDisclaimerCtr;
 	private ReferenceFinishController finishCtrl;
 	private ReferenceTabbedController referenceCtrl;
 	private ReferenceWarningController alreadySubmittedCtrl;
@@ -136,8 +137,7 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 					disclaimerError();
 				}
 			}
-		} //TODO selectus
-		/* else if(source == privacyDisclaimerCtr) {
+		} else if(source == privacyDisclaimerCtr) {
 			if(event == Event.DONE_EVENT) {
 				if(privacyDisclaimerCtr.isAccepted()) {
 					cmc.deactivate();
@@ -146,7 +146,7 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 					disclaimerError();
 				}
 			}
-		}*/ else if(source == referenceCtrl) {
+		} else if(source == referenceCtrl) {
 			if(event == Event.DONE_EVENT) {
 				doFinished(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
@@ -259,13 +259,12 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 		cmc.activate();	
 	}
 	
-	/*
-	//
 	private void doPrivacyDisclaimer(UserRequest ureq) {
 		removeAsListenerAndDispose(privacyDisclaimerCtr);
 		removeAsListenerAndDispose(cmc);
-		
-		String positionStaffMail = recruitingModule.getStaffMail(position);
+
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
+		String positionStaffMail = recruitingModule.getStaffMail(position, organisationSettings);
 		privacyDisclaimerCtr = new PrivacyDisclaimerController(ureq, getWindowControl(), positionStaffMail);
 		listenTo(privacyDisclaimerCtr);
 		String title = privacyDisclaimerCtr.disableLegend();
@@ -274,7 +273,6 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 		listenTo(cmc);
 		cmc.activate();	
 	}
-	*/
 	
 	private void doReview(UserRequest ureq) {
 		Position pos = loadPosition();
@@ -299,7 +297,7 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 		if(!reference.isDisclaimer()) {
 			doDisclaimer(ureq);
 		}  else if(!reference.isPrivacyDisclaimer() && recruitingModule.isReferencePrivacyDisclaimer()) {
-			//TODO selectus doPrivacyDisclaimer(ureq);
+			doPrivacyDisclaimer(ureq);
 		} else {
 			referenceCtrl = new ReferenceTabbedController(ureq, getWindowControl(), position, reference, secCallback);
 			listenTo(referenceCtrl);

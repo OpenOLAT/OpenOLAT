@@ -29,16 +29,20 @@ $reviewTitle
 			#end
 		#end
 	</div>
-	<div class="o_sel_reference_overview">
-		<div class="wizard clearfix">
-			<ul class="steps">
-				<li #if($currentStep == "reference.position.details") class='active o_enabled' #end>$r.render("reference.position.details")<span class="chevron"></span></li>
-				<li #if($currentStep == "reference.application.details") class='active o_enabled' #end>$r.render("applicationDetailsLink")<span class="chevron"></span></li>
-				<li #if($currentStep == "reference.submit") class='active o_enabled' #end>$r.render("reference.submit")<span class="chevron"></span></li>
-			</ul>
-		</div>
-		<div class="o_segments_content">
-			$r.render("content")
+	<div class="o_sel_reference_overview o_wizard">
+		<div class="o_wizard_body">
+			<div class="o_steps">
+				<div class="o_steps_main">
+					<ul class="">
+						<li #if($currentStep == "reference.position.details") class='active o_enabled' #end>$r.render("reference.position.details")<span class="chevron"></span></li>
+						<li #if($currentStep == "reference.application.details") class='active o_enabled' #end>$r.render("applicationDetailsLink")<span class="chevron"></span></li>
+						<li #if($currentStep == "reference.submit") class='active o_enabled' #end>$r.render("reference.submit")<span class="chevron"></span></li>
+					</ul>
+				</div>
+			</div>
+			<div class="o_segments_content">
+				$r.render("content")
+			</div>
 		</div>
 	</div>
 </fieldset>

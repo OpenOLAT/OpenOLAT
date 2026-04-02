@@ -566,9 +566,15 @@ fieldset.o_letter_preview legend {
 
 /* Notifications */
 #o_navbar_notifications_settings {
-	
 	a > span {
 		display: none;
+	}
+}
+
+/* Tags / tagify */
+.o_app_details_categories_input, .o_app_details_categories {
+	.o_tag {
+		border: none;
 	}
 }
 
