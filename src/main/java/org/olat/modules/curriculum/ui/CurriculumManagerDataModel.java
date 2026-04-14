@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ACTIVE;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_CANCELLED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_CONFIRMED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_DELETED;
@@ -28,7 +27,6 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_PREPARATION;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_PROVISIONAL;
-import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_ACTIVE;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_CANCELLED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_CONFIRMED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_DELETED;
@@ -120,7 +118,6 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 				case CONTEXT_PREPARATION -> row.getBaseUrl().concat(SUB_PATH_PREPARATION);
 				case CONTEXT_PROVISIONAL -> row.getBaseUrl().concat(SUB_PATH_PROVISIONAL);
 				case CONTEXT_CONFIRMED -> row.getBaseUrl().concat(SUB_PATH_CONFIRMED);
-				case CONTEXT_ACTIVE -> row.getBaseUrl().concat(SUB_PATH_ACTIVE);
 				case CONTEXT_CANCELLED -> row.getBaseUrl().concat(SUB_PATH_CANCELLED);
 				case CONTEXT_FINISHED -> row.getBaseUrl().concat(SUB_PATH_FINISHED);
 				case CONTEXT_DELETED -> row.getBaseUrl().concat(SUB_PATH_DELETED);
@@ -149,7 +146,6 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 			case numOfPreparationRootElements -> row.getImplementationsStatistics().numOfPreparationRootElements();
 			case numOfProvisionalRootElements -> row.getImplementationsStatistics().numOfProvisionalRootElements();
 			case numOfConfirmedRootElements -> row.getImplementationsStatistics().numOfConfirmedRootElements();
-			case numOfActiveRootElements -> row.getImplementationsStatistics().numOfActiveRootElements();
 			case numOfCancelledRootElements -> row.getImplementationsStatistics().numOfCancelledRootElements();
 			case numOfFinishedRootElements -> row.getImplementationsStatistics().numOfFinishedRootElements();
 			case numOfDeletedRootElements -> row.getImplementationsStatistics().numOfDeletedRootElements();
@@ -176,7 +172,6 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 		numOfPreparationRootElements("table.header.num.elements.preparation"),
 		numOfProvisionalRootElements("table.header.num.elements.provisional"),
 		numOfConfirmedRootElements("table.header.num.elements.confirmed"),
-		numOfActiveRootElements("table.header.num.elements.active"),
 		numOfCancelledRootElements("table.header.num.elements.cancelled"),
 		numOfFinishedRootElements("table.header.num.elements.finished"),
 		numOfDeletedRootElements("table.header.num.elements.deleted"),

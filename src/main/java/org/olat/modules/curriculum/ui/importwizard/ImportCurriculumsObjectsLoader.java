@@ -246,6 +246,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 				String[] subjectsArr = subjects.split(";");
 				for(String subject:subjectsArr) {
 					if(StringHelper.containsNonWhitespace(subject)) {
+						subject = subject.trim();
 						TaxonomyLevel level = levelsMap.get(subject);
 						if(level != null) {
 							importedRow.addTaxonomyLevel(level);

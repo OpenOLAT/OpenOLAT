@@ -1,5 +1,5 @@
 #if($r.isNotEmpty($errors))
-	<h4><i class='o_icon o_icon-fw o_icon_validation_error'> </i> $r.translate("error.values")</h4>
+	<h4><i class='o_icon o_icon-fw o_icon_validation_error'> </i> #if(${errors.size()} == 1) $r.translate("error.value") #else $r.translate("error.values") #end</h4>
 	<ul>
 	#foreach($error in $errors)
 		<li>$error.column : $error.message</li>
@@ -8,7 +8,7 @@
 #end
 
 #if($r.isNotEmpty($warnings))
-	<h4><i class='o_icon o_icon-fw o_icon_validation_warning'> </i> $r.translate("warning.values")</h4>
+	<h4><i class='o_icon o_icon-fw o_icon_validation_warning'> </i> #if(${warnings.size()} == 1) $r.translate("warning.value") #else $r.translate("warning.values") #end</h4>
 	<ul>
 	#foreach($warning in $warnings)
 		<li>$warning.column : $warning.message</li>
@@ -17,7 +17,7 @@
 #end
 
 #if($r.isNotEmpty($changes))
-	<h4><i class='o_icon o_icon-fw o_icon_changes'> </i> $r.translate("changed.values")</h4>
+	<h4><i class='o_icon o_icon-fw o_icon_changes'> </i> #if(${changes.size()} == 1) $r.translate("changed.value") #else $r.translate("changed.values")  #end</h4>
 	<ul>
 	#foreach($change in $changes)
 		<li>$change.column : "$change.beforeValue"/"$change.afterValue"</li>

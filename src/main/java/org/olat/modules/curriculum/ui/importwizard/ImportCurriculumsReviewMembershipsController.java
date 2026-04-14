@@ -189,8 +189,10 @@ public class ImportCurriculumsReviewMembershipsController extends AbstractImport
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validate(context.getImportedCurriculumsRows());
 		allOk &= validate(context.getImportedElementsRows());
-		allOk &= validate(context.getImportedUsersRows());
-		allOk &= validate(context.getImportedMembershipsRows());
+		allOk &= context.getImportedUsersRows() == null
+				|| validate(context.getImportedUsersRows());
+		allOk &= context.getImportedMembershipsRows() == null
+				|| validate(context.getImportedMembershipsRows());
 		return allOk;
 	}
 	

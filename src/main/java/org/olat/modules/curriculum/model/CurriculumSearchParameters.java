@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -47,6 +46,7 @@ public class CurriculumSearchParameters {
 	private List<String> roles;
 	
 	private boolean withDeleted = false;
+	private boolean hasRelevantImplementations = false;
 	
 	public CurriculumSearchParameters() {
 		//
@@ -54,7 +54,7 @@ public class CurriculumSearchParameters {
 
 	public List<? extends OrganisationRef> getOrganisations() {
 		if(organisations == null) {
-			organisations = new ArrayList<>();
+			organisations = List.of();
 		}
 		return organisations;
 	}
@@ -143,5 +143,13 @@ public class CurriculumSearchParameters {
 
 	public void setWithDeleted(boolean withDeleted) {
 		this.withDeleted = withDeleted;
+	}
+
+	public boolean isHasRelevantImplementations() {
+		return hasRelevantImplementations;
+	}
+
+	public void setHasRelevantImplementations(boolean hasRelevantImplementations) {
+		this.hasRelevantImplementations = hasRelevantImplementations;
 	}
 }

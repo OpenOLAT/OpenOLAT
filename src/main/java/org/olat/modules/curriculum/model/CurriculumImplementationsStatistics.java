@@ -25,19 +25,16 @@ package org.olat.modules.curriculum.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CurriculumImplementationsStatistics(long numOfRootElements,
-		long numOfPreparationRootElements, long numOfProvisionalRootElements,
-		long numOfConfirmedRootElements, long numOfActiveRootElements,
-		long numOfCancelledRootElements, long numOfFinishedRootElements,
-		long numOfDeletedRootElements) {
+public record CurriculumImplementationsStatistics(long numOfRootElements, long numOfPreparationRootElements,
+		long numOfProvisionalRootElements, long numOfConfirmedRootElements, long numOfCancelledRootElements,
+		long numOfFinishedRootElements, long numOfDeletedRootElements) {
 	
 	public long numOfNotDeletedElements() {
-		return numOfPreparationRootElements + numOfProvisionalRootElements
-				+ numOfConfirmedRootElements + numOfActiveRootElements
+		return numOfPreparationRootElements + numOfProvisionalRootElements + numOfConfirmedRootElements
 				+ numOfCancelledRootElements + numOfFinishedRootElements;
 	}
 
 	public static final CurriculumImplementationsStatistics empty() {
-		return new CurriculumImplementationsStatistics(0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l);
+		return new CurriculumImplementationsStatistics(0l, 0l, 0l, 0l, 0l, 0l, 0l);
 	}
 }

@@ -1006,10 +1006,10 @@ $o-media-browser-card-height-sm 					: 122px !default;
 $o-media-browser-card-visual-height-sm 				: 70px !default;
 
 /* Content Editor */
-$o-ce-padding-large									: 40px;
-$o-ce-padding-light									: 20px;
-$o-ce-padding-normal								: 10px;
-$o-ce-padding-compact								: 5px;
+$o-ce-padding-large									: 32px;
+$o-ce-padding-light									: 24px;
+$o-ce-padding-normal								: 16px;
+$o-ce-padding-compact								: 8px;
 
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
@@ -1666,7 +1666,7 @@ $o-selection-light-green: #32CD3233;
 $o-selection-dark-green : #228B2233;
 
 /* Shared Colors */
-$o-color-light-gray  : #4f4f4f;
+$o-color-light-gray  : #344054;
 $o-color-yellow      : #C69B02;
 $o-color-orange      : #C06613;
 $o-color-brown       : #855E3A;

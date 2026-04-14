@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
 import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -182,7 +182,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private boolean itemCollectionDirty = false;
 
 	@Autowired
-	private AiModule aiModule;
+	private AiMCQuestionService mcQuestionService;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -243,7 +243,7 @@ public class QuestionListController extends AbstractItemListController implement
 				newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
 				newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");			
 			}
-			if (aiModule.isMCQuestionGeneratorEnabled()) {
+			if (mcQuestionService.isEnabled()) {
 				newAiItem = uifactory.addFormLink("new.ai.item", formLayout, Link.BUTTON);
 				newAiItem.setIconLeftCSS("o_icon o_icon-fw o_icon_wizard");
 			}

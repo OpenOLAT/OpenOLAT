@@ -116,6 +116,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	private void processMemberships(Identity doer) {
+		if(context.getImportedMembershipsRows() == null || context.getImportedMembershipsRows().isEmpty()) return;
+		
 		List<ImportedMembershipRow> importedRows = context.getImportedMembershipsRows();
 		for(ImportedMembershipRow importedRow:importedRows) {
 			CurriculumRoles role = CurriculumExport.parseRole(importedRow.getRole());
@@ -132,6 +134,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	private void processUsers(Identity doer) {
+		if(context.getImportedUsersRows() == null || context.getImportedUsersRows().isEmpty()) return;
+		
 		List<ImportedUserRow> importedRows = context.getImportedUsersRows();
 		for(ImportedUserRow importedRow:importedRows) {
 			if(!isIgnored(importedRow) && importedRow.getIdentity() == null) {

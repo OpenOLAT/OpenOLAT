@@ -909,7 +909,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		boolean isRelevantFlat = RELEVANT_TAB_ID.equalsIgnoreCase(statusTab.getId()) && config.isFlat();
 		List<FlexiTableSort> sorters = new ArrayList<>();
 		if(isRelevantFlat) {
-			sorters.add(new FlexiTableSort(translate("sort.relevant"), RelevanceSortDelegate.SORT_KEY));
+			sorters.add(new FlexiTableSort(translate("sort.relevance"), RelevanceSortDelegate.SORT_KEY));
 			sorters.add(FlexiTableSort.SPACER);
 		}
 		addColumnSorters(sorters);

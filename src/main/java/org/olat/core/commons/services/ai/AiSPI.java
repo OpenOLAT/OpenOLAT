@@ -19,15 +19,18 @@
  */
 package org.olat.core.commons.services.ai;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
+import dev.langchain4j.model.chat.ChatModel;
+
 /**
  *
  * Base AI service provider interface. Implement this interface to register an
- * AI service provider. To support specific features, also implement the
- * corresponding feature interfaces (e.g. AiMCQuestionGeneratorSPI).
+ * AI service provider.
  *
  * Initial date: 22.05.2024<br>
  *
@@ -36,34 +39,18 @@ import org.olat.core.gui.control.WindowControl;
  */
 public interface AiSPI {
 
-	/**
-	 * @return The technical identifier of the SPI
-	 */
 	public String getId();
 
-	/**
-	 * @return The human readable identifier / name of the SPI, e.g the product name
-	 */
 	public String getName();
 
-	/**
-	 * @return true: this SPI is enabled by the admin; false: disabled
-	 */
 	public boolean isEnabled();
 
-	/**
-	 * Enable or disable this SPI. Stores the state persistently.
-	 *
-	 * @param enabled true to enable, false to disable
-	 */
 	public void setEnabled(boolean enabled);
 
-	/**
-	 * Factory method to create an admin interface to configure the SPI
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
 	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
+
+	public ChatModel buildChatModel(String modelName, int maxTokens);
+
+	public List<String> getAvailableModels();
 
 }

@@ -26,6 +26,7 @@ package org.olat.course.nodes.projectbroker;
 
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
@@ -46,9 +47,6 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 
 	public static final String PROJECTMANAGER_COLUMN_ROW_IDENT = "pmrow";
 	
-	/**
-	 * @see org.olat.core.gui.components.table.CustomCellRenderer#render(org.olat.core.gui.render.StringOutput, org.olat.core.gui.render.Renderer, java.lang.Object, java.util.Locale, int, java.lang.String)
-	 */
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {			
 		if (val instanceof ArrayList){
@@ -61,8 +59,6 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 				// do nothing with that
 			} 
 			
-			StringBuilder buf = new StringBuilder();
-			
 			if (renderer!=null && row != null) {
 				// if no renderer is set, then we assume it's a table export - in which case we don't want the htmls (<b>)
 				// no row might occur during table-search
@@ -71,12 +67,11 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 				  .append("'>");
 			}
 			
-			for (Identity identity : allIdents) {
-				String last = identity.getUser().getProperty(UserConstants.LASTNAME, locale);
-				String first= identity.getUser().getProperty(UserConstants.FIRSTNAME, locale); 
-				buf.append(last).append(" ").append(first).append(", ");				
-			}
-			sb.append(buf.substring(0, buf.length() - 2));
+			String projectmanagers = allIdents.stream()
+					.map(Identity::getUser)
+					.map(user -> user.getProperty(UserConstants.LASTNAME, locale) + " " + user.getProperty(UserConstants.FIRSTNAME, locale))
+					.collect(Collectors.joining(", "));
+			sb.appendHtmlEscaped(projectmanagers);
 			
 			if (renderer!=null && row != null) {
 				sb.append("</span>");

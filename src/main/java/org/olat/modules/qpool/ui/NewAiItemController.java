@@ -28,13 +28,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
+import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
 import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
-import org.olat.core.commons.services.ai.model.AiMCQuestionData;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
+import org.olat.core.commons.services.ai.model.AiUsageContext;
+import org.olat.core.commons.services.ai.model.MCQuestionData;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Service;
@@ -81,6 +84,8 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
  *
  */
 public class NewAiItemController extends FormBasicController {
+	
+	private static final Logger log = Tracing.createLoggerFor(NewAiItemController.class);
 
 	private TextElement contentEl;
 
@@ -103,6 +108,8 @@ public class NewAiItemController extends FormBasicController {
 
 	@Autowired
 	private AiModule aiModule;
+	@Autowired
+	private AiMCQuestionService mcQuestionService;
 
 	public NewAiItemController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -140,17 +147,23 @@ public class NewAiItemController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		AiUsageContext usageContext = AiUsageContext.builder()
+				.usageContextType("qti-mc-create-questions")
+				.identity(getIdentity())
+				.locale(getLocale())
+				.resourceType("QPool")
+				.resourceId(0L)
+				.build();
 		String input = contentEl.getValue();
-		AiMCQuestionGeneratorSPI generator = aiModule.getMCQuestionGenerator();
 		int numberQuestions = Math.max(1, Math.round(input.length() / 500));
-		AiMCQuestionsResponse response = generator.generateMCQuestionsResponse(input, numberQuestions);
+		AiMCQuestionsResponse response = mcQuestionService.generateMCQuestionsResponse(usageContext, input, numberQuestions);
 
 		if (response.isSuccess()) {
 			// create all items in the document and fire event with item list to parent
 			List<QuestionItem> questionItems = new ArrayList<>();
 
-			for (AiMCQuestionData questionData : response.getQuestions()) {
-				QuestionItem item = doCreateMCItem(questionData, generator);
+			for (MCQuestionData questionData : response.getQuestions()) {
+				QuestionItem item = doCreateMCItem(questionData);
 				if (item != null) {
 					questionItems.add(item);
 				}
@@ -173,12 +186,13 @@ public class NewAiItemController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private QuestionItem doCreateMCItem(AiMCQuestionData itemData, AiMCQuestionGeneratorSPI generator) {
+	private QuestionItem doCreateMCItem(MCQuestionData itemData) {
 		// 1) Create basic item using the builder in RAM
 		String title = itemData.getTitle();
 		String question = itemData.getQuestion();
 		if (title == null || question == null) {
-			return null;			
+			log.info("The response from the AI did not contain a title or questions.");
+			return null;
 		}
 		// question and scoring settings
 		MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder(StringHelper.xssScan(title), "New answer", qtiService.qtiSerializer());
@@ -255,7 +269,7 @@ public class NewAiItemController extends FormBasicController {
 		}
 		// Meta: used AI service and AI model
 		metaItem.setEditor("OpenOlat.AI.QTI12.Generator." + aiModule.getMCGeneratorSpiId());
-		metaItem.setEditorVersion(generator.getMCGeneratorModel());
+		metaItem.setEditorVersion(aiModule.getMCGeneratorModel());
 		
 		// 3) Persist item in question pool using the Excel import SPI
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);

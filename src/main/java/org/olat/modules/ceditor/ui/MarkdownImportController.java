@@ -40,12 +40,17 @@ import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.docxToMarkdown.DocxToMarkdownResult;
+import org.olat.core.util.docxToMarkdown.DocxToMarkdownService;
+import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.manager.MarkdownImportResult;
 import org.olat.modules.ceditor.manager.MarkdownImportService;
@@ -53,9 +58,9 @@ import org.olat.modules.ceditor.ui.event.MarkdownImportDoneEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Controller for importing markdown content into the content editor.
- * Provides file upload and text paste options. Supports direct .md files
- * and .zip archives containing a single .md file with relative image assets.
+ * Controller for importing content into the content editor.
+ * Provides file upload and text paste options. Supports Markdown files (.md),
+ * ZIP archives with markdown + images, and Word documents (.docx).
  *
  * Initial date: 2026-03-11<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com
@@ -64,16 +69,23 @@ public class MarkdownImportController extends FormBasicController {
 
 	private static final Set<String> UPLOAD_MIME_TYPES = Set.of(
 		"text/markdown", "text/x-markdown", "text/plain", "application/octet-stream",
-		"application/zip", "application/x-zip-compressed"
+		"application/zip", "application/x-zip-compressed",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 	);
 
-	/** Maximum upload size in KB (50 MB). Shared with MarkdownPagePartVisitor for download limits. */
+	/** Default upload size limit in KB (50 MB). Used as fallback for download limits in MarkdownPagePartVisitor. */
 	public static final int MAX_UPLOAD_SIZE_KB = 51200;
 
 	private static final String MODE_FILE = "file";
 	private static final String MODE_TEXT = "text";
 
 	private final Page page;
+	private final OLATResourceable aiOres;
+	private final String subIdent;
+	private final String targetContainerId;
+	private final int targetColumn;
+	private final String referenceElementId;
+	private final PageElementTarget target;
 
 	private SingleSelection modeEl;
 	private FileElement fileUploadEl;
@@ -82,33 +94,54 @@ public class MarkdownImportController extends FormBasicController {
 	private File tempUnzipDir;
 
 	@Autowired
+	private ContentEditorModule contentEditorModule;
+	@Autowired
 	private MarkdownImportService markdownImportService;
+	@Autowired
+	private DocxToMarkdownService docxToMarkdownService;
 
-	public MarkdownImportController(UserRequest ureq, WindowControl wControl, Page page) {
+	public MarkdownImportController(UserRequest ureq, WindowControl wControl, Page page, OLATResourceable aiOres,
+			String subIdent, String targetContainerId, int targetColumn,
+			String referenceElementId, PageElementTarget target) {
 		super(ureq, wControl);
 		this.page = page;
+		this.aiOres = aiOres;
+		this.subIdent = subIdent;
+		this.targetContainerId = targetContainerId;
+		this.targetColumn = targetColumn;
+		this.referenceElementId = referenceElementId;
+		this.target = target;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// Mode selection: file upload or text paste
 		String[] modeKeys = { MODE_FILE, MODE_TEXT };
-		String[] modeValues = { translate("import.markdown.mode.file"), translate("import.markdown.mode.text") };
-		modeEl = uifactory.addRadiosHorizontal("import.mode", "import.markdown.mode", formLayout, modeKeys, modeValues);
+		String[] modeTitles = { translate("import.mode.file"), translate("import.mode.text") };
+		String[] modeDescriptions = { translate("import.mode.file.desc"), translate("import.mode.text.desc") };
+		String[] modeIcons = { "o_icon o_icon_upload", "o_icon o_icon_edit" };
+		modeEl = uifactory.addCardSingleSelectHorizontal("import.mode", null, formLayout,
+				modeKeys, modeTitles, modeDescriptions, modeIcons);
 		modeEl.select(MODE_FILE, true);
 		modeEl.addActionListener(FormEvent.ONCHANGE);
 
-		fileUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "import.markdown.file", formLayout);
+		// File upload — use the larger of the two limits to allow both file types
+		int maxUploadKB = Math.max(contentEditorModule.getImportLimitMdKB(), contentEditorModule.getImportLimitDocxKB());
+		fileUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "import.file", formLayout);
 		fileUploadEl.setMandatory(true);
-		fileUploadEl.limitToMimeType(UPLOAD_MIME_TYPES, "import.markdown.file.error", null);
-		fileUploadEl.setMaxUploadSizeKB(MAX_UPLOAD_SIZE_KB, "import.markdown.file.toolarge", null);
+		fileUploadEl.limitToMimeType(UPLOAD_MIME_TYPES, "import.file.error", null);
+		fileUploadEl.setMaxUploadSizeKB(maxUploadKB, "import.file.toolarge", null);
+		fileUploadEl.addActionListener(FormEvent.ONCHANGE);
 
-		markdownTextEl = uifactory.addTextAreaElement("import.markdown.text", "import.markdown.text", -1, 15, 80, false, false, "", formLayout);
+		// Text input
+		markdownTextEl = uifactory.addTextAreaElement("import.text", "import.text", -1, 15, 80, false, false, "", formLayout);
 		markdownTextEl.setVisible(false);
 
+		// Buttons
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("import.markdown.submit", buttonLayout);
+		uifactory.addFormSubmitButton("import.submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
@@ -121,6 +154,16 @@ public class MarkdownImportController extends FormBasicController {
 			markdownTextEl.setVisible(!isFileMode);
 			flc.setDirty(true);
 		}
+		if (event instanceof UploadFileElementEvent) {
+			// Show beta warning when a .docx file is uploaded
+			String filename = fileUploadEl.getUploadFileName();
+			boolean isDocx = filename != null && filename.toLowerCase().endsWith(".docx");
+			if (isDocx) {
+				fileUploadEl.setWarningKey("import.docx.beta.warning");
+			} else {
+				fileUploadEl.clearWarning();
+			}
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -131,7 +174,7 @@ public class MarkdownImportController extends FormBasicController {
 		if (MODE_FILE.equals(modeEl.getSelectedKey())) {
 			fileUploadEl.clearError();
 			if (!fileUploadEl.isUploadSuccess()) {
-				fileUploadEl.setErrorKey("import.markdown.file.missing");
+				fileUploadEl.setErrorKey("import.file.missing");
 				allOk = false;
 			}
 		} else {
@@ -149,46 +192,66 @@ public class MarkdownImportController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String markdown;
 		File basePath = null;
+		List<String> extraWarnings = new ArrayList<>();
 
 		if (MODE_FILE.equals(modeEl.getSelectedKey()) && fileUploadEl.isUploadSuccess()) {
 			File uploaded = fileUploadEl.getUploadFile();
 			String filename = fileUploadEl.getUploadFileName();
 
-			if (filename != null && filename.toLowerCase().endsWith(".zip")) {
+			if (filename != null && filename.toLowerCase().endsWith(".docx")) {
+				// DOCX → Markdown conversion (images extracted to temp dir)
+				DocxToMarkdownResult docxResult = docxToMarkdownService.convert(uploaded);
+				if (docxResult.hasMessages()) {
+					String messagesText = docxResult.renderMessagesAsText(getTranslator());
+					if (!messagesText.isEmpty()) {
+						extraWarnings.add(messagesText);
+					}
+				}
+				markdown = docxResult.markdown();
+				basePath = docxResult.basePath();
+				// Track temp dir for cleanup
+				if (basePath != null && tempUnzipDir == null) {
+					tempUnzipDir = basePath;
+				}
+			} else if (filename != null && filename.toLowerCase().endsWith(".zip")) {
 				File mdFile = extractMarkdownFromZip(uploaded);
 				if (mdFile == null) {
 					return;
 				}
 				uploaded = mdFile;
 				basePath = mdFile.getParentFile();
+				try {
+					markdown = Files.readString(uploaded.toPath(), StandardCharsets.UTF_8);
+				} catch (Exception e) {
+					logError("Failed to read uploaded markdown file", e);
+					showError("import.markdown.read.error");
+					return;
+				}
 			} else {
 				basePath = uploaded.getParentFile();
-			}
-
-			try {
-				markdown = Files.readString(uploaded.toPath(), StandardCharsets.UTF_8);
-			} catch (Exception e) {
-				logError("Failed to read uploaded markdown file", e);
-				showError("import.markdown.read.error");
-				return;
+				try {
+					markdown = Files.readString(uploaded.toPath(), StandardCharsets.UTF_8);
+				} catch (Exception e) {
+					logError("Failed to read uploaded markdown file", e);
+					showError("import.markdown.read.error");
+					return;
+				}
 			}
 		} else {
 			markdown = markdownTextEl.getValue();
 		}
 
-		MarkdownImportResult result = markdownImportService.convertAndPersist(markdown, page, getIdentity(), basePath, getLocale());
+		MarkdownImportResult result = markdownImportService.convertAndPersist(markdown, page, getIdentity(), aiOres,
+				subIdent, basePath, getLocale(), targetContainerId, targetColumn, referenceElementId, target);
 		fireEvent(ureq, new MarkdownImportDoneEvent(result.warnings()));
 	}
 
 	/**
-	 * Extract a single .md file from a ZIP archive. The ZIP is extracted into a
-	 * temporary directory. If no .md file or more than one .md file is found,
-	 * an error is shown and null is returned.
+	 * Extract a single .md file from a ZIP archive.
 	 */
 	private File extractMarkdownFromZip(File zipFile) {
 		try {
 			tempUnzipDir = Files.createTempDirectory("md_import_").toFile();
-			// Unzip into a subdirectory to prevent overwriting if ZIP has no root folder
 			File extractDir = new File(tempUnzipDir, "content");
 			extractDir.mkdirs();
 
@@ -197,7 +260,6 @@ public class MarkdownImportController extends FormBasicController {
 				return null;
 			}
 
-			// Find all .md files in the extracted content
 			List<Path> mdFiles = new ArrayList<>();
 			Files.walkFileTree(extractDir.toPath(), new SimpleFileVisitor<>() {
 				@Override

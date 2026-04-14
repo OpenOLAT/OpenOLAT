@@ -57,6 +57,14 @@ public class CurriculumPage {
 		return this;
 	}
 	
+	public CurriculumPage listAllCurriculums() {
+		By allBy = By.xpath("//div[@class='o_sel_curriculum_management']//ul[contains(@class,'o_segments')]/li/a[contains(@href,'All')]");
+		OOGraphene.waitElement(allBy, browser).click();
+		By allSelectedBy = By.xpath("//div[@class='o_sel_curriculum_management']//ul[contains(@class,'o_segments')]/li/a[contains(@href,'All')][contains(@class,'btn-primary')]");
+		OOGraphene.waitElement(allSelectedBy, browser);
+		return this;
+	}
+	
 	public CurriculumPage addCurriculum(String name, String externalRef, String organisation) {
 		By addBy = By.cssSelector(".o_sel_curriculum_management a.o_sel_add_curriculum");
 		OOGraphene.waitElement(addBy, browser).click();

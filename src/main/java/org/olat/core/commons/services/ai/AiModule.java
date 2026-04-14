@@ -50,7 +50,7 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_IMG_DESC_MODEL = "ai.feature.image-description-generator.model";
 
 	// List of all Spring-registered SPI implementations (OpenAI, Anthropic)
-	private List<AiSPI> springProviders;
+	private List<AiSPI> springProviders = List.of();
 
 	// Generic SPI factory for user-created instances
 	@Autowired
@@ -92,53 +92,21 @@ public class AiModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * @return true: at least one AI feature is configured and ready to use
-	 */
-	public boolean isAiEnabled() {
-		return isMCQuestionGeneratorEnabled() || isImageDescriptionGeneratorEnabled();
-	}
-
-	/**
 	 * @return true: the MC question generator feature is configured and available
 	 */
 	public boolean isMCQuestionGeneratorEnabled() {
-		if (!StringHelper.containsNonWhitespace(mcGeneratorSpiId)) {
-			return false;
-		}
-		for (AiSPI spi : getAiProviders()) {
-			if (spi.getId().equals(mcGeneratorSpiId) && spi.isEnabled() && spi instanceof AiMCQuestionGeneratorSPI) {
-				return true;
-			}
-		}
-		return false;
+		return resolveProvider(mcGeneratorSpiId) != null && StringHelper.containsNonWhitespace(mcGeneratorModel);
 	}
 
 	/**
-	 * Get the configured MC question generator with the model pre-set.
-	 * Returns null if no generator is configured or available.
+	 * Get the configured MC question generator model name.
 	 *
-	 * @return The configured AiMCQuestionGeneratorSPI or null
+	 * @return The model name or null
 	 */
-	public AiMCQuestionGeneratorSPI getMCQuestionGenerator() {
-		if (!StringHelper.containsNonWhitespace(mcGeneratorSpiId)) {
-			return null;
-		}
-		for (AiSPI spi : getAiProviders()) {
-			if (spi.getId().equals(mcGeneratorSpiId) && spi.isEnabled() && spi instanceof AiMCQuestionGeneratorSPI) {
-				AiMCQuestionGeneratorSPI generator = (AiMCQuestionGeneratorSPI) spi;
-				generator.setMCGeneratorModel(mcGeneratorModel);
-				return generator;
-			}
-		}
-		return null;
+	public String getMCGeneratorModel() {
+		return mcGeneratorModel;
 	}
 
-	/**
-	 * Configure which SPI and model to use for MC question generation.
-	 *
-	 * @param spiId The SPI identifier, or null/empty to disable
-	 * @param model The model name
-	 */
 	public void setMCQuestionGeneratorConfig(String spiId, String model) {
 		this.mcGeneratorSpiId = spiId;
 		this.mcGeneratorModel = model;
@@ -146,61 +114,17 @@ public class AiModule extends AbstractSpringModule {
 		setStringProperty(AI_MC_GENERATOR_MODEL, StringHelper.containsNonWhitespace(model) ? model : "", true);
 	}
 
-	/**
-	 * @return The SPI ID configured for MC question generation, or null
-	 */
 	public String getMCGeneratorSpiId() {
 		return mcGeneratorSpiId;
-	}
-
-	/**
-	 * @return The model name configured for MC question generation, or null
-	 */
-	public String getMCGeneratorModel() {
-		return mcGeneratorModel;
 	}
 
 	/**
 	 * @return true: the image description generator feature is configured and available
 	 */
 	public boolean isImageDescriptionGeneratorEnabled() {
-		if (!StringHelper.containsNonWhitespace(imgDescSpiId)) {
-			return false;
-		}
-		for (AiSPI spi : getAiProviders()) {
-			if (spi.getId().equals(imgDescSpiId) && spi.isEnabled() && spi instanceof AiImageDescriptionSPI) {
-				return true;
-			}
-		}
-		return false;
+		return resolveProvider(imgDescSpiId) != null && StringHelper.containsNonWhitespace(imgDescModel);
 	}
 
-	/**
-	 * Get the configured image description generator with the model pre-set.
-	 * Returns null if no generator is configured or available.
-	 *
-	 * @return The configured AiImageDescriptionSPI or null
-	 */
-	public AiImageDescriptionSPI getImageDescriptionGenerator() {
-		if (!StringHelper.containsNonWhitespace(imgDescSpiId)) {
-			return null;
-		}
-		for (AiSPI spi : getAiProviders()) {
-			if (spi.getId().equals(imgDescSpiId) && spi.isEnabled() && spi instanceof AiImageDescriptionSPI) {
-				AiImageDescriptionSPI generator = (AiImageDescriptionSPI) spi;
-				generator.setImageDescriptionModel(imgDescModel);
-				return generator;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Configure which SPI and model to use for image description generation.
-	 *
-	 * @param spiId The SPI identifier, or null/empty to disable
-	 * @param model The model name
-	 */
 	public void setImageDescriptionGeneratorConfig(String spiId, String model) {
 		this.imgDescSpiId = spiId;
 		this.imgDescModel = model;
@@ -223,15 +147,30 @@ public class AiModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * Get all enabled SPIs that implement a given feature interface.
-	 *
-	 * @param featureClass The feature interface class
-	 * @return List of enabled SPIs implementing the feature
+	 * @return All enabled AI providers
 	 */
-	public List<AiSPI> getEnabledSPIsFor(Class<?> featureClass) {
+	public List<AiSPI> getEnabledProviders() {
 		return getAiProviders().stream()
-				.filter(spi -> spi.isEnabled() && featureClass.isInstance(spi))
+				.filter(AiSPI::isEnabled)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Resolve an enabled provider by its SPI ID.
+	 *
+	 * @param spiId The SPI identifier
+	 * @return The enabled provider, or null if not found or disabled
+	 */
+	public AiSPI resolveProvider(String spiId) {
+		if (!StringHelper.containsNonWhitespace(spiId)) {
+			return null;
+		}
+		for (AiSPI spi : getAiProviders()) {
+			if (spi.getId().equals(spiId) && spi.isEnabled()) {
+				return spi;
+			}
+		}
+		return null;
 	}
 
 	/**

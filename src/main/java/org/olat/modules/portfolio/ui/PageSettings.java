@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
+import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -43,6 +44,7 @@ public class PageSettings {
 	private CustomLinkTreeModel toolLinkTreeModel;
 	private boolean canCreateQuiz;
 	private String subIdent;
+	private OLATResourceable aiOres;
 
 	private PageSettings() {
 		//
@@ -159,6 +161,7 @@ public class PageSettings {
 
 	public void setBaseRepositoryEntry(RepositoryEntry baseRepositoryEntry) {
 		this.baseRepositoryEntry = baseRepositoryEntry;
+		this.aiOres = baseRepositoryEntry;
 	}
 
 	public CustomLinkTreeModel getLinkTreeModel() {
@@ -191,6 +194,14 @@ public class PageSettings {
 
 	public String getSubIdent() {
 		return subIdent;
+	}
+
+	public OLATResourceable getAiOres() {
+		return aiOres;
+	}
+
+	public void setAiOres(OLATResourceable aiOres) {
+		this.aiOres = aiOres;
 	}
 
 

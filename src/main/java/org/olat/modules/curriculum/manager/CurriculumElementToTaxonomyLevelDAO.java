@@ -100,6 +100,7 @@ public class CurriculumElementToTaxonomyLevelDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from curriculumelementtotaxonomylevel rel")
 		  .append(" inner join fetch rel.taxonomyLevel level")
+		  .append(" left join fetch level.type levelType")
 		  .append(" where rel.curriculumElement.key in :elementKeys");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElementToTaxonomyLevel.class)

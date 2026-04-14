@@ -193,10 +193,12 @@ public class PageContentConfigurationController extends BasicController {
 	private void doShowPreview(UserRequest ureq) {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
 		PageSettings pageSettings = PageSettings.noHeader(null);
+		pageSettings.setAiOres(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		pageSettings.setSubIdent(courseNode.getIdent());
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,
-				 secCallback, page, pageSettings, null, false);
+				 secCallback, page, pageSettings, null,false);
 		listenTo(pageCtrl);
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), pageCtrl, userCourseEnv, courseNode, "o_page_icon");
@@ -215,6 +217,8 @@ public class PageContentConfigurationController extends BasicController {
 		CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(courseEnv.getRunStructure().getRootNode());
 		CustomLinkTreeModel toolLinkTreeModel = new CourseToolLinkTreeModel(courseEnv.getCourseConfig(), courseEnv.getCourseGroupManager().getCourseEntry(), getLocale());
 		PageSettings pageSettings = PageSettings.reduced(null, linkTreeModel, toolLinkTreeModel, true, false);
+		pageSettings.setAiOres(courseEnv.getCourseGroupManager().getCourseEntry());
+		pageSettings.setSubIdent(courseNode.getIdent());
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,

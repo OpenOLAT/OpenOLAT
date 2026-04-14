@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.mediasite;
 
+import java.util.List;
 import java.util.Map;
 
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.nodes.MediaSiteCourseNode;
@@ -45,9 +47,16 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.PostDataMapper;
+import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.mediasite.LtiVersion;
 import org.olat.modules.mediasite.MediaSiteModule;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,6 +71,7 @@ public class MediaSiteRunController extends BasicController {
 	private final ModuleConfiguration config;
 	private final boolean showAdministration;
 	private final CourseEnvironment courseEnv;
+	private UserCourseEnvironment userCourseEnv;
 	
 	private Panel mainPanel;
 	
@@ -71,6 +81,8 @@ public class MediaSiteRunController extends BasicController {
 	private MediaSiteModule mediaSiteModule;
 	@Autowired
 	private LTIManager ltiManager;
+	@Autowired
+	private LTI13Service lti13Service;
 
 	/**
 	 * Constructor for Run Controller
@@ -82,6 +94,7 @@ public class MediaSiteRunController extends BasicController {
 	 */
 	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		this(ureq, wControl, courseNode, courseNode.getModuleConfiguration(), userCourseEnv.getCourseEnvironment(), false);
+		this.userCourseEnv = userCourseEnv;
 	}
 	
 	/**
@@ -138,17 +151,39 @@ public class MediaSiteRunController extends BasicController {
 		
 		boolean usesPrivateLogin = config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
 		
+		switch (resolveLtiVersion(usesPrivateLogin)) {
+			case lti_1_1 -> showContentLti11(ureq, usesPrivateLogin, container);
+			case lti_1_3 -> showContentLti13(ureq, usesPrivateLogin);
+		}
+	}
+
+	private LtiVersion resolveLtiVersion(boolean usesPrivateLogin) {
+		if (usesPrivateLogin) {
+			String versionStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI_VERSION);
+			if (StringHelper.containsNonWhitespace(versionStr)) {
+				try {
+					return LtiVersion.valueOf(versionStr);
+				} catch (IllegalArgumentException e) {
+					// fall through to default
+				}
+			}
+			return LtiVersion.lti_1_1;
+		}
+		return mediaSiteModule.getLtiVersion();
+	}
+
+	private void showContentLti11(UserRequest ureq, boolean usesPrivateLogin, VelocityContainer container) {
 		String url;
 		String oauth_key;
 		String oauth_secret;
-		
+
 		if (usesPrivateLogin) {
 			if (showAdministration) {
 				url = config.getStringValue(MediaSiteCourseNode.CONFIG_ADMINISTRATION_URL);
 			} else {
 				url = String.format(config.getStringValue(MediaSiteCourseNode.CONFIG_SERVER_URL), config.getStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID));
 			}
-			
+
 			oauth_key = config.getStringValue(MediaSiteCourseNode.CONFIG_PRIVATE_KEY);
 			oauth_secret = config.getStringValue(MediaSiteCourseNode.CONFIG_PRIVATE_SECRET);
 		} else {
@@ -161,27 +196,94 @@ public class MediaSiteRunController extends BasicController {
 			oauth_key = mediaSiteModule.getEnterpriseKey();
 			oauth_secret = mediaSiteModule.getEnterpriseSecret();
 		}
-		
+
 		LTIContext context = new MediaSiteContext();
 		Map<String, String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, true, true, false);
-		
+
 		String usernameKey = config.getStringValue(MediaSiteCourseNode.CONFIG_USER_NAME_KEY, mediaSiteModule.getUsernameProperty());
 		unsignedProps.put(usernameKey, ureq.getUserSession().getIdentity().getUser().getNickName());
-		
+
 		boolean isDebug = config.getBooleanSafe(MediaSiteCourseNode.CONFIG_IS_DEBUG, false);
 		Mapper contentMapper = new PostDataMapper(unsignedProps, url, oauth_key, oauth_secret, isDebug);
-		
+
 		String mapperUri = registerMapper(ureq, contentMapper);
 		container.contextPut("mapperUri", mapperUri + "/");
 		container.contextPut("height", "auto");
 		container.contextPut("width", "auto");
-		
+
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
 		container.put("js", js);
-		
+
 		mainPanel.setContent(container);
 	}
-	
+
+	private void showContentLti13(UserRequest ureq, boolean usesPrivateLogin) {
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		String subIdent = courseNode.getIdent();
+
+		LTI13ToolDeployment deployment;
+		String baseUrl;
+
+		if (usesPrivateLogin) {
+			String courseToolKeyStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY);
+			if (!StringHelper.isLong(courseToolKeyStr)) {
+				showError("error.lti13.not.configured");
+				return;
+			}
+			LTI13Tool courseTool = lti13Service.getToolByKey(Long.valueOf(courseToolKeyStr));
+			if (courseTool == null) {
+				showError("error.lti13.not.configured");
+				return;
+			}
+			List<LTI13ToolDeployment> deployments = lti13Service.getToolDeploymentByTool(courseTool);
+			if (deployments.isEmpty()) {
+				showError("error.lti13.not.configured");
+				return;
+			}
+			deployment = deployments.get(0);
+			baseUrl = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL);
+			if (!StringHelper.containsNonWhitespace(baseUrl)) {
+				showError("err.lti13.not.configured");
+				return;
+			}
+		} else {
+			Long deploymentKey = mediaSiteModule.getLti13DeploymentKey();
+			if (deploymentKey == null) {
+				showError("error.lti13.not.configured");
+				return;
+			}
+			deployment = lti13Service.getToolDeploymentByKey(deploymentKey);
+			if (deployment == null) {
+				showError("error.lti13.not.configured");
+				return;
+			}
+			baseUrl = mediaSiteModule.getLti13BaseUrl();
+			if (!StringHelper.containsNonWhitespace(baseUrl)) {
+				showError("error.lti13.not.configured");
+				return;
+			}
+		}
+
+		String targetUrl = String.format(baseUrl, config.getStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID));
+
+		LTI13Context context = lti13Service.getContext(courseEntry, subIdent);
+		if (context == null) {
+			context = lti13Service.createContext(targetUrl, deployment, courseEntry, subIdent, null);
+		} else if (!targetUrl.equals(context.getTargetUrl())) {
+			context.setTargetUrl(targetUrl);
+			context = lti13Service.updateContext(context);
+		}
+
+		Controller lti13Ctrl;
+		if (userCourseEnv != null) {
+			lti13Ctrl = new LTI13DisplayController(ureq, getWindowControl(), context, null, false, userCourseEnv);
+		} else {
+			lti13Ctrl = new LTI13DisplayController(ureq, getWindowControl(), context, null, false, false, false, false);
+		}
+		listenTo(lti13Ctrl);
+		mainPanel.setContent(lti13Ctrl.getInitialComponent());
+	}
+
 	private boolean checkHasDataExchangeAccepted(String hash) {
 		boolean dataAccepted = false;
 		CoursePropertyManager propMgr = courseEnv.getCoursePropertyManager();

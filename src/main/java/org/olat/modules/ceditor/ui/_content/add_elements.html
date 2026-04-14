@@ -13,6 +13,9 @@
 		#if($r.available("media.center"))
 			$r.render("media.center")
 		#end
+		#if($r.available("import.markdown"))
+			$r.render("import.markdown")
+		#end
 		$r.render("close")
 	</div>
 </div>

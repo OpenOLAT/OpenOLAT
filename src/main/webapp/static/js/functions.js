@@ -18,6 +18,8 @@ o_info.drakes = [];
 
 // o_info.extraFormData is a storage location for appending extra form data to a form submit.
 o_info.extraFormData = {};
+// Reference to the current XHR upload request, used to abort uploads via cancel button
+o_info.xhrCurrentUpload = null;
 
 /**
  * The BLoader object can be used to :
@@ -2022,6 +2024,7 @@ function o_XHRSubmit(formNam) {
 				xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
 				xhr.upload.addEventListener("progress", o_XHRProgress, false);
 				xhr.upload.addEventListener("loadend", o_XHRLoadend, false);
+				o_info.xhrCurrentUpload = xhr;
 				return xhr;
 		    },
 			type:'POST',
@@ -2083,10 +2086,20 @@ function o_XHRSubmit(formNam) {
 }
 
 function o_XHRLoadstart(evt) {
-	// Do only once: remove spinner and show upload progress 
+	// Do only once: remove spinner and show upload progress
 	jQuery('#o_ajax_progress').show();
 	jQuery('#o_ajax_busy .o_icon_busy').hide();
 	o_info.ajaxBusyLastProgress = Date.now();
+	// Bind cancel button to abort the current upload
+	jQuery('#o_ajax_progress #o_progress_cancel').off('click').on('click', function() {
+		if (o_info.xhrCurrentUpload != null) {
+			try {
+				o_info.xhrCurrentUpload.abort();
+			} catch(e) {
+				if(window.console) console.log(e);
+			}
+		}
+	});
 }
 function o_XHRProgress(evt) {
 	if (evt.lengthComputable) {
@@ -2110,7 +2123,9 @@ function o_XHRLoadend() {
 	jQuery('#o_ajax_progress').hide();
 	jQuery('#o_ajax_busy .o_icon_busy').show();   	
 	jQuery('#o_ajax_progress .o_progress_info').text('');
+	jQuery('#o_ajax_progress #o_progress_cancel').off('click');
 	o_info.ajaxBusyLastProgress = null;
+	o_info.xhrCurrentUpload = null;
 }
 
 function o_onXHRSuccess (data, textStatus, jqXHR) {

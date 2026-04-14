@@ -21,12 +21,12 @@ package org.olat.core.commons.services.ai.ui;
 
 import java.util.Locale;
 
-import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
-import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
-import org.olat.core.commons.services.ai.model.AiImageDescriptionData;
+import org.olat.core.commons.services.ai.AiImageDescriptionService;
+import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
-import org.olat.core.commons.services.ai.model.AiMCQuestionData;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
+import org.olat.core.commons.services.ai.model.ImageDescriptionData;
+import org.olat.core.commons.services.ai.model.MCQuestionData;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -275,61 +275,54 @@ public class AiFeaturesTestController extends BasicController {
 			+ "P//Z";
 	static final String IMG_TEST_MIME_TYPE = "image/jpeg";
 
+	private final AiMCQuestionService mcQuestionService;
+	private final AiImageDescriptionService imageDescriptionService;
 	private CloseableModalController cmc;
 
-	public AiFeaturesTestController(UserRequest ureq, WindowControl wControl) {
+	public AiFeaturesTestController(UserRequest ureq, WindowControl wControl,
+			AiMCQuestionService mcQuestionService, AiImageDescriptionService imageDescriptionService) {
 		super(ureq, wControl);
+		this.mcQuestionService = mcQuestionService;
+		this.imageDescriptionService = imageDescriptionService;
 		putInitialPanel(new org.olat.core.gui.components.panel.SimpleStackedPanel("aiTestPanel"));
 	}
 
-	/**
-	 * Run the MC question generator test and show results in a modal.
-	 *
-	 * @param ureq
-	 * @param generator the configured generator SPI with model already set
-	 */
-	public void testMcGenerator(UserRequest ureq, AiMCQuestionGeneratorSPI generator) {
+	public void testMcGenerator(String spiId, String modelName) {
 		VelocityContainer vc = createVelocityContainer("ai_test_result");
 		vc.contextPut("testType", "mc");
 		vc.contextPut("inputText", MC_TEST_INPUT);
 
-		AiMCQuestionsResponse response = generator.generateMCQuestionsResponse(MC_TEST_INPUT, 1);
+		AiMCQuestionsResponse response = mcQuestionService.generateMCQuestionsResponse(null, MC_TEST_INPUT, 1, spiId, modelName);
 		if (response.isSuccess() && !response.getQuestions().isEmpty()) {
-			AiMCQuestionData q = response.getQuestions().get(0);
+			MCQuestionData q = response.getQuestions().get(0);
 			vc.contextPut("mcData", q);
 		} else {
 			String error = response.getError() != null ? response.getError() : "No questions generated.";
 			vc.contextPut("error", error);
 		}
 
-		showModal(ureq, vc, "MC Question Generator Test");
+		showModal(vc, "MC Question Generator Test");
 	}
 
-	/**
-	 * Run the image description generator test and show results in a modal.
-	 *
-	 * @param ureq
-	 * @param generator the configured generator SPI with model already set
-	 */
-	public void testImgDescGenerator(UserRequest ureq, AiImageDescriptionSPI generator) {
+	public void testImgDescGenerator(String spiId, String modelName) {
 		VelocityContainer vc = createVelocityContainer("ai_test_result");
 		vc.contextPut("testType", "imgdesc");
 		vc.contextPut("inputImageBase64", IMG_TEST_BASE64);
 
-		AiImageDescriptionResponse response = generator.generateImageDescription(
-				IMG_TEST_BASE64, IMG_TEST_MIME_TYPE, Locale.ENGLISH);
+		AiImageDescriptionResponse response = imageDescriptionService.generateImageDescription(
+				null, IMG_TEST_BASE64, IMG_TEST_MIME_TYPE, Locale.ENGLISH, spiId, modelName);
 		if (response.isSuccess() && response.getDescription() != null) {
-			AiImageDescriptionData data = response.getDescription();
+			ImageDescriptionData data = response.getDescription();
 			vc.contextPut("imgData", data);
 		} else {
 			String error = response.getError() != null ? response.getError() : "No description generated.";
 			vc.contextPut("error", error);
 		}
 
-		showModal(ureq, vc, "Image Description Generator Test");
+		showModal(vc, "Image Description Generator Test");
 	}
 
-	private void showModal(UserRequest ureq, VelocityContainer vc, String title) {
+	private void showModal(VelocityContainer vc, String title) {
 		cleanUp();
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				vc, true, title);

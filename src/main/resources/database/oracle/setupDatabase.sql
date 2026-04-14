@@ -5085,6 +5085,44 @@ create table o_tb_audit_log (
    primary key (id)
 );
 
+-- AI
+create table o_ai_usage_log (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate timestamp not null,
+   a_usage_context_type varchar2(128),
+   a_usage_context_id varchar2(36),
+   a_resource_type varchar2(128),
+   a_resource_id number(19,0),
+   a_resource_sub_id varchar2(128),
+   fk_identity number(19,0),
+   a_locale varchar2(32),
+   a_ai_feature varchar2(128) not null,
+   a_duration_millis number(20),
+   a_status varchar2(32) not null,
+   a_error_code varchar2(128),
+   a_error_message clob,
+   a_model_provider varchar2(64),
+   a_req_model varchar2(128),
+   a_req_temperature number(6,4),
+   a_req_top_p number(6,4),
+   a_req_max_output_tokens number(20),
+   a_invocation_id varchar2(36),
+   a_service_interface varchar2(255),
+   a_service_method varchar2(255),
+   a_resp_id varchar2(255),
+   a_resp_model varchar2(128),
+   a_resp_finish_reason varchar2(64),
+   a_input_tokens number(20),
+   a_output_tokens number(20),
+   a_total_tokens number(20),
+   a_cached_input_tokens number(20),
+   a_reasoning_tokens number(20),
+   a_req_num_messages number(20),
+   a_req_text_length number(20),
+   a_cache_creation_input_tokens number(20),
+   primary key (id)
+);
+
 -- feed tag (blog/podcast)
 create table o_feed_tag (
     id number(20) generated always as identity,
@@ -7534,6 +7572,9 @@ create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
 create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
+
+-- AI
+create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
 
 -- feed tags
 create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);

@@ -10,7 +10,7 @@
 	</div>
 
 	#if($r.available("curriculum.element.coaches") || $r.available("curriculum.element.mastercoaches") || $r.available("course.owners") || $r.available("curriculum.element.owners"))
-	<div class="o_curriculum_widget_course_staff">
+	<div class="o_curriculum_widget_course_staff o_curriculum_widget_course_staff_card">
 		<h4>$r.translate("curriculum.element.course.staff")</h4>
 		<div class="o_curriculum_widget_roles_portrait">
 			#if($r.available("curriculum.element.coaches"))
@@ -35,5 +35,17 @@
 			#end
 		</div>
 	</div>
+	#else
+		<div class="o_curriculum_widget_course_staff_card">
+			$r.render("staff.empty")
+		</div>
+	#end
+	<div class="o_dashboard_widget_space"></div>
+	#if($r.available($detailsComponentName) && $r.visible($detailsComponentName))
+		<div class="o_dashboard_widget_footer">
+			<div class="o_dashboard_widget_footer_buttons">
+				$r.render($detailsComponentName)
+			</div>
+		</div>
 	#end
 </div>

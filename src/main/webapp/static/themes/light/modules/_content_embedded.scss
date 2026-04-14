@@ -141,7 +141,7 @@ table {
 			border: 1px solid $o-content-table-border;
 		}
 		thead td, th {
-			background: $gray-lighter;
+			background: rgba($gray-base, 10%);
 			font-weight: bold;
 		}
 	}

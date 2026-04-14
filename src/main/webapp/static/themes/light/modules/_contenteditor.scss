@@ -142,6 +142,11 @@
 		}
 	}
 
+	&.o_apply_background_color:not(.o_alert_box_active) {
+		border-radius: $border-radius-base;
+		overflow: hidden;
+	}
+
 	.o_ed_htitle {
 		h1, .h1 { font-size: $font-size-h1; }
 		h2, .h2 { font-size: $font-size-h2; }
@@ -152,6 +157,19 @@
 	}
 }
 
+@mixin alert_box($mainColor, $backgroundColor) {
+	box-shadow: $o-card-box-hover-shadow;
+	border-color: rgba($mainColor, 15%);
+	background-color: $backgroundColor;
+
+	> .o_container_block > .o_container_block_alert > .o_alert_icon {
+		color: $mainColor;
+	}
+	
+	&.o_page_layout {
+		box-shadow: none;
+	}
+}
 
 .o_page_content_editor > .o_page_fragment_edit > .o_page_layout, .o_page_layout, .o_page_part, .o_alert_div {
 	&.o_alert_box_active {
@@ -169,179 +187,84 @@
 		}
 
 		&.o_alert_box_type_note {
-			border-color: $o-box-note-color;
-			background-color: $o-box-note-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-note-color;
-			}
+			@include alert_box($o-box-note-color, $o-box-note-bg);
 		}
 
 		&.o_alert_box_type_info {
-			border-color: $o-box-info-color;
-			background-color: $o-box-info-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-info-color;
-			}
+			@include alert_box($o-box-info-color, $o-box-info-bg);
 		}
 
 		&.o_alert_box_type_tip {
-			border-color: $o-box-tip-color;
-			background-color: $o-box-tip-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-tip-color;
-			}
+			@include alert_box($o-box-tip-color, $o-box-tip-bg);
 		}
 
 		&.o_alert_box_type_important {
-			border-color: $o-box-important-color;
-			background-color: $o-box-important-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-important-color;
-			}
+			@include alert_box($o-box-important-color, $o-box-important-bg);
 		}
 
 		&.o_alert_box_type_warning {
-			border-color: $o-box-warning-color;
-			background-color: $o-box-warning-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-warning-color;
-			}
+			@include alert_box($o-box-warning-color, $o-box-warning-bg);
 		}
 
 		&.o_alert_box_type_error {
-			border-color: $o-box-error-color;
-			background-color: $o-box-error-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-error-color;
-			}
+			@include alert_box($o-box-error-color, $o-box-error-bg);
 		}
 
 		&.o_alert_box_type_success {
-			border-color: $o-box-success-color;
-			background-color: $o-box-success-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-box-success-color;
-			}
+			@include alert_box($o-box-success-color, $o-box-success-bg);
 		}
 
 		&.o_alert_box_color_lightgray {
-			border-color: $o-color-light-gray;
-			background-color: $o-color-light-gray-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-light-gray;
-			}
+			@include alert_box($o-color-light-gray, $o-color-light-gray-bg);
 		}
 
 		&.o_alert_box_color_lightblue {
-			border-color: $o-color-light-blue;
-			background-color: $o-color-light-blue-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-light-blue;
-			}
+			@include alert_box($o-color-light-blue, $o-color-light-blue-bg);
 		}
 
 		&.o_alert_box_color_purple {
-			border-color: $o-color-purple;
-			background-color: $o-color-purple-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-purple;
-			}
+			@include alert_box($o-color-purple, $o-color-purple-bg);
 		}
 
 		&.o_alert_box_color_yellow {
-			border-color: $o-color-yellow;
-			background-color: $o-color-yellow-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-yellow;
-			}
+			@include alert_box($o-color-yellow, $o-color-yellow-bg);
 		}
 
 		&.o_alert_box_color_red {
-			border-color: $o-color-red;
-			background-color: $o-color-red-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-red;
-			}
+			@include alert_box($o-color-red, $o-color-red-bg);
 		}
 
 		&.o_alert_box_color_lightgreen {
-			border-color: $o-color-light-green;
-			background-color: $o-color-light-green-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-light-green;
-			}
+			@include alert_box($o-color-light-green, $o-color-light-green-bg);
 		}
 
 		&.o_alert_box_color_orange {
-			border-color: $o-color-orange;
-			background-color: $o-color-orange-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-orange;
-			}
+			@include alert_box($o-color-orange, $o-color-orange-bg);
 		}
 
 		&.o_alert_box_color_brown {
-			border-color: $o-color-brown;
-			background-color: $o-color-brown-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-brown;
-			}
+			@include alert_box($o-color-brown, $o-color-brown-bg);
 		}
 
 		&.o_alert_box_color_orchid {
-			border-color: $o-color-orchid;
-			background-color: $o-color-orchid-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-orchid;
-			}
+			@include alert_box($o-color-orchid, $o-color-orchid-bg);
 		}
 
 		&.o_alert_box_color_cobaltblue {
-			border-color: $o-color-cobalt-blue;
-			background-color: $o-color-cobalt-blue-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-cobalt-blue;
-			}
+			@include alert_box($o-color-cobalt-blue, $o-color-cobalt-blue-bg);
 		}
 
 		&.o_alert_box_color_darkblue {
-			border-color: $o-color-dark-blue;
-			background-color: $o-color-dark-blue-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-dark-blue;
-			}
+			@include alert_box($o-color-dark-blue, $o-color-dark-blue-bg);
 		}
 
 		&.o_alert_box_color_seagreen {
-			border-color: $o-color-sea-green;
-			background-color: $o-color-sea-green-bg;
-
-			> .o_container_block > .o_container_block_alert > .o_alert_icon {
-				color: $o-color-sea-green;
-			}
+			@include alert_box($o-color-sea-green, $o-color-sea-green-bg);
 		}
 
 		.o_container_block, .o_page_container_slot-inner {
 			.o_container_block_alert {
-				padding: $o-ce-padding-normal;
+				padding: $o-ce-padding-normal $o-ce-padding-normal 0 $o-ce-padding-normal;
 				display: flex;
 
 				&.o_in_form {
@@ -1520,7 +1443,8 @@ table.o_ce_table {
 .o_page_run_code_box {
 	position: relative;
 
-	background-color: $pre-bg;
+	box-shadow: $o-card-box-hover-shadow;
+	background-color: mix($o-color-light-gray, white, 5%);
 	border: 1px solid $pre-border-color;
 	border-radius: $border-radius-base;
 
@@ -1982,6 +1906,47 @@ table.o_ce_table {
 
 	.o_page_table_run {
 		overflow-x: auto;
+
+		.o_table_border_wrap {
+			box-shadow: $o-card-box-hover-shadow;
+			border-radius: $border-radius-base;
+			overflow: hidden;
+			border: 1px solid rgba($gray-base, 10%);
+
+			table.b_border {
+				td, th {
+					border-color: rgba($gray-base, 10%);
+				}
+
+				> thead > tr:first-child > * { 
+					border-top: none; 
+				}
+				
+				&:not(:has(> thead)) > tbody > tr:first-child > * { 
+					border-top: none; 
+				}
+				
+				> tbody > tr:last-child > * { 
+					border-bottom: none; 
+				}
+				
+				> * > tr > *:first-child { 
+					border-left: none; 
+				}
+
+				> * > tr > *:last-child { 
+					border-right: none; 
+				}
+			}
+		}
+
+		.o_table_caption {
+			padding-top: $table-cell-padding;
+			padding-bottom: $table-cell-padding;
+			color: $text-muted;
+			text-align: left;
+			font-style: italic;
+		}
 
 		table {
 			width: 100%;
@@ -2822,6 +2787,69 @@ table.o_ce_table {
 	&.o_lightbox_close_border.o_image_gallery_lightbox {
 		.basicLightbox__placeholder {
 			overflow-y: auto;
+		}
+	}
+}
+
+.o_page_layout.o_apply_background_color {
+	> .o_container_block {
+		padding: $o-ce-padding-compact;
+	}
+
+	> .o_page_container_slot {
+		> .o_page_container_slot-inner {
+			padding: $o-ce-padding-compact;
+		}
+	}
+
+	div.o_color_lightgray hr {
+		border-top-color: mix($o-color-light-gray, white, 30%);
+	}
+	div.o_color_yellow hr {
+		border-top-color: mix($o-color-yellow, white, 30%);
+	}
+	div.o_color_orange hr {
+		border-top-color: mix($o-color-orange, white, 30%);
+	}
+	div.o_color_brown hr {
+		border-top-color: mix($o-color-brown, white, 30%);
+	}
+	div.o_color_red hr {
+		border-top-color: mix($o-color-red, white, 30%);
+	}
+	div.o_color_orchid hr {
+		border-top-color: mix($o-color-orchid, white, 30%);
+	}
+	div.o_color_purple hr {
+		border-top-color: mix($o-color-purple, white, 30%);
+	}
+	div.o_color_lightblue hr {
+		border-top-color: mix($o-color-light-blue, white, 30%);
+	}
+	div.o_color_cobaltblue hr {
+		border-top-color: mix($o-color-cobalt-blue, white, 30%);
+	}
+	div.o_color_darkblue hr {
+		border-top-color: mix($o-color-dark-blue, white, 30%);
+	}
+	div.o_color_lightgreen hr {
+		border-top-color: mix($o-color-light-green, white, 30%);
+	}
+	div.o_color_seagreen hr {
+		border-top-color: mix($o-color-sea-green, white, 30%);
+	}
+
+	.o_alert_box_active {
+		margin-left: $o-ce-padding-normal;
+		margin-right: $o-ce-padding-normal;
+	}
+}
+
+.o_page_content_editor {
+	.o_page_layout {
+		.o_alert_box_active {
+			margin-left: $o-ce-padding-compact;
+			margin-right: $o-ce-padding-compact;
 		}
 	}
 }

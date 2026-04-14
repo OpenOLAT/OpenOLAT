@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOCX-to-Markdown Converter — OpenOlat</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --content-bg: #ffffff;
+  --text: #1a1a2e;
+  --heading: #136669;
+  --heading-dark: #16797c;
+  --link: #16797c;
+  --link-hover: #1f999c;
+  --code-bg: #f6f8fa;
+  --code-border: #e2e8f0;
+  --code-color: #7c3aed;
+  --pre-bg: #1e1e2e;
+  --pre-text: #cdd6f4;
+  --table-header: #f8fafc;
+  --table-border: #e2e8f0;
+  --table-alt: #fafbfc;
+  --border: #e2e8f0;
+  --nav-width: 260px;
+  --nav-bg: #ffffff;
+  --aside-bg: #fff7ed;
+  --aside-border: #f97316;
+  --info-bg: #eff6ff;
+  --info-border: #3b82f6;
+  --diagram-bg: #ffffff;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+h2[id] { scroll-margin-top: 1rem; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+.doc-header {
+  background: linear-gradient(135deg, #16797c 0%, #1f999c 65%, #23adb1 100%);
+  color: white;
+  padding: 28px 48px 32px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.header-logo { display: flex; align-items: center; gap: 11px; }
+.header-logo-text { font-size: 16px; font-weight: 700; color: white; line-height: 1; letter-spacing: 0.1px; }
+.header-doc-type { font-size: 10.5px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
+.header-rule { height: 1px; background: rgba(255,255,255,0.2); margin-bottom: 16px; }
+.doc-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; border: none; margin: 0; padding: 0; color: white; }
+.doc-header .subtitle { margin-top: 5px; color: rgba(255,255,255,0.82); font-size: 13px; }
+.doc-header .meta { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.doc-header .meta span { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); border-radius: 4px; padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.92); }
+.header-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; }
+.header-nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 2px 0; transition: color 0.15s; }
+.header-nav a:hover { color: white; text-decoration: underline; }
+.header-nav a.active { color: white; font-weight: 600; }
+.header-nav .sep { color: rgba(255,255,255,0.35); font-size: 11px; }
+.page-layout { display: flex; min-height: 100vh; }
+.side-nav {
+  width: var(--nav-width); min-width: var(--nav-width);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border); background: var(--nav-bg);
+  padding: 1.2rem 0; font-size: 12px; scrollbar-width: thin;
+}
+.side-nav::-webkit-scrollbar { width: 4px; }
+.side-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.side-nav .nav-title { font-size: 13px; font-weight: 700; color: var(--heading); padding: 0 1rem 0.6rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+.side-nav .nav-group { padding: 0.5rem 0 0.2rem; }
+.side-nav .nav-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; padding: 0.3rem 1rem; }
+.side-nav a { display: block; padding: 3px 1rem 3px 1.2rem; color: #475569; text-decoration: none; border-left: 3px solid transparent; transition: all 0.15s; line-height: 1.5; }
+.side-nav a:hover { color: var(--link-hover); background: rgba(22,121,124,0.06); }
+.side-nav a.active { color: var(--link); border-left-color: var(--heading); background: rgba(22,121,124,0.08); font-weight: 600; }
+.main-content { flex: 1; max-width: 960px; padding: 40px 32px 80px; min-width: 0; }
+h2 { font-size: 18px; font-weight: 700; color: var(--heading); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin: 48px 0 20px; }
+h3 { font-size: 14px; font-weight: 600; color: #334155; margin: 20px 0 10px; }
+h4 { font-size: 13px; font-weight: 600; color: #475569; margin: 16px 0 6px; }
+p { margin: 8px 0; font-size: 14px; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--link-hover); }
+ul, ol { margin: 6px 0 12px 1.8rem; }
+li { margin: 3px 0; }
+code { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 12px; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: 1px 5px; color: var(--code-color); }
+pre { background: var(--pre-bg); color: var(--pre-text); border-radius: 10px; padding: 16px 20px; overflow-x: auto; margin: 10px 0 16px; line-height: 1.7; font-size: 12.5px; box-shadow: var(--shadow); }
+pre code { background: none; border: none; padding: 0; font-size: inherit; color: inherit; }
+.kw { color: #ff7b72; } .str { color: #a6e3a1; } .cmt { color: #6c7086; font-style: italic; } .typ { color: #89b4fa; } .num { color: #89b4fa; } .ann { color: #cba6f7; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0 16px; background: var(--content-bg); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+th { background: var(--table-header); padding: 8px 14px; text-align: left; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+.aside { background: var(--aside-bg); border-left: 4px solid var(--aside-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #7c2d12; }
+.aside strong { color: #92400e; }
+.info { background: var(--info-bg); border-left: 4px solid var(--info-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #1e3a5f; }
+.info strong { color: #1e40af; }
+.diagram-box { background: var(--diagram-bg); border-radius: 12px; padding: 32px; margin: 16px 0 20px; text-align: center; overflow-x: auto; box-shadow: var(--shadow); }
+.diagram-box svg { max-width: 100%; height: auto; }
+.diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
+hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+@media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
+@media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <div class="header-top">
+    <div class="header-logo" style="text-decoration:none">
+      <div>
+        <div class="header-logo-text">OpenOlat</div>
+        <div class="header-doc-type">Package Documentation</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="../../../../../../../doc/openolat-architecture.html">Architecture</a>
+      <span class="sep">|</span>
+      <a href="#" class="active">DOCX-to-Markdown</a>
+    </nav>
+  </div>
+  <div class="header-rule"></div>
+  <h1>DOCX-to-Markdown Converter</h1>
+  <div class="subtitle">Zero-dependency DOCX-to-Markdown conversion via a 6-stage SAX pipeline</div>
+  <div class="meta">
+    <span>Java 17+</span>
+    <span>Spring @Service</span>
+    <span>Core Utility</span>
+    <span>16 Java Files</span>
+    <span>~3,000 LOC</span>
+  </div>
+</header>
+
+<div class="page-layout">
+<nav class="side-nav">
+  <div class="nav-title">DOCX-to-Markdown</div>
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a href="#overview">Overview</a>
+    <a href="#public-api">Public API</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Architecture</div>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#package-structure">Package Structure</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Features</div>
+    <a href="#supported-features">Supported Features</a>
+    <a href="#edge-cases">Edge Cases</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Operations</div>
+    <a href="#security">Security</a>
+    <a href="#memory-scaling">Memory &amp; Scaling</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#i18n">i18n Messages</a>
+    <a href="#integration">Integration</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+<!-- ===== OVERVIEW ===== -->
+<h2 id="overview">Overview</h2>
+<p>The <code>org.olat.core.util.docxToMarkdown</code> package implements a <strong>zero-dependency DOCX-to-Markdown converter</strong> for OpenOlat. It reads DOCX files (ZIP archives conforming to the OOXML standard), extracts text, formatting, images, shapes, math, and metadata, and produces clean Markdown output with media files on disk.</p>
+
+<h3>Design Principles</h3>
+<ul>
+  <li><strong>Stateless @Service</strong> &mdash; all conversion state is local to each <code>convert()</code> call. Thread-safe by design.</li>
+  <li><strong>SAX streaming</strong> &mdash; the main <code>document.xml</code> is streamed directly from the ZIP to a SAX parser. No DOM tree is built.</li>
+  <li><strong>Security-first</strong> &mdash; XXE, zip bombs, zip slip, macros, and JavaScript URLs are all blocked at the entry point.</li>
+  <li><strong>Graceful degradation</strong> &mdash; unsupported features produce warnings, never exceptions. The converter always returns a result.</li>
+</ul>
+
+<div class="aside"><strong>Key Principle:</strong> Memory usage is proportional to text content, not file size. A 1 GB DOCX with many images uses only ~35 MB of heap because images and videos are streamed to disk.</div>
+
+<!-- ===== PUBLIC API ===== -->
+<h2 id="public-api">Public API</h2>
+<p>Only <strong>3 public classes</strong>. Everything else is package-private.</p>
+
+<h3>DocxToMarkdownService</h3>
+<p>Spring <code>@Service</code> entry point. Registered via component-scan in <code>utilCorecontext.xml</code>.</p>
+<pre><code><span class="ann">@Service</span>
+<span class="kw">public class</span> <span class="typ">DocxToMarkdownService</span> {
+    <span class="cmt">/** Convert from a java.io.File */</span>
+    <span class="kw">public</span> <span class="typ">DocxToMarkdownResult</span> <span class="kw">convert</span>(<span class="typ">File</span> docxFile);
+    <span class="cmt">/** Convert from a VFSLeaf (local files accessed directly, non-local copied to temp) */</span>
+    <span class="kw">public</span> <span class="typ">DocxToMarkdownResult</span> <span class="kw">convert</span>(<span class="typ">VFSLeaf</span> vfsLeaf);
+}</code></pre>
+
+<h3>DocxToMarkdownResult</h3>
+<p>Conversion result record.</p>
+<pre><code><span class="kw">public record</span> <span class="typ">DocxToMarkdownResult</span>(
+    <span class="typ">String</span> markdown,          <span class="cmt">// front matter + body, never null</span>
+    <span class="typ">File</span> basePath,            <span class="cmt">// temp dir containing media/ subdirectory (may be null)</span>
+    <span class="typ">List</span>&lt;<span class="typ">DocxConversionMessage</span>&gt; messages
+) {
+    <span class="kw">public boolean</span> hasMessages();
+    <span class="cmt">/** HTML &lt;ul&gt;&lt;li&gt;...&lt;/li&gt;&lt;/ul&gt; — HTML-escaped, safe for UI display */</span>
+    <span class="kw">public</span> <span class="typ">String</span> renderMessagesAsHtml(<span class="typ">Translator</span> translator);
+    <span class="cmt">/** Plain text "- message\n- message" — for logging or non-HTML contexts */</span>
+    <span class="kw">public</span> <span class="typ">String</span> renderMessagesAsText(<span class="typ">Translator</span> translator);
+}</code></pre>
+
+<h3>DocxConversionMessage</h3>
+<p>A single conversion message with i18n key and substitution arguments. The service never produces user-visible strings &mdash; only i18n keys.</p>
+<pre><code><span class="kw">public record</span> <span class="typ">DocxConversionMessage</span>(
+    <span class="typ">Level</span> level,    <span class="cmt">// INFO, WARNING, ERROR</span>
+    <span class="typ">String</span> i18nKey, <span class="cmt">// e.g. "docx.convert.warn.image.skipped"</span>
+    <span class="typ">String</span>[] args   <span class="cmt">// substitution arguments for {0}, {1}, ...</span>
+) {
+    <span class="kw">public</span> <span class="typ">String</span> translate(<span class="typ">Translator</span> translator);
+}</code></pre>
+
+<h3>Usage Example</h3>
+<pre><code><span class="ann">@Autowired</span>
+<span class="kw">private</span> <span class="typ">DocxToMarkdownService</span> docxService;
+
+<span class="cmt">// From a VFS leaf (preferred in OpenOlat)</span>
+<span class="typ">DocxToMarkdownResult</span> result = docxService.convert(vfsLeaf);
+<span class="cmt">// Or from a java.io.File</span>
+<span class="typ">DocxToMarkdownResult</span> result = docxService.convert(docxFile);
+<span class="typ">String</span> markdown = result.markdown();
+<span class="typ">File</span> mediaDir = result.basePath(); <span class="cmt">// contains media/ subdirectory with images</span>
+
+<span class="kw">if</span> (result.hasMessages()) {
+    <span class="typ">String</span> warnings = result.renderMessagesAsText(translator);
+    log.info(<span class="str">"Conversion messages:\n{}"</span>, warnings);
+}
+
+<span class="cmt">// Clean up temp directory when done</span>
+<span class="typ">FileUtils</span>.deleteDirsAndFiles(result.basePath(), <span class="kw">true</span>, <span class="kw">true</span>);</code></pre>
+
+<!-- ===== PIPELINE ===== -->
+<h2 id="pipeline">Pipeline Architecture</h2>
+<p>The converter operates as a <strong>6-stage pipeline</strong>. Stages 1&ndash;5b parse auxiliary XML parts into lookup maps. Stage 6 streams <code>document.xml</code> through a SAX handler that references these maps.</p>
+
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 520" width="880" height="520">
+  <!-- Background -->
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#16797c"/>
+    </marker>
+    <linearGradient id="stageGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e0f2f1"/>
+      <stop offset="100%" stop-color="#b2dfdb"/>
+    </linearGradient>
+    <linearGradient id="inputGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff3e0"/>
+      <stop offset="100%" stop-color="#ffe0b2"/>
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="100%" stop-color="#c8e6c9"/>
+    </linearGradient>
+    <linearGradient id="mainGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16797c"/>
+      <stop offset="100%" stop-color="#136669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Input: DOCX -->
+  <rect x="20" y="30" width="120" height="50" rx="8" fill="url(#inputGrad)" stroke="#f57c00" stroke-width="1.5"/>
+  <text x="80" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#e65100">DOCX</text>
+  <text x="80" y="68" text-anchor="middle" font-size="9" fill="#bf360c">(ZIP archive)</text>
+
+  <!-- Arrow to Stage 1 -->
+  <line x1="140" y1="55" x2="180" y2="55" stroke="#16797c" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Stage 1: ZipExtractor -->
+  <rect x="185" y="22" width="155" height="66" rx="8" fill="url(#stageGrad)" stroke="#16797c" stroke-width="1.5"/>
+  <text x="262" y="42" text-anchor="middle" font-size="10" font-weight="700" fill="#004d40">[1] ZipExtractor</text>
+  <text x="262" y="56" text-anchor="middle" font-size="8.5" fill="#37474f">Security checks</text>
+  <text x="262" y="68" text-anchor="middle" font-size="8.5" fill="#37474f">Extract auxiliary XML</text>
+  <text x="262" y="80" text-anchor="middle" font-size="8.5" fill="#37474f">document.xml NOT buffered</text>
+
+  <!-- Arrow from Stage 1 down to fan-out -->
+  <line x1="262" y1="88" x2="262" y2="115" stroke="#16797c" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Fan-out horizontal line -->
+  <line x1="120" y1="120" x2="710" y2="120" stroke="#16797c" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Stage 2: RelParser -->
+  <rect x="60" y="140" width="150" height="55" rx="8" fill="url(#stageGrad)" stroke="#16797c" stroke-width="1.5"/>
+  <text x="135" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#004d40">[2] RelParser</text>
+  <text x="135" y="173" text-anchor="middle" font-size="8.5" fill="#37474f">document.xml.rels</text>
+  <text x="135" y="185" text-anchor="middle" font-size="8.5" fill="#546e7a">Map&lt;id, RelTarget&gt;</text>
+  <line x1="135" y1="120" x2="135" y2="140" stroke="#16797c" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 3: NumberingParser -->
+  <rect x="230" y="140" width="150" height="55" rx="8" fill="url(#stageGrad)" stroke="#16797c" stroke-width="1.5"/>
+  <text x="305" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#004d40">[3] NumberingParser</text>
+  <text x="305" y="173" text-anchor="middle" font-size="8.5" fill="#37474f">numbering.xml</text>
+  <text x="305" y="185" text-anchor="middle" font-size="8.5" fill="#546e7a">Map&lt;numId, NumDef&gt;</text>
+  <line x1="305" y1="120" x2="305" y2="140" stroke="#16797c" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 4: StyleParser -->
+  <rect x="400" y="140" width="150" height="55" rx="8" fill="url(#stageGrad)" stroke="#16797c" stroke-width="1.5"/>
+  <text x="475" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#004d40">[4] StyleParser</text>
+  <text x="475" y="173" text-anchor="middle" font-size="8.5" fill="#37474f">styles.xml</text>
+  <text x="475" y="185" text-anchor="middle" font-size="8.5" fill="#546e7a">Map&lt;styleId, name&gt;</text>
+  <line x1="475" y1="120" x2="475" y2="140" stroke="#16797c" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 5: MetadataParser -->
+  <rect x="570" y="140" width="150" height="55" rx="8" fill="url(#stageGrad)" stroke="#16797c" stroke-width="1.5"/>
+  <text x="645" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#004d40">[5] MetadataParser</text>
+  <text x="645" y="173" text-anchor="middle" font-size="8.5" fill="#37474f">docProps/core.xml</text>
+  <text x="645" y="185" text-anchor="middle" font-size="8.5" fill="#546e7a">DocxMetadata</text>
+  <line x1="645" y1="120" x2="645" y2="140" stroke="#16797c" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 5b: FootnoteParser -->
+  <rect x="740" y="140" width="130" height="55" rx="8" fill="url(#stageGrad)" stroke="#16797c" stroke-width="1.5"/>
+  <text x="805" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#004d40">[5b] FootnoteParser</text>
+  <text x="805" y="173" text-anchor="middle" font-size="8.5" fill="#37474f">footnotes/endnotes</text>
+  <text x="805" y="185" text-anchor="middle" font-size="8.5" fill="#546e7a">Map&lt;id, text&gt;</text>
+  <line x1="805" y1="120" x2="805" y2="140" stroke="#16797c" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- All stage outputs feed down -->
+  <line x1="135" y1="195" x2="135" y2="240" stroke="#16797c" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="305" y1="195" x2="305" y2="240" stroke="#16797c" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="475" y1="195" x2="475" y2="240" stroke="#16797c" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="645" y1="195" x2="645" y2="240" stroke="#16797c" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="805" y1="195" x2="805" y2="240" stroke="#16797c" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Convergence line -->
+  <line x1="135" y1="240" x2="805" y2="240" stroke="#16797c" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="430" y1="240" x2="430" y2="265" stroke="#16797c" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Stage 6: Main handler (large box) -->
+  <rect x="180" y="270" width="500" height="80" rx="10" fill="url(#mainGrad)" stroke="#0d4f52" stroke-width="1.5"/>
+  <text x="430" y="296" text-anchor="middle" font-size="12" font-weight="700" fill="white">[6] DocxToMarkdownHandler</text>
+  <text x="430" y="314" text-anchor="middle" font-size="9.5" fill="rgba(255,255,255,0.85)">SAX ContentHandler on document.xml (streamed from ZIP)</text>
+  <text x="430" y="330" text-anchor="middle" font-size="9.5" fill="rgba(255,255,255,0.85)">2,100+ LOC &mdash; handles paragraphs, tables, images, math, shapes, lists</text>
+  <text x="430" y="346" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.6)">Uses VmlToSvgConverter + DocxMathConverter for special content</text>
+
+  <!-- document.xml streaming arrow (from ZIP directly) -->
+  <text x="52" y="295" text-anchor="middle" font-size="9" fill="#bf360c" font-style="italic">document.xml</text>
+  <text x="52" y="308" text-anchor="middle" font-size="8" fill="#bf360c">(streamed)</text>
+  <line x1="80" y1="55" x2="80" y2="310" stroke="#f57c00" stroke-width="1" stroke-dasharray="5,3"/>
+  <line x1="80" y1="310" x2="180" y2="310" stroke="#f57c00" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Output arrows -->
+  <line x1="350" y1="350" x2="350" y2="400" stroke="#16797c" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="520" y1="350" x2="520" y2="400" stroke="#16797c" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Output: Markdown -->
+  <rect x="280" y="405" width="140" height="50" rx="8" fill="url(#outputGrad)" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="350" y="427" text-anchor="middle" font-size="11" font-weight="700" fill="#1b5e20">Markdown</text>
+  <text x="350" y="443" text-anchor="middle" font-size="9" fill="#33691e">YAML front matter + body</text>
+
+  <!-- Output: Media files -->
+  <rect x="450" y="405" width="140" height="50" rx="8" fill="url(#outputGrad)" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="520" y="427" text-anchor="middle" font-size="11" font-weight="700" fill="#1b5e20">Media Files</text>
+  <text x="520" y="443" text-anchor="middle" font-size="9" fill="#33691e">images, SVGs, videos</text>
+
+  <!-- Metadata arrow to output -->
+  <line x1="645" y1="195" x2="645" y2="460" stroke="#16797c" stroke-width="1" stroke-dasharray="3,3"/>
+  <rect x="610" y="460" width="100" height="35" rx="6" fill="url(#outputGrad)" stroke="#2e7d32" stroke-width="1"/>
+  <text x="660" y="482" text-anchor="middle" font-size="9" font-weight="600" fill="#1b5e20">YAML front matter</text>
+  <line x1="610" y1="477" x2="420" y2="440" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,3"/>
+</svg>
+<div class="diagram-caption">6-stage SAX pipeline. document.xml is streamed directly from the ZIP to the handler without buffering.</div>
+</div>
+
+<div class="info"><strong>Streaming design:</strong> Stages 2&ndash;5b parse small auxiliary XML files into byte arrays (total &lt;1 MB). Stage 6 streams <code>document.xml</code> directly from the open <code>ZipFile</code> to the SAX parser, keeping memory constant regardless of document size.</div>
+
+<!-- ===== SUPPORTED FEATURES ===== -->
+<h2 id="supported-features">Supported Features</h2>
+
+<table>
+  <tr><th>Category</th><th>Feature</th><th>Markdown Output</th></tr>
+  <tr><td rowspan="5"><strong>Headings</strong></td><td>H1&ndash;H6</td><td><code>#</code> &ndash; <code>######</code></td></tr>
+  <tr><td>Title style &rarr; H1</td><td><code># title</code></td></tr>
+  <tr><td>Subtitle style &rarr; H2</td><td><code>## subtitle</code></td></tr>
+  <tr><td>German style names (e.g. &quot;Untertitel&quot;)</td><td>Normalized to English equivalents</td></tr>
+  <tr><td>Heading1&ndash;Heading6 style IDs</td><td>Mapped via <code>DocxStyleParser</code></td></tr>
+  <tr><td rowspan="5"><strong>Formatting</strong></td><td>Bold, Italic, Strikethrough</td><td><code>**</code>, <code>*</code>, <code>~~</code></td></tr>
+  <tr><td>Underline</td><td><code>&lt;span style=&quot;text-decoration:underline&quot;&gt;</code></td></tr>
+  <tr><td>Superscript, Subscript</td><td><code>&lt;sup&gt;</code>, <code>&lt;sub&gt;</code></td></tr>
+  <tr><td>Highlight</td><td><code>&lt;mark&gt;</code></td></tr>
+  <tr><td>Formatting spans merged across runs</td><td>Adjacent runs with identical formatting are fused</td></tr>
+  <tr><td><strong>Character Styles</strong></td><td>Emphasis, IntenseEmphasis, Strong, SubtleEmphasis, BookTitle</td><td>Mapped to <code>*</code>, <code>***</code>, <code>**</code>, <code>*</code>, <code>***</code></td></tr>
+  <tr><td><strong>Lists</strong></td><td>Bullet, Numbered, Nested (9 levels), Mixed</td><td><code>- </code>, <code>1. </code>, indented with 4 spaces per level</td></tr>
+  <tr><td rowspan="2"><strong>Tables</strong></td><td>Header detection (explicit <code>w:tblHeader</code> / bold heuristic / none)</td><td>GFM pipe tables with <code>|---|</code> separator</td></tr>
+  <tr><td>Multi-paragraph cells joined with space</td><td>Inline content within cells</td></tr>
+  <tr><td rowspan="3"><strong>Images</strong></td><td>Inline (<code>wp:inline</code>), Anchored (<code>wp:anchor</code>)</td><td><code>![alt](media/file.png){width=N height=N}</code></td></tr>
+  <tr><td>VML legacy images</td><td>Extracted via relationship lookup</td></tr>
+  <tr><td>Dimensions from <code>wp:extent</code> (EMU &rarr; px)</td><td>CommonMark attributes: <code>{width=N height=N}</code></td></tr>
+  <tr><td rowspan="2"><strong>Shapes</strong></td><td>DrawingML custom geometry, Preset shapes</td><td>SVG files saved to <code>media/</code></td></tr>
+  <tr><td>Group shapes (<code>wpg:wgp</code>)</td><td>Composite SVG with positioned children</td></tr>
+  <tr><td rowspan="2"><strong>Math</strong></td><td>Display math (<code>m:oMathPara</code>)</td><td><code>$$...$$</code> via fmath conversion</td></tr>
+  <tr><td>Inline math (<code>m:oMath</code>)</td><td><code>$...$</code> with text fallback from <code>m:t</code> elements</td></tr>
+  <tr><td><strong>Hyperlinks</strong></td><td>External, Internal anchors, Mailto</td><td><code>[text](url)</code></td></tr>
+  <tr><td rowspan="2"><strong>Blockquotes</strong></td><td>Quote style</td><td><code>&gt; text</code></td></tr>
+  <tr><td>IntenseQuote style</td><td><code>&gt; [!IMPORTANT]\n&gt; text</code></td></tr>
+  <tr><td><strong>Text Boxes</strong></td><td><code>w:txbxContent</code></td><td><code>&gt; [!NOTE]\n&gt; text</code> admonition</td></tr>
+  <tr><td><strong>Footnotes/Endnotes</strong></td><td>Numbered references</td><td><code>[^N]</code> inline + <code>[^N]: text</code> definitions at end</td></tr>
+  <tr><td><strong>Checkboxes</strong></td><td>SDT checkboxes (<code>w14:checked</code>)</td><td><code>[x]</code> / <code>[ ]</code></td></tr>
+  <tr><td><strong>Videos</strong></td><td><code>a:videoFile</code></td><td><code>[Video: name](media/file.mp4)</code> (streamed to disk)</td></tr>
+  <tr><td><strong>SmartArt diagrams</strong></td><td><code>diagrams/drawing*.xml</code> shapes</td><td>Rendered to SVG with shapes (rect, chevron, ellipse) + text</td></tr>
+  <tr><td><strong>Charts</strong></td><td><code>mc:Fallback</code> images</td><td>Fallback PNG/EMF extracted if available</td></tr>
+  <tr><td><strong>Image Dimensions</strong></td><td><code>wp:extent</code> cx/cy (EMU &rarr; px at 96 DPI)</td><td><code>![alt](url){width=280 height=186}</code> via CommonMark image-attributes extension</td></tr>
+  <tr><td><strong>Track Changes</strong></td><td>Insertions accepted, Deletions skipped</td><td>Final accepted text only</td></tr>
+  <tr><td><strong>Metadata</strong></td><td><code>docProps/core.xml</code> &rarr; YAML front matter</td><td><code>---\ntitle: ...\nauthor: ...\n---</code></td></tr>
+</table>
+
+<h3>Image Dimension Mapping</h3>
+<p>Image dimensions come from <code>wp:extent</code> in the OOXML (EMU units), representing the <strong>display size in the Word document layout</strong> &mdash; not the native image pixel resolution. A standard Word page content area is ~605px wide at 96 DPI (~16cm). The importer maps image width as a proportion of the Word page width to the content editor's <code>ImageSize</code> CSS class:</p>
+<table>
+  <tr><th>Word page proportion</th><th>Pixel range (at 605px page)</th><th>ImageSize</th><th>CSS width</th></tr>
+  <tr><td>&le; 35%</td><td>&le; 212px</td><td><code>small</code></td><td>25%</td></tr>
+  <tr><td>35&ndash;55%</td><td>213&ndash;333px</td><td><code>medium</code></td><td>40%</td></tr>
+  <tr><td>55&ndash;80%</td><td>334&ndash;484px</td><td><code>large</code></td><td>60%</td></tr>
+  <tr><td>&gt; 80%</td><td>&gt; 484px</td><td><code>fill</code></td><td>100%</td></tr>
+</table>
+
+<!-- ===== SECURITY ===== -->
+<h2 id="security">Security Architecture</h2>
+
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 340" width="780" height="340">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="100%" stop-color="#c8e6c9"/>
+    </linearGradient>
+    <linearGradient id="threatGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffebee"/>
+      <stop offset="100%" stop-color="#ffcdd2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="390" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#136669">Security Layers</text>
+
+  <!-- Layer 1: ZIP level -->
+  <rect x="20" y="40" width="740" height="55" rx="8" fill="url(#shieldGrad)" stroke="#2e7d32" stroke-width="1"/>
+  <text x="40" y="60" font-size="11" font-weight="700" fill="#1b5e20">ZIP Layer</text>
+  <rect x="140" y="48" width="135" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="207" y="68" text-anchor="middle" font-size="9" fill="#b71c1c">Zip Bomb</text>
+  <text x="295" y="75" font-size="8" fill="#2e7d32">max 64 entries, 50 MB/entry</text>
+  <rect x="440" y="48" width="100" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="490" y="68" text-anchor="middle" font-size="9" fill="#b71c1c">Zip Slip</text>
+  <text x="555" y="75" font-size="8" fill="#2e7d32">reject ".." in paths</text>
+  <rect x="640" y="48" width="100" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="690" y="68" text-anchor="middle" font-size="9" fill="#b71c1c">Macros</text>
+
+  <!-- Layer 2: XML level -->
+  <rect x="20" y="105" width="740" height="55" rx="8" fill="url(#shieldGrad)" stroke="#2e7d32" stroke-width="1"/>
+  <text x="40" y="125" font-size="11" font-weight="700" fill="#1b5e20">XML Layer</text>
+  <rect x="140" y="113" width="100" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="190" y="133" text-anchor="middle" font-size="9" fill="#b71c1c">XXE</text>
+  <text x="258" y="140" font-size="8" fill="#2e7d32">disallow-doctype-decl on ALL parsers</text>
+
+  <!-- Layer 3: Content level -->
+  <rect x="20" y="170" width="740" height="55" rx="8" fill="url(#shieldGrad)" stroke="#2e7d32" stroke-width="1"/>
+  <text x="40" y="190" font-size="11" font-weight="700" fill="#1b5e20">Content Layer</text>
+  <rect x="155" y="178" width="120" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="215" y="198" text-anchor="middle" font-size="9" fill="#b71c1c">JS URLs</text>
+  <text x="290" y="205" font-size="8" fill="#2e7d32">whitelist: http, https, mailto</text>
+  <rect x="440" y="178" width="120" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="500" y="198" text-anchor="middle" font-size="9" fill="#b71c1c">OLE/ActiveX</text>
+  <text x="575" y="205" font-size="8" fill="#2e7d32">entries skipped</text>
+
+  <!-- Layer 4: Output level -->
+  <rect x="20" y="235" width="740" height="55" rx="8" fill="url(#shieldGrad)" stroke="#2e7d32" stroke-width="1"/>
+  <text x="40" y="255" font-size="11" font-weight="700" fill="#1b5e20">Output Layer</text>
+  <rect x="155" y="243" width="140" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="225" y="263" text-anchor="middle" font-size="9" fill="#b71c1c">HTML Injection</text>
+  <text x="310" y="270" font-size="8" fill="#2e7d32">pure markdown output, messages escaped</text>
+  <rect x="470" y="243" width="140" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="540" y="263" text-anchor="middle" font-size="9" fill="#b71c1c">SVG Scripts</text>
+  <text x="625" y="270" font-size="8" fill="#2e7d32">only path/shape data in SVGs</text>
+
+  <!-- Summary -->
+  <text x="390" y="318" text-anchor="middle" font-size="10" fill="#546e7a" font-style="italic">8 attack vectors addressed across 4 defense layers</text>
+</svg>
+<div class="diagram-caption">Security is enforced at every stage: ZIP extraction, XML parsing, content processing, and output generation.</div>
+</div>
+
+<table>
+  <tr><th>#</th><th>Attack Vector</th><th>Protection</th><th>Implementation</th></tr>
+  <tr><td>1</td><td>XXE (XML External Entities)</td><td><code>disallow-doctype-decl</code> on ALL SAX parsers</td><td><code>XMLFactories</code> + explicit feature flag</td></tr>
+  <tr><td>2</td><td>Zip bomb</td><td>Entry count limit (64) + per-entry size limit (50 MB)</td><td><code>DocxZipExtractor.MAX_ENTRIES</code>, <code>MAX_ENTRY_SIZE</code></td></tr>
+  <tr><td>3</td><td>Zip slip</td><td>Reject entry names containing <code>..</code></td><td><code>DocxZipExtractor.extract()</code></td></tr>
+  <tr><td>4</td><td>Macros</td><td>Scan for <code>vbaProject.bin</code> during extraction</td><td><code>DocxZipExtractor.extract()</code></td></tr>
+  <tr><td>5</td><td>JavaScript URLs</td><td>Protocol whitelist: <code>http</code>, <code>https</code>, <code>mailto</code></td><td><code>DocxRelationshipParser.ALLOWED_SCHEMES</code></td></tr>
+  <tr><td>6</td><td>OLE/ActiveX</td><td>Entries skipped entirely</td><td>Not processed by any stage</td></tr>
+  <tr><td>7</td><td>HTML injection</td><td>Pure markdown output; <code>renderMessagesAsHtml()</code> escapes <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code></td><td><code>DocxToMarkdownResult.renderMessagesAsHtml()</code></td></tr>
+  <tr><td>8</td><td>SVG script injection</td><td>Generated SVGs contain only <code>&lt;path&gt;</code> shape data</td><td><code>VmlToSvgConverter.convert()</code></td></tr>
+</table>
+
+<!-- ===== MEMORY & SCALING ===== -->
+<h2 id="memory-scaling">Memory &amp; Scaling</h2>
+
+<h3>Memory Strategy</h3>
+<table>
+  <tr><th>Component</th><th>Strategy</th><th>Peak Memory</th></tr>
+  <tr><td><code>document.xml</code></td><td><strong>Streamed</strong> from ZIP to SAX handler</td><td>~0 (constant)</td></tr>
+  <tr><td>Auxiliary XMLs</td><td>byte[] (rels, styles, numbering, metadata, footnotes)</td><td>&lt; 1 MB total</td></tr>
+  <tr><td>Images</td><td>Read one at a time, max 10 MB, written to disk immediately</td><td>10 MB max</td></tr>
+  <tr><td>Videos</td><td><code>transferTo()</code> streaming from ZIP to file</td><td>Constant</td></tr>
+  <tr><td>Markdown output</td><td>StringBuilder, grows with text content</td><td>Proportional to text</td></tr>
+  <tr><td>Table rows</td><td>Buffered for header detection (flushed per table)</td><td>Proportional to largest table</td></tr>
+</table>
+
+<h3>Scaling Characteristics</h3>
+<table>
+  <tr><th>DOCX Size</th><th>Peak Heap</th><th>Notes</th></tr>
+  <tr><td>10 MB</td><td>~10 MB</td><td>Typical document with a few images</td></tr>
+  <tr><td>100 MB</td><td>~25 MB</td><td>Many images streamed to disk</td></tr>
+  <tr><td>500 MB</td><td>~30 MB</td><td>Heavy media content, text still small</td></tr>
+  <tr><td>1 GB</td><td>~35 MB</td><td>Videos dominate, streamed via transferTo()</td></tr>
+</table>
+
+<div class="info"><strong>Key insight:</strong> Memory is proportional to <em>text content</em>, not file size. Images and videos are streamed to disk. A 1 GB DOCX with mostly video content uses less heap than a 50 MB DOCX that is pure text.</div>
+
+<!-- ===== EDGE CASES ===== -->
+<h2 id="edge-cases">Edge Cases &amp; Limitations</h2>
+
+<table>
+  <tr><th>Situation</th><th>Handling</th><th>Message</th></tr>
+  <tr><td>Nested tables</td><td>Flattened to text with warning</td><td><code>docx.convert.warn.table.nested</code></td></tr>
+  <tr><td>Merged cells</td><td>Ignored (GFM limitation)</td><td><code>docx.convert.warn.merged.cells</code></td></tr>
+  <tr><td>Math (OOXML)</td><td>fmath conversion attempted; text fallback via <code>extractMathText()</code></td><td><code>docx.convert.warn.math.failed</code></td></tr>
+  <tr><td>Charts without fallback</td><td>Skipped</td><td><code>docx.convert.warn.smartart</code></td></tr>
+  <tr><td>Encrypted DOCX</td><td>Rejected with error</td><td><code>docx.convert.error.encrypted</code></td></tr>
+  <tr><td>.docm files</td><td>Rejected (macro detection via <code>vbaProject.bin</code>)</td><td><code>docx.convert.error.macro.detected</code></td></tr>
+  <tr><td>Images &gt; 10 MB</td><td>Skipped with warning</td><td><code>docx.convert.warn.image.skipped</code></td></tr>
+  <tr><td>Missing numbering.xml</td><td>Treated as bullet list</td><td><code>docx.convert.warn.numbering.missing</code></td></tr>
+  <tr><td>Comments</td><td>Skipped</td><td><code>docx.convert.warn.comments</code></td></tr>
+  <tr><td>OLE objects</td><td>Skipped</td><td><code>docx.convert.warn.ole</code></td></tr>
+  <tr><td>Unsafe URLs</td><td>Rejected at relationship parsing</td><td><code>docx.convert.warn.url.rejected</code></td></tr>
+</table>
+
+<!-- ===== PACKAGE STRUCTURE ===== -->
+<h2 id="package-structure">Package Structure</h2>
+
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 530" width="820" height="530">
+  <defs>
+    <linearGradient id="pubGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e3f2fd"/>
+      <stop offset="100%" stop-color="#bbdefb"/>
+    </linearGradient>
+    <linearGradient id="intGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f3e5f5"/>
+      <stop offset="100%" stop-color="#e1bee7"/>
+    </linearGradient>
+    <linearGradient id="recGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fce4ec"/>
+      <stop offset="100%" stop-color="#f8bbd0"/>
+    </linearGradient>
+    <linearGradient id="utilGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff8e1"/>
+      <stop offset="100%" stop-color="#ffecb3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="410" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#136669">Class Diagram &mdash; Visibility &amp; Relationships</text>
+
+  <!-- Legend -->
+  <rect x="520" y="34" width="14" height="14" rx="3" fill="url(#pubGrad)" stroke="#1565c0" stroke-width="1"/>
+  <text x="540" y="45" font-size="9" fill="#37474f">Public API</text>
+  <rect x="600" y="34" width="14" height="14" rx="3" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="620" y="45" font-size="9" fill="#37474f">SAX Handler</text>
+  <rect x="690" y="34" width="14" height="14" rx="3" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="710" y="45" font-size="9" fill="#37474f">Record</text>
+  <rect x="760" y="34" width="14" height="14" rx="3" fill="url(#utilGrad)" stroke="#f57f17" stroke-width="1"/>
+  <text x="780" y="45" font-size="9" fill="#37474f">Utility</text>
+
+  <!-- PUBLIC API section -->
+  <text x="30" y="78" font-size="10" font-weight="700" fill="#1565c0" text-transform="uppercase" letter-spacing="1">PUBLIC API</text>
+  <line x1="30" y1="83" x2="790" y2="83" stroke="#bbdefb" stroke-width="1"/>
+
+  <!-- DocxToMarkdownService -->
+  <rect x="30" y="94" width="280" height="55" rx="8" fill="url(#pubGrad)" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="40" y="112" font-size="10" fill="#1565c0" font-weight="600">@Service</text>
+  <text x="40" y="126" font-size="11" font-weight="700" fill="#0d47a1">DocxToMarkdownService</text>
+  <text x="40" y="140" font-size="9" fill="#37474f">convert(File) &rarr; DocxToMarkdownResult</text>
+
+  <!-- DocxToMarkdownResult -->
+  <rect x="340" y="94" width="220" height="55" rx="8" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="350" y="112" font-size="10" fill="#c62828" font-weight="600">record</text>
+  <text x="350" y="126" font-size="11" font-weight="700" fill="#b71c1c">DocxToMarkdownResult</text>
+  <text x="350" y="140" font-size="9" fill="#37474f">markdown, basePath, messages</text>
+
+  <!-- DocxConversionMessage -->
+  <rect x="590" y="94" width="200" height="55" rx="8" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="600" y="112" font-size="10" fill="#c62828" font-weight="600">record</text>
+  <text x="600" y="126" font-size="11" font-weight="700" fill="#b71c1c">DocxConversionMessage</text>
+  <text x="600" y="140" font-size="9" fill="#37474f">level, i18nKey, args</text>
+
+  <!-- Arrows between public classes -->
+  <line x1="310" y1="121" x2="340" y2="121" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="560" y1="121" x2="590" y2="121" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- INTERNAL section -->
+  <text x="30" y="178" font-size="10" font-weight="700" fill="#7b1fa2" text-transform="uppercase" letter-spacing="1">INTERNAL (PACKAGE-PRIVATE)</text>
+  <line x1="30" y1="183" x2="790" y2="183" stroke="#e1bee7" stroke-width="1"/>
+
+  <!-- Stage 1: ZipExtractor -->
+  <rect x="30" y="194" width="180" height="45" rx="7" fill="url(#utilGrad)" stroke="#f57f17" stroke-width="1"/>
+  <text x="40" y="212" font-size="10" font-weight="700" fill="#e65100">DocxZipExtractor</text>
+  <text x="40" y="228" font-size="8.5" fill="#37474f">ZIP reading + security</text>
+
+  <!-- DocxArchiveContent -->
+  <rect x="230" y="194" width="180" height="45" rx="7" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="240" y="212" font-size="10" font-weight="700" fill="#b71c1c">DocxArchiveContent</text>
+  <text x="240" y="228" font-size="8.5" fill="#37474f">byte[] for XML parts</text>
+
+  <line x1="210" y1="216" x2="230" y2="216" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 2: RelParser -->
+  <rect x="30" y="254" width="180" height="45" rx="7" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="40" y="272" font-size="10" font-weight="700" fill="#4a148c">DocxRelationshipParser</text>
+  <text x="40" y="288" font-size="8.5" fill="#37474f">.rels &rarr; Map&lt;id, RelTarget&gt;</text>
+
+  <!-- DocxRelTarget -->
+  <rect x="230" y="254" width="140" height="45" rx="7" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="240" y="272" font-size="10" font-weight="700" fill="#b71c1c">DocxRelTarget</text>
+  <text x="240" y="288" font-size="8.5" fill="#37474f">type + target</text>
+
+  <line x1="210" y1="276" x2="230" y2="276" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 3: NumberingParser -->
+  <rect x="400" y="254" width="180" height="45" rx="7" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="410" y="272" font-size="10" font-weight="700" fill="#4a148c">DocxNumberingParser</text>
+  <text x="410" y="288" font-size="8.5" fill="#37474f">numbering &rarr; Map&lt;numId, NumDef&gt;</text>
+
+  <!-- DocxNumberingDef -->
+  <rect x="600" y="254" width="170" height="45" rx="7" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="610" y="272" font-size="10" font-weight="700" fill="#b71c1c">DocxNumberingDef</text>
+  <text x="610" y="288" font-size="8.5" fill="#37474f">orderedByLevel map</text>
+
+  <line x1="580" y1="276" x2="600" y2="276" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 4: StyleParser -->
+  <rect x="30" y="314" width="180" height="45" rx="7" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="40" y="332" font-size="10" font-weight="700" fill="#4a148c">DocxStyleParser</text>
+  <text x="40" y="348" font-size="8.5" fill="#37474f">styles &rarr; Map&lt;styleId, name&gt;</text>
+
+  <!-- Stage 5: MetadataParser -->
+  <rect x="230" y="314" width="180" height="45" rx="7" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="240" y="332" font-size="10" font-weight="700" fill="#4a148c">DocxMetadataParser</text>
+  <text x="240" y="348" font-size="8.5" fill="#37474f">docProps &rarr; DocxMetadata</text>
+
+  <!-- DocxMetadata -->
+  <rect x="430" y="314" width="170" height="45" rx="7" fill="url(#recGrad)" stroke="#c62828" stroke-width="1"/>
+  <text x="440" y="332" font-size="10" font-weight="700" fill="#b71c1c">DocxMetadata</text>
+  <text x="440" y="348" font-size="8.5" fill="#37474f">title, author, keywords, ...</text>
+
+  <line x1="410" y1="336" x2="430" y2="336" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Stage 5b: FootnoteParser -->
+  <rect x="620" y="314" width="170" height="45" rx="7" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="630" y="332" font-size="10" font-weight="700" fill="#4a148c">DocxFootnoteParser</text>
+  <text x="630" y="348" font-size="8.5" fill="#37474f">footnotes &rarr; Map&lt;id, text&gt;</text>
+
+  <!-- Stage 6: Main handler -->
+  <rect x="30" y="380" width="380" height="55" rx="8" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1.5"/>
+  <text x="40" y="400" font-size="11" font-weight="700" fill="#4a148c">DocxToMarkdownHandler</text>
+  <text x="40" y="415" font-size="9" fill="#37474f">Main SAX handler (2,100+ LOC)</text>
+  <text x="40" y="428" font-size="8.5" fill="#546e7a">paragraphs, tables, images, math, shapes, lists, track changes</text>
+
+  <!-- Converters -->
+  <rect x="450" y="380" width="160" height="45" rx="7" fill="url(#utilGrad)" stroke="#f57f17" stroke-width="1"/>
+  <text x="460" y="398" font-size="10" font-weight="700" fill="#e65100">DocxMathConverter</text>
+  <text x="460" y="414" font-size="8.5" fill="#37474f">OOXML math &rarr; LaTeX</text>
+
+  <rect x="630" y="380" width="160" height="45" rx="7" fill="url(#utilGrad)" stroke="#f57f17" stroke-width="1"/>
+  <text x="640" y="398" font-size="10" font-weight="700" fill="#e65100">VmlToSvgConverter</text>
+  <text x="640" y="414" font-size="8.5" fill="#37474f">VML/DrawingML &rarr; SVG</text>
+
+  <!-- Arrows from handler to converters -->
+  <line x1="410" y1="405" x2="450" y2="405" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="610" y1="405" x2="630" y2="405" stroke="#546e7a" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- i18n -->
+  <rect x="30" y="460" width="760" height="40" rx="7" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1"/>
+  <text x="40" y="480" font-size="10" font-weight="600" fill="#616161">_i18n/</text>
+  <text x="90" y="480" font-size="9" fill="#757575">LocalStrings_en.properties</text>
+  <text x="280" y="480" font-size="9" fill="#757575">LocalStrings_de.properties</text>
+  <text x="460" y="480" font-size="8.5" fill="#9e9e9e">22 message keys: docx.convert.{warn|error|info}.{category}.{detail}</text>
+</svg>
+<div class="diagram-caption">17 Java files: 3 public API classes, 5 SAX handlers, 4 utility classes (incl. SmartArtRenderer), 5 records. All internal classes are package-private.</div>
+</div>
+
+<h3>Public API (3 classes)</h3>
+<table>
+  <tr><th>Class</th><th>Type</th><th>Purpose</th></tr>
+  <tr><td><code>DocxToMarkdownService</code></td><td><code>@Service</code></td><td>Entry point: <code>convert(File) &rarr; DocxToMarkdownResult</code></td></tr>
+  <tr><td><code>DocxToMarkdownResult</code></td><td>record</td><td>Result: <code>markdown</code>, <code>basePath</code>, <code>messages</code></td></tr>
+  <tr><td><code>DocxConversionMessage</code></td><td>record</td><td>Message: <code>level</code>, <code>i18nKey</code>, <code>args</code></td></tr>
+</table>
+
+<h3>Internal (13 package-private classes)</h3>
+<table>
+  <tr><th>Class</th><th>Type</th><th>Purpose</th></tr>
+  <tr><td><code>DocxZipExtractor</code></td><td>utility</td><td>ZIP reading + security checks</td></tr>
+  <tr><td><code>DocxArchiveContent</code></td><td>record</td><td>byte[] holders for auxiliary XML parts</td></tr>
+  <tr><td><code>DocxRelationshipParser</code></td><td>SAX handler</td><td><code>.rels</code> &rarr; <code>Map&lt;id, DocxRelTarget&gt;</code></td></tr>
+  <tr><td><code>DocxRelTarget</code></td><td>record</td><td>Relationship type + target</td></tr>
+  <tr><td><code>DocxNumberingParser</code></td><td>SAX handler</td><td><code>numbering.xml</code> &rarr; <code>Map&lt;numId, DocxNumberingDef&gt;</code></td></tr>
+  <tr><td><code>DocxNumberingDef</code></td><td>record</td><td><code>orderedByLevel</code> map</td></tr>
+  <tr><td><code>DocxStyleParser</code></td><td>SAX handler</td><td><code>styles.xml</code> &rarr; <code>Map&lt;styleId, name&gt;</code></td></tr>
+  <tr><td><code>DocxMetadataParser</code></td><td>SAX handler</td><td><code>docProps</code> &rarr; <code>DocxMetadata</code></td></tr>
+  <tr><td><code>DocxMetadata</code></td><td>record</td><td>title, author, keywords, etc. + <code>toYamlFrontMatter()</code></td></tr>
+  <tr><td><code>DocxFootnoteParser</code></td><td>SAX handler</td><td>footnotes/endnotes &rarr; <code>Map&lt;id, text&gt;</code></td></tr>
+  <tr><td><code>DocxToMarkdownHandler</code></td><td>SAX handler</td><td>Main converter (2,100+ LOC)</td></tr>
+  <tr><td><code>DocxMathConverter</code></td><td>utility</td><td>OOXML math &rarr; LaTeX via fmath</td></tr>
+  <tr><td><code>VmlToSvgConverter</code></td><td>utility</td><td>VML/DrawingML &rarr; SVG</td></tr>
+</table>
+
+<!-- ===== I18N ===== -->
+<h2 id="i18n">i18n Messages</h2>
+<p>Keys are in <code>_i18n/LocalStrings_en.properties</code> and <code>_i18n/LocalStrings_de.properties</code>.</p>
+<p>Pattern: <code>docx.convert.&lt;level&gt;.&lt;category&gt;.&lt;detail&gt;</code></p>
+
+<table>
+  <tr><th>Key</th><th>Level</th><th>Description</th></tr>
+  <tr><td><code>docx.convert.warn.image.skipped</code></td><td>WARNING</td><td>Image too large (&gt;10 MB)</td></tr>
+  <tr><td><code>docx.convert.warn.image.missing</code></td><td>WARNING</td><td>Image not found in archive</td></tr>
+  <tr><td><code>docx.convert.warn.table.nested</code></td><td>WARNING</td><td>Nested table flattened</td></tr>
+  <tr><td><code>docx.convert.warn.math.failed</code></td><td>WARNING</td><td>Math conversion failed</td></tr>
+  <tr><td><code>docx.convert.warn.element.unsupported</code></td><td>WARNING</td><td>Unsupported element skipped</td></tr>
+  <tr><td><code>docx.convert.warn.numbering.missing</code></td><td>WARNING</td><td>Numbering definitions missing</td></tr>
+  <tr><td><code>docx.convert.warn.track.changes</code></td><td>WARNING</td><td>Track changes detected</td></tr>
+  <tr><td><code>docx.convert.warn.superscript</code></td><td>WARNING</td><td>Superscript/subscript note</td></tr>
+  <tr><td><code>docx.convert.warn.footnotes</code></td><td>WARNING</td><td>Footnotes/endnotes skipped</td></tr>
+  <tr><td><code>docx.convert.warn.comments</code></td><td>WARNING</td><td>Comments skipped</td></tr>
+  <tr><td><code>docx.convert.warn.smartart</code></td><td>WARNING</td><td>SmartArt/chart skipped</td></tr>
+  <tr><td><code>docx.convert.warn.ole</code></td><td>WARNING</td><td>Embedded object skipped</td></tr>
+  <tr><td><code>docx.convert.warn.merged.cells</code></td><td>WARNING</td><td>Merged table cells ignored</td></tr>
+  <tr><td><code>docx.convert.warn.url.rejected</code></td><td>WARNING</td><td>Unsafe URL protocol rejected</td></tr>
+  <tr><td><code>docx.convert.error.macro.detected</code></td><td>ERROR</td><td>Macro detected, document rejected</td></tr>
+  <tr><td><code>docx.convert.error.invalid.format</code></td><td>ERROR</td><td>Not a valid DOCX</td></tr>
+  <tr><td><code>docx.convert.error.encrypted</code></td><td>ERROR</td><td>Encrypted document</td></tr>
+  <tr><td><code>docx.convert.error.read.failed</code></td><td>ERROR</td><td>Read failure</td></tr>
+  <tr><td><code>docx.convert.error.zip.bomb</code></td><td>ERROR</td><td>Suspicious archive structure</td></tr>
+  <tr><td><code>docx.convert.error.zip.slip</code></td><td>ERROR</td><td>Invalid entry path</td></tr>
+  <tr><td><code>docx.convert.info.metadata.partial</code></td><td>INFO</td><td>Some metadata fields empty</td></tr>
+</table>
+
+<!-- ===== INTEGRATION ===== -->
+<h2 id="integration">Integration</h2>
+
+<h3>From a Controller</h3>
+<ol>
+  <li>Add <code>@Autowired DocxToMarkdownService docxService;</code></li>
+  <li>Call <code>docxService.convert(file)</code> with the uploaded <code>.docx</code> file</li>
+  <li>Use <code>result.markdown()</code> for the converted text</li>
+  <li>Use <code>result.basePath()</code> to access extracted media files (in <code>media/</code> subdirectory)</li>
+  <li>Clean up <code>result.basePath()</code> when done &mdash; it is a temp directory</li>
+</ol>
+
+<pre><code><span class="ann">@Autowired</span>
+<span class="kw">private</span> <span class="typ">DocxToMarkdownService</span> docxService;
+
+<span class="kw">public void</span> handleUpload(<span class="typ">File</span> uploadedFile) {
+    <span class="typ">DocxToMarkdownResult</span> result = docxService.convert(uploadedFile);
+
+    <span class="kw">if</span> (result.hasMessages()) {
+        <span class="kw">for</span> (<span class="typ">DocxConversionMessage</span> msg : result.messages()) {
+            <span class="kw">if</span> (msg.level() == <span class="typ">Level</span>.ERROR) {
+                showError(msg.translate(getTranslator()));
+                <span class="kw">return</span>;
+            }
+        }
+    }
+
+    <span class="typ">String</span> markdown = result.markdown();
+    <span class="typ">File</span> mediaDir = <span class="kw">new</span> <span class="typ">File</span>(result.basePath(), <span class="str">"media"</span>);
+    <span class="cmt">// ... process markdown and media files ...</span>
+
+    <span class="cmt">// Clean up when done</span>
+    <span class="typ">FileUtils</span>.deleteDirsAndFiles(result.basePath(), <span class="kw">true</span>, <span class="kw">true</span>);
+}</code></pre>
+
+<h3>Spring Context</h3>
+<p>The service is registered via component-scan in <code>utilCorecontext.xml</code>. No additional XML configuration, no <code>@Bean</code> declarations, and no init/destroy lifecycle methods are needed.</p>
+
+<h3>Dependencies</h3>
+<table>
+  <tr><th>Dependency</th><th>Used By</th><th>Purpose</th></tr>
+  <tr><td><strong>fmath</strong></td><td><code>DocxMathConverter</code></td><td>OOXML math &rarr; MathML &rarr; LaTeX conversion</td></tr>
+  <tr><td><strong>OpenOlat core</strong></td><td>All parsers</td><td><code>XMLFactories</code> for secure SAX parser creation; <code>Tracing</code> for logging</td></tr>
+  <tr><td><strong>JDK only</strong></td><td>Everything else</td><td><code>java.util.zip</code>, <code>javax.xml.parsers</code>, <code>org.xml.sax</code></td></tr>
+</table>
+
+<div class="aside"><strong>No external dependencies:</strong> Apart from fmath for math conversion and standard OpenOlat utilities, the converter uses only JDK classes. It can be tested and run without any additional libraries.</div>
+
+</main>
+</div>
+
+</body>
+</html>

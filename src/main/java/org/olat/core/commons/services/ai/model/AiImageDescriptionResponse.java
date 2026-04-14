@@ -28,13 +28,13 @@ package org.olat.core.commons.services.ai.model;
  *
  */
 public class AiImageDescriptionResponse extends AiResponse {
-	private AiImageDescriptionData description;
+	private ImageDescriptionData description;
 
-	public AiImageDescriptionData getDescription() {
+	public ImageDescriptionData getDescription() {
 		return description;
 	}
 
-	public void setDescription(AiImageDescriptionData description) {
+	public void setDescription(ImageDescriptionData description) {
 		this.description = description;
 	}
 }

@@ -80,6 +80,10 @@ public class ValidationResultController extends FormBasicController {
 	}
 	
 	protected static final String valueToString(Object obj, Formatter formatter) {
+		return valueToString(obj, formatter, true);
+	}
+
+	private static final String valueToString(Object obj, Formatter formatter, boolean escape) {
 		String val;
 		if(obj instanceof String string) {
 			val = string;
@@ -91,7 +95,7 @@ public class ValidationResultController extends FormBasicController {
 			val = formatter.formatTimeShort(localTime);
 		} else if(obj instanceof List<?> list) {
 			List<String> values = list.stream()
-					.map(v -> valueToString(v, formatter))
+					.map(v -> valueToString(v, formatter, false))
 					.toList();
 			val = String.join("; ", values);
 		} else if(obj != null) {
@@ -99,7 +103,7 @@ public class ValidationResultController extends FormBasicController {
 		} else {
 			val = "";
 		}
-		return StringHelper.escapeHtml(val);
+		return escape ? StringHelper.escapeHtml(val) : val;
 	}
 
 	@Override

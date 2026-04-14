@@ -5037,6 +5037,44 @@ create table o_tb_audit_log (
    primary key (id)
 );
 
+-- AI
+create table o_ai_usage_log (
+   id bigserial,
+   creationdate timestamp not null,
+   a_usage_context_type varchar(128),
+   a_usage_context_id varchar(36),
+   a_resource_type varchar(128),
+   a_resource_id int8,
+   a_resource_sub_id varchar(128),
+   fk_identity int8,
+   a_locale varchar(32),
+   a_ai_feature varchar(128) not null,
+   a_duration_millis int8,
+   a_status varchar(32) not null,
+   a_error_code varchar(128),
+   a_error_message text,
+   a_model_provider varchar(64),
+   a_req_model varchar(128),
+   a_req_temperature decimal(6,4),
+   a_req_top_p decimal(6,4),
+   a_req_max_output_tokens int8,
+   a_invocation_id varchar(36),
+   a_service_interface varchar(255),
+   a_service_method varchar(255),
+   a_resp_id varchar(255),
+   a_resp_model varchar(128),
+   a_resp_finish_reason varchar(64),
+   a_input_tokens int8,
+   a_output_tokens int8,
+   a_total_tokens int8,
+   a_cached_input_tokens int8,
+   a_reasoning_tokens int8,
+   a_req_num_messages int8,
+   a_req_text_length int8,
+   a_cache_creation_input_tokens int8,
+   primary key (id)
+);
+
 -- feed tag (blog/podcast)
 create table o_feed_tag (
     id bigserial,
@@ -7497,6 +7535,9 @@ create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
 create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
+
+-- AI
+create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
 
 -- feed tags
 create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);

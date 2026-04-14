@@ -412,6 +412,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		List<CertificateAndEfficiencyStatementRow> tableRows = new ArrayList<>();
 		for(CurriculumElementRepositoryEntryViews element : curriculumElements) {
 			List<TaxonomyLevel> taxonomyLevels = levelsMap.get(element.getKey());
+			if (taxonomyLevels != null) {
+				taxonomyLevels = taxonomyLevels.stream()
+						.filter(tl -> tl.getType() != null && tl.getType().isAllowedAsSubject())
+						.toList();
+			}
 			CurriculumElement parent = element.getCurriculumElement().getParent();
 			if(element.getEntries() != null) {
 				allEntries.addAll(element.getEntries());

@@ -1120,10 +1120,12 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", reloadedPage.getKey());
 		WindowControl swControl = addToHistory(ureq, pageOres, null);
 		
+		PageSettings pageSettings = PageSettings.full(null);
+		pageSettings.setAiOres(OresHelper.createOLATResourceableInstance("PortfolioV2", reloadedPage.getKey()));
 		boolean openInEditMode = newElement || (secCallback.canEditPage(reloadedPage)
 				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage,
-				PageSettings.full(null), getPublishingInformations(), openInEditMode);
+				pageSettings, getPublishingInformations(), openInEditMode);
 		listenTo(pageCtrl);
 		
 		if(reloadedPage.getSection() != null) {

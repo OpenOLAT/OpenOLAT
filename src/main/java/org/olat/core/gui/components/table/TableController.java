@@ -311,10 +311,7 @@ public class TableController extends BasicController {
 		return tableSearchController;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(final UserRequest ureq, final Component source, final Event event) {
 		if (source == table) {
 			String cmd = event.getCommand();

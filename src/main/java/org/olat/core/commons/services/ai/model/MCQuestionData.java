@@ -20,26 +20,36 @@
 package org.olat.core.commons.services.ai.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.util.StringHelper;
 
+import dev.langchain4j.model.output.structured.Description;
+
 /**
- * 
+ *
  * Parsed data from chat response to build a question
- * 
+ *
  * Initial date: 22.05.2024<br>
- * 
+ *
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class AiMCQuestionData {
+public class MCQuestionData {
+	@Description("Short descriptive title for the question topic, max 10 words")
 	private String title;
+	@Description("The specific topic within the subject area")
 	private String topic;
+	@Description("The broad subject area the question belongs to")
 	private String subject;
+	@Description("Comma-separated keywords related to the question")
 	private String keywords;
+	@Description("The multiple choice question text, self-contained, no reference to 'the text' or 'the passage'")
 	private String question;
-	private ArrayList<String> correctAnswers= new ArrayList<>();
-	private ArrayList<String> wrongAnswers = new ArrayList<>();	
+	@Description("List of correct answer strings, each verifiably true based on the input")
+	private List<String> correctAnswers = new ArrayList<>();
+	@Description("List of wrong answer strings, each plausible but unambiguously incorrect")
+	private List<String> wrongAnswers = new ArrayList<>();
 
 	public String getTitle() {
 		return title;
@@ -71,20 +81,26 @@ public class AiMCQuestionData {
 	public void setQuestion(String question) {
 		this.question = question;
 	}
-	public ArrayList<String> getCorrectAnswers() {
+	public List<String> getCorrectAnswers() {
 		return correctAnswers;
+	}
+	public void setCorrectAnswers(List<String> correctAnswers) {
+		this.correctAnswers = correctAnswers;
 	}
 	public void addCorrectAnswer(String correctAnswer) {
 		if (StringHelper.containsNonWhitespace(correctAnswer)) {
 			this.correctAnswers.add(correctAnswer);
 		}
 	}
-	public ArrayList<String> getWrongAnswers() {
+	public List<String> getWrongAnswers() {
 		return wrongAnswers;
+	}
+	public void setWrongAnswers(List<String> wrongAnswers) {
+		this.wrongAnswers = wrongAnswers;
 	}
 	public void addWrongAnswer(String wrongAnswer) {
 		if (StringHelper.containsNonWhitespace(wrongAnswer)) {
-			this.wrongAnswers.add(wrongAnswer);			
+			this.wrongAnswers.add(wrongAnswer);
 		}
 	}
 }

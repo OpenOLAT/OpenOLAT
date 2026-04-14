@@ -94,7 +94,8 @@ public class MediaSiteConfigController extends FormBasicController {
 		configLayout.setRootForm(mainForm);
 		formLayout.add(configLayout);
 		
-		SelectionValue global = new SelectionValue(globalConfig, translate("config.global"), mediaSiteModule.getServerName());
+		SelectionValue global = new SelectionValue(globalConfig, translate("config.global"), 
+				mediaSiteModule.getServerName() + " (" + ltiVersionDisplayString() + ")");
 		SelectionValue local = new SelectionValue(localConfig, translate("config.local"), translate("config.local.description"));
 		SelectionValues configValues;
 		
@@ -134,7 +135,11 @@ public class MediaSiteConfigController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		
 	}
-	
+
+	private String ltiVersionDisplayString() {
+		return mediaSiteModule.getLtiVersion().displayName();
+	}
+
 	private void loadConfig(UserRequest ureq) {
 		if (mediaSiteModule.isGlobalLoginEnabled() && !config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, false)) {
 			localConfigurationContainer.setVisible(false);
@@ -171,7 +176,7 @@ public class MediaSiteConfigController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (localConfigurationCtrl != null && serverSelection.isKeySelected(localConfig)) {
-			localConfigurationCtrl.safeToModulConfiguration(ureq, config);
+			localConfigurationCtrl.saveToModuleConfiguration(ureq, config);
 		} else {
 			// Remove all local configuration, if global configuration is selected 
 			config.setBooleanEntry(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, false);
@@ -181,6 +186,9 @@ public class MediaSiteConfigController extends FormBasicController {
 			config.remove(MediaSiteCourseNode.CONFIG_SERVER_URL);
 			config.remove(MediaSiteCourseNode.CONFIG_SUPRESS_AGREEMENT);
 			config.remove(MediaSiteCourseNode.CONFIG_ADMINISTRATION_URL);
+			config.remove(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY);
+			config.remove(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL);
+			config.remove(MediaSiteCourseNode.CONFIG_LTI_VERSION);
 		}
 		
 		config.setStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID, mediaSiteManager.parseAlias(presentationUrlElement.getValue()));

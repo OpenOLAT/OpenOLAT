@@ -415,7 +415,7 @@ public class ImportedRow extends AbstractImportRow {
 			String[] subjectsArr = subjects.split(";");
 			for(String subject:subjectsArr) {
 				if(StringHelper.containsNonWhitespace(subject)) {
-					list.add(subject);
+					list.add(subject.trim());
 				}
 			}
 		}

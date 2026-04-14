@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai;
 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,19 +27,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.junit.Test;
-import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
-import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import dev.langchain4j.model.chat.ChatModel;
+
 /**
  * Unit tests for {@link AiModule} business logic.
- * Uses Mockito to avoid Spring context and AbstractSpringModule infrastructure.
- * Fields are set directly via the module's own setters/reflection to keep tests
- * focused on the logic under test.
  *
  * Initial date: 28.02.2026<br>
  *
@@ -46,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AiModuleTest extends OlatTestCase {
 
-	/** Minimal AiSPI that is NOT an AiMCQuestionGeneratorSPI */
 	private static class SimpleAiSpi implements AiSPI {
 		private final String id;
 		private boolean enabled;
@@ -64,60 +60,13 @@ public class AiModuleTest extends OlatTestCase {
 				org.olat.core.gui.UserRequest ureq, org.olat.core.gui.control.WindowControl wControl) {
 			return null;
 		}
-	}
-
-	/** Minimal SPI that also implements AiMCQuestionGeneratorSPI */
-	private static class MCGeneratorSpi extends SimpleAiSpi implements AiMCQuestionGeneratorSPI {
-		private String model;
-
-		MCGeneratorSpi(String id, boolean enabled) {
-			super(id, enabled);
-		}
-
-		@Override public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number) { return null; }
-		@Override public void setMCGeneratorModel(String model) { this.model = model; }
-		@Override public String getMCGeneratorModel() { return model; }
-		@Override public List<String> getAvailableMCGeneratorModels() { return List.of(); }
-	}
-
-	/** Minimal SPI that also implements AiImageDescriptionSPI */
-	private static class ImageDescSpi extends SimpleAiSpi implements AiImageDescriptionSPI {
-		private String model;
-
-		ImageDescSpi(String id, boolean enabled) {
-			super(id, enabled);
-		}
-
-		@Override public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) { return null; }
-		@Override public void setImageDescriptionModel(String model) { this.model = model; }
-		@Override public String getImageDescriptionModel() { return model; }
-		@Override public List<String> getAvailableImageDescriptionModels() { return List.of(); }
-	}
-
-	/** Minimal SPI that implements both feature interfaces */
-	private static class DualFeatureSpi extends SimpleAiSpi implements AiMCQuestionGeneratorSPI, AiImageDescriptionSPI {
-		private String mcModel;
-		private String imgModel;
-
-		DualFeatureSpi(String id, boolean enabled) {
-			super(id, enabled);
-		}
-
-		@Override public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number) { return null; }
-		@Override public void setMCGeneratorModel(String model) { this.mcModel = model; }
-		@Override public String getMCGeneratorModel() { return mcModel; }
-		@Override public List<String> getAvailableMCGeneratorModels() { return List.of(); }
-
-		@Override public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) { return null; }
-		@Override public void setImageDescriptionModel(String model) { this.imgModel = model; }
-		@Override public String getImageDescriptionModel() { return imgModel; }
-		@Override public List<String> getAvailableImageDescriptionModels() { return List.of(); }
+		@Override public ChatModel buildChatModel(String modelName, int maxTokens) { return null; }
+		@Override public List<String> getAvailableModels() { return List.of(); }
 	}
 
 	@Autowired
 	private AiModule module;
 
-	/** Set mcGeneratorSpiId and mcGeneratorModel via reflection. */
 	private void setConfig(String spiId, String model) throws Exception {
 		var spiIdField = AiModule.class.getDeclaredField("mcGeneratorSpiId");
 		spiIdField.setAccessible(true);
@@ -128,7 +77,6 @@ public class AiModuleTest extends OlatTestCase {
 		modelField.set(module, model);
 	}
 
-	/** Set imgDescSpiId and imgDescModel via reflection. */
 	private void setImgDescConfig(String spiId, String model) throws Exception {
 		var spiIdField = AiModule.class.getDeclaredField("imgDescSpiId");
 		spiIdField.setAccessible(true);
@@ -144,7 +92,7 @@ public class AiModuleTest extends OlatTestCase {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_noSpiIdConfigured_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setConfig(null, null);
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
@@ -152,7 +100,7 @@ public class AiModuleTest extends OlatTestCase {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_spiIdNotMatchingAnyProvider_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setConfig("Claude", "gpt-4o");
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
@@ -160,24 +108,23 @@ public class AiModuleTest extends OlatTestCase {
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_matchingSpiButDisabled_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", false)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", false)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
 	}
 
 	@Test
-	public void isMCQuestionGeneratorEnabled_spiDoesNotImplementMCInterface_returnsFalse() throws Exception {
-		// SPI with matching ID and enabled, but NOT an AiMCQuestionGeneratorSPI
+	public void isMCQuestionGeneratorEnabled_noModelConfigured_returnsFalse() throws Exception {
 		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
-		setConfig("OpenAI", "gpt-4o");
+		setConfig("OpenAI", null);
 
 		assertFalse(module.isMCQuestionGeneratorEnabled());
 	}
 
 	@Test
 	public void isMCQuestionGeneratorEnabled_allConditionsMet_returnsTrue() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setConfig("OpenAI", "gpt-4o");
 
 		assertTrue(module.isMCQuestionGeneratorEnabled());
@@ -186,111 +133,12 @@ public class AiModuleTest extends OlatTestCase {
 	@Test
 	public void isMCQuestionGeneratorEnabled_multipleProviders_onlyMatchingCounts() throws Exception {
 		module.setSpringProviders(List.of(
-				new MCGeneratorSpi("OpenAI", true),
-				new MCGeneratorSpi("Claude", false)
+				new SimpleAiSpi("OpenAI", true),
+				new SimpleAiSpi("Claude", false)
 		));
 		setConfig("Claude", "claude-3-5-sonnet");
 
-		// Claude is disabled → false
 		assertFalse(module.isMCQuestionGeneratorEnabled());
-	}
-
-
-	// ─── isAiEnabled ──────────────────────────────────────────────────────────
-
-	@Test
-	public void isAiEnabled_delegatesToMCQuestionGeneratorEnabled() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
-		setConfig("OpenAI", "gpt-4o");
-
-		assertEquals(module.isMCQuestionGeneratorEnabled(), module.isAiEnabled());
-	}
-
-
-	// ─── getMCQuestionGenerator ────────────────────────────────────────────────
-
-	@Test
-	public void getMCQuestionGenerator_noSpiIdConfigured_returnsNull() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", true)));
-		setConfig(null, null);
-
-		assertNull(module.getMCQuestionGenerator());
-	}
-
-	@Test
-	public void getMCQuestionGenerator_spiDisabled_returnsNull() throws Exception {
-		module.setSpringProviders(List.of(new MCGeneratorSpi("OpenAI", false)));
-		setConfig("OpenAI", "gpt-4o");
-
-		assertNull(module.getMCQuestionGenerator());
-	}
-
-	@Test
-	public void getMCQuestionGenerator_properlyConfigured_returnsGeneratorWithModelSet() throws Exception {
-		MCGeneratorSpi spi = new MCGeneratorSpi("OpenAI", true);
-		module.setSpringProviders(List.of(spi));
-		setConfig("OpenAI", "gpt-4o");
-
-		AiMCQuestionGeneratorSPI generator = module.getMCQuestionGenerator();
-		assertNotNull(generator);
-		assertEquals("gpt-4o", generator.getMCGeneratorModel());
-	}
-
-	@Test
-	public void getMCQuestionGenerator_setsModelOnSpiBeforeReturning() throws Exception {
-		MCGeneratorSpi spi = new MCGeneratorSpi("Claude", true);
-		module.setSpringProviders(List.of(spi));
-		setConfig("Claude", "claude-3-5-sonnet");
-
-		AiMCQuestionGeneratorSPI generator = module.getMCQuestionGenerator();
-		assertNotNull(generator);
-		// Verify the model was injected
-		assertEquals("claude-3-5-sonnet", spi.getMCGeneratorModel());
-	}
-
-
-	// ─── getEnabledSPIsFor ─────────────────────────────────────────────────────
-
-	@Test
-	public void getEnabledSPIsFor_returnsOnlyEnabledSPIsImplementingFeature() {
-		MCGeneratorSpi enabledMC = new MCGeneratorSpi("OpenAI", true);
-		MCGeneratorSpi disabledMC = new MCGeneratorSpi("Claude", false);
-		SimpleAiSpi enabledSimple = new SimpleAiSpi("Other", true);
-		module.setSpringProviders(List.of(enabledMC, disabledMC, enabledSimple));
-
-		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
-		assertEquals(1, result.size());
-		assertEquals("OpenAI", result.get(0).getId());
-	}
-
-	@Test
-	public void getEnabledSPIsFor_noMatchingProviders_returnsEmptyList() {
-		module.setSpringProviders(List.of(new SimpleAiSpi("Other", true)));
-
-		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
-		assertTrue(result.isEmpty());
-	}
-
-	@Test
-	public void getEnabledSPIsFor_allDisabled_returnsEmptyList() {
-		module.setSpringProviders(List.of(
-				new MCGeneratorSpi("OpenAI", false),
-				new MCGeneratorSpi("Claude", false)
-		));
-
-		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
-		assertTrue(result.isEmpty());
-	}
-
-	@Test
-	public void getEnabledSPIsFor_multipleEnabledProviders_returnsAll() {
-		module.setSpringProviders(List.of(
-				new MCGeneratorSpi("OpenAI", true),
-				new MCGeneratorSpi("Claude", true)
-		));
-
-		List<AiSPI> result = module.getEnabledSPIsFor(AiMCQuestionGeneratorSPI.class);
-		assertEquals(2, result.size());
 	}
 
 
@@ -298,7 +146,7 @@ public class AiModuleTest extends OlatTestCase {
 
 	@Test
 	public void isImageDescriptionGeneratorEnabled_noSpiIdConfigured_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setImgDescConfig(null, null);
 
 		assertFalse(module.isImageDescriptionGeneratorEnabled());
@@ -306,7 +154,7 @@ public class AiModuleTest extends OlatTestCase {
 
 	@Test
 	public void isImageDescriptionGeneratorEnabled_spiIdNotMatchingAnyProvider_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setImgDescConfig("Unknown", "gpt-4o");
 
 		assertFalse(module.isImageDescriptionGeneratorEnabled());
@@ -314,93 +162,86 @@ public class AiModuleTest extends OlatTestCase {
 
 	@Test
 	public void isImageDescriptionGeneratorEnabled_matchingSpiButDisabled_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", false)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", false)));
 		setImgDescConfig("OpenAI", "gpt-4o");
 
 		assertFalse(module.isImageDescriptionGeneratorEnabled());
 	}
 
 	@Test
-	public void isImageDescriptionGeneratorEnabled_spiDoesNotImplementInterface_returnsFalse() throws Exception {
+	public void isImageDescriptionGeneratorEnabled_noModelConfigured_returnsFalse() throws Exception {
 		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
-		setImgDescConfig("OpenAI", "gpt-4o");
+		setImgDescConfig("OpenAI", null);
 
 		assertFalse(module.isImageDescriptionGeneratorEnabled());
 	}
 
 	@Test
 	public void isImageDescriptionGeneratorEnabled_allConditionsMet_returnsTrue() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 		setImgDescConfig("OpenAI", "gpt-4o");
 
 		assertTrue(module.isImageDescriptionGeneratorEnabled());
 	}
 
 
-	// ─── getImageDescriptionGenerator ─────────────────────────────────────────
+	// ─── resolveProvider ──────────────────────────────────────────────────────
 
 	@Test
-	public void getImageDescriptionGenerator_noSpiIdConfigured_returnsNull() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
-		setImgDescConfig(null, null);
+	public void resolveProvider_nullId_returnsNull() {
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 
-		assertNull(module.getImageDescriptionGenerator());
+		assertNull(module.resolveProvider(null));
 	}
 
 	@Test
-	public void getImageDescriptionGenerator_spiDisabled_returnsNull() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", false)));
-		setImgDescConfig("OpenAI", "gpt-4o");
+	public void resolveProvider_noMatchingId_returnsNull() {
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", true)));
 
-		assertNull(module.getImageDescriptionGenerator());
+		assertNull(module.resolveProvider("Claude"));
 	}
 
 	@Test
-	public void getImageDescriptionGenerator_properlyConfigured_returnsGeneratorWithModelSet() throws Exception {
-		ImageDescSpi spi = new ImageDescSpi("OpenAI", true);
+	public void resolveProvider_matchingButDisabled_returnsNull() {
+		module.setSpringProviders(List.of(new SimpleAiSpi("OpenAI", false)));
+
+		assertNull(module.resolveProvider("OpenAI"));
+	}
+
+	@Test
+	public void resolveProvider_matchingAndEnabled_returnsProvider() {
+		SimpleAiSpi spi = new SimpleAiSpi("OpenAI", true);
 		module.setSpringProviders(List.of(spi));
-		setImgDescConfig("OpenAI", "gpt-4o");
 
-		AiImageDescriptionSPI generator = module.getImageDescriptionGenerator();
-		assertNotNull(generator);
-		assertEquals("gpt-4o", generator.getImageDescriptionModel());
+		AiSPI result = module.resolveProvider("OpenAI");
+		assertNotNull(result);
+		assertEquals("OpenAI", result.getId());
 	}
 
 
-	// ─── isAiEnabled with image description ───────────────────────────────────
+	// ─── getEnabledProviders ──────────────────────────────────────────────────
 
 	@Test
-	public void isAiEnabled_onlyImgDescEnabled_returnsTrue() throws Exception {
-		module.setSpringProviders(List.of(new ImageDescSpi("OpenAI", true)));
-		setConfig(null, null);
-		setImgDescConfig("OpenAI", "gpt-4o");
-
-		assertTrue(module.isAiEnabled());
-	}
-
-	@Test
-	public void isAiEnabled_bothDisabled_returnsFalse() throws Exception {
-		module.setSpringProviders(List.of(new DualFeatureSpi("OpenAI", true)));
-		setConfig(null, null);
-		setImgDescConfig(null, null);
-
-		assertFalse(module.isAiEnabled());
-	}
-
-
-	// ─── getEnabledSPIsFor with AiImageDescriptionSPI ─────────────────────────
-
-	@Test
-	public void getEnabledSPIsFor_imageDescriptionFeature_returnsOnlyMatching() {
+	public void getEnabledProviders_returnsOnlyEnabled() {
 		module.setSpringProviders(List.of(
-				new MCGeneratorSpi("MC", true),
-				new ImageDescSpi("Img", true),
-				new DualFeatureSpi("Both", true)
+				new SimpleAiSpi("OpenAI", true),
+				new SimpleAiSpi("Claude", false),
+				new SimpleAiSpi("Other", true)
 		));
 
-		List<AiSPI> result = module.getEnabledSPIsFor(AiImageDescriptionSPI.class);
+		List<AiSPI> result = module.getEnabledProviders();
 		assertEquals(2, result.size());
-		assertTrue(result.stream().anyMatch(s -> s.getId().equals("Img")));
-		assertTrue(result.stream().anyMatch(s -> s.getId().equals("Both")));
+		assertTrue(result.stream().anyMatch(s -> s.getId().equals("OpenAI")));
+		assertTrue(result.stream().anyMatch(s -> s.getId().equals("Other")));
+	}
+
+	@Test
+	public void getEnabledProviders_allDisabled_returnsEmptyList() {
+		module.setSpringProviders(List.of(
+				new SimpleAiSpi("OpenAI", false),
+				new SimpleAiSpi("Claude", false)
+		));
+
+		assertTrue(module.getEnabledProviders().isEmpty());
 	}
 }

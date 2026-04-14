@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.importwizard;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
@@ -136,8 +137,8 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 		LocalDateTime lastModified = getDateTime(r, 6);
 		
 		if(!StringHelper.containsNonWhitespace(identifier)
-				&& !StringHelper.containsNonWhitespace(curriculumIdentifier)
-				&& !StringHelper.containsNonWhitespace(implementationIdentifier)) {
+				&& !StringHelper.containsNonWhitespace(username)
+				&& !StringHelper.containsNonWhitespace(role)) {
 			return null;
 		}
 		return new ImportedMembershipRow(r.getRowNum(), curriculumIdentifier, implementationIdentifier, identifier,
@@ -182,40 +183,43 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 				log.error("", e);
 			}
 			
-			Sheet elementsSheet = wb.getSheet(1)
-					.orElse(null);
-			try (Stream<Row> rows = elementsSheet.openStream()) {
-				elementsRows = rows
-					.filter(r -> r.getRowNum() > 1)
-					.map(r -> readElementRow(r))
-					.filter(r -> r != null)
-					.toList();
-			} catch(Exception e) {
-				log.error("", e);
+			Optional<Sheet> elementsSheet = wb.getSheet(1);
+			if(elementsSheet.isPresent()) {
+				try (Stream<Row> rows = elementsSheet.get().openStream()) {
+					elementsRows = rows
+						.filter(r -> r.getRowNum() > 1)
+						.map(r -> readElementRow(r))
+						.filter(r -> r != null)
+						.toList();
+				} catch(Exception e) {
+					log.error("", e);
+				}
 			}
 			
-			Sheet membershipsSheet = wb.getSheet(2)
-					.orElse(null);
-			try (Stream<Row> rows = membershipsSheet.openStream()) {
-				membershipsRows = rows
-					.filter(r -> r.getRowNum() > 1)
-					.map(r -> readMembershipRow(r))
-					.filter(r -> r != null)
-					.toList();
-			} catch(Exception e) {
-				log.error("", e);
+			Optional<Sheet> membershipsSheet = wb.getSheet(2);
+			if(membershipsSheet.isPresent()) {
+				try (Stream<Row> rows = membershipsSheet.get().openStream()) {
+					membershipsRows = rows
+						.filter(r -> r.getRowNum() > 1)
+						.map(r -> readMembershipRow(r))
+						.filter(r -> r != null)
+						.toList();
+				} catch(Exception e) {
+					log.error("", e);
+				}
 			}
 			
-			Sheet usersSheet = wb.getSheet(3)
-					.orElse(null);
-			try (Stream<Row> rows = usersSheet.openStream()) {
-				usersRows = rows
-					.filter(r -> r.getRowNum() > 1)
-					.map(r -> readUserRow(r))
-					.filter(r -> r != null)
-					.toList();
-			} catch(Exception e) {
-				log.error("", e);
+			Optional<Sheet> usersSheet = wb.getSheet(3);
+			if(usersSheet.isPresent()) {
+				try (Stream<Row> rows = usersSheet.get().openStream()) {
+					usersRows = rows
+						.filter(r -> r.getRowNum() > 1)
+						.map(r -> readUserRow(r))
+						.filter(r -> r != null)
+						.toList();
+				} catch(Exception e) {
+					log.error("", e);
+				}
 			}
 			
 		} catch(Exception e) {

@@ -41,13 +41,18 @@ public class DeleteLayoutConfirmationController extends FormBasicController {
 	public static final Event DELETE_EVERYTHING_EVENT = new Event("command.delete.everything");
 	public static final Event ONLY_DELETE_LAYOUT_EVENT = new Event("command.only.delete.layout");
 	private final ContentEditorContainerComponent layoutComponent;
+	private final boolean isFirstContainer;
+	private final boolean isLastContainer;
 
 	private FormLink deleteEverythingButton;
 
 	public DeleteLayoutConfirmationController(UserRequest ureq, WindowControl wControl,
-											  ContentEditorContainerComponent layoutComponent) {
+											  ContentEditorContainerComponent layoutComponent,
+											  boolean isFirstContainer, boolean isLastContainer) {
 		super(ureq, wControl);
 		this.layoutComponent = layoutComponent;
+		this.isFirstContainer = isFirstContainer;
+		this.isLastContainer = isLastContainer;
 		initForm(ureq);
 	}
 
@@ -57,13 +62,21 @@ public class DeleteLayoutConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormWarning("delete.layout.warning");
+		if (isFirstContainer && isLastContainer) {
+			setFormWarning("delete.layout.warning.only");
+		} else if (isFirstContainer) {
+			setFormWarning("delete.layout.warning.first");
+		} else {
+			setFormWarning("delete.layout.warning");
+		}
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		deleteEverythingButton = uifactory.addFormLink("delete.layout.delete.everything", buttonLayout, Link.BUTTON);
 		deleteEverythingButton.setElementCssClass("btn-danger");
-		uifactory.addFormSubmitButton("delete.layout.only.delete.layout", buttonLayout);
+		if (!isFirstContainer || !isLastContainer) {
+			uifactory.addFormSubmitButton("delete.layout.only.delete.layout", buttonLayout);
+		}
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 

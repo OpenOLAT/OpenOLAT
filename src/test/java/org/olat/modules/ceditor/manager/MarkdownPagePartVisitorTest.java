@@ -74,8 +74,10 @@ public class MarkdownPagePartVisitorTest {
 	}
 
 	private VisitorResult convertWithWarnings(String markdown, Map<String, String> mathBlocks) {
-		Node document = parser.parse(markdown);
-		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, mathBlocks, null);
+		// Mirror the service's preprocessing so !!! MkDocs admonitions are handled
+		String preprocessed = MarkdownMkDocsAdmonitionPreprocessor.preprocess(markdown);
+		Node document = parser.parse(preprocessed);
+		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, null, null, mathBlocks, null);
 		document.accept(visitor);
 		return new VisitorResult(visitor.getParts(), visitor.getWarnings());
 	}
@@ -241,6 +243,29 @@ public class MarkdownPagePartVisitorTest {
 
 		assertThat(parts).hasSize(1);
 		assertThat(parts.get(0)).isInstanceOf(SpacerPart.class);
+	}
+
+	// --- YAML front matter ---
+
+	@Test
+	public void testYamlFrontMatterSkipped() {
+		List<PagePart> parts = convert("---\ntitle: My Page\ntags: test\n---\n\nHello world");
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		assertThat(para.getContent()).contains("Hello world");
+		assertThat(para.getContent()).doesNotContain("title");
+	}
+
+	@Test
+	public void testThematicBreakAfterContent() {
+		List<PagePart> parts = convert("Above\n\n---\n\nBelow");
+
+		assertThat(parts).hasSize(3);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(parts.get(1)).isInstanceOf(SpacerPart.class);
+		assertThat(parts.get(2)).isInstanceOf(ParagraphPart.class);
 	}
 
 	// --- BlockQuote ---
@@ -961,5 +986,304 @@ public class MarkdownPagePartVisitorTest {
 		assertThat(parts.get(0)).isInstanceOf(CodePart.class);
 		// Code blocks store raw text content, not executed HTML
 		assertThat(parts.get(0).getContent()).contains("<script>alert('xss')</script>");
+	}
+
+	// ======================================================================
+	// Safe inline HTML whitelist: <u>, <mark>, <sup>, <sub>, <span underline>
+	// ======================================================================
+
+	@Test
+	public void testInlineUnderlineTagIsPreserved() {
+		List<PagePart> parts = convert("Text with <u>underlined</u> content.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<u>underlined</u>");
+		assertThat(content).doesNotContain("&lt;u&gt;");
+	}
+
+	@Test
+	public void testInlineMarkTagIsPreserved() {
+		List<PagePart> parts = convert("This is a <mark>highlighted</mark> word.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<mark>highlighted</mark>");
+		assertThat(content).doesNotContain("&lt;mark&gt;");
+	}
+
+	@Test
+	public void testInlineSupTagIsPreserved() {
+		List<PagePart> parts = convert("E=mc<sup>2</sup>");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<sup>2</sup>");
+	}
+
+	@Test
+	public void testInlineSubTagIsPreserved() {
+		List<PagePart> parts = convert("H<sub>2</sub>O");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<sub>2</sub>");
+	}
+
+	@Test
+	public void testInlineSpanUnderlineIsPreserved() {
+		List<PagePart> parts = convert("Word <span style=\"text-decoration:underline\">under</span> here.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<span style=\"text-decoration:underline\">");
+		assertThat(content).contains("</span>");
+	}
+
+	// ======================================================================
+	// ==highlight== syntax → <mark>
+	// ======================================================================
+
+	@Test
+	public void testHighlightSyntaxProducesMark() {
+		List<PagePart> parts = convert("Some ==highlighted== text.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<mark>highlighted</mark>");
+	}
+
+	@Test
+	public void testHighlightSyntaxWithInlineFormatting() {
+		List<PagePart> parts = convert("A ==bold **word** inside== here.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<mark>");
+		assertThat(content).contains("</mark>");
+		assertThat(content).contains("<strong>word</strong>");
+	}
+
+	@Test
+	public void testHighlightInsideCodeSpanIsNotProcessed() {
+		List<PagePart> parts = convert("Use `x==y` for equality.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		// CommonMark delimiter processor respects code spans — no <mark> produced
+		assertThat(content).doesNotContain("<mark>");
+		assertThat(content).contains("<code>");
+	}
+
+	@Test
+	public void testHighlightInCodeBlockIsNotProcessed() {
+		String md = "```java\nif (x == y) { }\n```";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(CodePart.class);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("x == y");
+		assertThat(content).doesNotContain("<mark>");
+	}
+
+	@Test
+	public void testSingleEqualsIsNotHighlighted() {
+		List<PagePart> parts = convert("x = 1 and y = 2.");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).doesNotContain("<mark>");
+		assertThat(content).contains("x = 1");
+	}
+
+	@Test
+	public void testHighlightWithScriptIsEscaped() {
+		List<PagePart> parts = convert("==<script>alert('xss')</script>==");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<mark>");
+		assertThat(content).doesNotContain("<script>");
+		assertThat(content).contains("&lt;script&gt;");
+	}
+
+	// ======================================================================
+	// MkDocs admonitions: !!! type "Title"
+	// ======================================================================
+
+	@Test
+	public void testMkDocsAdmonitionInfoWithTitle() {
+		String md = "!!! info \"Did you know?\"\n    Paragraphs are indented by four spaces.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox).isNotNull();
+		assertThat(alertBox.isShowAlertBox()).isTrue();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.info);
+		assertThat(alertBox.getTitle()).isEqualTo("Did you know?");
+		assertThat(para.getContent()).contains("Paragraphs are indented by four spaces.");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionWarningWithoutTitle() {
+		String md = "!!! warning\n    Careful with this.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox).isNotNull();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.warning);
+		// No custom title + no translator in test → title stays at default
+		assertThat(para.getContent()).contains("Careful with this.");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionEmptyTitleSuppressesTitle() {
+		String md = "!!! note \"\"\n    Body without a title heading.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox).isNotNull();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.note);
+		// Empty quoted title → suppressed
+		assertThat(alertBox.getTitle()).isEmpty();
+	}
+
+	@Test
+	public void testMkDocsAdmonitionDangerMapsToError() {
+		String md = "!!! danger \"Danger Zone\"\n    Do not push this button.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.error);
+		assertThat(alertBox.getTitle()).isEqualTo("Danger Zone");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionMultipleParagraphs() {
+		String md = "!!! tip \"Pro tip\"\n    First paragraph.\n\n    Second paragraph.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		assertThat(para.getContent()).contains("First paragraph.");
+		assertThat(para.getContent()).contains("Second paragraph.");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionFollowedByParagraph() {
+		String md = "!!! info \"Heads up\"\n    Indented content.\n\nNormal paragraph after.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(2);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(parts.get(1)).isInstanceOf(ParagraphPart.class);
+		ParagraphPart admonition = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(admonition.getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.info);
+		assertThat(parts.get(1).getContent()).contains("Normal paragraph after.");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionInsideCodeBlockNotTransformed() {
+		String md = "```\n!!! info \"Not an admonition\"\n    Just code.\n```";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(CodePart.class);
+		assertThat(parts.get(0).getContent()).contains("!!! info");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionTitleWithHtmlIsSanitized() {
+		// HTML and markdown syntax in titles must be stripped so the title
+		// renders as plain text and doesn't break admonition detection.
+		String md = "!!! info \"Hello <b>world</b> `code` *em*\"\n    Body.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox).isNotNull();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.info);
+		assertThat(alertBox.getTitle()).isEqualTo("Hello world code em");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionWithTabIndentedContent() {
+		// MkDocs accepts a single tab as equivalent to four spaces for the
+		// content indent.
+		String md = "!!! tip \"Tab indent\"\n\tTab-indented body.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		assertThat(settings.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.tip);
+		assertThat(settings.getAlertBoxSettings().getTitle()).isEqualTo("Tab indent");
+		assertThat(para.getContent()).contains("Tab-indented body.");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionAdjacentBlocks() {
+		// Two admonition blocks with no blank line between them must both be
+		// transformed and produce two independent alert boxes.
+		String md = "!!! info \"First\"\n    Alpha.\n!!! warning \"Second\"\n    Beta.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(2);
+		ParagraphPart first = (ParagraphPart) parts.get(0);
+		ParagraphPart second = (ParagraphPart) parts.get(1);
+
+		TextSettings s1 = ContentEditorXStream.fromXml(first.getLayoutOptions(), TextSettings.class);
+		TextSettings s2 = ContentEditorXStream.fromXml(second.getLayoutOptions(), TextSettings.class);
+		assertThat(s1.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.info);
+		assertThat(s1.getAlertBoxSettings().getTitle()).isEqualTo("First");
+		assertThat(s2.getAlertBoxSettings().getType()).isEqualTo(AlertBoxType.warning);
+		assertThat(s2.getAlertBoxSettings().getTitle()).isEqualTo("Second");
+		assertThat(first.getContent()).contains("Alpha.");
+		assertThat(second.getContent()).contains("Beta.");
+	}
+
+	@Test
+	public void testHighlightCombinedWithStrikethrough() {
+		List<PagePart> parts = convert("==~~combined~~==");
+
+		assertThat(parts).hasSize(1);
+		String content = parts.get(0).getContent();
+		assertThat(content).contains("<mark>");
+		assertThat(content).contains("<del>");
+		assertThat(content).contains("combined");
+	}
+
+	@Test
+	public void testMkDocsAdmonitionUnknownTypeIgnored() {
+		// Unknown type is not mapped — it still becomes a blockquote but
+		// detectAdmonition returns null, so default 'note' type is used
+		// with no custom title.
+		String md = "!!! flibberflap \"Custom\"\n    Mystery type.";
+		List<PagePart> parts = convert(md);
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		ParagraphPart para = (ParagraphPart) parts.get(0);
+		TextSettings settings = ContentEditorXStream.fromXml(para.getLayoutOptions(), TextSettings.class);
+		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
+		assertThat(alertBox).isNotNull();
+		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.note);
 	}
 }

@@ -186,7 +186,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><th>Directory</th><th>Files</th><th>Purpose</th></tr>
   <tr><td><code>ceditor/</code> (root)</td><td>~39</td><td>Core interfaces, enums, markers</td></tr>
   <tr><td><code>handler/</code></td><td>12</td><td>PageElementHandler implementations</td></tr>
-  <tr><td><code>manager/</code></td><td>18</td><td>DAOs, services, file storage, XStream, markdown import</td></tr>
+  <tr><td><code>manager/</code></td><td>23</td><td>DAOs, services, file storage, XStream, markdown import</td></tr>
   <tr><td><code>model/</code></td><td>~49</td><td>POJOs, settings, value objects</td></tr>
   <tr><td><code>model/jpa/</code></td><td>24</td><td>JPA entity classes</td></tr>
   <tr><td><code>ui/</code></td><td>~52</td><td>Controllers, run components, factories</td></tr>
@@ -707,15 +707,54 @@ part.setLayoutOptions(xml);
   <tr><td><code>PageXStream</code></td><td>Page serialization for export</td></tr>
   <tr><td><code>MarkdownImportService</code></td><td>Markdown-to-PagePart conversion and persistence (CommonMark + GFM tables)</td></tr>
   <tr><td><code>MarkdownPagePartVisitor</code></td><td>CommonMark AST visitor producing PagePart instances</td></tr>
-  <tr><td><code>MarkdownMathPreprocessor</code></td><td>$$...$$ math block pre-processing</td></tr>
-  <tr><td><code>MarkdownCodeLanguageMapping</code></td><td>Code block info string to CodeLanguage mapping</td></tr>
+  <tr><td><code>MarkdownMathPreprocessor</code></td><td><code>$$...$$</code> math block pre-processing</td></tr>
+  <tr><td><code>MarkdownMkDocsAdmonitionPreprocessor</code></td><td>Transforms MkDocs <code>!!! type "Title"</code> blocks into blockquote admonitions</td></tr>
+  <tr><td><code>MarkdownAdmonitionMapping</code></td><td>Maps <code>[!TYPE]</code> / <code>[!TYPE|Title]</code> markers to <code>AlertBoxType</code></td></tr>
+  <tr><td><code>HighlightExtension</code></td><td>CommonMark extension adding <code>==text==</code> &rarr; <code>&lt;mark&gt;</code> via a <code>DelimiterProcessor</code></td></tr>
+  <tr><td><code>MarkdownCodeLanguageMapping</code></td><td>Code block info string to <code>CodeLanguage</code> mapping</td></tr>
 </table>
 
-<h3>Markdown Import</h3>
-<p>The markdown import feature converts CommonMark markdown into page content. Users can upload <code>.md</code>/<code>.txt</code> files, <code>.zip</code> archives (containing a single <code>.md</code> with images), or paste markdown text directly.</p>
-<p><strong>Conversion pipeline:</strong> <code>MarkdownMathPreprocessor</code> &rarr; CommonMark parser (+ GFM Tables extension) &rarr; <code>MarkdownPagePartVisitor</code> &rarr; persist parts &rarr; wrap in <code>ContainerPart</code> (<code>block_1col</code>).</p>
-<p><strong>Security:</strong> Inline HTML is entity-escaped (<code>escapeHtml(true)</code>), HTML blocks are skipped, URL sanitization allows only <code>http</code>/<code>https</code>/<code>mailto</code> protocols, remote image downloads are restricted to allowed domains (<code>MediaServerModule</code>), and local file paths are blocked in text paste mode.</p>
-<p><strong>UI:</strong> <code>MarkdownImportController</code> (<code>FormBasicController</code>) with file upload or text paste tabs. Enabled when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>.</p>
+<h3>Content Import (Markdown and Word)</h3>
+<p>The content import feature converts CommonMark markdown or Word documents (.docx) into page content. Users can upload <code>.md</code>/<code>.txt</code> files, <code>.zip</code> archives (with images), <code>.docx</code> Word documents, or paste markdown text directly.</p>
+
+<h4>Supported Markdown Features</h4>
+<table>
+  <tr><th>Markdown Construct</th><th>PagePart</th></tr>
+  <tr><td><code># Heading</code> (H1&ndash;H6)</td><td><code>TitlePart</code></td></tr>
+  <tr><td>Paragraphs</td><td><code>ParagraphPart</code> (consecutive merged)</td></tr>
+  <tr><td><code>**bold**</code>, <code>*italic*</code>, <code>~~strike~~</code></td><td>Inline HTML in paragraph content</td></tr>
+  <tr><td><code>==highlight==</code></td><td><code>&lt;mark&gt;</code> via custom <code>HighlightExtension</code></td></tr>
+  <tr><td><code>&lt;sup&gt;</code>, <code>&lt;sub&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;mark&gt;</code>, <code>&lt;span style=&quot;text-decoration:underline&quot;&gt;</code></td><td>Whitelisted safe inline HTML</td></tr>
+  <tr><td>Fenced code blocks</td><td><code>CodePart</code> with syntax highlighting</td></tr>
+  <tr><td><code>$$math$$</code> display math</td><td><code>MathPart</code></td></tr>
+  <tr><td>GFM tables</td><td><code>TablePart</code> with row/column header detection</td></tr>
+  <tr><td><code>&gt; blockquote</code> / <code>&gt; [!NOTE]</code> / <code>&gt; [!NOTE|Title]</code></td><td><code>ParagraphPart</code> with <code>AlertBoxSettings</code></td></tr>
+  <tr><td><code>!!! type "Title"</code> (MkDocs / Python-Markdown)</td><td><code>ParagraphPart</code> with <code>AlertBoxSettings</code> (custom title, empty <code>""</code> suppresses it)</td></tr>
+  <tr><td><code>---</code></td><td><code>SpacerPart</code></td></tr>
+  <tr><td><code>![alt](url){width=N height=N}</code></td><td><code>MediaPart</code> with <code>ImageSize</code> from dimensions</td></tr>
+  <tr><td><code>[^1]</code> footnotes</td><td>Footnote definitions</td></tr>
+  <tr><td><code>[x]</code> task lists</td><td>Task list checkboxes</td></tr>
+  <tr><td>YAML front matter (<code>---</code>)</td><td>Parsed and stripped</td></tr>
+</table>
+
+<h4>Word/DOCX Import</h4>
+<p>Word documents are converted to Markdown via <code>DocxToMarkdownService</code> from <code>org.olat.core.util.docxToMarkdown</code> before being fed into the standard Markdown import pipeline. This supports headings, formatting (bold, italic, underline, strikethrough, superscript, subscript, highlight), tables, images, shapes (as SVG), SmartArt diagrams, footnotes, math, hyperlinks, blockquotes, text boxes, and more. Word import is marked as beta. See the <code>docxToMarkdown</code> package documentation for full details.</p>
+
+<h4>Pipeline</h4>
+<p><strong>Markdown:</strong> <code>MarkdownMathPreprocessor</code> &rarr; <code>MarkdownMkDocsAdmonitionPreprocessor</code> &rarr; CommonMark parser (with GFM tables, strikethrough, footnotes, task lists, autolinks, image attributes, YAML front matter, and the custom <code>HighlightExtension</code>) &rarr; image dimension extraction &rarr; <code>MarkdownPagePartVisitor</code> &rarr; persist parts &rarr; <code>ContainerPart</code>. The math preprocessor runs first so that stray <code>!!!</code> inside LaTeX cannot be mis-transformed by the admonition preprocessor.</p>
+<p><strong>DOCX:</strong> <code>DocxToMarkdownService.convert()</code> &rarr; Markdown + media files on disk &rarr; same Markdown pipeline as above.</p>
+
+<h4>Security</h4>
+<p>Inline HTML is entity-escaped (<code>escapeHtml(true)</code>) with a whitelist for safe tags (<code>sup</code>, <code>sub</code>, <code>u</code>, <code>mark</code>, <code>span</code>). HTML blocks are skipped. URL sanitization allows only <code>http</code>/<code>https</code>/<code>mailto</code>. Remote image downloads restricted by <code>MediaServerModule</code>. Local file paths blocked in text paste mode. The <code>==highlight==</code> syntax is processed via a CommonMark <code>DelimiterProcessor</code>, so it respects code spans and code fences automatically. MkDocs admonition titles are sanitized to plain text (HTML tags and CommonMark-formatting chars stripped) before being emitted.</p>
+
+<h4>UI and Configuration</h4>
+<p><code>MarkdownImportController</code> provides a card-style mode selection (file upload or text paste). Upload limits are configurable:</p>
+<table>
+  <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>ceditor.import.limit.md</code></td><td>51200 (50 MB)</td><td>Markdown/ZIP upload limit (KB)</td></tr>
+  <tr><td><code>ceditor.import.limit.docx</code></td><td>204800 (200 MB)</td><td>Word document upload limit (KB)</td></tr>
+</table>
+<p>Enabled when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>.</p>
 
 <!-- ===== CONTAINER SYSTEM ===== -->
 <h2 id="container-system">Container System</h2>

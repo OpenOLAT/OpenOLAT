@@ -31,17 +31,27 @@ import org.commonmark.node.Text;
 import org.olat.modules.ceditor.model.AlertBoxType;
 
 /**
- * Maps GitHub-style admonition markers ([!TYPE]) in blockquotes
- * to AlertBoxType values and titles.
+ * Maps GitHub-style and MkDocs-style admonition markers in blockquotes
+ * to {@link AlertBoxType} values and titles.
+ *
+ * Supported marker syntax (first line of the blockquote):
+ * <ul>
+ *   <li>{@code [!TYPE]} — GitHub style, no title (uses translated type as title)</li>
+ *   <li>{@code [!TYPE|Custom title]} — MkDocs custom title</li>
+ *   <li>{@code [!TYPE|]} — MkDocs empty title ({@code ""}), suppresses title</li>
+ * </ul>
  *
  * Initial date: 2026-03-16<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com
  */
 public class MarkdownAdmonitionMapping {
 
-	static final Pattern ADMONITION_PATTERN = Pattern.compile("^\\[!(\\w+)]$");
+	// Matches [!TYPE] or [!TYPE|optional title]
+	static final Pattern ADMONITION_PATTERN =
+		Pattern.compile("^\\[!(\\w+)(?:\\|([^\\]]*))?]$");
 
 	private static final Map<String, AlertBoxType> TYPE_MAPPING = Map.ofEntries(
+		// GitHub admonition types
 		Map.entry("NOTE", AlertBoxType.note),
 		Map.entry("TIP", AlertBoxType.tip),
 		Map.entry("IMPORTANT", AlertBoxType.important),
@@ -49,13 +59,40 @@ public class MarkdownAdmonitionMapping {
 		Map.entry("CAUTION", AlertBoxType.error),
 		Map.entry("INFO", AlertBoxType.info),
 		Map.entry("SUCCESS", AlertBoxType.success),
-		Map.entry("ERROR", AlertBoxType.error)
+		Map.entry("ERROR", AlertBoxType.error),
+		// MkDocs / Python-Markdown admonition types
+		Map.entry("ABSTRACT", AlertBoxType.info),
+		Map.entry("SUMMARY", AlertBoxType.info),
+		Map.entry("TLDR", AlertBoxType.info),
+		Map.entry("HINT", AlertBoxType.tip),
+		Map.entry("CHECK", AlertBoxType.success),
+		Map.entry("DONE", AlertBoxType.success),
+		Map.entry("HELP", AlertBoxType.important),
+		Map.entry("FAQ", AlertBoxType.important),
+		Map.entry("QUESTION", AlertBoxType.important),
+		Map.entry("ATTENTION", AlertBoxType.warning),
+		Map.entry("FAILURE", AlertBoxType.error),
+		Map.entry("FAIL", AlertBoxType.error),
+		Map.entry("MISSING", AlertBoxType.error),
+		Map.entry("DANGER", AlertBoxType.error),
+		Map.entry("BUG", AlertBoxType.error),
+		Map.entry("EXAMPLE", AlertBoxType.tip),
+		Map.entry("QUOTE", AlertBoxType.note),
+		Map.entry("CITE", AlertBoxType.note)
 	);
 
-	public record AdmonitionResult(AlertBoxType type) {}
+	/**
+	 * Result of admonition detection.
+	 *
+	 * @param type        the resolved alert box type
+	 * @param customTitle the custom title provided after {@code |} (may be null
+	 *                    when no title was given, or empty when an explicit empty
+	 *                    title {@code ""} was supplied)
+	 */
+	public record AdmonitionResult(AlertBoxType type, String customTitle) {}
 
 	/**
-	 * Detect a GitHub-style admonition marker in a BlockQuote node.
+	 * Detect a GitHub- or MkDocs-style admonition marker in a BlockQuote node.
 	 * If found, removes the marker text and following SoftLineBreak from the AST
 	 * so they don't appear in rendered output.
 	 *
@@ -83,10 +120,12 @@ public class MarkdownAdmonitionMapping {
 			return null;
 		}
 
+		String customTitle = matcher.group(2); // null if no | was present
+
 		// Remove the marker text node and the following SoftLineBreak from the AST
 		removeAdmonitionMarker(text);
 
-		return new AdmonitionResult(alertType);
+		return new AdmonitionResult(alertType, customTitle);
 	}
 
 	/**

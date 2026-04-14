@@ -165,6 +165,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final VelocityContainer disclaimerVC;
 	
 	private boolean assessmentStopped = true;
+	private boolean confirmationSent = false;
 	
 	private EventBus singleUserEventCenter;
 	private final boolean anonym;
@@ -1263,8 +1264,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						start, completion, AssessmentRunStatus.done, getIdentity().getKey()),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 			
-			if(courseNode.getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
+			if(courseNode.getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)
+					&& !confirmationSent) {
 				testNode.sendConfirmationEmail(userCourseEnv, assessmentConfig, getLocale());
+				confirmationSent = true;
 			}
 			
 			if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {

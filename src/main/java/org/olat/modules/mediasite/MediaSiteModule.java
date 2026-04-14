@@ -19,8 +19,12 @@
  */
 package org.olat.modules.mediasite;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,7 +46,11 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 	private static final String MEDIASITE_SERVER_NAME			= "mediasite.server.name";
 	private static final String MEDIASITE_USERNAME_PROPERTY		= "mediasite.username.property.key";
 	private static final String MEDIASITE_SUPRESS_AGREEMENT		= "mediasite.supress.data.transmission.agreement";
-	
+	private static final String MEDIASITE_LTI13_TOOL_KEY		= "mediasite.lti13.tool.key";
+	private static final String MEDIASITE_LTI13_DEPLOYMENT_KEY	= "mediasite.lti13.deployment.key";
+	private static final String MEDIASITE_LTI_VERSION			= "mediasite.lti.version";
+	private static final String MEDIASITE_LTI13_BASE_URL		= "mediasite.lei13.base.url";
+
 	@Value("${mediasite.enabled}")
 	private boolean enabled;
 	@Value("${mediasite.global.login.enabled}")
@@ -61,6 +69,11 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 	private String usernameProperty;
 	@Value("${mediasite.supress.data.transmission.agreement}")
 	private boolean supressDataTransmissionAgreement;
+	@Value("${mediasite.lti.version:lti_1_1}")
+	private String ltiVersion;
+	private Long lti13ToolKey;
+	private Long lti13DeploymentKey;
+	private String lti13BaseUrl;
 
 	public MediaSiteModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -77,6 +90,12 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 		serverName = getStringPropertyValue(MEDIASITE_SERVER_NAME, serverName);
 		usernameProperty = getStringPropertyValue(MEDIASITE_USERNAME_PROPERTY, usernameProperty);
 		supressDataTransmissionAgreement = getBooleanPropertyValue(MEDIASITE_SUPRESS_AGREEMENT) || supressDataTransmissionAgreement;
+		ltiVersion = getStringPropertyValue(MEDIASITE_LTI_VERSION, ltiVersion);
+		String toolKeyStr = getStringPropertyValue(MEDIASITE_LTI13_TOOL_KEY, null);
+		lti13ToolKey = StringHelper.containsNonWhitespace(toolKeyStr) ? Long.valueOf(toolKeyStr) : null;
+		String deploymentKeyStr = getStringPropertyValue(MEDIASITE_LTI13_DEPLOYMENT_KEY, null);
+		lti13DeploymentKey = StringHelper.containsNonWhitespace(deploymentKeyStr) ? Long.valueOf(deploymentKeyStr) : null;
+		lti13BaseUrl = getStringPropertyValue(MEDIASITE_LTI13_BASE_URL, null);
 	}
 
 	@Override
@@ -166,4 +185,54 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 		return supressDataTransmissionAgreement;
 	}
 
+	public Long getLti13ToolKey() {
+		return lti13ToolKey;
+	}
+
+	public void setLti13ToolKey(Long lti13ToolKey) {
+		this.lti13ToolKey = lti13ToolKey;
+		setStringProperty(MEDIASITE_LTI13_TOOL_KEY, lti13ToolKey != null ? String.valueOf(lti13ToolKey) : "", true);
+	}
+
+	public Long getLti13DeploymentKey() {
+		return lti13DeploymentKey;
+	}
+
+	public void setLti13DeploymentKey(Long lti13DeploymentKey) {
+		this.lti13DeploymentKey = lti13DeploymentKey;
+		setStringProperty(MEDIASITE_LTI13_DEPLOYMENT_KEY, lti13DeploymentKey != null ? String.valueOf(lti13DeploymentKey) : "", true);
+	}
+
+	public LtiVersion getLtiVersion() {
+		return LtiVersion.valueOf(ltiVersion);
+	}
+	
+	public void setLtiVersion(LtiVersion ltiVersion) {
+		this.ltiVersion = ltiVersion.name();
+		setStringProperty(MEDIASITE_LTI_VERSION, this.ltiVersion, true);
+	}
+	
+	public Set<LtiVersion> availableGlobalServerConfigurations() {
+		Set<LtiVersion> result = new HashSet<>();
+		if (StringHelper.containsNonWhitespace(getEnterpriseKey()) && 
+				StringHelper.containsNonWhitespace(getEnterpriseSecret()) && 
+				StringHelper.containsNonWhitespace(getBaseURL()) && 
+				StringHelper.containsNonWhitespace(getAdministrationURL()) && 
+				StringHelper.containsNonWhitespace(getUsernameProperty())) {
+			result.add(LtiVersion.lti_1_1);
+		}
+		if (getLti13ToolKey() != null && getLti13DeploymentKey() != null) {
+			result.add(LtiVersion.lti_1_3);
+		}
+		return result;
+	}
+
+	public String getLti13BaseUrl() {
+		return lti13BaseUrl;
+	}
+	
+	public void setLti13BaseUrl(String lti13BaseUrl) {
+		this.lti13BaseUrl = lti13BaseUrl;
+		setStringProperty(MEDIASITE_LTI13_BASE_URL, this.lti13BaseUrl, true);
+	}
 }

@@ -40,6 +40,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
+import org.olat.modules.ceditor.ui.event.ImportMarkdownEvent;
 import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
@@ -56,6 +57,7 @@ public class AddElementsController extends BasicController {
 	private final ContentEditorFragment referenceComponent;
 	private Link closeButton;
 	private Link mediaCenterButton;
+	private Link importMarkdownButton;
 	private PageElementHandler mediaCenterHandler;
 
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
@@ -151,6 +153,11 @@ public class AddElementsController extends BasicController {
 			mediaCenterButton.setIconLeftCSS("o_icon o_icon_image");
 		}
 
+		if (provider.isImportMarkdownEnabled()) {
+			importMarkdownButton = LinkFactory.createButton("import.markdown", mainVC, this);
+			importMarkdownButton.setIconLeftCSS("o_icon o_icon_import");
+		}
+
 		putInitialPanel(mainVC);
 	}
 
@@ -175,6 +182,15 @@ public class AddElementsController extends BasicController {
 				fireEvent(ureq, new CloseElementsEvent());
 			} else if(link == mediaCenterButton) {
 				fireEvent(ureq, new AddElementEvent(referenceFragment, referenceComponent, mediaCenterHandler, target, containerColumn));
+			} else if(link == importMarkdownButton) {
+				String compId = referenceComponent != null ? referenceComponent.getElementId() : null;
+				if (target == PageElementTarget.within) {
+					// "+" inside container: compId is the container ID
+					fireEvent(ureq, new ImportMarkdownEvent(compId, containerColumn, null, target));
+				} else {
+					// above/below/atTheEnd: compId is the reference element
+					fireEvent(ureq, new ImportMarkdownEvent(null, -1, compId, target));
+				}
 			}
 		}
 	}

@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.ai;
+package org.olat.core.commons.services.ai.manager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +35,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
 
 import dev.langchain4j.exception.HttpException;
@@ -57,8 +55,6 @@ import dev.langchain4j.http.client.sse.ServerSentEventParser;
  * @author gnaegi@frentix.com, https://www.frentix.com
  */
 public class LangChain4jHttpClient implements HttpClient {
-
-	private static final Logger log = Tracing.createLoggerFor(LangChain4jHttpClient.class);
 
 	private final HttpClientService httpClientService;
 

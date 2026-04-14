@@ -44,6 +44,10 @@ public class ContentEditorModule extends AbstractSpringModule {
 	private String imageTitleStyles;
 	@Value("${ceditor.table.styles}")
 	private String tableStyles;
+	@Value("${ceditor.import.limit.md:51200}")
+	private int importLimitMdKB;
+	@Value("${ceditor.import.limit.docx:204800}")
+	private int importLimitDocxKB;
 	
 	@Autowired
 	private ContentEditorModule(CoordinatorManager coordinateManager) {
@@ -83,7 +87,15 @@ public class ContentEditorModule extends AbstractSpringModule {
 	public List<String> getTableStyleList() {
 		return stylesToList(tableStyles);
 	}
-	
+
+	public int getImportLimitMdKB() {
+		return importLimitMdKB;
+	}
+
+	public int getImportLimitDocxKB() {
+		return importLimitDocxKB;
+	}
+
 	private List<String> stylesToList(String styles) {
 		List<String> styleList = new ArrayList<>();
 		if(StringHelper.containsNonWhitespace(styles)) {

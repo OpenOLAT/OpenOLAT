@@ -32,13 +32,13 @@ import java.util.List;
  *
  */
 public class AiMCQuestionsResponse extends AiResponse {
-	List<AiMCQuestionData> questions = new ArrayList<>();
+	private List<MCQuestionData> questions = new ArrayList<>();
 
-	public void addQuestion(AiMCQuestionData question) {
+	public void addQuestion(MCQuestionData question) {
 		questions.add(question);
 	}
 
-	public List<AiMCQuestionData> getQuestions() {
+	public List<MCQuestionData> getQuestions() {
 		return questions;
 	}
 }

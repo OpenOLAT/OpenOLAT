@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui.event;
 
 import org.olat.core.gui.control.Event;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 
 /**
  * Event fired when user requests to import markdown content into the page editor.
@@ -31,7 +32,41 @@ public class ImportMarkdownEvent extends Event {
 
 	private static final long serialVersionUID = 1L;
 
+	private final String targetContainerId;
+	private final int targetColumn;
+	private final String referenceElementId;
+	private final PageElementTarget target;
+
 	public ImportMarkdownEvent() {
 		super("import-markdown");
+		this.targetContainerId = null;
+		this.targetColumn = -1;
+		this.referenceElementId = null;
+		this.target = null;
+	}
+
+	public ImportMarkdownEvent(String targetContainerId, int targetColumn,
+			String referenceElementId, PageElementTarget target) {
+		super("import-markdown");
+		this.targetContainerId = targetContainerId;
+		this.targetColumn = targetColumn;
+		this.referenceElementId = referenceElementId;
+		this.target = target;
+	}
+
+	public String getTargetContainerId() {
+		return targetContainerId;
+	}
+
+	public int getTargetColumn() {
+		return targetColumn;
+	}
+
+	public String getReferenceElementId() {
+		return referenceElementId;
+	}
+
+	public PageElementTarget getTarget() {
+		return target;
 	}
 }

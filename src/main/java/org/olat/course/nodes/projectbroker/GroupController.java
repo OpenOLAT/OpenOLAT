@@ -234,6 +234,11 @@ public class GroupController extends BasicController {
 				tableConfig.setPreferencesOffered(true, "groupcontrollerreadonly" + group.getKey());
 			}
 		}
+		if (isAddParticipant) {
+			tableConfig.setTableEmptyMessage(translate("add.participant.empty"), null, "o_icon_user");
+		} else {
+			tableConfig.setTableEmptyMessage(translate("add.user.empty"), null, "o_icon_user");
+		}
 		
 		myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myTrans);	
@@ -474,7 +479,7 @@ public class GroupController extends BasicController {
 		listenTo(usc);
 		
 		Component usersearchview = usc.getInitialComponent();
-		String titleI18nKey = isAddParticipant ? "add.participant.to.topic" : "add.user.to.topic";
+		String titleI18nKey = isAddParticipant ? "add.participant" : "add.user";
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersearchview, true, translate(titleI18nKey));
 		listenTo(cmc);
 		

@@ -54,8 +54,10 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.handler.ContainerHandler;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.model.jpa.AbstractPart;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
@@ -218,6 +220,8 @@ public class PageEditorV2Controller extends BasicController {
 			if (event instanceof AddElementEvent aee) {
 				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
 						aee.getTarget(),  aee.getContainerColumn());
+			} else if (event instanceof ImportMarkdownEvent) {
+				fireEvent(ureq, event);
 			}
 		} else if(addLayoutCtrl == source) {
 			addCalloutCtrl.deactivate();
@@ -342,16 +346,19 @@ public class PageEditorV2Controller extends BasicController {
 
 	private void updateDeleteButtonVisibility() {
 		boolean deleteable = secCallback.canDeleteElement();
-		boolean firstContainerComponent = true;
 
 		if (editorCmp.getComponents() instanceof ArrayList<Component> components) {
-			for (Component component : components) {
-				if (component instanceof ContentEditorContainerComponent containerComponent) {
-					containerComponent.setDeleteable(deleteable);
-					containerComponent.setDeleteLinkDisabled(firstContainerComponent);
-					containerComponent.setDirty(true);
-					firstContainerComponent = false;
-				}
+			List<ContentEditorContainerComponent> containerComponents = components.stream()
+					.filter(c -> c instanceof ContentEditorContainerComponent)
+					.map(c -> (ContentEditorContainerComponent) c)
+					.toList();
+			boolean isOnlyContainer = containerComponents.size() == 1;
+			for (ContentEditorContainerComponent containerComponent : containerComponents) {
+				containerComponent.setDeleteable(deleteable);
+				boolean emptyOnlyContainer = isOnlyContainer
+						&& containerComponent.getContainerSettings().getAllElementIds().isEmpty();
+				containerComponent.setDeleteLinkDisabled(emptyOnlyContainer);
+				containerComponent.setDirty(true);
 			}
 		}
 	}
@@ -766,12 +773,21 @@ public class PageEditorV2Controller extends BasicController {
 		}
 		provider.removePageElement(layoutComponent.getElement());
 		editorCmp.removeRootComponent(layoutComponent);
+		doEnsureAtLeastOneContainer(ureq);
 		updateVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private void doOnlyDeleteLayout(UserRequest ureq, ContentEditorContainerComponent layoutComponent) {
 		provider.removePageElement(layoutComponent.getElement());
+		// If this is the only container and has content, create a new container before
+		// transferring so that moveElementsToPreviousContainer has a destination and there are no orphans.
+		if (editorCmp.previousRootContainerComponent(layoutComponent) == null
+				&& editorCmp.nextRootContainerComponent(layoutComponent) == null) {
+			ContainerHandler handler = new ContainerHandler(ContainerLayout.block_1col);
+			PageElement element = handler.createPageElement(getLocale());
+			doAddPageElementAtTheEnd(ureq, element);
+		}
 		moveElementsToPreviousContainer(ureq, layoutComponent);
 		editorCmp.removeRootComponent(layoutComponent);
 		updateVisibility();
@@ -779,7 +795,12 @@ public class PageEditorV2Controller extends BasicController {
 	}
 
 	private void doDeleteLayoutConfirmation(UserRequest ureq, ContentEditorContainerComponent layoutComponent) {
-		deleteLayoutConfirmationCtrl = new DeleteLayoutConfirmationController(ureq, getWindowControl(), layoutComponent);
+		boolean hasPrevious = editorCmp.previousRootContainerComponent(layoutComponent) != null;
+		boolean hasNext = editorCmp.nextRootContainerComponent(layoutComponent) != null;
+		boolean isFirstContainer = !hasPrevious;
+		boolean isLastContainer = !hasNext;
+		deleteLayoutConfirmationCtrl = new DeleteLayoutConfirmationController(ureq, getWindowControl(), layoutComponent,
+				isFirstContainer, isLastContainer);
 		listenTo(deleteLayoutConfirmationCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), null, deleteLayoutConfirmationCtrl.getInitialComponent(),
@@ -808,6 +829,7 @@ public class PageEditorV2Controller extends BasicController {
 				moveElementsToPreviousContainer(ureq, containerCmp);
 			}
 			editorCmp.removeRootComponent(fragment);
+			doEnsureAtLeastOneContainer(ureq);
 		} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
 			if(fragment instanceof ContentEditorContainerComponent container) {
 				moveElementsToContainerSlot(ureq, container, parentContainer);
@@ -842,7 +864,21 @@ public class PageEditorV2Controller extends BasicController {
 	}
 	
 	/**
-	 * 
+	 * If no root container exists, create a new empty default layout container so the page always has at least one.
+	 */
+	private void doEnsureAtLeastOneContainer(UserRequest ureq) {
+		for (Component component : editorCmp.getComponents()) {
+			if (component instanceof ContentEditorContainerComponent) {
+				return;
+			}
+		}
+		ContainerHandler handler = new ContainerHandler(ContainerLayout.block_1col);
+		PageElement element = handler.createPageElement(getLocale());
+		doAddPageElementAtTheEnd(ureq, element);
+	}
+
+	/**
+	 *
 	 * @param container The container to empty
 	 * @param parent The parent of the container to empty
 	 */

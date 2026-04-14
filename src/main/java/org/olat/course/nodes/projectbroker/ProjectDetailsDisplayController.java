@@ -47,6 +47,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
@@ -145,7 +146,8 @@ public class ProjectDetailsDisplayController extends BasicController {
 			projectLeaderString.append(" ");
 			projectLeaderString.append(last);
 			String linkName = "projectLeaderLink_" + i;
-			Link projectLeaderLink = LinkFactory.createCustomLink(linkName, CMD_OPEN_PROJECT_LEADER_DETAIL, projectLeaderString.toString() , Link.NONTRANSLATED, myContent, this);
+			Link projectLeaderLink = LinkFactory.createCustomLink(linkName, CMD_OPEN_PROJECT_LEADER_DETAIL,
+					StringHelper.escapeHtml(projectLeaderString.toString()), Link.NONTRANSLATED, myContent, this);
 			projectLeaderLink.setUserObject(identity);
 			projectLeaderLink.setTarget("_blank");
 			projectLeaderLinkNameList.add(linkName);
@@ -240,9 +242,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 				if (source instanceof Link) {
 					Link projectLeaderLink = (Link)source;
 					final Identity identity = (Identity)projectLeaderLink.getUserObject();
-					ControllerCreator ctrlCreator = (lureq, lwControl) -> {
-						return new UserInfoMainController(lureq, lwControl, identity, true, false);
-					};
+					ControllerCreator ctrlCreator = (lureq, lwControl) -> new UserInfoMainController(lureq, lwControl, identity, true, false);
 					// wrap the content controller into a full header layout
 					ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
 					// open in new browser window

@@ -30,6 +30,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -38,11 +39,14 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
@@ -53,6 +57,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActi
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -116,13 +121,11 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public static final String CONTEXT_REPORTS = "Reports";
 	public static final String CONTEXT_ABSENCES = "Absences";
 	public static final String CONTEXT_CONFIRMED = "Confirmed";
-	public static final String CONTEXT_ACTIVE = "Active";
 	public static final String CONTEXT_CANCELLED = "Cancelled";
 	public static final String CONTEXT_FINISHED = "Finished";
 	public static final String CONTEXT_DELETED = "Deleted";
-	public static final List<String> CONTEXTS = List.of(CONTEXT_DETAILS, CONTEXT_IMPLEMENTATIONS,
-			CONTEXT_PREPARATION, CONTEXT_PROVISIONAL, CONTEXT_CONFIRMED, CONTEXT_ACTIVE,
-			CONTEXT_CANCELLED, CONTEXT_FINISHED, CONTEXT_DELETED);
+	public static final List<String> CONTEXTS = List.of(CONTEXT_DETAILS, CONTEXT_IMPLEMENTATIONS, CONTEXT_PREPARATION,
+			CONTEXT_PROVISIONAL, CONTEXT_CONFIRMED, CONTEXT_CANCELLED, CONTEXT_FINISHED, CONTEXT_DELETED);
 	
 	public static final String SUB_PATH_DETAILS = "/" + CONTEXT_DETAILS + "/0";
 	public static final String SUB_PATH_OVERVIEW = "/" + CONTEXT_OVERVIEW + "/0";
@@ -130,17 +133,18 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public static final String SUB_PATH_PREPARATION = SUB_PATH_IMPLEMENTATIONS + "/" + CONTEXT_PREPARATION + "/0";
 	public static final String SUB_PATH_PROVISIONAL = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_PROVISIONAL + "/0";
 	public static final String SUB_PATH_CONFIRMED = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_CONFIRMED + "/0";
-	public static final String SUB_PATH_ACTIVE = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_ACTIVE + "/0";
 	public static final String SUB_PATH_CANCELLED = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_CANCELLED + "/0";
 	public static final String SUB_PATH_FINISHED = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_FINISHED + "/0";
 	public static final String SUB_PATH_DELETED = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_DELETED + "/0";
 	
 	private static final String ALL_TAB_ID = "All";
+	private static final String RELEVANT_TAB_ID = "Relevant";
 
 	private static final String FILTER_STATUS = "Status";
 	private static final String FILTER_ORGANISATIONS = "Organisations";
-	
+
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab relevantTab;
 	
 	private FlexiTableElement tableEl;
 	private FormLink bulkDeleteButton;
@@ -187,6 +191,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		initForm(ureq);
 		loadModel(null, true);
 		initFilters();// To collect some organisations
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
+		initSortSettings();
 	}
 
 	@Override
@@ -211,7 +218,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfPreparationRootElements, CONTEXT_PREPARATION));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfProvisionalRootElements, CONTEXT_PROVISIONAL));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfConfirmedRootElements, CONTEXT_CONFIRMED));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfActiveRootElements, CONTEXT_ACTIVE));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.numOfCancelledRootElements, CONTEXT_CANCELLED));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.numOfFinishedRootElements, CONTEXT_FINISHED));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.numOfDeletedRootElements, CONTEXT_DELETED));
@@ -243,10 +249,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				.withPrimaryButton("o_icon_add", "add.curriculum", null)
 				.build());
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
-		
 		initFiltersPresets();
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, relevantTab);
 		
 		if(secCallback.canDeleteCurriculum()) {
 			tableEl.setMultiSelect(true);
@@ -263,6 +267,22 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		}
 	}
 	
+	private void initSortSettings() {
+		List<FlexiTableSort> sorters = new ArrayList<>();
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), CurriculumManagerTableSort.SORT_RELEVANCE));
+		sorters.add(FlexiTableSort.SPACER);
+		FlexiTableColumnModel columnModel = tableModel.getTableColumnModel();
+		for(int i = 0; i < columnModel.getColumnCount(); i++) {
+			FlexiColumnModel col = columnModel.getColumnModel(i);
+			if(col.isSortable() && col.getSortKey() != null && col.getHeaderKey() != null) {
+				sorters.add(new FlexiTableSort(translate(col.getHeaderKey()), col.getSortKey()));
+			}
+		}
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(sorters);
+		sortOptions.setDefaultOrderBy(new SortKey(CurriculumManagerTableSort.SORT_RELEVANCE, true));
+		tableEl.setSortSettings(sortOptions);
+	}
+
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
@@ -288,7 +308,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		}
 
 		if(!filters.isEmpty()) {
-			tableEl.setFilters(true, filters, false, false);
+			tableEl.setFilters(true, filters, true, false);
 		}
 	}
 	
@@ -311,12 +331,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void initFiltersPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
-		
-		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
-				TabSelectionBehavior.nothing, List.of());
-		allTab.setFiltersExpanded(true);
+
+		allTab = FlexiFiltersTabFactory.tab(ALL_TAB_ID, translate("filter.all"), TabSelectionBehavior.nothing);
 		tabs.add(allTab);
-		
+
+		relevantTab = FlexiFiltersTabFactory.tab(RELEVANT_TAB_ID, translate("filter.relevant"), TabSelectionBehavior.nothing);
+		tabs.add(relevantTab);
+
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
@@ -367,6 +388,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		// principals can only view them
 		CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
 		searchParams.setSearchString(searchString);
+		
+		FlexiFiltersTab selectedFilterTab = tableEl.getSelectedFilterTab();
+		searchParams.setHasRelevantImplementations(selectedFilterTab != null && selectedFilterTab == relevantTab);
 		
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_STATUS);
 		if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
@@ -537,6 +561,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				}
 			} else if(event instanceof FlexiTableSearchEvent ftse) {
 				doSearch(ftse);
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				loadModel(tableEl.getQuickSearchString(), true);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doNewCurriculum(ureq);
 			}

@@ -21,30 +21,21 @@ package org.olat.core.commons.services.ai.spi.generic;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiApiKeySPI;
-import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
-import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
-import org.olat.core.commons.services.ai.AiPromptHelper;
 import org.olat.core.commons.services.ai.AiSPI;
-import org.olat.core.commons.services.ai.LangChain4jHttpClientBuilder;
-import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
-import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
+import org.olat.core.commons.services.ai.manager.LangChain4jHttpClientBuilder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
-import dev.langchain4j.data.message.SystemMessage;
-import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.http.client.HttpClientBuilder;
+import dev.langchain4j.model.chat.Capability;
 import dev.langchain4j.model.chat.ChatModel;
-import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiModelCatalog;
 
@@ -59,7 +50,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGeneratorSPI, AiImageDescriptionSPI {
+public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI {
 	private static final Logger log = Tracing.createLoggerFor(GenericAiSpiInstance.class);
 
 	private final int instanceId;
@@ -70,12 +61,6 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 	private String apiKey;
 	private String models;
 	private boolean enabled;
-
-	private String mcGeneratorModel;
-	private ChatModel chatModel;
-
-	private String imageDescriptionModelName;
-	private ChatModel imageDescChatModel;
 
 	GenericAiSpiInstance(int instanceId, GenericAiSPI parent) {
 		this.instanceId = instanceId;
@@ -89,8 +74,6 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		this.models = models;
 		this.enabled = enabled;
 	}
-
-	// ------ AiSPI ------
 
 	@Override
 	public String getId() {
@@ -118,7 +101,36 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		return new GenericAiSpiAdminController(ureq, wControl, this);
 	}
 
-	// ------ AiApiKeySPI ------
+	@Override
+	public ChatModel buildChatModel(String modelName, int maxTokens) {
+		var builder = OpenAiChatModel.builder()
+				.httpClientBuilder(new LangChain4jHttpClientBuilder())
+				.baseUrl(baseUrl)
+				.modelName(modelName)
+				.maxCompletionTokens(maxTokens)
+				.supportedCapabilities(Set.of(Capability.RESPONSE_FORMAT_JSON_SCHEMA));
+		if (StringHelper.containsNonWhitespace(apiKey)) {
+			builder.apiKey(apiKey);
+		} else {
+			builder.apiKey("no-key");
+		}
+		return builder.build();
+	}
+
+	@Override
+	public List<String> getAvailableModels() {
+		if (StringHelper.containsNonWhitespace(baseUrl)) {
+			try {
+				List<String> serverModels = fetchModelsFromServer(apiKey);
+				if (!serverModels.isEmpty()) {
+					return serverModels;
+				}
+			} catch (Exception e) {
+				log.debug("Could not fetch models from generic server [{}], using configured list", getName(), e);
+			}
+		}
+		return getModelList();
+	}
 
 	@Override
 	public String getApiKey() {
@@ -129,8 +141,6 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 	public void setApiKey(String apiKey) {
 		this.apiKey = apiKey;
 		parent.setInstanceProperty(instanceId, "api.key", apiKey);
-		rebuildChatModel();
-		rebuildImageDescChatModel();
 	}
 
 	@Override
@@ -138,7 +148,6 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		if (!StringHelper.containsNonWhitespace(baseUrl)) {
 			throw new IllegalStateException("Base URL is not configured");
 		}
-		// Query the /v1/models endpoint of the OpenAI-compatible server
 		return fetchModelsFromServer(testApiKey);
 	}
 
@@ -157,121 +166,6 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		return "ai.generic.apikey";
 	}
 
-	// ------ AiMCQuestionGeneratorSPI ------
-
-	@Override
-	public void setMCGeneratorModel(String model) {
-		if (!Objects.equals(this.mcGeneratorModel, model)) {
-			this.mcGeneratorModel = model;
-			rebuildChatModel();
-		}
-	}
-
-	@Override
-	public String getMCGeneratorModel() {
-		return mcGeneratorModel;
-	}
-
-	@Override
-	public List<String> getAvailableMCGeneratorModels() {
-		// Try to fetch models from server first, fall back to configured list
-		if (StringHelper.containsNonWhitespace(baseUrl)) {
-			try {
-				List<String> serverModels = fetchModelsFromServer(apiKey);
-				if (!serverModels.isEmpty()) {
-					return serverModels;
-				}
-			} catch (Exception e) {
-				log.debug("Could not fetch models from generic server [{}], using configured list", getName(), e);
-			}
-		}
-		return getModelList();
-	}
-
-	@Override
-	public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number) {
-		AiMCQuestionsResponse response = new AiMCQuestionsResponse();
-		if (chatModel == null) {
-			response.setError("AI provider is not properly configured.");
-			return response;
-		}
-		try {
-			AiPromptHelper promptHelper = parent.getAiPromptHelper();
-			Locale locale = promptHelper.detectSupportedLocale(input);
-			if (locale == null) {
-				response.setError("Could not detect language of the input text.");
-				return response;
-			}
-
-			SystemMessage systemMessage = promptHelper.createQuestionSystemMessage(locale);
-			UserMessage userMessage = promptHelper.createChoiceQuestionUserMessage(input, number, 2, 3, locale);
-
-			ChatResponse chatResponse = chatModel.chat(systemMessage, userMessage);
-			String result = chatResponse.aiMessage().text();
-
-			if (log.isDebugEnabled()) {
-				log.debug("Generic AI [{}] response for MC question:: {}", getName(), result);
-			}
-
-			response = promptHelper.parseQuestionResult(result);
-
-		} catch (Exception e) {
-			log.warn("Error while creating an MC question via generic AI service [{}]", getName(), e);
-			response.setError(e.getMessage());
-		}
-		return response;
-	}
-
-	// ------ AiImageDescriptionSPI ------
-
-	@Override
-	public void setImageDescriptionModel(String model) {
-		if (!Objects.equals(this.imageDescriptionModelName, model)) {
-			this.imageDescriptionModelName = model;
-			rebuildImageDescChatModel();
-		}
-	}
-
-	@Override
-	public String getImageDescriptionModel() {
-		return imageDescriptionModelName;
-	}
-
-	@Override
-	public List<String> getAvailableImageDescriptionModels() {
-		return getAvailableMCGeneratorModels();
-	}
-
-	@Override
-	public AiImageDescriptionResponse generateImageDescription(String imageBase64, String mimeType, Locale locale) {
-		AiImageDescriptionResponse response = new AiImageDescriptionResponse();
-		if (imageDescChatModel == null) {
-			response.setError("AI provider is not properly configured.");
-			return response;
-		}
-		try {
-			AiPromptHelper promptHelper = parent.getAiPromptHelper();
-			SystemMessage systemMessage = promptHelper.createImageDescriptionSystemMessage(locale);
-			UserMessage userMessage = promptHelper.createImageDescriptionUserMessage(imageBase64, mimeType, locale);
-
-			ChatResponse chatResponse = imageDescChatModel.chat(systemMessage, userMessage);
-			String result = chatResponse.aiMessage().text();
-
-			if (log.isDebugEnabled()) {
-				log.debug("Generic AI [{}] response for image description:: {}", getName(), result);
-			}
-
-			response = promptHelper.parseImageDescriptionResult(result);
-
-		} catch (Exception e) {
-			log.warn("Error while creating an image description via generic AI service [{}]", getName(), e);
-			response.setError(e.getMessage());
-		}
-		return response;
-	}
-
-	// ------ Instance-specific getters / setters ------
-
 	public int getInstanceId() {
 		return instanceId;
 	}
@@ -283,8 +177,6 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 	public void setBaseUrl(String baseUrl) {
 		this.baseUrl = baseUrl;
 		parent.setInstanceProperty(instanceId, "base.url", baseUrl);
-		rebuildChatModel();
-		rebuildImageDescChatModel();
 	}
 
 	public String getModels() {
@@ -301,25 +193,13 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 		parent.setInstanceProperty(instanceId, "name", name);
 	}
 
-	/**
-	 * Delete this instance by removing all its properties from the parent.
-	 */
 	public void delete() {
 		parent.deleteInstance(instanceId);
 	}
 
-	// ------ Internal ------
-
-	private HttpClientBuilder langChain4jHttpClientBuilder() {
-		return new LangChain4jHttpClientBuilder(parent.getHttpClientService());
-	}
-
-	/**
-	 * Query the /v1/models endpoint of the OpenAI-compatible server.
-	 */
 	private List<String> fetchModelsFromServer(String key) throws Exception {
 		var builder = OpenAiModelCatalog.builder()
-				.httpClientBuilder(langChain4jHttpClientBuilder())
+				.httpClientBuilder(new LangChain4jHttpClientBuilder())
 				.baseUrl(baseUrl);
 		if (StringHelper.containsNonWhitespace(key)) {
 			builder.apiKey(key);
@@ -342,37 +222,5 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 				.map(String::trim)
 				.filter(StringHelper::containsNonWhitespace)
 				.toList();
-	}
-
-	private String getFirstModel() {
-		List<String> list = getModelList();
-		return list.isEmpty() ? null : list.get(0);
-	}
-
-	private void rebuildChatModel() {
-		String modelName = StringHelper.containsNonWhitespace(mcGeneratorModel) ? mcGeneratorModel : getFirstModel();
-		chatModel = buildChatModel(apiKey, modelName);
-	}
-
-	private void rebuildImageDescChatModel() {
-		String modelName = StringHelper.containsNonWhitespace(imageDescriptionModelName) ? imageDescriptionModelName : getFirstModel();
-		imageDescChatModel = buildChatModel(apiKey, modelName);
-	}
-
-	private ChatModel buildChatModel(String key, String modelName) {
-		if (!StringHelper.containsNonWhitespace(baseUrl) || !StringHelper.containsNonWhitespace(modelName)) {
-			return null;
-		}
-		var builder = OpenAiChatModel.builder()
-				.httpClientBuilder(langChain4jHttpClientBuilder())
-				.baseUrl(baseUrl)
-				.modelName(modelName)
-				.maxCompletionTokens(4000);
-		if (StringHelper.containsNonWhitespace(key)) {
-			builder.apiKey(key);
-		} else {
-			builder.apiKey("no-key");
-		}
-		return builder.build();
 	}
 }

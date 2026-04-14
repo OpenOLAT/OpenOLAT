@@ -150,14 +150,16 @@ fieldset.o_validation_result {
 			margin: 5px 0;
 	}
 
-	.o_curriculum_widget_course_staff {
+	.o_curriculum_widget_course_staff_card {
 		margin: $o-dashboard-widget-base-margin;
+	}
+	.o_curriculum_widget_course_staff {
 		border: $o-curriculum-widget-card-border;
 		border-radius: $o-curriculum-widget-card-border-radius;
 		background-color: #fff;
 		padding: 5px 0;
 	}
-
+	
 	.o_curriculum_course_cards {
 		margin: 0 $o-dashboard-widget-base-margin;
 		.o_table_flexi.o_rendertype_custom .o_table_row.row {

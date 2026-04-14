@@ -88,9 +88,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+	@Override
 	public int getColumnCount() {
 		return COLUMN_COUNT + numberOfCustomFieldInTable + numberOfEventInTable;
 	}
@@ -180,6 +178,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 		return objects.get(row);
 	}
 
+	@Override
 	public Object createCopyWithEmptyList() {
 		ProjectListTableModel copy = new ProjectListTableModel(new ArrayList<>(), identity, translator, moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
 		return copy;

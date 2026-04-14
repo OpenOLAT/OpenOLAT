@@ -34,7 +34,7 @@ import org.olat.modules.qpool.QuestionItem;
  */
 public class AiQuestionItemsCreatedEvent extends Event {
 	
-	private static final long serialVersionUID = 5839754884543268793L;
+	private static final long serialVersionUID = -2047583961048273654L;
 
 	private List<QuestionItem> questionItems;
 
@@ -44,15 +44,15 @@ public class AiQuestionItemsCreatedEvent extends Event {
 	 * @param questionItems The new generated question items
 	 */
 	public AiQuestionItemsCreatedEvent(List<QuestionItem> questionItems) {
-		super("ai.error.language.not.supported");
+		super("ai.question.items.created");
 		this.questionItems = questionItems;
 	}
 
 	/**
-	 * @return The error details or NULL if not available
+	 * @return The generated question items
 	 */
 	public List<QuestionItem> getQuestionItems() {
-		return this.questionItems;
+		return questionItems;
 	}
 	
 }

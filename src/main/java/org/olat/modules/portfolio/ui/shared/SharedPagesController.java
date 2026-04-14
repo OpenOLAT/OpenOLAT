@@ -349,9 +349,11 @@ public class SharedPagesController extends FormBasicController implements Activa
 		
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
+		PageSettings pageSettings = PageSettings.full(null);
+		pageSettings.setAiOres(OresHelper.createOLATResourceableInstance("PortfolioV2", reloadedPage.getKey()));
 		PublishingInformations publishingInfos = portfolioService.getBinderPublishingInformations(binder);
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage,
-				PageSettings.full(null), publishingInfos, false);
+				pageSettings, publishingInfos, false);
 		listenTo(pageCtrl);
 		
 		if(row.getIdentityKey() != null) {

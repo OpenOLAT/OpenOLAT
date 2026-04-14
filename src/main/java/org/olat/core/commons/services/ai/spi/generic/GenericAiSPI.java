@@ -22,14 +22,13 @@ package org.olat.core.commons.services.ai.spi.generic;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.ai.AiPromptHelper;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,12 +57,6 @@ public class GenericAiSPI extends AbstractSpringModule {
 
 	private final List<GenericAiSpiInstance> instances = new ArrayList<>();
 	private final AtomicInteger nextId = new AtomicInteger(1);
-
-	@Autowired
-	private AiPromptHelper aiPromptHelper;
-
-	@Autowired
-	private HttpClientService httpClientService;
 
 	@Autowired
 	public GenericAiSPI(CoordinatorManager coordinatorManager) {
@@ -182,16 +175,8 @@ public class GenericAiSPI extends AbstractSpringModule {
 	private void saveInstanceIds() {
 		String ids = instances.stream()
 				.map(i -> String.valueOf(i.getInstanceId()))
-				.reduce((a, b) -> a + "," + b)
-				.orElse("");
+				.collect(Collectors.joining(","));
 		setStringProperty(GENERIC_INSTANCES, ids, true);
 	}
 
-	AiPromptHelper getAiPromptHelper() {
-		return aiPromptHelper;
-	}
-
-	HttpClientService getHttpClientService() {
-		return httpClientService;
-	}
 }

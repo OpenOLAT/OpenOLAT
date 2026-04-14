@@ -576,7 +576,7 @@ public class ImportCurriculumsValidator {
 		} else if(entry != null && importedRow.type() == CurriculumExportType.COURSE && entry.getRuntimeType() != RepositoryEntryRuntimeType.curricular) {
 			String column = translate(ImportCurriculumsCols.objectType.i18nHeaderKey());
 			if(roles.isAdministrator() && entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone) {
-				importedRow.addValidationWarning(ImportCurriculumsCols.objectType, column, null, translate("error.wrong.runtime.type"));
+				importedRow.addValidationWarning(ImportCurriculumsCols.objectType, column, null, translate("warning.standalone.runtime.type"));
 			} else {
 				importedRow.addValidationError(ImportCurriculumsCols.objectType, column, null, translate("error.wrong.runtime.type"));
 			}
@@ -890,7 +890,8 @@ public class ImportCurriculumsValidator {
 			}
 		}
 		
-		if(allOk && (!subjectsList.isEmpty() || !currentPaths.isEmpty())) {
+		if(allOk && (!subjectsList.isEmpty() || !currentPaths.isEmpty())
+				&& (!subjectsList.containsAll(currentPaths) || !currentPaths.containsAll(subjectsList)) ) {
 			importedRow.addChanged(column, currentPaths, subjectsList, ImportCurriculumsCols.taxonomyLevels);
 		}
 		return allOk;

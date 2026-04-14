@@ -44,6 +44,14 @@ public enum LTI13ToolType {
 	 */
 	JUPYTER_HUB,
 	/**
+	 * MediaSite global server (system-wide, configured in administration)
+	 */
+	MEDIASITE_GLOBAL,
+	/**
+	 * MediaSite per-course server (configured in course editor)
+	 */
+	MEDIASITE_COURSE,
+	/**
 	 * Not used (backwards compatibility)
 	 */
 	SHARED

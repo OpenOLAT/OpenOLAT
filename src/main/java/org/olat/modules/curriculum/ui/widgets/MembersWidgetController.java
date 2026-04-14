@@ -34,8 +34,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.indicators.IndicatorsFactory;
 import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -84,6 +86,8 @@ public class MembersWidgetController extends FormBasicController {
 	private FormLink elementOwnersLink;
 	private FormLink coachesLink;
 	private FormLink masterCoachesLink;
+	private EmptyPanelItem emptyStaff;
+	private FormLink detailsLink;
 
 	private int counter = 0;
 	private boolean otherRolesInitialized = false;
@@ -99,6 +103,7 @@ public class MembersWidgetController extends FormBasicController {
 	public MembersWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "members_widget", Util
 				.createPackageTranslator(CurriculumElementDetailsController.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(DashboardUIFactory.class, getLocale(), getTranslator()));
 		curriculumElementInfos = loadInformations(curriculumElement);
 		initForm(ureq);
 	}
@@ -114,6 +119,10 @@ public class MembersWidgetController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		emptyStaff = uifactory.addEmptyPanel("staff.empty", null, formLayout);
+		emptyStaff.setTitle(translate("curriculum.no.course.staff.title"));
+		emptyStaff.setIconCssClass("o_icon o_icon-lg o_icon_coaching_tool");
+
 		participantsIndicatorsEl = IndicatorsFactory.createItem("participantsIndicators", formLayout);
 
 		participantsKeyLink = IndicatorsFactory.createIndicatorFormLink("participantsKey", "participants", "", "", formLayout);
@@ -128,6 +137,10 @@ public class MembersWidgetController extends FormBasicController {
 
 		initOtherRoles(ureq);
 		updateParticipantsIndicator();
+
+		detailsLink = DashboardUIFactory.createDetailsLink(formLayout);
+		detailsLink.setUrl(getUrl("[Members:0]"));
+		flc.contextPut("detailsComponentName", detailsLink.getComponent().getComponentName());
 	}
 
 	private void updateParticipantsIndicator() {
@@ -274,6 +287,8 @@ public class MembersWidgetController extends FormBasicController {
 			flc.remove(elementOwnersLink);
 			elementOwnersLink = null;
 		}
+		boolean hasStaff = coachesLink != null || masterCoachesLink != null || ownersLink != null || elementOwnersLink != null;
+		emptyStaff.setVisible(!hasStaff);
 		otherRolesInitialized = true;
 	}
 
@@ -308,7 +323,9 @@ public class MembersWidgetController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(coachesLink == source) {
+		if(detailsLink == source) {
+			fireActivateMembersEvent(ureq);
+		} else if(coachesLink == source) {
 			fireActivateActiveEvent(ureq, "Coach");
 		} else if(masterCoachesLink == source) {
 			fireActivateActiveEvent(ureq, "MasterCoach");

@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.util.StringHelper;
 
+import dev.langchain4j.model.output.structured.Description;
+
 /**
  * Parsed data from chat response containing image description metadata.
  *
@@ -32,14 +34,22 @@ import org.olat.core.util.StringHelper;
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class AiImageDescriptionData {
+public class ImageDescriptionData {
+	@Description("Short descriptive title, max 10 words")
 	private String title;
+	@Description("2-3 sentences describing the image in detail, suitable for full-text search")
 	private String description;
+	@Description("Accessible description for screen readers, precise and informative, only relevant details, very short, avoids redundancy, does not start with 'Image of' or 'Picture of'")
 	private String altText;
+	@Description("Academic or professional subject area, 1-2 words, e.g. Biology, Computer Science, Marketing, History, Mathematics, Medicine, Art")
 	private String subject;
+	@Description("Exactly one of: horizontal, vertical, square")
 	private String orientation;
+	@Description("1-2 dominant colors; use b&w for grayscale; empty list if no clear dominant color")
 	private List<String> colorTags = new ArrayList<>();
+	@Description("1-2 categories describing the image content")
 	private List<String> categoryTags = new ArrayList<>();
+	@Description("1-4 descriptive tags, stock-photo style, singular form (e.g. tree not trees)")
 	private List<String> keywords = new ArrayList<>();
 
 	public String getTitle() {
@@ -86,6 +96,10 @@ public class AiImageDescriptionData {
 		return colorTags;
 	}
 
+	public void setColorTags(List<String> colorTags) {
+		this.colorTags = colorTags;
+	}
+
 	public void addColorTag(String colorTag) {
 		if (StringHelper.containsNonWhitespace(colorTag)) {
 			this.colorTags.add(colorTag);
@@ -96,6 +110,10 @@ public class AiImageDescriptionData {
 		return categoryTags;
 	}
 
+	public void setCategoryTags(List<String> categoryTags) {
+		this.categoryTags = categoryTags;
+	}
+
 	public void addCategoryTag(String categoryTag) {
 		if (StringHelper.containsNonWhitespace(categoryTag)) {
 			this.categoryTags.add(categoryTag);
@@ -104,6 +122,10 @@ public class AiImageDescriptionData {
 
 	public List<String> getKeywords() {
 		return keywords;
+	}
+
+	public void setKeywords(List<String> keywords) {
+		this.keywords = keywords;
 	}
 
 	public void addKeyword(String keyword) {

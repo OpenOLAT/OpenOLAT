@@ -17,10 +17,11 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.ai;
+package org.olat.core.commons.services.ai.manager;
 
 import java.time.Duration;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.httpclient.HttpClientService;
 
 import dev.langchain4j.http.client.HttpClient;
@@ -38,13 +39,8 @@ import dev.langchain4j.http.client.HttpClientBuilder;
  */
 public class LangChain4jHttpClientBuilder implements HttpClientBuilder {
 
-	private final HttpClientService httpClientService;
 	private Duration connectTimeout;
 	private Duration readTimeout;
-
-	public LangChain4jHttpClientBuilder(HttpClientService httpClientService) {
-		this.httpClientService = httpClientService;
-	}
 
 	@Override
 	public Duration connectTimeout() {
@@ -70,6 +66,6 @@ public class LangChain4jHttpClientBuilder implements HttpClientBuilder {
 
 	@Override
 	public HttpClient build() {
-		return new LangChain4jHttpClient(httpClientService);
+		return new LangChain4jHttpClient(CoreSpringFactory.getImpl(HttpClientService.class));
 	}
 }

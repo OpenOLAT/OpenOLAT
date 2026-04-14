@@ -21,8 +21,9 @@ package org.olat.core.commons.services.ai.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.services.ai.AiImageDescriptionSPI;
-import org.olat.core.commons.services.ai.AiMCQuestionGeneratorSPI;
+import org.olat.core.commons.services.ai.AiFeature;
+import org.olat.core.commons.services.ai.AiImageDescriptionService;
+import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.AiSPI;
 import org.olat.core.gui.UserRequest;
@@ -81,6 +82,10 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	@Autowired
 	private AiModule aiModule;
+	@Autowired
+	private AiMCQuestionService mcQuestionService;
+	@Autowired
+	private AiImageDescriptionService imageDescriptionService;
 
 	public AiFeaturesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -96,7 +101,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		// ---- MC Question Generator section ----
 		uifactory.addSpacerElement("mcSpacer", formLayout, false);
 		uifactory.addStaticTextElement("mcTitle", null,
-				"<h4>" + translate("ai.feature.mc-question-generator") + "</h4>", formLayout);
+				"<h4>" + translate(AiFeature.MCQuestionGenerator.getI18nKey()) + "</h4>", formLayout);
 
 		boolean mcEnabled = aiModule.isMCQuestionGeneratorEnabled();
 		mcEnabledEl = uifactory.addToggleButton("mc.enabled", "ai.feature.enabled",
@@ -104,13 +109,12 @@ public class AiFeaturesAdminController extends FormBasicController {
 		mcEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		mcEnabledEl.toggle(mcEnabled);
 
-		mcGeneratorSpiEl = buildSpiDropdown("mc.spi", AiMCQuestionGeneratorSPI.class,
-				aiModule.getMCGeneratorSpiId(), formLayout);
+		mcGeneratorSpiEl = buildSpiDropdown("mc.spi", aiModule.getMCGeneratorSpiId(), formLayout);
 
 		// ---- Image Description Generator section ----
 		imgDescSpacer = uifactory.addSpacerElement("imgDescSpacer", formLayout, false);
 		imgDescTitle = uifactory.addStaticTextElement("imgDescTitle", null,
-				"<h4>" + translate("ai.feature.image-description-generator") + "</h4>", formLayout);
+				"<h4>" + translate(AiFeature.ImageDescriptionGenerator.getI18nKey()) + "</h4>", formLayout);
 
 		boolean imgDescEnabled = aiModule.isImageDescriptionGeneratorEnabled();
 		imgDescEnabledEl = uifactory.addToggleButton("imgDesc.enabled", "ai.feature.enabled",
@@ -118,8 +122,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		imgDescEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		imgDescEnabledEl.toggle(imgDescEnabled);
 
-		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", AiImageDescriptionSPI.class,
-				aiModule.getImgDescSpiId(), formLayout);
+		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout);
 
 		// Save button
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -134,9 +137,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		updateImgDescVisibility();
 	}
 
-	private SingleSelection buildSpiDropdown(String elName, Class<?> featureClass,
-			String currentSpiId, FormItemContainer container) {
-		List<AiSPI> spis = aiModule.getEnabledSPIsFor(featureClass);
+	private SingleSelection buildSpiDropdown(String elName, String currentSpiId, FormItemContainer container) {
+		List<AiSPI> spis = aiModule.getEnabledProviders();
 		String[] keys;
 		String[] values;
 		if (spis.isEmpty()) {
@@ -233,7 +235,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		formLayout.remove(buttonsCont);
 
 		mcGeneratorModelEl = buildModelElement(spiId, "ai.feature.model",
-				getMcModelsForSpi(spiId), aiModule.getMCGeneratorModel());
+				getModelsForSpi(spiId), aiModule.getMCGeneratorModel());
 
 		mcTestLink = uifactory.addFormLink("mc.test", "mc.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
 		mcTestLink.setGhost(true);
@@ -254,7 +256,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		formLayout.remove(buttonsCont);
 
 		imgDescModelEl = buildModelElement(spiId, "ai.feature.image-description-generator.model",
-				getImgDescModelsForSpi(spiId), aiModule.getImgDescModel());
+				getModelsForSpi(spiId), aiModule.getImgDescModel());
 
 		imgDescTestLink = uifactory.addFormLink("imgDesc.test", "imgDesc.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
 		imgDescTestLink.setGhost(true);
@@ -322,24 +324,13 @@ public class AiFeaturesAdminController extends FormBasicController {
 		}
 	}
 
-	private List<String> getMcModelsForSpi(String spiId) {
-		return getModelsForSpi(spiId, AiMCQuestionGeneratorSPI.class,
-				AiMCQuestionGeneratorSPI::getAvailableMCGeneratorModels);
-	}
-
-	private List<String> getImgDescModelsForSpi(String spiId) {
-		return getModelsForSpi(spiId, AiImageDescriptionSPI.class,
-				AiImageDescriptionSPI::getAvailableImageDescriptionModels);
-	}
-
-	private <T> List<String> getModelsForSpi(String spiId, Class<T> featureClass,
-			java.util.function.Function<T, List<String>> modelGetter) {
+	private List<String> getModelsForSpi(String spiId) {
 		if (!StringHelper.containsNonWhitespace(spiId) || "-".equals(spiId)) {
 			return List.of();
 		}
 		for (AiSPI spi : aiModule.getAiProviders()) {
-			if (spi.getId().equals(spiId) && featureClass.isInstance(spi)) {
-				return modelGetter.apply(featureClass.cast(spi));
+			if (spi.getId().equals(spiId)) {
+				return spi.getAvailableModels();
 			}
 		}
 		return List.of();
@@ -348,28 +339,30 @@ public class AiFeaturesAdminController extends FormBasicController {
 	// ------ Test methods ------
 
 	private void doTestMcGenerator(UserRequest ureq) {
-		AiMCQuestionGeneratorSPI generator = getFormMcGenerator();
-		if (generator == null) {
+		String spiId = getSelectedSpiId(mcGeneratorSpiEl);
+		String model = extractModelValue(mcGeneratorModelEl);
+		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
 			showError("ai.feature.test.not.configured");
 			return;
 		}
 		ensureTestCtrl(ureq);
-		testCtrl.testMcGenerator(ureq, generator);
+		testCtrl.testMcGenerator(spiId, model);
 	}
 
 	private void doTestImgDescGenerator(UserRequest ureq) {
-		AiImageDescriptionSPI generator = getFormImgDescGenerator();
-		if (generator == null) {
+		String spiId = getSelectedSpiId(imgDescSpiEl);
+		String model = extractModelValue(imgDescModelEl);
+		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
 			showError("ai.feature.test.not.configured");
 			return;
 		}
 		ensureTestCtrl(ureq);
-		testCtrl.testImgDescGenerator(ureq, generator);
+		testCtrl.testImgDescGenerator(spiId, model);
 	}
 
 	private void ensureTestCtrl(UserRequest ureq) {
 		if (testCtrl == null) {
-			testCtrl = new AiFeaturesTestController(ureq, getWindowControl());
+			testCtrl = new AiFeaturesTestController(ureq, getWindowControl(), mcQuestionService, imageDescriptionService);
 			listenTo(testCtrl);
 		}
 	}
@@ -408,7 +401,6 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// Save MC generator config — clear when toggle is off
 		if (mcEnabledEl.isOn()) {
 			String mcSpiId = getSelectedSpiId(mcGeneratorSpiEl);
 			String mcModel = extractModelValue(mcGeneratorModelEl);
@@ -419,7 +411,6 @@ public class AiFeaturesAdminController extends FormBasicController {
 			logAudit("MC question generator disabled");
 		}
 
-		// Save image description generator config — clear when toggle is off
 		if (imgDescEnabledEl.isOn()) {
 			String imgDescSpiId = getSelectedSpiId(imgDescSpiEl);
 			String imgDescModel = extractModelValue(imgDescModelEl);
@@ -468,35 +459,5 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	private boolean hasModelValue(FormItem modelEl) {
 		return StringHelper.containsNonWhitespace(extractModelValue(modelEl));
-	}
-
-	private AiMCQuestionGeneratorSPI getFormMcGenerator() {
-		String spiId = getSelectedSpiId(mcGeneratorSpiEl);
-		String model = extractModelValue(mcGeneratorModelEl);
-		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
-			return null;
-		}
-		for (AiSPI spi : aiModule.getAiProviders()) {
-			if (spi.getId().equals(spiId) && spi.isEnabled() && spi instanceof AiMCQuestionGeneratorSPI generator) {
-				generator.setMCGeneratorModel(model);
-				return generator;
-			}
-		}
-		return null;
-	}
-
-	private AiImageDescriptionSPI getFormImgDescGenerator() {
-		String spiId = getSelectedSpiId(imgDescSpiEl);
-		String model = extractModelValue(imgDescModelEl);
-		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
-			return null;
-		}
-		for (AiSPI spi : aiModule.getAiProviders()) {
-			if (spi.getId().equals(spiId) && spi.isEnabled() && spi instanceof AiImageDescriptionSPI generator) {
-				generator.setImageDescriptionModel(model);
-				return generator;
-			}
-		}
-		return null;
 	}
 }

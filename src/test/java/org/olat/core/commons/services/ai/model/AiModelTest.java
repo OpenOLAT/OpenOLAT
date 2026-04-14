@@ -28,7 +28,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for the AI model classes:
- * {@link AiResponse}, {@link AiMCQuestionsResponse}, {@link AiMCQuestionData}.
+ * {@link AiResponse}, {@link AiMCQuestionsResponse}, {@link MCQuestionData}.
  *
  * Initial date: 28.02.2026<br>
  *
@@ -61,10 +61,10 @@ public class AiModelTest {
 		AiMCQuestionsResponse response = new AiMCQuestionsResponse();
 		assertEquals(0, response.getQuestions().size());
 
-		response.addQuestion(new AiMCQuestionData());
+		response.addQuestion(new MCQuestionData());
 		assertEquals(1, response.getQuestions().size());
 
-		response.addQuestion(new AiMCQuestionData());
+		response.addQuestion(new MCQuestionData());
 		assertEquals(2, response.getQuestions().size());
 	}
 
@@ -82,11 +82,11 @@ public class AiModelTest {
 	}
 
 
-	// ─── AiMCQuestionData ──────────────────────────────────────────────────────
+	// ─── MCQuestionData ──────────────────────────────────────────────────────
 
 	@Test
 	public void aiMCQuestionData_addCorrectAnswer_nonBlank_added() {
-		AiMCQuestionData data = new AiMCQuestionData();
+		MCQuestionData data = new MCQuestionData();
 		data.addCorrectAnswer("Correct answer");
 		assertEquals(1, data.getCorrectAnswers().size());
 		assertEquals("Correct answer", data.getCorrectAnswers().get(0));
@@ -94,7 +94,7 @@ public class AiModelTest {
 
 	@Test
 	public void aiMCQuestionData_addCorrectAnswer_blank_filtered() {
-		AiMCQuestionData data = new AiMCQuestionData();
+		MCQuestionData data = new MCQuestionData();
 		data.addCorrectAnswer("   ");
 		data.addCorrectAnswer("");
 		data.addCorrectAnswer(null);
@@ -103,7 +103,7 @@ public class AiModelTest {
 
 	@Test
 	public void aiMCQuestionData_addWrongAnswer_nonBlank_added() {
-		AiMCQuestionData data = new AiMCQuestionData();
+		MCQuestionData data = new MCQuestionData();
 		data.addWrongAnswer("Wrong answer");
 		assertEquals(1, data.getWrongAnswers().size());
 		assertEquals("Wrong answer", data.getWrongAnswers().get(0));
@@ -111,7 +111,7 @@ public class AiModelTest {
 
 	@Test
 	public void aiMCQuestionData_addWrongAnswer_blank_filtered() {
-		AiMCQuestionData data = new AiMCQuestionData();
+		MCQuestionData data = new MCQuestionData();
 		data.addWrongAnswer("  ");
 		data.addWrongAnswer("");
 		assertEquals(0, data.getWrongAnswers().size());
@@ -119,7 +119,7 @@ public class AiModelTest {
 
 	@Test
 	public void aiMCQuestionData_settersAndGetters() {
-		AiMCQuestionData data = new AiMCQuestionData();
+		MCQuestionData data = new MCQuestionData();
 		data.setTitle("Title");
 		data.setTopic("Topic");
 		data.setSubject("Subject");
