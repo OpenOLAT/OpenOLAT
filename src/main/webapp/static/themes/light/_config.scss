@@ -1010,6 +1010,7 @@ $o-ce-padding-large									: 32px;
 $o-ce-padding-light									: 24px;
 $o-ce-padding-normal								: 16px;
 $o-ce-padding-compact								: 8px;
+$o-cc-box-shadow		 							: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04) !default;
 
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;

@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -81,8 +80,7 @@ public class QualityToDoTaskQueryTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		Set<Long> originIds = Set.of(dataCollection1.getKey());
-		searchParams.setCustomQuery(new QualityToDoTaskQuery(member, true, originIds));
+		searchParams.setCustomQuery(new QualityToDoTaskQuery(member, true, List.of(organisation1)));
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
 		
 		assertThat(toDoTasks)

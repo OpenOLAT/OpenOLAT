@@ -103,6 +103,7 @@ import org.olat.modules.ceditor.handler.QuizElementHandler;
 import org.olat.modules.ceditor.handler.SpacerElementHandler;
 import org.olat.modules.ceditor.handler.TablePageElementHandler;
 import org.olat.modules.ceditor.handler.TitlePageElementHandler;
+import org.olat.modules.ceditor.handler.TocElementHandler;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
@@ -910,6 +911,9 @@ public class PageRunController extends BasicController implements TooledControll
 			//handler for spacer code
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
 			handlers.add(hrHandler);
+			//handler for table of contents
+			TocElementHandler tocHandler = new TocElementHandler(page, pageService);
+			handlers.add(tocHandler);
 			//handler for container
 			ContainerHandler containerHandler = new ContainerHandler();
 			handlers.add(containerHandler);
@@ -1030,6 +1034,10 @@ public class PageRunController extends BasicController implements TooledControll
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
 			handlers.add(hrHandler);
 			creationHandlers.add(hrHandler);
+			//handler for table of contents
+			TocElementHandler tocHandler = new TocElementHandler(page, pageService);
+			handlers.add(tocHandler);
+			creationHandlers.add(tocHandler);
 			//handler for HTML code
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler(settings.getLinkTreeModel(), settings.getToolLinkTreeModel());
 			handlers.add(htlmRawHandler);

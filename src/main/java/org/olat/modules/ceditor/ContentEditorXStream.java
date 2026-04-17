@@ -48,6 +48,7 @@ import org.olat.modules.ceditor.model.TableRow;
 import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.model.TitleSettings;
+import org.olat.modules.ceditor.model.TocSettings;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
@@ -73,7 +74,8 @@ public class ContentEditorXStream {
 				GeneralStyleSettings.class,
 				BlockLayoutSettings.class, MediaSettings.class, MathSettings.class,
 				AlertBoxSettings.class,
-				QuizSettings.class, QuizQuestion.class
+				QuizSettings.class, QuizQuestion.class,
+				TocSettings.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -113,6 +115,8 @@ public class ContentEditorXStream {
 
 		xstream.alias("quizsettings", QuizSettings.class);
 		xstream.alias("quizquestion", QuizQuestion.class);
+
+		xstream.alias("tocsettings", TocSettings.class);
 	}
 	
 	public static String toXml(Object obj) {

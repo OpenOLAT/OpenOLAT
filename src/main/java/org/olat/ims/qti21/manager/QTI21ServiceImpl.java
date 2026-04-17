@@ -444,25 +444,29 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		String softKey = testEntry.getSoftkey();
 		AssessmentTestInfos infos = assessmentTestInfosCache.get(softKey);
 		if(infos == null) {
-			FileResourceManager frm = FileResourceManager.getInstance();
-			File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-			ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
-			AssessmentTest assessmentTest = resolvedAssessmentTest.getTestLookup().extractIfSuccessful();
-			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
-			Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
-			Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
-			if(maxScore != null && minScore == null && "OpenOLAT".equals(assessmentTest.getToolName())) {
-				minScore = 0d;
+			try {
+				FileResourceManager frm = FileResourceManager.getInstance();
+				File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+				ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+				boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getTestLookup().extractIfSuccessful();
+				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
+				Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+				Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
+				if(maxScore != null && minScore == null && "OpenOLAT".equals(assessmentTest.getToolName())) {
+					minScore = 0d;
+				}
+				Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+				
+				Double timeLimits = (assessmentTest != null && assessmentTest.getTimeLimits() != null)
+						? assessmentTest.getTimeLimits().getMaximum()
+						: null;
+				
+				infos = new AssessmentTestInfos(estimatedMaxScore, maxScore, minScore, cutValue, manualCorrections, timeLimits);
+				assessmentTestInfosCache.put(softKey, infos);
+			} catch (Exception e) {
+				log.error("Cannot read test: {}", softKey, e);
 			}
-			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-			
-			Double timeLimits = (assessmentTest != null && assessmentTest.getTimeLimits() != null)
-					? assessmentTest.getTimeLimits().getMaximum()
-					: null;
-			
-			infos = new AssessmentTestInfos(estimatedMaxScore, maxScore, minScore, cutValue, manualCorrections, timeLimits);
-			assessmentTestInfosCache.put(softKey, infos);
 		}
 		return infos;
 	}

@@ -43,8 +43,8 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -93,6 +93,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private ObjectSelectionElement taxonomyLevelEl;
+	private TaxonomyLevelSelectionSource taxonomyLevelSource;
 	private FormLink generateAiLink;
 
 	private UploadMedia uploadMedia;
@@ -232,11 +233,11 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
-		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+		taxonomyLevelSource = new TaxonomyLevelSelectionSource(getLocale(),
 				mediaService.getTaxonomyLevels(mediaReference),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
 				translate("taxonomy.levels"), translate("table.header.taxonomy"));
-		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, source);
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, taxonomyLevelSource);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
@@ -396,8 +397,27 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		}
 		tagsEl.addNewDisplayNames(newTags);
 
+		// Map AI subject to taxonomy level
+		if (StringHelper.containsNonWhitespace(data.getSubject())) {
+			mapSubjectToTaxonomy(data.getSubject());
+		}
+
 		setFormWarning("ai.generate.metadata.done");
 		markDirty();
+	}
+
+	private void mapSubjectToTaxonomy(String subject) {
+		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
+			return;
+		}
+		String subjectLower = subject.trim().toLowerCase();
+		for (ObjectOption option : taxonomyLevelSource.getOptions()) {
+			String title = option.getTitle();
+			if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
+				taxonomyLevelEl.select(option.getKey());
+				return;
+			}
+		}
 	}
 
 	private void updateAiButtonVisibility() {

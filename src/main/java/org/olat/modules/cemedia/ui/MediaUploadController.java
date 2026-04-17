@@ -43,8 +43,8 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -67,9 +67,7 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.ui.medias.AbstractCollectMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
-import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
@@ -91,6 +89,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private ObjectSelectionElement taxonomyLevelEl;
+	private TaxonomyLevelSelectionSource taxonomyLevelSource;
 
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -168,11 +167,11 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
-		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+		taxonomyLevelSource = new TaxonomyLevelSelectionSource(getLocale(),
 				List.of(),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
 				translate("taxonomy.levels"), translate("table.header.taxonomy"));
-		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, source);
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, taxonomyLevelSource);
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
@@ -414,21 +413,14 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	}
 
 	private void mapSubjectToTaxonomy(String subject) {
-		List<TaxonomyRef> taxonomyRefs = mediaModule.getTaxonomyRefs();
-		if (taxonomyRefs.isEmpty()) return;
-
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
+			return;
+		}
 		String subjectLower = subject.trim().toLowerCase();
-		for (TaxonomyLevel level : levels) {
-			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
-			if (displayName != null && subjectLower.equals(displayName.trim().toLowerCase())) {
-				taxonomyLevelEl.select(level.getKey().toString());
-				return;
-			}
-			// Also try the identifier as fallback
-			String identifier = level.getIdentifier();
-			if (identifier != null && subjectLower.equals(identifier.trim().toLowerCase())) {
-				taxonomyLevelEl.select(level.getKey().toString());
+		for (ObjectOption option : taxonomyLevelSource.getOptions()) {
+			String title = option.getTitle();
+			if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
+				taxonomyLevelEl.select(option.getKey());
 				return;
 			}
 		}

@@ -116,7 +116,11 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 			String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
 
-			sb.append("<div class='o_page_part ").append(fragment.getCssClass());
+			sb.append("<div");
+			if ("htitle".equals(element.getType())) {
+				sb.append(" id='toc-").append(element.getId()).append("'");
+			}
+			sb.append(" class='o_page_part ").append(fragment.getCssClass());
 			if (alertBoxType != null) {
 				sb.append(" o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
 			}

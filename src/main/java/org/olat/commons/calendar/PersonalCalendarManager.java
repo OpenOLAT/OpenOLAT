@@ -23,20 +23,18 @@ import java.util.List;
 
 import org.olat.commons.calendar.model.CalendarFileInfos;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 
 /**
  * 
  * Initial date: 27.08.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public interface PersonalCalendarManager {
 	
 	public List<CalendarFileInfos> getListOfCalendarsFiles(Identity identity);
 	
-	public List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl);
+	public List<KalendarRenderWrapper> getListOfCalendarWrappers(Identity identity);
 
 }

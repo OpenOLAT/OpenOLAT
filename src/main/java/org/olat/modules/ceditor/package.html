@@ -340,7 +340,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span class="kw">private</span> <span class="typ">PageBody</span> body;
 }</code></pre>
 
-<h3>Concrete Part Entities (13 types)</h3>
+<h3>Concrete Part Entities (14 types)</h3>
 <table>
   <tr><th>Entity Name</th><th>Type String</th><th>Discriminator</th></tr>
   <tr><td><code>TitlePart</code></td><td><code>"htitle"</code></td><td>cetitlepart</td></tr>
@@ -356,6 +356,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>MathPart</code></td><td><code>"math"</code></td><td>cemathpart</td></tr>
   <tr><td><code>QuizPart</code></td><td><code>"quiz"</code></td><td>cequizpart</td></tr>
   <tr><td><code>EvaluationFormPart</code></td><td><code>"evaluationform"</code></td><td>ceformpart</td></tr>
+  <tr><td><code>TocPart</code></td><td><code>&quot;toc&quot;</code></td><td>cetocpart</td></tr>
 </table>
 
 <div class="aside"><strong>Ordering:</strong> <code>PageBodyImpl</code> uses <code>@OneToMany</code> with <code>@OrderColumn(name="pos")</code> to maintain element order. The <code>pos</code> column in <code>AbstractPart</code> is read-only (<code>insertable=false, updatable=false</code>) &mdash; ordering is managed entirely by the JPA collection.</div>
@@ -508,6 +509,7 @@ part.setLayoutOptions(xml);
   <tr><td><code>MathPageElementHandler</code></td><td><code>math</code></td><td>text</td><td>Simple</td></tr>
   <tr><td><code>QuizElementHandler</code></td><td><code>quiz</code></td><td>knowledge</td><td>Simple</td></tr>
   <tr><td><code>EvaluationFormHandler</code></td><td><code>evaluationform</code></td><td>organisational</td><td>Interactive</td></tr>
+  <tr><td><code>TocElementHandler</code></td><td><code>toc</code></td><td>other</td><td>Simple</td></tr>
 </table>
 
 <!-- ===== PROVIDER PATTERN ===== -->
@@ -825,6 +827,13 @@ pageService.appendNewPagePart(page, codePart);</code></pre>
     file, <span class="str">"photo.png"</span>, <span class="kw">null</span>, author, <span class="typ">MediaLog.Action</span>.UPLOAD);
 <span class="typ">MediaPart</span> mediaPart = <span class="typ">MediaPart</span>.valueOf(author, media);
 pageService.appendNewPagePart(page, mediaPart);</code></pre>
+
+<h4>Table of Contents</h4>
+<pre><code><span class="typ">TocPart</span> tocPart = <span class="kw">new</span> <span class="typ">TocPart</span>();
+<span class="typ">TocSettings</span> ts = <span class="kw">new</span> <span class="typ">TocSettings</span>(); <span class="cmt">// defaults: visibleLevels={1,2,3,4}, no title</span>
+ts.setTitle(<span class="str">"Contents"</span>);
+tocPart.setTocSettings(ts);
+pageService.appendNewPagePart(page, tocPart);</code></pre>
 
 <!-- ===== NEW ELEMENT GUIDE ===== -->
 <h2 id="new-element-guide">Adding a New Element Type</h2>

@@ -55,59 +55,98 @@ public class OriginCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof MemberRow memberRow) {
-			CourseMembership courseMembership = memberRow.getMembership();
-			Set<CurriculumElementShort> curriculumElements = new HashSet<>(memberRow.getCurriculumElements() != null ? 
-					memberRow.getCurriculumElements() : List.of());
+			if (renderer == null) {
+				renderForExport(target, memberRow, translator);
+			} else {
+				renderForUI(renderer, target, memberRow, row, source, ubu, translator);
+			}
+		}
+	}
 
-			int totalItems = (courseMembership.isRepositoryEntryMember() ? 1 : 0)
-					+ (courseMembership.isBusinessGroupMember() ? memberRow.getGroups().size() : 0)
-					+ (courseMembership.isCurriculumElementMember() ? curriculumElements.size() : 0);
+	private void renderForExport(StringOutput target, MemberRow memberRow, Translator translator) {
+		CourseMembership courseMembership = memberRow.getMembership();
+		Set<CurriculumElementShort> curriculumElements = new HashSet<>(memberRow.getCurriculumElements() != null ?
+				memberRow.getCurriculumElements() : List.of());
 
-			int renderedItems = 0;
-			target.append("<div class='o_origin_cell'>");
-			
-			if (courseMembership.isRepositoryEntryMember()) {
-				target.append("<i class='o_icon o_CourseModule_icon'> </i> ");
-				target.append(translator.translate("course"));
+		boolean first = true;
+		if (courseMembership.isRepositoryEntryMember()) {
+			target.append(translator.translate("course"));
+			first = false;
+		}
+		if (courseMembership.isBusinessGroupMember()) {
+			for (BusinessGroupShort businessGroup : memberRow.getGroups()) {
+				if (!first) {
+					target.append(", ");
+				}
+				target.append(businessGroup.getName());
+				first = false;
+			}
+		}
+		if (courseMembership.isCurriculumElementMember()) {
+			for (CurriculumElementShort curriculumElement : curriculumElements) {
+				if (!first) {
+					target.append(", ");
+				}
+				target.append(curriculumElement.getDisplayName());
+				first = false;
+			}
+		}
+	}
+
+	private void renderForUI(Renderer renderer, StringOutput target, MemberRow memberRow, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		CourseMembership courseMembership = memberRow.getMembership();
+		Set<CurriculumElementShort> curriculumElements = new HashSet<>(memberRow.getCurriculumElements() != null ?
+				memberRow.getCurriculumElements() : List.of());
+
+		int totalItems = (courseMembership.isRepositoryEntryMember() ? 1 : 0)
+				+ (courseMembership.isBusinessGroupMember() ? memberRow.getGroups().size() : 0)
+				+ (courseMembership.isCurriculumElementMember() ? curriculumElements.size() : 0);
+
+		int renderedItems = 0;
+		target.append("<div class='o_origin_cell'>");
+
+		if (courseMembership.isRepositoryEntryMember()) {
+			target.append("<i class='o_icon o_CourseModule_icon'> </i> ");
+			target.append(translator.translate("course"));
+			renderedItems++;
+		}
+
+		if (courseMembership.isBusinessGroupMember()) {
+			FlexiCellRenderer businessGroupRenderer = new BusinessGroupNameCellRenderer();
+			for (BusinessGroupShort businessGroup : memberRow.getGroups()) {
+				if (renderedItems >= MAX_ITEMS) {
+					break;
+				}
+				if (renderedItems > 0) {
+					target.append(", ");
+				}
+				businessGroupRenderer.render(renderer, target, businessGroup, row, source, ubu, translator);
 				renderedItems++;
 			}
-			
-			if (courseMembership.isBusinessGroupMember()) {
-				FlexiCellRenderer businessGroupRenderer = new BusinessGroupNameCellRenderer();
-				for (BusinessGroupShort businessGroup : memberRow.getGroups()) {
-					if (renderedItems >= MAX_ITEMS) {
-						break;
-					}
-					if (renderedItems > 0) {
-						target.append(", ");
-					}
-					businessGroupRenderer.render(renderer, target, businessGroup, row, source, ubu, translator);
-					renderedItems++;
-				}
-			}
-
-			if (courseMembership.isCurriculumElementMember()) {
-				FlexiCellRenderer curriculumElementRenderer = new CurriculumElementCellRenderer();
-				for (CurriculumElementShort curriculumElement : curriculumElements) {
-					if (renderedItems >= MAX_ITEMS) {
-						break;
-					}
-					if (renderedItems > 0) {
-						target.append(", ");
-					}
-					curriculumElementRenderer.render(renderer, target, curriculumElement.getDisplayName(), row, source, ubu, translator);
-					renderedItems++;
-				}
-			}
-
-			if (totalItems > MAX_ITEMS) {
-				int remaining = totalItems - MAX_ITEMS;
-				target.append(" ");
-				new StaticFlexiCellRenderer(openDetailsAction, new TextFlexiCellRenderer())
-						.render(renderer, target, "+" + remaining, row, source, ubu, translator);
-			}
-
-			target.append("</div>");
 		}
+
+		if (courseMembership.isCurriculumElementMember()) {
+			FlexiCellRenderer curriculumElementRenderer = new CurriculumElementCellRenderer();
+			for (CurriculumElementShort curriculumElement : curriculumElements) {
+				if (renderedItems >= MAX_ITEMS) {
+					break;
+				}
+				if (renderedItems > 0) {
+					target.append(", ");
+				}
+				curriculumElementRenderer.render(renderer, target, curriculumElement.getDisplayName(), row, source, ubu, translator);
+				renderedItems++;
+			}
+		}
+
+		if (totalItems > MAX_ITEMS) {
+			int remaining = totalItems - MAX_ITEMS;
+			target.append(" ");
+			new StaticFlexiCellRenderer(openDetailsAction, new TextFlexiCellRenderer())
+					.render(renderer, target, "+" + remaining, row, source, ubu, translator);
+		}
+
+		target.append("</div>");
 	}
 }

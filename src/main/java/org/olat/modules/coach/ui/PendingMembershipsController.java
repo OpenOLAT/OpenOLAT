@@ -183,7 +183,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		toolsColumn.setExportable(false);
 		columnModel.addFlexiColumnModel(toolsColumn);
 
-		tableModel = new PendingMembershipsTableModel(userManager, userPropertyHandlers, columnModel, getLocale());
+		tableModel = new PendingMembershipsTableModel(columnModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "list", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);

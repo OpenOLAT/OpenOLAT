@@ -20,40 +20,41 @@
 package org.olat.modules.quality.manager;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoTaskSearchParams.ToDoTaskCustomQuery;
 
 /**
- * 
+ *
  * Initial date: 24 Apr 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class QualityToDoTaskQuery implements ToDoTaskCustomQuery {
-	
+
 	private final Long memberKey;
 	private final boolean allGeneralToDoTasks;
-	private final Collection<Long> originIds;
-	
-	public Collection<Long> getOriginIds() {
-		return originIds;
-	}
+	private final Set<Long> organisationKeys;
+	private final boolean hasOrganisations;
 
-	public QualityToDoTaskQuery(Identity member, boolean allGeneralToDoTasks, Collection<Long> originIds) {
+	public QualityToDoTaskQuery(Identity member, boolean allGeneralToDoTasks, Collection<? extends OrganisationRef> organisationRefs) {
 		this.memberKey = member.getKey();
 		this.allGeneralToDoTasks = allGeneralToDoTasks;
-		this.originIds = originIds;
+		this.organisationKeys = organisationRefs.stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
+		this.hasOrganisations = !organisationKeys.isEmpty();
 	}
 
 	@Override
 	public void appendQuery(QueryBuilder sb) {
 		sb.and().append("(");
-		
+
 		// member
 		sb.append("toDoTask.type").in(GeneralToDoTaskProvider.TYPE, DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
 		sb.append("and toDoTask.baseGroup.key in (");
@@ -63,25 +64,33 @@ public class QualityToDoTaskQuery implements ToDoTaskCustomQuery {
 		sb.append("   and membership.identity.key = :qualMemberKey");
 		sb.append("   and membership.role").in(ToDoRole.assignee, ToDoRole.delegatee);
 		sb.append(")");
-		
+
 		// quality manager etc
-		sb.append(" or ");
-		sb.append("toDoTask.type").in(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
-		sb.append(" and toDoTask.originId in :qualOriginIds");
-		
+		if (hasOrganisations) {
+			sb.append(" or ");
+			sb.append("toDoTask.type").in(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
+			sb.append(" and toDoTask.originId in (");
+			sb.append("select distinct rel.dataCollection.key");
+			sb.append("  from qualitydatacollectiontoorganisation as rel");
+			sb.append(" where rel.organisation.key in :qualOrganisationKeys");
+			sb.append(")");
+		}
+
 		// all general qm todos
 		if (allGeneralToDoTasks) {
 			sb.append(" or ");
 			sb.append("toDoTask.type = '").append(GeneralToDoTaskProvider.TYPE).append("'");
 		}
-		
+
 		sb.append(")");
 	}
 
 	@Override
 	public void addParameters(TypedQuery<?> query) {
 		query.setParameter("qualMemberKey", memberKey);
-		query.setParameter("qualOriginIds", originIds);
+		if (hasOrganisations) {
+			query.setParameter("qualOrganisationKeys", organisationKeys);
+		}
 	}
 
 }

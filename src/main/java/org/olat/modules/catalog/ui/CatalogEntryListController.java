@@ -20,6 +20,8 @@
 package org.olat.modules.catalog.ui;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -119,8 +121,8 @@ import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumInfoHelper;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumInfoHelper;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
@@ -140,10 +142,10 @@ import org.olat.registration.SelfRegistrationAdvanceOrderInput;
 import org.olat.registration.TemporaryKey;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.ResourceInfoHelper;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ResourceInfoHelper;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
@@ -457,16 +459,23 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private void loadModel(boolean initFilters) {
+		Instant totalStart = Instant.now();
+
+		Instant dbStart = Instant.now();
 		List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(searchParams);
+		log.debug("Catalog: entries loaded from database in {} millis",
+				() -> Duration.between(dbStart, Instant.now()).toMillis());
+
+		Instant filterStart = Instant.now();
 		catalogEntries.removeIf(this::shouldExcludeCatalogEntry);
 		if(initFilters) {
 			initFilters(catalogEntries);
 		}
-		
+
 		List<CatalogEntryRow> rows = catalogEntries.stream()
 				.map(this::toRow)
 				.collect(Collectors.toList());
-		
+
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters != null) {
 			for(FlexiTableFilter filter:filters) {
@@ -476,20 +485,33 @@ public class CatalogEntryListController extends FormBasicController implements A
 				}
 			}
 		}
-		
+
 		applySearch(rows);
-		
+		log.debug("Catalog: {} entries filtered in {} millis",
+				rows::size,
+				() -> Duration.between(filterStart, Instant.now()).toMillis());
+
+		Instant componentStart = Instant.now();
 		rows.forEach(this::forgeLinks);
-		
+		log.debug("Catalog: components created in {} millis",
+				() -> Duration.between(componentStart, Instant.now()).toMillis());
+
+		Instant thumbnailStart = Instant.now();
 		List<OLATResource> resources = catalogEntries.stream()
 				.map(CatalogEntry::getOlatResource)
 				.toList();
 		Map<Long, VFSThumbnailInfos> thumbnails = repositoryEntryMapper.getResourceableThumbnails(resources);
 		Map<Long, VFSThumbnailInfos> elementThumbnails = curriculumElementImageMapper.getResourceableThumbnails(resources);
 		rows.forEach( r -> forgeThumbnail(r, thumbnails, elementThumbnails));
+		log.debug("Catalog: thumbnails created in {} millis",
+				() -> Duration.between(thumbnailStart, Instant.now()).toMillis());
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+
+		log.debug("Catalog: model ({} rows) loaded in total {} millis",
+				rows::size,
+				() -> Duration.between(totalStart, Instant.now()).toMillis());
 	}
 	
 	private void applySearch(List<CatalogEntryRow> rows) {

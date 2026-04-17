@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +43,6 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
@@ -206,7 +204,6 @@ public class ACMethodDAO {
 		return query.getResultList();
 	}
 
-	//TOOD uh check
 	public List<OfferAccess> getOfferAccess(Collection<Offer> offers, boolean valid) {
 		if(offers == null || offers.isEmpty()) return Collections.emptyList();
 
@@ -246,20 +243,18 @@ public class ACMethodDAO {
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
 			String resourceType, String excludedResourceType, boolean valid, Date atDate, List<? extends OrganisationRef> organisations) {
 
-		final int maxResourcesEntries = 250;//quicker to filter in java, numerous keys in "in" are slow
-		
+		boolean filterByOrganisations = organisations != null && !organisations.isEmpty();
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, resource, offer.key, offer.price, offer.autoBooking")
 			.append(" from acofferaccess access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
-			.append(" inner join offer.resource oResource")
-			.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid)
+			.append(" inner join offer.resource oResource");
+		sb.append(" where access.valid=").append(valid).append(" and offer.valid=").append(valid)
 			.append(" and resource.key=oResource.key");
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
-			if(resourceKeys.size() < maxResourcesEntries) {
-				sb.append(" and resource.key in (:resourceKeys) ");
-			}
+			sb.append(" and resource.key in (:resourceKeys) ");
 			sb.append(" and oResource.key=resource.key");
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
@@ -268,24 +263,24 @@ public class ACMethodDAO {
 		if(StringHelper.containsNonWhitespace(excludedResourceType)) {
 			sb.append(" and not(oResource.resName=:excludedResourceType)");
 		}
-
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
+		}
+		if (filterByOrganisations) {
+			sb.append(" and (");
+			sb.append("exists (select oto.key from offertoorganisation oto where oto.offer.key=offer.key and oto.organisation.key in (:offerOrganisationKeys))");
+			sb.append(" or not exists (select oto2.key from offertoorganisation oto2 where oto2.offer.key=offer.key)");
+			sb.append(")");
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class);
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
-		
-		Set<Long> resourceKeysSet = null;
+
 		if(resourceKeys != null && !resourceKeys.isEmpty()) {
-			if(resourceKeys.size() < maxResourcesEntries) {
-				query.setParameter("resourceKeys", resourceKeys);
-			} else {
-				resourceKeysSet = new HashSet<>(resourceKeys);
-			}
+			query.setParameter("resourceKeys", resourceKeys);
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			query.setParameter("resourceType", resourceType);
@@ -293,38 +288,21 @@ public class ACMethodDAO {
 		if(StringHelper.containsNonWhitespace(excludedResourceType)) {
 			query.setParameter("excludedResourceType", excludedResourceType);
 		}
+		if (filterByOrganisations) {
+			Set<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
+			query.setParameter("offerOrganisationKeys", organisationKeys);
+		}
 
 		List<Object[]> rawResults = query.getResultList();
-		
-		Set<Long> organisationKeys = organisations != null && !organisations.isEmpty()
-				? organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toSet())
-				: Collections.emptySet();
-		Map<Long, List<Long>> offerKeyToOrganisationKey = null;
-		if (organisations != null && !organisations.isEmpty()) {
-			List<OfferRef> offerKeys = rawResults.stream()
-					.map(rawResult -> (OfferRef)() -> (Long)rawResult[2])
-					.collect(Collectors.toList());
-			offerKeyToOrganisationKey = offerToOrganisationDAO.getOfferKeyToOrganisations(offerKeys);
-		}
-		
+
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
 			OLATResource resource = (OLATResource)rawResult[1];
-			if(resourceKeysSet != null && !resourceKeysSet.contains(resource.getKey())) {
-				continue;
-			}
 			if(!method.isVisibleInGui()) {
 				continue;
 			}
-			if (organisations != null && !organisations.isEmpty()) {
-				Long offerKey = (Long)rawResult[2];
-				List<Long> offerOrganisationKeys = offerKeyToOrganisationKey.get(offerKey);
-				if (offerOrganisationKeys != null && !offerOrganisationKeys.stream().anyMatch(offerOrgKey -> organisationKeys.contains(offerOrgKey))) {
-					continue;
-				}
-			}
-			
+
 			Price price = (Price)rawResult[3];
 			boolean autoBooking = (boolean)rawResult[4];
 			if(rawResultsMap.containsKey(resource.getKey())) {
@@ -333,7 +311,7 @@ public class ACMethodDAO {
 				rawResultsMap.put(resource.getKey(), new OLATResourceAccess(resource, price, method, autoBooking));
 			}
 		}
-		
+
 		return new ArrayList<>(rawResultsMap.values());
 	}
 

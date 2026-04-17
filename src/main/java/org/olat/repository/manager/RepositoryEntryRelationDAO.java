@@ -345,10 +345,40 @@ public class RepositoryEntryRelationDAO {
 		}
 	}
 	
+	public Map<Long, Set<String>> filterMembershipsByRoles(IdentityRef identity, Collection<Long> entries, Collection<String> roles) {
+		Map<Long, Set<String>> memberships = new HashMap<>();
+		if(entries == null || entries.isEmpty()) return memberships;
+		if(roles == null || roles.isEmpty()) return memberships;
+
+		List<Long> entryKeysList = new ArrayList<>(entries);
+
+		int count = 0;
+		int batch = 5000;
+		do {
+			int toIndex = Math.min(count + batch, entryKeysList.size());
+			List<Long> toLoad = entryKeysList.subList(count, toIndex);
+			List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
+					.createNamedQuery("filterRepositoryEntryRelationMembershipByRoles", Object[].class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("repositoryEntryKey", toLoad)
+					.setParameter("roles", roles)
+					.setFlushMode(FlushModeType.COMMIT)
+					.getResultList();
+			for(Object[] membership: membershipList) {
+				Long entryKey = (Long) membership[0];
+				String role = (String) membership[1];
+				memberships.computeIfAbsent(entryKey, k -> new HashSet<>()).add(role);
+			}
+			count += batch;
+		} while(count < entryKeysList.size());
+
+		return memberships;
+	}
+
 	/**
 	 * It will count all members, business groups members too but not
 	 * the organizations.
-	 * 
+	 *
 	 * @param re The repository entry
 	 * @param Roles The role (mandatory)
 	 * @return

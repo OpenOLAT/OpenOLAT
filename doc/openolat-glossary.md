@@ -4,9 +4,15 @@ A reference glossary of product-specific terms used in OpenOlat.
 These are terms that have specific meaning within the OpenOlat LMS context
 and should be used consistently across translations, documentation, and code.
 
-**Total terms:** 172
+**Total terms:** 210
 
 ## System roles
+
+### Absence manager
+
+Can manage attendance tracking and absence records across the system.
+
+*Canonical key:* `org.olat.admin.user:role.lecturemanager`
 
 ### Administrator
 
@@ -18,7 +24,13 @@ Has full system administration rights.
 
 Can create and manage learning resources.
 
-*Canonical key:* `org.olat.course.nodes.basiclti:author.roles`
+*Canonical key:* `org.olat.admin.user:role.author`
+
+### Course planner
+
+Can manage curricula and products in the Course Planner module.
+
+*Canonical key:* `org.olat.admin.user:role.curriculummanager`
 
 ### Education manager
 
@@ -48,6 +60,12 @@ Has principal oversight permissions.
 
 *Canonical key:* `org.olat.repository:role.principal`
 
+### Project manager
+
+Can manage project spaces across the system.
+
+*Canonical key:* `org.olat.admin.user:role.projectmanager`
+
 ### Quality manager
 
 Can manage quality management processes.
@@ -65,6 +83,18 @@ Can manage the question bank pool.
 Can manage role assignments.
 
 *Canonical key:* `org.olat.admin.user:role.rolesmanager`
+
+### System administrator
+
+Has full system-level administration rights including server configuration.
+
+*Canonical key:* `org.olat.admin.user:role.sysadmin`
+
+### User
+
+A registered account holder in the system with basic access rights.
+
+*Canonical key:* `org.olat.admin.user:role.user`
 
 ### User manager
 
@@ -324,6 +354,12 @@ Web-based Distributed Authoring and Versioning for file access.
 *Canonical key:* `org.olat.core.commons.services.webdav.ui:admin.menu.title`
 
 
+### AI module
+
+Integration of AI capabilities for content generation and assistance.
+
+*Canonical key:* `org.olat.core.commons.services.ai.ui:admin.menu.title`
+
 ### Assessment tool
 
 Central interface for coaches and owners to evaluate, grade, and manage learner assessments.
@@ -341,6 +377,12 @@ Recording capabilities for audio and video content.
 Feature allowing coaches to assess multiple participants simultaneously.
 
 *Canonical key:* `org.olat.course.assessment.ui:menu.bulkfocus`
+
+### Calendar
+
+Personal and course calendar for scheduling and event management.
+
+*Canonical key:* `org.olat.home:menu.calendar`
 
 ### Content editor
 
@@ -364,9 +406,25 @@ Surveys used within the Quality Management module to gather feedback.
 
 *Canonical key:* `org.olat.modules.quality.ui:data.collection.title`
 
+### Data collection generator
+
+Automated rule sets that create data collections (surveys) based on triggers like course start or end.
+
+### Full-text search
+
+System-wide search for content across courses, learning resources, and user data.
+
+*Canonical key:* `org.olat.home:menu.fulltextsearch`
+
 ### Instant messaging
 
 Built-in chat/messenger for real-time communication between users.
+
+### Licenses
+
+Management of content licenses for learning resources.
+
+*Canonical key:* `org.olat.core.commons.services.license.ui:admin.menu.title`
 
 ### Notes
 
@@ -379,6 +437,12 @@ Personal note-taking feature for users.
 Open Archives Initiative Protocol for Metadata Harvesting, used for catalog exposure.
 
 *Canonical key:* `org.olat.modules.oaipmh.ui:admin.menu.title`
+
+### Passkey
+
+Passwordless authentication via WebAuthn allowing users to log in with biometric or hardware keys.
+
+*Canonical key:* `org.olat.login.webauthn.ui:admin.menu.title`
 
 ### Peer review
 
@@ -408,6 +472,10 @@ User subscriptions to notifications about changes in courses and resources.
 
 Central area aggregating all shared video learning resources.
 
+### Web catalog
+
+Externally accessible catalog that allows non-registered users to browse and book course offerings.
+
 ### Whiteboard
 
 Visual collaboration tool (powered by draw.io) within the Projects module.
@@ -415,11 +483,23 @@ Visual collaboration tool (powered by draw.io) within the Projects module.
 
 ## Areas
 
+### Administration
+
+The system administration area for configuring modules, managing users, and system settings.
+
+*Canonical key:* `org.olat.admin.site.ui:AdminSiteDef`
+
 ### Authoring
 
 The area where authors create and manage learning resources.
 
 *Canonical key:* `org.olat.repository.ui.author:author.title`
+
+### Courses
+
+The main area where users find and access their enrolled courses.
+
+*Canonical key:* `org.olat.admin.site.ui:MyCoursesSiteDef`
 
 
 ## Concepts
@@ -453,7 +533,7 @@ A managed learning resource in the authoring area (course, test, form, etc.).
 
 ### Access code
 
-A password-based booking method restricting course enrollment to code holders.
+A password-based booking method restricting course enrolment to code holders.
 
 *Canonical key:* `org.olat.resource.accesscontrol.ui:accesscontrol.name.token`
 
@@ -473,6 +553,48 @@ Skill or competence assigned to users via taxonomy.
 
 *Canonical key:* `org.olat.admin.user:view.competences`
 
+### Corrector
+
+A person assigned to manually grade test submissions within a correction workflow.
+
+### Course element
+
+A building block that can be added to a course structure in the course editor.
+
+*Canonical key:* `org.olat.core.commons.chiefcontrollers:CourseBb`
+
+### Course lifecycle
+
+The automated process by which a course transitions through statuses based on its execution end date.
+
+### Delivery format
+
+A metadata field indicating the mode of delivery (online, blended, in-person) shown in catalog cards.
+
+### Drop box
+
+The file submission area within a Task course element where participants upload their work.
+
+*Canonical key:* `org.olat.core.commons.chiefcontrollers:DropboxController`
+
+### Educational product
+
+A Course Planner product consisting of multiple courses and implementations, visible in the Coaching tool.
+
+### External reference
+
+An external identifier for a learning resource, e.g. from a course catalog or lecture directory.
+
+*Canonical key:* `org.olat.repository:cif.externalref`
+
+### Grading assignment
+
+A task assigned to a corrector to manually grade a specific test submission.
+
+### Launcher
+
+A configurable section in Catalog 2.0 that dynamically assembles and displays course offerings.
+
 ### Learning area
 
 A named grouping of course groups used to simplify group-based visibility rules.
@@ -482,6 +604,20 @@ A named grouping of course groups used to simplify group-based visibility rules.
 ### Learning progress
 
 Tracking of user progress through a learning path course.
+
+### Learning resource
+
+A managed content object in the authoring area (course, test, form, video, etc.).
+
+*Canonical key:* `org.olat.core.commons.chiefcontrollers:LearningRes`
+
+### Lesson block
+
+A schedulable teaching unit within the Events/Absences module, comprising 1 to 12 individual lessons.
+
+### Metadata
+
+Descriptive information about a learning resource (title, description, authors, license, etc.).
 
 ### Product
 
@@ -495,13 +631,39 @@ Lifecycle state of a learning resource: Preparation, Review, Access for Coach, P
 
 *Canonical key:* `org.olat.repository:cif.publish`
 
+### Rubric
+
+A form element for evaluating multiple criteria against the same rating scale, used in assessments and surveys.
+
+### Return box
+
+The file area within a Task course element where coaches return graded work to participants.
+
+*Canonical key:* `org.olat.core.commons.chiefcontrollers:ReturnboxController`
+
+### Sample solutions
+
+Model answers or reference solutions provided within a Task course element.
+
+*Canonical key:* `org.olat.core.commons.chiefcontrollers:SolutionController`
+
 ### Storage folder
 
 Internal file management area within a course for storing course files.
 
 *Canonical key:* `org.olat.course.editor:command.coursefolder`
 
+### Teaser
+
+A short preview text used for compact announcements, currently available for courses.
+
 ### Template course
+
+A source course from which implementation instances are automatically created in Course Planner.
+
+### Waiting list
+
+A queue for users who cannot be immediately enrolled, with automatic promotion when places become available.
 
 A source course from which implementation instances are automatically created in Course Planner.
 
@@ -633,6 +795,12 @@ A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_blog`
 
+### Calendar
+
+A course element for embedding a course calendar with events and deadlines.
+
+*Canonical key:* `org.olat.course.nodes.cal:calendar.title`
+
 ### CP learning content
 
 A course element (building block) that can be added to a course structure.
@@ -681,6 +849,12 @@ A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_bc`
 
+### Form
+
+A course element for embedding evaluation forms that participants fill out.
+
+*Canonical key:* `org.olat.course.nodes.form:course.node.link.text`
+
 ### Forum
 
 A course element (building block) that can be added to a course structure.
@@ -710,6 +884,18 @@ A course element (building block) that can be added to a course structure.
 A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_ll`
+
+### Microsoft Teams
+
+A course element for Microsoft Teams virtual meetings within a course.
+
+*Canonical key:* `org.olat.course.nodes.teams:title_vc`
+
+### Notifications
+
+A course element for posting and reading course notifications/messages.
+
+*Canonical key:* `org.olat.course.nodes.info:title_info`
 
 ### Page
 
@@ -777,6 +963,12 @@ A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_st`
 
+### Survey
+
+A course element for anonymous surveys using evaluation forms.
+
+*Canonical key:* `org.olat.course.nodes.survey:course.node.link.text`
+
 ### Task
 
 A course element (building block) that can be added to a course structure.
@@ -818,6 +1010,12 @@ A course element (building block) that can be added to a course structure.
 A course element (building block) that can be added to a course structure.
 
 *Canonical key:* `org.olat.course.nodes:title_wiki`
+
+### Zoom
+
+A course element for Zoom video conferencing within a course.
+
+*Canonical key:* `org.olat.course.nodes.zoom:title_vc`
 
 
 ### card2brain
@@ -900,6 +1098,12 @@ A type of learning resource that can be created or imported in the authoring are
 A type of learning resource that can be created or imported in the authoring area.
 
 *Canonical key:* `org.olat.modules.ceditor.ui:FileResource.BLOG`
+
+### CP learning content
+
+A type of learning resource for IMS Content Packages.
+
+*Canonical key:* `org.olat.core.commons.chiefcontrollers:FileResource.IMSCP`
 
 ### Excel
 

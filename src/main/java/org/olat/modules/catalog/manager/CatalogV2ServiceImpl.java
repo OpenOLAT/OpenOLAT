@@ -172,16 +172,20 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels = loadRepositoryEntryToTaxonomyLevels(repositoryEntriesInfos);
 		
-		List<Long> reMembershipKeys;
-		List<Long> reParticipantKeys;
+		Set<Long> reMembershipKeys;
+		Set<Long> reParticipantKeys;
 		if (searchParams.getMember() == null) {
-			reMembershipKeys = List.of();
-			reParticipantKeys = List.of();
+			reMembershipKeys = Set.of();
+			reParticipantKeys = Set.of();
 		} else {
-			reMembershipKeys = repositoryEntriesInfos.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
-			reParticipantKeys = new ArrayList<>(reMembershipKeys);
-			repositoryService.filterByRoles(searchParams.getMember(), reMembershipKeys, List.of(GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
-			repositoryService.filterByRoles(searchParams.getMember(), reParticipantKeys, List.of(GroupRoles.participant.name()));
+			List<Long> entryKeys = repositoryEntriesInfos.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+			List<String> roles = List.of(GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
+			Map<Long, Set<String>> memberships = repositoryService.filterMembershipsByRoles(searchParams.getMember(), entryKeys, roles);
+			reMembershipKeys = memberships.keySet();
+			reParticipantKeys = memberships.entrySet().stream()
+					.filter(e -> e.getValue().contains(GroupRoles.participant.name()))
+					.map(Map.Entry::getKey)
+					.collect(Collectors.toSet());
 		}
 		
 		List<UserRating> ratings = searchParams.getMember() == null || !repositoryModule.isRatingEnabled()

@@ -51,7 +51,6 @@ public class Index {
 	
 	private String indexPath;
 	private String tempIndexPath;
-	private String permanentIndexPath;
 	
 	private OlatFullIndexer fullIndexer;
 	private SearchSpellChecker spellChecker;
@@ -64,7 +63,6 @@ public class Index {
 		this.spellChecker = spellChecker;
 		this.indexPath = searchModule.getFullIndexPath();
 		this.tempIndexPath = searchModule.getFullTempIndexPath();
-		this.permanentIndexPath = searchModule.getFullPermanentIndexPath();
 		
 		fullIndexer = new OlatFullIndexer(this, searchModule, searchService, mainIndexer, coordinatorManager);
 	}
@@ -94,17 +92,6 @@ public class Index {
 	public boolean existIndex() {
 		try {
 			File indexFile = new File(indexPath);
-			Directory directory = FSDirectory.open(indexFile.toPath());
-			return DirectoryReader.indexExists(directory);
-		} catch (IOException e) {
-			log.error("", e);
-			return false;
-		}
-	}
-	
-	public boolean existPermanentIndex() {
-		try {
-			File indexFile = new File(permanentIndexPath);
 			Directory directory = FSDirectory.open(indexFile.toPath());
 			return DirectoryReader.indexExists(directory);
 		} catch (IOException e) {

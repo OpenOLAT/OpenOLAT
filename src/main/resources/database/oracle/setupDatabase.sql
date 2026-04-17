@@ -6166,20 +6166,20 @@ create index idx_re_to_lev_tax_lev_idx on o_re_to_tax_level (fk_taxonomy_level);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
-create index idx_offer_guest_idx on o_ac_offer (guest_access);
-create index idx_offer_open_idx on o_ac_offer (open_access);
+create index idx_offer_catalog_guest_idx on o_ac_offer (is_valid, guest_access, catalog_web_publish, fk_resource_id);
+create index idx_offer_catalog_open_idx on o_ac_offer (is_valid, open_access, catalog_web_publish, fk_resource_id);
 alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
 create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
 
 alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
 create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
 alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
-create index idx_rel_oto_org_idx on o_ac_offer_to_organisation (fk_organisation);
+create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);
 alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);
-create index idx_offeracc_offer_idx on o_ac_offer_access (fk_offer_id);
+create index idx_offeracc_offer_method_idx on o_ac_offer_access (fk_offer_id, fk_method_id);
 
 alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_ac_billing_to_org_idx on o_ac_billing_address (fk_organisation);

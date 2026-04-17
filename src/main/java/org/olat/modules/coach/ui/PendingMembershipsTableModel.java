@@ -28,8 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Initial date: 2025-10-27<br>
@@ -40,14 +38,11 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 		implements SortableFlexiTableDataModel<PendingMembershipRow> {
 
 	private static final PendingMembershipsCol[] COLS = PendingMembershipsCol.values();
-	private final UserManager userManager;
-	private final List<UserPropertyHandler> userPropertyHandlers;
+
 	private final Locale locale;
 
-	public PendingMembershipsTableModel(UserManager userManager, List<UserPropertyHandler> userPropertyHandlers, FlexiTableColumnModel columnModel, Locale locale) {
+	public PendingMembershipsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
-		this.userManager = userManager;
-		this.userPropertyHandlers = userPropertyHandlers;
 		this.locale = locale;
 	}
 

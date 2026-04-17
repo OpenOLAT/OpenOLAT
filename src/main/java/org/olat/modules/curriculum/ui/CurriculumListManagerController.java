@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -138,13 +139,15 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public static final String SUB_PATH_DELETED = SUB_PATH_IMPLEMENTATIONS +  "/" + CONTEXT_DELETED + "/0";
 	
 	private static final String ALL_TAB_ID = "All";
-	private static final String RELEVANT_TAB_ID = "Relevant";
+	private static final String ACTIVE_TAB_ID = "Active";
+	private static final String DELETED_TAB_ID = "Deleted";
 
 	private static final String FILTER_STATUS = "Status";
 	private static final String FILTER_ORGANISATIONS = "Organisations";
 
 	private FlexiFiltersTab allTab;
-	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab activeTab;
+	private FlexiFiltersTab deletedTab;
 	
 	private FlexiTableElement tableEl;
 	private FormLink bulkDeleteButton;
@@ -250,7 +253,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				.build());
 		
 		initFiltersPresets();
-		tableEl.setSelectedFilterTab(ureq, relevantTab);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 		
 		if(secCallback.canDeleteCurriculum()) {
 			tableEl.setMultiSelect(true);
@@ -330,13 +333,28 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void initFiltersPresets() {
+		if(!roles.isAdministrator()) {
+			return;
+		}
+		
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
 		allTab = FlexiFiltersTabFactory.tab(ALL_TAB_ID, translate("filter.all"), TabSelectionBehavior.nothing);
 		tabs.add(allTab);
 
-		relevantTab = FlexiFiltersTabFactory.tab(RELEVANT_TAB_ID, translate("filter.relevant"), TabSelectionBehavior.nothing);
-		tabs.add(relevantTab);
+		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				ACTIVE_TAB_ID,
+				translate("filter.active"),
+				TabSelectionBehavior.nothing,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CurriculumStatus.active.name())));
+		tabs.add(activeTab);
+		
+		deletedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				DELETED_TAB_ID,
+				translate("filter.deleted"),
+				TabSelectionBehavior.nothing,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CurriculumStatus.deleted.name())));
+		tabs.add(deletedTab);
 
 		tableEl.setFilterTabs(true, tabs);
 	}
@@ -388,9 +406,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		// principals can only view them
 		CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
 		searchParams.setSearchString(searchString);
-		
-		FlexiFiltersTab selectedFilterTab = tableEl.getSelectedFilterTab();
-		searchParams.setHasRelevantImplementations(selectedFilterTab != null && selectedFilterTab == relevantTab);
 		
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_STATUS);
 		if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {

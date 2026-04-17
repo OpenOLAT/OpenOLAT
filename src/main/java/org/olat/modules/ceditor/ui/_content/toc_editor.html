@@ -1,0 +1,18 @@
+<div class="o_page_toc_editor o_ce_layout_predefined">
+    #if($title && !$title.isEmpty())
+    <div class="o_page_toc_title">$r.escapeHtml($title)</div>
+    #end
+    #if($entries && !$entries.isEmpty())
+    <ol class="o_page_toc_list">
+    #foreach($entry in $entries)
+        <li class="o_page_toc_indent_$entry.indent">
+            $r.escapeHtml($entry.text)
+        </li>
+    #end
+    </ol>
+    #else
+    <div class="o_page_toc_empty">
+        <i class="o_icon o_icon_list_num"> </i> $r.translate("toc.empty.hint")
+    </div>
+    #end
+</div>

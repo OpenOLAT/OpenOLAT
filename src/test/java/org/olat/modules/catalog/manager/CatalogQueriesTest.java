@@ -273,6 +273,25 @@ public class CatalogQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadRepositoryEntries_webPublish() {
+		TestCatalogItem catalogItem = createCatalogItem(true);
+
+		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setWebPublish(true);
+
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
+
+		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null, null).stream()
+				.forEach(offer -> {
+					offer.setCatalogWebPublish(true);
+					acService.save(offer);
+				});
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
+	}
+
+	@Test
 	public void shouldLoadRepositoryEntriesOpenAccess() {
 		TestCatalogItem catalogItem = createOpenAccessCatalogItem();
 		
@@ -449,6 +468,25 @@ public class CatalogQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadRepositoryEntriesForGuests_webPublish() {
+		RepositoryEntry repositoryEntry = createRepositoryEntryForGuest();
+
+		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
+		searchParams.setWebPublish(true);
+
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
+
+		acService.getOffers(repositoryEntry, true, false, null, false, null, null).stream()
+				.forEach(offer -> {
+					offer.setCatalogWebPublish(true);
+					acService.save(offer);
+				});
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).contains(repositoryEntry);
+	}
+
+	@Test
 	public void shouldLoadRepositoryEntries_filterBy_ResourceKeys() {
 		TestCatalogItem catalogItem = createCatalogItem(3, true);
 		
@@ -566,6 +604,16 @@ public class CatalogQueriesTest extends OlatTestCase {
 		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).contains(catalogItem.getCurriculumElement());
 	}
 	
+	@Test
+	public void shouldLoadCurriculumElements_guestOnly_empty() {
+		TestCatalogItem catalogItem = createCatalogItem(false);
+
+		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setGuestOnly(true);
+
+		assertThat(sut.loadCurriculumElements(searchParams)).isEmpty();
+	}
+
 	@Test
 	public void shouldLoadCurriculumElements_exclude_notInCatalog() {
 		TestCatalogItem catalogItem = createCatalogItem(false);
@@ -725,6 +773,25 @@ public class CatalogQueriesTest extends OlatTestCase {
 		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
 	}
 	
+	@Test
+	public void shouldLoadCurriculumElements_webPublish() {
+		TestCatalogItem catalogItem = createCatalogItem(false);
+
+		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setWebPublish(true);
+
+		assertThat(sut.loadCurriculumElements(searchParams)).doesNotContain(catalogItem.getCurriculumElement());
+
+		acService.findOfferByResource(catalogItem.getCurriculumElement().getResource(), true, null, null).stream()
+				.forEach(offer -> {
+					offer.setCatalogWebPublish(true);
+					acService.save(offer);
+				});
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.loadCurriculumElements(searchParams)).contains(catalogItem.getCurriculumElement());
+	}
+
 	@Test
 	public void shouldLoadCurriculumElements_filterBy_ResourceKey() {
 		TestCatalogItem catalogItem = createCatalogItem(3, false);

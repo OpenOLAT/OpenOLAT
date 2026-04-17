@@ -115,7 +115,7 @@ public class CalendarPortletRunController extends BasicController {
 				ColumnDescriptor.ALIGNMENT_LEFT));
 		
 		
-		List<KalendarEvent> events = getMatchingEvents(ureq, wControl);
+		List<KalendarEvent> events = getMatchingEvents(ureq);
 		tableController.setTableDataModel(new EventsModel(events));
 		listenTo(tableController);
 		
@@ -124,11 +124,11 @@ public class CalendarPortletRunController extends BasicController {
 		putInitialPanel(this.calendarVC);
 	}
 
-	private List<KalendarEvent> getMatchingEvents(UserRequest ureq, WindowControl wControl) {
+	private List<KalendarEvent> getMatchingEvents(UserRequest ureq) {
 		ZonedDateTime startDate = DateUtils.toZonedDateTime(new Date());
 		ZonedDateTime endDate = startDate.plusDays(7);
 		List<KalendarEvent> events = new ArrayList<>();
-		List<KalendarRenderWrapper> calendars = personalCalendarManager.getListOfCalendarWrappers(ureq, wControl);
+		List<KalendarRenderWrapper> calendars = personalCalendarManager.getListOfCalendarWrappers(ureq.getIdentity());
 		for (Iterator<KalendarRenderWrapper> iter = calendars.iterator(); iter.hasNext();) {
 			KalendarRenderWrapper calendarWrapper = iter.next();
 			boolean readOnly = (calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !calendarWrapper.isImported();

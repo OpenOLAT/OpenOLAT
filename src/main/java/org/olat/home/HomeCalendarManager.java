@@ -46,8 +46,6 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProvide
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -144,18 +142,28 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 				RepositoryEntry courseEntry = (RepositoryEntry)resource[0];
 				if(resourceSet.contains(courseEntry)) {
 					continue;
-				} else {
-					resourceSet.add(courseEntry);
 				}
-				
+				resourceSet.add(courseEntry);
+
 				String calendarId = courseEntry.getOlatResource().getResourceableId().toString();
-				CalendarKey key = new CalendarKey(calendarId, CalendarManager.TYPE_COURSE);
-				CalendarUserConfiguration calendarConfig = configMap.get(key);
-				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
-					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_COURSE, calendarId);
-					if(iCalFile != null) {
-						aggregatedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_COURSE, iCalFile));
+				try {
+					ICourse course = CourseFactory.loadCourse(courseEntry);
+					if(CourseCalendars.isCourseCalendarEnabled(course)) {
+						CalendarKey key = new CalendarKey(calendarId, CalendarManager.TYPE_COURSE);
+						CalendarUserConfiguration calendarConfig = configMap.get(key);
+						if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
+							File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_COURSE, calendarId);
+							if(iCalFile != null) {
+								aggregatedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_COURSE, iCalFile));
+							}
+						}
 					}
+				} catch (CorruptedCourseException e) {
+					OLATResource olatResource = courseEntry.getOlatResource();
+					log.error("Corrupted course: {} :: {}", olatResource.getResourceableTypeName(), calendarId);
+				} catch (Exception e) {
+					OLATResource olatResource = courseEntry.getOlatResource();
+					log.error("Cannot read calendar of course: {} :: {}", olatResource.getResourceableTypeName(), calendarId, e);
 				}
 			}
 		}
@@ -166,19 +174,17 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 	//
 	
 	@Override
-	public List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {
+	public List<KalendarRenderWrapper> getListOfCalendarWrappers(Identity identity) {
 		if(!calendarModule.isEnabled()) {
 			return new ArrayList<>();
 		}
-		
-		Identity identity = ureq.getIdentity();
-		
+
 		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		Map<CalendarKey,CalendarUserConfiguration> configMap = calendarManager
-				.getCalendarUserConfigurationsMap(ureq.getIdentity());
+				.getCalendarUserConfigurationsMap(identity);
 		appendPersonalCalendar(identity, calendars, configMap);
 		appendGroupCalendars(identity, calendars, configMap);
-		appendCourseCalendars(ureq, calendars, configMap);
+		appendCourseCalendars(identity, calendars, configMap);
 		
 		//reload every hour
 		List<KalendarRenderWrapper> importedCalendars = importCalendarManager.getImportedCalendarsForIdentity(identity, true);
@@ -226,13 +232,13 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 		}
 	}
 
-	private void appendCourseCalendars(UserRequest ureq, List<KalendarRenderWrapper> calendars,
+	private void appendCourseCalendars(Identity identity, List<KalendarRenderWrapper> calendars,
 			Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
 			
 			// add course calendars
-			List<Object[]> resources = getCourses(ureq.getIdentity());
-			Set<OLATResource> editoredResources = getEditorGrants(ureq.getIdentity());
+			List<Object[]> resources = getCourses(identity);
+			Set<OLATResource> editoredResources = getEditorGrants(identity);
 			
 			Set<Long> duplicates = new HashSet<>();
 			
@@ -275,7 +281,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 					log.error("Corrupted course: {} :: {}", olatResource.getResourceableTypeName(), courseResourceableID);
 				} catch (Exception e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
-					log.error("Cannor read calendar of course: {} :: {}", olatResource.getResourceableTypeName(), courseResourceableID);
+					log.error("Cannot read calendar of course: {} :: {}", olatResource.getResourceableTypeName(), courseResourceableID, e);
 				}
 			}
 		}

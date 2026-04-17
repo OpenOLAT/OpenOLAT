@@ -131,32 +131,10 @@ public class ShowZoomApplicationsController extends FormBasicController {
     private void loadModel() {
         List<ZoomApplicationRow> rows = zoomManager.getProfileApplications(zoomProfile.getKey()).stream()
                 .filter(app -> app.getApplicationType() != null)
-                .filter(this::isValid)
                 .map(this::toRow)
                 .collect(toList());
         applicationsTableModel.setObjects(rows);
         applicationsTableEl.reset(true, true, true);
-    }
-
-    private boolean isValid(ZoomProfileApplication application) {
-        LTI13Context ltiContext = application.getLti13Context();
-        try {
-            switch (application.getApplicationType()) {
-                case courseElement:
-                    ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
-                    return course.getRunStructure().getNode(ltiContext.getSubIdent()) != null;
-                case courseTool:
-                    CourseFactory.loadCourse(ltiContext.getEntry());
-                    return true;
-                case groupTool:
-                    return true;
-                default:
-                    return false;
-            }
-        } catch (Exception e) {
-            log.warn("Zoom application is no longer valid: {}", e.getMessage());
-            return false;
-        }
     }
 
     private ZoomApplicationRow toRow(ZoomProfileApplication application) {
@@ -191,7 +169,7 @@ public class ShowZoomApplicationsController extends FormBasicController {
                     ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
                     CourseNode courseNode = course.getRunStructure().getNode(ltiContext.getSubIdent());
                     if (courseNode == null) {
-                        return null;
+                        return translator.translate("zoom.profile.application.missing.courseElement");
                     }
                     return translator.translate("zoom.profile.application.courseElement",
                             StringHelper.xssScan(courseNode.getShortName()),
@@ -208,7 +186,7 @@ public class ShowZoomApplicationsController extends FormBasicController {
             }
         } catch (Exception e) {
             log.warn("Failed to build display text for Zoom application: {}", e.getMessage());
-            return null;
+            return translator.translate("zoom.profile.application.missing.course");
         }
     }
     
@@ -256,11 +234,11 @@ public class ShowZoomApplicationsController extends FormBasicController {
                 FlexiTableComponent source, URLBuilder ubu, Translator translator) {
             if (cellValue instanceof ZoomApplicationRow applicationRow) {
                 if (StringHelper.containsNonWhitespace(applicationRow.getGroupDisplayText())) {
-                    target.append(applicationRow.getGroupDisplayText());
+                    target.append(StringHelper.escapeHtml(applicationRow.getGroupDisplayText()));
                 } else {
                     String displayText = buildDisplayText(applicationRow.getApplication(), translator);
                     if (StringHelper.containsNonWhitespace(displayText)) {
-                        target.append(displayText);
+                        target.append(StringHelper.escapeHtml(displayText));
                     }
                 }
             }

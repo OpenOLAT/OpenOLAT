@@ -174,7 +174,8 @@ public class RepositoyUIFactory {
 		ObjectSelectionElement organisationEl = uifactory.addObjectSelectionElement("organisations",
 				"cif.organisations", formLayout, windowControl, true, organisationSource);
 		organisationEl.setMandatory(true);
-		organisationEl.setVisible(manageableOrganisations.size() > 1 && organisationModule.isEnabled());
+		organisationEl.setVisible(organisationModule.isEnabled());
+		organisationEl.setEnabled(manageableOrganisations.size() > 1);
 		
 		if (organisationEl.isVisible()) {
 			List<String> preselectedOrganisations = defaultOrganisations == null || defaultOrganisations.isEmpty()

@@ -13,16 +13,21 @@ canonical translations used throughout the application.
 
 | English | Deutsch | Francais | Espanol | Italiano |
 |---------|---------|----------|---------|----------|
+| Absence manager | Absenzenverwalter{in} |  |  |  |
 | Administrator | Administrator{in} | Administrateur |  | Amministratore |
-| Author | Besitzer{innen} | Propri\u00E9taire |  | Autore |
+| Author | Autor{in} | Auteur |  | Autore |
+| Course planner | Kursplaner{in} |  |  |  |
 | Education manager | Ausbildungsverantwortliche{r} | Responsables \u00E9ducatifs |  | Responsabile di formazione |
 | Group manager |  |  |  |  |
 | Learning resource manager | Lernressourcenverwalter{in} | Administrateur des ressources didactiques |  | Manager delle risorse didattiche |
 | Line manager | Linienvorgesetzte{r} | Line manager |  | Manager di linea |
 | Principal | Principal | Principal |  | Principale |
+| Project manager | Projektverwalter{in} |  |  |  |
 | Quality manager | Qualityverwalter{in} | Responsable qualit\u00E9 |  | Manager della qualit\u00E0 |
 | Question bank manager | Poolverwalter{in} | Gestion banque de questions |  | Manager del pool di domande |
 | Roles manager | Rollenverwalter{in} | Gestion r\u00F4les |  | Manager dei ruoli |
+| System administrator | Systemadministrator{in} |  |  |  |
+| User | Benutzer{in} |  |  |  |
 | User manager | Benutzerverwalter{in} | Gestion des utilisateurs |  | Amministratore utenti |
 
 ## Course/Resource roles
@@ -84,59 +89,85 @@ canonical translations used throughout the application.
 
 | English | Deutsch | Francais | Espanol | Italiano |
 |---------|---------|----------|---------|----------|
+| AI module | KI Modul |  |  |  |
 | Assessment inspection | Pr\u00FCfungseinsicht | consultation d'examen |  | Ispezione di valutazione |
 | Assessment mode | Pr\u00FCfungsmodus | Mode d'\u00E9valuation |  | Modalit\u00E0 di valutazione |
-| Badges | Badges | Badges |  | Badge |
-| Coaching | Betreuend | Coach\u00E9 |  | Tutorato |
-| Conventional course | Herk\u00F6mmlicher Kurs | Cours conventionnel |  | Corso convenzionale |
-| Evidence of achievement | Leistungsnachweise | Attestation de performance | Evidencia de logros | Attestati di efficienza |
-| File Hub | File Hub | File Hub |  | File Hub |
-| Learning path | Lernpfad | Parcours d'apprentissage |  | Percorso |
-| REST API | REST API | REST API |  | REST API |
-| WebDAV | WebDAV | WebDAV |  | WebDAV |
 | Assessment tool | Bewertungswerkzeug | Outil d'évaluation |  | Strumento di valutazione |
 | Audio/Video recording | Audio-/Videoaufnahme | Enregistrement audio/vidéo |  | Registrazione audio/video |
+| Badges | Badges | Badges |  | Badge |
 | Bulk assessment | Massenbewertung | Évaluation en masse |  | Valutazione in blocco |
+| Calendar | Kalender | Calendrier |  | Calendario |
+| Coaching | Betreuend | Coach\u00E9 |  | Tutorato |
 | Content editor | Content Editor | Éditeur de contenu |  | Editor di contenuto |
+| Conventional course | Herk\u00F6mmlicher Kurs | Cours conventionnel |  | Corso convenzionale |
 | Course editor | Kurseditor | Éditeur de cours |  | Editor del corso |
 | Credit points | Kreditpunkte | Crédits |  | Crediti formativi |
 | Data collection | Datenerfassung | Collecte de données |  | Raccolta dati |
+| Data collection generator | Datenerhebungsgenerator |  |  |  |
+| Evidence of achievement | Leistungsnachweise | Attestation de performance | Evidencia de logros | Attestati di efficienza |
+| File Hub | File Hub | File Hub |  | File Hub |
+| Full-text search | Volltextsuche |  |  |  |
 | Instant messaging | Chat | Messagerie instantanée |  | Messaggistica istantanea |
+| Learning path | Lernpfad | Parcours d'apprentissage |  | Percorso |
+| Licenses | Lizenzen |  |  |  |
 | Notes | Notizen | Notes |  | Appunti |
 | OAI-PMH | OAI-PMH | OAI-PMH |  | OAI-PMH |
+| Passkey | Passkey |  |  |  |
 | Peer review | Peer-Review | Révision par les pairs |  | Revisione tra pari |
+| REST API | REST API | REST API |  | REST API |
 | Recertification | Rezertifizierung | Recertification |  | Ricertificazione |
 | Role switching | Rollenwechsel | Changement de rôle |  | Cambio di ruolo |
 | Safe Exam Browser | Safe Exam Browser | Safe Exam Browser |  | Safe Exam Browser |
 | Subscriptions | Abonnements | Abonnements |  | Abbonamenti |
 | Video collection | Videosammlung | Collection vidéo |  | Collezione video |
+| Web catalog | Web-Katalog |  |  |  |
+| WebDAV | WebDAV | WebDAV |  | WebDAV |
 | Whiteboard | Whiteboard | Tableau blanc |  | Lavagna |
 
 ## Areas
 
 | English | Deutsch | Francais | Espanol | Italiano |
 |---------|---------|----------|---------|----------|
+| Administration | Systemadministration |  |  |  |
 | Authoring | Autorenbereich | Ressources didactiques |  | Risorse didattiche |
+| Courses | Meine Kurse |  |  |  |
 
 ## Concepts
 
 | English | Deutsch | Francais | Espanol | Italiano |
 |---------|---------|----------|---------|----------|
-| Certification program | Zertifikatsprogramme |  |  |  |
-| Curriculum element |  |  |  |  |
-| Implementation | Durchf\u00FChrung | Impl\u00E9mentation |  | Implementazione |
-| Offer | Angebot | Offre |  | Offerta |
-| Repository entry |  |  |  |  |
 | Access code | Zugangscode | Code d'accès |  | Codice di accesso |
 | Booking order | Buchungsauftrag | Ordre de réservation |  | Ordine di prenotazione |
+| Certification program | Zertifikatsprogramme |  |  |  |
 | Coach folder | Betreuer{innen} Ordner | Dossier coach |  | Cartella coach |
 | Competence | Kompetenz | Compétence |  | Competenza |
+| Corrector | Korrektor{in} |  |  |  |
+| Course element | Kursbaustein |  |  |  |
+| Course lifecycle | Kurs-Lebenszyklus |  |  |  |
+| Curriculum element |  |  |  |  |
+| Delivery format | Durchführungsformat |  |  |  |
+| Drop box | Abgabeordner |  |  |  |
+| Educational product | Bildungsprodukt |  |  |  |
+| External reference | Kennzeichen |  |  |  |
+| Grading assignment | Korrekturauftrag |  |  |  |
+| Implementation | Durchf\u00FChrung | Impl\u00E9mentation |  | Implementazione |
+| Launcher | Launcher |  |  |  |
 | Learning area | Lernbereich | Domaine d'étude |  | Area di studio |
 | Learning progress | Lernfortschritt | Progrès d'apprentissage |  | Progresso di apprendimento |
+| Learning resource | Lernressource |  |  |  |
+| Lesson block | Lektionsblock |  |  |  |
+| Metadata | Metadaten |  |  |  |
+| Offer | Angebot | Offre |  | Offerta |
 | Product | Produkt | Produit |  | Prodotto |
 | Publication status | Publikationsstatus | Statut de publication |  | Stato di pubblicazione |
+| Repository entry |  |  |  |  |
+| Return box | Rückgabeordner |  |  |  |
+| Rubric | Rubrik |  |  |  |
+| Sample solutions | Musterlösungen |  |  |  |
 | Storage folder | Ablageordner | Dossier de stockage |  | Cartella di conservazione |
+| Teaser | Teaser |  |  |  |
 | Template course | Vorlagekurs |  |  |  |
+| Waiting list | Warteliste |  |  |  |
 
 ## Standards
 
@@ -176,6 +207,7 @@ canonical translations used throughout the application.
 | BigBlueButton | BigBlueButton | BigBlueButton |  | BigBlueButton |
 | Blog | Blog | Blogue |  | Blog |
 | CP learning content | CP-Lerninhalt | Contenu didactique CP |  | Contenuto didattico CP |
+| Calendar | Kalender | Calendrier |  | Calendario |
 | Check list | Checkliste | Listes de contr\u00F4le |  | Checklist |
 | Check list (old) | Checkliste (alt) | Check-list (ancienne) |  | Check list |
 | E-mail | E-Mail | E-mail | Formulario de contacto | E-mail |
@@ -183,11 +215,14 @@ canonical translations used throughout the application.
 | External page | Externe Seite | Page externe | P\u00E1gina externa | Pagina esterna |
 | File dialog | Dateidiskussion | Fichier discut\u00E9 | Di\u00E1logo de archivo | Discussione documentata |
 | Folder | Ordner | Dossier | Carpeta | Cartella |
+| Form | Formular | Formulaire |  | Questionario |
 | Forum | Forum | Forum | Foro | Forum |
 | Grouptask | Gruppenaufgabe | Devoir de groupe |  | Compito di gruppo |
 | HTML-Page | HTML-Seite | Page HTML |  | Pagina HTML |
 | LTI page | LTI-Seite | Page LTI |  | Pagina LTI |
 | Link list | Linkliste | Liste de liens | Lista de enlaces | Lista link |
+| Microsoft Teams | Microsoft Teams | Microsoft Teams |  | Microsoft Teams |
+| Notifications | Mitteilungen |  |  |  |
 | Page | Seite | Page |  | Pagina |
 | Participant Folder | Teilnehmer{innen} Ordner | Dossier participant |  | Cartella di consegna |
 | Participant list | Liste der Teilnehmer{innen} | Liste des participants |  | Lista dei partecipanti |
@@ -199,6 +234,7 @@ canonical translations used throughout the application.
 | Selection | Auswahl | S\u00E9lection |  | Selezione |
 | Self-test | Selbsttest | Auto-test | Auto-Test | Autotest |
 | Structure | Struktur | Structure | Estructura | Struttura |
+| Survey | Umfrage | Enquête |  | Sondaggio |
 | Task | Aufgabe | Devoir |  | Compito |
 | Test | Test | Test |  | Test |
 | Topic assignment | Themenvergabe | Affectation sujets |  | Assegnazione temi |
@@ -206,6 +242,7 @@ canonical translations used throughout the application.
 | Video | Video | Vid\u00E9o |  | Video |
 | Video task | Videoaufgabe | Devoir vid\u00E9o |  | Compito video |
 | Wiki | Wiki | Page Wiki | P\u00E1gina colaborativa | Wiki |
+| Zoom | Zoom | Zoom |  | Zoom |
 
 ## Learning Resource Types
 
@@ -213,6 +250,7 @@ canonical translations used throughout the application.
 |---------|---------|----------|---------|----------|
 | Animation | Animation | Animation | Animaci\u00F3n | Animazione |
 | Blog entry | Blog Eintrag | Contribution de blogue |  | Articolo di blog |
+| CP learning content | CP-Lerninhalt | Contenu didactique CP |  | Contenuto didattico CP |
 | Excel | Excel | Excel | Excel | Excel |
 | File | Datei | Fichier | Archivo | File |
 | Form | Formular | Formulaire |  | Questionario |

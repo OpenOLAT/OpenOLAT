@@ -115,22 +115,19 @@ public class CatalogQueries {
 
 		sb.and().append("(");
 
+		// Guest access
 		if (isGuestOnly || webPublish) {
 			or = true;
-			sb.append(" res.key in (");
-			sb.append("   select resource.key");
-			sb.append("     from acoffer offer");
-			sb.append("     inner join offer.resource resource");
-			sb.append("     inner join repositoryentry re2");
-			sb.append("        on re2.olatResource.key = resource.key");
-			sb.append("       and re2.publicVisible = true");
+			sb.append(" (v.publicVisible = true");
+			sb.append("  and v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
+			sb.append("  and res.key in (select resource.key from acoffer offer");
+			sb.append("    inner join offer.resource resource");
 			sb.append("    where offer.valid = true");
 			sb.append("      and offer.guestAccess = true");
 			if (webPublish) {
-				sb.append("  and offer.catalogWebPublish = true");
+				sb.append("    and offer.catalogWebPublish = true");
 			}
-			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
-			sb.append(")");
+			sb.append("  ))");
 			if (isGuestOnly) {
 				sb.append(")");
 				return;
@@ -142,70 +139,72 @@ public class CatalogQueries {
 			sb.append(" or ");
 		}
 		or = true;
-		sb.append(" res.key in (");
-		sb.append("   select resource.key");
-		sb.append("     from acoffer offer");
-		sb.append("     inner join offer.resource resource");
-		sb.append("     inner join repositoryentry re2");
-		sb.append("        on re2.olatResource.key = resource.key");
-		sb.append("       and re2.publicVisible = true");
-		sb.append("     inner join offertoorganisation oto");
-		sb.append("        on oto.offer.key = offer.key");
+		sb.append(" (v.publicVisible = true");
+		sb.append("  and v.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
+		sb.append("  and res.key in (select resource.key from acoffer offer");
+		sb.append("    inner join offer.resource resource");
+		sb.append("    inner join offertoorganisation oto on oto.offer.key = offer.key");
 		sb.append("    where offer.valid = true");
 		sb.append("      and offer.openAccess = true");
 		if (webPublish) {
-			sb.append("  and offer.catalogWebPublish = true");
+			sb.append("    and offer.catalogWebPublish = true");
 		}
-		sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
 		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-			sb.append("      and oto.organisation.key in :offerOrganisationKeys");
+			sb.append("    and oto.organisation.key in :offerOrganisationKeys");
 			addParams.setOfferOrganisations(true);
 		}
-		sb.append(")"); // in
+		sb.append("  ))");
 
 		// Access methods
 		if (acModule.isEnabled()) {
 			if (or) {
 				sb.append(" or ");
 			}
-			sb.append(" res.key in (");
-			sb.append("   select resource.key");
-			sb.append("     from acofferaccess access");
-			sb.append("     inner join access.offer offer");
-			sb.append("     inner join offer.resource resource");
-			sb.append("     inner join repositoryentry re2");
-			sb.append("        on re2.olatResource.key = resource.key");
-			sb.append("       and re2.publicVisible = true");
-			sb.append("     inner join offertoorganisation oto");
-			sb.append("        on oto.offer.key = offer.key");
-			sb.append("   where offer.valid = true");
-			sb.append("     and offer.catalogPublish = true");
-			if (webPublish) {
-				sb.append(" and offer.catalogWebPublish = true");
-			}
-			sb.append("     and offer.openAccess = false");
-			sb.append("     and offer.guestAccess = false");
-			sb.append("     and access.method.enabled = true");
-			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-				sb.append("     and oto.organisation.key in :offerOrganisationKeys");
-				addParams.setOfferOrganisations(true);
-			}
 			if (offerValidAt != null) {
-				sb.append(" and (");
-				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
-				sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-				sb.append(" and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
-				sb.append(" and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
-				sb.append(" or");
-				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
-				sb.append(" and offer.validFrom is null and offer.validTo is null");
-				sb.append(" )");
+				// Offers without validity period
+				sb.append(" (v.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
+				sb.append("  and res.key in (");
+				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
+				sb.append("      and offer.validFrom is null and offer.validTo is null");
+				sb.append("  ))");
+				// Offers with validity period
+				sb.append(" or ");
+				sb.append(" (v.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+				sb.append("  and res.key in (");
+				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
+				sb.append("      and (offer.validFrom is not null or offer.validTo is not null)");
+				sb.append("      and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
+				sb.append("      and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
+				sb.append("  ))");
 				addParams.setOfferValidAt(true);
+			} else {
+				sb.append(" (res.key in (");
+				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
+				sb.append("  ))");
 			}
-			sb.append(")"); // in
 		}
 
 		sb.append(")");
+	}
+
+	private void appendMethodOfferSubSelect(QueryBuilder sb, boolean webPublish,
+			List<? extends OrganisationRef> offerOrganisations, AddParams addParams) {
+		sb.append("select resource.key from acofferaccess access");
+		sb.append("    inner join access.offer offer");
+		sb.append("    inner join offer.resource resource");
+		sb.append("    inner join offertoorganisation oto on oto.offer.key = offer.key");
+		sb.append("    where offer.valid = true");
+		sb.append("      and offer.catalogPublish = true");
+		if (webPublish) {
+			sb.append("    and offer.catalogWebPublish = true");
+		}
+		sb.append("      and offer.openAccess = false");
+		sb.append("      and offer.guestAccess = false");
+		sb.append("      and access.method.enabled = true");
+		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+			sb.append("    and oto.organisation.key in :offerOrganisationKeys");
+			addParams.setOfferOrganisations(true);
+		}
 	}
 
 	private void appendParamsRE(CatalogEntrySearchParams searchParams, TypedQuery<?> query, AddParams addParams) {
@@ -319,44 +318,31 @@ public class CatalogQueries {
 
 	private void appendAccessSubSelectCE(QueryBuilder sb, AddParams addParams, boolean webPublish,
 			Date offerValidAt, List<? extends OrganisationRef> offerOrganisations) {
-		
+
 		sb.and().append("(");
 
-		// Access methods
-		sb.append(" res.key in (");
-		sb.append("   select resource.key");
-		sb.append("     from acofferaccess access");
-		sb.append("     inner join access.offer offer");
-		sb.append("     inner join offer.resource resource");
-		sb.append("     inner join curriculumelement ce2");
-		sb.append("        on ce2.resource.key = resource.key");
-		sb.append("     inner join offertoorganisation oto");
-		sb.append("        on oto.offer.key = offer.key");
-		sb.append("   where offer.valid = true");
-		sb.append("     and offer.catalogPublish = true");
-		if (webPublish) {
-			sb.append(" and offer.catalogWebPublish = true");
-		}
-		sb.append("     and offer.openAccess = false");
-		sb.append("     and offer.guestAccess = false");
-		sb.append("     and access.method.enabled = true");
-		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-			sb.append(" and oto.organisation.key in :offerOrganisationKeys");
-			addParams.setOfferOrganisations(true);
-		}
 		if (offerValidAt != null) {
-			sb.append(" and (");
-			sb.append(" ce2.status ").in(ACService.CESTATUS_ACTIVE_METHOD_PERIOD);
-			sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-			sb.append(" and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
-			sb.append(" and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
-			sb.append(" or");
-			sb.append(" ce2.status ").in(ACService.CESTATUS_ACTIVE_METHOD);
-			sb.append(" and offer.validFrom is null and offer.validTo is null");
-			sb.append(" )");
+			// Offers without validity period
+			sb.append(" (v.status ").in(ACService.CESTATUS_ACTIVE_METHOD);
+			sb.append("  and res.key in (");
+			appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
+			sb.append("      and offer.validFrom is null and offer.validTo is null");
+			sb.append("  ))");
+			// Offers with validity period
+			sb.append(" or ");
+			sb.append(" (v.status ").in(ACService.CESTATUS_ACTIVE_METHOD_PERIOD);
+			sb.append("  and res.key in (");
+			appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
+			sb.append("      and (offer.validFrom is not null or offer.validTo is not null)");
+			sb.append("      and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
+			sb.append("      and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
+			sb.append("  ))");
 			addParams.setOfferValidAt(true);
+		} else {
+			sb.append(" (res.key in (");
+			appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
+			sb.append("  ))");
 		}
-		sb.append(")"); // in
 
 		sb.append(")");
 	}

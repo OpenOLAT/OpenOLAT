@@ -109,7 +109,6 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	
 	private SearchSpellChecker searchSpellChecker;
 	private String indexPath;
-	private String permanentIndexPath;
 	private String indexerCron;
 	
 	/** Counts number of search queries since last restart. */
@@ -239,7 +238,6 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		indexer = new Index(searchModuleConfig, this, searchSpellChecker, mainIndexer, coordinatorManager);
 
 		indexPath = searchModuleConfig.getFullIndexPath();	
-		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
 		
 		createIndexSearcherManager();
 
@@ -517,28 +515,21 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 
 	private IndexSearcher newSearcher() throws IOException {
 		DirectoryReader classicReader = DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath()));
-		DirectoryReader permanentReader = DirectoryReader.open(FSDirectory.open(new File(permanentIndexPath).toPath()));
-		OOMultiReader mReader = new OOMultiReader(classicReader, permanentReader);
+		OOMultiReader mReader = new OOMultiReader(classicReader);
 		return new IndexSearcher(mReader);
 	}
 
 	private static class OOMultiReader extends MultiReader {
 		
 		private final DirectoryReader reader;
-		private final DirectoryReader permanentReader;
 		
-		public OOMultiReader(DirectoryReader reader, DirectoryReader permanentReader) throws IOException {
-			super(reader, permanentReader);
+		public OOMultiReader(DirectoryReader reader) throws IOException {
+			super(reader);
 			this.reader = reader;
-			this.permanentReader = permanentReader;
 		}
 
 		public DirectoryReader getReader() {
 			return reader;
-		}
-
-		public DirectoryReader getPermanentReader() {
-			return permanentReader;
 		}
 	}
 
@@ -572,8 +563,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		    } else {
 		    	final OOMultiReader r = (OOMultiReader)referenceToRefresh.getIndexReader();
 		    	final IndexReader newReader = DirectoryReader.openIfChanged(r.getReader());
-		    	final IndexReader newPermReader = DirectoryReader.openIfChanged(r.getPermanentReader());  
-		    	if (newReader == null && newPermReader == null) {
+		    	if (newReader == null) {
 		    		searcher = null;
 		    	} else {
 			    	searcher = getSearcher(factory);
@@ -621,19 +611,15 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	 */
 	protected boolean existIndex()
 	throws IOException {
-		
-			File indexFile = new File(searchModuleConfig.getFullIndexPath());
-			if(indexFile.exists()) {
-				File permIndexFile = new File(searchModuleConfig.getFullPermanentIndexPath());
-				try(FSDirectory directory = FSDirectory.open(indexFile.toPath());
-						FSDirectory permDirectory = FSDirectory.open(permIndexFile.toPath())) {
-					return DirectoryReader.indexExists(directory) && DirectoryReader.indexExists(permDirectory);
-				} catch(IOException e) {
-					log.error("", e);
-				}
+		File indexFile = new File(searchModuleConfig.getFullIndexPath());
+		if(indexFile.exists()) {
+			try(FSDirectory directory = FSDirectory.open(indexFile.toPath())) {
+				return DirectoryReader.indexExists(directory);
+			} catch(IOException e) {
+				log.error("", e);
 			}
-			return false;
-		
+		}
+		return false;
 	}
 
 	/**

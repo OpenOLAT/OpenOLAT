@@ -289,6 +289,19 @@ public abstract class BasicController extends DefaultController {
 				+ ".html", translator, this);
 	}
 
+	/**
+	 * Returns the path to the Velocity template for the given page name,
+	 * following the same convention as {@link #createVelocityContainer(String)}.
+	 * Useful when a subclass needs to construct a custom {@link org.olat.core.gui.components.velocity.VelocityContainer}
+	 * subtype and must pass the resolved template path to its constructor.
+	 *
+	 * @param page the page name without path or extension, e.g. {@code "index"}
+	 * @return the absolute template path, e.g. {@code "/org/example/ui/_content/index.html"}
+	 */
+	protected String getVelocityTemplatePath(String page) {
+		return velocity_root + "/" + page + ".html";
+	}
+
 	protected StackedPanel putInitialPanel(Component initialContent) {
 		if(initialContent instanceof StackedPanel) {
 			super.setInitialComponent(initialContent);

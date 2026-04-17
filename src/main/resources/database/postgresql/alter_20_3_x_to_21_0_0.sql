@@ -36,3 +36,13 @@ create table o_ai_usage_log (
    primary key (id)
 );
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
+
+-- ac offer indexes
+drop index idx_offer_guest_idx;
+drop index idx_offer_open_idx;
+drop index idx_rel_oto_org_idx;
+drop index idx_offeracc_offer_idx;
+create index idx_offer_catalog_guest_idx on o_ac_offer (is_valid, guest_access, catalog_web_publish, fk_resource_id);
+create index idx_offer_catalog_open_idx on o_ac_offer (is_valid, open_access, catalog_web_publish, fk_resource_id);
+create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
+create index idx_offeracc_offer_method_idx on o_ac_offer_access (fk_offer_id, fk_method_id);

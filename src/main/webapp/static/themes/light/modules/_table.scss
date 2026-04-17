@@ -122,7 +122,7 @@
 			text-decoration: none;
 		}
 	}
-	td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored) {
+	td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
 		/* fix a11y contrast on stipped and non-stryped cols */
 		color: $o-table-link-color;
 	}

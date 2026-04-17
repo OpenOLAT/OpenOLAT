@@ -263,6 +263,7 @@
 		<class>org.olat.modules.ceditor.model.jpa.TitlePart</class>
 		<class>org.olat.modules.ceditor.model.jpa.MediaPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.SpacerPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.TocPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.TablePart</class>
 		<class>org.olat.modules.ceditor.model.jpa.EvaluationFormPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.CategoryImpl</class>

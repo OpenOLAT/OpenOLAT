@@ -1412,8 +1412,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		activityDao.create(Action.fileDeletePermanently, before, null, null, doer, reloadedFile.getArtefact());
 
 		fileDao.delete(file);
-		projectStorage.deleteFile(project, filename);
 		deleteArtefactPermanent(reloadedFile.getArtefact());
+		dbInstance.intermediateCommit(); // To avoid red screen
+		projectStorage.deleteFile(project, filename);
 	}
 	
 	@Override

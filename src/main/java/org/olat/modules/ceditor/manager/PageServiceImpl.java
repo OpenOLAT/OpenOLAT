@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -584,6 +586,38 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	@Override
 	public List<PagePart> getPageParts(Page page) {
 		return pageDao.getParts(page.getBody());
+	}
+
+	@Override
+	public List<PagePart> getAllPagePartsFlat(Page page) {
+		List<PagePart> allParts = getPageParts(page);
+
+		Map<String, PagePart> partsByElementId = new HashMap<>();
+		for (PagePart part : allParts) {
+			partsByElementId.put(part.getId(), part);
+		}
+
+		Set<String> containedIds = new HashSet<>();
+		for (PagePart part : allParts) {
+			if (part instanceof ContainerPart container) {
+				containedIds.addAll(container.getContainerSettings().getAllElementIds());
+			}
+		}
+
+		List<PagePart> flatList = new ArrayList<>();
+		for (PagePart part : allParts) {
+			if (part instanceof ContainerPart container) {
+				for (String elementId : container.getContainerSettings().getAllElementIds()) {
+					PagePart child = partsByElementId.get(elementId);
+					if (child != null) {
+						flatList.add(child);
+					}
+				}
+			} else if (!containedIds.contains(part.getId())) {
+				flatList.add(part);
+			}
+		}
+		return flatList;
 	}
 
 	@Override

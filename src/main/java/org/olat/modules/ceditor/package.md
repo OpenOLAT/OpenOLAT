@@ -221,6 +221,7 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 | `MathPart`                 | `"math"`           | `cemathpart`           | `MathElement`       |
 | `QuizPart`                 | `"quiz"`           | `cequizpart`           | `QuizElement`       |
 | `EvaluationFormPart`       | `"evaluationform"` | `ceformpart`           | (none)              |
+| `TocPart`                  | `"toc"`            | `cetocpart`            | `TocElement`        |
 
 ### Table: `o_ce_page`
 
@@ -307,6 +308,7 @@ All settings classes live in `org.olat.modules.ceditor.model`:
 | `ImageComparisonSettings`   | `imagecomparisonsettings`   | ImageComparisonPart | orientation, comparison type                               |
 | `MathSettings`              | `mathsettings`              | MathPart        | (LaTeX-specific)                                               |
 | `QuizSettings`              | `quizsettings`              | QuizPart        | `List<QuizQuestion>`                                           |
+| `TocSettings`               | `tocsettings`               | TocPart         | `title`, `visibleLevels` (Set&lt;Integer&gt; of 1-5, default 1-4)   |
 | `BlockLayoutSettings`       | `blocklayoutsettings`       | (shared)        | `spacing`, custom spacing per side                             |
 | `AlertBoxSettings`          | `alertboxsettings`          | (shared)        | `showAlertBox`, `type`, `title`, `withIcon`, `collapsible`     |
 | `MediaSettings`             | `mediasettings`             | MediaPart       | (media-specific)                                               |
@@ -1034,6 +1036,7 @@ public PageElement clonePageElement(PageElement element) {
 | `MathPageElementHandler`         | `"math"`           | `text`          | Simple        | Yes       | `MathElement`       | 40   |
 | `QuizElementHandler`             | `"quiz"`           | `knowledge`     | Simple        | Yes       | `QuizElement`       | --   |
 | `EvaluationFormHandler`          | `"evaluationform"` | `organisational`| Interactive   | No        | (none)              | --   |
+| `TocElementHandler`              | `"toc"`            | `other`         | Simple        | Yes       | `TocElement`        | 20   |
 
 \* `ImageHandler` is defined in the `cemedia` module (`org.olat.modules.cemedia.handler`), not in `ceditor`. Other media handlers (`AudioHandler`, `VideoHandler`, `FileHandler`, `CitationHandler`, `DrawioHandler`) follow the same pattern.
 
@@ -1110,6 +1113,20 @@ public PageElement clonePageElement(PageElement element) {
 - **Content column:** References to the evaluation form resource.
 - **Layout options:** (minimal).
 - **Special:** Uses `InteractiveAddPageElementHandler` -- requires selecting an existing form resource.
+
+#### Table of Contents (`toc`)
+- **Content column:** Unused.
+- **Layout options:** `TocSettings` -- `title` (optional heading text), `visibleLevels` (Set&lt;Integer&gt; of 1–5, default {1,2,3,4}).
+- **Editor:** `TocEditorController` -- shows a live preview of the computed entries while in edit mode, updating automatically when the page structure changes or the user leaves element-edit-mode.
+- **Inspector:** `TocInspectorController` -- title text field, H1–H5 checkboxes for visible levels.
+- **View:** `TocRunController` -- renders entries as a `<nav>` with a hierarchical `<ol>` of anchor links.
+- **Rendering algorithm:** Implemented in `TocElementHandler.computeEntries()`:
+  1. Find the nearest `TitlePart` that precedes the TOC element; use its heading size as the baseline level (defaults to H1 if none is found).
+  2. Collect all subsequent `TitlePart` elements whose level is strictly lower than the baseline (e.g. H2–H6 for an H1 baseline).
+  3. Stop as soon as a title at the same or higher level as the baseline is encountered.
+  4. Filter by `visibleLevels`; compute indent as `level - baseline - 1`.
+- **Anchor IDs:** `PageFragmentsComponentRenderer` adds `id="toc-{key}"` to the wrapper `<div>` of every `TitlePart`. TOC links reference these IDs as `#toc-{key}`.
+- **Position sensitivity:** `TocElementHandler` is instantiated with the owning `Page` so `computeEntries()` can call `PageService.getAllPagePartsFlat(page)` to determine ordering. The editor controller receives a `Function<TocPart, List<TitleEntry>>` to avoid a circular dependency between the `handler` and `ui` packages.
 
 #### Media types (Image, Audio, Video, File, Citation, Draw.io)
 - Defined in the `cemedia` module, not in `ceditor`.

@@ -46,7 +46,6 @@ public class CurriculumSearchParameters {
 	private List<String> roles;
 	
 	private boolean withDeleted = false;
-	private boolean hasRelevantImplementations = false;
 	
 	public CurriculumSearchParameters() {
 		//
@@ -144,12 +143,5 @@ public class CurriculumSearchParameters {
 	public void setWithDeleted(boolean withDeleted) {
 		this.withDeleted = withDeleted;
 	}
-
-	public boolean isHasRelevantImplementations() {
-		return hasRelevantImplementations;
-	}
-
-	public void setHasRelevantImplementations(boolean hasRelevantImplementations) {
-		this.hasRelevantImplementations = hasRelevantImplementations;
-	}
+	
 }

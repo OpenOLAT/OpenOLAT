@@ -1,0 +1,12 @@
+<nav class="o_page_toc o_ce_layout_predefined">
+    #if($title && !$title.isEmpty())
+    <div class="o_page_toc_title">$r.escapeHtml($title)</div>
+    #end
+    <ol class="o_page_toc_list">
+    #foreach($entry in $entries)
+        <li class="o_page_toc_indent_$entry.indent">
+            <a href="#toc-$entry.key">$r.escapeHtml($entry.text)</a>
+        </li>
+    #end
+    </ol>
+</nav>

@@ -57,7 +57,9 @@ public class CurriculumObjectNameCellRenderer implements CustomCellRenderer, Fle
 	}
 
 	private void render(StringOutput sb, String s, Renderer renderer) {
+		// Handle export case:
 		if (renderer == null) {
+			sb.append(s);
 			return;
 		}
 		

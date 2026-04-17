@@ -65,7 +65,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, OresHelper.lookupType(CalendarManager.class));
 		
 		OLATResourceable callerOres = OresHelper.createOLATResourceableInstanceWithoutCheck(identity.getName(), identity.getKey());
-		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, windowControl);
+		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq.getIdentity());
 		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars,
 				CalendarController.CALLER_HOME, callerOres, true);
 		calendarController.setDifferentiateManagedEvent(true);
@@ -89,7 +89,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof CalendarGUIModifiedEvent) {
-			List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, getWindowControl());
+			List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq.getIdentity());
 			calendarController.setCalendars(calendars);
 		}
 		super.event(ureq, source, event);

@@ -105,5 +105,19 @@ public class IpListValidatorTest {
 		boolean notAllowed4 = IpListValidator.isIpAllowed(ipList, "212.203.203.64");
 		Assert.assertFalse(notAllowed4);
 	}
+	
+	@Test
+	public void isIpAllowed_trailingSpaces() {
+		String ipList = "192.168.1.212 \n 192.168.1.221 ";
+
+		boolean allowed1 = IpListValidator.isIpAllowed(ipList, "192.168.1.212");
+		Assert.assertTrue(allowed1);
+		
+		boolean allowed2 = IpListValidator.isIpAllowed(ipList, "192.168.1.221");
+		Assert.assertTrue(allowed2);
+		
+		boolean notAllowed = IpListValidator.isIpAllowed(ipList, "192.168.1.210");
+		Assert.assertFalse(notAllowed);
+	}
 
 }

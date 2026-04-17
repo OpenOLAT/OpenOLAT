@@ -382,63 +382,6 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, managedCurriculums.size());
 		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 	}
-	
-	@Test
-	public void searchWithInfos_hasRelevantImplementations() {
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-rel-1", "Curriculum relevant 1", "Short desc.", false, null);
-		curriculumService.createCurriculumElement("Element-rel-1", "1. Element",
-				CurriculumElementStatus.confirmed, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		dbInstance.commitAndCloseSession();
-
-		CurriculumSearchParameters paramsWithFilter = new CurriculumSearchParameters();
-		paramsWithFilter.setHasRelevantImplementations(true);
-		List<CurriculumInfos> withFilter = curriculumDao.searchWithInfos(paramsWithFilter);
-		Assertions.assertThat(withFilter)
-			.map(CurriculumInfos::curriculum)
-			.contains(curriculum);
-
-		CurriculumSearchParameters paramsWithoutFilter = new CurriculumSearchParameters();
-		List<CurriculumInfos> withoutFilter = curriculumDao.searchWithInfos(paramsWithoutFilter);
-		Assertions.assertThat(withoutFilter)
-			.map(CurriculumInfos::curriculum)
-			.contains(curriculum);
-	}
-
-	@Test
-	public void searchWithInfos_hasRelevantImplementations_noRelevant() {
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-rel-2", "Curriculum relevant 2", "Short desc.", false, null);
-		curriculumService.createCurriculumElement("Element-rel-2", "1. Element",
-				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		dbInstance.commitAndCloseSession();
-
-		CurriculumSearchParameters params = new CurriculumSearchParameters();
-		params.setHasRelevantImplementations(true);
-		List<CurriculumInfos> results = curriculumDao.searchWithInfos(params);
-		Assertions.assertThat(results)
-			.map(CurriculumInfos::curriculum)
-			.doesNotContain(curriculum);
-	}
-
-	@Test
-	public void searchWithInfos_hasRelevantImplementations_childElement() {
-		Curriculum curriculum = curriculumDao.createAndPersist("CUR-rel-3", "Curriculum relevant 3", "Short desc.", false, null);
-		CurriculumElement rootElement = curriculumService.createCurriculumElement("Element-rel-3-root", "Root Element",
-				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		curriculumService.createCurriculumElement("Element-rel-3-child", "Child Element",
-				CurriculumElementStatus.confirmed, new Date(), new Date(), rootElement, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		dbInstance.commitAndCloseSession();
-
-		CurriculumSearchParameters params = new CurriculumSearchParameters();
-		params.setHasRelevantImplementations(true);
-		List<CurriculumInfos> results = curriculumDao.searchWithInfos(params);
-		Assertions.assertThat(results)
-			.map(CurriculumInfos::curriculum)
-			.doesNotContain(curriculum);
-	}
 
 	@Test
 	public void getMembersIdentity() {

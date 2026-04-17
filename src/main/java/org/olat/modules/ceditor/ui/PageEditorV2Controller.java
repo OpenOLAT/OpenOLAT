@@ -86,6 +86,7 @@ import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
+import org.olat.modules.ceditor.ui.event.PageStructureChangedEvent;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
 import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.forms.model.xml.Container;
@@ -266,7 +267,23 @@ public class PageEditorV2Controller extends BasicController {
 				if (fragmentComponent.getElementId().equals(elementId)) {
 					PageEditorUIFactory.refreshElementLayoutOptions(element, fragmentComponent.getElement());
 					fragmentComponent.setDirty(true);
+					fragmentComponent.dispatchToEditor(uureq, new ChangePartEvent(element));
 				}
+			}
+			return true;
+		}, editorCmp, false).visitAll(ureq);
+		doNotifyStructureChangedToEditors(ureq);
+	}
+
+	private void doNotifyStructureChangedToEditors(UserRequest ureq) {
+		if (editorCmp == null) {
+			return;
+		}
+
+		PageStructureChangedEvent event = new PageStructureChangedEvent();
+		new ComponentTraverser((comp, uureq) -> {
+			if (comp instanceof ContentEditorFragmentComponent fragmentComponent) {
+				fragmentComponent.dispatchToEditor(uureq, event);
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);
@@ -581,6 +598,7 @@ public class PageEditorV2Controller extends BasicController {
 			if(referenceFragment != null) {
 				referenceFragment.setEditMode(false);
 			}
+			doNotifyStructureChangedToEditors(ureq);
 			fragment.setEditMode(true);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
@@ -910,6 +928,7 @@ public class PageEditorV2Controller extends BasicController {
 			}
 		}
 		updateVisibility();
+		doNotifyStructureChangedToEditors(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -927,6 +946,7 @@ public class PageEditorV2Controller extends BasicController {
 			}
 		}
 		updateVisibility();
+		doNotifyStructureChangedToEditors(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -960,6 +980,7 @@ public class PageEditorV2Controller extends BasicController {
 		} else {
 			editorCmp.addRootComponent(0, source);
 		}
+		doNotifyStructureChangedToEditors(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -1023,6 +1044,7 @@ public class PageEditorV2Controller extends BasicController {
 		if(!ok) {
 			editorCmp.setDirty(true);
 		}
+		doNotifyStructureChangedToEditors(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

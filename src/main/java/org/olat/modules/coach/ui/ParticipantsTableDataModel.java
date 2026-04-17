@@ -85,7 +85,7 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 		List<ParticipantStatisticsEntry> objs = getObjects();
 		for (Iterator<ParticipantStatisticsEntry> it_res = objs.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
 			ParticipantStatisticsEntry entry = it_res.next();
-			if(accept(searchValue, entry)) {
+			if(accept(searchValue, entry.getIdentityProps())) {
 				maxEntries--;
 				String key = entry.getIdentityKey().toString();
 				String displayText = StringHelper.escapeHtml(userManager.getUserDisplayName(entry, userPropertyHandlers));
@@ -101,8 +101,7 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(StringHelper.containsNonWhitespace(searchString) || !filters.isEmpty()) {
-			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
-					? null : searchString.toLowerCase();
+			final List<String> loweredSearchValues = tokenizeSearchString(searchString);
 			final Set<Long> organisations = getFilteredOrganisations(filters);
 			final ConfirmationByEnum confirmedBy = getFilteredConfirmedBy(filters);
 			final Boolean notVisited = getFilteredNotVisited(filters);
@@ -115,7 +114,7 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 			
 			List<ParticipantStatisticsEntry> filteredRows = new ArrayList<>(backupList.size());
 			for(ParticipantStatisticsEntry row:backupList) {
-				boolean accept = accept(loweredSearchString, row)
+				boolean accept = accept(loweredSearchValues, row)
 						&& acceptOrganisations(organisations, row)
 						&& accept(confirmedBy, row)
 						&& acceptNotVisited(notVisited, row)
@@ -132,6 +131,21 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 		} else {
 			super.setObjects(backupList);
 		}
+	}
+	
+	private List<String> tokenizeSearchString(String searchString) {
+		List<String> searchValues = null;
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = searchString.replaceAll(" ", ",");
+			String[] values = searchString.split(",");
+			searchValues = new ArrayList<>(values.length);
+			for(String value:values) {
+				if(StringHelper.containsNonWhitespace(value)) {
+					searchValues.add(value.toLowerCase());
+				}
+			}
+		}
+		return searchValues;
 	}
 	
 	private boolean acceptLastVisit(String ref, LocalDateTime now, ParticipantStatisticsEntry entry) {
@@ -308,10 +322,18 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 			: organisations.stream().anyMatch(org -> organisationsKeys.contains(org.getKey()));
 	}
 	
-	private boolean accept(String searchValue, ParticipantStatisticsEntry entry) {
-		if(searchValue == null) return true;
+	private boolean accept(List<String> searchValues, ParticipantStatisticsEntry entry) {
+		if(searchValues == null || searchValues.isEmpty()) return true;
 		
 		String[] userProperties = entry.getIdentityProps();
+		boolean allOk = true;
+		for(String searchValue:searchValues) {
+			allOk &= accept(searchValue, userProperties);
+		}
+		return allOk;
+	}
+
+	private boolean accept(String searchValue, String[] userProperties) {
 		for(int i=userProperties.length; i-->0; ) {
 			String userProp = userProperties[i];
 			if(userProp != null && userProp.toLowerCase().contains(searchValue)) {

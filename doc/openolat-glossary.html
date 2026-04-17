@@ -173,7 +173,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <h1>Product Glossary</h1>
   <div class="subtitle">Reference glossary of product-specific terms used in OpenOlat</div>
   <div class="meta">
-    <span>172 Terms</span>
+    <span>210 Terms</span>
     <span>Roles</span>
     <span>Modules</span>
     <span>Course Elements</span>
@@ -191,21 +191,28 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 </nav>
 
 <main class="main-content">
-
 <div class="stats-box">
-<strong>172 terms</strong> across 13 categories.
+<strong>210 terms</strong> across 13 categories.
 These are terms that have specific meaning within the OpenOlat LMS context
 and should be used consistently across translations, documentation, and code.
 </div>
 
 <h2 id="system-role">System roles</h2><div class="term-card">
+  <strong>Absence manager</strong>
+  <div class="desc">Can manage attendance tracking and absence records across the system.</div>
+  <div class="key">Key: <code>org.olat.admin.user:role.lecturemanager</code></div>
+</div><div class="term-card">
   <strong>Administrator</strong>
   <div class="desc">Has full system administration rights.</div>
   <div class="key">Key: <code>org.olat.repository:role.administrator</code></div>
 </div><div class="term-card">
   <strong>Author</strong>
   <div class="desc">Can create and manage learning resources.</div>
-  <div class="key">Key: <code>org.olat.course.nodes.basiclti:author.roles</code></div>
+  <div class="key">Key: <code>org.olat.admin.user:role.author</code></div>
+</div><div class="term-card">
+  <strong>Course planner</strong>
+  <div class="desc">Can manage curricula and products in the Course Planner module.</div>
+  <div class="key">Key: <code>org.olat.admin.user:role.curriculummanager</code></div>
 </div><div class="term-card">
   <strong>Education manager</strong>
   <div class="desc">Can manage educational programs.</div>
@@ -226,6 +233,10 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">Has principal oversight permissions.</div>
   <div class="key">Key: <code>org.olat.repository:role.principal</code></div>
 </div><div class="term-card">
+  <strong>Project manager</strong>
+  <div class="desc">Can manage project spaces across the system.</div>
+  <div class="key">Key: <code>org.olat.admin.user:role.projectmanager</code></div>
+</div><div class="term-card">
   <strong>Quality manager</strong>
   <div class="desc">Can manage quality management processes.</div>
   <div class="key">Key: <code>org.olat.admin.user:role.qualitymanager</code></div>
@@ -238,10 +249,19 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">Can manage role assignments.</div>
   <div class="key">Key: <code>org.olat.admin.user:role.rolesmanager</code></div>
 </div><div class="term-card">
+  <strong>System administrator</strong>
+  <div class="desc">Has full system-level administration rights including server configuration.</div>
+  <div class="key">Key: <code>org.olat.admin.user:role.sysadmin</code></div>
+</div><div class="term-card">
+  <strong>User</strong>
+  <div class="desc">A registered account holder in the system with basic access rights.</div>
+  <div class="key">Key: <code>org.olat.admin.user:role.user</code></div>
+</div><div class="term-card">
   <strong>User manager</strong>
   <div class="desc">Can manage user accounts and roles.</div>
   <div class="key">Key: <code>org.olat.user.ui.organisation:role.usermanager</code></div>
-</div><h2 id="course-resource-role">Course/Resource roles</h2><div class="term-card">
+</div>
+<h2 id="course-resource-role">Course/Resource roles</h2><div class="term-card">
   <strong>Coach</strong>
   <div class="desc">Tutors/coaches participants in a course or group.</div>
   <div class="key">Key: <code>org.olat.repository:access.info.role.coach</code></div>
@@ -253,11 +273,13 @@ and should be used consistently across translations, documentation, and code.
   <strong>Participant</strong>
   <div class="desc">A learner enrolled in a course or group.</div>
   <div class="key">Key: <code>org.olat.repository:access.info.role.participant</code></div>
-</div><h2 id="curriculum-role">Curriculum roles</h2><div class="term-card">
+</div>
+<h2 id="curriculum-role">Curriculum roles</h2><div class="term-card">
   <strong>Master coach</strong>
   <div class="desc">Supervises coaches across curriculum implementations.</div>
   <div class="key">Key: <code>org.olat.course.member:role.origin.cpl.mastercoach</code></div>
-</div><h2 id="cpl-role">Course Planner roles</h2><div class="term-card">
+</div>
+<h2 id="cpl-role">Course Planner roles</h2><div class="term-card">
   <strong>Product owner</strong>
   <div class="desc">Manages a complete product (curriculum) in Course Planner.</div>
   <div class="key">Key: <code>org.olat.modules.curriculum.ui:add.curriculumowner</code></div>
@@ -265,7 +287,8 @@ and should be used consistently across translations, documentation, and code.
   <strong>Element owner</strong>
   <div class="desc">Manages a specific curriculum element within Course Planner.</div>
   <div class="key">Key: <code>org.olat.modules.curriculum.ui:add.curriculumelementowner</code></div>
-</div><h2 id="access-role">Access roles</h2><div class="term-card">
+</div>
+<h2 id="access-role">Access roles</h2><div class="term-card">
   <strong>Guest</strong>
   <div class="desc">Anonymous user with limited read-only access.</div>
   <div class="key">Key: <code>org.olat.course.noderight.ui:role.guest</code></div>
@@ -273,7 +296,8 @@ and should be used consistently across translations, documentation, and code.
   <strong>Invitee</strong>
   <div class="desc">External user invited to access specific resources.</div>
   <div class="key">Key: <code>org.olat.admin.user:role.invitee</code></div>
-</div><h2 id="module">Modules</h2><div class="term-card">
+</div>
+<h2 id="module">Modules</h2><div class="term-card">
   <strong>Access control</strong>
   <div class="desc">Booking and offer management for learning resources.</div>
   <div class="key">Key: <code>org.olat.repository:tab.accesscontrol</code></div>
@@ -356,7 +380,8 @@ and should be used consistently across translations, documentation, and code.
   <strong>Contact tracing</strong>
   <div class="desc">Location-based contact tracing system.</div>
   <div class="key">Key: <code>org.olat.modules.contacttracing.ui:admin.menu.title</code></div>
-</div><h2 id="feature">Features</h2><div class="term-card">
+</div>
+<h2 id="feature">Features</h2><div class="term-card">
   <strong>Assessment inspection</strong>
   <div class="desc">Supervised review of completed assessments.</div>
   <div class="key">Key: <code>org.olat.course.assessment.ui.inspection:inspection.overview.title</code></div>
@@ -397,6 +422,10 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">Web-based Distributed Authoring and Versioning for file access.</div>
   <div class="key">Key: <code>org.olat.core.commons.services.webdav.ui:admin.menu.title</code></div>
 </div><div class="term-card">
+  <strong>AI module</strong>
+  <div class="desc">Integration of AI capabilities for content generation and assistance.</div>
+  <div class="key">Key: <code>org.olat.core.commons.services.ai.ui:admin.menu.title</code></div>
+</div><div class="term-card">
   <strong>Assessment tool</strong>
   <div class="desc">Central interface for coaches and owners to evaluate, grade, and manage learner assessments.</div>
   <div class="key">Key: <code>org.olat.course.assessment.ui:command.assessment</code></div>
@@ -408,6 +437,10 @@ and should be used consistently across translations, documentation, and code.
   <strong>Bulk assessment</strong>
   <div class="desc">Feature allowing coaches to assess multiple participants simultaneously.</div>
   <div class="key">Key: <code>org.olat.course.assessment.ui:menu.bulkfocus</code></div>
+</div><div class="term-card">
+  <strong>Calendar</strong>
+  <div class="desc">Personal and course calendar for scheduling and event management.</div>
+  <div class="key">Key: <code>org.olat.home:menu.calendar</code></div>
 </div><div class="term-card">
   <strong>Content editor</strong>
   <div class="desc">WYSIWYG editor for creating rich content within Page course elements.</div>
@@ -424,8 +457,19 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">Surveys used within the Quality Management module to gather feedback.</div>
   <div class="key">Key: <code>org.olat.modules.quality.ui:data.collection.title</code></div>
 </div><div class="term-card">
+  <strong>Data collection generator</strong>
+  <div class="desc">Automated rule sets that create data collections (surveys) based on triggers like course start or end.</div>
+</div><div class="term-card">
+  <strong>Full-text search</strong>
+  <div class="desc">System-wide search for content across courses, learning resources, and user data.</div>
+  <div class="key">Key: <code>org.olat.home:menu.fulltextsearch</code></div>
+</div><div class="term-card">
   <strong>Instant messaging</strong>
   <div class="desc">Built-in chat/messenger for real-time communication between users.</div>
+</div><div class="term-card">
+  <strong>Licenses</strong>
+  <div class="desc">Management of content licenses for learning resources.</div>
+  <div class="key">Key: <code>org.olat.core.commons.services.license.ui:admin.menu.title</code></div>
 </div><div class="term-card">
   <strong>Notes</strong>
   <div class="desc">Personal note-taking feature for users.</div>
@@ -434,6 +478,10 @@ and should be used consistently across translations, documentation, and code.
   <strong>OAI-PMH</strong>
   <div class="desc">Open Archives Initiative Protocol for Metadata Harvesting, used for catalog exposure.</div>
   <div class="key">Key: <code>org.olat.modules.oaipmh.ui:admin.menu.title</code></div>
+</div><div class="term-card">
+  <strong>Passkey</strong>
+  <div class="desc">Passwordless authentication via WebAuthn allowing users to log in with biometric or hardware keys.</div>
+  <div class="key">Key: <code>org.olat.login.webauthn.ui:admin.menu.title</code></div>
 </div><div class="term-card">
   <strong>Peer review</strong>
   <div class="desc">Feature enabling participants to review each other&#x27;s work in task elements.</div>
@@ -455,13 +503,26 @@ and should be used consistently across translations, documentation, and code.
   <strong>Video collection</strong>
   <div class="desc">Central area aggregating all shared video learning resources.</div>
 </div><div class="term-card">
+  <strong>Web catalog</strong>
+  <div class="desc">Externally accessible catalog that allows non-registered users to browse and book course offerings.</div>
+</div><div class="term-card">
   <strong>Whiteboard</strong>
   <div class="desc">Visual collaboration tool (powered by draw.io) within the Projects module.</div>
-</div><h2 id="area">Areas</h2><div class="term-card">
+</div>
+<h2 id="area">Areas</h2><div class="term-card">
+  <strong>Administration</strong>
+  <div class="desc">The system administration area for configuring modules, managing users, and system settings.</div>
+  <div class="key">Key: <code>org.olat.admin.site.ui:AdminSiteDef</code></div>
+</div><div class="term-card">
   <strong>Authoring</strong>
   <div class="desc">The area where authors create and manage learning resources.</div>
   <div class="key">Key: <code>org.olat.repository.ui.author:author.title</code></div>
-</div><h2 id="concept">Concepts</h2><div class="term-card">
+</div><div class="term-card">
+  <strong>Courses</strong>
+  <div class="desc">The main area where users find and access their enrolled courses.</div>
+  <div class="key">Key: <code>org.olat.admin.site.ui:MyCoursesSiteDef</code></div>
+</div>
+<h2 id="concept">Concepts</h2><div class="term-card">
   <strong>Certification program</strong>
   <div class="desc">A structured certification path with recertification requirements.</div>
   <div class="key">Key: <code>org.olat.course.certificate.ui:options.certificate.program.title</code></div>
@@ -481,7 +542,7 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">A managed learning resource in the authoring area (course, test, form, etc.).</div>
 </div><div class="term-card">
   <strong>Access code</strong>
-  <div class="desc">A password-based booking method restricting course enrollment to code holders.</div>
+  <div class="desc">A password-based booking method restricting course enrolment to code holders.</div>
   <div class="key">Key: <code>org.olat.resource.accesscontrol.ui:accesscontrol.name.token</code></div>
 </div><div class="term-card">
   <strong>Booking order</strong>
@@ -495,12 +556,52 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">Skill or competence assigned to users via taxonomy.</div>
   <div class="key">Key: <code>org.olat.admin.user:view.competences</code></div>
 </div><div class="term-card">
+  <strong>Corrector</strong>
+  <div class="desc">A person assigned to manually grade test submissions within a correction workflow.</div>
+</div><div class="term-card">
+  <strong>Course element</strong>
+  <div class="desc">A building block that can be added to a course structure in the course editor.</div>
+  <div class="key">Key: <code>org.olat.core.commons.chiefcontrollers:CourseBb</code></div>
+</div><div class="term-card">
+  <strong>Course lifecycle</strong>
+  <div class="desc">The automated process by which a course transitions through statuses based on its execution end date.</div>
+</div><div class="term-card">
+  <strong>Delivery format</strong>
+  <div class="desc">A metadata field indicating the mode of delivery (online, blended, in-person) shown in catalog cards.</div>
+</div><div class="term-card">
+  <strong>Drop box</strong>
+  <div class="desc">The file submission area within a Task course element where participants upload their work.</div>
+  <div class="key">Key: <code>org.olat.core.commons.chiefcontrollers:DropboxController</code></div>
+</div><div class="term-card">
+  <strong>Educational product</strong>
+  <div class="desc">A Course Planner product consisting of multiple courses and implementations, visible in the Coaching tool.</div>
+</div><div class="term-card">
+  <strong>External reference</strong>
+  <div class="desc">An external identifier for a learning resource, e.g. from a course catalog or lecture directory.</div>
+  <div class="key">Key: <code>org.olat.repository:cif.externalref</code></div>
+</div><div class="term-card">
+  <strong>Grading assignment</strong>
+  <div class="desc">A task assigned to a corrector to manually grade a specific test submission.</div>
+</div><div class="term-card">
+  <strong>Launcher</strong>
+  <div class="desc">A configurable section in Catalog 2.0 that dynamically assembles and displays course offerings.</div>
+</div><div class="term-card">
   <strong>Learning area</strong>
   <div class="desc">A named grouping of course groups used to simplify group-based visibility rules.</div>
   <div class="key">Key: <code>org.olat.course.condition:form.easy.learningGroup.area</code></div>
 </div><div class="term-card">
   <strong>Learning progress</strong>
   <div class="desc">Tracking of user progress through a learning path course.</div>
+</div><div class="term-card">
+  <strong>Learning resource</strong>
+  <div class="desc">A managed content object in the authoring area (course, test, form, video, etc.).</div>
+  <div class="key">Key: <code>org.olat.core.commons.chiefcontrollers:LearningRes</code></div>
+</div><div class="term-card">
+  <strong>Lesson block</strong>
+  <div class="desc">A schedulable teaching unit within the Events/Absences module, comprising 1 to 12 individual lessons.</div>
+</div><div class="term-card">
+  <strong>Metadata</strong>
+  <div class="desc">Descriptive information about a learning resource (title, description, authors, license, etc.).</div>
 </div><div class="term-card">
   <strong>Product</strong>
   <div class="desc">Top-level entity in Course Planner representing a curriculum with implementations and courses.</div>
@@ -510,13 +611,31 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">Lifecycle state of a learning resource: Preparation, Review, Access for Coach, Published, Finished.</div>
   <div class="key">Key: <code>org.olat.repository:cif.publish</code></div>
 </div><div class="term-card">
+  <strong>Rubric</strong>
+  <div class="desc">A form element for evaluating multiple criteria against the same rating scale, used in assessments and surveys.</div>
+</div><div class="term-card">
+  <strong>Return box</strong>
+  <div class="desc">The file area within a Task course element where coaches return graded work to participants.</div>
+  <div class="key">Key: <code>org.olat.core.commons.chiefcontrollers:ReturnboxController</code></div>
+</div><div class="term-card">
+  <strong>Sample solutions</strong>
+  <div class="desc">Model answers or reference solutions provided within a Task course element.</div>
+  <div class="key">Key: <code>org.olat.core.commons.chiefcontrollers:SolutionController</code></div>
+</div><div class="term-card">
   <strong>Storage folder</strong>
   <div class="desc">Internal file management area within a course for storing course files.</div>
   <div class="key">Key: <code>org.olat.course.editor:command.coursefolder</code></div>
 </div><div class="term-card">
+  <strong>Teaser</strong>
+  <div class="desc">A short preview text used for compact announcements, currently available for courses.</div>
+</div><div class="term-card">
   <strong>Template course</strong>
   <div class="desc">A source course from which implementation instances are automatically created in Course Planner.</div>
-</div><h2 id="standard">Standards</h2><div class="term-card">
+</div><div class="term-card">
+  <strong>Waiting list</strong>
+  <div class="desc">A queue for users who cannot be immediately enrolled, with automatic promotion when places become available. A source course from which implementation instances are automatically created in Course Planner.</div>
+</div>
+<h2 id="standard">Standards</h2><div class="term-card">
   <strong>QTI 2.1</strong>
   <div class="desc">Question and Test Interoperability standard for assessment items.</div>
   <div class="key">Key: <code>org.olat.core.commons.services.export.ui:archive.qti21</code></div>
@@ -524,7 +643,8 @@ and should be used consistently across translations, documentation, and code.
   <strong>SCORM</strong>
   <div class="desc">Sharable Content Object Reference Model for e-learning content packaging.</div>
   <div class="key">Key: <code>org.olat.course.archiver:scorm</code></div>
-</div><h2 id="integration">Integrations</h2><div class="term-card">
+</div>
+<h2 id="integration">Integrations</h2><div class="term-card">
   <strong>LTI</strong>
   <div class="desc">Learning Tools Interoperability standard for external tool integration.</div>
   <div class="key">Key: <code>org.olat.ims.lti13.ui:admin.menu.title</code></div>
@@ -574,7 +694,8 @@ and should be used consistently across translations, documentation, and code.
 </div><div class="term-card">
   <strong>Vitero</strong>
   <div class="desc">Vitero virtual team room integration.</div>
-</div><h2 id="course-element">Course Elements</h2><div class="term-card">
+</div>
+<h2 id="course-element">Course Elements</h2><div class="term-card">
   <strong>Adobe Connect</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes.adobeconnect:title_vc</code></div>
@@ -598,6 +719,10 @@ and should be used consistently across translations, documentation, and code.
   <strong>Blog</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_blog</code></div>
+</div><div class="term-card">
+  <strong>Calendar</strong>
+  <div class="desc">A course element for embedding a course calendar with events and deadlines.</div>
+  <div class="key">Key: <code>org.olat.course.nodes.cal:calendar.title</code></div>
 </div><div class="term-card">
   <strong>CP learning content</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
@@ -631,6 +756,10 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_bc</code></div>
 </div><div class="term-card">
+  <strong>Form</strong>
+  <div class="desc">A course element for embedding evaluation forms that participants fill out.</div>
+  <div class="key">Key: <code>org.olat.course.nodes.form:course.node.link.text</code></div>
+</div><div class="term-card">
   <strong>Forum</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_fo</code></div>
@@ -650,6 +779,14 @@ and should be used consistently across translations, documentation, and code.
   <strong>Link list</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_ll</code></div>
+</div><div class="term-card">
+  <strong>Microsoft Teams</strong>
+  <div class="desc">A course element for Microsoft Teams virtual meetings within a course.</div>
+  <div class="key">Key: <code>org.olat.course.nodes.teams:title_vc</code></div>
+</div><div class="term-card">
+  <strong>Notifications</strong>
+  <div class="desc">A course element for posting and reading course notifications/messages.</div>
+  <div class="key">Key: <code>org.olat.course.nodes.info:title_info</code></div>
 </div><div class="term-card">
   <strong>Page</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
@@ -695,6 +832,10 @@ and should be used consistently across translations, documentation, and code.
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_st</code></div>
 </div><div class="term-card">
+  <strong>Survey</strong>
+  <div class="desc">A course element for anonymous surveys using evaluation forms.</div>
+  <div class="key">Key: <code>org.olat.course.nodes.survey:course.node.link.text</code></div>
+</div><div class="term-card">
   <strong>Task</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_ita</code></div>
@@ -722,6 +863,10 @@ and should be used consistently across translations, documentation, and code.
   <strong>Wiki</strong>
   <div class="desc">A course element (building block) that can be added to a course structure.</div>
   <div class="key">Key: <code>org.olat.course.nodes:title_wiki</code></div>
+</div><div class="term-card">
+  <strong>Zoom</strong>
+  <div class="desc">A course element for Zoom video conferencing within a course.</div>
+  <div class="key">Key: <code>org.olat.course.nodes.zoom:title_vc</code></div>
 </div><div class="term-card">
   <strong>card2brain</strong>
   <div class="desc">A course element for flashcard-based learning via card2brain.</div>
@@ -766,7 +911,8 @@ and should be used consistently across translations, documentation, and code.
   <strong>Vitero</strong>
   <div class="desc">A course element for Vitero virtual team rooms.</div>
   <div class="key">Key: <code>org.olat.course.nodes.vitero:title_vc</code></div>
-</div><h2 id="learning-resource-type">Learning Resource Types</h2><div class="term-card">
+</div>
+<h2 id="learning-resource-type">Learning Resource Types</h2><div class="term-card">
   <strong>Animation</strong>
   <div class="desc">A type of learning resource that can be created or imported in the authoring area.</div>
   <div class="key">Key: <code>org.olat.repository:FileResource.ANIM</code></div>
@@ -774,6 +920,10 @@ and should be used consistently across translations, documentation, and code.
   <strong>Blog entry</strong>
   <div class="desc">A type of learning resource that can be created or imported in the authoring area.</div>
   <div class="key">Key: <code>org.olat.modules.ceditor.ui:FileResource.BLOG</code></div>
+</div><div class="term-card">
+  <strong>CP learning content</strong>
+  <div class="desc">A type of learning resource for IMS Content Packages.</div>
+  <div class="key">Key: <code>org.olat.core.commons.chiefcontrollers:FileResource.IMSCP</code></div>
 </div><div class="term-card">
   <strong>Excel</strong>
   <div class="desc">A type of learning resource that can be created or imported in the authoring area.</div>

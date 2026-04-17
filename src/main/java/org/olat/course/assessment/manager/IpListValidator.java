@@ -50,6 +50,7 @@ public class IpListValidator {
 			for(StringTokenizer tokenizer = new StringTokenizer(ipList, "\n\r", false); tokenizer.hasMoreTokens(); ) {
 				String ipRange = tokenizer.nextToken();
 				if(StringHelper.containsNonWhitespace(ipRange)) {
+					ipRange = ipRange.trim();
 					int indexMask = ipRange.indexOf('/');
 					int indexPseudoRange = ipRange.indexOf('-');
 					if(indexMask > 0) {

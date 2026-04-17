@@ -234,7 +234,7 @@ public class ZipUtil {
 			// unzip files
 			ZipEntry oEntr = oZip.getNextEntry();
 			while (oEntr != null) {
-				String name = oEntr.getName();
+				String name = cleanFilename(oEntr.getName());
 				if(!targetDir.isInPath(name)) {
 					throw new IOException("Invalip ZIP");
 				}
@@ -357,7 +357,8 @@ public class ZipUtil {
 			VFSLeaf lastLeaf = null;
 			while (oEntr != null) {
 				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
-					if(!targetDir.isInPath(oEntr.getName())) {
+					String name = cleanFilename(oEntr.getName());
+					if(!targetDir.isInPath(name)) {
 						throw new IOException("Invalip ZIP");
 					}
 					
@@ -368,7 +369,6 @@ public class ZipUtil {
 					} else {
 						// create file
 						VFSContainer createIn = targetDir;
-						String name = oEntr.getName();
 						// check if entry has directories which did not show up as
 						// directories above
 						int dirSepIndex = name.lastIndexOf('/');
@@ -416,10 +416,18 @@ public class ZipUtil {
 				oEntr = oZip.getNextEntry();
 			}
 		} catch (IOException e) {
+			log.error("", e);
 			return false;
 		}
 		return true;
 	} // unzip
+	
+	private static final String cleanFilename(String name) {
+		if(name != null && name.startsWith("/")) {
+			name = name.substring(1, name.length());
+		}
+		return name;
+	}
 	
 	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats)
 	throws InvalidZipException {

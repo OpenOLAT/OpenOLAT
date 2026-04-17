@@ -141,8 +141,17 @@ public interface PageService {
 	 * @return
 	 */
 	List<PagePart> getPageParts(Page page);
-	
-	
+
+	/**
+	 * Returns all non-container page parts in visual page order, expanding containers
+	 * to interleave their children at the correct positions. Parts inside multi-column
+	 * containers are listed column by column (left to right, top to bottom).
+	 *
+	 * @param page
+	 * @return Flat ordered list of non-container page parts
+	 */
+	List<PagePart> getAllPagePartsFlat(Page page);
+
 	/**
 	 * Retrieve the assignment of a specific page body.
 	 * 

@@ -52,6 +52,7 @@ import org.olat.repository.RepositoryEntry;
 @NamedQuery(name="relationByRepositoryEntry", query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey")
 @NamedQuery(name="relationByGroup", query="select rel from repoentrytogroup as rel where rel.group.key=:groupKey")
 @NamedQuery(name="filterRepositoryEntryRelationByRoles", query="select relGroup.entry.key, membership.identity.key from repoentrytogroup as relGroup inner join bgroupmember as membership on (relGroup.group.key=membership.group.key) where membership.identity.key=:identityKey and membership.role in (:roles) and relGroup.entry.key in (:repositoryEntryKey)")
+@NamedQuery(name="filterRepositoryEntryRelationMembershipByRoles", query="select relGroup.entry.key, membership.role from repoentrytogroup as relGroup inner join bgroupmember as membership on (relGroup.group.key=membership.group.key) where membership.identity.key=:identityKey and membership.role in (:roles) and relGroup.entry.key in (:repositoryEntryKey)")
 public class RepositoryEntryToGroupRelation implements Persistable {
 
 	private static final long serialVersionUID = 2215547264646107606L;

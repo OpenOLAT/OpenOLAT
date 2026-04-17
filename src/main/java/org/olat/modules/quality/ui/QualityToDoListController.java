@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -135,7 +136,9 @@ public class QualityToDoListController extends ToDoTaskListController {
 	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setCustomQuery(new QualityToDoTaskQuery(getIdentity(), secCallback.canCreateToDoTasks(), allDataCollectionKeys));
+		Set<OrganisationRef> allOrganisationRefs = new HashSet<>(secCallback.getEditDataCollectionOrganisationRefs());
+		allOrganisationRefs.addAll(secCallback.getViewOnlyDataCollectionOrganisationRefs());
+		searchParams.setCustomQuery(new QualityToDoTaskQuery(getIdentity(), secCallback.canCreateToDoTasks(), allOrganisationRefs));
 		return searchParams;
 	}
 

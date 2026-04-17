@@ -81,11 +81,8 @@ public class SearchModule extends AbstractSpringModule {
 
 	@Value("${search.index.path:/tmp}")
 	private String indexPath;
-	@Value("${search.permanent.index.path:/sidx}")
-	private String permanentIndexPath;
 	
 	private String fullIndexPath;
-	private String fullPermanentIndexPath;
 	private String fullTempIndexPath;
 	private String fullTempSpellCheckPath;
 	
@@ -148,7 +145,6 @@ public class SearchModule extends AbstractSpringModule {
 		
 		log.debug("init indexPath=" + indexPath);
 		fullIndexPath = buildPath(indexPath);
-		fullPermanentIndexPath = buildPath(permanentIndexPath);
 		
 		fullTempIndexPath = buildPath(tempIndexPath);
 		fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
@@ -228,13 +224,6 @@ public class SearchModule extends AbstractSpringModule {
 	 */
 	public String getFullIndexPath() {
 		return fullIndexPath;
-	}
-	
-	/**
-	 * @return Return the path to the permanent index
-	 */
-	public String getFullPermanentIndexPath() {
-		return fullPermanentIndexPath;
 	}
 
 	/**
