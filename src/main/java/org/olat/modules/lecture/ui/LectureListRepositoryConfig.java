@@ -48,6 +48,7 @@ public class LectureListRepositoryConfig {
 	private Visibility withNumberOfLectures = Visibility.SHOW;
 	private Visibility withExam = Visibility.SHOW;
 	private Visibility withOnlineMeeting = Visibility.SHOW;
+	private Visibility withOnlineRecording = Visibility.SHOW;
 	private Visibility withEdit = Visibility.SHOW;
 	
 	private boolean withDetailsParticipantsGroups = true;
@@ -232,6 +233,15 @@ public class LectureListRepositoryConfig {
 
 	public LectureListRepositoryConfig withOnlineMeeting(Visibility onlineMeeting) {
 		this.withOnlineMeeting = onlineMeeting;
+		return this;
+	}
+	
+	public Visibility withOnlineRecording() {
+		return withOnlineRecording;
+	}
+
+	public LectureListRepositoryConfig withOnlineRecording(Visibility onlineRecording) {
+		this.withOnlineRecording = onlineRecording;
 		return this;
 	}
 

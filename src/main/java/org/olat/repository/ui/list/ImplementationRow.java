@@ -20,13 +20,18 @@
 package org.olat.repository.ui.list;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -36,14 +41,19 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
  */
 public class ImplementationRow implements CurriculumElementRef {
 	
-	private final FormLink markLink;
+	private FormLink markLink;
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
+	private final List<CurriculumRoles> roles;
+
+	private Double completion;
+	private ProgressBarItem completionItem;
+	private FormLink calendarsLink;
 	
-	public ImplementationRow(CurriculumElement curriculumElement, Curriculum curriculum, FormLink markLink) {
+	public ImplementationRow(CurriculumElement curriculumElement, Curriculum curriculum, List<CurriculumRoles> roles) {
 		this.curriculumElement = curriculumElement;
 		this.curriculum = curriculum;
-		this.markLink = markLink;
+		this.roles = roles;
 	}
 
 	public CurriculumElement getCurriculumElement() {
@@ -75,10 +85,18 @@ public class ImplementationRow implements CurriculumElementRef {
 		return curriculumElement.getEndDate();
 	}
 	
+	public List<CurriculumRoles> getRoles() {
+		return roles;
+	}
+	
 	public CurriculumElementStatus getStatus() {
 		return curriculumElement.getElementStatus();
 	}
 	
+	public void setMarkLink(FormLink markLink) {
+		this.markLink = markLink;
+	}
+
 	public boolean isMarked() {
 		String css = markLink.getComponent().getIconLeftCSS();
 		return Mark.MARK_CSS_ICON.equals(css) || Mark.MARK_CSS_LARGE.equals(css);
@@ -86,6 +104,44 @@ public class ImplementationRow implements CurriculumElementRef {
 	
 	public FormLink getMarkLink() {
 		return markLink;
+	}
+
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
+
+	public ProgressBarItem getCompletionItem() {
+		return completionItem;
+	}
+
+	public void setCompletionItem(ProgressBarItem completionItem) {
+		this.completionItem = completionItem;
+	}
+
+	public FormLink getCalendarsLink() {
+		return calendarsLink;
+	}
+
+	public void setCalendarsLink(FormLink calendarsLink) {
+		this.calendarsLink = calendarsLink;
+	}
+
+	public boolean isCalendarsEnabled() {
+		if (curriculumElement == null) return false;
+		if (curriculumElement.getCalendars() == CurriculumCalendars.enabled) return true;
+		if (curriculumElement.getCalendars() == CurriculumCalendars.inherited && curriculumElement.getType() != null) {
+			return curriculumElement.getType().getCalendars() == CurriculumCalendars.enabled;
+		}
+		return false;
+	}
+
+	public boolean isLearningProgressEnabled() {
+		return CurriculumLearningProgress.isEnabled(curriculumElement,
+				curriculumElement != null ? curriculumElement.getType() : null);
 	}
 
 }

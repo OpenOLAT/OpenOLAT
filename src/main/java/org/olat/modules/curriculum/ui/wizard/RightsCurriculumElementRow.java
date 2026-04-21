@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.ui.wizard;
 
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.member.AbstractCurriculumElementRow;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
@@ -32,8 +31,6 @@ import org.olat.modules.curriculum.ui.member.MembershipModification;
  */
 public class RightsCurriculumElementRow extends AbstractCurriculumElementRow {
 
-	private FormLink addButton;
-	private FormLink noteButton;
 	private RightsCurriculumElementRow parent;
 	private MembershipModification modification;
 	
@@ -48,22 +45,6 @@ public class RightsCurriculumElementRow extends AbstractCurriculumElementRow {
 	
 	public void setParent(RightsCurriculumElementRow parent) {
 		this.parent = parent;
-	}
-	
-	public FormLink getAddButton() {
-		return addButton;
-	}
-
-	public void setAddButton(FormLink button) {
-		this.addButton = button;
-	}
-	
-	public FormLink getNoteButton() {
-		return noteButton;
-	}
-
-	public void setNoteButton(FormLink noteButton) {
-		this.noteButton = noteButton;
 	}
 
 	public MembershipModification getModification() {

@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalDate;
 
 /**
  * 
@@ -38,20 +40,23 @@ public class ImportedUserRow extends AbstractImportRow {
 
 	private final String organisationIdentifier;
 	private final LocalDateTime creationDate;
+	private final ReaderLocalDate expirationDate;
 	private final String[] identityProps;
 	private final String password;
 	
 	private Identity identity;
-	private Organisation organisation;
+	private List<Organisation> organisations;
 	private Map<String,CurriculumImportedValue> validationHandlersMap;
 	
 	
 	
-	public ImportedUserRow(int rowNum, String[] identityProps, String organisationIdentifier, String password, LocalDateTime creationDate) {
+	public ImportedUserRow(int rowNum, String[] identityProps, String organisationIdentifier,
+			ReaderLocalDate expirationDate, String password, LocalDateTime creationDate) {
 		super(rowNum);
 		this.organisationIdentifier = organisationIdentifier;
 		this.creationDate = creationDate;
 		this.identityProps = identityProps;
+		this.expirationDate = expirationDate;
 		this.password = password;
 	}
 	
@@ -84,17 +89,34 @@ public class ImportedUserRow extends AbstractImportRow {
 		}
 		return null;
 	}
+	
+	public ReaderLocalDate getExpirationDate() {
+		return expirationDate;
+	}
 
 	public String getOrganisationIdentifier() {
 		return organisationIdentifier;
 	}
-
-	public Organisation getOrganisation() {
-		return organisation;
+	
+	public List<String> getOrganisationIdentifiersList() {
+		List<String> list = new ArrayList<>(3);
+		if(StringHelper.containsNonWhitespace(organisationIdentifier)) {
+			String[] subjectsArr = organisationIdentifier.split(";");
+			for(String subject:subjectsArr) {
+				if(StringHelper.containsNonWhitespace(subject)) {
+					list.add(subject.trim());
+				}
+			}
+		}
+		return list;
 	}
 
-	public void setOrganisation(Organisation organisation) {
-		this.organisation = organisation;
+	public List<Organisation> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(List<Organisation> organisations) {
+		this.organisations = organisations;
 	}
 
 	public LocalDateTime getCreationDate() {

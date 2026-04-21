@@ -509,7 +509,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), "o_sel_curriculum_lectures", uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
-				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumElementConfig("curriculum-element-details-v1.1")
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumElementConfig("curriculum-element-details-v1.2")
 						.withExternalRef(Visibility.SHOW)
 						.withCurriculum(Visibility.HIDE)
 						.withRepositoryEntry(Visibility.HIDE)
@@ -519,6 +519,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 						.withNumberOfLectures(Visibility.HIDE)
 						.withExam(Visibility.HIDE)
 						.withOnlineMeeting(Visibility.HIDE)
+						.withOnlineRecording(Visibility.HIDE)
 						.withEdit(Visibility.HIDE)
 						.withRollCall(Visibility.NO)
 						.withAllMineSwitch(false, false)

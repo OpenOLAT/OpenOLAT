@@ -47,6 +47,7 @@ public enum LectureBlockManagedFlag {
         location(details,all),
         dates(details,all),
         onlineMeeting(details,all),
+        onlineRecording(details,all),
 	    subjects(details,all),
       settings(all),
       delete(all);

@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 
@@ -111,14 +112,19 @@ implements FlexiTableFooterModel {
 			case externalRef -> element.getIdentifier();
 			case externalId -> element.getExternalId();
 			case roleToModify -> getAction(detailsRow);
-			case note -> detailsRow.getNoteButton();
+			case note -> hasNote(detailsRow);
 			default -> "ERROR";
 		};
 	}
 	
 	private Object getAction(RightsCurriculumElementRow detailsRow) {
 		MembershipModification mod = detailsRow.getModification();
-		return mod == null ? detailsRow.getAddButton() : mod.nextStatus();
+		return mod == null ? null : mod.nextStatus();
+	}
+	
+	private Boolean hasNote(RightsCurriculumElementRow detailsRow) {
+		MembershipModification mod = detailsRow.getModification();
+		return mod != null && StringHelper.containsNonWhitespace(mod.adminNote());
 	}
 
 	@Override

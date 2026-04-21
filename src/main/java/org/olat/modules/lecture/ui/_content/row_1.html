@@ -31,7 +31,11 @@
 		
 		<div class="o_lecture_timeline_details_actions">
 			#if($r.isNotNull($row.openOnlineMeetingButton))
-				$r.render($row.openOnlineMeetingButton)
+				$r.render($row.openOnlineMeetingButton,"nolayout")
+			#end
+			
+			#if($r.isNotNull($row.openOnlineRecordingButton))
+				$r.render($row.openOnlineRecordingButton,"nolayout")
 			#end
 			
 			#if($r.isNotNull($row.rollCallButton) && $r.isNotNull($row.toolsButton))

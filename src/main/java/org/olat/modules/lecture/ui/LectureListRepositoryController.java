@@ -573,6 +573,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(config.withOnlineMeeting() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withOnlineMeeting() == Visibility.SHOW, BlockCols.onlineMeeting));
 		}
+		if(config.withOnlineRecording() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withOnlineRecording() == Visibility.SHOW, BlockCols.onlineRecording));
+		}
 
 		if(!lectureManagementManaged && secCallback.canEditLectureBlocks() && config.withEdit() != Visibility.NO) {	
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", BlockCols.edit.ordinal(), CMD_EDIT,
@@ -857,6 +860,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			if(lectureRow.getOpenOnlineMeetingButton() != null) {
 				components.add(lectureRow.getOpenOnlineMeetingButton().getComponent());
 			}
+			if(lectureRow.getOpenOnlineRecordingButton() != null) {
+				components.add(lectureRow.getOpenOnlineRecordingButton().getComponent());
+			}
 			if(lectureRow.getRollCallLink() != null) {
 				components.add(lectureRow.getRollCallLink().getComponent());
 			}
@@ -1051,6 +1057,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				onlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_vc_icon");
 				row.setOpenOnlineMeetingLink(onlineMeetingLink);
 			}
+		}
+		
+		if(config.withOnlineRecording() != Visibility.NO && StringHelper.containsNonWhitespace(b.getRecordingUrl())) {
+			String id = "oor_" + b.getKey();
+			ExternalLinkItem onlineRecordingLink = uifactory.addExternalLink(id, id, b.getRecordingUrl(), "_blank", tableEl);
+			onlineRecordingLink.setName(translate("open.online.recording"));
+			onlineRecordingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_video_record");
+			row.setOpenOnlineRecordingLink(onlineRecordingLink);
 		}
 		
 		row.setNextScheduled(nextScheduledBlock != null && nextScheduledBlock.getKey().equals(b.getKey()));

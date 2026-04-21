@@ -154,6 +154,14 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	public String getMeetingUrl();
 
 	public void setMeetingUrl(String meetingUrl);
+	
+	public String getRecordingTitle();
+
+	public void setRecordingTitle(String recordingTitle);
+
+	public String getRecordingUrl();
+
+	public void setRecordingUrl(String recordingUrl);
 
 	
 	public BigBlueButtonMeeting getBBBMeeting();

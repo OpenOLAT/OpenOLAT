@@ -44,41 +44,11 @@ public class CurriculumSecurityCallbackFactory {
 		return new DefaultCurriculumSecurityCallback(false, false, List.of(), List.of());
 	}
 	
-	/**
-	 * @return A security callback without any administration permissions
-	 * 		but view calendars and lectures.
-	 */
-	public static final CurriculumSecurityCallback userLookCallback() {
-		return new UserLookCurriculumSecurityCallback();
-	}
-	
 	public static final CurriculumSecurityCallback createCallback(Roles roles, List<Curriculum> ownedCurriculums,
 			List<CurriculumElementRef> ownedElements) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
 		boolean principal = roles.isPrincipal();
 		return new DefaultCurriculumSecurityCallback(admin, principal, ownedCurriculums, ownedElements);
-	}
-	
-	private static class UserLookCurriculumSecurityCallback extends DefaultCurriculumSecurityCallback {
-
-		public UserLookCurriculumSecurityCallback() {
-			super(false, false, List.of(), List.of());
-		}
-
-		@Override
-		public boolean canViewAllCalendars() {
-			return true;
-		}
-
-		@Override
-		public boolean canViewAllLectures(Curriculum curriculum) {
-			return true;
-		}
-
-		@Override
-		public boolean canViewAllLearningProgress() {
-			return true;
-		}
 	}
 	
 	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {

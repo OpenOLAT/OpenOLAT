@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -457,8 +458,17 @@ public class OverviewRepositoryListController extends BasicController implements
 			implementationsListStackPanel = new TooledStackedPanel("myliststack", getTranslator(), this);
 			implementationsListStackPanel.setToolbarEnabled(false);
 
+			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(asRoles)
+					.enablePreparationWarning()
+					.enableBookmarks()
+					.enableCompletion()
+					.enableCalendar();
+			if (!participantsOnly) {
+				configBuilder.enableCancelledFilter();
+			}
+			ImplementationsListConfig config = configBuilder.build();
 			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(),
-					implementationsListStackPanel, asRoles, false, null, false, false);
+					implementationsListStackPanel, getIdentity(), config);
 			listenTo(implementationsListCtrl);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {

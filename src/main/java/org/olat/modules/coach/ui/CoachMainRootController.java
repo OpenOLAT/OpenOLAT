@@ -49,6 +49,7 @@ import org.olat.modules.coach.ui.component.SearchStateEntry;
 import org.olat.modules.coach.ui.dashboard.CoachDashboardController;
 import org.olat.modules.coach.ui.manager.CoachReportsController;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingSecurityCallbackFactory;
@@ -66,6 +67,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CoachMainRootController extends BasicController implements Activateable2 {
+	
+	private final static ImplementationsListConfig IMPLEMENTATION_LIST_CONFIG = ImplementationsListConfig
+			.builder(List.of(GroupRoles.participant, GroupRoles.coach))
+			.enablePreparation()
+			.enablePreparationWarning()
+			.enableFormTitle()
+			.setHelpUrl("manual_user/area_modules/Coaching_Educational_Products/")
+			.enableBookmarks()
+			.enableId()
+			.enableExtRefVisibilityDefault()
+			.enableStatus()
+			.enableCalendar()
+			.enableCancelledFilter()
+			.build();
 	
 	private Link peopleButton;
 	private Link ordersButton;
@@ -356,9 +371,8 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementations", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		implementationsCtrl = new ImplementationsListController(ureq, bwControl, content,
-				List.of(GroupRoles.owner, GroupRoles.coach), true,
-				"manual_user/area_modules/Coaching_Educational_Products/", true, true);
+		implementationsCtrl = new ImplementationsListController(ureq, bwControl, content, getIdentity(),
+				IMPLEMENTATION_LIST_CONFIG);
 		listenTo(implementationsCtrl);
 		content.pushController(translate("implementations.title"), implementationsCtrl);
 		return implementationsCtrl;

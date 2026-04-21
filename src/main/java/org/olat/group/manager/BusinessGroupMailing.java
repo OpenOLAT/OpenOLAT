@@ -49,6 +49,7 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.group.ui.BGMailHelper.BGMailTemplate;
 import org.olat.group.ui.BGMailHelper.BGMailTemplateInfos;
 import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
@@ -94,7 +95,7 @@ public class BusinessGroupMailing {
 		return null;
 	}
 	
-	public static MailTemplate getDefaultTemplate(MailType type, BusinessGroupShort group, Identity ureqIdentity) {
+	public static BGMailTemplate getDefaultTemplate(MailType type, BusinessGroupShort group, Identity ureqIdentity) {
 		if(type == null) return null;
 		
 		switch(type) {
@@ -142,7 +143,7 @@ public class BusinessGroupMailing {
 			} else {
 				template = getDefaultTemplate(type, group, ureqIdentity);
 			}
-		} else if(group != null && template.getContext() != null && needTemplateEnhancement(template)) {
+		} else if(group != null && template != null && template.getContext() != null && needTemplateEnhancement(template)) {
 
 			String lang = null;
 			if (identity != null) {
@@ -155,7 +156,7 @@ public class BusinessGroupMailing {
 		}
 		
 		MailContext context = mailing == null ? null : mailing.getContext();
-		if(context == null) {
+		if(context == null && group != null) {
 			context = new MailContextImpl(null, null, "[BusinessGroup:" + group.getKey() + "]");
 		}
 		

@@ -216,7 +216,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private LectureListRepositoryController doOpenLectures(UserRequest ureq, List<ContextEntry> defaultEntries) {
 		if(lecturesCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Teacher"), null);
-			LectureListRepositoryConfig config = LectureListRepositoryConfig.coachingConfig("coching-teacher-v1.1")
+			LectureListRepositoryConfig config = LectureListRepositoryConfig.coachingConfig("coching-teacher-v1.2")
 					.withExternalRef(Visibility.HIDE)
 					.withCurriculum(Visibility.HIDE)
 					.withRepositoryEntry(Visibility.SHOW)
@@ -226,6 +226,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 					.withNumberOfLectures(Visibility.HIDE)
 					.withExam(Visibility.HIDE)
 					.withOnlineMeeting(Visibility.SHOW)
+					.withOnlineRecording(Visibility.SHOW)
 					.withEdit(Visibility.SHOW)
 					.withRollCall(Visibility.SHOW)
 					.withAllMineSwitch(false, false)

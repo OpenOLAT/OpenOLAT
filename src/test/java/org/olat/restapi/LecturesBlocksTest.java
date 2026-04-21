@@ -507,6 +507,62 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		Assert.assertNotNull(configVo);
 	}
 	
+	/**
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void putLecturesBlockWithMeetingAndRecordingUrls()
+	throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		String externalId = UUID.randomUUID().toString();
+		LectureBlockVO lectureBlockVo = new LectureBlockVO();
+		lectureBlockVo.setTitle("A block to close");
+		lectureBlockVo.setDescription("A description");
+		lectureBlockVo.setManagedFlagsString("all");
+		lectureBlockVo.setPlannedLectures(4);
+		lectureBlockVo.setExternalId(externalId);
+		lectureBlockVo.setStartDate(new Date());
+		lectureBlockVo.setEndDate(new Date());
+		lectureBlockVo.setMeetingTitle("A meeting");
+		lectureBlockVo.setMeetingUrl("https://www.openolat.com/meeting.mp4");
+		lectureBlockVo.setRecordingTitle("The recording");
+		lectureBlockVo.setRecordingUrl("https://www.openolat.com/recording.mp4");
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString()).path("lectureblocks").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, lectureBlockVo);
+		HttpResponse response = conn.execute(method);
+		
+		// check the response
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+
+		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
+		Assert.assertNotNull(blockVo);
+		
+		// check the database
+		LectureBlock dbBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(blockVo.getKey()));
+		Assert.assertNotNull(dbBlock);
+		Assert.assertEquals("A block to close", dbBlock.getTitle());
+		Assert.assertEquals("A description", dbBlock.getDescription());
+		Assert.assertEquals("all", dbBlock.getManagedFlagsString());
+		Assert.assertEquals(4, dbBlock.getPlannedLecturesNumber());
+		Assert.assertEquals(externalId, dbBlock.getExternalId());
+		Assert.assertNotNull(dbBlock.getStartDate());
+		Assert.assertNotNull(dbBlock.getEndDate());
+		Assert.assertEquals("A meeting", dbBlock.getMeetingTitle());
+		Assert.assertEquals("https://www.openolat.com/meeting.mp4", dbBlock.getMeetingUrl());
+		Assert.assertEquals("The recording", dbBlock.getRecordingTitle());
+		Assert.assertEquals("https://www.openolat.com/recording.mp4", dbBlock.getRecordingUrl());
+	}
+	
 	@Test
 	public void updateLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {

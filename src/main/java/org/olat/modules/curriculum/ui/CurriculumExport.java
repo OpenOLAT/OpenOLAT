@@ -260,6 +260,8 @@ public class CurriculumExport {
 		}
 		
 		headerRow.addCell(col++, translator.translate("export.organisation.affilition") + MANDATORY, workbook.getStyles().getHeaderStyle());
+
+		headerRow.addCell(col++, translator.translate("export.expiration.date"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.creation.date"), workbook.getStyles().getHeaderStyle());
 	}
 	
@@ -293,7 +295,8 @@ public class CurriculumExport {
 					.toList();
 			row.addCell(col++, String.join(";", identifiers));
 		}
-		
+
+		row.addCell(col++, user.getExpirationDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(col++, user.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 	}
 	
@@ -722,12 +725,14 @@ public class CurriculumExport {
 		
 		private final String nickName;
 		private final Date creationDate;
+		private final Date expirationDate;
 		private List<OrganisationWithParents> organisations;
 		
 		public Member(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 			super(identity, userPropertyHandlers, locale);
 			nickName = identity.getUser().getNickName();
 			creationDate = identity.getCreationDate();
+			expirationDate = identity.getExpirationDate();
 		}
 		
 		public String getNickName() {
@@ -736,6 +741,10 @@ public class CurriculumExport {
 		
 		public Date getCreationDate() {
 			return creationDate;
+		}
+		
+		public Date getExpirationDate() {
+			return expirationDate;
 		}
 		
 		public List<OrganisationWithParents> getOrganisations() {

@@ -154,7 +154,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		lecturesBlocksLink = LinkFactory.createLink("curriculum.lectures", "lecturesblocks", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
 		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
-		lecturesBlocksLink.setVisible(lecturesSecCallback.viewAs() != null);
+		lecturesBlocksLink.setVisible(lecturesSecCallback.viewAs() != null && lectureModule.isEnabled());
 		
 		reportsLink = LinkFactory.createLink("curriculum.reports", "reports", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
@@ -317,7 +317,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Events", 0L);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculums-overview-v1.1")
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculums-overview-v1.2")
 				.withExternalRef(Visibility.HIDE)
 				.withCurriculum(Visibility.SHOW)
 				.withRepositoryEntry(Visibility.SHOW)
@@ -327,6 +327,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 				.withNumberOfLectures(Visibility.HIDE)
 				.withExam(Visibility.HIDE)
 				.withOnlineMeeting(Visibility.HIDE)
+				.withOnlineRecording(Visibility.HIDE)
 				.withEdit(Visibility.HIDE)
 				.withRollCall(Visibility.NO)
 				.withAllMineSwitch(false, false)

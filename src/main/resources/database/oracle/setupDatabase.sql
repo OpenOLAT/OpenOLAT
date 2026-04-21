@@ -3814,8 +3814,10 @@ create table o_lecture_block (
   l_descr clob,
   l_preparation clob,
   l_location varchar2(255 char),
-  l_meeting_title varchar(1024 char);
-  l_meeting_url varchar(1024 char);
+  l_meeting_title varchar(1024 char),
+  l_meeting_url varchar(1024 char),
+  l_recording_title varchar(1024),
+  l_recording_url varchar(1024),
   l_comment clob,
   l_start_date date not null,
   l_end_date date not null,

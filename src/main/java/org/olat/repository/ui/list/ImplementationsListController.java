@@ -20,7 +20,10 @@
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,26 +54,42 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.CurriculumElementCalendarController;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
+import org.olat.modules.curriculum.ui.component.CurriculumRolesComparator;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
+import org.olat.modules.curriculum.ui.member.RolesFlexiCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.ui.list.ImplementationsListDataModel.ImplementationsCols;
@@ -87,7 +106,6 @@ public class ImplementationsListController extends FormBasicController implement
 	private final String CMD_SELECT  = "iselect";
 	
 	private static final String ALL_TAB_ID = "All";
-	private static final String ACTIVE_TAB_ID = "Active";
 	private static final String FAVORITE_TAB_ID = "Marks";
 	private static final String FINISHED_TAB_ID = "Finished";
 	private static final String RELEVANT_TAB_ID = "Relevant";
@@ -99,7 +117,6 @@ public class ImplementationsListController extends FormBasicController implement
 	static final String FILTER_CURRICULUM = "Curriculum";
 	
 	private FlexiFiltersTab allTab;
-	private FlexiFiltersTab activeTab;
 	private FlexiFiltersTab favoriteTab;
 	private FlexiFiltersTab finishedTab;
 	private FlexiFiltersTab relevantTab;
@@ -109,36 +126,33 @@ public class ImplementationsListController extends FormBasicController implement
 	private ImplementationsListDataModel tableModel;
 	private final BreadcrumbedStackedPanel stackPanel;
 	
-	private final List<GroupRoles> asRoles;
-	private final boolean onlyParticipant;
-	private final boolean withTitle;
-	private final String helpUrl;
-	private final boolean showStatus;
-	private final boolean withPreparation;
+	private final Identity assessedIdentity;
 	private final List<CurriculumElementStatus> status;
+	private final ImplementationsListConfig config;
 	
+	private int counter;
 	private ImplementationController implementationCtrl;
+	private CurriculumElementCalendarController calendarsCtrl;
+
 
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
 
 	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			List<GroupRoles> asRoles, boolean withTitle, String helpUrl, boolean showStatus, boolean withPreparation) {
+			Identity assessedIdentity, ImplementationsListConfig config) {
 		super(ureq, wControl, "implementations");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(),
 				Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		this.stackPanel = stackPanel;
-		this.withTitle = withTitle;
-		this.helpUrl = helpUrl;
-		this.asRoles = asRoles;
-		this.showStatus = showStatus;
-		this.withPreparation = withPreparation;
-		onlyParticipant = asRoles.size() == 1 && asRoles.contains(GroupRoles.participant);
-		status = withPreparation
+		this.assessedIdentity = assessedIdentity;
+		this.config = config;
+		status = config.withPreparation()
 				? RepositoryEntryMyImplementationsQueries.STATUS_WITH_PREPARATION
 				: RepositoryEntryMyImplementationsQueries.STATUS_WITHOUT_PREPARATION;
 		
@@ -148,12 +162,10 @@ public class ImplementationsListController extends FormBasicController implement
 		initFilter();
 		initFilterPresets();
 		
-		if(tableModel.hasMarked()) {
+		if(favoriteTab != null && tableModel.hasMarked()) {
 			tableEl.setSelectedFilterTab(ureq, favoriteTab);
 		} else if(allTab != null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
-		} else if(activeTab != null) {
-			tableEl.setSelectedFilterTab(ureq, activeTab);
 		}
 		
 		filterModel();
@@ -162,31 +174,45 @@ public class ImplementationsListController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("withTitle", Boolean.valueOf(withTitle));
-			layoutCont.contextPut("helpUrl", helpUrl);
+			layoutCont.contextPut("withTitle", Boolean.valueOf(config.withFormTitle()));
+			layoutCont.contextPut("helpUrl", config.helpUrl());
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ImplementationsCols.mark);
-		markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
-		markColModel.setExportable(false);
-		columnsModel.addFlexiColumnModel(markColModel);
+		if (config.withBookmarks()) {
+			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ImplementationsCols.mark);
+			markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+			markColModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(markColModel);
+		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.key));
+		if (config.withId()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.key));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.displayName, CMD_SELECT));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!onlyParticipant, ImplementationsCols.curriculum,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.extRefVisibilityDefault(), ImplementationsCols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.curriculum,
 				new CurriculumCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleStart,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleEnd,
 				new DateFlexiCellRenderer(getLocale())));
-		if (showStatus) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.elementStatus,
+		if (config.withRoles()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.roles,
+					new RolesFlexiCellRenderer(getTranslator())));
+		}
+		if (config.withStatus()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.elementStatus,
 					new CurriculumStatusCellRenderer(getTranslator())));
 		}
-		
+		if (config.withCompletion()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.completion));
+		}
+		if (config.withCalendar()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.calendars));
+		}
+
 		tableModel = new ImplementationsListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_coursetable");
@@ -195,11 +221,13 @@ public class ImplementationsListController extends FormBasicController implement
 	
 	private void initFilter() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
-		
-		SelectionValues markedKeyValue = new SelectionValues();
-		markedKeyValue.add(SelectionValues.entry(FILTER_MARKED, translate("search.mark")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
-				FILTER_MARKED, markedKeyValue, true));
+	
+		if (config.withBookmarks()) {
+			SelectionValues markedKeyValue = new SelectionValues();
+			markedKeyValue.add(SelectionValues.entry(FILTER_MARKED, translate("search.mark")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
+					FILTER_MARKED, markedKeyValue, true));
+		}
 		
 		Set<Curriculum> curriculums = tableModel.getObjects().stream().map(ImplementationRow::getCurriculum).collect(Collectors.toSet());
 		if(!curriculums.isEmpty()) {
@@ -218,15 +246,15 @@ public class ImplementationsListController extends FormBasicController implement
 					FILTER_CURRICULUM, curriculumValues, true);
 			filters.add(curriculumFilter);
 		}
-    	
+		
 		SelectionValues statusValues = new SelectionValues();
-		if(withPreparation) {
+		if(config.withPreparation()) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
 		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
-		if(!onlyParticipant) {
+		if(config.withCancelledFilter()) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
 		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
@@ -244,28 +272,22 @@ public class ImplementationsListController extends FormBasicController implement
 	private void initFilterPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		favoriteTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAVORITE_TAB_ID, translate("filter.mark"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_MARKED, FILTER_MARKED)));
-		tabs.add(favoriteTab);
-
-		if(onlyParticipant) {
-			activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("filter.active") ,
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							List.of(CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
-									CurriculumElementStatus.active.name()))));
-			tabs.add(activeTab);
-		} else {
-			allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
-					TabSelectionBehavior.nothing, List.of());
-			tabs.add(allTab);
-			
-			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							List.of(CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
-									CurriculumElementStatus.active.name()))));
-			tabs.add(relevantTab);
+		if (config.withBookmarks()) {
+			favoriteTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAVORITE_TAB_ID, translate("filter.mark"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_MARKED, FILTER_MARKED)));
+			tabs.add(favoriteTab);
 		}
-		if (withPreparation) {
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(allTab);
+		
+		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+						List.of(CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
+								CurriculumElementStatus.active.name()))));
+		tabs.add(relevantTab);
+		if (config.withPreparation()) {
 			preparationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB_ID, translate("filter.preparation"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 							List.of(CurriculumElementStatus.preparation.name()))));
@@ -276,31 +298,61 @@ public class ImplementationsListController extends FormBasicController implement
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 						List.of(CurriculumElementStatus.finished.name()))));
 		tabs.add(finishedTab);
-
-
+		
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	private void loadModel() {
-		Set<Long> markedElementKeys = markManager.getMarkResourceIds(getIdentity(), "CurriculumElement", List.of());
-		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(),
-				false, asRoles, status);
+		Set<Long> markedElementKeys = config.withBookmarks()
+				? markManager.getMarkResourceIds(assessedIdentity, "CurriculumElement", List.of())
+				: Set.of();
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(assessedIdentity,
+				false, config.asRoles(), status);
+		if (config.coachIdentity() != null) {
+			Set<Long> coachImplementationKeys = myImplementationsQueries
+					.searchImplementations(config.coachIdentity(), false, List.of(GroupRoles.coach), status).stream()
+					.map(CurriculumElement::getKey)
+					.collect(Collectors.toSet());
+			implementations = implementations.stream()
+					.filter(impl -> coachImplementationKeys.contains(impl.getKey()))
+					.toList();
+		}
+
+		Map<Long, List<CurriculumRoles>> eleKeyToRoles = Map.of();
+		if (config.withRoles()) {
+			eleKeyToRoles = curriculumService.getCurriculumElementMemberships(implementations, List.of(assessedIdentity)).stream()
+				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, CurriculumElementMembership::getRoles));
+		}
+		
 		List<ImplementationRow> rows = new ArrayList<>();
 		for(CurriculumElement implementation:implementations) {
 			boolean marked = markedElementKeys.contains(implementation.getKey());
 			Curriculum curriculum = implementation.getCurriculum();
-			rows.add(forgeRow(implementation, curriculum, marked));
+			CurriculumRolesComparator rolesComparator = new CurriculumRolesComparator();
+			List<CurriculumRoles> roles = eleKeyToRoles.getOrDefault(implementation.getKey(), List.of()).stream()
+					.sorted((r1, r2) -> rolesComparator.compare(r1, r2))
+					.toList();
+			rows.add(forgeRow(implementation, curriculum, roles, marked));
+		}
+		forgeCalendarsLinks(rows);
+		if (config.withCompletion()) {
+			forgeCurriculumCompletions(rows);
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private ImplementationRow forgeRow(CurriculumElement implementation, Curriculum curriculum, boolean marked) {
-		FormLink markLink = uifactory.addFormLink("mark_" + implementation.getResource().getKey(), "mark", "", tableEl, Link.NONTRANSLATED);
-		decoratedMarkLink(markLink, marked);
+	private ImplementationRow forgeRow(CurriculumElement implementation, Curriculum curriculum,
+			List<CurriculumRoles> roles, boolean marked) {
+		ImplementationRow row = new ImplementationRow(implementation, curriculum, roles);
 		
-		ImplementationRow row = new ImplementationRow(implementation, curriculum, markLink);
-		markLink.setUserObject(row);
+		if (config.withBookmarks()) {
+			FormLink markLink = uifactory.addFormLink("mark_" + implementation.getResource().getKey(), "mark", "", tableEl, Link.NONTRANSLATED);
+			decoratedMarkLink(markLink, marked);
+			row.setMarkLink(markLink);
+			markLink.setUserObject(row);
+		}
+		
 		return row;
 	}
 	
@@ -329,9 +381,6 @@ public class ImplementationsListController extends FormBasicController implement
 		} else if(ALL_TAB_ID.equalsIgnoreCase(type) && allTab != null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
 			filterModel();
-		} else if(ACTIVE_TAB_ID.equalsIgnoreCase(type) && activeTab != null) {
-			tableEl.setSelectedFilterTab(ureq, activeTab);
-			filterModel();
 		} else if(FAVORITE_TAB_ID.equalsIgnoreCase(type) && favoriteTab != null) {
 			tableEl.setSelectedFilterTab(ureq, favoriteTab);
 			filterModel();
@@ -346,9 +395,6 @@ public class ImplementationsListController extends FormBasicController implement
 			filterModel();
 		} else if(allTab != null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
-			filterModel();
-		} else if(activeTab != null) {
-			tableEl.setSelectedFilterTab(ureq, activeTab);
 			filterModel();
 		}
 	}
@@ -376,6 +422,8 @@ public class ImplementationsListController extends FormBasicController implement
 				boolean marked = doMark(ureq, row);
 				decoratedMarkLink(link, marked);
 				link.getComponent().setDirty(true);
+			} else if("calendars".equals(link.getCmd())) {
+				doOpenCalendars(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -392,22 +440,85 @@ public class ImplementationsListController extends FormBasicController implement
 		CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementation", element.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		implementationCtrl = new ImplementationController(ureq, swControl, stackPanel,
-				element.getCurriculum(), element, asRoles, secCallback);
+		implementationCtrl = new ImplementationController(ureq, swControl, stackPanel, assessedIdentity,
+				element.getCurriculum(), element, secCallback, config);
 		listenTo(implementationCtrl);
 		stackPanel.pushController(element.getDisplayName(), implementationCtrl);
 	}
 	
+	private void forgeCalendarsLinks(List<ImplementationRow> rows) {
+		for (ImplementationRow row : rows) {
+			if (row.isCalendarsEnabled()) {
+				FormLink calendarLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "calendars", null, null, Link.LINK);
+				calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
+				calendarLink.setUserObject(row);
+				row.setCalendarsLink(calendarLink);
+			}
+		}
+	}
+
+	private void forgeCurriculumCompletions(List<ImplementationRow> rows) {
+		Collection<Long> curEleKeys = rows.stream()
+				.filter(ImplementationRow::isLearningProgressEnabled)
+				.map(ImplementationRow::getKey)
+				.collect(Collectors.toList());
+		if (curEleKeys.isEmpty()) return;
+
+		List<AssessmentEntryCompletion> completionsList = assessmentService
+				.loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleKeys);
+		Map<Long, Double> completions = new HashMap<>();
+		for (AssessmentEntryCompletion c : completionsList) {
+			if (c.getCompletion() != null) {
+				completions.put(c.getKey(), c.getCompletion());
+			}
+		}
+		for (ImplementationRow row : rows) {
+			Double completion = completions.get(row.getKey());
+			if (completion != null) {
+				forgeCompletion(row, completion);
+			}
+		}
+	}
+
+	private void forgeCompletion(ImplementationRow row, Double completion) {
+		ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
+				completion.floatValue(), Float.valueOf(1), null);
+		completionItem.setWidthInPercent(true);
+		completionItem.setLabelAlignment(LabelAlignment.none);
+		completionItem.setRenderStyle(RenderStyle.radial);
+		completionItem.setRenderSize(RenderSize.inline);
+		completionItem.setBarColor(BarColor.neutral);
+		row.setCompletionItem(completionItem);
+		row.setCompletion(completion);
+	}
+
+	private void doOpenCalendars(UserRequest ureq, ImplementationRow row) {
+		removeAsListenerAndDispose(calendarsCtrl);
+
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntriesWithDescendants(element).stream()
+				.filter(e -> "CourseModule".equals(e.getOlatResource().getResourceableTypeName()))
+				.collect(Collectors.toList());
+
+		CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Calendars", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
+		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, element, entries, secCallback);
+		listenTo(calendarsCtrl);
+		stackPanel.pushController(translate("calendars"), calendarsCtrl);
+	}
+
 	private boolean doMark(UserRequest ureq, ImplementationRow row) {
 		OLATResourceable item = OresHelper.createOLATResourceableInstance("CurriculumElement", row.getKey());
 		String businessPath = "[MyCoursesSite:0][CurriculumElement:" + item.getResourceableId() + "]";
 
 		boolean marked;
-		if(markManager.isMarked(item, getIdentity(), null)) {
-			markManager.removeMark(item, getIdentity(), null);
+		if(markManager.isMarked(item, assessedIdentity, null)) {
+			markManager.removeMark(item, assessedIdentity, null);
 			marked = false;
 		} else {
-			markManager.setMark(item, getIdentity(), null, businessPath);
+			markManager.setMark(item, assessedIdentity, null, businessPath);
 			marked = true;
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);

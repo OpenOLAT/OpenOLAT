@@ -253,7 +253,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				.build());
 		
 		initFiltersPresets();
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		if (allTab != null) {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+		}
 		
 		if(secCallback.canDeleteCurriculum()) {
 			tableEl.setMultiSelect(true);

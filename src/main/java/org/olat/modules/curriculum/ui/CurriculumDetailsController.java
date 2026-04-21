@@ -203,7 +203,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		if(lectureModule.isEnabled()) {
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_LECTURES), null);
-				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculum-details-v1.1")
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculum-details-v1.2")
 						.withExternalRef(Visibility.HIDE)
 						.withCurriculum(Visibility.HIDE)
 						.withRepositoryEntry(Visibility.SHOW)
@@ -213,6 +213,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						.withNumberOfLectures(Visibility.HIDE)
 						.withExam(Visibility.HIDE)
 						.withOnlineMeeting(Visibility.HIDE)
+						.withOnlineRecording(Visibility.HIDE)
 						.withEdit(Visibility.HIDE)
 						.withRollCall(Visibility.NO)
 						.withAllMineSwitch(false, false)

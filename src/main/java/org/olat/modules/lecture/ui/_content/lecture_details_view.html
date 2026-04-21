@@ -31,6 +31,13 @@
 			</div>
 		#end
 		
+		#if($r.available("open.external.recording"))
+			<div>
+				$r.render("open.external.recording", "label")
+				<div class="form-group clearfix">$r.render("open.external.recording", "nolayout")</div>
+			</div>
+		#end
+		
 		#if($r.available("edit")) 
 			<div class="o_actions">$r.render("edit")</div>
 		#end

@@ -76,6 +76,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 
 	private FormLink rollCallLink;
 	private FormItem openOnlineMeetingLink;
+	private ExternalLinkItem openOnlineRecordingLink;
 	
 	private final String entryUrl;
 	private final ZonedDateTime date;
@@ -320,6 +321,25 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	public void setOpenOnlineMeetingLink(FormItem openOnlineMeetingLink) {
 		this.openOnlineMeetingLink = openOnlineMeetingLink;
 	}
+	
+	public ExternalLinkItem getOpenOnlineRecordingButton() {
+		if(openOnlineRecordingLink != null) {
+			openOnlineRecordingLink.setCssClass("btn btn-default");
+		}
+		return openOnlineRecordingLink;
+	}
+	
+	public ExternalLinkItem getOpenOnlineRecordingSmallButton() {
+		if(openOnlineRecordingLink != null) {
+			openOnlineRecordingLink.setCssClass("btn btn-xs btn-default");
+		}
+		return openOnlineRecordingLink;
+	}
+	
+	public void setOpenOnlineRecordingLink(ExternalLinkItem link) {
+		this.openOnlineRecordingLink = link;
+	}
+	
 	
 	public FormLink getRollCallLink() {
 		if(rollCallLink != null) {

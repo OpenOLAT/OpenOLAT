@@ -118,6 +118,8 @@ public class ImportCurriculumsReviewUsersController extends AbstractImportListCo
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.organisationIdentifier,
 				new ImportValueCellRenderer(ImportCurriculumsCols.organisationIdentifier, getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.expirationDate,
+				new ImportValueCellRenderer(ImportCurriculumsCols.expirationDate, getLocale())));
 		
 		if(importUsersPasswords) {
 			ImportValueCellRenderer renderer = new ImportValueCellRenderer(ImportCurriculumsCols.password, getLocale());

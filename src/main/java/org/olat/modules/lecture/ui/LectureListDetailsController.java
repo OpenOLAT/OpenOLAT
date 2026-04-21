@@ -201,6 +201,13 @@ public class LectureListDetailsController extends FormBasicController {
 			button.setCssClass("btn btn-default");
 		}
 		
+		if(StringHelper.containsNonWhitespace(lectureBlock.getRecordingUrl())) {
+			ExternalLinkItem button = uifactory.addExternalLink("open.external.recording", "open.external.recording", lectureBlock.getRecordingUrl(), "_blank", formLayout);
+			button.setName(translate("open.online.recording"));
+			button.setLabel("online.recording", null);
+			button.setCssClass("btn btn-default");
+		}
+		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("lectureBlockKey", lectureBlock.getKey());
 			layoutCont.contextPut("title", lectureBlock.getTitle());

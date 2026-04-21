@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -156,6 +157,8 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 			} else {
 				target.appendHtmlEscaped(string);
 			}
+		} else if(cellValue instanceof LocalDateTime dateTime) {
+			target.append(format.formatDateAndTime(dateTime));
 		} else if(cellValue instanceof ReaderLocalDate readerDate) {
 			if(readerDate.date() != null) {
 				target.append(format.formatDate(readerDate.date()));

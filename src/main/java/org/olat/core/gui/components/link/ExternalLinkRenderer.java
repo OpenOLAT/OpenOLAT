@@ -41,7 +41,6 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 			Translator translator, RenderResult renderResult, String[] args) {
 		ExternalLink link = (ExternalLink)source;
 		
-		
 		String linkText = link.getName();
 		String title = link.getTooltip();
 		// don't use title if the same as link text to remove a11y redundancy

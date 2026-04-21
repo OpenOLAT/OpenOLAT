@@ -68,17 +68,14 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListContr
 import org.olat.course.certificate.ui.CertificatesListOverviewController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
 import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
 import org.olat.modules.creditpoint.ui.CreditPointUserController;
-import org.olat.modules.coach.RoleSecurityCallback;
-import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
-import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumSecurityCallback;
-import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationListController;
 import org.olat.modules.grading.GradingModule;
@@ -716,11 +713,10 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_EDU_PRODUCTS), uureq -> {
-				List<Curriculum> curriculumRefs = curriculumService.getMyCurriculums(identity);
-				CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 				RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.createForAdmin();
+				// Current identity does not act as coach
 				courseListWrapperCtrl = new CourseListWrapperController(uureq, getWindowControl(), stackPanel, identity,
-				      curriculumSecurityCallback, roleSecurityCallback, List.copyOf(curriculumRefs), null, true);
+						null, roleSecurityCallback, null, true);
 				listenTo(courseListWrapperCtrl);
 				return courseListWrapperCtrl.getInitialComponent();
 			});

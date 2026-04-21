@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.importwizard;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -67,12 +68,15 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedUserRo
 	
 	public List<Organisation> getOrganisations() {
 		if(backupList == null) List.of();
-
-		Set<Organisation> organisations = backupList.stream()
-			.map(ImportedUserRow::getOrganisation)
-			.filter(org -> org != null)
-			.collect(Collectors.toSet());
-		return List.copyOf(organisations);
+		
+		Set<Organisation> allOrganisations = new HashSet<>();
+		for(ImportedUserRow row:backupList) {
+			List<Organisation> organisations = row.getOrganisations();
+			if(organisations != null && !organisations.isEmpty()) {
+				allOrganisations.addAll(organisations);
+			}
+		}
+		return List.copyOf(allOrganisations);
 	}
 	
 	@Override
@@ -138,7 +142,12 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedUserRo
 
 	private boolean acceptOrganisations(Set<Long> organisations, ImportedUserRow row) {
 		if(organisations == null || organisations.isEmpty()) return true;
-		return row.getOrganisation() != null && organisations.contains(row.getOrganisation().getKey());
+		
+		List<Organisation> list = row.getOrganisations();
+		if(list == null || list.isEmpty()) {
+			return false;
+		}
+		return list.stream().anyMatch(org -> organisations.contains(org.getKey()));
 	}
 	
 	private boolean acceptStatus(Set<String> status, ImportedUserRow row) {
@@ -210,6 +219,7 @@ implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ImportedUserRo
 				case tools -> Boolean.valueOf(userRow.getIgnoreEl() != null && userRow.getIgnoreEl().isEnabled());
 				case organisationIdentifier -> userRow.getOrganisationIdentifier();
 				case password -> userRow.getPassword();
+				case expirationDate -> userRow.getExpirationDate();
 				default -> "ERROR";
 			};
 		}

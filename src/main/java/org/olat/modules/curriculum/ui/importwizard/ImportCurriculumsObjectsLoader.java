@@ -508,17 +508,30 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 				}
 			}
 			
-			Organisation organisation = loadOrganisation(importedRow.getOrganisationIdentifier());
-			importedRow.setOrganisation(organisation);
+			List<Organisation> organisations = loadOrganisations(importedRow.getOrganisationIdentifiersList());
+			importedRow.setOrganisations(organisations);
 		}
 	}
 
+	private List<Organisation> loadOrganisations(List<String> organisationIdentifiers) {
+		List<Organisation> organisations = new ArrayList<>(3);
+		if(organisationIdentifiers != null && !organisationIdentifiers.isEmpty()) {
+			for(String organisationIdentifier:organisationIdentifiers) {
+				Organisation organisation = loadOrganisation(organisationIdentifier);
+				if(organisation != null) {
+					organisations.add(organisation);
+				}
+			}
+		}
+		return organisations;
+	}
+	
 	private Organisation loadOrganisation(String organisationIdentifier) {
 		Organisation organisation = organisationMap.get(organisationIdentifier);
 		if(organisation == null && StringHelper.containsNonWhitespace(organisationIdentifier)) {
-			List<Organisation> organisations = organisationService.findOrganisationByIdentifier(organisationIdentifier);
-			if(organisations.size() == 1) {
-				organisation = organisations.get(0);
+			List<Organisation> organisationsList = organisationService.findOrganisationByIdentifier(organisationIdentifier);
+			if(organisationsList.size() == 1) {
+				organisation = organisationsList.get(0);
 				organisationMap.put(organisationIdentifier, organisation);
 			}
 		}

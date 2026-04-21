@@ -138,6 +138,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case chosenTeachers -> transformIdentitiesToString(row.getTeachersList());
 			case rollCall -> row.getRollCallLink();
 			case onlineMeeting -> row.getOpenOnlineMeetingSmallButton();
+			case onlineRecording -> row.getOpenOnlineRecordingSmallButton();
 			case leadTime -> getTime(row.getLeadTime());
 			case followUptime -> getTime(row.getFollowupTime());
 			case subjects -> row.getSubjects();
@@ -189,6 +190,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		numParticipants("table.header.participants"),
 		curriculumElement("table.header.curriculum.element"),
 		onlineMeeting("table.header.online.meeting"),
+		onlineRecording("table.header.online.recording"),
 		entry("table.header.entry"),
 		rollCall("details"),
 		leadTime("table.header.lead.time"),

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,7 +30,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -43,6 +43,8 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.AbstractExcelReader;
 import org.olat.core.util.openxml.AbstractExcelReader.ReaderLocalDate;
@@ -65,6 +67,7 @@ import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -78,6 +81,7 @@ public class ImportCurriculumsValidator {
 	
 	private final Roles roles;
 	private final Identity identity;
+	private final Formatter formatter;
 	private final Translator translator;
 	
 	public static final String ON = "ON";
@@ -87,6 +91,8 @@ public class ImportCurriculumsValidator {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Set<String> curriculumsNoPermissions = new HashSet<>();
 
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -103,6 +109,7 @@ public class ImportCurriculumsValidator {
 		this.roles = roles;
 		this.identity = identity;
 		this.translator = translator;
+		formatter = Formatter.getInstance(translator.getLocale());
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CurriculumExport.usageIdentifyer, isAdministrativeUser)
@@ -260,7 +267,10 @@ public class ImportCurriculumsValidator {
 			ValidationError validationError = new ValidationError();
 			String column = translate(handler.i18nColumnDescriptorLabelKey());
 			
-			if(validateMandatory(importedRow, value, handler)
+			if(!StringHelper.containsNonWhitespace(value)
+					&& handler.getName().equals(UserConstants.EMAIL) && !userModule.isEmailMandatory()) {
+				// Not mandatory per setting
+			} else if(validateMandatory(importedRow, value, handler)
 					&& validateLength(importedRow, value, 128, handler)) {
 			
 				if(UserConstants.NICKNAME.equals(handler.getName())) {
@@ -298,19 +308,46 @@ public class ImportCurriculumsValidator {
 		// Organisation
 		if(validateMandatory(importedRow, importedRow.getOrganisationIdentifier(), ImportCurriculumsCols.organisationIdentifier)) {
 			String organisationColumn = translate(ImportCurriculumsCols.organisationIdentifier.i18nHeaderKey());
-			if(importedRow.getOrganisation() == null) {
+			if(importedRow.getOrganisations() == null || importedRow.getOrganisations().isEmpty()) {
 				// Has an organisation identifier
 				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
 						null, translator.translate("error.not.exist", importedRow.getOrganisationIdentifier()));
-			} else if(!hasOrganisationPermission(importedRow.getOrganisation())) {
+			} else if(importedRow.getOrganisations() == null || importedRow.getOrganisations().isEmpty()) {
+				// Has an organisation identifier
+				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+						null, translator.translate("error.not.exist", importedRow.getOrganisationIdentifier()));
+			} else if(importedRow.getOrganisations().size() < importedRow.getOrganisationIdentifiersList().size()) {
+				String missingOrganisations = listMissingOrganisations(importedRow.getOrganisationIdentifiersList(), importedRow.getOrganisations());
+				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+						null, translator.translate("error.not.exist", missingOrganisations));
+			} else if(!hasOrganisationsPermission(importedRow.getOrganisations())) {
 				importedRow.addValidationError(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
 						null, translate("error.permissions"));
 			} else if(importedRow.getIdentity() != null) {
 				List<Organisation> currentOrganisations = organisationService.getOrganisations(importedRow.getIdentity(), OrganisationRoles.user);
-				if(!currentOrganisations.contains(importedRow.getOrganisation())) {
-					importedRow.addValidationWarning(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
-							null, translate("error.no.update"));
+				for(Organisation organisation: importedRow.getOrganisations()) {
+					if(!currentOrganisations.contains(organisation)) {
+						importedRow.addValidationWarning(ImportCurriculumsCols.organisationIdentifier, organisationColumn,
+								null, translate("error.no.update"));
+						break;
+					}
 				}
+			}
+		}
+		
+		if(importedRow.getExpirationDate() != null && importedRow.getExpirationDate().date() != null) {
+			ReaderLocalDate expirationDate = importedRow.getExpirationDate();
+			String expirationColumn = translate(ImportCurriculumsCols.expirationDate.i18nHeaderKey());
+			if(importedRow.getIdentity() == null &&  expirationDate.date().compareTo(LocalDate.now()) < 0) {
+				importedRow.addValidationError(ImportCurriculumsCols.expirationDate, expirationColumn,
+						null, translate("error.date.future"));
+			} else if(importedRow.getIdentity() != null && (importedRow.getIdentity().getExpirationDate() == null
+					|| !DateUtils.isSameDay(importedRow.getIdentity().getExpirationDate(), DateUtils.toDate(expirationDate.date())))) {
+				String currentValue = importedRow.getIdentity().getExpirationDate() == null
+						? expirationColumn
+						: formatter.formatDate(importedRow.getIdentity().getExpirationDate());
+				importedRow.addValidationWarning(ImportCurriculumsCols.expirationDate, expirationColumn, null,
+						translator.translate("warning.change.ignore", currentValue));
 			}
 		}
 		
@@ -322,6 +359,20 @@ public class ImportCurriculumsValidator {
 				importedRow.setStatus(ImportCurriculumsStatus.NO_CHANGES);
 			}
 		}
+	}
+	
+	private String listMissingOrganisations(List<String> identifiers, List<Organisation> organisations) {
+		Set<String> organisationsSet = organisations.stream()
+				.map(Organisation::getIdentifier)
+				.collect(Collectors.toSet());
+		StringBuilder sb = new StringBuilder();
+		for(String identifier:identifiers) {
+			if(!organisationsSet.contains(identifier)) {
+				if(!sb.isEmpty()) sb.append(";");
+				sb.append(identifier);
+			}
+		}
+		return sb.toString();
 	}
 	
 	public void validatePassword(ImportedUserRow importedRow) {
@@ -839,6 +890,14 @@ public class ImportCurriculumsValidator {
 		// Identifier / external ref.
 		boolean allOk = validateMandatory(importedRow, importedRow.getIdentifier(), ImportCurriculumsCols.identifier);
 		allOk &= validateLength(importedRow, importedRow.getIdentifier(), maxLength, ImportCurriculumsCols.identifier);
+		return allOk;
+	}
+	
+	private boolean hasOrganisationsPermission(List<Organisation> organisations) {
+		boolean allOk = true;
+		for(Organisation organisation:organisations) {
+			allOk &= hasOrganisationPermission(organisation);
+		}
 		return allOk;
 	}
 	

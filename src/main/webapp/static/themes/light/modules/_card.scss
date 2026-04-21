@@ -311,6 +311,10 @@
 			margin-left: auto;
 		}
 	}
+	.o_visual {
+		border-radius: $o-dashboard-widget-rowelem-visual-border-radius;
+	}
+	
 }
 .o_dashboard_table_widget {
 	.table {

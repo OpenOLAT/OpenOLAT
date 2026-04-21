@@ -243,7 +243,8 @@ implements FilterableFlexiTableModel {
 		password("table.header.password"),
 		creationDate("table.header.creation.date"),
 		lastModified("table.header.last.modified"),
-		tools("action.more")
+		tools("action.more"),
+		expirationDate("table.header.expiration.date"),
 		;
 		
 		private final String i18nHeaderKey;

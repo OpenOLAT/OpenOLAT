@@ -27,6 +27,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
@@ -47,13 +48,20 @@ public class RolesFlexiCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof MemberRow memberRow) {
-			List<CurriculumRoles> roles = memberRow.getRoles();
-			for(int i=0; i<roles.size(); i++) {
-				if(i > 0) {
-					target.append(", ");
-				}
-				target.append(translator.translate("role.".concat(roles.get(i).name())));
+			render(target, memberRow.getRoles());
+		} else if (cellValue instanceof CurriculumElementMembership membership) {
+			render(target, membership.getRoles());
+		} else if (cellValue instanceof org.olat.repository.ui.list.ImplementationRow implementationRow) {
+			render(target, implementationRow.getRoles());
+		}
+	}
+
+	private void render(StringOutput target, List<CurriculumRoles> roles) {
+		for(int i=0; i<roles.size(); i++) {
+			if(i > 0) {
+				target.append(", ");
 			}
+			target.append(translator.translate("role.".concat(roles.get(i).name())));
 		}
 	}
 }

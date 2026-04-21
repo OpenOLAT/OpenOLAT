@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -45,8 +44,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,7 +64,6 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
-import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.member.ChangeApplyToEnum;
 import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
@@ -83,8 +81,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RightsController extends StepFormBasicController {
 
-	private static final String CMD_ADD = "add";
-	private static final String CMD_NOTE = "note";
 	private static final String ASSIGN_KEY = "assign";
 	private static final String DONT_ASSIGN_KEY = "dont-assign";
 	
@@ -210,17 +206,19 @@ public class RightsController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RightsElementsCols.externalId));
 
 		String i18nLabel = "role.".concat(roleToModify.name());
-		GroupMembershipStatusRenderer statusRenderer = new GroupMembershipStatusRenderer(getLocale());
+		AddGroupMembershipStatusRenderer statusRenderer = new AddGroupMembershipStatusRenderer(getLocale());
 		DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, RightsElementsCols.roleToModify.ordinal(), null, false, null, statusRenderer);
 		col.setDefaultVisible(true);
 		col.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(col);
 		
+		NoteCellRenderer noteRenderer = new NoteCellRenderer();
 		DefaultFlexiColumnModel noteCol = new DefaultFlexiColumnModel(RightsElementsCols.note);
 		noteCol.setDefaultVisible(true);
 		noteCol.setAlwaysVisible(false);
 		noteCol.setIconHeader("o_icon o_icon-fw");// Dummy icon
 		noteCol.setHeaderLabel(i18nLabel);
+		noteCol.setCellRenderer(noteRenderer);
 		columnsModel.addFlexiColumnModel(noteCol);
 
 		tableModel = new RightsCurriculumElementsTableModel(columnsModel);
@@ -265,7 +263,6 @@ public class RightsController extends StepFormBasicController {
 			RightsCurriculumElementRow row = new RightsCurriculumElementRow(element);
 			rows.add(row);
 			rowsMap.put(row.getKey(), row);
-			forgeLinks(row);
 		}
 		
 		for(RightsCurriculumElementRow row:rows) {
@@ -277,23 +274,6 @@ public class RightsController extends StepFormBasicController {
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-	}
-	
-	private void forgeLinks(RightsCurriculumElementRow row) {
-		String id = "model-" + roleToModify + "-" + row.getKey();
-		flc.remove(id);
-		
-		FormLink addLink = uifactory.addFormLink("add.".concat(id), CMD_ADD, "add", tableEl, Link.LINK);
-		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_plus");
-		addLink.setUserObject(row);
-		row.setAddButton(addLink);
-		
-		FormLink noteLink = uifactory.addFormLink("note.".concat(id), CMD_NOTE, "", tableEl, Link.LINK | Link.NONTRANSLATED);
-		noteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_notes");
-		noteLink.setTitle(translate("note"));
-		noteLink.setUserObject(row);
-		noteLink.setVisible(false);
-		row.setNoteButton(noteLink);
 	}
 	
 	@Override
@@ -318,12 +298,21 @@ public class RightsController extends StepFormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(confirmationTypeEl == source || applyToEl == source) {
 			updateUI();
-		} else if(source instanceof FormLink link
-				&& link.getUserObject() instanceof RightsCurriculumElementRow row) {
-			if(CMD_ADD.equals(link.getCmd())) {
-				doAddMembership(ureq, link, row);
-			} else if(CMD_NOTE.equals(link.getCmd())) {
-				doOpenNote(ureq, link, row);
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent se) {
+				if(AddGroupMembershipStatusRenderer.CMD_ACTIONS.equals(se.getCommand())) {
+					RightsCurriculumElementRow selectedRow = tableModel.getObject(se.getIndex());
+					if(selectedRow != null) {
+						String targetId = AddGroupMembershipStatusRenderer.getId(se.getIndex());
+						doAddMembership(ureq, targetId, selectedRow);
+					}
+				} else if(NoteCellRenderer.CMD_NOTE.equals(se.getCommand())) {
+					RightsCurriculumElementRow selectedRow = tableModel.getObject(se.getIndex());
+					if(selectedRow != null) {
+						String targetId = NoteCellRenderer.getId(se.getIndex());
+						doOpenNote(ureq, targetId, selectedRow);
+					}
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -429,7 +418,7 @@ public class RightsController extends StepFormBasicController {
 		//
 	}
 	
-	private void doAddMembership(UserRequest ureq, FormLink link, RightsCurriculumElementRow row) {
+	private void doAddMembership(UserRequest ureq, String targetId, RightsCurriculumElementRow row) {
 		boolean hasChildren = tableModel.getObjects().stream()
 				.filter(obj -> row.equals(obj.getParent()))
 				.count() > 0;
@@ -439,8 +428,8 @@ public class RightsController extends StepFormBasicController {
 		
 		String title = translate("add.membership");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addMembershipCtrl.getInitialComponent(), link.getFormDispatchId(),
-				title, true, "", new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, title));
+				addMembershipCtrl.getInitialComponent(), targetId,
+				title, true, "", new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, title, true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -451,7 +440,7 @@ public class RightsController extends StepFormBasicController {
 				null, null, null, mod.toDescendants(), mod.adminNote());
 
 		RightsCurriculumElementRow row = tableModel.getObject(modification.curriculumElement());
-		setModification(row, modification);
+		row.setModification(modification);
 		
 		if(modification.toDescendants()) {
 			int index = tableModel.getIndexOf(row);
@@ -460,7 +449,7 @@ public class RightsController extends StepFormBasicController {
 				RightsCurriculumElementRow obj = tableModel.getObject(i);
 				if(tableModel.isParentOf(row, obj)) {
 					MembershipModification objModification = modification.copyFor(obj.getCurriculumElement());
-					setModification(obj, objModification);
+					obj.setModification(objModification);
 				}
 			}
 		}
@@ -468,12 +457,7 @@ public class RightsController extends StepFormBasicController {
 		tableEl.reset(false, false, true);
 	}
 	
-	private void setModification(RightsCurriculumElementRow obj, MembershipModification modification) {
-		obj.getNoteButton().setVisible(StringHelper.containsNonWhitespace(modification.adminNote()));
-		obj.setModification(modification);
-	}
-	
-	private void doOpenNote(UserRequest ureq, FormLink link, RightsCurriculumElementRow row) {
+	private void doOpenNote(UserRequest ureq, String targetId, RightsCurriculumElementRow row) {
 		String adminNote = null;
 		MembershipModification modification = row.getModification();		
 		if(modification != null && StringHelper.containsNonWhitespace(modification.adminNote())) {
@@ -486,9 +470,9 @@ public class RightsController extends StepFormBasicController {
 		listenTo(noteCtrl);
 		
 		String title = translate("note");
-		CalloutSettings settings = new CalloutSettings(title);
+		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, false, title, true);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+				noteCtrl.getInitialComponent(), targetId, title, true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

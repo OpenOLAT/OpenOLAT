@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +48,8 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> implements FlexiBusinessPathModel {
 
 	private final Locale locale;
-	
+	private List<CurriculumElementWithViewsRow> filteredSourceRows;
+
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
@@ -64,7 +66,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			Long searchKey = StringHelper.isLong(lowerSearchString) ? Long.valueOf(lowerSearchString) : null;
 			List<CurriculumElementStatus> statusList = filteredStatus(tab);
 			List<RepositoryEntryStatusEnum> entryStatusList = filteredEntryStatus(tab);
-			
+
 			List<CurriculumElementWithViewsRow> filteredRows = backupRows.stream()
 				.filter(row -> (quickSearch(lowerSearchString, row) || searchKey(searchKey, row)))
 				.filter(row -> filterStatus(row, statusList, entryStatusList))
@@ -72,8 +74,9 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 
 			reconstructParentLine(filteredRows);
 			Collections.sort(filteredRows, new CurriculumElementViewsRowComparator(locale));
+			filteredSourceRows = new ArrayList<>(filteredRows);
 			setFilteredObjects(filteredRows);
-			
+
 			// Open all filtered
 			openedRows.clear();
 			for(CurriculumElementWithViewsRow currentRow:filteredRows) {
@@ -84,8 +87,55 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 				}
 			}
 		} else {
+			filteredSourceRows = null;
 			setUnfilteredObjects();
 		}
+	}
+
+	@Override
+	public void open(int row) {
+		if(filteredSourceRows == null) {
+			super.open(row);
+			return;
+		}
+
+		CurriculumElementWithViewsRow objectToOpen = getObject(row);
+		openedRows.add(objectToOpen);
+
+		List<CurriculumElementWithViewsRow> currentRows = getObjects();
+
+		List<CurriculumElementWithViewsRow> children = new ArrayList<>();
+		for(CurriculumElementWithViewsRow filteredRow : filteredSourceRows) {
+			if(objectToOpen.equals(filteredRow.getParent())) {
+				children.add(filteredRow);
+			}
+		}
+
+		int childrenPos = row + 1;
+		if(childrenPos < currentRows.size()) {
+			currentRows.addAll(childrenPos, children);
+		} else {
+			currentRows.addAll(children);
+		}
+		setFilteredObjects(currentRows);
+	}
+
+	@Override
+	public void openAll() {
+		if(filteredSourceRows == null) {
+			super.openAll();
+			return;
+		}
+
+		openedRows.clear();
+		for(CurriculumElementWithViewsRow currentRow : filteredSourceRows) {
+			if(currentRow.getParent() != null) {
+				openedRows.add(currentRow.getParent());
+			} else {
+				openedRows.add(currentRow);
+			}
+		}
+		setFilteredObjects(new ArrayList<>(filteredSourceRows));
 	}
 	
 	private List<CurriculumElementStatus> filteredStatus(FlexiFiltersTab tab) {
@@ -110,14 +160,19 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		};
 	}
 	
-	private boolean filterStatus(CurriculumElementWithViewsRow row, List<CurriculumElementStatus> statusList,
+	boolean filterStatus(CurriculumElementWithViewsRow row, List<CurriculumElementStatus> statusList,
 			List<RepositoryEntryStatusEnum> entryStatusList) {
 		if(statusList.isEmpty()) return true;
-		
-		CurriculumElementStatus elementStatus = row.getCurriculumElementStatus();
+
 		RepositoryEntryStatusEnum entryStatus = row.getEntryStatus();
-		return (elementStatus != null && statusList.contains(elementStatus))
-				|| (entryStatus != null && entryStatusList.contains(entryStatus));
+		if(entryStatus != null) {
+			return entryStatusList.contains(entryStatus);
+		}
+		if(row.isCurriculumElementOnly() && row.hasChildren() && !row.isCurriculumMember()) {
+			return false;
+		}
+		CurriculumElementStatus elementStatus = row.getCurriculumElementStatus();
+		return elementStatus != null && statusList.contains(elementStatus);
 	}
 	
 	private void reconstructParentLine(List<CurriculumElementWithViewsRow> rows) {
@@ -166,6 +221,14 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	@Override
 	public boolean hasChildren(int row) {
 		CurriculumElementWithViewsRow element = getObject(row);
+		if (filteredSourceRows != null) {
+			for (CurriculumElementWithViewsRow filteredRow : filteredSourceRows) {
+				if (element.equals(filteredRow.getParent())) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return element.hasChildren();
 	}
 
@@ -194,6 +257,9 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			}
 			case beginDate: return curriculum.getCurriculumElementBeginDate();
 			case endDate: return curriculum.getCurriculumElementEndDate();
+			case roles: return curriculum.getCurriculumMembership();
+			case elementStatus: return curriculum.getCurriculumElementStatus();
+			case curriculum: return curriculum.getCurriculum();
 			case mark: return curriculum.getMarkLink();
 			case select: return curriculum.getSelectLink();
 			case details: return curriculum.getDetailsLink();
@@ -210,6 +276,9 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		identifier("table.header.external.ref"),
 		mark("table.header.mark"),
 		select("table.header.entry.displayName"),
+		roles("table.header.roles"),
+		elementStatus("table.header.status"),
+		curriculum("table.header.curriculum"),
 		completion("table.header.completion"),
 		details("table.header.details"),
 		start("table.header.start"),

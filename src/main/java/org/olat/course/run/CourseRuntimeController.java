@@ -2398,7 +2398,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private LectureListRepositoryConfig getLecturesAdminConfig() {
-		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig("repository-entry-admin-v1.1");
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig("repository-entry-admin-v1.2");
 		config = config
 				.withExternalRef(Visibility.SHOW)
 				.withCurriculum(Visibility.HIDE)
@@ -2409,6 +2409,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withNumberOfLectures(Visibility.SHOW)
 				.withExam(Visibility.SHOW)
 				.withOnlineMeeting(Visibility.HIDE)
+				.withOnlineRecording(Visibility.HIDE)
 				.withEdit(Visibility.SHOW)
 				.withRollCall(Visibility.NO)
 				.withAllMineSwitch(false, false)
@@ -2459,7 +2460,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				? lectureModule.isShowLectureBlocksAllTeachersDefault()
 				: true;
 		
-		String prefsId = "repository-entry-" + secCallback.viewAs() + "-v2.1-rc-" + withRollCall.name().toLowerCase();
+		String prefsId = "repository-entry-" + secCallback.viewAs() + "-v2.2-rc-" + withRollCall.name().toLowerCase();
 		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig(prefsId);
 		config = config
 				.withExternalRef(participant ? Visibility.NO : Visibility.SHOW)

@@ -33,6 +33,7 @@ import org.olat.course.member.wizard.InvitationContext.TransientInvitation;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
+import org.olat.group.ui.BGMailHelper.BGMailTemplate;
 import org.olat.group.ui.wizard.BGMailTemplateController;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.project.manager.ProjectMailing;
@@ -67,7 +68,8 @@ public class InvitationMailController extends StepFormBasicController {
 			RepositoryEntryMailTemplate invitationTemplate = RepositoryMailing.getInvitationTemplate(context.getRepoEntry(), getIdentity());
 			mailTemplate = enrichCourseUrl(invitationTemplate);
 		} else if(context.getBusinessGroup() != null) {
-			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, context.getBusinessGroup(), getIdentity());
+			BGMailTemplate invitationTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, context.getBusinessGroup(), getIdentity());
+			mailTemplate = enrichBusinessGroupUrl(invitationTemplate);
 		} else if(context.getProject() != null) {
 			mailTemplate = projectMailing.createInvitationTemplate(context.getProject(), getIdentity());
 		}
@@ -97,6 +99,23 @@ public class InvitationMailController extends StepFormBasicController {
 			}
 		}
 		invitationTemplate.setCourseUrl(url);
+		return invitationTemplate;
+	}
+	
+	private BGMailTemplate enrichBusinessGroupUrl(BGMailTemplate invitationTemplate) {
+		String url = "$groupurl";
+		if(context.getInvitations().size() == 1) {
+			TransientInvitation transientInvitation = context.getInvitations().get(0);
+			if(transientInvitation.getIdentity() != null && transientInvitation.getIdentity().getKey() != null) {
+				if(context.getBusinessGroup() != null) {
+					Invitation invitation = invitationService.findInvitation(context.getBusinessGroup(), transientInvitation.getIdentity());
+					if(invitation != null) {
+						url = invitationService.toUrl(invitation, context.getBusinessGroup());
+					}
+				}
+			}
+		}
+		invitationTemplate.setBusinessGroupUrl(url);
 		return invitationTemplate;
 	}
 

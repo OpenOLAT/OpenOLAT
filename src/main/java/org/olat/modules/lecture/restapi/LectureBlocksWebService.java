@@ -228,6 +228,12 @@ public class LectureBlocksWebService {
 		if(blockVo.getMeetingUrl() != null) {
 			block.setMeetingUrl(blockVo.getMeetingUrl());
 		}
+		if(blockVo.getRecordingTitle() != null) {
+			block.setRecordingTitle(blockVo.getRecordingTitle());
+		}
+		if(blockVo.getRecordingUrl() != null) {
+			block.setRecordingUrl(blockVo.getRecordingUrl());
+		}
 		
 		if(autoclose) {
 			block.setStatus(LectureBlockStatus.done);

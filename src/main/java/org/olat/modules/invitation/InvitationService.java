@@ -73,6 +73,8 @@ public interface InvitationService {
 	
 	public Invitation findInvitation(RepositoryEntryRef entry, IdentityRef identity);
 	
+	public Invitation findInvitation(BusinessGroup businessGroup, IdentityRef identity);
+	
 	public List<Invitation> findInvitations(Identity identity);
 
 	/**

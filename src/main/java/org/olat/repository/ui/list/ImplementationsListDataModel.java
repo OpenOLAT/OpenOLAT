@@ -19,7 +19,10 @@
  */
 package org.olat.repository.ui.list;
 
-import static org.olat.repository.ui.list.ImplementationsListController.*;
+import static org.olat.repository.ui.list.ImplementationsListController.FILTER_CURRICULUM;
+import static org.olat.repository.ui.list.ImplementationsListController.FILTER_MARKED;
+import static org.olat.repository.ui.list.ImplementationsListController.FILTER_PERIOD;
+import static org.olat.repository.ui.list.ImplementationsListController.FILTER_STATUS;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -204,7 +207,10 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 			case curriculum -> row.getCurriculum();
 			case lifecycleStart -> row.getBeginDate();
 			case lifecycleEnd -> row.getEndDate();
+			case roles -> row;
 			case elementStatus -> row.getStatus();
+			case completion -> row.getCompletionItem();
+			case calendars -> row.getCalendarsLink();
 			case mark -> row.getMarkLink();
 			default -> "ERROR";
 		};
@@ -223,7 +229,10 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 		curriculum("table.header.curriculum"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
+		roles("table.header.roles"),
 		elementStatus("table.header.status"),
+		completion("table.header.completion"),
+		calendars("table.header.calendars"),
 		mark("table.header.mark");
 		
 		private final String i18nKey;

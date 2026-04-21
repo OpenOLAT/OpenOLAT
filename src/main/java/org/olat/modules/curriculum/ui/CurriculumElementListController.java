@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -94,6 +93,8 @@ import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModel.ElementViewCols;
 import org.olat.modules.curriculum.ui.component.CurriculumElementCompositeRenderer;
 import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowComparator;
+import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
+import org.olat.modules.curriculum.ui.member.RolesFlexiCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -103,17 +104,12 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.RepositoryEntryRefImpl;
-import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
+import org.olat.repository.ui.list.CurriculumCellRenderer;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.method.AccessMethodHandler;
-import org.olat.resource.accesscontrol.model.OLATResourceAccess;
-import org.olat.resource.accesscontrol.model.PriceMethodBundle;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -171,7 +167,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private final CurriculumRef curriculum;
 	private final Identity assessedIdentity;
 	private final CurriculumElement rootElement;
-	private final CurriculumElementListConfig config;
+	private final ImplementationsListConfig config;
 	private final CurriculumSecurityCallback secCallback;
 	
 	private RepositoryEntryDetailsController detailsCtrl;
@@ -181,8 +177,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private ACService acService;
 	@Autowired
 	private MarkManager markManager;
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -194,7 +188,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	
 	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			Identity assessedIdentity, CurriculumRef curriculum, CurriculumElement rootElement,
-			CurriculumSecurityCallback secCallback, CurriculumElementListConfig config) {
+			CurriculumSecurityCallback secCallback, ImplementationsListConfig config) {
 		super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		
@@ -219,28 +213,41 @@ public class CurriculumElementListController extends FormBasicController impleme
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(assessedIdentity.equals(getIdentity())) {
+		if (config.withBookmarks()) {
 			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ElementViewCols.mark);
 			markColModel.setIconHeader("o_icon o_icon_bookmark_header");
 			columnsModel.addFlexiColumnModel(markColModel);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
+		if (config.withId()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
+		}
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, treeNodeRenderer));
-		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
+		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(config.extRefVisibilityDefault(), ElementViewCols.identifier, "select");
 		elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(elementIdentifierCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.beginDate,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.endDate,
 				new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
-		
-		if(config.asRoles().contains(GroupRoles.participant)) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.select));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.curriculum,
+				new CurriculumCellRenderer()));
+		if (config.withRoles()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.roles,
+					new RolesFlexiCellRenderer(getTranslator())));
+		}
+		if (config.withStatus()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementStatus,
+					new CurriculumStatusCellRenderer(getTranslator())));
+		}
+		if(config.withCompletion()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
 		}
+		if(config.withCalendar()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale());
@@ -270,7 +277,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(activeTab);
 		
-		preparationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB, translate("filter.preparation"),
+		preparationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB, translate("filter.in.preparation"),
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(preparationTab);
 		
@@ -325,7 +332,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 
 	private void loadModel() {
-		if(config.preparationWarning() && rootElement != null && rootElement.getElementStatus() == CurriculumElementStatus.preparation) {
+		if(config.withPreparationWarning() && rootElement != null && rootElement.getElementStatus() == CurriculumElementStatus.preparation) {
 			tableModel.setObjects(List.of());
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("warning.preparation.title")
@@ -338,9 +345,19 @@ public class CurriculumElementListController extends FormBasicController impleme
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
 		CurriculumElementStatus[] visibleStatus = ALL_STATUS.toArray(new CurriculumElementStatus[0]);
-		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
+		List<CurriculumElementRepositoryEntryViews> elementsWithViews = new ArrayList<>(curriculumService
 				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
-						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles(), false);
+						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles(), false));
+		if (config.coachIdentity() != null) {
+			List<CurriculumElement> elements = elementsWithViews.stream()
+					.map(CurriculumElementRepositoryEntryViews::getCurriculumElement)
+					.toList();
+			Set<Long> coachElementKeys = curriculumService.getCurriculumElementMemberships(elements, List.of(config.coachIdentity())).stream()
+					.filter(CurriculumElementMembership::isCoach)
+					.map(CurriculumElementMembership::getCurriculumElementKey)
+					.collect(Collectors.toSet());
+			elementsWithViews.removeIf(e -> !coachElementKeys.contains(e.getCurriculumElement().getKey()));
+		}
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);
@@ -353,7 +370,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 			}
 		}
 		List<? extends OrganisationRef> organisations = acService.getOfferOrganisations(assessedIdentity);
-		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, organisations);
 		List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null, organisations);
 		
 		repositoryService.filterMembership(assessedIdentity, repoKeys);
@@ -369,7 +385,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				rows.add(row);
 			} else if(elementWithViews.getEntries().size() == 1) {
 				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().get(0), true);
-				forge(row, repoKeys, resourcesOpenAccess, resourcesWithOffer);
+				forge(row, repoKeys, resourcesOpenAccess);
 				forgeCalendarsLink(row);
 				rows.add(row);
 			} else {
@@ -378,7 +394,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				rows.add(elementRow);
 				for(RepositoryEntryMyView entry:elementWithViews.getEntries()) {
 					CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, entry, false);
-					forge(row, repoKeys, resourcesOpenAccess, resourcesWithOffer);
+					forge(row, repoKeys, resourcesOpenAccess);
 					rows.add(row);
 				}
 			}
@@ -438,56 +454,24 @@ public class CurriculumElementListController extends FormBasicController impleme
 		}
 	}
 	
-	private void forge(CurriculumElementWithViewsRow row, Collection<Long> repoKeys, List<OLATResource> resourcesOpenAccess, List<OLATResourceAccess> resourcesWithOffer) {
+	private void forge(CurriculumElementWithViewsRow row, Collection<Long> repoKeys, List<OLATResource> resourcesOpenAccess) {
 		if(row.getRepositoryEntryKey() == null || guestOnly) return;// nothing for guests
 
 		boolean isMember = repoKeys.contains(row.getRepositoryEntryKey());
 		row.setMember(isMember);
 		
 		FormLink startLink = null;
-		List<PriceMethod> types = new ArrayList<>();
 		if (isMember || resourcesOpenAccess.contains(row.getOlatResource())) {
 			startLink = uifactory.addFormLink("start_" + (++counter), "start", "open", null, null, Link.LINK);
 			startLink.setElementCssClass("o_start btn-block");
 			startLink.setCustomEnabledLinkCSS("o_start btn-block");
 			startLink.setIconRightCSS("o_icon o_icon_start");
-		} else if(row.isPublicVisible()) {
-			// collect access control method icons
-			OLATResource resource = row.getOlatResource();
-			for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
-				if(resource.getKey().equals(resourceAccess.getResource().getKey())) {
-					for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
-						String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
-						String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
-						AccessMethodHandler amh = acModule.getAccessMethodHandler(bundle.getMethod().getType());
-						String displayName = amh.getMethodName(getLocale());
-						types.add(new PriceMethod(price, type, displayName));
-					}
-				}
-			}
 			
-			if (types.isEmpty()) {
-				startLink = uifactory.addFormLink("start_" + (++counter), "start", "book", null, null, Link.LINK);
-				startLink.setElementCssClass("o_start btn-block");
-				startLink.setCustomEnabledLinkCSS("o_book btn-block");
-				startLink.setIconRightCSS("o_icon o_icon_start");
-			}
-		}
-
-		if(startLink != null) {
 			startLink.setUserObject(row);
 			String businessPath = "[RepositoryEntry:" + row.getRepositoryEntryKey() + "]";
 			String startUrl = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 			startLink.setUrl(startUrl);
 			row.setStartLink(startLink, startUrl);
-		}
-
-		if (!row.isPublicVisible()) {
-			// members only always show lock icon
-			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
-		}
-		if(!types.isEmpty()) {
-			row.setAccessTypes(types);
 		}
 		
 		forgeDetails(row);
@@ -504,7 +488,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 	
 	private void forgeMarkLink(CurriculumElementWithViewsRow row) {
-		if(!guestOnly && assessedIdentity.equals(getIdentity())) {
+		if(!guestOnly && config.withBookmarks()) {
 			FormLink markLink = uifactory.addFormLink("mark_" + (++counter), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
@@ -699,7 +683,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			showWarning("repositoryentry.not.existing");
 		} else {
 			BasicDetailsHeaderConfig infoConfig = null;
-			if (config.enhancedInfoHeader()) {
+			if (config.withEnhancedInfoHeader()) {
 				infoConfig = new CatalogRepositoryEntryHeaderConfig(entry, assessedIdentity, Roles.userRoles(), false);
 				infoConfig.hideOpenButtons();
 			} else {
@@ -736,7 +720,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 			}
 		}
 		
-		
 		List<RepositoryEntry> entries = repositoryService.loadByKeys(entryKeys);
 		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, element, entries, secCallback);
 		listenTo(calendarsCtrl);
@@ -752,13 +735,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 			EntryChangedEvent e = new EntryChangedEvent(ref, getIdentity(), Change.removeBookmark, "curriculum");
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return false;
-		} else {
-			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
-			markManager.setMark(item, getIdentity(), null, businessPath);
-			
-			EntryChangedEvent e = new EntryChangedEvent(ref, getIdentity(), Change.addBookmark, "curriculum");
-			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
-			return true;
 		}
+		
+		String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
+		markManager.setMark(item, getIdentity(), null, businessPath);
+		
+		EntryChangedEvent e = new EntryChangedEvent(ref, getIdentity(), Change.addBookmark, "curriculum");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+		return true;
 	}
 }

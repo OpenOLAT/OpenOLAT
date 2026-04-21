@@ -29,6 +29,7 @@ import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -38,7 +39,6 @@ import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 
@@ -69,8 +69,6 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	private String shortenedDescription;
 	
 	private RepositoryEntryStatusEnum status;
-	private boolean publicVisible;
-	private List<PriceMethod> accessTypes;
 
 	private boolean member;
 	private boolean marked;
@@ -163,6 +161,10 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	
 	public boolean isCurriculumElementWithEntry() {
 		return element != null && repositoryEntry != null && singleEntry;
+	}
+	
+	public Curriculum getCurriculum() {
+		return element == null ? null : element.getCurriculum();
 	}
 	
 	public String getCurriculumElementIdentifier() {
@@ -295,14 +297,6 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return status;
 	}
 	
-	public boolean isPublicVisible() {
-		return publicVisible;
-	}
-
-	public void setPublicVisible(boolean publicVisible) {
-		this.publicVisible = publicVisible;
-	}
-	
 	public Long getRepositoryEntryKey() {
 		return repositoryEntry == null ? null : repositoryEntry.getKey();
 	}
@@ -408,14 +402,6 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 
 	public void setCurriculumMember(boolean curriculumMember) {
 		this.curriculumMember = curriculumMember;
-	}
-
-	public List<PriceMethod> getAccessTypes() {
-		return accessTypes;
-	}
-
-	public void setAccessTypes(List<PriceMethod> accessTypes) {
-		this.accessTypes = accessTypes;
 	}
 	
 	@SuppressWarnings("deprecation")

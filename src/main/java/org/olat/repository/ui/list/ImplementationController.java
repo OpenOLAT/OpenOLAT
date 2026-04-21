@@ -19,9 +19,6 @@
  */
 package org.olat.repository.ui.list;
 
-import java.util.List;
-
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -31,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
@@ -40,8 +38,8 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
-import org.olat.modules.curriculum.ui.CurriculumElementListConfig;
 import org.olat.modules.curriculum.ui.CurriculumElementListController;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,8 +66,8 @@ public class ImplementationController extends BasicController {
 	private CurriculumService curriculumService;
 	
 	public ImplementationController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			CurriculumRef curriculum, CurriculumElement rootElement,
-			List<GroupRoles> asRoles, CurriculumSecurityCallback secCallback) {
+			Identity assessedIdentity, CurriculumRef curriculum, CurriculumElement rootElement, CurriculumSecurityCallback secCallback,
+			ImplementationsListConfig config) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -78,13 +76,12 @@ public class ImplementationController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("implementation");
 		
-		headerCtrl = new ImplementationHeaderController(ureq, wControl, rootElement, true);
+		headerCtrl = new ImplementationHeaderController(ureq, wControl, rootElement, true, config.withBookmarks());
 		listenTo(headerCtrl);
 		mainVC.put("elementHeader", headerCtrl.getInitialComponent());
 		
-		CurriculumElementListConfig config = CurriculumElementListConfig.config(false, true, asRoles);
 		elementListCtrl = new CurriculumElementListController(ureq, wControl, stackPanel,
-				getIdentity(), curriculum, rootElement, secCallback, config);
+				assessedIdentity, curriculum, rootElement, secCallback, config);
 		listenTo(elementListCtrl);
 		mainVC.put("elementList", elementListCtrl.getInitialComponent());
 		

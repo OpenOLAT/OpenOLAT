@@ -850,6 +850,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.catalog.manager.MultiCurriculumElementSecurityCallbackFactoryTest.class,
 	org.olat.modules.catalog.manager.RepositoryEntrySecurityCallbackFactoryTest.class,
 	org.olat.modules.ceditor.CloneElementHandlerTest.class,
+	org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModelFilterStatusTest.class,
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.edusharing.manager.EdusharingHtmlServiceImplTest.class,
 	org.olat.modules.edusharing.manager.EdusharingSecurityImplTest.class,

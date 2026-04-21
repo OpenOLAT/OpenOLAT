@@ -55,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ImplementationHeaderController extends FormBasicController {
 	
 	private final boolean withDetailsLink;
+	private final boolean withBookmarks;
 	private FormLink markLink;
 	private FormLink selectLink;
 	private FormLink detailsLink;
@@ -68,7 +69,7 @@ public class ImplementationHeaderController extends FormBasicController {
 	@Autowired
 	private MapperService mapperService;
 	
-	public ImplementationHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element, boolean withDetailsLink) {
+	public ImplementationHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element, boolean withDetailsLink, boolean withBookmarks) {
 		super(ureq, wControl, "row_1");
 		setTranslator(Util.createPackageTranslator(OpenAccessOfferController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -76,6 +77,7 @@ public class ImplementationHeaderController extends FormBasicController {
 		
 		this.element = element;
 		this.withDetailsLink = withDetailsLink;
+		this.withBookmarks = withBookmarks;
 		curriculumElementImageMapper = CurriculumElementImageMapper.mapper900x600();
 		curriculumElementImageMapperKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_900_600, curriculumElementImageMapper);
 
@@ -95,19 +97,21 @@ public class ImplementationHeaderController extends FormBasicController {
 			selectLink = uifactory.addFormLink("select_" + row.getOlatResource().getKey(), displayName, null, layoutCont, Link.NONTRANSLATED);
 			row.setSelectLink(selectLink);
 			
-			markLink = uifactory.addFormLink("mark_" + row.getOlatResource().getKey(), "", null, layoutCont, Link.NONTRANSLATED);
-			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
-			markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
-			row.setMarkLink(markLink);
-			
 			if (element.getType() != null) {
 				row.setTranslatedTechnicalType(element.getType().getDisplayName());
 			}
 			
-			OLATResourceable item = OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey());
-			boolean marked = markManager.isMarked(item, getIdentity(), null);
-			decoratedMarkLink(marked);
+			if (withBookmarks) {
+				markLink = uifactory.addFormLink("mark_" + row.getOlatResource().getKey(), "", null, layoutCont, Link.NONTRANSLATED);
+				markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+				markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+				markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+				row.setMarkLink(markLink);
+				
+				OLATResourceable item = OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey());
+				boolean marked = markManager.isMarked(item, getIdentity(), null);
+				decoratedMarkLink(marked);
+			}
 			
 			if (withDetailsLink) {
 				detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);

@@ -154,6 +154,7 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 		}
 		int col = numOfHandlers;
 		String organisationIdentifier = getString(r, col++);
+		ReaderLocalDate expirationDate = getDate(r, col++);
 		LocalDateTime creationDate = getDateTime(r, col++);
 		String password = getString(r, col++);
 		
@@ -164,7 +165,7 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 			return null;
 		}
 
-		return new ImportedUserRow(r.getRowNum(), identityProps, organisationIdentifier, password, creationDate);
+		return new ImportedUserRow(r.getRowNum(), identityProps, organisationIdentifier, expirationDate, password, creationDate);
 	}
 	
 	public Import loadFile(File file) {

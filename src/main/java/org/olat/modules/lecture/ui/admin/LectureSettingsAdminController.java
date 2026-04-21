@@ -407,10 +407,11 @@ public class LectureSettingsAdminController extends FormBasicController {
 		assessmentLeadTimeEl.setVisible(assessmentModeEnabled);
 		assessmentFollowupTimeEl.setVisible(assessmentModeEnabled);
 		assessmentIpsEl.setVisible(assessmentModeEnabled);
-		assessmentSafeExamBrowserKeysEl.setVisible(assessmentSafeExamBrowserEl.isOneSelected()
+		assessmentSafeExamBrowserKeysEl.setVisible( enabled && assessmentSafeExamBrowserEl.isOneSelected()
 				&& SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
-		assessmentSafeExamBrowserDownloadEl.setVisible(assessmentSafeExamBrowserEl.isOneSelected()
+		assessmentSafeExamBrowserDownloadEl.setVisible(enabled && assessmentSafeExamBrowserEl.isOneSelected()
 				&& SEB_OPENOLAT_DEF_CONFIG.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
+		assessmentSafeExamBrowserEl.setVisible(enabled);
 		
 		globalCont.setVisible(enabled);
 		autoClosePeriodEl.setVisible(enabled);

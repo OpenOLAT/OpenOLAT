@@ -75,9 +75,6 @@ import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.curriculum.certificate.CertificateAndEfficiencyStatementWrapperController;
 import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumSecurityCallback;
-import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
@@ -306,10 +303,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (roleSecurityCallback.canViewCoursesAndCurriculum()) {
 			courseTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("enrollments"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ENROLLMENTS), null);
-				List<Curriculum> curriculumRefs = curriculumService.getMyCurriculums(mentee);
-				CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
-				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback,
-						List.copyOf(curriculumRefs), statEntry, false);
+				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee,
+						null, roleSecurityCallback, statEntry, false);
 				listenTo(courseListWrapperController);
 				return courseListWrapperController;
 			});

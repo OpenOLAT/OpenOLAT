@@ -77,7 +77,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createAddParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.subject";
 		String bodyKey = "notification.mail.added.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -92,7 +92,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createRemoveParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.subject";
 		String bodyKey = "notification.mail.removed.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -107,7 +107,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createAddMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.self.subject";
 		String bodyKey = "notification.mail.added.self.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -122,7 +122,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createRemoveMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.self.subject";
 		String bodyKey = "notification.mail.removed.self.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -137,7 +137,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createAddWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.added.subject";
 		String bodyKey = "notification.mail.waitingList.added.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -152,7 +152,7 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createRemoveWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.removed.subject";
 		String bodyKey = "notification.mail.waitingList.removed.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -168,13 +168,13 @@ public class BGMailHelper {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createWaitinglistTransferMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createWaitinglistTransferMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.transfer.subject";
 		String bodyKey = "notification.mail.waitingList.transfer.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
 	}
 	
-	public static MailTemplate createInvitationMailTemplate(BusinessGroupShort group, Identity actor) {
+	public static BGMailTemplate createInvitationMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.invitation.subject";
 		String bodyKey = "notification.mail.invitation.body";
 		return createMailTemplate(group, actor, actor, subjectKey, bodyKey);
@@ -189,7 +189,7 @@ public class BGMailHelper {
 	 * @param bodyKey
 	 * @return
 	 */
-	public static MailTemplate createMailTemplate(BusinessGroupShort group, Identity recipient, Identity actor, String subjectKey, String bodyKey) {
+	public static BGMailTemplate createMailTemplate(BusinessGroupShort group, Identity recipient, Identity actor, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String lang = null;
 		if (recipient != null) {
@@ -241,7 +241,7 @@ public class BGMailHelper {
 		return names.toString();
 	}
 	
-	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity overrideIdentity, Identity actor, String[] args,
+	private static BGMailTemplate createMailTemplate(BusinessGroupShort group, Identity overrideIdentity, Identity actor, String[] args,
 			String subjectKey, String bodyKey, Locale locale) {
 	
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
@@ -414,6 +414,12 @@ public class BGMailHelper {
 			this.actor = actor;
 			this.translator = translator;
 			this.overrideIdentity = overrideIdentity;
+		}
+		
+		public void setBusinessGroupUrl(String url) {
+			if(infos != null) {
+				infos.setGroupUrl(url);
+			}
 		}
 		
 		public BGMailTemplateInfos getInfos() {

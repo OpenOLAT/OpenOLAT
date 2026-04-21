@@ -166,6 +166,11 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Column(name="l_meeting_url", nullable=true, insertable=true, updatable=true)
 	private String meetingUrl;
 	
+	@Column(name="l_recording_title", nullable=true, insertable=true, updatable=true)
+	private String recordingTitle;
+	@Column(name="l_recording_url", nullable=true, insertable=true, updatable=true)
+	private String recordingUrl;
+	
 	@OneToOne(targetEntity=BigBlueButtonMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_meeting", nullable=true, insertable=true, updatable=true)
 	private BigBlueButtonMeeting bbbMeeting;
@@ -498,7 +503,27 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	public void setMeetingUrl(String meetingUrl) {
 		this.meetingUrl = meetingUrl;
 	}
-	
+
+	@Override
+	public String getRecordingTitle() {
+		return recordingTitle;
+	}
+
+	@Override
+	public void setRecordingTitle(String recordingTitle) {
+		this.recordingTitle = recordingTitle;
+	}
+
+	@Override
+	public String getRecordingUrl() {
+		return recordingUrl;
+	}
+
+	@Override
+	public void setRecordingUrl(String recordingUrl) {
+		this.recordingUrl = recordingUrl;
+	}
+
 	@Override
 	public BigBlueButtonMeeting getBBBMeeting() {
 		return bbbMeeting;

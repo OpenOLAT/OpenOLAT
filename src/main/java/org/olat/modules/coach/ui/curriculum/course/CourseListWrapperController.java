@@ -41,16 +41,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.EnrollmentListController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumRef;
-import org.olat.modules.curriculum.CurriculumSecurityCallback;
-import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
+import org.olat.repository.ui.list.ImplementationsListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CourseListWrapperController extends BasicController implements Activateable2 {
@@ -65,29 +62,25 @@ public class CourseListWrapperController extends BasicController implements Acti
 	private TooledStackedPanel implementationsListStackPanel;
     
     private final Identity mentee;
+	private final Identity coach;
     private final Object statEntry;
-    private final CurriculumSecurityCallback curriculumSecurityCallback;
     private final RoleSecurityCallback roleSecurityCallback;
-    private final List<CurriculumRef> curriculumRefs;
 
     private EnrollmentListController allCoursesCtrl;
-    private CurriculumElementListController implementationsListCtrl;
+    private ImplementationsListController implementationsListCtrl;
 
     @Autowired
     private CurriculumModule curriculumModule;
-	@Autowired
-	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
 
-	public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee,
-			CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
-			List<CurriculumRef> curriculumRefs, Object statEntry, boolean onlyImplementations) {
+	public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			Identity mentee, Identity coach, RoleSecurityCallback roleSecurityCallback, Object statEntry,
+			boolean onlyImplementations) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.mentee = mentee;
-		this.curriculumSecurityCallback = curriculumSecurityCallback;
+		this.coach = coach;
 		this.roleSecurityCallback = roleSecurityCallback;
-		this.curriculumRefs = curriculumRefs;
 		this.statEntry = statEntry;
 
 		mainVC = createVelocityContainer("course_list_wrapper");
@@ -95,16 +88,6 @@ public class CourseListWrapperController extends BasicController implements Acti
 		List<Scope> scopes = new ArrayList<>(4);
 		scopes.add(ScopeFactory.createScope(CMD_ALL_COURSES, translate("all.courses"), null, "o_icon o_icon-fw o_icon_curriculum"));
 		if(curriculumModule.isEnabled()) {
-			List<GroupRoles> asRoles = List.of(GroupRoles.coach, GroupRoles.participant);
-			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(mentee, true,
-					asRoles, RepositoryEntryMyImplementationsQueries.STATUS_WITHOUT_PREPARATION);
-			for(CurriculumElement implementation:implementations) {
-				String name = StringHelper.escapeHtml(implementation.getDisplayName());
-				String hint = scopeDatesHint(implementation);
-				scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
-					name, hint, "o_icon o_icon-fw o_icon_curriculum"));
-			}
-			
 			scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.education.products"),
 					null, "o_icon o_icon-fw o_icon_curriculum"));
 		}
@@ -120,24 +103,6 @@ public class CourseListWrapperController extends BasicController implements Acti
 
         putInitialPanel(mainVC);
     }
-	
-	private String scopeDatesHint(CurriculumElement implementation) {
-		Formatter formatter = Formatter.getInstance(getLocale());
-		String begin = formatter.formatDate(implementation.getBeginDate());
-		String end = formatter.formatDate(implementation.getEndDate());
-		
-		String hint;
-		if(begin != null && end != null) {
-			hint = translate("search.implementations.dates", begin, end);
-		} else if(begin != null) {
-			hint = translate("search.implementations.begin", begin);
-		} else if(end != null) {
-			hint = translate("search.implementations.end", end);
-		} else {
-			hint = null;
-		}
-		return hint;
-	}
 
     @Override
     public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -183,15 +148,25 @@ public class CourseListWrapperController extends BasicController implements Acti
 		}
 	}
 
-	private CurriculumElementListController doOpenImplementations(UserRequest ureq) {
+	private Activateable2 doOpenImplementations(UserRequest ureq) {
 		if(implementationsListCtrl == null) {
 			implementationsListStackPanel = new TooledStackedPanel("myliststack", getTranslator(), this);
 			implementationsListStackPanel.setToolbarEnabled(false);
 			
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_IMPLEMENTATIONS_LIST), null);
-			implementationsListCtrl = new CurriculumElementListController(ureq, bwControl, implementationsListStackPanel, mentee, curriculumRefs, null,
-					curriculumSecurityCallback, roleSecurityCallback, true);
-			listenTo(implementationsListCtrl);
+			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(GroupRoles.participant))
+					.setCoachIdentity(coach)
+					.enableId()
+					.enableExtRefVisibilityDefault()
+					.enableRoles();
+			if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
+				configBuilder.enableStatus().enableCompletion();
+			}
+			if (roleSecurityCallback.canViewCalendar()) {
+				configBuilder.enableCalendar();
+			}
+			ImplementationsListConfig config = configBuilder.build();
+			implementationsListCtrl = new ImplementationsListController(ureq, bwControl, implementationsListStackPanel, mentee, config);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {
 			implementationsListStackPanel.popUpToRootController(ureq);

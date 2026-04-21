@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,39 +14,46 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.ui.curriculum.course;
+package org.olat.modules.curriculum.ui.wizard;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 10 août 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 20 avr. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumElementCompositeRenderer extends StaticFlexiCellRenderer {
+public class NoteCellRenderer extends StaticFlexiCellRenderer {
 	
-	public CurriculumElementCompositeRenderer(String action, FlexiCellRenderer labelDelegate) {
-		super(action, labelDelegate);
+	public static final String CMD_NOTE = "note";
+	
+	public NoteCellRenderer() {
+		super("", CMD_NOTE);
 	}
-
+	
+	protected static final String getId(int row) {
+		return "o_c" + CMD_NOTE + "_" + row;
+	}
+	
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		CourseCurriculumTreeWithViewsRow view = (CourseCurriculumTreeWithViewsRow)source.getFormItem().getTableDataModel().getObject(row);
-		if(view.isCurriculumElementOnly()) {
-			getLabelDelegate().render(renderer, target, cellValue, row, source, ubu, translator);
-		} else {
-			super.render(renderer, target, cellValue, row, source, ubu, translator);
+	protected String getId(Object cellValue, int row, FlexiTableComponent source) {
+		return getId(row);
+	}
+	
+	@Override
+	protected String getLabel(Renderer renderer, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu,
+			Translator translator) {
+		if(Boolean.TRUE.equals(cellValue)) {
+			return "<span><i class='o_icon o_icon-fw o_icon_notes'> </i></span>";
 		}
+		return null;
 	}
 }

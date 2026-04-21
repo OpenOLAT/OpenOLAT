@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -41,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.AbstractExcelReader;
@@ -166,7 +168,24 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 			authusername = nickName;
 			pwd = row.getPassword();
 		}
-		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, newUser, provider, BaseSecurity.DEFAULT_ISSUER, null, authusername, pwd, row.getOrganisation(), null, doer);
+		
+		Organisation organisation = row.getOrganisations() != null && !row.getOrganisations().isEmpty()
+				? row.getOrganisations().get(0)
+				: null;
+		
+		Date expirationDate = row.getExpirationDate() == null
+				? null
+				: DateUtils.toDate(row.getExpirationDate().date());
+		
+		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, newUser,
+				provider, BaseSecurity.DEFAULT_ISSUER, null, authusername, pwd, organisation, expirationDate, doer);
+		if(row.getOrganisations() != null && row.getOrganisations().size() > 1) {
+			for(int i=1; i<row.getOrganisations().size(); i++) {
+				Organisation additionalOrganisation = row.getOrganisations().get(i);
+				organisationService.addMember(additionalOrganisation, identity, OrganisationRoles.user, doer);
+			}
+		}
+		return identity;
 	}
 	
 	private void processEvents() {
