@@ -49,6 +49,8 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 	private static final LogEntryCols[] COLS = LogEntryCols.values();
 	protected static final String OUTCOMES = "OUTCOMES";
 	protected static final String MANUAL_CORRECTION = "MANUAL_CORRECTION";
+	protected static final String SESSION_EXTENSION = "SESSION_EXTENSION";
+	protected static final String SESSION_RETRIEVED = "SESSION_RETRIEVED";
 	
 	private final Translator translator;
 	private List<LogViewerEntry> backups;
@@ -104,7 +106,9 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 			if((row.getTestEventType() != null && type.equals(row.getTestEventType().name()))
 					|| (row.getItemEventType() != null && type.equals(row.getItemEventType().name()))
 						|| (OUTCOMES.equals(type) && row.isOutcomes())
-						|| (MANUAL_CORRECTION.equals(type) && row.isManualCorrection())) {
+						|| (MANUAL_CORRECTION.equals(type) && row.isManualCorrection())
+						|| (SESSION_EXTENSION.equals(type) && row.isSessionExtension())
+						|| (SESSION_RETRIEVED.equals(type) && row.isSessionRetrieved())) {
 				return true;
 			}
 		}
@@ -149,6 +153,10 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 			sb.append(OUTCOMES);
 		} else if(entry.isManualCorrection()) {
 			sb.append(MANUAL_CORRECTION);
+		} else if(entry.isSessionExtension()) {
+			sb.append(SESSION_EXTENSION);
+		} else if(entry.isSessionRetrieved()) {
+			sb.append(SESSION_RETRIEVED);
 		} else {
 			if(entry.getTestEventType() != null) {
 				sb.append(entry.getTestEventType());

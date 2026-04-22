@@ -29,13 +29,18 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.ims.qti21.XmlUtilities;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
@@ -45,6 +50,7 @@ import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.imscp.xml.manifest.ResourcesType;
 import org.olat.imsmd.xml.manifest.LomType;
 import org.olat.imsmd.xml.manifest.TechnicalType;
+import org.xml.sax.InputSource;
 
 /**
  * manifest
@@ -309,8 +315,9 @@ public class ManifestBuilder {
 	
 	public static final ManifestBuilder read(Path file) {
 		try(InputStream in = Files.newInputStream(file)) {
-			ManifestType manifest = (ManifestType)((JAXBElement<?>)context
-					.createUnmarshaller().unmarshal(in)).getValue();
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+			Source xmlSource = new SAXSource(XmlUtilities.createNsAwareSaxReader(), new InputSource(in));
+			ManifestType manifest = (ManifestType)((JAXBElement<?>)unmarshaller.unmarshal(xmlSource)).getValue();
 			return new ManifestBuilder(manifest);
 		} catch (JAXBException | IOException e) {
 			log.error("", e);

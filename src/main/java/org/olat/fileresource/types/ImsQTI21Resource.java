@@ -103,8 +103,7 @@ public class ImsQTI21Resource extends FileResource {
 			eval.setValid(false);
 		}
 		return eval;
-	}
-	
+	}	
 
 	public static boolean validateImsManifest(QTI21ContentPackage cp, ResourceLocator resourceLocator) {
 		try {
@@ -117,21 +116,9 @@ public class ImsQTI21Resource extends FileResource {
 					BadRessourceHelper.extractMessage(result.getXmlParseResult(), out);
 					log.warn(out.toString());
 				}
-				return result != null && result.isSchemaValid() || true;
+				return result != null && result.isSchemaValid();
 			}
 			return false;
-		} catch (Exception e) {
-			log.error("", e);
-			return false;
-		}
-	}
-	
-	public static boolean validate(File resource) {
-		try {
-			PathResourceLocator resourceLocator = new PathResourceLocator(resource.getParentFile().toPath());
-			ResourceLocator chainedResourceLocator = createResolvingResourceLocator(resourceLocator);
-			XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, resource.toURI(), true, true);
-			return result != null && result.isSchemaValid();
 		} catch (Exception e) {
 			log.error("", e);
 			return false;

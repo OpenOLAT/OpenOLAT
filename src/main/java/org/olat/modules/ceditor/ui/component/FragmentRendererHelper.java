@@ -43,6 +43,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.ceditor.model.jpa.TocPart;
 import org.olat.modules.ceditor.ui.model.PageFragment;
 import org.olat.modules.forms.model.xml.DateInput;
 import org.olat.modules.forms.model.xml.Disclaimer;
@@ -121,6 +122,11 @@ public class FragmentRendererHelper {
 		if (element instanceof QuizPart quizPart) {
 			if (quizPart.getSettings() != null) {
 				return quizPart.getSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof TocPart tocPart) {
+			if (tocPart.getTocSettings() != null) {
+				return tocPart.getTocSettings().getAlertBoxSettings();
 			}
 		}
 		if (element instanceof GalleryPart galleryPart) {

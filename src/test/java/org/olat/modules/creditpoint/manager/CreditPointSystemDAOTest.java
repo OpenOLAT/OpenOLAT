@@ -244,7 +244,7 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		List<OrganisationRef> organisations = List.of(defaultOrganisation);
 		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
-		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations, null);
 		Assertions.assertThat(systemList)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.containsAnyOf(cpSystem);
@@ -262,7 +262,7 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		List<OrganisationRef> organisations = List.of(defaultOrganisation, defaultUnitTestOrganisation);
 		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
-		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations, null);
 		Assertions.assertThat(systemList)
 			.doesNotContain(cpSystem);
 	}
@@ -279,7 +279,7 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		List<OrganisationRef> organisations = List.of(defaultOrganisation, defaultUnitTestOrganisation);
 		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
-		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations, null);
 		Assertions.assertThat(systemList)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.containsAnyOf(cpSystem);
@@ -295,9 +295,25 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		Assert.assertNotNull(relation);
 
 		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
-		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(List.of(), restrictedOrganisations);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(List.of(), restrictedOrganisations, null);
 		Assertions.assertThat(systemList)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.containsAnyOf(cpSystem);
+	}
+	
+	@Test
+	public void getOrganisationsMapOrganisationRestrictionWithSystemKey() {
+		Organisation forbiddenOrganisation = organisationService
+				.createOrganisation("Credit-point-forbidden-5", "Credit-point-forbidden-5", "", null, null, JunitTestHelper.getDefaultActor());
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("CSP-10", "R10", Integer.valueOf(180), CreditPointExpirationType.DAY, true, false);
+		CreditPointSystemToOrganisation relation = creditPointSystemToOrganisationDao.createRelation(cpSystem, forbiddenOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+
+		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(List.of(), restrictedOrganisations, cpSystem.getKey());
+		Assertions.assertThat(systemList)
+			.hasSize(1)
+			.containsExactly(cpSystem);
 	}
 }

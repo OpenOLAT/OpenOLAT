@@ -352,6 +352,16 @@ public class FormUIFactory {
 		return mse;
 	}
 
+	public MultipleSelectionElement addCheckboxesButtonGroup(String name, String i18nLabel,
+			FormItemContainer formLayout, SelectionValues selectionValues) {
+		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, Layout.buttongroup);
+		mse.setKeysAndValues(selectionValues.keys(), selectionValues.values(),
+				selectionValues.cssClasses(), selectionValues.icons());
+		setLabelIfNotNull(i18nLabel, mse);
+		formLayout.add(mse);
+		return mse;
+	}
+
 	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, FormItemContainer formLayout,
 													List<ColorPickerElement.Color> colors) {
 		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);

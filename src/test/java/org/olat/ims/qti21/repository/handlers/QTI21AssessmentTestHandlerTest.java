@@ -21,18 +21,22 @@ package org.olat.ims.qti21.repository.handlers;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti21.model.xml.BadRessourceHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -114,6 +118,45 @@ public class QTI21AssessmentTestHandlerTest extends OlatTestCase {
         Assert.assertTrue(validAssessmentItem);
         
         Assert.assertTrue(readableManifest);
+	}
+	
+	@Test
+	public void simpleQTI21Resource() throws IOException, URISyntaxException {
+		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_test.zip");
+		File testFile = new File(fileUrl.toURI());
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "simple_QTI_21_test.zip");
+		Assert.assertNotNull(evaluation);
+        Assert.assertTrue(evaluation.isValid());
+	}
+	
+	/**
+	 * Unknown test with a lot of errors.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void nonConformQTI21Resource() throws IOException, URISyntaxException {
+		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform.zip");
+		File testFile = new File(fileUrl.toURI());
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform.zip");
+		Assert.assertNotNull(evaluation);
+        Assert.assertFalse(evaluation.isValid());
+	}
+	
+	/**
+	 * Onyx test.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void onyx3Resource() throws IOException, URISyntaxException {
+		URL fileUrl = QTI21AssessmentTestHandlerTest.class.getResource("fxtest_bps_qti21.zip");
+		File testFile = new File(fileUrl.toURI());
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "fxtest_bps_qti21.zip");
+		Assert.assertNotNull(evaluation);
+        Assert.assertTrue(evaluation.isValid());
 	}
 	
 	private boolean validateAssessmentTest(File assessmentTestFile) {

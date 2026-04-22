@@ -120,6 +120,7 @@ public class ACOrderDAO {
 		line.setOffer(offer);
 		line.setUnitPrice(offer.getPrice().clone());
 		line.setTotal(line.getUnitPrice().clone());
+		line.setCancellingEnabled(offer.isCancellingEnabled());
 		if(offer.getCancellingFee() != null) {
 			line.setCancellationFee(offer.getCancellingFee().clone());
 		}

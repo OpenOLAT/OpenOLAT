@@ -46,3 +46,8 @@ create index idx_offer_catalog_guest_idx on o_ac_offer (is_valid, guest_access, 
 create index idx_offer_catalog_open_idx on o_ac_offer (is_valid, open_access, catalog_web_publish, fk_resource_id);
 create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
 create index idx_offeracc_offer_method_idx on o_ac_offer_access (fk_offer_id, fk_method_id);
+
+-- ac cancelling enabled
+alter table o_ac_offer add cancelling_enabled number default 1 not null;
+alter table o_ac_order_part add cancelling_enabled number default 1 not null;
+alter table o_ac_order_line add cancelling_enabled number default 1 not null;

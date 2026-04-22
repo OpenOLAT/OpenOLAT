@@ -21,6 +21,7 @@ package org.olat.gui.demo.guidemo;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -43,14 +44,39 @@ public class GuiDemoFlexiMultipleSelectionController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
+
 		FormLayoutContainer defaultCont = uifactory.addDefaultFormLayout("def", null, formLayout);
 		defaultCont.setFormTitle(translate("layout.default"));
 		initSetOfCheckboxes("def", defaultCont);
-		
+
 		FormLayoutContainer verticalCont = uifactory.addVerticalFormLayout("vertical", null, formLayout);
 		verticalCont.setFormTitle(translate("layout.vertical"));
 		initSetOfCheckboxes("vert", verticalCont);
+
+		FormLayoutContainer buttonGroupCont = uifactory.addDefaultFormLayout("buttongroup", null, formLayout);
+		buttonGroupCont.setFormTitle(translate("layout.buttongroup"));
+		initButtonGroupExamples(buttonGroupCont);
+	}
+
+	private void initButtonGroupExamples(FormItemContainer formLayout) {
+		SelectionValues planets3 = new SelectionValues();
+		planets3.add(SelectionValues.entry("1", translate("select.3")));
+		planets3.add(SelectionValues.entry("2", translate("select.4")));
+		planets3.add(SelectionValues.entry("3", translate("select.5")));
+		uifactory.addCheckboxesButtonGroup("btn.group.3", "multi.select.buttongroup.3", formLayout, planets3);
+
+		SelectionValues planets8 = new SelectionValues();
+		planets8.add(SelectionValues.entry("1", translate("select.1")));
+		planets8.add(SelectionValues.entry("2", translate("select.2")));
+		planets8.add(SelectionValues.entry("3", translate("select.3")));
+		planets8.add(SelectionValues.entry("4", translate("select.4")));
+		planets8.add(SelectionValues.entry("5", translate("select.5")));
+		planets8.add(SelectionValues.entry("6", translate("select.6")));
+		planets8.add(SelectionValues.entry("7", translate("select.7")));
+		planets8.add(SelectionValues.entry("8", translate("select.8")));
+		MultipleSelectionElement vertBtnGroup = uifactory.addCheckboxesButtonGroup(
+				"btn.group.8", "multi.select.buttongroup.8", formLayout, planets8);
+		vertBtnGroup.setElementCssClass("o_button_group_vertical");
 	}
 	
 	private void initSetOfCheckboxes(String suffix, FormItemContainer formLayout) {

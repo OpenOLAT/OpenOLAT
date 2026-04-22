@@ -41,6 +41,7 @@
 				<value>org.olat.course.nodes.co</value>
 				<value>org.olat.course.nodes.en</value>
 				<value>org.olat.modules.bigbluebutton.restapi</value>
+				<value>org.olat.modules.creditpoint.restapi</value>
 				<value>org.olat.modules.curriculum.restapi</value>
 				<value>org.olat.modules.docpool.restapi</value>
 				<value>org.olat.modules.fo.restapi</value>

@@ -47,6 +47,9 @@ public class AuditLogFormatter {
 	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss:SSS";
 	public static final String AUDIT_MARKER = "QTI21 audit";
 	public static final String MANUAL_CORRECTION_MARKER = "Manual correction itemSession";
+	// Value must match the typo in existing log files — do not correct.   
+	public static final String TEST_SESSION_EXTENDED = "Test session extened";
+	public static final String TEST_SESSION_RETRIEVED = "Test session retrieved";
 	
 	private static final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 	

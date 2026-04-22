@@ -36,6 +36,8 @@ public interface OrderPart {
 
 	public Price getTotalOrderLines();
 	
+	public boolean isCancellingEnabled();
+
 	public Price getCancellationFees();
 
 }

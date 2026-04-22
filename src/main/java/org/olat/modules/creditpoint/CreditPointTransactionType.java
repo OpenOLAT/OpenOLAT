@@ -31,7 +31,18 @@ public enum CreditPointTransactionType {
 	reversal,
 	withdrawal,
 	removal,
-	expiration,
+	expiration;
+	
+	public static final CreditPointTransactionType secureValueOf(String val) {
+		if(val == null) return null;
+		
+		for(CreditPointTransactionType type:values()) {
+			if(type.name().equalsIgnoreCase(val)) {
+				return type;
+			}
+		}
+		return null;
+	}
 	
 
 }

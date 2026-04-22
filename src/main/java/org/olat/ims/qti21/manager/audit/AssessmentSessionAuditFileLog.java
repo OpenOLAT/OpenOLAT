@@ -146,6 +146,7 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, boolean compensation, Identity coach) {
 		try {
 			AuditLogFormatter.logDate(writer);
+			// The start of the line is used as a marker for the log viewer.
 			writer.write("Test session extened " + extraTime + " by " + coach.getKey());
 			if(compensation) {
 				writer.write(" (compensation for disadvantages)");

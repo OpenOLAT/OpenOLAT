@@ -84,6 +84,17 @@ public class CreditPointWalletDAO {
 				.getResultList();
 	}
 	
+	public List<CreditPointWallet> getWallets(CreditPointSystem system) {
+		String query = """
+				select wallet from creditpointwallet as wallet
+				inner join fetch wallet.creditPointSystem as sys
+				inner join fetch wallet.identity as ident
+				where sys.key=:systemKey""";
+		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointWallet.class)
+				.setParameter("systemKey", system.getKey())
+				.getResultList();
+	}
+	
 	public CreditPointWallet loadForUpdate(CreditPointWallet wallet) {
 		//first remove it from caches
 		dbInstance.getCurrentEntityManager().detach(wallet);

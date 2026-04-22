@@ -541,6 +541,16 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		peerReviewPeriodEl.clearError();
+		if (peerReviewPeriodEl.isVisible() && peerReviewPeriodEl.isEnabled()) {
+			DueDateConfig dateConfig = peerReviewPeriodEl.getDueDateConfig();
+			if (dateConfig.getAbsoluteStartDate() != null && dateConfig.getAbsoluteDate() != null
+					&& dateConfig.getAbsoluteStartDate().compareTo(dateConfig.getAbsoluteDate()) > 0) {
+				peerReviewPeriodEl.setErrorKey("form.error.first.after.second.date.time");
+				allOk = false;
+			}
+		}
+		
 		peerReviewPeriodLengthEl.clearError();
 		if(peerReviewPeriodLengthEl.isVisible()) {
 			if(!StringHelper.containsNonWhitespace(peerReviewPeriodLengthEl.getValue())) {

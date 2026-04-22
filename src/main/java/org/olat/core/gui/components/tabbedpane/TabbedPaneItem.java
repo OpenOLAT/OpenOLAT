@@ -100,6 +100,10 @@ public class TabbedPaneItem extends FormItemImpl implements FormItemCollection {
 		return component.addTab(displayName, elementCssClass, controller);
 	}
 	
+	public int getSelectedPane() {
+		return component.getSelectedPane();
+	}
+
 	public void setSelectedPane(UserRequest ureq, int newSelectedPane) {
 		component.setSelectedPane(ureq, newSelectedPane);
 	}

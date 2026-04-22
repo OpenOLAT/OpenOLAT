@@ -73,15 +73,30 @@ public interface CreditPointService {
 	 */
 	List<CreditPointSystem> getCreditPointSystems(IdentityRef identity);
 	
+	/**
+	 * 
+	 * @param roles The roles of the user
+	 * @return A list of credit point systems the user is allowed to see.
+	 */
 	List<CreditPointSystem> getCreditPointSystems(Roles roles);
+	
+	/**
+	 * 
+	 * @param roles The roles of the user
+	 * @return The credit point system if the user is allowed to see it or null.
+	 */
+	CreditPointSystem getCreditPointSystem(Roles roles, Long systemKey);
 	
 	List<CreditPointSystemInfos> getCreditPointSystemsWithInfos();
 	
 	
 	CreditPointWallet getOrCreateWallet(Identity identity, CreditPointSystem system);
 	
+	CreditPointWallet getWallet(IdentityRef identity, CreditPointSystem system);
+	
 	List<CreditPointWallet> getWallets(IdentityRef identity);
 	
+	List<CreditPointWallet> getWallets(CreditPointSystem system);
 	
 	CreditPointTransactionAndWallet createCreditPointTransaction(CreditPointTransactionType transactionType,
 			BigDecimal amount, Date expirationDate, String note, CreditPointWallet wallet, Identity creator, 

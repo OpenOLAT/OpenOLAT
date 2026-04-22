@@ -186,7 +186,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	public enum Layout {
 		horizontal,
 		vertical,
-		dropdown
+		dropdown,
+		buttongroup
 	}
 	
 	public static class DropdownHiddenEvent extends FormEvent {

@@ -61,6 +61,10 @@ public interface Offer extends OfferRef {
 
 	public void setCostCenter(CostCenter costCenter);
 
+	public boolean isCancellingEnabled();
+
+	public void setCancellingEnabled(boolean cancellingEnabled);
+
 	public Price getCancellingFee();
 
 	public void setCancellingFee(Price cancellingFee);

@@ -66,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseSecurityTest extends OlatRestTestCase {
 
-	private static final Logger log = Tracing.createLoggerFor(CourseTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseSecurityTest.class);
 	
 	private Identity admin, id1, auth1, auth2;
 	private ICourse course;

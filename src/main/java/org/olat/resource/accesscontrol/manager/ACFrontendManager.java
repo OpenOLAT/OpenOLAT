@@ -1421,6 +1421,14 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 	
 	@Override
+	public boolean isCancellingEnabled(OLATResource resource, List<Order> orders) {
+		return orders.stream()
+				.flatMap(o -> o.getParts().stream())
+				.flatMap(p -> p.getOrderLines().stream())
+				.anyMatch(line -> resource.equals(line.getOffer().getResource()) && line.isCancellingEnabled());
+	}
+
+	@Override
 	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders) {
 		Date cancellationDate = DateUtils.getStartOfDay(new Date());
 		Price totalFee = null;
@@ -1447,6 +1455,9 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 	
 	private Price getCancellationFee(OrderLine orderLine, Date resourceBeginDate, Date cancellationDate) {
+		if(!orderLine.isCancellingEnabled()) {
+			return null;
+		}
 		Price cancellingFee = orderLine.getCancellationFee();
 		Integer cancellationDeadline = orderLine.getCancellingFeeDeadlineDays();
 

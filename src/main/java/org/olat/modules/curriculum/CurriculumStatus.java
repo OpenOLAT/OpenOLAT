@@ -43,6 +43,10 @@ public enum CurriculumStatus {
 		return ok;
 	}
 	
+	public static CurriculumStatus[] all() {
+		return new CurriculumStatus[] { CurriculumStatus.active, CurriculumStatus.deleted };
+	}
+	
 	public static CurriculumStatus[] notDeleted() {
 		return new CurriculumStatus[] { CurriculumStatus.active, };
 	}

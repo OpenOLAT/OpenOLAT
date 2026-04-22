@@ -19,7 +19,6 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.List;
 import java.util.function.Function;
 
 import org.olat.core.gui.UserRequest;
@@ -32,9 +31,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.model.jpa.TocPart;
-import org.olat.modules.ceditor.ui.TocRunController.TitleEntry;
+import org.olat.modules.ceditor.ui.TocRunController.TocRenderData;
 import org.olat.modules.ceditor.ui.component.EditModeAware;
-import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.PageStructureChangedEvent;
 
 /**
@@ -45,14 +43,14 @@ public class TocEditorController extends BasicController implements PageElementE
 
 	private final EditModeAwareVelocityContainer mainVC;
 	private TocPart tocPart;
-	private final Function<TocPart, List<TitleEntry>> entryProvider;
+	private final Function<TocPart, TocRenderData> renderDataProvider;
 	private final boolean editorUsedAsView;
 
-	public TocEditorController(UserRequest ureq, WindowControl wControl, TocPart tocPart, 
-							   Function<TocPart, List<TitleEntry>> entryProvider, boolean editorUsedAsView) {
+	public TocEditorController(UserRequest ureq, WindowControl wControl, TocPart tocPart,
+							   Function<TocPart, TocRenderData> renderDataProvider, boolean editorUsedAsView) {
 		super(ureq, wControl);
 		this.tocPart = tocPart;
-		this.entryProvider = entryProvider;
+		this.renderDataProvider = renderDataProvider;
 		this.editorUsedAsView = editorUsedAsView;
 		mainVC = new EditModeAwareVelocityContainer("toc_editor", getTranslator(), this);
 		doUpdateEntries();
@@ -61,17 +59,16 @@ public class TocEditorController extends BasicController implements PageElementE
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (event instanceof ChangePartEvent cpe && cpe.getElement() instanceof TocPart updatedTocPart) {
-			tocPart = updatedTocPart;
-			doUpdateEntries();
-		} else if (event instanceof PageStructureChangedEvent) {
+		if (event instanceof PageStructureChangedEvent) {
 			doUpdateEntries();
 		}
 	}
 
 	private void doUpdateEntries() {
-		mainVC.contextPut("title", tocPart.getTocSettings().getTitle());
-		mainVC.contextPut("entries", entryProvider.apply(tocPart));
+		TocRenderData renderData = renderDataProvider.apply(tocPart);
+		mainVC.contextPut("title", renderData.title());
+		mainVC.contextPut("entries", renderData.entries());
+		mainVC.contextPut("blockLayoutClass", renderData.blockLayoutClass());
 		mainVC.setDirty(true);
 	}
 

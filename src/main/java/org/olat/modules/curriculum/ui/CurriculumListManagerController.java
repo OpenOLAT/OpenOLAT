@@ -253,7 +253,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				.build());
 		
 		initFiltersPresets();
-		if (allTab != null) {
+		if (activeTab != null) {
+			tableEl.setSelectedFilterTab(ureq, activeTab);
+		} else if (allTab != null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
 		}
 		
@@ -335,7 +337,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void initFiltersPresets() {
-		if(!roles.isAdministrator()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			return;
 		}
 		
@@ -344,20 +346,22 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		allTab = FlexiFiltersTabFactory.tab(ALL_TAB_ID, translate("filter.all"), TabSelectionBehavior.nothing);
 		tabs.add(allTab);
 
-		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(
-				ACTIVE_TAB_ID,
-				translate("filter.active"),
-				TabSelectionBehavior.nothing,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CurriculumStatus.active.name())));
-		tabs.add(activeTab);
+		if (roles.isAdministrator()) {
+			activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					ACTIVE_TAB_ID,
+					translate("filter.active"),
+					TabSelectionBehavior.nothing,
+					List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CurriculumStatus.active.name())));
+			tabs.add(activeTab);
+			
+			deletedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					DELETED_TAB_ID,
+					translate("filter.deleted"),
+					TabSelectionBehavior.nothing,
+					List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CurriculumStatus.deleted.name())));
+			tabs.add(deletedTab);
+		}
 		
-		deletedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(
-				DELETED_TAB_ID,
-				translate("filter.deleted"),
-				TabSelectionBehavior.nothing,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CurriculumStatus.deleted.name())));
-		tabs.add(deletedTab);
-
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
@@ -416,6 +420,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				List<CurriculumStatus> status = filterValues.stream()
 						.map(CurriculumStatus::valueOf).toList();
 				searchParams.setStatusList(status);
+			}
+		}
+		if (searchParams.getStatusList() == null) {
+			if (deletedTab != null) {
+				searchParams.setStatusList(List.of(CurriculumStatus.all()));
+			} else {
+				searchParams.setStatusList(List.of(CurriculumStatus.notDeleted()));
 			}
 		}
 		

@@ -1120,13 +1120,13 @@ public PageElement clonePageElement(PageElement element) {
 - **Editor:** `TocEditorController` -- shows a live preview of the computed entries while in edit mode, updating automatically when the page structure changes or the user leaves element-edit-mode.
 - **Inspector:** `TocInspectorController` -- title text field, H1–H5 checkboxes for visible levels.
 - **View:** `TocRunController` -- renders entries as a `<nav>` with a hierarchical `<ol>` of anchor links.
-- **Rendering algorithm:** Implemented in `TocElementHandler.computeEntries()`:
-  1. Find the nearest `TitlePart` that precedes the TOC element; use its heading size as the baseline level (defaults to H1 if none is found).
+- **Rendering algorithm:** Implemented in `TocElementHandler.computeRenderData()`:
+  1. Find the nearest `TitlePart` that precedes the TOC element; use its heading size as the baseline level (defaults to level 0 / full-page TOC if none is found).
   2. Collect all subsequent `TitlePart` elements whose level is strictly lower than the baseline (e.g. H2–H6 for an H1 baseline).
   3. Stop as soon as a title at the same or higher level as the baseline is encountered.
   4. Filter by `visibleLevels`; compute indent as `level - baseline - 1`.
 - **Anchor IDs:** `PageFragmentsComponentRenderer` adds `id="toc-{key}"` to the wrapper `<div>` of every `TitlePart`. TOC links reference these IDs as `#toc-{key}`.
-- **Position sensitivity:** `TocElementHandler` is instantiated with the owning `Page` so `computeEntries()` can call `PageService.getAllPagePartsFlat(page)` to determine ordering. The editor controller receives a `Function<TocPart, List<TitleEntry>>` to avoid a circular dependency between the `handler` and `ui` packages.
+- **Position sensitivity:** `TocElementHandler` is instantiated with the owning `Page` so `computeRenderData()` can call `PageService.getAllPagePartsFlat(page)` to determine ordering. The editor controller receives a `Function<TocPart, TocRenderData>` to avoid a circular dependency between the `handler` and `ui` packages.
 
 #### Media types (Image, Audio, Video, File, Citation, Draw.io)
 - Defined in the `cemedia` module, not in `ceditor`.

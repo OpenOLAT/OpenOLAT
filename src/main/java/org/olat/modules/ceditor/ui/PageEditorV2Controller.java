@@ -267,7 +267,6 @@ public class PageEditorV2Controller extends BasicController {
 				if (fragmentComponent.getElementId().equals(elementId)) {
 					PageEditorUIFactory.refreshElementLayoutOptions(element, fragmentComponent.getElement());
 					fragmentComponent.setDirty(true);
-					fragmentComponent.dispatchToEditor(uureq, new ChangePartEvent(element));
 				}
 			}
 			return true;

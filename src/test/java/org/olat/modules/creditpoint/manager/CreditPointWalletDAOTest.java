@@ -93,7 +93,7 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getWallets() {
+	public void getWalletsByIdentity() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-2");
 		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("wall-2b-coin", "W2bC", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
@@ -102,6 +102,21 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<CreditPointWallet> loadedWallets = creditPointWalletDao.getWallets(id);
+		Assertions.assertThat(loadedWallets)
+			.hasSize(1)
+			.containsExactly(wallet);
+	}
+	
+	@Test
+	public void getWalletsByCreditPointSystem() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-6");
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("wall-2c-coin", "W2bC", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		CreditPointWallet wallet = creditPointWalletDao.createWallet(id, cpSystem);
+		dbInstance.commitAndCloseSession();
+		
+		List<CreditPointWallet> loadedWallets = creditPointWalletDao.getWallets(cpSystem);
 		Assertions.assertThat(loadedWallets)
 			.hasSize(1)
 			.containsExactly(wallet);

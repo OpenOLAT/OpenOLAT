@@ -38,7 +38,6 @@ import org.olat.modules.catalog.ui.CatalogEntryListController;
 import org.olat.modules.catalog.ui.CatalogEntryListParams;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +98,7 @@ public class BookOnBehalfOfController extends BasicController {
 		listParams.setExcludedCurriculumElementKeys(reservedCurriculumElementKeys);
 		listParams.setExcludeMembers(true);
 		listParams.setExcludedAccessMethodTypes(Set.of(
-				PaypalAccessHandler.METHOD_TYPE, PaypalCheckoutAccessHandler.METHOD_TYPE, FreeAccessHandler.METHOD_TYPE
+				PaypalAccessHandler.METHOD_TYPE, PaypalCheckoutAccessHandler.METHOD_TYPE
 		));
 		listParams.setFireBookedEvent(true);
 		return listParams;

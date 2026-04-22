@@ -58,6 +58,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			}
 		} else if (stF.getLayout() == Layout.dropdown) {
 			renderDropDown(sb, stC);
+		} else if (stF.getLayout() == Layout.buttongroup) {
+			renderButtonGroup(sb, stC);
 		} else {
 			renderHorizontal(sb, stC);
 		}
@@ -324,6 +326,47 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		return sb;
 	}
 	
+	private void renderButtonGroup(StringOutput sb, MultipleSelectionComponent stC) {
+		MultipleSelectionElementImpl stF = stC.getFormItem();
+		String groupId = "o_bg_" + stC.getDispatchID();
+		sb.append("<div id='").append(groupId).append("'");
+		appendIdIfRequired(sb, stC);
+		sb.append(" class='o_checkbox_button_group");
+		String elementCssClass = stF.getElementCssClass();
+		if (StringHelper.containsNonWhitespace(elementCssClass)) {
+			sb.append(" ").append(elementCssClass);
+		}
+		sb.append("'>");
+		for (CheckboxElement check : stC.getCheckComponents()) {
+			if (check.isVisible()) {
+				renderCheckbox(sb, check, stC, false);
+			}
+		}
+		sb.append("</div>");
+		sb.append("<script>\n")
+		  .append("\"use strict\";\n")
+		  .append("(function() {\n")
+		  .append("  var el = document.getElementById('").append(groupId).append("');\n")
+		  .append("  if (!el) return;\n")
+		  .append("  function checkOverflow() {\n")
+		  .append("    if (!el.parentElement) return;\n")
+		  .append("    el.classList.remove('o_button_group_vertical');\n")
+		  .append("    var childrenWidth = 0;\n")
+		  .append("    for (var i = 0; i < el.children.length; i++) {\n")
+		  .append("      childrenWidth += el.children[i].scrollWidth;\n")
+		  .append("    }\n")
+		  .append("    if (childrenWidth > el.parentElement.clientWidth) {\n")
+		  .append("      el.classList.add('o_button_group_vertical');\n")
+		  .append("    }\n")
+		  .append("  }\n")
+		  .append("  window.requestAnimationFrame(checkOverflow);\n")
+		  .append("  if (window.ResizeObserver && el.parentElement) {\n")
+		  .append("    new ResizeObserver(checkOverflow).observe(el.parentElement);\n")
+		  .append("  }\n")
+		  .append("})();\n")
+		  .append("</script>");
+	}
+
 	private void renderVertical(StringOutput sb, MultipleSelectionComponent stC) {
 		for(CheckboxElement check:stC.getCheckComponents()) {
 			if(check.isVisible()) {

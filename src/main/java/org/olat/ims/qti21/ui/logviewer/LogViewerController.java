@@ -137,7 +137,7 @@ public class LogViewerController extends FormBasicController implements FlexiTab
 		if(eventType == CandidateTestEventType.ENTER_TEST) {
 			return "success";
 		}
-		if(eventType == CandidateTestEventType.SUSPEND) {
+		if(eventType == CandidateTestEventType.SUSPEND || entry.isSessionExtension() || entry.isSessionRetrieved()) {
 			return "warning";
 		}
 		if(eventType == CandidateTestEventType.EXIT_TEST || eventType == CandidateTestEventType.EXIT_DUE_TIME_LIMIT) {
@@ -151,6 +151,8 @@ public class LogViewerController extends FormBasicController implements FlexiTab
 		
 		SelectionValues eventTypesValues = new SelectionValues();
 		eventTypesValues.add(SelectionValues.entry(LogViewerTableDataModel.OUTCOMES, LogViewerTableDataModel.OUTCOMES));
+		eventTypesValues.add(SelectionValues.entry(LogViewerTableDataModel.SESSION_EXTENSION, LogViewerTableDataModel.SESSION_EXTENSION));
+		eventTypesValues.add(SelectionValues.entry(LogViewerTableDataModel.SESSION_RETRIEVED, LogViewerTableDataModel.SESSION_RETRIEVED));
 		for(CandidateTestEventType type:CandidateTestEventType.values()) {
 			eventTypesValues.add(SelectionValues.entry(type.name(), type.name()));
 		}

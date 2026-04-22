@@ -863,6 +863,82 @@ form.o_dnd_over {
 		margin-top: 0;
 	}
 }
+.o_checkbox_button_group {
+	display: inline-flex;
+	vertical-align: middle;
+
+	> div {
+		position: relative;
+		border: 1px solid $btn-default-border;
+		margin: 0;
+		background-color: $btn-default-bg;
+		color: $btn-default-color;
+		white-space: nowrap;
+		cursor: pointer;
+
+		&:not(:first-of-type):not(:last-of-type) {
+			border-radius: 0;
+		}
+		&:first-of-type {
+			border-radius: $btn-border-radius-base 0 0 $btn-border-radius-base;
+		}
+		&:last-of-type {
+			border-radius: 0 $btn-border-radius-base $btn-border-radius-base 0;
+		}
+		&:first-of-type:last-of-type {
+			border-radius: $btn-border-radius-base;
+		}
+		&:not(:first-child) {
+			margin-left: -1px;
+		}
+
+		&:hover {
+			z-index: 2;
+			background-color: darken($btn-default-bg, 10%);
+			border-color: darken($btn-default-border, 12%);
+		}
+
+		&:has(input:checked) {
+			z-index: 2;
+			background-color: $o-radio-card-bg-checked;
+			border-color: $o-radio-card-border-color-checked;
+			color: $o-radio-card-label-color-checked;
+		}
+
+		label {
+			display: block;
+			padding: $padding-base-vertical $padding-base-horizontal;
+			margin-bottom: 0;
+			cursor: pointer;
+			font-weight: normal;
+		}
+	}
+
+	&.o_button_group_vertical {
+		display: flex;
+		flex-direction: column;
+		width: fit-content;
+
+		> div {
+			&:not(:first-of-type):not(:last-of-type) {
+				border-radius: 0;
+			}
+			&:first-of-type {
+				border-radius: $btn-border-radius-base $btn-border-radius-base 0 0;
+			}
+			&:last-of-type {
+				border-radius: 0 0 $btn-border-radius-base $btn-border-radius-base;
+			}
+			&:first-of-type:last-of-type {
+				border-radius: $btn-border-radius-base;
+			}
+			&:not(:first-of-type) {
+				margin-left: 0;
+				margin-top: -1px;
+			}
+		}
+	}
+}
 
 legend.control-label {
 	display: inline-block;

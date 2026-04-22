@@ -100,7 +100,6 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 		autoEl.setVisible(!confirmationByManager);
 		
 		boolean autoBooking = autoEl.isVisible() && autoEl.isAtLeastSelected(1);
-		customSpacerEl.setVisible(!autoBooking);
 		descEl.setVisible(!autoBooking);
 	}
 

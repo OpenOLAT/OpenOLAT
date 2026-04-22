@@ -30,6 +30,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.ceditor.model.jpa.TocPart;
 import org.olat.modules.cemedia.MediaVersion;
 
 /**
@@ -73,6 +74,9 @@ public class PageEditorUIFactory {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 		if (sourceElement instanceof ImageComparisonPart sourcePart && targetElement instanceof ImageComparisonPart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof TocPart sourcePart && targetElement instanceof TocPart targetPart) {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 	}

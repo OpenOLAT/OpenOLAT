@@ -102,6 +102,9 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 			return;
 		}
 
+		if (!acService.isCancellingEnabled(curriculumElement.getResource(), orders)) {
+			return;
+		}
 		leaveAvailable = true;
 		leaveEnabled = true;
 		Price cancellationFee = acService.getCancellationFee(curriculumElement.getResource(), curriculumElement.getBeginDate(), orders);

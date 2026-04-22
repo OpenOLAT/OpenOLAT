@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -204,6 +205,52 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		Assert.assertEquals(RepositoryEntryStatusEnum.published, reloadEntryInUse.getEntryStatus());
 	}
 	
+	@Test
+	public void getRepositoryEntries_excludeTemplate() {
+		RepositoryEntry course = createRepositoryEntry("To close course", RepositoryEntryStatusEnum.published, -120, -60);
+		RepositoryEntry template = createRepositoryEntry("To close template", RepositoryEntryStatusEnum.published, -120, -60);
+		template = repositoryManager.setRuntimeType(template, RepositoryEntryRuntimeType.template);
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> entriesToClose = automaticLifecycleService
+				.getRepositoryEntries(DateUtils.addDays(new Date(), -50), RepositoryEntryStatusEnum.preparationToPublished());
+		Assert.assertNotNull(entriesToClose);
+		Assert.assertTrue(entriesToClose.contains(course));
+		Assert.assertFalse(entriesToClose.contains(template));
+	}
+
+	@Test
+	public void getRepositoryEntriesInTrash_excludeTemplate() {
+		RepositoryEntry course = createTrashedRepositoryEntry("To delete course", RepositoryEntryStatusEnum.trash, -120, -60, -80);
+		RepositoryEntry template = createTrashedRepositoryEntry("To delete template", RepositoryEntryStatusEnum.trash, -120, -60, -80);
+		template = repositoryManager.setRuntimeType(template, RepositoryEntryRuntimeType.template);
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> deletedEntries = automaticLifecycleService
+				.getRepositoryEntriesInTrash(DateUtils.addDays(new Date(), -70));
+		Assert.assertNotNull(deletedEntries);
+		Assert.assertTrue(deletedEntries.contains(course));
+		Assert.assertTrue(deletedEntries.contains(template));
+	}
+
+	@Test
+	public void manageAutoDelete_templateNotDeleted() {
+		repositoryModule.setLifecycleAutoClose("40day");
+		repositoryModule.setLifecycleAutoDelete("120day");
+		repositoryModule.setLifecycleAutoDefinitivelyDelete(null);
+
+		RepositoryEntry template = createRepositoryEntry("Template with expired lifecycle", RepositoryEntryStatusEnum.published, -180, -130);
+		template = repositoryManager.setRuntimeType(template, RepositoryEntryRuntimeType.template);
+		dbInstance.commitAndCloseSession();
+
+		automaticLifecycleService.manage();
+
+		RepositoryEntry reloaded = repositoryManager.lookupRepositoryEntry(template.getKey());
+		Assert.assertNotNull(reloaded);
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, reloaded.getEntryStatus());
+		Assert.assertEquals(RepositoryEntryRuntimeType.template, reloaded.getRuntimeType());
+	}
+
 	@Test
 	public void deleteCoursePermanentlyByLifecycle() {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");

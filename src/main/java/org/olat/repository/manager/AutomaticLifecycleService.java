@@ -42,6 +42,7 @@ import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -194,8 +195,9 @@ public class AutomaticLifecycleService {
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" left join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.status ").in(states);
-		
+		  .append(" where lifecycle.validTo<:now and v.status ").in(states)
+		  .append(" and (v.runtimeTypeString is null or v.runtimeTypeString<>:template)");
+
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		CalendarUtils.getEndOfDay(cal);
@@ -204,6 +206,7 @@ public class AutomaticLifecycleService {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("now", endOfDay)
+				.setParameter("template", RepositoryEntryRuntimeType.template.name())
 				.getResultList();
 	}
 	

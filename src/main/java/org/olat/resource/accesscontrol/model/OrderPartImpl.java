@@ -90,6 +90,8 @@ public class OrderPartImpl implements Persistable, OrderPart {
     @AttributeOverride(name="amount", column = @Column(name="total_lines_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code"))
 	private PriceImpl totalOrderLines;
+	@Column(name="cancelling_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean cancellingEnabled;
 	@Embedded
     @AttributeOverride(name="amount", column = @Column(name="total_lines_cfee_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="total_lines_cfee_currency_code"))
@@ -137,6 +139,15 @@ public class OrderPartImpl implements Persistable, OrderPart {
 	}
 
 	@Override
+	public boolean isCancellingEnabled() {
+		return cancellingEnabled;
+	}
+
+	public void setCancellingEnabled(boolean cancellingEnabled) {
+		this.cancellingEnabled = cancellingEnabled;
+	}
+
+	@Override
 	public Price getCancellationFees() {
 		return cancellationFees;
 	}
@@ -159,12 +170,16 @@ public class OrderPartImpl implements Persistable, OrderPart {
 	
 	public void recalculate(String currencyCode) {
 		totalOrderLines = new PriceImpl(BigDecimal.ZERO, currencyCode);
-		
+
 		PriceImpl fees = new PriceImpl(BigDecimal.ZERO, currencyCode);
+		cancellingEnabled = false;
 		for(OrderLine orderLine : getOrderLines()) {
 			totalOrderLines = totalOrderLines.add(orderLine.getTotal());
 			if(orderLine.getCancellationFee() != null) {
 				fees = fees.add(orderLine.getCancellationFee());
+			}
+			if(orderLine.isCancellingEnabled()) {
+				cancellingEnabled = true;
 			}
 		}
 

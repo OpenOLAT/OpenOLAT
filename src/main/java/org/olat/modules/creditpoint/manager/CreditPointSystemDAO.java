@@ -100,10 +100,14 @@ public class CreditPointSystemDAO {
 				.getResultList();
 	}
 	
-	public List<CreditPointSystem> loadCreditPointSystemsFor(List<OrganisationRef> organisations, List<OrganisationRef> restrictedOrganisations) {
+	public List<CreditPointSystem> loadCreditPointSystemsFor(List<OrganisationRef> organisations, List<OrganisationRef> restrictedOrganisations,
+			Long systemKey) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select sys from creditpointsystem sys")
-		  .append(" where sys.organisationsRestrictions=false");
+		sb.append("select sys from creditpointsystem sys"); 
+		if(systemKey != null) {
+			sb.and().append(" sys.key=:systemKey");
+		}
+		sb.and().append("(sys.organisationsRestrictions=false");
 		if(organisations != null && !organisations.isEmpty()) {
 			sb.append(" or exists (select rel.key from creditpointsystemtoorganisation as rel")
 			  .append("  where sys.organisationsRestrictions=true and sys.rolesRestrictions=false")
@@ -116,6 +120,7 @@ public class CreditPointSystemDAO {
 			  .append("  and restrictedRel.creditPointSystem.key=sys.key and restrictedRel.organisation.key in (:restrictedOrganisationsKeys)")
 			  .append(" )");
 		}
+		sb.append(")");
 
 		TypedQuery<CreditPointSystem> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), CreditPointSystem.class);
 		if(organisations != null && !organisations.isEmpty()) {
@@ -129,6 +134,9 @@ public class CreditPointSystemDAO {
 					.map(OrganisationRef::getKey)
 					.toList();
 			query.setParameter("restrictedOrganisationsKeys", restrictedOrganisationsKeys);
+		}
+		if(systemKey != null) {
+			query.setParameter("systemKey", systemKey);
 		}
 
 		return query.getResultList();

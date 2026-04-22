@@ -134,7 +134,33 @@ public class LogViewerDeserializer {
 		if(manualCorrectionMarkerIndex >= 0) {
 			return parseManualCorrectionLine(manualCorrectionMarkerIndex, line);
 		}
+		
+		int sessionExtendedMarkerIndex = line.indexOf(AuditLogFormatter.TEST_SESSION_EXTENDED);
+		if(sessionExtendedMarkerIndex >= 0) {
+			return parseSessionExtendedLine(sessionExtendedMarkerIndex, line);
+		}
+		
+		int sessionRetrievedMarkerIndex = line.indexOf(AuditLogFormatter.TEST_SESSION_RETRIEVED);
+		if(sessionRetrievedMarkerIndex >= 0) {
+			return parseSessionRetrievedLine(sessionRetrievedMarkerIndex, line);
+		}
 		return null;
+	}
+	
+	private LogViewerEntry parseSessionExtendedLine(int markerIndex, String line) throws Exception {
+		String dateString  = line.substring(0, markerIndex).trim();
+		Date date = dateFormat.parse(dateString);
+		LogViewerEntry entry = new LogViewerEntry(date);
+		entry.setSessionExtension(true);
+		return entry;
+	}
+	
+	private LogViewerEntry parseSessionRetrievedLine(int markerIndex, String line) throws Exception {
+		String dateString  = line.substring(0, markerIndex).trim();
+		Date date = dateFormat.parse(dateString);
+		LogViewerEntry entry = new LogViewerEntry(date);
+		entry.setSessionRetrieved(true);
+		return entry;
 	}
 
 	private LogViewerEntry parseManualCorrectionLine(int markerIndex, String line) throws Exception {
@@ -243,7 +269,9 @@ public class LogViewerDeserializer {
 				}
 			}
 		}
-		entry.setAnswers(new Answers(answers));
+		if(entry != null) {
+			entry.setAnswers(new Answers(answers));
+		}
 	}
 	
 	private Answer parseParams(AssessmentItem item, QtiNode node, String value) {

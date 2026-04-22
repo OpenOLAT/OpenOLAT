@@ -27,13 +27,14 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.ceditor.model.jpa.TocPart;
 
 /**
  * Initial date: 15 Apr 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class TocRunController extends BasicController {
+
+	public record TocRenderData(String title, List<TitleEntry> entries, String blockLayoutClass) {}
 
 	/**
 	 * A single entry in the rendered TOC list.
@@ -62,11 +63,12 @@ public class TocRunController extends BasicController {
 		}
 	}
 
-	public TocRunController(UserRequest ureq, WindowControl wControl, TocPart tocPart, List<TitleEntry> entries, String title) {
+	public TocRunController(UserRequest ureq, WindowControl wControl, TocRenderData renderData) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("toc_run");
-		mainVC.contextPut("title", title);
-		mainVC.contextPut("entries", entries);
+		mainVC.contextPut("title", renderData.title());
+		mainVC.contextPut("entries", renderData.entries());
+		mainVC.contextPut("blockLayoutClass", renderData.blockLayoutClass());
 		putInitialPanel(mainVC);
 	}
 

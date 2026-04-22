@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,6 +45,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
@@ -76,7 +76,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private MultipleSelectionElement catalogEl;
 	protected SingleSelection confirmationByManagerEl;
 	private MultipleSelectionElement confirmationEmailEl;
-	protected SpacerElement customSpacerEl;
 
 	protected final OfferAccess link;
 	private final boolean offerOrganisationsSupported;
@@ -97,7 +96,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, OfferAccess link,
 			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
 			boolean confirmationByManagerSupported, CatalogInfo catalogInfo, boolean edit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(AbstractConfigurationMethodController.class, getLocale(), getTranslator()));
 		this.link = link;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
@@ -109,21 +108,42 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// Label
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("generalCont", getTranslator());
+		generalCont.setRootForm(mainForm);
+		formLayout.add(generalCont);
+
 		String label = link.getOffer() != null ? link.getOffer().getLabel() : null;
-		labelEl = uifactory.addTextElement("offer.label", "offer.label", 128, label, formLayout);
+		if (label == null && !edit && link.getOffer() != null) {
+			OLATResource resource = link.getOffer().getResource();
+			List<Offer> existingOffers = acService.findOfferByResource(resource, true, null, null);
+			label = String.format("O-%02d", existingOffers.size() + 1);
+		}
+		labelEl = uifactory.addTextElement("offer.label", "offer.internal.label", 128, label, generalCont);
 		labelEl.setElementCssClass("o_sel_accesscontrol_label");
-		labelEl.setHelpTextKey("offer.label.help", null);
-		
-		// Catalog
+
+		initCustomFormElements(generalCont);
+
+		String desc = null;
+		if(link.getOffer() != null) {
+			desc = link.getOffer().getDescription();
+		}
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, generalCont);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		descEl.setHelpTextKey("offer.description.help", null);
+
+		FormLayoutContainer catalogCont = FormLayoutContainer.createDefaultFormLayout("catalogCont", getTranslator());
+		catalogCont.setFormTitle(translate("offer.catalog.title"));
+		catalogCont.setRootForm(mainForm);
+		formLayout.add(catalogCont);
+
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_OO, translate("offer.publish.in.intern")));
+			catalogSV.add(SelectionValues.entry(CATALOG_OO, translate("offer.publish.in.intern"), null, "o_icon o_icon-fw o_icon_catalog_intern", null, true));
 			if (catalogModule.isWebPublishEnabled()) {
-				catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern")));
+				catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern"), null, "o_icon o_icon-fw o_icon_catalog_extern", null, true));
 			}
 		}
-		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		catalogEl = uifactory.addCheckboxesButtonGroup("offer.publish.in", "offer.publish.in", catalogCont, catalogSV);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_publish");
 		if (catalogEl.getKeys().contains(CATALOG_OO)) {
 			catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
@@ -133,44 +153,44 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		}
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 		catalogEl.addActionListener(FormEvent.ONCHANGE);
-		
-		// Organisations
+
 		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
 			Collection<? extends OrganisationRef> selectedOrganisations = offerOrganisations != null? offerOrganisations: List.of();
 			OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
 					selectedOrganisations,
 					() -> acService.getSelectionOfferOrganisations(getIdentity()));
-			organisationsEl = uifactory.addObjectSelectionElement("organisations", "offer.released.for", formLayout,
+			organisationsEl = uifactory.addObjectSelectionElement("organisations", "offer.released.for", catalogCont,
 					getWindowControl(), true, organisationSource);
 			organisationsEl.setMandatory(true);
 		}
-		
-		// Period
+
 		SelectionValues periodSV = new SelectionValues();
 		periodSV.add(SelectionValues.entry(PERIOD_STATUS, catalogInfo.getStatusPeriodOption()));
 		periodSV.add(SelectionValues.entry(PERIOD_DATE, translate("offer.available.in.period")));
-		periodEl = uifactory.addRadiosVertical("offer.available.in", formLayout, periodSV.keys(), periodSV.values());
+		periodEl = uifactory.addRadiosVertical("offer.available.in", catalogCont, periodSV.keys(), periodSV.values());
 		periodEl.addActionListener(FormEvent.ONCHANGE);
 		String selectedPeriodKey = link.getOffer() != null && (link.getOffer().getValidFrom() != null || link.getOffer().getValidTo() != null)
 				? PERIOD_DATE
 				: PERIOD_STATUS;
 		periodEl.select(selectedPeriodKey, true);
-		
-		datesEl = uifactory.addDateChooser("from_" + link.getKey(), "offer.period.date.from", link.getValidFrom(), formLayout);
+
+		datesEl = uifactory.addDateChooser("from_" + link.getKey(), "offer.period.date.from", link.getValidFrom(), catalogCont);
 		datesEl.setSecondDate(true);
 		datesEl.setSecondDate(link.getValidTo());
 		datesEl.setDefaultValue(datesEl);
 		datesEl.setSeparator("offer.period.date.to");
 		datesEl.setHelpTextKey("offer.preiod.help", null);
-		
-		uifactory.addSpacerElement("confirmations", formLayout, false);
-		
-		// Confirmations
+
+		FormLayoutContainer membershipCont = FormLayoutContainer.createDefaultFormLayout("membershipCont", getTranslator());
+		membershipCont.setFormTitle(translate("offer.membership.title"));
+		membershipCont.setRootForm(mainForm);
+		formLayout.add(membershipCont);
+
 		if (confirmationByManagerSupported) {
 			SelectionValues confirmationSV = new SelectionValues();
 			confirmationSV.add(SelectionValues.entry(CONFIRMATION_BY_MANAGER_NO, translate("membership.confirmation.standard"), translate("membership.confirmation.standard.desc"), "o_icon o_ac_membership_standard_icon", null, true));
 			confirmationSV.add(SelectionValues.entry(CONFIRMATION_BY_MANAGER_YES, translate("membership.confirmation.manager"), translate("membership.confirmation.manager.desc"), "o_icon o_ac_membership_confirmation_icon", null, true));
-			confirmationByManagerEl = uifactory.addCardSingleSelectHorizontal("membership.confirmation", "membership.confirmation", formLayout, confirmationSV);
+			confirmationByManagerEl = uifactory.addCardSingleSelectHorizontal("membership.confirmation", "membership.confirmation", membershipCont, confirmationSV);
 			confirmationByManagerEl.setElementCssClass("o_sel_accesscontrol_confirmation_manager");
 			confirmationByManagerEl.addActionListener(FormEvent.ONCHANGE);
 			if (link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired()) {
@@ -179,39 +199,27 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 				confirmationByManagerEl.select(CONFIRMATION_BY_MANAGER_NO, true);
 			}
 		}
-		
-		confirmationEmailEl = uifactory.addCheckboxesHorizontal("booking.receipt", formLayout, onKeys,
+
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("booking.receipt", membershipCont, onKeys,
 				new String[] { translate("booking.receipt.option") });
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
-		
-		initCustomMembershipElements(formLayout);
-		
-		customSpacerEl = uifactory.addSpacerElement("others", formLayout, false);
-		
-		// Custom
-		initCustomFormElements(formLayout);
-		
-		// Description
-		String desc = null;
-		if(link.getOffer() != null) {
-			desc = link.getOffer().getDescription();
-		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
-		descEl.setElementCssClass("o_sel_accesscontrol_description");
-		descEl.setHelpTextKey("offer.description.help", null);
-		
-		// Buttons
+
+		initCustomMembershipElements(membershipCont);
+
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
-		formLayout.add(buttonGroupLayout);
-		
+		buttonsWrapperCont.add(buttonGroupLayout);
+
 		if(edit) {
 			uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		} else {
 			uifactory.addFormSubmitButton("create", buttonGroupLayout);
 		}
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
-		
+
 		updateUI();
 	}
 	

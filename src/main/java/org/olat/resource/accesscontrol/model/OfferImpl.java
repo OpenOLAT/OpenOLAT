@@ -127,6 +127,8 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
     @AttributeOverride(name="amount", column = @Column(name="price_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="price_currency_code"))
 	private PriceImpl price;
+	@Column(name="cancelling_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean cancellingEnabled;
 	@Embedded
 	@AttributeOverride(name="amount", column = @Column(name="cancelling_fee_amount"))
 	@AttributeOverride(name="currencyCode", column = @Column(name="cancelling_fee_currency_code"))
@@ -351,6 +353,16 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	@Override
 	public void setPrice(Price price) {
 		this.price = (PriceImpl)price;
+	}
+
+	@Override
+	public boolean isCancellingEnabled() {
+		return cancellingEnabled;
+	}
+
+	@Override
+	public void setCancellingEnabled(boolean cancellingEnabled) {
+		this.cancellingEnabled = cancellingEnabled;
 	}
 
 	@Override

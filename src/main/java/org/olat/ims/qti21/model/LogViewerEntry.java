@@ -39,6 +39,8 @@ public class LogViewerEntry {
 	
 	private boolean outcomes;
 	private boolean manualCorrection;
+	private boolean sessionExtension;
+	private boolean sessionRetrieved;
 	
 	private CandidateTestEventType testEventType;
 	private CandidateItemEventType itemEventType;
@@ -78,6 +80,22 @@ public class LogViewerEntry {
 
 	public void setManualCorrection(boolean manualCorrection) {
 		this.manualCorrection = manualCorrection;
+	}
+
+	public boolean isSessionExtension() {
+		return sessionExtension;
+	}
+
+	public void setSessionExtension(boolean sessionExtension) {
+		this.sessionExtension = sessionExtension;
+	}
+
+	public boolean isSessionRetrieved() {
+		return sessionRetrieved;
+	}
+
+	public void setSessionRetrieved(boolean sessionRetrieved) {
+		this.sessionRetrieved = sessionRetrieved;
 	}
 
 	public CandidateTestEventType getTestEventType() {

@@ -150,6 +150,18 @@ public class CreditPointServiceImpl implements CreditPointService {
 
 	@Override
 	public List<CreditPointSystem> getCreditPointSystems(Roles roles) {
+		return internalCreditPointSystems(roles, null);
+	}
+
+	@Override
+	public CreditPointSystem getCreditPointSystem(Roles roles, Long systemKey) {
+		List<CreditPointSystem> systems = internalCreditPointSystems(roles, systemKey);
+		return systems.size() == 1
+				? systems.get(0)
+				: null;
+	}
+	
+	private List<CreditPointSystem> internalCreditPointSystems(Roles roles, Long systemKey) {
 		// Without roles restrictions
 		List<OrganisationRef> organisations = roles
 				.getOrganisationsWithRoles(OrganisationRoles.author, OrganisationRoles.learnresourcemanager,
@@ -158,7 +170,7 @@ public class CreditPointServiceImpl implements CreditPointService {
 		List<OrganisationRef> restrictedOrganisations = roles
 				.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager,
 						OrganisationRoles.curriculummanager, OrganisationRoles.administrator);
-		return creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		return creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations, systemKey);
 	}
 
 	@Override
@@ -193,6 +205,11 @@ public class CreditPointServiceImpl implements CreditPointService {
 	}
 
 	@Override
+	public CreditPointWallet getWallet(IdentityRef identity, CreditPointSystem system) {
+		return creditPointWalletDao.getWallet(identity, system);
+	}
+
+	@Override
 	public CreditPointWallet getOrCreateWallet(Identity identity, CreditPointSystem system) {
 		CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
 		if(wallet == null) {
@@ -205,6 +222,11 @@ public class CreditPointServiceImpl implements CreditPointService {
 	@Override
 	public List<CreditPointWallet> getWallets(IdentityRef identity) {
 		return creditPointWalletDao.getWallets(identity);
+	}
+	
+	@Override
+	public List<CreditPointWallet> getWallets(CreditPointSystem system) {
+		return creditPointWalletDao.getWallets(system);
 	}
 
 	@Override

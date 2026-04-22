@@ -28,11 +28,10 @@ import java.util.Set;
  */
 public class TocSettings {
 
-	/** Optional title displayed above the TOC list. Empty string means no title. */
 	private String title = "";
-
-	/** Heading levels shown in the TOC, e.g. {H1, H2, H3, H4}. Default: H1–H4. */
 	private Set<Integer> visibleLevels = new LinkedHashSet<>(Set.of(1, 2, 3, 4));
+	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	public String getTitle() {
 		return title;
@@ -48,5 +47,21 @@ public class TocSettings {
 
 	public void setVisibleLevels(Set<Integer> visibleLevels) {
 		this.visibleLevels = visibleLevels;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 }

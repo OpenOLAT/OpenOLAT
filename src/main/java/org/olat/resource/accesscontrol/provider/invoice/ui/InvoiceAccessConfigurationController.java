@@ -56,13 +56,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InvoiceAccessConfigurationController extends AbstractConfigurationMethodController {
 
+	private static final String CANCELLATION_POLICY_FREE = "free";
+	private static final String CANCELLATION_POLICY_WITH_FEE = "withFee";
+
 	private SingleSelection currencyEl;
 	private TextElement priceAmountEl;
-	private FormToggle cancellingEnabledEl;
+	private SingleSelection costCenterEl;
+	private FormToggle cancelableEl;
+	private SingleSelection cancellationPolicyEl;
 	private TextElement cancellingFeeAmountEl;
 	private FormLayoutContainer cancellingFeeFreeCont;
 	private TextElement cancellingFeeFreeEl;
-	private SingleSelection costCenterEl;
 	
 	private String currencyCode = null;
 	
@@ -88,8 +92,10 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		String priceAmount = null;
 		String cancellingFeeDeadlineDays = null;
 		String cancellingFeeAmount = null;
-		
+		boolean cancellingEnabled = true;
+
 		if (offer != null && offer.getKey() != null) {
+			cancellingEnabled = offer.isCancellingEnabled();
 			if (offer.getPrice() != null) {
 				if (offer.getPrice().getAmount() != null) {
 					priceAmount = PriceFormat.formatMoneyForTextInput(offer.getPrice().getAmount());
@@ -137,26 +143,6 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		priceAmountEl.setElementCssClass("o_sel_accesscontrol_invoice_price");
 		priceAmountEl.setMandatory(true);
 		
-		cancellingEnabledEl = uifactory.addToggleButton("cancelling.fee.enabled", "cancelling.fee.enabled",
-				translate("on"), translate("off"), formLayout);
-		cancellingEnabledEl.toggle(StringHelper.containsNonWhitespace(cancellingFeeAmount));
-		cancellingEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		
-		cancellingFeeAmountEl = uifactory.addTextElement("cancelling.fee", 32, cancellingFeeAmount, formLayout);
-		cancellingFeeAmountEl.setMandatory(true);
-		
-		cancellingFeeFreeCont = FormLayoutContainer.createCustomFormLayout("freeCont", getTranslator(), velocity_root + "/cancelling_fee_free.html");
-		cancellingFeeFreeCont.setLabel("cancelling.fee.free", null);
-		cancellingFeeFreeCont.setRootForm(mainForm);
-		if (!catalogInfo.isStartDateAvailable()) {
-			cancellingFeeFreeCont.setWarningKey("cancelling.fee.free.start.missing");
-		}
-		formLayout.add(cancellingFeeFreeCont);
-		
-		cancellingFeeFreeEl = uifactory.addTextElement("cancelling.fee.free", 8, cancellingFeeDeadlineDays, cancellingFeeFreeCont);
-		cancellingFeeFreeEl.setDisplaySize(8);
-		updateCancellingUI();
-		
 		SelectionValues costCenterSV = new SelectionValues();
 		CostCenterSearchParams costCenterSearchParams = new CostCenterSearchParams();
 		costCenterSearchParams.setEnabled(Boolean.TRUE);
@@ -180,13 +166,41 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 				costCenterEl.select(offer.getCostCenter().getKey().toString(), true);
 			}
 		}
+		
+		cancelableEl = uifactory.addToggleButton("cancelling.enabled", "cancelling.enabled",
+				translate("on"), translate("off"), formLayout);
+		cancelableEl.toggle(cancellingEnabled);
+		cancelableEl.addActionListener(FormEvent.ONCHANGE);
+
+		SelectionValues cancellationPolicySV = new SelectionValues();
+		cancellationPolicySV.add(SelectionValues.entry(CANCELLATION_POLICY_FREE, translate("cancellation.policy.free")));
+		cancellationPolicySV.add(SelectionValues.entry(CANCELLATION_POLICY_WITH_FEE, translate("cancellation.policy.with.fee")));
+		cancellationPolicyEl = uifactory.addRadiosVertical("cancellation.policy", "cancellation.policy", formLayout,
+				cancellationPolicySV.keys(), cancellationPolicySV.values());
+		cancellationPolicyEl.select(StringHelper.containsNonWhitespace(cancellingFeeAmount) ? CANCELLATION_POLICY_WITH_FEE : CANCELLATION_POLICY_FREE, true);
+		cancellationPolicyEl.addActionListener(FormEvent.ONCHANGE);
+
+		cancellingFeeAmountEl = uifactory.addTextElement("cancelling.fee", 32, cancellingFeeAmount, formLayout);
+		cancellingFeeAmountEl.setMandatory(true);
+		
+		cancellingFeeFreeCont = FormLayoutContainer.createCustomFormLayout("freeCont", getTranslator(), velocity_root + "/cancelling_fee_free.html");
+		cancellingFeeFreeCont.setLabel("cancelling.fee.free", null);
+		cancellingFeeFreeCont.setRootForm(mainForm);
+		if (!catalogInfo.isStartDateAvailable()) {
+			cancellingFeeFreeCont.setWarningKey("cancelling.fee.free.start.missing");
+		}
+		formLayout.add(cancellingFeeFreeCont);
+		
+		cancellingFeeFreeEl = uifactory.addTextElement("cancelling.fee.free", 8, cancellingFeeDeadlineDays, cancellingFeeFreeCont);
+		cancellingFeeFreeEl.setDisplaySize(8);
+		updateCancellingUI();
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == currencyEl) {
 			updateCancellingFeeAmount();
-		} else if (source == cancellingEnabledEl) {
+		} else if (source == cancelableEl || source == cancellationPolicyEl) {
 			updateCancellingUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -216,7 +230,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 				newFeeValue = PriceFormat.formatMoneyForTextInput(currentFeeDefault);
 			}
 			cancellingFeeAmountEl.setValue(newFeeValue);
-			cancellingEnabledEl.toggle(currentFeeDefault != null);
+			cancellationPolicyEl.select(currentFeeDefault != null ? CANCELLATION_POLICY_WITH_FEE : CANCELLATION_POLICY_FREE, true);
 			updateCancellingUI();
 		}
 		
@@ -224,10 +238,12 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 	}
 	
 	private void updateCancellingUI() {
-		boolean cancellingFeeEnabled = cancellingEnabledEl.isOn();
-		cancellingFeeAmountEl.setVisible(cancellingFeeEnabled);
-		cancellingFeeFreeCont.setVisible(cancellingFeeEnabled);
-		cancellingFeeFreeEl.setVisible(cancellingFeeEnabled);
+		boolean cancelable = cancelableEl.isOn();
+		cancellationPolicyEl.setVisible(cancelable);
+		boolean withFee = cancelable && cancellationPolicyEl.isOneSelected() && CANCELLATION_POLICY_WITH_FEE.equals(cancellationPolicyEl.getSelectedKey());
+		cancellingFeeAmountEl.setVisible(withFee);
+		cancellingFeeFreeCont.setVisible(withFee);
+		cancellingFeeFreeEl.setVisible(withFee);
 	}
 
 	@Override
@@ -284,7 +300,8 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		price.setAmount(priceAmount);
 		price.setCurrencyCode(currencyCode);
 		link.getOffer().setPrice(price);
-		
+		link.getOffer().setCancellingEnabled(cancelableEl.isOn());
+
 		PriceImpl cancellingFee = null;
 		if (cancellingFeeAmountEl.isVisible()) {
 			if (StringHelper.containsNonWhitespace(cancellingFeeAmountEl.getValue())) {

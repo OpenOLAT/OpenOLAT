@@ -32,6 +32,7 @@ import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.model.TitleSettings;
+import org.olat.modules.ceditor.model.TocSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 
 /**
@@ -56,6 +57,13 @@ public class BlockLayoutClassFactory {
 	}
 
 	public static String buildClass(QuizSettings settings, boolean inForm) {
+		if (settings == null) {
+			return getPredefinedCssClass(inForm);
+		}
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
+	}
+
+	public static String buildClass(TocSettings settings, boolean inForm) {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}

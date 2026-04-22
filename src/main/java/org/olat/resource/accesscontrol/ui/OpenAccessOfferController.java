@@ -76,7 +76,7 @@ public class OpenAccessOfferController extends FormBasicController {
 	public OpenAccessOfferController(UserRequest ureq, WindowControl wControl, Offer offer,
 			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.offer = offer;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.offerOrganisations = offerOrganisations;
@@ -88,42 +88,47 @@ public class OpenAccessOfferController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_open_form");
-		
-		// Catalog
+
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("generalCont", getTranslator());
+		generalCont.setRootForm(mainForm);
+		formLayout.add(generalCont);
+
+		String desc = null;
+		if(offer != null) {
+			desc = offer.getDescription();
+		}
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, generalCont);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		descEl.setHelpTextKey("offer.description.help", null);
+
+		FormLayoutContainer catalogCont = FormLayoutContainer.createDefaultFormLayout("catalogCont", getTranslator());
+		catalogCont.setFormTitle(translate("offer.catalog.title"));
+		catalogCont.setRootForm(mainForm);
+		formLayout.add(catalogCont);
+
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isWebPublishEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern")));
+			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern"), null, "o_icon o_icon-fw o_icon_catalog_extern", null, true));
 		}
-		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		catalogEl = uifactory.addCheckboxesButtonGroup("offer.publish.in", "offer.publish.in", catalogCont, catalogSV);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
 		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
 			catalogEl.select(CATALOG_WEB,offer != null && offer.isCatalogWebPublish());
 		}
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
-		
-		// Organisations
+
 		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
-			initFormOrganisations(formLayout);
+			initFormOrganisations(catalogCont);
 		}
-		
-		// Period
-		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), formLayout);
-		
-		uifactory.addSpacerElement("others", formLayout, false);
-		
-		// Description
-		String desc = null;
-		if(offer != null) {
-			desc = offer.getDescription();
-		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
-		descEl.setElementCssClass("o_sel_accesscontrol_description");
-		descEl.setHelpTextKey("offer.description.help", null);
-		
-		// Buttons
+
+		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), catalogCont);
+
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
-		formLayout.add(buttonGroupLayout);
+		buttonsWrapperCont.add(buttonGroupLayout);
 
 		if(edit) {
 			uifactory.addFormSubmitButton("save", buttonGroupLayout);
@@ -132,7 +137,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		}
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
-	
+
 	private void initFormOrganisations(FormItemContainer formLayout) {
 		Collection<? extends OrganisationRef> selectedOrganisations = offerOrganisations != null? offerOrganisations: List.of();
 		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(

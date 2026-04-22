@@ -381,6 +381,8 @@ public interface ACService {
 	
 	public Date getBeginDate(OLATResource resource);
 	
+	public boolean isCancellingEnabled(OLATResource resource, List<Order> orders);
+
 	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders);
 	
 	public ParticipantsAvailabilityNum getParticipantsAvailability(Long maxParticipants, Long numParticipants, boolean distinguishOverbooked);

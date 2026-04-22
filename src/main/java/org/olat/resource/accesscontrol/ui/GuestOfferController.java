@@ -55,7 +55,7 @@ public class GuestOfferController extends FormBasicController {
 	private CatalogV2Module catalogModule;
 	
 	public GuestOfferController(UserRequest ureq, WindowControl wControl, Offer offer, CatalogInfo catalogInfo, boolean edit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.offer = offer;
 		this.catalogInfo = catalogInfo;
 		this.edit = edit;
@@ -65,27 +65,37 @@ public class GuestOfferController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_guest_form");
-		
+
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("generalCont", getTranslator());
+		generalCont.setRootForm(mainForm);
+		formLayout.add(generalCont);
+
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, offer.getDescription(), generalCont);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		descEl.setHelpTextKey("offer.description.help", null);
+
+		FormLayoutContainer catalogCont = FormLayoutContainer.createDefaultFormLayout("catalogCont", getTranslator());
+		catalogCont.setFormTitle(translate("offer.catalog.title"));
+		catalogCont.setRootForm(mainForm);
+		formLayout.add(catalogCont);
+
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isEnabled() && catalogModule.isWebPublishEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern")));
+			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern"), null, "o_icon o_icon-fw o_icon_catalog_extern", null, true));
 		}
-		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		catalogEl = uifactory.addCheckboxesButtonGroup("offer.publish.in", "offer.publish.in", catalogCont, catalogSV);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
 		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
-		
-		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), formLayout);
-		
-		uifactory.addSpacerElement("others", formLayout, false);
-		
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, offer.getDescription(), formLayout);
-		descEl.setElementCssClass("o_sel_accesscontrol_description");
-		descEl.setHelpTextKey("offer.description.help", null);
-		
+
+		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), catalogCont);
+
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
-		formLayout.add(buttonGroupLayout);
+		buttonsWrapperCont.add(buttonGroupLayout);
 
 		if(edit) {
 			uifactory.addFormSubmitButton("save", buttonGroupLayout);
