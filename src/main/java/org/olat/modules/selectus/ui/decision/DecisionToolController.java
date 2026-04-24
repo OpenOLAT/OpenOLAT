@@ -18,6 +18,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -29,7 +30,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,8 +45,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.AddressOption;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
@@ -79,6 +80,7 @@ import org.olat.modules.selectus.ui.events.DecisionRubricEvent;
 import org.olat.modules.selectus.ui.events.FinalDecisionChangeEvent;
 import org.olat.modules.selectus.ui.rating.RatingComparator;
 import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -88,6 +90,9 @@ import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
  */
 public class DecisionToolController extends FormBasicController implements FlexiTableCssDelegate, GenericEventListener {
 
+	protected static final String FILTER_DECISION = "decision";
+	protected static final String FILTER_NULL_KEY = "NULL";
+	
 	private final RatingComparator ratingComparator = new RatingComparator();
 	
 	private FlexiTableElement tableEl;
@@ -134,8 +139,9 @@ public class DecisionToolController extends FormBasicController implements Flexi
 	
 	public DecisionToolController(UserRequest ureq, WindowControl wControl, Position position,
 			RecruitingPositionSecurityCallback secCallback) {
-		super(ureq, wControl, "decision_tool");
-		setTranslator(Util.createPackageTranslator(PositionController.class, getLocale()));
+		super(ureq, wControl, "decision_tool", Util
+				.createPackageTranslator(PositionController.class, ureq.getLocale()));
+
 		this.position = position;
 		this.secCallback = secCallback;
 		editable = secCallback.canEditDecisionRubrics();
@@ -286,7 +292,18 @@ public class DecisionToolController extends FormBasicController implements Flexi
 	}
 
 	private void initFilters() {
-		//TODO flexi ql
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues decisionKV = new SelectionValues();
+		decisionKV.add(SelectionValues.entry(FILTER_NULL_KEY, translate("decision.0.filter")));
+		decisionKV.add(SelectionValues.entry("3", translate("decision.3.filter")));
+		decisionKV.add(SelectionValues.entry("2", translate("decision.2.filter")));
+		decisionKV.add(SelectionValues.entry("1", translate("decision.1.filter")));
+		decisionKV.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.decision"),
+				FILTER_DECISION, decisionKV, true));
+
+		tableEl.setFilters(true, filters, true, true);
 	}
 	
 	private void initColumnsModelApplicant() {

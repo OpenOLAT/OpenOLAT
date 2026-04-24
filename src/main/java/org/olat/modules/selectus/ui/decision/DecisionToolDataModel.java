@@ -10,10 +10,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -24,7 +26,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.DecisionRubric;
@@ -56,7 +57,7 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 	private final Map<Long,List<ApplicationCategoryInfos>> appToCategories;
 	private final List<DecisionRubricDefinition> definitions;
 	
-	private List<ApplicationRubricsRow> backups = new ArrayList<>();
+	private List<ApplicationRubricsRow> backupList = new ArrayList<>();
 	
 	private final RecruitingModule recruitingModule;
 	
@@ -70,7 +71,7 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 		this.translator = translator;
 		this.definitions = definitions;
 		this.appToCategories = appToCategories;
-		backups = new ArrayList<>(rows);
+		backupList = new ArrayList<>(rows);
 	}
 	
 	public List<DecisionRubricDefinition> getDefinitions() {
@@ -127,12 +128,40 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			//TODO flexi ql
-			super.setObjects(backups);
+		if(filters != null && !filters.isEmpty()) {
+			final Set<String> decisions = getFilteredList(filters, DecisionToolController.FILTER_DECISION);
+			
+			List<ApplicationRubricsRow> filteredRows = new ArrayList<>(backupList.size());
+			for(ApplicationRubricsRow row:backupList) {
+				boolean accept = acceptDecision(decisions, row);
+				if(accept) {
+					filteredRows.add(row);
+				}
+			}
+			super.setObjects(filteredRows);
 		} else {
-			super.setObjects(backups);
+			super.setObjects(backupList);
 		}
+	}
+	
+	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			return filterValues != null && !filterValues.isEmpty() ? Set.copyOf(filterValues) : Set.of();
+		}
+		return Set.of();
+	}
+	
+	private boolean acceptDecision(Set<String> status, ApplicationRubricsRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		Integer decision = row.getApplication().getDecision();
+		if((decision == null || decision.intValue() <= 0) && status.contains(DecisionToolController.FILTER_NULL_KEY)
+				|| (decision != null && status.contains(decision.toString()))) {
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -291,7 +320,7 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 	
 	@Override
 	public void setObjects(List<ApplicationRubricsRow> objects) {
-		backups = new ArrayList<>(objects);
+		backupList = new ArrayList<>(objects);
 		super.setObjects(objects);
 	}
 	
