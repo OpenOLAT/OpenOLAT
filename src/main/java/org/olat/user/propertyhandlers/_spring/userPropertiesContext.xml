@@ -2581,7 +2581,33 @@
 					</bean>
 				</entry>
 		
-				
+				<entry key="org.olat.ldap.ui.ImportExternalUserSearchController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Used for external users import and search." />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />	
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyGender" />
+								<ref bean="userPropertyTypeOfUser" />
+								<ref bean="userPropertyTelOffice" />
+								<ref bean="userPropertyStreet" />
+								<ref bean="userPropertyExtendedAddress" />
+								<ref bean="userPropertyZipCode" />
+								<ref bean="userPropertyCity" />
+								<ref bean="userPropertyCountry" />
+							</list>
+						</property>	
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />	
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
    
 				<!--
 					Default configuration in case nothing else matches.

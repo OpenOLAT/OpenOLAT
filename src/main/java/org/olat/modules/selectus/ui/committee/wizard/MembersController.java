@@ -199,7 +199,11 @@ public class MembersController extends FormBasicController {
 		if(member != null
 				&& !(member.getIdentity() instanceof TransientIdentity)
 				&& member.getIdentity().getKey() != null) {
-			return member.getIdentity().getName();
+			String username = member.getIdentity().getUser().getNickName();
+			if(!StringHelper.containsNonWhitespace(username)) {
+				username = member.getIdentity().getName();
+			}
+			return username;
 		}
 		if(!StringHelper.containsNonWhitespace(email)) {
 			return "";

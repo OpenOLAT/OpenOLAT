@@ -1,24 +1,29 @@
 $r.xssScan($publicFeedbackTitle)
 <p>$r.xssScan($positionMsg)</p>
-<div class="o_sel_reference_overview">
-	<div class="wizard clearfix">
-		<ul class="steps">
-			<li class='active o_enabled'>$r.translate("public.feedback.step.submission")<span class="chevron"></span></li>
-		</ul>
-	</div>
-	<div class="o_segments_content">
-		<div class="o_info">$r.translate("public.feedback.title.explanation")<br>$r.translate("public.feedback.title.explanation.2")</div>
-		#if($r.isTrue($applicationTitleFirstLastNameEnabled))
-		<strong>$r.translate("public.feedback.applicant"):</strong> $r.escapeHtml($applicationTitleFirstLastName)<br>
-		#end
-		#if($r.isTrue($deadLineEnabled))
-		<strong>$r.translate("public.feedback.deadline"):</strong> $deadLine<br>
-		#end
-		<label for="$f.getItemId("feedback")">$r.translate("public.feedback.feedback")</label>
-		$r.render("feedback")
-		<div class="o_button_group">
-			$r.render("save")
-			$r.render("cancel")
+<div class="o_sel_reference_overview o_wizard">
+	<div class="o_wizard_body">
+		<div class="o_steps">
+			<div class="o_steps_main">
+				<ul class="">
+					<li class="active" aria-current="step"><a class="o_disabled disabled a11yactive" href="#" onclick="return false;">
+						<span>$r.translate("public.feedback.step.submission")</span></a><span class="chevron"></span></li>
+				</ul>
+			</div>
+		</div>
+		<div class="o_segments_content">
+			<div class="o_info">$r.translate("public.feedback.title.explanation")<br>$r.translate("public.feedback.title.explanation.2")</div>
+			#if($r.isTrue($applicationTitleFirstLastNameEnabled))
+			<strong>$r.translate("public.feedback.applicant"):</strong> $r.escapeHtml($applicationTitleFirstLastName)<br>
+			#end
+			#if($r.isTrue($deadLineEnabled))
+			<strong>$r.translate("public.feedback.deadline"):</strong> $deadLine<br>
+			#end
+			<label for="$f.getItemId("feedback")">$r.translate("public.feedback.feedback")</label>
+			$r.render("feedback")
+			<div class="o_button_group">
+				$r.render("save")
+				$r.render("cancel")
+			</div>
 		</div>
 	</div>
 </div>

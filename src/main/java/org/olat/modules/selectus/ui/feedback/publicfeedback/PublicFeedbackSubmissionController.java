@@ -99,7 +99,7 @@ public class PublicFeedbackSubmissionController extends FormBasicController {
 		
 		String[] applicantArgs = new String[] {
 			applicantFullName,						// 0
-			position.getPositionTitle(getLocale()),	// 1
+			position.getMLTitle(getLocale()),	// 1
 			applicantLastName,						// 2
 			headEmail,								// 3
 			applicationTitleFirstLastName			// 4

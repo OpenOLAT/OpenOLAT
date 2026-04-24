@@ -95,7 +95,7 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 	private FormLayoutContainer feedbackDeadlineContainer;
 
 	private CloseableModalController cmc;
-	private StepsMainRunController addMembersFeeadbackWizard;
+	private StepsMainRunController addMembersFeedbackWizard;
 	private ApplicationFeedbackMemberEditController memberEditCtrl;
 	private SendFeedbackInvitationController sendFeedbackInvitationCtrl;
 	private ConfirmRemoveFeedbackMemberController confirmRemoveFeedbackCtrl;
@@ -425,11 +425,11 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(addMembersFeeadbackWizard == source) {
+		} else if(addMembersFeedbackWizard == source) {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
 			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				getWindowControl().pop();
+				getWindowControl().removeTopModalDialog(addMembersFeedbackWizard.getInitialComponent());
 				//reload the list
 				loadModel();
 			}
@@ -443,12 +443,12 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 	private void cleanUp() {
 		removeAsListenerAndDispose(sendFeedbackInvitationCtrl);
 		removeAsListenerAndDispose(confirmRemoveFeedbackCtrl);
-		removeAsListenerAndDispose(addMembersFeeadbackWizard);
+		removeAsListenerAndDispose(addMembersFeedbackWizard);
 		removeAsListenerAndDispose(memberEditCtrl);
 		removeAsListenerAndDispose(cmc);
 		sendFeedbackInvitationCtrl = null;
 		confirmRemoveFeedbackCtrl = null;
-		addMembersFeeadbackWizard = null;
+		addMembersFeedbackWizard = null;
 		memberEditCtrl = null;
 		cmc = null;
 	}
@@ -479,9 +479,9 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 			feedbackMembersContext.setDeadline(defaultConfig.getDeadline());
 			Feedback1EmailStep start = new Feedback1EmailStep(ureq, feedbackMembersContext);
 			AddFeedbacksMemberFinishCallback finish = new AddFeedbacksMemberFinishCallback(feedbackMembersContext, getTranslator());
-			addMembersFeeadbackWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, title, null);
-			listenTo(addMembersFeeadbackWizard);
-			getWindowControl().pushAsModalDialog(addMembersFeeadbackWizard.getInitialComponent());
+			addMembersFeedbackWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, title, null);
+			listenTo(addMembersFeedbackWizard);
+			getWindowControl().pushAsTopModalDialog(addMembersFeedbackWizard.getInitialComponent());
 		}
 	}
 	
