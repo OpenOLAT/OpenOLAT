@@ -95,7 +95,7 @@ public class MemberFeedbacksController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.department));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberFeedCols.planingsNumber));
 
-		tableModel = new MemberFeedbacksTableModel(columnsModel, salutationGenerator, getTranslator(), getLocale());
+		tableModel = new MemberFeedbacksTableModel(columnsModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "feedbacks", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);
@@ -167,8 +167,7 @@ public class MemberFeedbacksController extends FormBasicController {
 				tableModel.filter(ftse.getSearch(), ftse.getFilters());
 				tableEl.reset(true, true, false);
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("edit".equals(link.getCmd())) {
 				doEdit(ureq, (MemberFeedbackRow)link.getUserObject());
 			}

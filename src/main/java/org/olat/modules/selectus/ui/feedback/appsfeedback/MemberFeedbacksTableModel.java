@@ -20,7 +20,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.RecruitingHelper;
@@ -38,16 +37,13 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FilterableFlexiTableM
 	
 	private final Locale locale;
 	private final Translator translator;
-	private final SalutationGenerator salutationGenerator;
 	
 	private List<MemberFeedbackRow> backupRows;
 	
-	public MemberFeedbacksTableModel(FlexiTableColumnModel columnsModel, SalutationGenerator salutationGenerator,
-			Translator translator, Locale locale) {
+	public MemberFeedbacksTableModel(FlexiTableColumnModel columnsModel, Translator translator, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 		this.translator = translator;
-		this.salutationGenerator = salutationGenerator;
 	}
 	
 	@Override
@@ -61,13 +57,37 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FilterableFlexiTableM
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(StringHelper.containsNonWhitespace(searchString)) {
-			//TODO flexi ql
-			super.setObjects(backupRows);
+			
+			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
+					? null : searchString.toLowerCase();
+		
+			List<MemberFeedbackRow> filteredRows = new ArrayList<>(backupRows.size());
+			for(MemberFeedbackRow row:backupRows) {
+				boolean accept = accept(loweredSearchString, row);
+				if(accept) {
+					filteredRows.add(row);
+				}
+			}
+			super.setObjects(filteredRows);
 		} else if(backupRows == null) {
 			super.setObjects(new ArrayList<>());
 		} else {
 			super.setObjects(backupRows);
 		}
+	}
+	
+	private boolean accept(String searchValue, MemberFeedbackRow row) {
+		if(searchValue == null) return true;
+		return accept(searchValue, row.getPosition().getMLTitle(locale))
+				|| accept(searchValue, row.getApplication().getPerson().getFirstName())
+				|| accept(searchValue, row.getApplication().getPerson().getLastName())
+				|| accept(searchValue, getOrganisation(row.getOrganisation()))
+				|| accept(searchValue, row.getPosition().getMLDepartement(locale))
+				|| accept(searchValue, row.getPosition().getPlaningsNumber());
+	}
+	
+	private boolean accept(String searchValue, String val) {
+		return val != null && val.toLowerCase().contains(searchValue);
 	}
 	
 	@Override
