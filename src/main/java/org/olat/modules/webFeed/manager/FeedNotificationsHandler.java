@@ -46,6 +46,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.ui.FeedHelper;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -126,7 +127,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 	}
 
 	private void appendSubscriptionItem(Item item, Publisher p, Date compareDate, Translator translator, List<SubscriptionListItem> items) {
-		String title = item.getTitle();
+		String title = FeedHelper.getTitle(item.getTitle(), item);
 		String author = item.getAuthor();
 		String businessPath = p.getBusinessPath() + "[FeedItem:" + item.getKey() + "]";
 		String urlToSend = BusinessControlFactory.getInstance()

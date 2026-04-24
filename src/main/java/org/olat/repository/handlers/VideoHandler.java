@@ -57,8 +57,8 @@ import org.olat.modules.video.ui.VideoRestrictedMessageController;
 import org.olat.modules.video.ui.VideoRestrictedRuntimeController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.modules.video.ui.editor.VideoEditorController;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -168,6 +168,7 @@ public class VideoHandler extends FileHandler {
 		RepositoryEntry repoEntry = repositoryService.create(initialAuthor, null, "",
 				displayname, description, resource, RepositoryEntryStatusEnum.preparation,
 				RepositoryEntryRuntimeType.embedded, organisation);
+		dbInstance.commit();
 		
 		if(fileName == null) {
 			fileName = file.getName();

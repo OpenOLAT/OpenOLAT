@@ -151,7 +151,7 @@ public class BookingPage {
 		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_description textarea");
 		browser.findElement(descriptionBy).sendKeys(description);	
 
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_guest_form button.btn-primary");
+		By submitBy = By.cssSelector(".modal-content .o_sel_accesscontrol_buttons button.btn.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_guest_form");
 		
@@ -164,7 +164,7 @@ public class BookingPage {
 		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_open_form .o_sel_accesscontrol_description textarea");
 		browser.findElement(descriptionBy).sendKeys(description);		
 
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_open_form button.btn-primary");
+		By submitBy = By.cssSelector(".modal-content .o_sel_accesscontrol_buttons button.btn.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_open_form");
 		
@@ -187,8 +187,9 @@ public class BookingPage {
 		By tokenBy = By.cssSelector(".o_sel_accesscontrol_token_form .o_sel_accesscontrol_token input[type='text']");
 		browser.findElement(tokenBy).sendKeys(token);
 
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_token_form button.btn-primary");
-		browser.findElement(submitBy).click();
+		By submitBy = By.cssSelector(".modal-content .buttons button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElementRefreshed(submitBy, browser);
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		By tokenRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_sel_ac_offer>div.o_icon_panel_icon_col>h4>i.o_ac_token_icon");
@@ -236,7 +237,8 @@ public class BookingPage {
 		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_invoice_form .o_sel_accesscontrol_description textarea");
 		browser.findElement(descriptionBy).sendKeys(description);
 
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_invoice_form button.btn-primary");
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_buttons button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElementRefreshed(submitBy, browser);
 		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
@@ -276,16 +278,16 @@ public class BookingPage {
 	}
 	
 	public BookingPage configureGuestBooking(String description, boolean externalCatalog) {
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_description textarea");
+		OOGraphene.waitElement(descriptionBy, browser).sendKeys(description);
+		
 		if(externalCatalog) {
-			By catalogBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_catalog input[name='offer.publish.in'][value='web']");
+			By catalogBy = By.cssSelector(".o_sel_accesscontrol_catalog .o_sel_accesscontrol_catalog input[name='offer.publish.in'][value='web']");
 			WebElement catalogEl = OOGraphene.waitElement(catalogBy, browser);
 			OOGraphene.check(catalogEl, Boolean.TRUE);
 		}
-		
-		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_description textarea");
-		browser.findElement(descriptionBy).sendKeys(description);
-		
-		By submitBy = By.cssSelector(".o_sel_accesscontrol_guest_form button.btn-primary");
+
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_buttons .buttons button.btn.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;

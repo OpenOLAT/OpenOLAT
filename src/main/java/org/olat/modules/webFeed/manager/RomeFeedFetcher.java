@@ -40,6 +40,7 @@ import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.EnclosureImpl;
 import org.olat.modules.webFeed.model.ItemImpl;
+import org.olat.modules.webFeed.ui.FeedHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -172,14 +173,17 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 		item.setGuid(entry.getUri());
 		item.setLastModified(entry.getUpdatedDate());
 		item.setPublishDate(entry.getPublishedDate());
-		item.setTitle(entry.getTitle());
 
 		if (entry.getDescription() != null) {
 			item.setDescription(entry.getDescription().getValue());
 		}
 
 		List<SyndContent> contents = entry.getContents();
-		item.setContent(joinContents(contents));
+		String content = joinContents(contents);
+		item.setContent(content);
+		
+		String title = FeedHelper.getTitle(entry.getTitle(), item);
+		item.setTitle(title);
 
 		List<SyndEnclosure> enclosures = entry.getEnclosures();
 		item.setEnclosure(convertEnclosures(enclosures));

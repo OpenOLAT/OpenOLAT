@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.ui.FeedHelper;
 import org.olat.modules.webFeed.ui.FeedMainController;
 /**
 *
@@ -99,7 +100,7 @@ public class FeedNotifications {
 	private void createSubscriptionItem(Item item, Publisher p){
 		Date modDate = item.getPublishDate();
 		if (item.isPublished() && compareDate.before(modDate)) {
-			String title = item.getTitle();
+			String title = FeedHelper.getTitle(item.getTitle(), item);
 			String author = item.getAuthor();
 			String desc = translator.translate("notifications.entry", new String[] { title, author });
 			String businessPath = p.getBusinessPath();

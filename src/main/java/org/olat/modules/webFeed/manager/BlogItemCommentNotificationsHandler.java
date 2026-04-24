@@ -26,6 +26,7 @@ import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.ui.FeedHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +64,9 @@ public class BlogItemCommentNotificationsHandler extends FeedCommentNotification
 	@Override
 	public String getDisplayName(Publisher publisher) {
 		Item item = feedManager.loadItem(Long.valueOf(publisher.getData()));
-		return item == null ? "???" : item.getTitle();
+		return item == null
+				? "???"
+				: FeedHelper.getTitle(item.getTitle(), item);
 	}
 
 	@Override

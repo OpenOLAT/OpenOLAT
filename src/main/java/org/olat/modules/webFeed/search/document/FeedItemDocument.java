@@ -22,6 +22,7 @@ package org.olat.modules.webFeed.search.document;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.ui.FeedHelper;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
@@ -40,7 +41,7 @@ public class FeedItemDocument extends OlatDocument {
 
 	public FeedItemDocument(Item item, SearchResourceContext searchResourceContext) {
 		super();
-		setTitle(item.getTitle());
+		setTitle(FeedHelper.getTitle(item.getTitle(), item));
 		setAuthor(item.getAuthor());		
 		// Remove HTML tags from description and content, not useful in index
 		String rawDescription = tagsFilter.filter(item.getDescription());

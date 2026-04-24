@@ -51,3 +51,95 @@ create index idx_offeracc_offer_method_idx on o_ac_offer_access (fk_offer_id, fk
 alter table o_ac_offer add column cancelling_enabled bool default true not null;
 alter table o_ac_order_part add column cancelling_enabled bool default true not null;
 alter table o_ac_order_line add column cancelling_enabled bool default true not null;
+
+-- Room management
+create table o_rm_location (
+    id bigserial,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    r_status varchar(16) not null default 'active',
+    r_name varchar(255) not null,
+    r_ext_id varchar(64),
+    r_ext_ref varchar(255),
+    r_description text,
+    r_address varchar(1024),
+    r_info_url varchar(1024),
+    r_geo_lat decimal(10,7),
+    r_geo_lon decimal(10,7),
+    primary key (id)
+);
+
+create unique index idx_rm_loc_ext_id on o_rm_location (r_ext_id);
+
+create table o_rm_location_to_org (
+    id bigserial,
+    creationdate timestamp not null,
+    fk_location int8 not null,
+    fk_organisation int8 not null,
+    primary key (id)
+);
+
+create unique index idx_rm_loc_org on o_rm_location_to_org (fk_location, fk_organisation);
+alter table o_rm_location_to_org add constraint rm_loc_to_loc_idx foreign key (fk_location) references o_rm_location(id);
+alter table o_rm_location_to_org add constraint rm_loc_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+
+create table o_rm_room (
+    id bigserial,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    r_status varchar(16) not null default 'active',
+    r_name varchar(255) not null,
+    r_ext_id varchar(64),
+    r_ext_ref varchar(255),
+    r_description text,
+    r_seats integer,
+    r_admin_info text,
+    fk_location int8 not null,
+    primary key (id)
+);
+
+create unique index idx_rm_room_ext_id on o_rm_room (r_ext_id);
+alter table o_rm_room add constraint rm_room_to_loc_idx foreign key (fk_location) references o_rm_location(id);
+create index idx_rm_room_loc on o_rm_room(fk_location);
+
+create table o_rm_room_booking (
+    id bigserial,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    r_start_date timestamp not null,
+    r_end_date timestamp not null,
+    r_buffer_before integer not null default 0,
+    r_buffer_after integer not null default 0,
+    fk_room int8 not null,
+    fk_lecture_block int8 not null,
+    primary key (id)
+);
+
+create unique index idx_rm_booking_block_room on o_rm_room_booking (fk_lecture_block, fk_room);
+alter table o_rm_room_booking add constraint rm_book_to_room_idx foreign key (fk_room) references o_rm_room(id);
+alter table o_rm_room_booking add constraint rm_book_to_lb_idx foreign key (fk_lecture_block) references o_lecture_block(id);
+create index idx_rm_book_room_time on o_rm_room_booking(fk_room, r_start_date, r_end_date);
+create index idx_rm_book_lb on o_rm_room_booking(fk_lecture_block);
+
+create table o_rm_module_log (
+    id bigserial,
+    creationdate timestamp not null,
+    r_action varchar(64) not null,
+    r_before text,
+    r_before_status varchar(64),
+    r_after text,
+    r_after_status varchar(64),
+    fk_doer int8,
+    fk_location int8,
+    fk_room int8,
+    fk_booking int8,
+    fk_lecture_block int8,
+    primary key (id)
+);
+
+alter table o_rm_module_log add constraint rm_log_to_doer_idx foreign key (fk_doer) references o_bs_identity(id);
+alter table o_rm_module_log add constraint rm_log_to_loc_idx foreign key (fk_location) references o_rm_location(id);
+alter table o_rm_module_log add constraint rm_log_to_room_idx foreign key (fk_room) references o_rm_room(id);
+alter table o_rm_module_log add constraint rm_log_to_book_idx foreign key (fk_booking) references o_rm_room_booking(id);
+alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lecture_block) references o_lecture_block(id);
+create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);

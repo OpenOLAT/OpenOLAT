@@ -161,28 +161,34 @@ public class RepositoryAccessPage {
 		return this;
 	}
 	
-	public RepositoryAccessPage selectModalOpenBooking(String description) {
+	private RepositoryAccessPage selectModalOpenBooking(String description) {
 		OOGraphene.waitModalDialog(browser);
 		
-		// select open
+		// Select open booking
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='open.access']");
 		OOGraphene.waitElement(openBy, browser).click();
 		
-		// save
-		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
+		// Create booking
+		By createBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElementRefreshed(createBy, browser);
+		OOGraphene.click(createBy, browser);
+				
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_open_form .o_sel_accesscontrol_description textarea");
+		OOGraphene.waitElement(descriptionBy, browser).sendKeys(description);	
+		
+		// Save booking
+		By saveBy = By.cssSelector(".modal-content fieldset.o_sel_accesscontrol_buttons div.buttons button.btn.btn-primary.o_button_dirty");
 		OOGraphene.waitElementRefreshed(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
-		
-		// wait second popup
-		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_open_form");
-		// configure method
-		new BookingPage(browser)
-			.configureOpenMethod(description);
 
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_sel_ac_offer>div.o_icon_panel_content_col>div.o_icon_panel_header>h4");
+		OOGraphene.waitElement(publicRowBy, browser);
 		return this;
 	}
 	
-	public RepositoryAccessPage selectModalFreeBooking(String message) {
+	private RepositoryAccessPage selectModalFreeBooking(String message) {
 		OOGraphene.waitModalDialog(browser);
 		
 		// Select free booking

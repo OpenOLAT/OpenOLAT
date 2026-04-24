@@ -37,8 +37,9 @@
 	<import resource="classpath:/org/olat/modules/oaipmh/_spring/oaipmhContext.xml"/>
 	<import resource="classpath:/org/olat/modules/jupyterhub/_spring/jupyterHubContext.xml"/>
 	<import resource="classpath:/org/olat/modules/openbadges/_spring/openBadgesContext.xml"/>
+	<import resource="classpath:/org/olat/modules/roommanagement/_spring/roomManagementContext.xml"/>
 	<import resource="classpath:/org/olat/modules/selectus/_spring/selectusContext.xml"/>
-
+	
 	<!-- Forum admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8208" />

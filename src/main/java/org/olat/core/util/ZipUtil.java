@@ -422,7 +422,13 @@ public class ZipUtil {
 		return true;
 	} // unzip
 	
-	private static final String cleanFilename(String name) {
+	/**
+	 * Remove / before filename if any.
+	 * 
+	 * @param name The filename
+	 * @return Filename without starting /
+	 */
+	public static final String cleanFilename(String name) {
 		if(name != null && name.startsWith("/")) {
 			name = name.substring(1, name.length());
 		}

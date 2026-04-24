@@ -236,6 +236,9 @@ public class FileSystemExport implements MediaResource {
 
 				@Override
 				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					if (dir.toFile().isHidden()) {
+						return FileVisitResult.SKIP_SUBTREE;
+					}
 					String relPath = sourceFolder.relativize(dir).toString() + "/";
 					if ((relPath = containsID(relPath)) != null && (relPath = boxesEnabled(relPath)) != null) {
 						zout.putNextEntry(new ZipEntry(ZipUtil.escapeZIPPath(targetPath + relPath)));

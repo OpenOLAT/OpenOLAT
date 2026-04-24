@@ -346,8 +346,9 @@ public class RepositoryEntryImportExport {
 		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
 		
 		if (StringHelper.containsNonWhitespace(repositoryProperties.getRuntimeType())) {
-			repositoryManager.setRuntimeType(newEntry, RepositoryEntryRuntimeType.secureValueOf(repositoryProperties.getRuntimeType(), RepositoryEntryRuntimeType.standalone));
+			newEntry = repositoryManager.setRuntimeType(newEntry, RepositoryEntryRuntimeType.secureValueOf(repositoryProperties.getRuntimeType(), RepositoryEntryRuntimeType.standalone));
 		}
+		
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(), repositoryProperties.getTeaser(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),

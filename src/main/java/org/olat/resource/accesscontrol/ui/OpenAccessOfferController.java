@@ -87,9 +87,9 @@ public class OpenAccessOfferController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_accesscontrol_open_form");
-
+		
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("generalCont", getTranslator());
+		generalCont.setElementCssClass("o_sel_accesscontrol_open_form");
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 
@@ -124,6 +124,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), catalogCont);
 
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
+		buttonsWrapperCont.setElementCssClass("o_sel_accesscontrol_buttons");
 		buttonsWrapperCont.setRootForm(mainForm);
 		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

@@ -63,6 +63,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.PublisherSubscriber;
+import org.olat.modules.webFeed.ui.FeedHelper;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -302,7 +303,7 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 	
 	private String buildBody(Item item, UserComment comment, String urlToSend, Translator translator) {
 		String[] args = new String[] {
-			item.getTitle(),
+			FeedHelper.getTitle(item.getTitle(), item),
 			userManager.getUserDisplayName(comment.getCreator()),
 			Formatter.getInstance(translator.getLocale()).formatDateAndTime(comment.getCreationDate())
 		};

@@ -207,6 +207,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		initCustomMembershipElements(membershipCont);
 
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
+		buttonsWrapperCont.setElementCssClass("o_sel_accesscontrol_buttons");
 		buttonsWrapperCont.setRootForm(mainForm);
 		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

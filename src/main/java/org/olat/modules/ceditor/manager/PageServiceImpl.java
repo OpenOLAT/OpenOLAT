@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -451,8 +453,10 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	private File unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {
 		try(InputStream in=storage.getInputStream(entry)) {
 			String entryPath = entry.getName();
-			String fileName = entryPath.replace(mediaZipPath, "");
-			File mediaFile = new File(mediaDir, fileName);
+			String fileName = ZipUtil.cleanFilename(entryPath.replace(mediaZipPath, ""));
+			Path filePath = mediaDir.toPath().resolve(fileName);
+			Path normalizedPath = filePath.normalize();
+			File mediaFile = normalizedPath.toFile();
 			if(mediaFile.isHidden() || mediaFile.getName().startsWith(".")) {
 				return null;
 			} else {
