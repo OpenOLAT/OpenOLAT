@@ -527,7 +527,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					      .append(dispatchId).append("_csa' href=\"javascript:;\" onclick=\"")
 					      .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, false,
 							  new NameValuePair("cc-selectall", fcm.getColumnIndex())))
-					      .append("\" draggable=\"false\"><i class='o_icon o_icon_check_on'> </i> <span>").append(translator.translate("form.select.all"))
+					      .append("\" draggable=\"false\"><i class='o_icon o_icon_check_on'> </i> <span>").append(translator.translate("form.checkall"))
 					      .append("</span></a><br><a id='")
 					      .append(dispatchId).append("_cdsa' href=\"javascript:;\" onclick=\"")
 					      .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, false,

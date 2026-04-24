@@ -152,7 +152,7 @@ implements PositionEditableController, FlexiTableCssDelegate {
 			deleteRenderer.setIconLeftCSS("o_icon o_icon_delete_item");
 			DefaultFlexiColumnModel deleteCol = new DefaultFlexiColumnModel(TemplateCols.reset.i18nHeaderKey(), TemplateCols.reset.ordinal(), "reset",
 					new ResetCellRenderer(resetRenderer, deleteRenderer));
-			deleteCol.setHeaderLabel("&nbsp;");
+			deleteCol.setHeaderLabel(translate("table.action"));
 			columnsModel.addFlexiColumnModel(deleteCol);
 		}
 		

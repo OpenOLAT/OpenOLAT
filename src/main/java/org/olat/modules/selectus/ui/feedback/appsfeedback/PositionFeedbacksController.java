@@ -174,17 +174,8 @@ public class PositionFeedbacksController extends FormBasicController {
 				new BooleanCellRenderer(viewCol, null)));
 		
 		if(canEditFeedbacks) {
-			StaticFlexiCellRenderer editCol = new StaticFlexiCellRenderer(translate("edit"), "edit-feed");
-			editCol.setDirtyCheck(false);
-			editCol.setIconLeftCSS("o_icon o_icon_edit");
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "edit", null, -1, "edit-feed", false, null,
-					FlexiColumnModel.ALIGNMENT_LEFT, editCol));
-			
-			StaticFlexiCellRenderer deleteCol = new StaticFlexiCellRenderer(translate("delete"), "delete-feed");
-			deleteCol.setDirtyCheck(false);
-			deleteCol.setIconLeftCSS("o_icon o_icon_delete_item");
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "delete", null, -1, "delete-feed", false, null,
-					FlexiColumnModel.ALIGNMENT_LEFT, deleteCol));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit-feed", "o_icon_edit"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete-feed", "o_icon_delete_item"));
 		}
 
 		tableModel = new PositionFeedbacksTableModel(columnsModel, salutationGenerator, userPropertyHandlers, getTranslator(), getLocale());

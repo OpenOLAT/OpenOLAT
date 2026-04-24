@@ -15,7 +15,7 @@ import org.olat.core.gui.translator.Translator;
 /**
  * 
  * Initial date: 23 mars 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class YesNoCellRenderer implements FlexiCellRenderer {
@@ -32,13 +32,10 @@ public class YesNoCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof Boolean) {
 			Boolean b = (Boolean)cellValue;
 			if(b.booleanValue()) {
-				target.append(translator.translate("flexi.ql.true"));
+				target.append(translator.translate("yes"));
 			} else {
-				target.append(translator.translate("flexi.ql.false"));
+				target.append(translator.translate("no"));
 			}
 		}
 	}
-	
-	
-
 }

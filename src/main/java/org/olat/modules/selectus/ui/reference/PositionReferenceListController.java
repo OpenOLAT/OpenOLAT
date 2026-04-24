@@ -192,6 +192,7 @@ public class PositionReferenceListController extends FormBasicController {
 		// actions
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReferenceCols.sendMail));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReferenceCols.viewLetter));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit", "o_icon_edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete", "o_icon_delete_item"));
 		
