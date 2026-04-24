@@ -153,7 +153,7 @@ public class PositionListOverviewController extends BasicController implements T
 		}
 		
 		if(unloadModel) {
-			notificationListCtrl.unloadModel();
+			loadModel();
 		}
 	}
 	

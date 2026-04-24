@@ -1,14 +1,4 @@
 <fieldset>
 	<legend>$r.translate("notification.table.title")</legend>
-	$r.render("mark.all.read")
-	<div class="o_form o_form_search_inline form-inline">
-		<div class="inline">$r.render("search.type")</div>
-		<div class="inline">$r.translate("filter.begin.date") $r.render("filter.begin.date")</div>
-		<div class="inline">$r.translate("filter.end.date") $r.render("filter.end.date")</div>
-	</div>
 	$r.render("table")
-	<div class="o_button_group">
-		$r.render("mark.read")
-		$r.render("mark.unread")
-	</div>
 </fieldset>

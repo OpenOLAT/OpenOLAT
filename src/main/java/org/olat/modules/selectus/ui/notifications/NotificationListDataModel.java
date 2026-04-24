@@ -7,21 +7,17 @@ package org.olat.modules.selectus.ui.notifications;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -37,7 +33,6 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.model.PositionRef;
 import org.olat.modules.selectus.model.RecruitingAuditLog;
@@ -53,51 +48,25 @@ import org.olat.modules.selectus.ui.RecruitingHelper;
  *
  */
 public class NotificationListDataModel extends DefaultFlexiTableDataModel<AuditLogRow>
-implements SortableFlexiTableDataModel<AuditLogRow>, FilterableFlexiTableModel, ExportableFlexiTableDataModel {
+implements SortableFlexiTableDataModel<AuditLogRow>, ExportableFlexiTableDataModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(NotificationListDataModel.class);
 	
-	private Roles roles;
-	private Set<Long> read;
-	private Identity identity;
-	private PositionRef position;
-	private List<AuditLogRow> backupRows;
-	private RecruitingAuditLogSearchParameters params;
+	private static final AuditCols[] COLS = AuditCols.values();
+	
+	private final Roles roles;
+	private final Identity identity;
+	private final PositionRef position;
 	private final Translator translator;
 	
-	public NotificationListDataModel(FlexiTableColumnModel columnsModel, Translator translator) {
+	private RecruitingAuditLogSearchParameters params;
+	
+	public NotificationListDataModel(FlexiTableColumnModel columnsModel, Identity identity, Roles roles, PositionRef position, Translator translator) {
 		super(columnsModel);
+		this.roles = roles;
+		this.identity = identity;
+		this.position = position;
 		this.translator = translator;
-	}
-
-	@Override
-	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(filters == null || filters.isEmpty()) {
-			super.setObjects(backupRows);
-		} else {
-			FlexiTableFilter filter = filters.get(0);
-			if(filter.isShowAll()) {
-				super.setObjects(backupRows);
-			} else {
-				List<AuditLogRow> filtered = new ArrayList<>(backupRows.size());
-				
-				if("read".equals(filter.getFilter())) {
-					for(AuditLogRow row:backupRows) {
-						if(read.contains(row.getKey())) {
-							filtered.add(row);
-						}
-					}
-				} else if("unread".equals(filter.getFilter())) {
-					for(AuditLogRow row:backupRows) {
-						if(!read.contains(row.getKey())) {
-							filtered.add(row);
-						}
-					}
-				}
-
-				super.setObjects(filtered);
-			}
-		}
 	}
 
 	@Override
@@ -115,7 +84,9 @@ implements SortableFlexiTableDataModel<AuditLogRow>, FilterableFlexiTableModel, 
 				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
 		
-		return new OpenXMLWorkbookResource(label){
+		ftC.getFormItem().getFilters();
+		
+		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
 				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
@@ -189,16 +160,16 @@ implements SortableFlexiTableDataModel<AuditLogRow>, FilterableFlexiTableModel, 
 
 	@Override
 	public Object getValueAt(AuditLogRow row, int col) {
-		switch(AuditCols.values()[col]) {
-			case read: return read.contains(row.getKey());
-			case time: return row.getTime();
-			case identity: return row.getIdentityFullName();
-			case target: return row.getTarget();
-			case action: return row.getAction();
-			case message: return getTranslatedMessage(row);
-			case gotoItem: return gotoItem(row);
-			default: return "ERROR";
-		}
+		return switch(COLS[col]) {
+			case read -> row.isRead();
+			case time -> row.getTime();
+			case identity -> row.getIdentityFullName();
+			case target -> row.getTarget();
+			case action -> row.getAction();
+			case message -> getTranslatedMessage(row);
+			case gotoItem -> gotoItem(row);
+			default -> "ERROR";
+		};
 	}
 	
 	private boolean gotoItem(AuditLogRow row) {
@@ -215,20 +186,9 @@ implements SortableFlexiTableDataModel<AuditLogRow>, FilterableFlexiTableModel, 
 		}
 		return translator.translate(row.getMessageI18n(), row.getMessageValues());
 	}
-
-	public void setRead(Set<Long> read) {
-		this.read = read;
-	}
 	
-	public void setPosition(PositionRef position) {
-		this.position = position;
-	}
-	
-	public void setObjects(List<AuditLogRow> objects, Identity identity, Roles roles, RecruitingAuditLogSearchParameters params) {
-		this.roles = roles;
+	public void setObjects(List<AuditLogRow> objects,  RecruitingAuditLogSearchParameters params) {
 		this.params = params;
-		this.identity = identity;
-		this.backupRows = objects;
 		super.setObjects(objects);
 	}
 	

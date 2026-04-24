@@ -46,14 +46,10 @@
 		<p>$r.translate("wizard.instructions.docs.text")</p>
 		#if($professorship == 'disabled')
 		#elseif($professorship == 'assistant')
-			#if($r.translate("policy.professorship.type.assistant").length() > 10)
-				<p><strong>Please note:</strong> $r.translate("policy.professorship.type.assistant")</p>
-			#end
+			<p><strong>Please note:</strong> $r.translate("policy.professorship.type.assistant")</p>
 		#elseif($professorship == 'full')
-			#if($r.translate("policy.professorship.type.full").length() > 10)
 			<p><strong>Please note:</strong> $r.translate("policy.professorship.type.full")</p>
-			#end
-		#elseif($r.translate("policy.professorship.type.any").length() > 10)
+		#else
 			<p><strong>Please note:</strong> $r.translate("policy.professorship.type.any")</p>
 		#end
 		<p class="o_warning o_sel_instructions_warning">$r.translate("wizard.instructions.warning", $i18nArguments)</p>

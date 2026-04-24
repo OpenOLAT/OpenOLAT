@@ -27,6 +27,8 @@ public class AuditLogRow {
 	private final String messageI18n;
 	private final String[] messageValues;
 	
+	private final boolean read;
+	
 	private final Long positionKey;
 	private final Long applicationKey;
 	private final Long commentKey;
@@ -34,8 +36,9 @@ public class AuditLogRow {
 	private final Long identityKey;
 	private final String identityFullName;
 	
-	public AuditLogRow(String identityFullName, RecruitingAuditLogLight log) {
+	public AuditLogRow(String identityFullName, RecruitingAuditLogLight log, boolean read) {
 		this.key = log.getKey();
+		this.read = read;
 		this.creationDate = log.getCreationDate();
 		this.action = log.getActionEnum();
 		this.target = log.getTargetEnum();
@@ -56,6 +59,10 @@ public class AuditLogRow {
 	
 	public Long getKey() {
 		return key;
+	}
+	
+	public boolean isRead() {
+		return read;
 	}
 	
 	public String getIdentityFullName() {
