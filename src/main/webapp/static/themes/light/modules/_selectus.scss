@@ -8,9 +8,43 @@ table.table tr.fx_r_onhold td span, table.table tr.fx_r_onhold td a, table.table
 	color: $o-selectus-onhold-color;
 }
 
-table.o_table tr.fx_r_a_decision td, table.table tr.fx_r_a_decision td { background-color: #c7f1c7; }
-table.o_table tr.fx_r_b_decision td, table.table tr.fx_r_b_decision td { background-color: #fcfed7; }
-table.o_table tr.fx_r_c_decision td, table.table tr.fx_r_c_decision td { background-color: #f7e5d7; }
+.o_table_wrapper table.o_table,
+.o_table_wrapper table.table {
+	tbody tr {
+		&.fx_r_a_decision,
+		&.fx_r_a_decision.o_col_sticky_left,
+		&.fx_r_a_decision.o_col_sticky_right {
+			> td {
+				background-color: $o-selectus-table-a-decision-bg !important;	
+			}
+			&:hover > td {
+				background-color: $o-selectus-table-a-decision-bg-hover !important;	
+			}	
+		}
+		
+		&.fx_r_b_decision,
+		&.fx_r_b_decision.o_col_sticky_left,
+		&.fx_r_b_decision.o_col_sticky_right  {
+			> td {
+				background-color: $o-selectus-table-b-decision-bg !important;
+			}
+			&:hover > td {
+				background-color: $o-selectus-table-b-decision-bg-hover !important;	
+			}
+		}
+		
+		&.fx_r_c_decision,
+		&.fx_r_c_decision.o_col_sticky_left,
+		&.fx_r_c_decision.o_col_sticky_right {
+			> td {
+				background-color: $o-selectus-table-c-decision-bg !important;
+			}
+			&:hover > td {
+				background-color: $o-selectus-table-c-decision-bg-hover !important;	
+			}	
+		}
+	}
+}
 
 span.o_icon-stack.o_position_status {
 	width: 1em;
