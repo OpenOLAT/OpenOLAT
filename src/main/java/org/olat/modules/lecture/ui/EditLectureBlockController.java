@@ -679,7 +679,8 @@ public class EditLectureBlockController extends FormBasicController {
 					if(bigBlueButtonMeeting == null || bigBlueButtonMeeting.getTemplate() == null) {
 						onlineMeetingEl.setErrorKey("error.configure.online.meeting");
 						allOk &= false;
-					} else {
+					} else if(dateEl.getDate() != null && dateEl.getSecondDate() != null) {
+						// Only makes these validation if the dates are set, they are mandatory for a reason
 						long leadTime = bigBlueButtonMeeting.getLeadTime();
 						long followUpTime = bigBlueButtonMeeting.getFollowupTime();
 						BigBlueButtonMeetingTemplate template = bigBlueButtonMeeting.getTemplate();
