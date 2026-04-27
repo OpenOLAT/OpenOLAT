@@ -37,8 +37,6 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -56,6 +54,9 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -109,6 +110,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection educationalTypeEl;
 	private ObjectSelectionElement organisationEl;
+	private FormLink createWizardButton;
 	
 	protected RepositoryEntry repositoryEntry;
 	private final RepositoryHandler handler;
@@ -116,6 +118,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private final List<Organisation> organisations;
 	private final List<Organisation> defaultOrganisations;
 	private RepositoryWizardProvider wizardProvider;
+	
+	private WizardProviderController wizardProviderCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private Object createObject;
 	private LicenseType licenseType;
@@ -280,21 +285,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		if (wizardsEnabled) {
 			List<RepositoryWizardProvider> wizardProviders = wizardService.getProviders(handler.getSupportedType());
 			if (!wizardProviders.isEmpty()) {
-				FormLayoutContainer dummyCont = FormLayoutContainer.createBareBoneFormLayout("dummy", getTranslator());
-				dummyCont.setRootForm(mainForm);
-				
-				DropdownItem wizardDropdown = uifactory.addDropdownMenu("cmd.create.wizard", null,
-						buttonContainer, getTranslator());
-				wizardDropdown.setOrientation(DropdownOrientation.right);
-				wizardDropdown.setExpandContentHeight(true);
-				
-				for (RepositoryWizardProvider wizardProvider : wizardProviders) {
-					FormLink link = uifactory.addFormLink(wizardProvider.getType(), CMD_WIZARD, null, null, dummyCont, Link.LINK + Link.NONTRANSLATED);
-					link.setI18nKey(wizardProvider.getDisplayName(getLocale()));
-					link.setUserObject(wizardProvider);
-					link.setElementCssClass("o_sel_wizard_" + wizardProvider.getType());
-					wizardDropdown.addElement(link);
-				}
+				createWizardButton = uifactory.addFormLink("cmd.create.wizard", buttonContainer, Link.BUTTON);
+				createWizardButton.setElementCssClass("o_sel_repo_create_wizards");
+				createWizardButton.setIconRightCSS("o_icon o_icon_caret");
 			}
 		}
 		
@@ -396,11 +389,30 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == wizardProviderCtrl) {
+			calloutCtrl.deactivate();
+			cleanUp();
+		} else if(calloutCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeControllerListener(wizardProviderCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		wizardProviderCtrl = null;
+		calloutCtrl = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(createWizardButton == source) {
+			doOpenWizardCallout(ureq, createWizardButton);
+		} else if (source instanceof FormLink link) {
 			if (CMD_WIZARD.equals(link.getCmd())) {
 				wizardProvider = (RepositoryWizardProvider)link.getUserObject();
 				mainForm.submit(ureq);
@@ -505,6 +517,25 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	private void doOpenWizardCallout(UserRequest ureq, FormLink button) {
+		removeAsListenerAndDispose(wizardProviderCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+
+		wizardProviderCtrl = new WizardProviderController(ureq, getWindowControl());
+		listenTo(wizardProviderCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				wizardProviderCtrl.getInitialComponent(), button.getFormDispatchId(), "", true, "",
+				new CalloutSettings(false, CalloutOrientation.bottom, false, null, true));
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
+	private void doSelectWizard(UserRequest ureq, RepositoryWizardProvider wizardProvider) {
+		this.wizardProvider = wizardProvider;
+		mainForm.submit(ureq);
+	}
 
 	private void doCreate(UserRequest ureq) {
 		String displayname = displaynameEl.getValue();
@@ -588,5 +619,46 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 
 	protected void afterEntryCreated() {
 		// May be overridden.
+	}
+	
+	public class WizardProviderController extends FormBasicController {
+
+		public WizardProviderController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl, "wizard_providers");
+			
+			initForm(ureq);
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			List<FormLink> links = new ArrayList<>();
+			List<RepositoryWizardProvider> wizardProviders = wizardService.getProviders(handler.getSupportedType());
+			for (RepositoryWizardProvider wizardProvider : wizardProviders) {
+				FormLink link = uifactory.addFormLink(wizardProvider.getType(), CMD_WIZARD, null, null, formLayout, Link.LINK + Link.NONTRANSLATED);
+				link.setI18nKey(wizardProvider.getDisplayName(getLocale()));
+				link.setUserObject(wizardProvider);
+				link.setElementCssClass("o_sel_wizard_" + wizardProvider.getType());
+				links.add(link);
+			}
+			
+			if(formLayout instanceof FormLayoutContainer layoutCont) {
+				layoutCont.contextPut("links", links);
+			}
+		}
+		
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(source instanceof FormLink link
+					&& link.getUserObject() instanceof RepositoryWizardProvider wizardProvider) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doSelectWizard(ureq, wizardProvider);
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
+		}
 	}
 }

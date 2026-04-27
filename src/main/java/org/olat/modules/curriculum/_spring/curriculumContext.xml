@@ -78,6 +78,61 @@
 		<property name="excludeDeletedCurriculumElements" value="true" />
 	</bean>
 	
+	<!--  Invoices only -->
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="200" />
+		<property name="i18nNameKey" value="report.booking.all.invoices.unfiltered" />
+		<property name="i18nDescriptionKey" value="report.booking.all.invoices.unfiltered.desc" />
+		<property name="accessMethod" value="invoice.method" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="210" />
+		<property name="i18nNameKey" value="report.booking.all.invoices.current.fiscal.year" />
+		<property name="i18nDescriptionKey" value="report.booking.all.invoices.current.fiscal.year.desc" />
+		<property name="durationUnit" value="currentFiscalYear" />
+		<property name="accessMethod" value="invoice.method" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="220" />
+		<property name="i18nNameKey" value="report.booking.all.invoices.last.fiscal.year" />
+		<property name="i18nDescriptionKey" value="report.booking.all.invoices.last.fiscal.year.desc" />
+		<property name="durationUnit" value="lastFiscalYear" />
+		<property name="accessMethod" value="invoice.method" />
+	</bean>
+	
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="230" />
+		<property name="i18nNameKey" value="report.booking.invoices.new.last.seven.days" />
+		<property name="i18nDescriptionKey" value="report.booking.invoices.new.last.seven.days.desc" />
+		<property name="durationUnit" value="day" />
+		<property name="duration" value="7" />
+		<property name="excludeDeletedCurriculumElements" value="true" />
+		<property name="accessMethod" value="invoice.method" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="240" />
+		<property name="i18nNameKey" value="report.booking.invoices.new.last.four.weeks" />
+		<property name="i18nDescriptionKey" value="report.booking.invoices.new.last.four.weeks.desc" />
+		<property name="durationUnit" value="week" />
+		<property name="duration" value="4" />
+		<property name="excludeDeletedCurriculumElements" value="true" />
+		<property name="accessMethod" value="invoice.method" />
+	</bean>
+	
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="250" />
+		<property name="i18nNameKey" value="report.booking.invoices.new.last.twelve.months" />
+		<property name="i18nDescriptionKey" value="report.booking.invoices.new.last.twelve.months.desc" />
+		<property name="durationUnit" value="month" />
+		<property name="duration" value="12" />
+		<property name="excludeDeletedCurriculumElements" value="true" />
+		<property name="accessMethod" value="invoice.method" />
+	</bean>
+
+	<!-- Jobs -->
 	<bean id="curriculumAutomationTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     	<property name="jobDetail" ref="curriculumAutomationJob.${cluster.singleton.services}" />
     	<property name="cronExpression" value="0 45 2 * * ?"/>

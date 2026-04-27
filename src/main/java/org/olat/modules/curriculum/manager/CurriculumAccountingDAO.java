@@ -156,7 +156,7 @@ public class CurriculumAccountingDAO {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
 		}
 		sb.append(" from acorder o");
-		sb.append(" inner join fetch o.billingAddress billingAddress");
+		sb.append(" left join fetch o.billingAddress billingAddress");
 		sb.append(" inner join o.parts orderPart");
 		sb.append(" inner join orderPart.lines orderLine");
 		sb.append(" inner join orderLine.offer offer");
@@ -197,6 +197,9 @@ public class CurriculumAccountingDAO {
 		if(searchParams.isExcludeDeletedCurriculumElements()) {
 			sb.and().append("ce.status <> 'deleted'");
 		}
+		if(searchParams.getAccessMethodType() != null) {
+			sb.and().append("type(m) = :methodType");
+		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
@@ -219,6 +222,10 @@ public class CurriculumAccountingDAO {
 		if(searchParams.getToDate() != null) {
 			query.setParameter("toDate", searchParams.getToDate());
 		}
+		if(searchParams.getAccessMethodType() != null) {
+			query.setParameter("methodType", searchParams.getAccessMethodType());
+		}
+		
 		return query.getResultList().stream()
 				.map(objects -> mapToBookingOrder(objects, userPropertyHandlers, implementationAndIdentityToMembership))
 				.toList();

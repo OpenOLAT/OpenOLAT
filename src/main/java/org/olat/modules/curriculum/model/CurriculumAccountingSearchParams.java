@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 
 /**
  * 
@@ -36,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 public class CurriculumAccountingSearchParams {
 	
 	private Identity identity;
+	private Class<? extends AccessMethod> accessMethodType;
 	private Curriculum curriculum;
 	private CurriculumElement curriculumElement;
 	private Date fromDate;
@@ -97,5 +99,13 @@ public class CurriculumAccountingSearchParams {
 
 	public void setExcludeDeletedCurriculumElements(boolean excludeDeletedCurriculumElements) {
 		this.excludeDeletedCurriculumElements = excludeDeletedCurriculumElements;
+	}
+
+	public Class<?> getAccessMethodType() {
+		return accessMethodType;
+	}
+
+	public void setAccessMethodType(Class<? extends AccessMethod> type) {
+		this.accessMethodType = type;
 	}
 }

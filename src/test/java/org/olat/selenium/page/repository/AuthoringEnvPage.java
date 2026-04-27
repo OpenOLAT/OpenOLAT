@@ -203,13 +203,15 @@ public class AuthoringEnvPage {
 		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='" + courseType + "']");
 		browser.findElement(typeBy).click();
 		// open the assistant list
-		By assistantListBy = By.cssSelector("div.modal-dialog div.o_sel_repo_save_details button.dropdown-toggle");
-		browser.findElement(assistantListBy).click();
-		By assistantDropdownBy = By.cssSelector("div.modal-dialog ul.dropdown-menu");
-		OOGraphene.waitElement(assistantDropdownBy, browser);
-		// create the course
-		By simpleCourseWizardBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@class,'" + wizard.linkCssClass() + "')]");
+		By assistantListBy = By.cssSelector("div.modal-dialog div.o_sel_repo_save_details a.o_sel_repo_create_wizards");
+		OOGraphene.click(assistantListBy, browser);
+		OOGraphene.waitTopCallout(browser);
+		
+		// Start the wizard
+		By simpleCourseWizardBy = By.xpath("//div[contains(@class,'popover-content')]//ul[contains(@class,'o_sel_wizard_providers')]//a[contains(@class,'" + wizard.linkCssClass() + "')]");
 		browser.findElement(simpleCourseWizardBy).click();
+		OOGraphene.waitTopCalloutDisappears(browser, "ul.o_sel_wizard_providers");
+		
 		// wait the wizard
 		OOGraphene.waitModalDialog(browser, wizard.modalCssClass());
 	}

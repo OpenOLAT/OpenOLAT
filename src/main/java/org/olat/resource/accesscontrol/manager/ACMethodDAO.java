@@ -157,6 +157,22 @@ public class ACMethodDAO {
 				.createQuery(sb.toString(), AccessMethod.class)
 				.getResultList();
 	}
+	
+	public Class<? extends AccessMethod> getAvailableMethodClass(String handlerType) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
+			.append(" where method.valid=true and method.enabled=true");
+
+		List<AccessMethod> methods = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessMethod.class)
+				.getResultList();
+		for(AccessMethod method:methods) {
+			if(handlerType.equals(method.getType())) {
+				return method.getClass();
+			}
+		}
+		return null;
+	}
 
 	public List<AccessMethod> getAvailableMethodsByType(Class<? extends AccessMethod> type) {
 		StringBuilder sb = new StringBuilder();

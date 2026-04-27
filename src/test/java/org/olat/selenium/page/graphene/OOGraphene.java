@@ -190,6 +190,19 @@ public class OOGraphene {
 		waitModalDialogDisappears(browser, Duration.ofSeconds(5), calloutBy);
 	}
 	
+	public static void waitTopCallout(WebDriver browser) {
+		waitBusyAndScrollTop(browser);
+		By modalBy = By.cssSelector("div.o_ltop_modal_panel div.popover-content div.o_callout_content");
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlower)
+			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
+	}
+	
+	public static void waitTopCalloutDisappears(WebDriver browser, String cssSelector) {
+		By calloutBy = By.cssSelector("div.o_ltop_modal_panel div.popover-content div.o_callout_content " + cssSelector);
+		waitModalDialogDisappears(browser, Duration.ofSeconds(5), calloutBy);
+	}
+	
 	public static void waitBusy(WebDriver browser) {
 		waitBusy(browser, timeout);
 	}

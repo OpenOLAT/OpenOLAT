@@ -49,6 +49,7 @@ import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
+import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -87,7 +88,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource(), "offer-1");
+		AccessResult accessResult = createOrder(id, element.getResource(), "offer-1", true);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -119,7 +120,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource(), null);
+		AccessResult accessResult = createOrder(id, element.getResource(), null, true);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		// Buyer has not access to the report.
@@ -146,7 +147,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource(), null);
+		AccessResult accessResult = createOrder(id, element.getResource(), null, true);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -173,7 +174,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource(), null);
+		AccessResult accessResult = createOrder(id, element.getResource(), null, true);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -203,7 +204,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource(), null);
+		AccessResult accessResult = createOrder(id, element.getResource(), null, true);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -214,7 +215,44 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 		curriculumAccountingDao.loadAssessmentsInfos(bookingOrders, searchParams);
 	}
 	
-	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel) {
+	@Test
+	public void bookingOrdersByType() {
+		// Create a curriculum with an element and an invoice offer
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("account-7");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("account-8");
+		
+		// Make curriculum
+		Organisation organisation = JunitTestHelper.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-ACCOUNTING-5", "Curriculum accounting 5", "Curriculum", false, organisation);
+		curriculumService.addMember(curriculum, owner, CurriculumRoles.curriculumowner);
+		
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for reservation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		AccessResult accessResult = createOrder(id, element.getResource(), "offer-1", false);
+		Assert.assertTrue(accessResult.isAccessible());
+		
+		// An order with free access
+		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+		searchParams.setAccessMethodType(FreeAccessMethod.class);
+		searchParams.setCurriculum(curriculum);
+		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, new ArrayList<>());
+		Assertions.assertThat(bookingOrders)
+			.hasSize(1)
+			.map(BookingOrder::getOrder)
+			.containsExactly(accessResult.getOrder());
+		
+		// No order with invoice
+		CurriculumAccountingSearchParams negativeSearchParams = new CurriculumAccountingSearchParams();
+		negativeSearchParams.setAccessMethodType(InvoiceAccessMethod.class);
+		negativeSearchParams.setCurriculum(curriculum);
+		List<BookingOrder> noBookingOrders = curriculumAccountingDao.bookingOrders(negativeSearchParams, new ArrayList<>());
+		Assertions.assertThat(noBookingOrders)
+			.hasSize(0);
+	}
+	
+	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel, boolean withBillingAddress) {
 		// Make an offer
 		Offer offer = acService.createOffer(resource, "Access curriculum element");
 		offer.setLabel(offerLabel);
@@ -222,7 +260,9 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 		List<AccessMethod> methods = acService.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		offerAccess = acService.saveOfferAccess(offerAccess);
-		BillingAddress billingAddress = acService.createBillingAddress(null, delivery);
+		BillingAddress billingAddress = withBillingAddress
+				? acService.createBillingAddress(null, delivery)
+				: null;
 		dbInstance.commitAndCloseSession();
 		
 		// Book the curriculum
