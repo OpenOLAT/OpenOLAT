@@ -12,11 +12,13 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -27,15 +29,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-
+import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.RecruitingModule;
-import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.Project;
+import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.comparator.LastnameComparator;
+import org.olat.modules.selectus.ui.model.AppToCategory;
 
 /**
  * 
@@ -49,20 +52,16 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	private static final ReferenceCols[] COLS = ReferenceCols.values();
 
 	private Position position;
-	private final Locale locale;
 	private final Translator translator;
-	private final SalutationGenerator salutationGenerator;
 	private final RecruitingModule recruitingModule;
 	
 	private List<PositionReferenceRow> backups;
 	
-	public PositionReferenceDataModel(FlexiTableColumnModel columnsModel, Position position, SalutationGenerator salutationGenerator, Translator translator, Locale locale) {
+	public PositionReferenceDataModel(FlexiTableColumnModel columnsModel, Position position, Translator translator) {
 		super(columnsModel);
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
-		this.locale = locale;
 		this.position = position;
 		this.translator = translator;
-		this.salutationGenerator = salutationGenerator;
 	}
 	
 	public void setPosition(Position position) {
@@ -70,39 +69,111 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	}
 
 	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<PositionReferenceRow> views = new PositionReferenceSortDelegate(orderBy, this, translator.getLocale()).sort();
+			super.setObjects(views);
+		}
+	}
+	
+	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
-		if(StringHelper.containsNonWhitespace(key) && !"showall".equals(key)) {
-			List<PositionReferenceRow> filteredRows = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
+			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
+					? null : searchString.toLowerCase();
+			final Set<String> decisions = getFilteredList(filters, PositionReferenceListController.FILTER_DECISION);
+			final Set<String> referenceType = getFilteredList(filters, PositionReferenceListController.FILTER_REFERENCE_TYPE);
+			final Set<String> referenceStatus = getFilteredList(filters, PositionReferenceListController.FILTER_REFERENCE_STATUS);
+			final Set<String> applicationStatus = getFilteredList(filters, PositionReferenceListController.FILTER_APPLICATION_STATUS);
+			final Set<String> categories = getFilteredList(filters, PositionReferenceListController.FILTER_CATEGORIES);
+
+			List<PositionReferenceRow> filteredRows = new ArrayList<>(backups.size());
 			for(PositionReferenceRow row:backups) {
-				ReferenceType type = row.getReference().getReferenceType();
-				if(type != null && key != null && key.equals(type.name())) {
+				boolean accept = accept(loweredSearchString, row)
+						&& acceptDecision(decisions, row)
+						&& acceptReferenceType(referenceType, row)
+						&& acceptReferenceStatus(referenceStatus, row)
+						&& acceptApplicationStatus(applicationStatus, row)
+						&& acceptCategories(categories, row);
+				if(accept) {
 					filteredRows.add(row);
 				}
 			}
+		
 			super.setObjects(filteredRows);
 		} else {
 			super.setObjects(backups);
 		}
 	}
 
-	@Override
-	public void sort(SortKey orderBy) {
-		if(orderBy != null) {
-			List<PositionReferenceRow> views = new PositionReferenceSortDelegate(orderBy, this, null).sort();
-			super.setObjects(views);
+	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			return filterValues != null && !filterValues.isEmpty() ? Set.copyOf(filterValues) : Set.of();
 		}
+		return Set.of();
 	}
 	
-	public boolean flexiSearch(String searchString, String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(searchString) || StringHelper.containsNonWhitespace(query)) {
-			//TODO flexi ql
-			super.setObjects(backups);
-		} else {
-			super.setObjects(backups);
+	private boolean acceptDecision(Set<String> status, PositionReferenceRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		Integer decision = row.getApplication().getDecision();
+		if((decision == null || decision.intValue() <= 0) && status.contains(PositionReferenceListController.FILTER_NULL_KEY)
+				|| (decision != null && status.contains(decision.toString()))) {
+			return true;
 		}
-		return allErrors;
+		return false;
+	}
+	
+	private boolean acceptReferenceType(Set<String> status, PositionReferenceRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		ReferenceType referenceType = row.getReference().getReferenceType();
+		return status.contains(referenceType.name());
+	}
+	
+	private boolean acceptReferenceStatus(Set<String> status, PositionReferenceRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		ReferenceStatus referenceStatus = row.getReference().getReferenceStatus();
+		return status.contains(referenceStatus.name());
+	}
+	
+	private boolean acceptApplicationStatus(Set<String> status, PositionReferenceRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		ApplicationStatus applicationStatus = row.getApplication().getApplicationStatus();
+		return status.contains(applicationStatus.name());
+	}
+	
+	private boolean acceptCategories(Set<String> categories, PositionReferenceRow row) {
+		if(categories == null || categories.isEmpty()) return true;
+		
+		if(row.getCategories() != null && !row.getCategories().isEmpty()) {
+			for(AppToCategory cat:row.getCategories()) {
+				String name = cat.getCategoryName();
+				if(cat.isAdministrative()) {
+					name = "a:" + name;
+				}
+				if(categories.contains(name)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean accept(String searchValue, PositionReferenceRow row) {
+		if(searchValue == null) return true;
+		
+		return accept(searchValue, row.getApplication().getPerson().getFirstName())
+				|| accept(searchValue, row.getApplication().getPerson().getLastName())
+				|| accept(searchValue, row.getApplication().getPerson().getMail());
+	}
+	
+	private boolean accept(String searchValue, String val) {
+		return val != null && val.toLowerCase().contains(searchValue);
 	}
 	
 	@Override

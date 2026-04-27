@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -64,6 +66,7 @@ import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.TaggingService;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.Category;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
@@ -99,6 +102,13 @@ public class PositionReferenceListController extends FormBasicController {
 
 	private static final String PREFS_ID = "recruitingPosRecommendationFlexiList";
 
+	protected static final String FILTER_DECISION = "decision";
+	protected static final String FILTER_CATEGORIES = "categories";
+	protected static final String FILTER_REFERENCE_TYPE = "referenceType";
+	protected static final String FILTER_REFERENCE_STATUS = "referenceStatus";
+	protected static final String FILTER_APPLICATION_STATUS = "applicationStatus";
+	protected static final String FILTER_NULL_KEY = "NULL";
+	
 	private FormLink contactButton;
 	private FormLink sendMailButton;
 	private FlexiTableElement tableEl;
@@ -196,7 +206,7 @@ public class PositionReferenceListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit", "o_icon_edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete", "o_icon_delete_item"));
 		
-		dataModel = new PositionReferenceDataModel(columnsModel, position, salutationGenerator, getTranslator(), getLocale());
+		dataModel = new PositionReferenceDataModel(columnsModel, position, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);
@@ -213,7 +223,64 @@ public class PositionReferenceListController extends FormBasicController {
 	}
 	
 	private void initFilters() {
-		//TODO flexi ql
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// Reference status
+		SelectionValues referenceStatusPK = new SelectionValues();
+		for(ReferenceStatus status: ReferenceStatus.values()) {
+			referenceStatusPK.add(SelectionValues.entry(status.name(), translate("reference.status.".concat(status.name()))));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.reference.status"),
+				FILTER_REFERENCE_STATUS, referenceStatusPK, true));
+		
+		// Reference type
+		SelectionValues referenceTypePK = new SelectionValues();
+		referenceTypePK.add(SelectionValues.entry(ReferenceType.expert.name(),
+				translate("table.header.reference.type.expert")));
+		referenceTypePK.add(SelectionValues.entry(ReferenceType.recommendation.name(),
+				translate("table.header.reference.type.recommendation")));
+		referenceTypePK.add(SelectionValues.entry(ReferenceType.comparativeAssessmentExpert.name(),
+				translate("table.header.reference.type.comparativeAssessmentExpert")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.reference.type"),
+				FILTER_REFERENCE_TYPE, referenceTypePK, true));
+		
+		// Application status
+		SelectionValues applicationStatusPK = new SelectionValues();
+		ApplicationStatus[] applicationStatus = recruitingModule.getTableApplicationsDefaultBasicFilterApplicationStatus();
+		for(ApplicationStatus status:applicationStatus) {
+			applicationStatusPK.add(SelectionValues.entry(status.name(), translate("application.status.".concat(status.name()))));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.status"),
+				FILTER_APPLICATION_STATUS, applicationStatusPK, true));
+		
+		// Decisions
+		SelectionValues decisionKV = new SelectionValues();
+		decisionKV.add(SelectionValues.entry(FILTER_NULL_KEY, translate("decision.0.filter")));
+		decisionKV.add(SelectionValues.entry("3", translate("decision.3.filter")));
+		decisionKV.add(SelectionValues.entry("2", translate("decision.2.filter")));
+		decisionKV.add(SelectionValues.entry("1", translate("decision.1.filter")));
+		decisionKV.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.decision"),
+				FILTER_DECISION, decisionKV, true));
+		
+		// Categories
+		boolean seeAdministrativeCategories = secCallback.canSeeApplicationAdministrativeCategories();
+		List<Category> categories = taggingService.getAvailableCategoriesFor(position);
+		SelectionValues categoriesPK = new SelectionValues();
+		for(Category category:categories) {
+			String label = RecruitingHelper.getLabel(category);
+			categoriesPK.add(SelectionValues.entry(category.getName(), label));
+			if(seeAdministrativeCategories) {
+				String tagName = "a:".concat(category.getName());
+				String adminLabel = RecruitingHelper.getLabel(tagName, category.getColor(), true);
+				categoriesPK.add(SelectionValues.entry(tagName, adminLabel));
+			}
+		}
+		categoriesPK.add(SelectionValues.entry("null", translate("filter.no.categories")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.categories"),
+				FILTER_CATEGORIES, categoriesPK, true));
+		
+		tableEl.setFilters(true, filters, true, true);
 	}
 	
 	private final void initColumnModel(ReferenceCols col, RecruitingTableOption option, FlexiCellRenderer renderer) {
