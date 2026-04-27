@@ -227,7 +227,7 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 					FlexiColumnModel.ALIGNMENT_LEFT, deleteCol));
 		}
 
-		membersFeedbackModel = new FeedbackMembersDataModel(columnsModel, salutationGenerator, getLocale());
+		membersFeedbackModel = new FeedbackMembersDataModel(columnsModel, getLocale());
 		membersFeedbackTableEl = uifactory.addTableElement(getWindowControl(), "feedbacks", membersFeedbackModel, 20, false, getTranslator(), formLayout);
 		membersFeedbackTableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		membersFeedbackTableEl.setExportEnabled(false);

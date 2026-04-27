@@ -188,7 +188,7 @@ public class PositionEditPublicFeedbackController extends FormBasicController im
 		
 		feedbackDeadlineYearElement.clearError();
 		if(getPublicFeedbackDeadline() == null) {
-			feedbackDeadlineYearElement.setErrorKey("form.legende.mandatory", null);
+			feedbackDeadlineYearElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			allOk &= validateYearElement(feedbackDeadlineYearElement);

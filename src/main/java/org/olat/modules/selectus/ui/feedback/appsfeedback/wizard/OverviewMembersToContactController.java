@@ -91,7 +91,7 @@ public class OverviewMembersToContactController extends StepFormBasicController 
 			}
 		}
 		
-		tableModel = new OverviewMembersToContactDataModel(columnsModel, salutationGenerator, userPropertyHandlers, getTranslator(), getLocale());
+		tableModel = new OverviewMembersToContactDataModel(columnsModel, userPropertyHandlers, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "members", tableModel, 256, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);

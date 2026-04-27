@@ -11,7 +11,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-
+import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.model.AppToCategory;
@@ -51,6 +51,10 @@ public class PositionFeedbackRow {
 	
 	public ApplicationFeedback getFeedback() {
 		return feedback;
+	}
+	
+	public Application getApplication() {
+		return feedback.getApplication();
 	}
 	
 	public String getApplicationUrl() {

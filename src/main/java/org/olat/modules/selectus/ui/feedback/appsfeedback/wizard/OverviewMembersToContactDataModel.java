@@ -15,12 +15,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-
-import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.FeedbackHelper;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.PositionFeedbacksController;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -35,15 +33,13 @@ implements SortableFlexiTableDataModel<Identity> {
 	
 	private final Locale locale;
 	private final Translator translator;
-	private final SalutationGenerator salutationGenerator;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public OverviewMembersToContactDataModel(FlexiTableColumnModel columnsModel, SalutationGenerator salutationGenerator,
-			List<UserPropertyHandler> userPropertyHandlers, Translator translator, Locale locale) {
+	public OverviewMembersToContactDataModel(FlexiTableColumnModel columnsModel, List<UserPropertyHandler> userPropertyHandlers,
+			Translator translator, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 		this.translator = translator;
-		this.salutationGenerator = salutationGenerator;
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 

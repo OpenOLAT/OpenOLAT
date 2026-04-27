@@ -19,6 +19,7 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -40,11 +42,6 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -57,6 +54,7 @@ import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
+import org.olat.modules.selectus.model.Category;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
@@ -73,6 +71,10 @@ import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.Contact2Overvie
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.ContactFeedbacksMemberFinishCallback;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.ContactMembersContext;
 import org.olat.modules.selectus.ui.model.AppToCategory;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The list of feedbacks requests for a position.
@@ -84,6 +86,13 @@ import org.olat.modules.selectus.ui.model.AppToCategory;
 public class PositionFeedbacksController extends FormBasicController {
 
 	private static final String PREFS_ID = "recruitingPosFeedbackMembersFlexiList";
+
+	protected static final String FILTER_DECISION = "decision";
+	protected static final String FILTER_CATEGORIES = "categories";
+	protected static final String FILTER_FEEDBACK_STATUS = "feedbackStatus";
+	protected static final String FILTER_APPLICATION_STATUS = "applicationStatus";
+	protected static final String FILTER_NULL_KEY = "NULL";
+	
 	public static final int USER_PROP_OFFSET = 500; //only used in wizard
 	public static final String formIdentifyer = "Committee";
 	
@@ -159,10 +168,10 @@ public class PositionFeedbacksController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PositionFeedCols.dateLastReminder, new DateCellRenderer()));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PositionFeedCols.applicationStatus));
-
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PositionFeedCols.categories, new CategoriesCellRenderer()));
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PositionFeedCols.decision, new DecisionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PositionFeedCols.categories,
+				new CategoriesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PositionFeedCols.decision,
+				new DecisionCellRenderer()));
 		
 		if(canEditFeedbacks) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PositionFeedCols.sendMail));
@@ -178,7 +187,7 @@ public class PositionFeedbacksController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete-feed", "o_icon_delete_item"));
 		}
 
-		tableModel = new PositionFeedbacksTableModel(columnsModel, salutationGenerator, userPropertyHandlers, getTranslator(), getLocale());
+		tableModel = new PositionFeedbacksTableModel(columnsModel, userPropertyHandlers, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "feedbacks", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
 		tableEl.setExportEnabled(false);
@@ -198,7 +207,53 @@ public class PositionFeedbacksController extends FormBasicController {
 	}
 	
 	private void initFilters() {
-		//TODO Flexi QL
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// Feedback status
+		SelectionValues referenceStatusPK = new SelectionValues();
+		for(ReferenceStatus status: ReferenceStatus.values()) {
+			referenceStatusPK.add(SelectionValues.entry(status.name(), translate("reference.status.".concat(status.name()))));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.status"),
+				FILTER_FEEDBACK_STATUS, referenceStatusPK, true));
+		
+		// Application status
+		SelectionValues applicationStatusPK = new SelectionValues();
+		ApplicationStatus[] applicationStatus = recruitingModule.getTableApplicationsDefaultBasicFilterApplicationStatus();
+		for(ApplicationStatus status:applicationStatus) {
+			applicationStatusPK.add(SelectionValues.entry(status.name(), translate("application.status.".concat(status.name()))));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.status"),
+				FILTER_APPLICATION_STATUS, applicationStatusPK, true));
+		
+		// Decisions
+		SelectionValues decisionKV = new SelectionValues();
+		decisionKV.add(SelectionValues.entry(FILTER_NULL_KEY, translate("decision.0.filter")));
+		decisionKV.add(SelectionValues.entry("3", translate("decision.3.filter")));
+		decisionKV.add(SelectionValues.entry("2", translate("decision.2.filter")));
+		decisionKV.add(SelectionValues.entry("1", translate("decision.1.filter")));
+		decisionKV.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.decision"),
+				FILTER_DECISION, decisionKV, true));
+		
+		// Categories
+		boolean seeAdministrativeCategories = secCallback.canSeeApplicationAdministrativeCategories();
+		List<Category> categories = taggingService.getAvailableCategoriesFor(position);
+		SelectionValues categoriesPK = new SelectionValues();
+		for(Category category:categories) {
+			String label = RecruitingHelper.getLabel(category);
+			categoriesPK.add(SelectionValues.entry(category.getName(), label));
+			if(seeAdministrativeCategories) {
+				String tagName = "a:".concat(category.getName());
+				String adminLabel = RecruitingHelper.getLabel(tagName, category.getColor(), true);
+				categoriesPK.add(SelectionValues.entry(tagName, adminLabel));
+			}
+		}
+		categoriesPK.add(SelectionValues.entry("null", translate("filter.no.categories")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.categories"),
+				FILTER_CATEGORIES, categoriesPK, true));
+		
+		tableEl.setFilters(true, filters, true, true);
 	}
 	
 	public SelectionValues getApplicationStatusKeyValues() {
@@ -333,8 +388,7 @@ public class PositionFeedbacksController extends FormBasicController {
 		if(contactButton == source) {
 			doContactMembers(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("app".equals(se.getCommand())) {
 					PositionFeedbackRow row = tableModel.getObject(se.getIndex());
 					doOpenApplication(ureq, row);

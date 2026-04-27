@@ -84,7 +84,7 @@ public class ApplicationFeedbacksController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppFeedCols.feedbackStatus));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppFeedCols.submissionDeadline));
 
-		tableModel = new ApplicationFeedbacksTableModel(columnsModel, salutationGenerator, getLocale());
+		tableModel = new ApplicationFeedbacksTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "feedbacks", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "app-member-feedbacks-list");
 		tableEl.setRendererType(FlexiTableRendererType.custom);

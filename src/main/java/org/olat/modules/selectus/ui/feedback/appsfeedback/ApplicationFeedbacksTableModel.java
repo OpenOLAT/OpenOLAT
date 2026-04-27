@@ -15,8 +15,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-
-import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 
 /**
@@ -32,18 +30,16 @@ implements SortableFlexiTableDataModel<ApplicationFeedbackRow> {
 	private static final AppFeedCols[] COLS = AppFeedCols.values();
 	
 	private final Locale locale;
-	private final SalutationGenerator salutationGenerator;
 	
-	public ApplicationFeedbacksTableModel(FlexiTableColumnModel columnsModel, SalutationGenerator salutationGenerator, Locale locale) {
+	public ApplicationFeedbacksTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
-		this.salutationGenerator = salutationGenerator;
 	}
 
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<ApplicationFeedbackRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort();
+			List<ApplicationFeedbackRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
