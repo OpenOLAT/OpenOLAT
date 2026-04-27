@@ -20,12 +20,15 @@
 package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -36,6 +39,7 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -55,6 +59,9 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 public class RepositoryCatalogInfoFactory {
 	
 	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath, boolean showRQCode) {
+		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+		boolean startDateAvailable = lifecycle != null && lifecycle.getValidFrom() != null;
+		boolean endDateAvailable = lifecycle != null && lifecycle.getValidTo() != null;
 		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
 		if (catalogV2Module.isEnabled()) {
 			Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
@@ -71,12 +78,22 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
+			SelectionValues availableStatuses = new SelectionValues();
+			for (RepositoryEntryStatusEnum status : RepositoryEntryStatusEnum.preparationToClosed()) {
+				availableStatuses.add(SelectionValues.entry(status.name(), translator.translate(status.i18nKey()),
+						null, "o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true));
+			}
+			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
+					.map(RepositoryEntryStatusEnum::name)
+					.collect(Collectors.toSet());
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
 					false, true,
 					true, translator.translate("access.taxonomy.level"), details,
 					null, getCatalogStatusEvaluator(entry.getEntryStatus()), translator.translate("offer.available.in.status.course"),
+					availableStatuses, defaultStatuses,
 					false,
-					false, 
+					startDateAvailable,
+					endDateAvailable,
 					editBusinessPath,
 					translator.translate("access.open.metadata"),
 					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()),
@@ -111,8 +128,9 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
-					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), false,
-					false, editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode, null);
+					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null,
+					false, startDateAvailable, endDateAvailable, editBusinessPath, translator.translate("access.open.catalog"),
+					null, null, null, showRQCode, null);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

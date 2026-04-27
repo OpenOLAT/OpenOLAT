@@ -32,12 +32,14 @@ import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -55,10 +57,14 @@ class EvaluationFormStorage {
 	private static final String RESPONSES_DIRECTORY = "responses";
 	private static final String TMP_DIRECTORY = "evaluation_form_tmp";
 
-	
 	private Path bcrootDirectory;
 	private Path rootDirectory;
 	private Path responsesDirectory;
+	
+	@Autowired
+	public EvaluationFormStorage(FolderModule folderModule) {
+		log.debug("Storage: {}", folderModule != null);
+	}
 	
 	@PostConstruct
 	public void initDirectories() {

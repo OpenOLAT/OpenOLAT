@@ -26,18 +26,27 @@
     		return true;
         }
     	
-    	var allowedText = "";
-    	var textarea = document.getElementById(this.attr('id'));
+    	let allowedText = "";
+    	let textarea = document.getElementById(this.attr('id'));
     	textarea.addEventListener('copy', getTextSelection, false);
     	textarea.addEventListener('cut', getTextSelection, false);
+		textarea.addEventListener('dragstart', getTextSelection, false);
     	textarea.addEventListener('paste', function(e) {
-	    	var text = e.clipboardData.getData('text');
+	    	let text = e.clipboardData.getData('text');
 	    	if(normalizeText(text) !== normalizeText(allowedText)) {
 	    		e.preventDefault();
 	    		showMessageBox('warn', settings.errorHeader, settings.errorMessage);
 	    	}
     		return true;
     	});
+		textarea.addEventListener('drop', function(e) {
+		    let text = e.dataTransfer ? e.dataTransfer.getData('text') : '';
+			console.log(text);
+		    if (normalizeText(text) !== normalizeText(allowedText)) {
+		        e.preventDefault();
+		        showMessageBox('warn', settings.errorHeader, settings.errorMessage);
+		    }
+		});
         return this;
     };
 }( jQuery ));

@@ -121,7 +121,7 @@ public class OpenAccessOfferController extends FormBasicController {
 			initFormOrganisations(catalogCont);
 		}
 
-		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), catalogCont);
+		uifactory.addStaticTextElement("offer.available.if", catalogInfo.getStatusPeriodOption(), catalogCont);
 
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
 		buttonsWrapperCont.setElementCssClass("o_sel_accesscontrol_buttons");

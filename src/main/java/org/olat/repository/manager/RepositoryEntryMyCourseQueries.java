@@ -551,62 +551,53 @@ public class RepositoryEntryMyCourseQueries {
 			}
 			
 			// Access methods
-			RepositoryEntryStatusEnum[] subSetsPeriodAccessMethods = subSetOf(ACService.RESTATUS_ACTIVE_METHOD_PERIOD, entryStatus);
 			RepositoryEntryStatusEnum[] subSetsActiveAccessMethods = subSetOf(ACService.RESTATUS_ACTIVE_METHOD, entryStatus);
 			
-			if (acModule.isEnabled()
-					&& (subSetsActiveAccessMethods.length > 0 || subSetsPeriodAccessMethods.length > 0 || offerValidAt == null)) {
+			if (acModule.isEnabled()) {
 				if(numOfStatus > 0) {
 					sb.append(" or");
 				}
 
 				sb.append(" (");
-				sb.append(" res.key in (");
-				sb.append("   select resource.key");
-				sb.append("     from acofferaccess access");
-				sb.append("     inner join access.offer offer");
-				sb.append("     inner join offer.resource resource");
-				sb.append("     inner join repositoryentry re2");
-				sb.append("        on re2.olatResource.key = resource.key");
-				sb.append("       and re2.publicVisible = true");
-				sb.append("     inner join offertoorganisation oto");
-				sb.append("        on oto.offer.key = offer.key");
-				sb.append("   where offer.valid = true");
-				sb.append("     and offer.openAccess = false");
-				sb.append("     and offer.guestAccess = false");
-				sb.append("     and access.method.enabled = true");
+				sb.append(" v.publicVisible = true");
 				if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-					sb.append("     and oto.organisation.key in :organisationKeys");
 					offerOrganisationsUsed = true;
 				}
-				if (offerValidAt != null
-						&& (subSetsPeriodAccessMethods.length > 0 || subSetsActiveAccessMethods.length > 0)) {
-					
+				if (offerValidAt != null) {
 					sb.append(" and (");
-					
-					if(subSetsPeriodAccessMethods.length > 0) {
-						sb.append(" (re2.status ").in(subSetsPeriodAccessMethods);
-						sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-						sb.append(" and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
-						sb.append(" and (offer.validTo is null or date(offer.validTo)>=:offerValidAt))");
-						numOfStatus += subSetsPeriodAccessMethods.length;
-					}
-					
-					if(subSetsActiveAccessMethods.length > 0) {
-						sb.append(" or", subSetsPeriodAccessMethods.length > 0);
-						
-						sb.append(" (re2.status ").in(subSetsActiveAccessMethods);
-						sb.append(" and offer.validFrom is null and offer.validTo is null)");
+					// Offers without validity period
+					if (subSetsActiveAccessMethods.length > 0) {
+						sb.append("exists (");
+						appendMethodOfferExistsPrefix(sb, offerOrganisations);
+						sb.append("     and offer.validFrom is null and offer.validTo is null");
+						sb.append("     and ((offer.validStatus is null and v.status ").in(subSetsActiveAccessMethods).append(")");
+						sb.append("          or (offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0))");
+						sb.append("  )");
+						sb.append(" or ");
 						numOfStatus += subSetsActiveAccessMethods.length;
 					}
-					
-					sb.append(" )"); // and
+					// Offers with validity period - if validFrom or validTo is set, validStatus is always set
+					sb.append("exists (");
+					appendMethodOfferExistsPrefix(sb, offerOrganisations);
+					sb.append("     and (offer.validFrom is not null or offer.validTo is not null)");
+					sb.append("     and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
+					sb.append("     and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
+					sb.append("     and offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0");
+					sb.append("  )");
+					sb.append(")"); // and
 					offerValidAtUsed = true;
-				} else if(offerValidAt == null && entryStatus != null && entryStatus.length > 0) {
-					sb.append(" and re2.status ").in(entryStatus);
+					numOfStatus += 1;
+				} else if(entryStatus != null && entryStatus.length > 0) {
+					sb.append(" and v.status ").in(entryStatus);
+					sb.append(" and exists (");
+					appendMethodOfferExistsPrefix(sb, offerOrganisations);
+					sb.append("  )");
 					numOfStatus += entryStatus.length;
+				} else {
+					sb.append(" and exists (");
+					appendMethodOfferExistsPrefix(sb, offerOrganisations);
+					sb.append("  )");
 				}
-				sb.append(")"); // in
 				sb.append(")"); // or
 			}
 		}
@@ -615,10 +606,27 @@ public class RepositoryEntryMyCourseQueries {
 		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed, numOfStatus == 0);
 	}
 	
+	private void appendMethodOfferExistsPrefix(QueryBuilder sb, List<? extends OrganisationRef> offerOrganisations) {
+		sb.append("   select 1");
+		sb.append("     from acofferaccess access");
+		sb.append("     inner join access.offer offer");
+		sb.append("     inner join offer.resource resource");
+		sb.append("     inner join offertoorganisation oto");
+		sb.append("        on oto.offer.key = offer.key");
+		sb.append("   where resource.key = res.key");
+		sb.append("     and offer.valid = true");
+		sb.append("     and offer.openAccess = false");
+		sb.append("     and offer.guestAccess = false");
+		sb.append("     and access.method.enabled = true");
+		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+			sb.append("     and oto.organisation.key in :organisationKeys");
+		}
+	}
+
 	/**
 	 * Optimize the status to contains only the ones the user search for. If the result
 	 * is empty, you need to abort the search if you don't have an other sub-query.
-	 * 
+	 *
 	 * @param allowed The list of status to optimize
 	 * @param filterStatus The status the user search for
 	 * @return Intersection of the permitted status and the status used to filter

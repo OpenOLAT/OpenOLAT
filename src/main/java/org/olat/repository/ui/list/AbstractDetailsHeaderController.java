@@ -33,7 +33,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.catalog.ui.BookEvent;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -137,7 +136,6 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract String getLeaveText(boolean withFee);
 	
 	protected abstract String getStartLinkText();
-	protected abstract boolean tryAutoBooking(UserRequest ureq);
 	protected abstract OLATResource getResource();
 	
 	private void initByConfig(UserRequest ureq) {
@@ -257,11 +255,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			fireEvent(ureq, RESERVATION_CONFIRMATION_EVENT);
 		} else if (source == startCtrl) {
 			if (event == START_EVENT) {
-				if (startCtrl.isAutoBooking()) {
-					doAutoBooking(ureq);
-				} else {
-					fireEvent(ureq, START_EVENT);
-				}
+				fireEvent(ureq, START_EVENT);
 			} else if (event == START_ADMIN_EVENT) {
 				fireEvent(ureq, START_EVENT);
 			}
@@ -291,17 +285,6 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		ResourceReservation reservation = acService.getReservation(getIdentity(), getResource());
 		if (reservation != null) {
 			acService.removeReservation(getIdentity(), getIdentity(), reservation, null);
-		}
-	}
-
-	private void doAutoBooking(UserRequest ureq) {
-		if (getIdentity() == null) {
-			fireEvent(ureq, new BookEvent(getResource().getKey()));
-		} else {
-			boolean success = tryAutoBooking(ureq);
-			if (success) {
-				fireEvent(ureq, START_EVENT);
-			}
 		}
 	}
 

@@ -40,8 +40,8 @@ public class SingleCurriculumElementSecurityCallbackFactory extends CurriculumEl
 
 	public SingleCurriculumElementSecurityCallbackFactory(CurriculumElementStatus curriculumElementStatus,
 			RepositoryEntryStatusEnum repositoryEntryStatus, boolean isMember, boolean isParticipant, Supplier<Boolean> isReservation,
-			List<OLATResourceAccess> resourceAccesses, ParticipantsAvailability participantsAvailability) {
-		super(curriculumElementStatus, isMember, isParticipant, isReservation, resourceAccesses, participantsAvailability);
+			boolean bookingOnBehalf, List<OLATResourceAccess> resourceAccesses, ParticipantsAvailability participantsAvailability) {
+		super(curriculumElementStatus, isMember, isParticipant, isReservation, bookingOnBehalf, resourceAccesses, participantsAvailability);
 		this.status = repositoryEntryStatus;
 	}
 	

@@ -36,9 +36,9 @@ import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 public class MultiCurriculumElementSecurityCallbackFactory extends CurriculumElementCallbackFactory {
 
 	public MultiCurriculumElementSecurityCallbackFactory(CurriculumElementStatus curriculumElementStatus, boolean isMember,
-			boolean isParticipant, Supplier<Boolean> isReservation, List<OLATResourceAccess> resourceAccesses,
+			boolean isParticipant, Supplier<Boolean> isReservation, boolean bookingOnBehalf, List<OLATResourceAccess> resourceAccesses,
 			ParticipantsAvailability participantsAvailability) {
-		super(curriculumElementStatus, isMember, isParticipant, isReservation, resourceAccesses, participantsAvailability);
+		super(curriculumElementStatus, isMember, isParticipant, isReservation, bookingOnBehalf, resourceAccesses, participantsAvailability);
 	}
 	
 	@Override

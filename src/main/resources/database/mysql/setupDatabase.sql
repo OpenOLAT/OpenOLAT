@@ -1097,6 +1097,8 @@ create table  if not exists o_ac_offer (
   is_valid bit default 1,
   validfrom datetime,
   validto datetime,
+  valid_date_config varchar(2000),
+  valid_status varchar(255),
   version mediumint unsigned not null,
   resourceid bigint,
   resourcetypename varchar(255),

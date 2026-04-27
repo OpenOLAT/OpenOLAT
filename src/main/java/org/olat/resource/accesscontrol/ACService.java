@@ -134,6 +134,10 @@ public interface ACService {
 
 	public Offer save(Offer offer);
 
+	public void materializeDates(Offer offer);
+
+	public void updateRelativeValidDates(Collection<OLATResource> resources, Date beginDate, Date endDate);
+
 	public void deleteOffer(Offer offer);
 	
 	public void deleteOffers(OLATResource resource);

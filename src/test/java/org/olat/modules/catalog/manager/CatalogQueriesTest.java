@@ -76,6 +76,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CatalogQueriesTest extends OlatTestCase {
+
+	private static final Set<String> DEFAULT_VALID_STATUS = Set.of(
+			"preparation", "review", "coachpublished", "published",
+			"provisional", "confirmed", "active");
 	
 	@Autowired
 	private DB dbInstance;
@@ -144,7 +148,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	@Test
 	public void shouldLoadRepositoryEntries_exclude_not_in_period() {
 		TestCatalogItem catalogItem = createCatalogItem(true);
-		
+
 		setOfferValid(catalogItem, null, null);
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, -2, 2);
@@ -168,7 +172,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	@Test
 	public void shouldLoadRepositoryEntries_exclude_status_period() {
 		TestCatalogItem catalogItem = createCatalogItem(true);
-		
+
 		setOfferValid(catalogItem, -2, 2);
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.preparation);
@@ -643,7 +647,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	@Test
 	public void shouldLoadCurriculumElements_exclude_not_in_period() {
 		TestCatalogItem catalogItem = createCatalogItem(false);
-		
+
 		setOfferValid(catalogItem, null, null);
 		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).contains(catalogItem.getCurriculumElement());
 		setOfferValid(catalogItem, -2, 2);
@@ -668,7 +672,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	public void shouldLoadCurriculumElements_exclude_status_period() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		TestCatalogItem catalogItem = createCatalogItem(false);
-		
+
 		setOfferValid(catalogItem, -2, 2);
 		
 		curriculumService.updateCurriculumElementStatus(doer, catalogItem.getCurriculumElement(), CurriculumElementStatus.preparation, false, null);
@@ -936,6 +940,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 			offer.setCatalogPublish(true);
 			offer.setValidFrom(DateUtils.addDays(new Date(), -10));
 			offer.setValidTo(DateUtils.addDays(new Date(), 10));
+			offer.setValidStatus(DEFAULT_VALID_STATUS);
 			offer = acService.save(offer);
 			AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 			OfferAccess offerAccess = acService.createOfferAccess(offer, method);
@@ -973,6 +978,101 @@ public class CatalogQueriesTest extends OlatTestCase {
 		return new TestCatalogItem(List.of(repositoryEntry), List.of(), searchParams);
 	}
 	
+	@Test
+	public void shouldLoadRepositoryEntries_validStatus_period() {
+		TestCatalogItem catalogItem = createCatalogItem(true);
+
+		setOfferValid(catalogItem, -2, 2);
+		setOfferValidStatus(catalogItem, Set.of("review"));
+
+		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.review);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
+
+		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
+	}
+
+	@Test
+	public void shouldLoadRepositoryEntries_validStatus_no_period() {
+		TestCatalogItem catalogItem = createCatalogItem(true);
+
+		setOfferValid(catalogItem, null, null);
+		setOfferValidStatus(catalogItem, Set.of("review"));
+
+		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.review);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
+
+		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.published);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
+	}
+
+	@Test
+	public void shouldLoadCurriculumElements_validStatus_period() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TestCatalogItem catalogItem = createCatalogItem(false);
+
+		setOfferValid(catalogItem, -2, 2);
+		setOfferValidStatus(catalogItem, Set.of("confirmed"));
+
+		curriculumService.updateCurriculumElementStatus(doer, catalogItem.getCurriculumElement(), CurriculumElementStatus.confirmed, false, null);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).contains(catalogItem.getCurriculumElement());
+
+		curriculumService.updateCurriculumElementStatus(doer, catalogItem.getCurriculumElement(), CurriculumElementStatus.active, false, null);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
+	}
+
+	@Test
+	public void shouldLoadRepositoryEntries_exclude_period_without_validStatus() {
+		TestCatalogItem catalogItem = createCatalogItem(true);
+
+		setOfferValid(catalogItem, -2, 2);
+		setOfferValidStatus(catalogItem, null);
+
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
+	}
+
+	@Test
+	public void shouldLoadCurriculumElements_validStatus_no_period() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TestCatalogItem catalogItem = createCatalogItem(false);
+
+		setOfferValid(catalogItem, null, null);
+		setOfferValidStatus(catalogItem, Set.of("confirmed"));
+
+		curriculumService.updateCurriculumElementStatus(doer, catalogItem.getCurriculumElement(), CurriculumElementStatus.confirmed, false, null);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).contains(catalogItem.getCurriculumElement());
+
+		curriculumService.updateCurriculumElementStatus(doer, catalogItem.getCurriculumElement(), CurriculumElementStatus.active, false, null);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
+	}
+
+	@Test
+	public void shouldLoadCurriculumElements_exclude_period_without_validStatus() {
+		TestCatalogItem catalogItem = createCatalogItem(false);
+
+		setOfferValid(catalogItem, -2, 2);
+		setOfferValidStatus(catalogItem, null);
+
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
+	}
+
+	private void setOfferValidStatus(TestCatalogItem catalogItem, Set<String> validStatus) {
+		acService.findOfferByResource(catalogItem.getResource(), true, null, null).stream()
+				.forEach(offer -> {
+					offer.setValidStatus(validStatus);
+					acService.save(offer);
+				});
+		dbInstance.commitAndCloseSession();
+	}
+
 	private void setOfferValid(TestCatalogItem catalogItem, Integer fromAddDays, Integer toAddDays) {
 		acService.findOfferByResource(catalogItem.getResource(), true, null, null).stream()
 				.forEach(offer -> {
@@ -985,6 +1085,11 @@ public class CatalogQueriesTest extends OlatTestCase {
 						offer.setValidTo(DateUtils.addDays(catalogItem.getSearchParams().getOfferValidAt(), toAddDays.intValue()));
 					} else {
 						offer.setValidTo(null);
+					}
+					if (fromAddDays != null || toAddDays != null) {
+						offer.setValidStatus(DEFAULT_VALID_STATUS);
+					} else {
+						offer.setValidStatus(null);
 					}
 					acService.save(offer);
 				});

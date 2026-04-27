@@ -70,7 +70,6 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 			autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);
 			autoEl.setHelpText(translate("auto.booking.help"));
 			autoEl.setElementCssClass("o_sel_accesscontrol_auto_booking");
-			autoEl.addActionListener(FormEvent.ONCHANGE);
 			if(link.getOffer() != null && link.getOffer().getKey() != null) {
 				autoEl.select(autoKeys[0], link.getOffer().isAutoBooking());
 			} else {
@@ -98,9 +97,6 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 				&& confirmationByManagerEl.isOneSelected()
 				&& confirmationByManagerEl.isKeySelected(CONFIRMATION_BY_MANAGER_YES);
 		autoEl.setVisible(!confirmationByManager);
-		
-		boolean autoBooking = autoEl.isVisible() && autoEl.isAtLeastSelected(1);
-		descEl.setVisible(!autoBooking);
 	}
 
 	@Override

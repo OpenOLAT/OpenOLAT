@@ -162,23 +162,24 @@ public class CatalogQueries {
 			}
 			if (offerValidAt != null) {
 				// Offers without validity period
-				sb.append(" (v.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
-				sb.append("  and res.key in (");
+				sb.append(" (exists (");
 				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 				sb.append("      and offer.validFrom is null and offer.validTo is null");
+				sb.append("      and ((offer.validStatus is null and v.status ").in(ACService.RESTATUS_ACTIVE_METHOD).append(")");
+				sb.append("           or (offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0))");
 				sb.append("  ))");
-				// Offers with validity period
+				// Offers with validity period - if validFrom or validTo is set, validStatus is always set
 				sb.append(" or ");
-				sb.append(" (v.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
-				sb.append("  and res.key in (");
+				sb.append(" (exists (");
 				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 				sb.append("      and (offer.validFrom is not null or offer.validTo is not null)");
 				sb.append("      and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
 				sb.append("      and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
+				sb.append("      and offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0");
 				sb.append("  ))");
 				addParams.setOfferValidAt(true);
 			} else {
-				sb.append(" (res.key in (");
+				sb.append(" (exists (");
 				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 				sb.append("  ))");
 			}
@@ -189,11 +190,12 @@ public class CatalogQueries {
 
 	private void appendMethodOfferSubSelect(QueryBuilder sb, boolean webPublish,
 			List<? extends OrganisationRef> offerOrganisations, AddParams addParams) {
-		sb.append("select resource.key from acofferaccess access");
+		sb.append("select 1 from acofferaccess access");
 		sb.append("    inner join access.offer offer");
 		sb.append("    inner join offer.resource resource");
 		sb.append("    inner join offertoorganisation oto on oto.offer.key = offer.key");
-		sb.append("    where offer.valid = true");
+		sb.append("    where resource.key = res.key");
+		sb.append("      and offer.valid = true");
 		sb.append("      and offer.catalogPublish = true");
 		if (webPublish) {
 			sb.append("    and offer.catalogWebPublish = true");
@@ -323,23 +325,24 @@ public class CatalogQueries {
 
 		if (offerValidAt != null) {
 			// Offers without validity period
-			sb.append(" (v.status ").in(ACService.CESTATUS_ACTIVE_METHOD);
-			sb.append("  and res.key in (");
+			sb.append(" (exists (");
 			appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 			sb.append("      and offer.validFrom is null and offer.validTo is null");
+			sb.append("      and ((offer.validStatus is null and v.status ").in(ACService.CESTATUS_ACTIVE_METHOD).append(")");
+			sb.append("           or (offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0))");
 			sb.append("  ))");
-			// Offers with validity period
+			// Offers with validity period - if validFrom or validTo is set, validStatus is always set
 			sb.append(" or ");
-			sb.append(" (v.status ").in(ACService.CESTATUS_ACTIVE_METHOD_PERIOD);
-			sb.append("  and res.key in (");
+			sb.append(" (exists (");
 			appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 			sb.append("      and (offer.validFrom is not null or offer.validTo is not null)");
 			sb.append("      and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
 			sb.append("      and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
+			sb.append("      and offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0");
 			sb.append("  ))");
 			addParams.setOfferValidAt(true);
 		} else {
-			sb.append(" (res.key in (");
+			sb.append(" (exists (");
 			appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 			sb.append("  ))");
 		}

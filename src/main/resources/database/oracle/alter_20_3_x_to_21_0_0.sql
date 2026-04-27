@@ -51,6 +51,9 @@ create index idx_offeracc_offer_method_idx on o_ac_offer_access (fk_offer_id, fk
 alter table o_ac_offer add cancelling_enabled number default 1 not null;
 alter table o_ac_order_part add cancelling_enabled number default 1 not null;
 alter table o_ac_order_line add cancelling_enabled number default 1 not null;
+-- ac offer valid config
+alter table o_ac_offer add valid_status varchar(255 char);
+alter table o_ac_offer add valid_date_config varchar(2000 char);
 
 -- Room management
 create table o_rm_location (

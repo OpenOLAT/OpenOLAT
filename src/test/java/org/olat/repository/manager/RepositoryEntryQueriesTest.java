@@ -29,6 +29,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -76,6 +77,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryQueriesTest extends OlatTestCase {
 	
 	private static final String TEST_RES_NAME = "TestManagerQuery";
+	private static final Set<String> DEFAULT_VALID_STATUS = Set.of(
+			"preparation", "review", "coachpublished", "published",
+			"provisional", "confirmed", "active");
 	
 	@Autowired
 	private DB dbInstance;
@@ -698,8 +702,66 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(re.getKey());
 	}
 	
+	@Test
+	public void searchViews_offer_validStatus() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		Date now = new Date();
+		Date inPast = DateUtils.addDays(now, -2);
+		Date inFuture = DateUtils.addDays(now, 2);
+
+		RepositoryEntry reMatchPeriod = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.review, inPast, inFuture, Set.of("review"));
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, inFuture, Set.of("review"));
+		RepositoryEntry reMatchNoPeriod = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.review, null, null, Set.of("review"));
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null, Set.of("review"));
+		dbInstance.commitAndCloseSession();
+
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(now);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+
+		assertThat(views).extracting(RepositoryEntry::getKey).containsExactlyInAnyOrder(
+				reMatchPeriod.getKey(),
+				reMatchNoPeriod.getKey());
+	}
+
+	@Test
+	public void searchViews_offer_period_without_validStatus() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		Date now = new Date();
+		Date inPast = DateUtils.addDays(now, -2);
+		Date inFuture = DateUtils.addDays(now, 2);
+
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, inPast, inFuture, null);
+		dbInstance.commitAndCloseSession();
+
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(now);
+		List<RepositoryEntry> views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
+
+		assertThat(views).isEmpty();
+	}
+
 	private RepositoryEntry createReOffer(AccessMethod method, List<Organisation> reOrgs,
 			List<Organisation> offerOrganisations, RepositoryEntryStatusEnum status, Date validFrom, Date validTo) {
+		Set<String> validStatus = (validFrom != null || validTo != null) ? DEFAULT_VALID_STATUS : null;
+		return createReOffer(method, reOrgs, offerOrganisations, status, validFrom, validTo, validStatus);
+	}
+
+	private RepositoryEntry createReOffer(AccessMethod method, List<Organisation> reOrgs,
+			List<Organisation> offerOrganisations, RepositoryEntryStatusEnum status, Date validFrom, Date validTo,
+			Set<String> validStatus) {
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
 		rePreparation = repositoryManager.setStatus(rePreparation, status);
 		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
@@ -707,6 +769,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
 		offer.setValidFrom(validFrom);
 		offer.setValidTo(validTo);
+		offer.setValidStatus(validStatus);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
 		acService.saveOfferAccess(offerAccess);
 		acService.updateOfferOrganisations(offer, offerOrganisations);

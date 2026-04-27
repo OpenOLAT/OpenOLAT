@@ -102,6 +102,7 @@ import org.olat.resource.accesscontrol.CostCenter;
 import org.olat.resource.accesscontrol.CostCenterSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferDateConfig;
 import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.OfferToOrganisation;
@@ -478,9 +479,12 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 		if (offer.isOpenAccess()) {
 			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_OPEN);
 		}
-		return offer.getValidFrom() == null && offer.getValidTo() == null
-				? RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD)
-				: RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+		
+		Set<String> validStatus = offer.getValidStatus();
+		if (!validStatus.isEmpty()) {
+			return validStatus.contains(status.name());
+		}
+		return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD);
 	}
 	
 	@Override
@@ -496,9 +500,11 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 
 	private boolean filterByStatus(Offer offer, CurriculumElementStatus status) {
-		return offer.getValidFrom() == null && offer.getValidTo() == null
-				? Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(status)
-				: Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD_PERIOD).contains(status);
+		Set<String> validStatus = offer.getValidStatus();
+		if (!validStatus.isEmpty()) {
+			return validStatus.contains(status.name());
+		}
+		return CurriculumElementStatus.isInArray(status, ACService.CESTATUS_ACTIVE_METHOD);
 	}
 	
 	@Override
@@ -542,18 +548,81 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 
 	@Override
 	public Offer save(Offer offer) {
+		materializeDates(offer);
 		return accessManager.saveOffer(offer);
 	}
 
 	@Override
 	public OfferAccess saveOfferAccess(OfferAccess link) {
 		//offer access only cascade merge
+		materializeDates(link.getOffer());
 		if(link.getOffer().getKey() == null) {
 			accessManager.saveOffer(link.getOffer());
 		}
 		return methodManager.save(link);
 	}
 	
+	@Override
+	public void materializeDates(Offer offer) {
+		if (!offer.isValid()) {
+			return;
+		}
+		OfferDateConfig config = offer.getValidDateConfig();
+		if (config == null) {
+			return;
+		}
+
+		Date beginDate = null;
+		Date endDate = null;
+
+		String resourceTypeName = offer.getResourceTypeName();
+		if ("CurriculumElement".equals(resourceTypeName)) {
+			CurriculumElement element = curriculumElementDao.loadElementByResource(offer.getResource());
+			if (element != null) {
+				beginDate = element.getBeginDate();
+				endDate = element.getEndDate();
+			}
+		} else if (!"BusinessGroup".equals(resourceTypeName)) {
+			RepositoryEntry entry = repositoryEntryDao.loadByResource(offer.getResource());
+			if (entry != null && entry.getLifecycle() != null) {
+				beginDate = entry.getLifecycle().getValidFrom();
+				endDate = entry.getLifecycle().getValidTo();
+			}
+		}
+
+		materializeDates(offer, config, beginDate, endDate);
+	}
+
+	private void materializeDates(Offer offer, Date beginDate, Date endDate) {
+		materializeDates(offer, offer.getValidDateConfig(), beginDate, endDate);
+	}
+
+	private void materializeDates(Offer offer, OfferDateConfig config, Date beginDate, Date endDate) {
+		if (config == null) {
+			return;
+		}
+		if (config.getFromValue() != null && config.getFromUnit() != null && config.getFromRef() != null) {
+			offer.setValidFrom(config.getFromRef()
+					.computeDate(beginDate, endDate, config.getFromUnit(), config.getFromValue()));
+		}
+		if (config.getToValue() != null && config.getToUnit() != null && config.getToRef() != null) {
+			offer.setValidTo(config.getToRef()
+					.computeDate(beginDate, endDate, config.getToUnit(), config.getToValue()));
+		}
+	}
+
+	@Override
+	public void updateRelativeValidDates(Collection<OLATResource> resources, Date beginDate, Date endDate) {
+		if (!accessModule.isEnabled() || resources.isEmpty()) {
+			return;
+		}
+		List<Offer> offers = accessManager.loadRelativeDateOffers(resources);
+		for (Offer offer : offers) {
+			materializeDates(offer, beginDate, endDate);
+			accessManager.saveOffer(offer);
+		}
+	}
+
 	@Override
 	public void updateOfferOrganisations(Offer offer, Collection<Organisation> organisations) {
 		if (organisations == null || organisations.isEmpty()) {
@@ -1210,6 +1279,10 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 		Offer offer = link.getOffer();
 		AccessMethod method = link.getMethod();
 		Offer offerCopy = accessManager.copyAndPersistOffer(offer, validFrom, validTo, resource, resourceName);
+		if (offerCopy.getValidDateConfig() != null) {
+			materializeDates(offerCopy);
+			offerCopy = accessManager.saveOffer(offerCopy);
+		}
 		OfferAccess accessCopy = createOfferAccess(offerCopy, method);
 		accessCopy.setValidFrom(validFrom);
 		accessCopy.setValidTo(validTo);

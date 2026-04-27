@@ -88,7 +88,7 @@ public class GuestOfferController extends FormBasicController {
 		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 
-		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), catalogCont);
+		uifactory.addStaticTextElement("offer.available.if", catalogInfo.getStatusPeriodOption(), catalogCont);
 
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
 		buttonsWrapperCont.setElementCssClass("o_sel_accesscontrol_buttons");

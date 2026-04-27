@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.resource.OLATResource;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,14 @@ public class RepositoryEntryLifecycleDAO {
 		return dbInstance.getCurrentEntityManager().merge(lifecycle);
 	}
 	
+	public List<OLATResource> loadResources(RepositoryEntryLifecycle lifecycle) {
+		String query = "select r.olatResource from repositoryentry r where r.lifecycle.key = :lifecycleKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, OLATResource.class)
+				.setParameter("lifecycleKey", lifecycle.getKey())
+				.getResultList();
+	}
+
 	public void deleteLifecycle(RepositoryEntryLifecycle lifecycle) {
 		RepositoryEntryLifecycle reloadedLifecycle = dbInstance.getCurrentEntityManager()
 				.getReference(RepositoryEntryLifecycle.class, lifecycle.getKey());

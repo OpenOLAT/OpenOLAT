@@ -336,37 +336,33 @@ public class RepositoryEntryQueries {
 			// Access methods
 			if (acModule.isEnabled()) {
 				sb.append(" or (");
-				sb.append(" res.key in (");
-				sb.append("   select resource.key");
-				sb.append("     from acofferaccess access");
-				sb.append("     inner join access.offer offer");
-				sb.append("     inner join offer.resource resource");
-				sb.append("     inner join repositoryentry re2");
-				sb.append("        on re2.olatResource.key = resource.key");
-				sb.append("       and re2.publicVisible = true");
-				sb.append("     inner join offertoorganisation oto");
-				sb.append("        on oto.offer.key = offer.key");
-				sb.append("   where offer.valid = true");
-				sb.append("     and offer.openAccess = false");
-				sb.append("     and offer.guestAccess = false");
-				sb.append("     and access.method.enabled = true");
+				sb.append(" v.publicVisible = true");
 				if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-					sb.append("     and oto.organisation.key in :organisationKeys");
 					offerOrganisationsUsed = true;
 				}
 				if (offerValidAt != null) {
-					sb.append(" and (");
-					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
-					sb.append(" and (offer.validFrom is not null or offer.validTo is not null)");
-					sb.append(" and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
-					sb.append(" and (offer.validTo is null or offer.validTo>=:offerValidAt)");
-					sb.append(" or");
-					sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
-					sb.append(" and offer.validFrom is null and offer.validTo is null");
-					sb.append(" )");
+					// Offers without validity period
+					sb.append(" and (exists (");
+					appendMethodOfferExistsPrefix(sb, offerOrganisations);
+					sb.append("     and offer.validFrom is null and offer.validTo is null");
+					sb.append("     and ((offer.validStatus is null and v.status ").in(ACService.RESTATUS_ACTIVE_METHOD).append(")");
+					sb.append("          or (offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0))");
+					sb.append("  )");
+					// Offers with validity period - if validFrom or validTo is set, validStatus is always set
+					sb.append("  or exists (");
+					appendMethodOfferExistsPrefix(sb, offerOrganisations);
+					sb.append("     and (offer.validFrom is not null or offer.validTo is not null)");
+					sb.append("     and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
+					sb.append("     and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+					sb.append("     and offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0");
+					sb.append("  ))");
 					offerValidAtUsed = true;
+				} else {
+					sb.append(" and v.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
+					sb.append(" and exists (");
+					appendMethodOfferExistsPrefix(sb, offerOrganisations);
+					sb.append("  )");
 				}
-				sb.append(")"); // in
 				sb.append(")"); // or
 			}
 		}
@@ -374,6 +370,23 @@ public class RepositoryEntryQueries {
 		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed);
 	}
 	
+	private void appendMethodOfferExistsPrefix(QueryBuilder sb, List<? extends OrganisationRef> offerOrganisations) {
+		sb.append("   select 1");
+		sb.append("     from acofferaccess access");
+		sb.append("     inner join access.offer offer");
+		sb.append("     inner join offer.resource resource");
+		sb.append("     inner join offertoorganisation oto");
+		sb.append("        on oto.offer.key = offer.key");
+		sb.append("   where resource.key = res.key");
+		sb.append("     and offer.valid = true");
+		sb.append("     and offer.openAccess = false");
+		sb.append("     and offer.guestAccess = false");
+		sb.append("     and access.method.enabled = true");
+		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+			sb.append("     and oto.organisation.key in :organisationKeys");
+		}
+	}
+
 	private final static class AddParams {
 		
 		private final boolean identity;

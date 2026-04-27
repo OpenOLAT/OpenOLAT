@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.resource.OLATResource;
 
@@ -45,11 +46,25 @@ public interface Offer extends OfferRef {
 	
 	public Date getValidFrom();
 
+	/**
+	 * If validFrom is set, validStatus must be set as well.
+	 */
 	public void setValidFrom(Date validFrom);
 
 	public Date getValidTo();
 
+	/**
+	 * If validTo is set, validStatus must be set as well.
+	 */
 	public void setValidTo(Date validTo);
+
+	public OfferDateConfig getValidDateConfig();
+
+	public void setValidDateConfig(OfferDateConfig validDateConfig);
+
+	public Set<String> getValidStatus();
+
+	public void setValidStatus(Set<String> validStatus);
 	
 	public boolean isValid();
 	

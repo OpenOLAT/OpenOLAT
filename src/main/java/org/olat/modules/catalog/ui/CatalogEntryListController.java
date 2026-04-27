@@ -575,8 +575,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (catalogEntry.isPublicVisible()) {
 			updateAccessMaxParticipants(row);
 			
+			boolean bookingOnBehalf = getIdentity() != null && !getIdentity().equals(searchParams.getMember());
 			CatalogEntrySecurityCallback secCallback = CatalogEntrySecurityCallbackFactory.createSecurityCallback(
-					catalogEntry, searchParams.isGuestOnly(), row.getParticipantsAvailabilityNum().availability());
+					catalogEntry, searchParams.isGuestOnly(), row.getParticipantsAvailabilityNum().availability(), bookingOnBehalf);
 			row.setSecCallback(secCallback);
 			
 			Set<String> accessMethodTypes = new HashSet<>(2);
@@ -1189,7 +1190,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 										searchParams.getMember())
 								.stream().anyMatch(CurriculumElementMembership::hasMembership);
 					}
-					if (!canLaunch && acService.tryAutoBooking(getIdentity(), curriculumElement, acResult)) {
+					if (!canLaunch && acService.tryAutoBooking(searchParams.getMember(), curriculumElement, acResult)) {
 						doOpenResource(ureq, row);
 						return;
 					}

@@ -298,6 +298,7 @@ public class ACOfferDAO {
 		offerCopy.setOpenAccess(offer.isOpenAccess());
 		offerCopy.setValidFrom(validFrom);
 		offerCopy.setValidTo(validTo);
+		offerCopy.setValidDateConfig(offer.getValidDateConfig());
 		dbInstance.getCurrentEntityManager().persist(offerCopy);
 		return offerCopy;
 	}
@@ -325,6 +326,20 @@ public class ACOfferDAO {
 	public Offer save(Offer offer, CostCenter costCenter) {
 		((OfferImpl)offer).setCostCenter(costCenter);
 		return saveOffer(offer);
+	}
+
+	public List<Offer> loadRelativeDateOffers(Collection<OLATResource> resources) {
+		String query = """
+				select offer from acoffer offer
+				inner join fetch offer.resource resource
+				where resource.key in :resourceKeys
+				  and offer.valid=true
+				  and offer.validDateConfigXml is not null
+				""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Offer.class)
+				.setParameter("resourceKeys", resources.stream().map(OLATResource::getKey).toList())
+				.getResultList();
 	}
 	
 	public Map<Long, Long> getCostCenterKeyToOfferCount(Collection<CostCenter> costCenters) {

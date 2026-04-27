@@ -1014,6 +1014,8 @@ create table o_ac_offer (
   is_valid boolean default true,
   validfrom timestamp,
   validto timestamp,
+  valid_date_config varchar(2000),
+  valid_status varchar(255),
   version int4 not null,
   resourceid int8,
   resourcetypename varchar(255),

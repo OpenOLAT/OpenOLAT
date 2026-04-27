@@ -40,57 +40,59 @@ public class MultiCurriculumElementSecurityCallbackFactoryTest {
 
 	@Test
 	public void shouldCreateCallback_participant_access() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.active, true, true, () -> false, oneAccess(), ParticipantsAvailability.manyLeft);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.active, true, true, () -> false, false, oneAccess(), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, true, true, false, false, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_participant_noaccess_status() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, true, true, () -> false, oneAccess(), ParticipantsAvailability.manyLeft);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, true, true, () -> false, false, oneAccess(), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, true, false, false, false, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_reservation() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.active, false, false, () -> true, oneAccess(), ParticipantsAvailability.manyLeft);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.active, false, false, () -> true, false, oneAccess(), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, true, false, false, false, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_fully_booked() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.active, true, true, () -> false, oneAccess(), ParticipantsAvailability.fullyBooked);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.active, true, true, () -> false, false, oneAccess(), ParticipantsAvailability.fullyBooked);
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, oneAccess(), ParticipantsAvailability.fullyBooked);
+		secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, false, oneAccess(), ParticipantsAvailability.fullyBooked);
 		assertCallback(secCallback, false, false, true, false, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_offer() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, oneAccess(), ParticipantsAvailability.manyLeft);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, false, oneAccess(), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, false, false, true, true, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_offers() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, toAccess(List.of(false, false)), ParticipantsAvailability.manyLeft);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, false, toAccess(List.of(false, false)), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, false, false, true, true, false);
 	}
 	
 	@Test
 	public void shouldCreateCallback_autoBooking() {
-		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, toAccess(List.of(true)), ParticipantsAvailability.manyLeft);
+		CatalogEntrySecurityCallback secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, false, toAccess(List.of(true)), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, false, false, true, true, true);
-		secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false,  toAccess(List.of(true, true)), ParticipantsAvailability.manyLeft);
+		secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, false, toAccess(List.of(true, true)), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, false, false, true, true, false);
-		secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, toAccess(List.of(false, true)), ParticipantsAvailability.manyLeft);
+		secCallback = secCallback(CurriculumElementStatus.preparation, false, false, () -> false, false, toAccess(List.of(false, true)), ParticipantsAvailability.manyLeft);
+		assertCallback(secCallback, false, false, true, true, false);
+		secCallback(CurriculumElementStatus.preparation, false, false, () -> false, true, toAccess(List.of(true)), ParticipantsAvailability.manyLeft);
 		assertCallback(secCallback, false, false, true, true, false);
 	}
 
 	private CatalogEntrySecurityCallback secCallback(CurriculumElementStatus curriculumElementStatus, boolean isMember,
-			boolean isParticipant, Supplier<Boolean> isReservation, List<OLATResourceAccess> resourceAccesses,
-			ParticipantsAvailability participantsAvailability) {
+			boolean isParticipant, Supplier<Boolean> isReservation, boolean bookingOnBehalf,
+			List<OLATResourceAccess> resourceAccesses, ParticipantsAvailability participantsAvailability) {
 		return new MultiCurriculumElementSecurityCallbackFactory(curriculumElementStatus, isMember, isParticipant,
-				isReservation, resourceAccesses, participantsAvailability).getSecurityCallback();
+				isReservation, bookingOnBehalf, resourceAccesses, participantsAvailability).getSecurityCallback();
 	}
 	
 	private void assertCallback(CatalogEntrySecurityCallback secCallback, boolean openAvailable, boolean openEnabled,

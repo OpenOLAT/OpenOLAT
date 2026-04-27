@@ -48,8 +48,6 @@ public class HeaderStartController extends BasicController {
 	private final Link startAdminLink;
 	private final ExternalLink guestStartLink;
 	
-	private boolean autoBooking = false;
-
 	protected HeaderStartController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -104,14 +102,6 @@ public class HeaderStartController extends BasicController {
 	
 	public void setError(String error) {
 		mainVC.contextPut("error", error);
-	}
-
-	public boolean isAutoBooking() {
-		return autoBooking;
-	}
-
-	public void setAutoBooking(boolean autoBooking) {
-		this.autoBooking = autoBooking;
 	}
 
 	@Override

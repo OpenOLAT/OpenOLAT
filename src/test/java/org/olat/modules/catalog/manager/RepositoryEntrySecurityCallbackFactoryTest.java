@@ -38,71 +38,72 @@ public class RepositoryEntrySecurityCallbackFactoryTest {
 
 	@Test
 	public void shouldCreateCallback_participant_access() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, true, true, false, false, oneAccess());
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, true, true, false, false, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
 	}
 	
 	@Test
 	public void shouldCreateCallback_participant_noaccess_status() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.preparation, true, true, false, false, oneAccess());
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.preparation, true, true, false, false, false, oneAccess());
 		assertCallback(secCallback, true, false, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.review, true, true, false, false, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.review, true, true, false, false, false, oneAccess());
 		assertCallback(secCallback, true, false, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.coachpublished, true, true, false, false, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.coachpublished, true, true, false, false, false, oneAccess());
 		assertCallback(secCallback, true, false, false, false, false);
 	}
 	
 	@Test
 	public void shouldCreateCallback_guest_access() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, true, false, oneAccess());
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, true, false, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.preparation, false, false, true, false, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.preparation, false, false, true, false, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.review, false, false, true, false, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.review, false, false, true, false, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.coachpublished, false, false, true, false, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.coachpublished, false, false, true, false, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_open_access() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, true, oneAccess());
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, true, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.preparation, false, false, false, true, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.preparation, false, false, false, true, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.review, false, false, false, true, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.review, false, false, false, true, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.coachpublished, false, false, false, true, oneAccess());
+		secCallback = secCallback(RepositoryEntryStatusEnum.coachpublished, false, false, false, true, false, oneAccess());
 		assertCallback(secCallback, true, true, false, false, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_offer() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, oneAccess());
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, false, oneAccess());
 		assertCallback(secCallback, false, false, true, true, false);
 	}
-	
+
 	@Test
 	public void shouldCreateCallback_offers() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, toAccess(List.of(false, false)));
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, false, toAccess(List.of(false, false)));
 		assertCallback(secCallback, false, false, true, true, false);
 	}
 	
 	@Test
 	public void shouldCreateCallback_autoBooking() {
-		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, toAccess(List.of(true)));
+		CatalogEntrySecurityCallback secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, false, toAccess(List.of(true)));
 		assertCallback(secCallback, false, false, true, true, true);
-		secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, toAccess(List.of(true, true)));
+		secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, false, toAccess(List.of(true, true)));
 		assertCallback(secCallback, false, false, true, true, false);
-		secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, toAccess(List.of(false, true)));
+		secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, false, toAccess(List.of(false, true)));
+		assertCallback(secCallback, false, false, true, true, false);
+		secCallback = secCallback(RepositoryEntryStatusEnum.published, false, false, false, false, true, toAccess(List.of(true)));
 		assertCallback(secCallback, false, false, true, true, false);
 	}
-	
 
 	private CatalogEntrySecurityCallback secCallback(RepositoryEntryStatusEnum status, boolean isMember,
-			boolean isParticipant, boolean openAccess, boolean guestAccess, List<OLATResourceAccess> accesses) {
+			boolean isParticipant, boolean openAccess, boolean guestAccess, boolean bookingOnBehalf, List<OLATResourceAccess> accesses) {
 		return new RepositoryEntrySecurityCallbackFactory(status, isMember, isParticipant, openAccess, guestAccess,
-				accesses).getSecurityCallback();
+				bookingOnBehalf, accesses).getSecurityCallback();
 	}
 	
 	private void assertCallback(CatalogEntrySecurityCallback secCallback, boolean openAvailable, boolean openEnabled,

@@ -42,8 +42,9 @@ public class CatalogEntrySecurityCallbackFactory {
 	public static CatalogEntrySecurityCallback createSecurityCallback(
 			CatalogEntry catalogEntry,
 			boolean guestAccess,
-			ParticipantsAvailability participantsAvailability) {
-		
+			ParticipantsAvailability participantsAvailability,
+			boolean bookingOnBehalf) {
+
 		if (catalogEntry.getCurriculumElementKey() != null) {
 			if (catalogEntry.isSingleCourseImplementation()) {
 				return createSingleCurriculumElementSecurityCallback(
@@ -52,6 +53,7 @@ public class CatalogEntrySecurityCallbackFactory {
 						catalogEntry.isMember(),
 						catalogEntry.isParticipant(),
 						() -> Boolean.valueOf(catalogEntry.isReservationAvailable()),
+						bookingOnBehalf,
 						catalogEntry.getResourceAccess(),
 						participantsAvailability);
 			}
@@ -60,6 +62,7 @@ public class CatalogEntrySecurityCallbackFactory {
 					catalogEntry.isMember(),
 					catalogEntry.isParticipant(),
 					() -> Boolean.valueOf(catalogEntry.isReservationAvailable()),
+					bookingOnBehalf,
 					catalogEntry.getResourceAccess(),
 					participantsAvailability);
 		} else if (catalogEntry.getRepositoryEntryKey() != null) {
@@ -69,39 +72,41 @@ public class CatalogEntrySecurityCallbackFactory {
 					catalogEntry.isParticipant(),
 					catalogEntry.isOpenAccess(),
 					guestAccess,
+					bookingOnBehalf,
 					catalogEntry.getResourceAccess());
 		}
-		
+
 		return CatalogEntrySecurityCallback.ERROR_CALLBACK;
 	}
-	
+
 	public static CatalogEntrySecurityCallback createSingleCurriculumElementSecurityCallback(
 			CurriculumElementStatus curriculumElementStatus, RepositoryEntryStatusEnum repositoryElementStatus,
 			boolean isMember, boolean isParticipant, Supplier<Boolean> isReservation,
-			List<OLATResourceAccess> resourceAccesses, ParticipantsAvailability participantsAvailability) {
-		
+			boolean bookingOnBehalf, List<OLATResourceAccess> resourceAccesses, ParticipantsAvailability participantsAvailability) {
+
 		CurriculumElementCallbackFactory factory = new SingleCurriculumElementSecurityCallbackFactory(
 				curriculumElementStatus, repositoryElementStatus, isMember, isParticipant, isReservation,
-				resourceAccesses, participantsAvailability);
+				bookingOnBehalf, resourceAccesses, participantsAvailability);
 		return factory.getSecurityCallback();
 	}
 
 	public static CatalogEntrySecurityCallback createMultiCurriculumElementSecurityCallback(
 			CurriculumElementStatus curriculumElementStatus, boolean isMember, boolean isParticipant,
-			Supplier<Boolean> isReservation, List<OLATResourceAccess> resourceAccesses,
+			Supplier<Boolean> isReservation, boolean bookingOnBehalf, List<OLATResourceAccess> resourceAccesses,
 			ParticipantsAvailability participantsAvailability) {
-		
+
 		MultiCurriculumElementSecurityCallbackFactory factory = new MultiCurriculumElementSecurityCallbackFactory(
-				curriculumElementStatus, isMember, isParticipant, isReservation, resourceAccesses,
+				curriculumElementStatus, isMember, isParticipant, isReservation, bookingOnBehalf, resourceAccesses,
 				participantsAvailability);
 		return factory.getSecurityCallback();
 	}
-	
+
 	public static CatalogEntrySecurityCallback createRepositoryEntrySecurityCallback(
 			RepositoryEntryStatusEnum repositoryElementStatus, boolean isMember, boolean isParticipant,
-			boolean openAccess, boolean guestAccess, List<OLATResourceAccess> resourceAccesses) {
+			boolean openAccess, boolean guestAccess, boolean bookingOnBehalf, List<OLATResourceAccess> resourceAccesses) {
 		RepositoryEntrySecurityCallbackFactory factory = new RepositoryEntrySecurityCallbackFactory(
-				repositoryElementStatus, isMember, isParticipant, openAccess, guestAccess, resourceAccesses);
+				repositoryElementStatus, isMember, isParticipant, openAccess, guestAccess, bookingOnBehalf,
+				resourceAccesses);
 		return factory.getSecurityCallback();
 	}
 

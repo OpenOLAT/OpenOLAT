@@ -47,7 +47,6 @@ import org.olat.repository.ui.list.AbstractDetailsHeaderController;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
@@ -139,12 +138,6 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", element.getType().getDisplayName());
-	}
-
-	@Override
-	protected boolean tryAutoBooking(UserRequest ureq) {
-		AccessResult acResult = acService.isAccessible(element, bookedIdentity, null, false, null, false);
-		return acService.tryAutoBooking(bookedIdentity, element, acResult);
 	}
 
 	@Override

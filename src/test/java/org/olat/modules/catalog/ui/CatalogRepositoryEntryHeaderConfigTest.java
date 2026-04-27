@@ -23,6 +23,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
@@ -315,6 +316,11 @@ public class CatalogRepositoryEntryHeaderConfigTest extends OlatTestCase {
 		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname());
 		offer.setValidFrom(DateUtils.addDays(new Date(), -10));
 		offer.setValidTo(DateUtils.addDays(new Date(), 10));
+		offer.setValidStatus(Set.of(
+				RepositoryEntryStatusEnum.preparation.name(),
+				RepositoryEntryStatusEnum.review.name(),
+				RepositoryEntryStatusEnum.coachpublished.name(),
+				RepositoryEntryStatusEnum.published.name()));
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
 		acService.saveOfferAccess(offerAccess);

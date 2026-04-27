@@ -22,7 +22,6 @@ package org.olat.repository.ui;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -38,6 +37,9 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 18.03.2013<br>
@@ -53,7 +55,11 @@ public class LifecycleEditController extends FormBasicController {
 	private DateChooser validToEl;
 
 	private RepositoryEntryLifecycle lifecycle;
-	private final RepositoryEntryLifecycleDAO reLifecycleDao;
+
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private RepositoryEntryLifecycleDAO reLifecycleDao;
 
 	public LifecycleEditController(UserRequest ureq, WindowControl wControl, RepositoryEntryLifecycle lifecycle) {
 		super(ureq, wControl);
@@ -61,7 +67,6 @@ public class LifecycleEditController extends FormBasicController {
 
 		// lifecycle may be null for creating a new entry
 		this.lifecycle = lifecycle;
-		reLifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 
 		initForm(ureq);
 	}
@@ -151,6 +156,8 @@ public class LifecycleEditController extends FormBasicController {
 			lifecycle.setValidFrom(validFromEl.getDate());
 			lifecycle.setValidTo(validToEl.getDate());
 			reLifecycleDao.updateLifecycle(lifecycle);
+			List<OLATResource> resources = reLifecycleDao.loadResources(lifecycle);
+			acService.updateRelativeValidDates(resources, lifecycle.getValidFrom(), lifecycle.getValidTo());
 		}
 		setDefaultCourseExecPeriod();
 		fireEvent(ureq, Event.DONE_EVENT);

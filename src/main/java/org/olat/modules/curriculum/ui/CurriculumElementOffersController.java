@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -44,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.CatalogInfo.SortPriorityProvider;
@@ -94,11 +97,26 @@ public class CurriculumElementOffersController extends BasicController {
 		
 		boolean fullyBooked = curriculumService.isMaxParticipantsReached(element);
 		boolean startDateAvailable = element.getBeginDate() != null;
+		boolean endDateAvailable = element.getEndDate() != null;
+		SelectionValues availableStatuses = new SelectionValues();
+		Arrays.stream(CurriculumElementStatus.selectableAdmin())
+			.filter(status -> status != CurriculumElementStatus.active)
+			.forEach(status -> availableStatuses.add(SelectionValues.entry(
+					status.name(),
+					translate("status." + status.name()),
+					null,
+					"o_icon o_icon-fw o_icon_curriculum_status_" + status.name(),
+					null,
+					true)));
+		Set<String> defaultStatuses = Arrays.stream(ACService.CESTATUS_ACTIVE_METHOD_PERIOD)
+				.map(CurriculumElementStatus::name)
+				.collect(Collectors.toSet());
+
 		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), false, true, true,
 				translate("access.taxonomy.level"), details, null, getStatusEvaluator(element.getElementStatus()),
-				translate("offer.available.in.status.curriculum.element"),
-				fullyBooked, startDateAvailable, editBusinessPath,
-				translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
+				translate("offer.available.in.status.curriculum.element"), availableStatuses, defaultStatuses,
+				fullyBooked, startDateAvailable, endDateAvailable, editBusinessPath, translate("access.open.metadata"),
+				CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
 				taxonomyLevels, true, getSortOrderProvider(element));
 

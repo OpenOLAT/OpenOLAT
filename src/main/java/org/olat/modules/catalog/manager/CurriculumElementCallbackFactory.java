@@ -43,16 +43,19 @@ public abstract class CurriculumElementCallbackFactory {
 	protected final Supplier<Boolean> isReservation;
 	protected final List<OLATResourceAccess> resourceAccesses;
 	protected final ParticipantsAvailability participantsAvailability;
+	protected final boolean bookingOnBehalf;
 	private CatalogEntrySecurityCallback secCallback;
 
 	public CurriculumElementCallbackFactory(CurriculumElementStatus curriculumElementStatus, boolean isMember, boolean isParticipant,
-			Supplier<Boolean> isReservation, List<OLATResourceAccess> resourceAccesses, ParticipantsAvailability participantsAvailability) {
+			Supplier<Boolean> isReservation, boolean bookingOnBehalf, List<OLATResourceAccess> resourceAccesses,
+			ParticipantsAvailability participantsAvailability) {
 		this.curriculumElementStatus = curriculumElementStatus;
 		this.isMember = isMember;
 		this.isParticipant = isParticipant;
 		this.isReservation = isReservation;
 		this.resourceAccesses = resourceAccesses;
 		this.participantsAvailability = participantsAvailability;
+		this.bookingOnBehalf = bookingOnBehalf;
 	}
 	
 	public final CatalogEntrySecurityCallback getSecurityCallback() {
@@ -78,7 +81,7 @@ public abstract class CurriculumElementCallbackFactory {
 	protected abstract CatalogEntrySecurityCallback createMemberCallback();
 	
 	protected final boolean isAutoBooking() {
-		if (isMember) {
+		if (isMember || bookingOnBehalf) {
 			return false;
 		}
 		

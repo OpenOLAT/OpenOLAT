@@ -74,6 +74,7 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -247,7 +248,10 @@ public class MembersTableController extends FormBasicController {
 	
 	protected void forgeChatLink(MemberRow row, Identity identity) {
 		FormLink chatLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "im", "", null, null, Link.NONTRANSLATED);
-		row.setOnlineStatus(userPortraitService.createPortraitUser(getLocale(), identity).getPresence().name());
+		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+		if (portraitUser.getPresence() != null) {
+			row.setOnlineStatus(portraitUser.getPresence().name());
+		}
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
 	}

@@ -41,17 +41,20 @@ public class RepositoryEntrySecurityCallbackFactory {
 	private final boolean openAccess;
 	private final boolean guestAccess;
 	private final List<OLATResourceAccess> resourceAccesses;
+	private final boolean bookingOnBehalf;
 	private final CatalogEntrySecurityCallback secCallback;
-	
+
 	public RepositoryEntrySecurityCallbackFactory(RepositoryEntryStatusEnum repositoryElementStatus, boolean isMember,
-			boolean isParticipant, boolean openAccess, boolean guestAccess, List<OLATResourceAccess> resourceAccesses) {
+			boolean isParticipant, boolean openAccess, boolean guestAccess, boolean bookingOnBehalf,
+			List<OLATResourceAccess> resourceAccesses) {
 		this.repositoryElementStatus = repositoryElementStatus;
 		this.isMember = isMember;
 		this.isParticipant = isParticipant;
 		this.openAccess = openAccess;
 		this.guestAccess = guestAccess;
 		this.resourceAccesses = resourceAccesses;
-		
+		this.bookingOnBehalf = bookingOnBehalf;
+
 		secCallback = createSecCallback();
 	}
 
@@ -83,7 +86,7 @@ public class RepositoryEntrySecurityCallbackFactory {
 	}
 	
 	private boolean isAutoBooking() {
-		if (isMember || openAccess || guestAccess) {
+		if (isMember || openAccess || guestAccess || bookingOnBehalf) {
 			return false;
 		}
 		

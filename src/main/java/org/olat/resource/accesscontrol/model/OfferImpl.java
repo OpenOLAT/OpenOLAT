@@ -22,6 +22,8 @@ package org.olat.resource.accesscontrol.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -35,6 +37,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -47,7 +50,9 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.CostCenter;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferDateConfig;
 import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.manager.OfferDateConfigXStream;
 
 /**
  * 
@@ -93,6 +98,12 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="validto", nullable=true, insertable=true, updatable=true)
 	private Date validTo;
+	@Column(name="valid_date_config", nullable=true, insertable=true, updatable=true)
+	private String validDateConfigXml;
+	@Transient
+	private OfferDateConfig validDateConfigCache;
+	@Column(name="valid_status", nullable=true, insertable=true, updatable=true)
+	private String validStatus;
 
 	@Column(name="token", nullable=true, insertable=true, updatable=true)
 	private String token;
@@ -203,6 +214,51 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	@Override
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
+	}
+
+	@Override
+	public OfferDateConfig getValidDateConfig() {
+		if (validDateConfigCache == null && validDateConfigXml != null) {
+			validDateConfigCache = OfferDateConfigXStream.fromXml(validDateConfigXml);
+		}
+		return validDateConfigCache;
+	}
+
+	@Override
+	public void setValidDateConfig(OfferDateConfig validDateConfig) {
+		this.validDateConfigCache = validDateConfig;
+		this.validDateConfigXml = OfferDateConfigXStream.toXml(validDateConfig);
+	}
+
+	@Override
+	public Set<String> getValidStatus() {
+		return splitValidStatus(validStatus);
+	}
+
+	@Override
+	public void setValidStatus(Set<String> validStatus) {
+		this.validStatus = joinValidStatus(validStatus);
+	}
+
+	private static Set<String> splitValidStatus(String value) {
+		Set<String> result = new HashSet<>();
+		if (value == null || value.isBlank()) {
+			return result;
+		}
+		for (String part : value.split(",")) {
+			String trimmed = part.trim();
+			if (!trimmed.isEmpty()) {
+				result.add(trimmed);
+			}
+		}
+		return result;
+	}
+
+	private static String joinValidStatus(Set<String> values) {
+		if (values == null || values.isEmpty()) {
+			return null;
+		}
+		return "," + String.join(",", values) + ",";
 	}
 
 	@Override

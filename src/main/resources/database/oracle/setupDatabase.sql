@@ -1061,6 +1061,8 @@ create table o_ac_offer (
   is_valid number default 1,
   validfrom date,
   validto date,
+  valid_date_config varchar(2000 char),
+  valid_status varchar(255 char),
   version number(20) not null,
   resourceid number(20),
   resourcetypename varchar(255 char),

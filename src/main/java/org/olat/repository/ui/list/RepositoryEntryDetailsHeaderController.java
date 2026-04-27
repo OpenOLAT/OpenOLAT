@@ -40,7 +40,6 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -137,12 +136,6 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-	}
-
-	@Override
-	protected boolean tryAutoBooking(UserRequest ureq) {
-		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, false, null, false);
-		return acService.tryAutoBooking(getIdentity(), entry, acResult);
 	}
 
 	@Override

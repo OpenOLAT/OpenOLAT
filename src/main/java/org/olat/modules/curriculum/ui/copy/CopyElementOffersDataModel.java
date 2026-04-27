@@ -103,7 +103,7 @@ implements SortableFlexiTableDataModel<CopyOfferRow> {
 		label("table.header.offer.label"),
 		publishedIn("table.header.published.in"),
 		organisations("table.header.released.for"),
-		availableIn("offer.available.in"),
+		availableIn("offer.available.if"),
 		price("booking.offer.price");
 
 		private final String i18nKey;

@@ -967,6 +967,9 @@ public class RepositoryManager {
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		updatedRe.getOlatResource().getKey();
 		dbInstance.commit();
+		acService.updateRelativeValidDates(List.of(updatedRe.getOlatResource()),
+				cycle != null ? cycle.getValidFrom() : null,
+				cycle != null ? cycle.getValidTo() : null);
 		return updatedRe;
 	}
 
@@ -1039,9 +1042,12 @@ public class RepositoryManager {
 
 		dbInstance.commit();
 		autoAccessManager.grantAccess(updatedRe);
+		acService.updateRelativeValidDates(List.of(updatedRe.getOlatResource()),
+				cycle != null ? cycle.getValidFrom() : null,
+				cycle != null ? cycle.getValidTo() : null);
 		return updatedRe;
 	}
-	
+
 	public RepositoryEntry setExpenditureOfWork(final RepositoryEntry re,String expenditureOfWork) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
@@ -1138,6 +1144,9 @@ public class RepositoryManager {
 
 		dbInstance.commit();
 		autoAccessManager.grantAccess(updatedRe);
+		acService.updateRelativeValidDates(List.of(updatedRe.getOlatResource()),
+				cycle != null ? cycle.getValidFrom() : null,
+				cycle != null ? cycle.getValidTo() : null);
 		return updatedRe;
 	}
 

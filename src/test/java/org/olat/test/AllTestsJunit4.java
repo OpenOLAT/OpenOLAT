@@ -779,6 +779,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACMethodDAOTest.class,
 	org.olat.resource.accesscontrol.ACMethodManagerTest.class,
 	org.olat.resource.accesscontrol.ACOfferManagerTest.class,
+	org.olat.resource.accesscontrol.ACOfferRelativeDatesTest.class,
 	org.olat.resource.accesscontrol.ACOfferToOrganisationDAOTest.class,
 	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
 	org.olat.resource.accesscontrol.ACBillingAddressDAOTest.class,

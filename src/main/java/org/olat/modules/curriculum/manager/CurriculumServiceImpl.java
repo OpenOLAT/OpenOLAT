@@ -242,6 +242,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private InvitationDAO invitationDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private ACService acService;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -861,7 +863,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
-		return curriculumElementDao.update(element);
+		CurriculumElement updated = curriculumElementDao.update(element);
+		if (updated.getResource() != null) {
+			acService.updateRelativeValidDates(List.of(updated.getResource()), updated.getBeginDate(), updated.getEndDate());
+		}
+		return updated;
 	}
 	
 	@Override
