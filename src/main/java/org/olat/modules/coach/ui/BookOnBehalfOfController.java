@@ -40,6 +40,7 @@ import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,6 +80,10 @@ public class BookOnBehalfOfController extends BasicController {
 		catalogEntryListCtrl = new CatalogEntryListController(ureq, wControl, stackPanel, searchParams, listParams);
 		listenTo(catalogEntryListCtrl);
 
+		UserPropertiesInfoController profile = new UserPropertiesInfoController(ureq, wControl, reloadedIdentity);
+		listenTo(profile);
+		mainVC.put("portrait", profile.getInitialComponent());
+		
 		mainVC.put("catalogEntryList", catalogEntryListCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
