@@ -549,6 +549,14 @@ public class FormUIFactory {
 		return ss;
 	}
 	
+	public SingleSelection addCardSingleSelectVertical(String name, String i18nLabel, FormItemContainer formLayout, SelectionValues values) {
+		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
+		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons(), null, values.cssClasses(), false, null);
+		setLabelIfNotNull(i18nLabel, ss);
+		formLayout.add(ss); 
+		return ss;
+	}
+	
 	/**
 	 * A radio button group rendered vertically as cards with a card title,
 	 * description and icon. If you need custom styling, width etc, use the

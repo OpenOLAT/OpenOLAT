@@ -114,6 +114,11 @@
 						$(this).removeClass('o_display_none');
 					}
 				});
+				// Hide the more toggle when its dropdown ends up empty
+				// (e.g. a single crumb that overflows the bar).
+				if (this.elements.moreListItems.not('.o_display_none').length === 0) {
+					this.elements.moreList.addClass('o_display_none');
+				}
 			}
 		}
 	}

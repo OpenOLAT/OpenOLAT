@@ -78,7 +78,6 @@ public class LectureBlockVO implements LectureBlockRef {
 	
 	private String meetingTitle;
 	private String meetingUrl;
-	private String recordingTitle;
 	private String recordingUrl;
 	
 	@Schema(accessMode = AccessMode.READ_ONLY, description = "Signal the presence of a BigBlueButton meeting")
@@ -110,7 +109,6 @@ public class LectureBlockVO implements LectureBlockRef {
 		
 		vo.setMeetingTitle(block.getMeetingTitle());
 		vo.setMeetingUrl(block.getMeetingUrl());
-		vo.setRecordingTitle(block.getRecordingTitle());
 		vo.setRecordingUrl(block.getRecordingUrl());
 		
 		if(block.getStatus() != null) {
@@ -268,14 +266,6 @@ public class LectureBlockVO implements LectureBlockRef {
 
 	public void setMeetingUrl(String meetingUrl) {
 		this.meetingUrl = meetingUrl;
-	}
-
-	public String getRecordingTitle() {
-		return recordingTitle;
-	}
-
-	public void setRecordingTitle(String recordingTitle) {
-		this.recordingTitle = recordingTitle;
 	}
 
 	public String getRecordingUrl() {
