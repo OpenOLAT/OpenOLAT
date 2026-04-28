@@ -18,6 +18,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -31,7 +32,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
@@ -214,24 +214,65 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 
 	@Override
 	public void filter(String searchString,  List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			flexiSearch(searchString, null);
-		} else if(filters != null && !filters.isEmpty()) {
-			filter(filters);
+		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
+			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
+					? null : searchString.toLowerCase();
+			final Set<String> decisions = getFilteredList(filters, PositionApplicationsController.FILTER_DECISION);
+			final Set<String> applicationStatus = getFilteredList(filters, PositionApplicationsController.FILTER_APPLICATION_STATUS);
+			
+			List<ApplicationRow> filteredRows = new ArrayList<>(backupRows.size());
+			for(ApplicationRow row:backupRows) {
+				boolean accept = accept(loweredSearchString, row)
+						&& acceptDecision(decisions, row)
+						&& acceptApplicationStatus(applicationStatus, row);
+				if(accept) {
+					filteredRows.add(row);
+				}
+			}
+			
+			super.setObjects(filteredRows);
 		} else {
 			super.setObjects(backupRows);
 		}
 	}
 	
-	public boolean flexiSearch(String searchString, String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			//TODO Flexi QL super.setObjects(results.getRows());
-			super.setObjects(backupRows);
-		} else {
-			super.setObjects(backupRows);
+	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			return filterValues != null && !filterValues.isEmpty() ? Set.copyOf(filterValues) : Set.of();
 		}
-		return allErrors;
+		return Set.of();
+	}
+	
+	private boolean acceptDecision(Set<String> status, ApplicationRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		Integer decision = row.getApplication().getDecision();
+		if((decision == null || decision.intValue() <= 0) && status.contains(PositionApplicationsController.FILTER_NULL_KEY)
+				|| (decision != null && status.contains(decision.toString()))) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean acceptApplicationStatus(Set<String> status, ApplicationRow row) {
+		if(status == null || status.isEmpty()) return true;
+
+		ApplicationStatus applicationStatus = row.getApplication().getApplicationStatus();
+		return status.contains(applicationStatus.name());
+	}
+	
+	private boolean accept(String searchValue, ApplicationRow row) {
+		if(searchValue == null) return true;
+		
+		return accept(searchValue, row.getApplication().getPerson().getFirstName())
+				|| accept(searchValue, row.getApplication().getPerson().getLastName())
+				|| accept(searchValue, row.getApplication().getPerson().getMail());
+	}
+	
+	private boolean accept(String searchValue, String val) {
+		return val != null && val.toLowerCase().contains(searchValue);
 	}
 	
 	public void reset() {

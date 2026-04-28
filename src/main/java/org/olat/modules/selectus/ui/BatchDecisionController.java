@@ -96,7 +96,7 @@ public class BatchDecisionController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!decisionEl.isOneSelected()) {
-			decisionEl.setErrorKey("form.legende.mandatory", null);
+			decisionEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

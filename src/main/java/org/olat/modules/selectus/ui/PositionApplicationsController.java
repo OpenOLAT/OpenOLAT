@@ -29,6 +29,7 @@ import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -44,6 +45,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -196,6 +201,10 @@ import org.olat.modules.selectus.ui.review.ReviewEditController;
  */
 public class PositionApplicationsController extends FormBasicController implements FlexiTableCssDelegate, GenericEventListener, Activateable2 {
 
+	protected static final String FILTER_DECISION = "decision";
+	protected static final String FILTER_APPLICATION_STATUS = "applicationStatus";
+	protected static final String FILTER_NULL_KEY = "NULL";
+	
 	private final RatingComparator ratingComparator = new RatingComparator();
 	
 	private boolean listChanged = false;
@@ -204,6 +213,8 @@ public class PositionApplicationsController extends FormBasicController implemen
 	private List<ApplicationLight> applications;
 	private final Translator mailTranslator;
 	private final List<Tab> customTabs;
+
+	private FlexiFiltersTab allTab;
 	
 	private final ApplicationAttributesDelegate projectAttributesDelegate
 		= new ApplicationAttributesDelegate(PositionApplicationAttributeTabEnum.project);
@@ -325,6 +336,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		setRatingDeadline();
 
 		initForm(ureq);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 		loadModel(position);
 		
 		positionOres = OresHelper.clone(position);
@@ -417,6 +429,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setShowAllRowsEnabled(true);
+		
+		initFilterPresets();
+		initFilters();
 		
 		String page = velocity_root + "/assignments_statistics.html";
 		statisticsContainer = FormLayoutContainer.createCustomFormLayout("statistics", getTranslator(), page);
@@ -885,6 +900,54 @@ public class PositionApplicationsController extends FormBasicController implemen
 		if(!option.isDisabled() && field.visible(excludedAttributesList)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION));
 		}
+	}
+	
+	private void initFilterPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("all", translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(allTab);
+		
+		// Active (application status)
+
+		// Decision
+		
+		// Without sent emails
+		
+		// My assignment
+		
+		// Not rated
+		
+		// Female
+		
+		
+		tableEl.setFilterTabs(true, tabs);
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// Application status
+		SelectionValues applicationStatusPK = new SelectionValues();
+		ApplicationStatus[] applicationStatus = recruitingModule.getTableApplicationsDefaultBasicFilterApplicationStatus();
+		for(ApplicationStatus status:applicationStatus) {
+			applicationStatusPK.add(SelectionValues.entry(status.name(), translate("application.status.".concat(status.name()))));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.status"),
+				FILTER_APPLICATION_STATUS, applicationStatusPK, true));
+		
+		// Decisions
+		SelectionValues decisionKV = new SelectionValues();
+		decisionKV.add(SelectionValues.entry(FILTER_NULL_KEY, translate("decision.0.filter")));
+		decisionKV.add(SelectionValues.entry("3", translate("decision.3.filter")));
+		decisionKV.add(SelectionValues.entry("2", translate("decision.2.filter")));
+		decisionKV.add(SelectionValues.entry("1", translate("decision.1.filter")));
+		decisionKV.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.decision"),
+				FILTER_DECISION, decisionKV, true));
+
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	public SelectionValues getAssigneesKeyValues() {
@@ -1481,10 +1544,16 @@ public class PositionApplicationsController extends FormBasicController implemen
 				removeAsListenerAndDispose(appController);
 				appController = null;
 			}
+			if(tableEl.getSelectedFilterTab() == null) {
+				tableEl.setSelectedFilterTab(ureq, allTab);
+			}
+			
 		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Assignments".equalsIgnoreCase(type)) {
 				doSelectAssignmentFilter(ureq, entries.get(0).getOLATResourceable().getResourceableId());
+			} else if(tableEl.getSelectedFilterTab() == null) {
+				tableEl.setSelectedFilterTab(ureq, allTab);
 			}
 		}
 	}
