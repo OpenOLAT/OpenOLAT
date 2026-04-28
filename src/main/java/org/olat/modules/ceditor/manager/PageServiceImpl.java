@@ -450,15 +450,18 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	 */
 	private File unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {
 		try(InputStream in=storage.getInputStream(entry)) {
+			File mediaFile = null;
 			String entryPath = entry.getName();
 			String fileName = ZipUtil.cleanFilename(entryPath.replace(mediaZipPath, ""));
 			Path filePath = mediaDir.toPath().resolve(fileName);
 			Path normalizedPath = filePath.normalize();
-			File mediaFile = normalizedPath.toFile();
-			if(mediaFile.isHidden() || mediaFile.getName().startsWith(".")) {
-				return null;
-			} else {
-				FileUtils.copyToFile(in, mediaFile, "");
+			if(normalizedPath.startsWith(mediaDir.toPath())) {
+				mediaFile = normalizedPath.toFile();
+				if(mediaFile.isHidden() || mediaFile.getName().startsWith(".")) {
+					mediaFile = null;// We don't want them
+				} else {
+					FileUtils.copyToFile(in, mediaFile, "");
+				}
 			}
 			return mediaFile;
 		} catch(IOException e) {
