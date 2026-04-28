@@ -136,14 +136,11 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 				if (target.exists()) {
 					fileNames.add(uploadedFileName);
 				}
-				if (!fileNames.isEmpty()) {
-					if (fileNames.size() > 1) {
-						filesUploadEl.setErrorKey("error.files.exist", String.join(", ", fileNames));
-					} else {
-						filesUploadEl.setErrorKey("error.file.exists", fileNames.get(0));
-					}
-					allOk &= false;
-				}
+			}
+			
+			if (!fileNames.isEmpty()) {
+				filesUploadEl.setErrorKey("error.files.exist", String.join(", ", fileNames));
+				allOk &= false;
 			}
 		}
 
