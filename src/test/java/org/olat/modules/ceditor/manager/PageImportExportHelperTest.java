@@ -28,7 +28,6 @@ import java.util.zip.ZipFile;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -164,8 +163,13 @@ public class PageImportExportHelperTest extends OlatTestCase {
 		Assert.assertFalse(slippyQuestion1File.exists());
 	}
 	
+	/**
+	 * A second run of the this test with the same database will match the media per UUID.
+	 * If the first test failed, the second run will probably fail too.
+	 * 
+	 * @throws Exception
+	 */
 	@Test
-	@Ignore
 	public void importPageWithSlippingImage() throws Exception {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("page-io-5");
 		
@@ -192,7 +196,7 @@ public class PageImportExportHelperTest extends OlatTestCase {
 		String filename = mediaPart.getMediaVersion().getRootFilename();
 		File bcrootStorage = contentEditorFileStorage.getRootDirectory();
 		File imageFile = new File(bcrootStorage, storage + "/" + filename);
-		Assert.assertFalse(imageFile.exists());
+		Assert.assertTrue(imageFile.exists());
 		
 		File slippyImageFile = new File("/tmp/briareos.jpg");
 		Assert.assertFalse(slippyImageFile.exists());
