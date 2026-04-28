@@ -409,18 +409,24 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 		String educationalTypeKey = implementationFormatEl.isOneSelected() ? implementationFormatEl.getSelectedKey() : null;
 		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeKey);
 
-		List<Organisation> orgs = organisationService.getOrganisation(
-				OrganisationSelectionSource.toRefs(administrativeAccessEl.getSelectedKeys()));
+		List<Organisation> orgs = getSelectedOrganisations();
 		
 		RepositoryEntry reloadedEntry = repositoryManager.setDescriptionAndName(entry, title, extRef,
 				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(),
 				entry.getRequirements(), entry.getCredits(), entry.getMainLanguage(), entry.getLocation(),
 				entry.getExpenditureOfWork(), lifecycle, orgs, subjects, educationalType);
 		
-		repositoryManager.setRuntimeType(reloadedEntry, runtimeType);
+		reloadedEntry = repositoryManager.setRuntimeType(reloadedEntry, runtimeType);
 
 		RepositoyUIFactory.setDefaultOrganisationKeys(ureq, administrativeAccessEl.getSelectedKeys());
 		
 		context.setCreatedRepositoryEntry(reloadedEntry);
+	}
+	
+	public List<Organisation> getSelectedOrganisations() {
+		if(administrativeAccessEl == null || !administrativeAccessEl.isVisible()) {
+			return List.of(organisationService.getDefaultOrganisation());
+		}
+		return organisationService.getOrganisation(OrganisationSelectionSource.toRefs(administrativeAccessEl.getSelectedKeys()));
 	}
 }
