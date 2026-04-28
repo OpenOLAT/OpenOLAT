@@ -95,6 +95,7 @@ public class BookOnBehalfOfController extends BasicController {
 		CatalogEntryListParams listParams = new CatalogEntryListParams();
 		listParams.setExcludeRepositoryEntries(true);
 		Set<Long> reservedCurriculumElementKeys = Set.copyOf(curriculumElementDAO.loadReservedElementKeys(identity));
+		listParams.setWithSearch(true);
 		listParams.setExcludedCurriculumElementKeys(reservedCurriculumElementKeys);
 		listParams.setExcludeMembers(true);
 		listParams.setExcludedAccessMethodTypes(Set.of(
