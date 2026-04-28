@@ -654,8 +654,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			List<TaskDefinition> taskDefinitionList = (List<TaskDefinition>) runContext.get("taskList");
 			for (TaskDefinition newTask : taskDefinitionList) {
-				tasksContainer.resolve(newTask.getFilename()).getMetaInfo().setFileInitializedBy(getIdentity());
-				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
+				VFSItem item = tasksContainer.resolve(newTask.getFilename());
+				if(item != null) {
+					item.getMetaInfo().setFileInitializedBy(getIdentity());
+					gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
+				}
 			}
 
 			gtaManager.markNews(courseEnv, gtaNode);

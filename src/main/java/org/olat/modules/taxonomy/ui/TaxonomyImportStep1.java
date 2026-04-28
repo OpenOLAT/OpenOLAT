@@ -22,6 +22,8 @@ package org.olat.modules.taxonomy.ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -323,6 +325,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 		private boolean createTaxonomyLevelToImageMap(ZipEntry zipEntry, TaxonomyLevel matchedLevel) {
 			boolean allOk = true;
 			if (!zipEntry.isDirectory()) {
+				final Path tmpPath = Paths.get(WebappHelper.getTmpDir()).normalize();
 				Map<String, File> destinationToImage = new HashMap<>();
 				String destination;
 				String fileName;
@@ -330,8 +333,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 				try (ZipFile zipFile = new ZipFile(uploadFileEl.getUploadFile())) {
 
 					InputStream in = zipFile.getInputStream(zipEntry);
-					File image;
-
 					if (zipEntry.getName().contains(BACKGROUND)) {
 						fileName = zipEntry.getName().replaceAll(".+background/", "");
 						destination = BACKGROUND;
@@ -343,12 +344,14 @@ public class TaxonomyImportStep1 extends BasicStep {
 						uploadFileEl.setErrorKey("import.taxonomy.error.wrong.structure");
 						return false;
 					}
-
+					File image;
 					if (IMAGE_MIME_TYPES.contains(WebappHelper.getMimeType(fileName))) {
 						uploadFileEl.clearError();
-						image = new File(WebappHelper.getTmpDir() + "/" + fileName);
-						if (image.length() / 1024 < 5025 && destination.equals(BACKGROUND)
-						|| image.length() / 1024 < 2049 && destination.equals(TEASER)) {
+						Path imagePath = Paths.get(WebappHelper.getTmpDir(), fileName).normalize();
+						image = imagePath.toFile();
+						if (imagePath.startsWith(tmpPath) &&
+								((image.length() / 1024 < 5025 && destination.equals(BACKGROUND))
+										|| (image.length() / 1024 < 2049 && destination.equals(TEASER)))) {
 							FileUtils.copyInputStreamToFile(in, image);
 						} else {
 							uploadFileEl.reset();
@@ -360,8 +363,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 						uploadFileEl.setErrorKey("error.mimetype");
 						return false;
 					}
-
-
 
 					if (taxonomyLevelToImage.get(matchedLevel) != null) {
 						taxonomyLevelToImage.get(matchedLevel).put(destination, image);

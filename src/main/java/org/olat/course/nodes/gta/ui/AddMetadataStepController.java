@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -145,7 +147,7 @@ public class AddMetadataStepController extends StepFormBasicController {
 			taskList.add(task);
 		}
 
-		if (!filesUploadEl.isMultiFileUpload()
+		if (filesUploadEl.getUploadFilesInfos().size() == 1
 				&& filesUploadEl.getUploadMimeType().equals("application/zip")) {
 			// first 'extraction' in AddMultipleTasksStepController for getting the values (title) for this step
 			// second extraction after completion and for adding new tasks/files to OO
@@ -176,6 +178,7 @@ public class AddMetadataStepController extends StepFormBasicController {
 
 	private boolean extractAssignmentMediaFiles() {
 		boolean allOk = true;
+		final Path tasksFolderPath = tasksFolder.toPath();
 
 		try (ZipInputStream zis = new ZipInputStream(filesUploadEl.getUploadInputStream())) {
 			ZipEntry zipEntry = zis.getNextEntry();
@@ -193,8 +196,11 @@ public class AddMetadataStepController extends StepFormBasicController {
 						fileName = zipEntry.getName().replaceAll(".*/", "");
 					}
 					// adding files to system
-					File target = new File(tasksFolder, fileName);
-					Files.copy(zis, target.toPath());
+					fileName = ZipUtil.cleanFilename(fileName);
+					Path targetPath = tasksFolderPath.resolve(fileName).normalize();
+					if(targetPath.startsWith(tasksFolderPath)) {
+						Files.copy(zis, targetPath);
+					}
 				}
 
 				zis.closeEntry();
