@@ -37,7 +37,6 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyState;
@@ -51,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.IconPanelItem;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -1141,7 +1141,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private String buildStatusLine() {
 			Set<String> statusKeys = offer.getValidStatus();
 			if (statusKeys.isEmpty()) {
-				statusKeys = catalogInfo.getNoPeriodStatuses();
+				statusKeys = catalogInfo.getDefaultStatuses();
 			}
 			if (statusKeys == null || statusKeys.isEmpty()) {
 				return null;

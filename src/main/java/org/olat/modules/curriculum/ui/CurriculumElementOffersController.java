@@ -108,16 +108,13 @@ public class CurriculumElementOffersController extends BasicController {
 					"o_icon o_icon-fw o_icon_curriculum_status_" + status.name(),
 					null,
 					true)));
-		Set<String> defaultStatuses = Arrays.stream(ACService.CESTATUS_ACTIVE_METHOD_PERIOD)
-				.map(CurriculumElementStatus::name)
-				.collect(Collectors.toSet());
-		Set<String> noPeriodStatuses = Arrays.stream(ACService.CESTATUS_ACTIVE_METHOD)
+		Set<String> defaultStatuses = Arrays.stream(ACService.CESTATUS_ACTIVE_METHOD)
 				.map(CurriculumElementStatus::name)
 				.collect(Collectors.toSet());
 
 		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), false, true, true,
 				translate("access.taxonomy.level"), details, null, getStatusEvaluator(element.getElementStatus()),
-				translate("offer.available.in.status.curriculum.element"), availableStatuses, defaultStatuses, noPeriodStatuses,
+				translate("offer.available.in.status.curriculum.element"), availableStatuses, defaultStatuses,
 				fullyBooked, startDateAvailable, endDateAvailable, editBusinessPath, translate("access.open.metadata"),
 				CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,

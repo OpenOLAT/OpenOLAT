@@ -28,7 +28,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CatalogInfo {
 
 	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null,
-			null, null, null, null, null, false, false, false, null, null, null, null, null, true, null);
+			null, null, null, null, false, false, false, null, null, null, null, null, true, null);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -43,7 +43,6 @@ public class CatalogInfo {
 	private final String statusPeriodOption;
 	private final SelectionValues availableStatuses;
 	private final Set<String> defaultStatuses;
-	private final Set<String> noPeriodStatuses;
 	private final boolean fullyBooked;
 	private final boolean startDateAvailable;
 	private final boolean endDateAvailable;
@@ -58,7 +57,7 @@ public class CatalogInfo {
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
 			String customPublishedIn, CatalogStatusEvaluator statusEvaluator, String statusPeriodOption,
-			SelectionValues availableStatuses, Set<String> defaultStatuses, Set<String> noPeriodStatuses, boolean fullyBooked,
+			SelectionValues availableStatuses, Set<String> defaultStatuses, boolean fullyBooked,
 			boolean startDateAvailable, boolean endDateAvailable, String editBusinessPath, String editLabel,
 			String catalogBusinessPath, String webCatalogBusinessPath, Collection<TaxonomyLevel> microsites,
 			boolean showQRCode, SortPriorityProvider sortPriorityProvider) {
@@ -74,7 +73,6 @@ public class CatalogInfo {
 		this.statusPeriodOption = statusPeriodOption;
 		this.availableStatuses = availableStatuses;
 		this.defaultStatuses = defaultStatuses;
-		this.noPeriodStatuses = noPeriodStatuses;
 		this.fullyBooked = fullyBooked;
 		this.startDateAvailable = startDateAvailable;
 		this.endDateAvailable = endDateAvailable;
@@ -133,10 +131,6 @@ public class CatalogInfo {
 
 	public Set<String> getDefaultStatuses() {
 		return defaultStatuses;
-	}
-
-	public Set<String> getNoPeriodStatuses() {
-		return noPeriodStatuses;
 	}
 
 	public boolean isFullyBooked() {

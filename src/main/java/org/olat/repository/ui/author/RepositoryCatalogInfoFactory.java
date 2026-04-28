@@ -39,11 +39,11 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
@@ -83,17 +83,15 @@ public class RepositoryCatalogInfoFactory {
 				availableStatuses.add(SelectionValues.entry(status.name(), translator.translate(status.i18nKey()),
 						null, "o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true));
 			}
-			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
+			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
 					.map(RepositoryEntryStatusEnum::name)
 					.collect(Collectors.toSet());
-			Set<String> noPeriodStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
-					.map(RepositoryEntryStatusEnum::name)
-					.collect(Collectors.toSet());
+			
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
 					false, true,
 					true, translator.translate("access.taxonomy.level"), details,
 					null, getCatalogStatusEvaluator(entry.getEntryStatus()), translator.translate("offer.available.in.status.course"),
-					availableStatuses, defaultStatuses, noPeriodStatuses,
+					availableStatuses, defaultStatuses,
 					false,
 					startDateAvailable,
 					endDateAvailable,
@@ -131,7 +129,7 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
-					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null, null,
+					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null,
 					false, startDateAvailable, endDateAvailable, editBusinessPath, translator.translate("access.open.catalog"),
 					null, null, null, showRQCode, null);
 		}
