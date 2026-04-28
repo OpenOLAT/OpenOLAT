@@ -151,7 +151,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement onlineMeetingProviderUrlEl;
 	private TextElement onlineMeetingProviderNameEl;
 	private TextElement onlineRecordingUrlEl;
-	private TextElement onlineRecordingNameEl;
+	private FormLayoutContainer onlineMeetingProviderLayout;
 	
 	private final boolean readOnly;
 	private final boolean embedded;
@@ -373,7 +373,7 @@ public class EditLectureBlockController extends FormBasicController {
 		enabledOnlineMeetingEl.setVisible(!meetingPK.isEmpty());
 		enabledOnlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
 		
-		onlineMeetingEl = uifactory.addCardSingleSelectHorizontal("onlinemeeting.provider", null, formLayout, meetingPK);
+		onlineMeetingEl = uifactory.addCardSingleSelectHorizontal("onlinemeeting.provider", "onlinemeeting.provider", null, formLayout, meetingPK, true, null);
 		onlineMeetingEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
 		onlineMeetingEl.setVisible(enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn());
 		onlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
@@ -389,22 +389,25 @@ public class EditLectureBlockController extends FormBasicController {
 		editOnlineMeetingButton = uifactory.addFormLink("edit.online.meeting", formLayout, Link.BUTTON_SMALL);
 		editOnlineMeetingButton.setVisible(false);
 		
+		String onlineMeetingPage = velocity_root + "/online_meeting.html";
+		onlineMeetingProviderLayout = uifactory.addCustomFormLayout("online.meeting", null, onlineMeetingPage, formLayout);
+		onlineMeetingProviderLayout.setFormLayout("horizontal");
+		
 		String onlineMeetingTitle = lectureBlock == null ? "Zoom" : lectureBlock.getMeetingTitle();
-		onlineMeetingProviderNameEl = uifactory.addTextElement("lecture.online.meeting.provider.name", 32, onlineMeetingTitle, formLayout);
+		onlineMeetingProviderNameEl = uifactory.addTextElement("lecture.online.meeting.provider.name", 32, onlineMeetingTitle, onlineMeetingProviderLayout);
 		onlineMeetingProviderNameEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
 		onlineMeetingProviderNameEl.setMandatory(true);
-		onlineMeetingProviderUrlEl = uifactory.addTextElement("lecture.online.meeting.provider.url", 256, onlineMeetingUrl, formLayout);
+		onlineMeetingProviderUrlEl = uifactory.addTextElement("lecture.online.meeting.provider.url", 256, onlineMeetingUrl, onlineMeetingProviderLayout);
 		onlineMeetingProviderUrlEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
 		onlineMeetingProviderUrlEl.setMandatory(true);
 
-		String onlineRecordingTitle = lectureBlock == null ? null : lectureBlock.getRecordingTitle();
 		String onlineRecordingUrl = lectureBlock == null ? null : lectureBlock.getRecordingUrl();
-		onlineRecordingNameEl = uifactory.addTextElement("lecture.online.recording.name", 32, onlineRecordingTitle, formLayout);
-		onlineRecordingNameEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineRecording));
 		onlineRecordingUrlEl = uifactory.addTextElement("lecture.online.recording.url", 256, onlineRecordingUrl, formLayout);
 		onlineRecordingUrlEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineRecording));
 		
 		updateOnlineMeetingUI();
+		
+		uifactory.addSpacerElement("online-spacer", formLayout, false);
 		
 		// Subjects
 		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
@@ -598,10 +601,10 @@ public class EditLectureBlockController extends FormBasicController {
 				&& OTHER_MEETING.equals(onlineMeetingEl.getSelectedKey()) && !embedded;
 		onlineMeetingProviderNameEl.setVisible(enabledOnlineMeetingUrl);
 		onlineMeetingProviderUrlEl.setVisible(enabledOnlineMeetingUrl);
+		onlineMeetingProviderLayout.setVisible(enabledOnlineMeetingUrl);
 		
 		// URL for all types of meetings
 		boolean enableRecordingUrl = addLectureCtxt == null;
-		onlineRecordingNameEl.setVisible(enableRecordingUrl);
 		onlineRecordingUrlEl.setVisible(enableRecordingUrl);
 	}
 
@@ -708,7 +711,6 @@ public class EditLectureBlockController extends FormBasicController {
 			}
 		}
 		
-		onlineRecordingNameEl.clearError();
 		onlineRecordingUrlEl.clearError();
 		if(onlineRecordingUrlEl.isVisible() && StringHelper.containsNonWhitespace(onlineRecordingUrlEl.getValue())) {
 			allOk &= validateUrl(onlineRecordingUrlEl);
@@ -919,10 +921,6 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private void updateRecording() {
-		String title = StringHelper.containsNonWhitespace(onlineRecordingNameEl.getValue())
-				? onlineRecordingNameEl.getValue()
-				: null;
-		lectureBlock.setRecordingTitle(title);
 		String url = StringHelper.containsNonWhitespace(onlineRecordingUrlEl.getValue())
 				? onlineRecordingUrlEl.getValue()
 				: null;

@@ -1063,7 +1063,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			String id = "oor_" + b.getKey();
 			ExternalLinkItem onlineRecordingLink = uifactory.addExternalLink(id, id, b.getRecordingUrl(), "_blank", tableEl);
 			onlineRecordingLink.setName(translate("open.online.recording"));
-			onlineRecordingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_video_record");
+			onlineRecordingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_video_icon");
 			row.setOpenOnlineRecordingLink(onlineRecordingLink);
 		}
 		

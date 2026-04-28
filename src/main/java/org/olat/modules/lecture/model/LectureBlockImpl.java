@@ -165,9 +165,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	private String meetingTitle;
 	@Column(name="l_meeting_url", nullable=true, insertable=true, updatable=true)
 	private String meetingUrl;
-	
-	@Column(name="l_recording_title", nullable=true, insertable=true, updatable=true)
-	private String recordingTitle;
+
 	@Column(name="l_recording_url", nullable=true, insertable=true, updatable=true)
 	private String recordingUrl;
 	
@@ -502,16 +500,6 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public void setMeetingUrl(String meetingUrl) {
 		this.meetingUrl = meetingUrl;
-	}
-
-	@Override
-	public String getRecordingTitle() {
-		return recordingTitle;
-	}
-
-	@Override
-	public void setRecordingTitle(String recordingTitle) {
-		this.recordingTitle = recordingTitle;
 	}
 
 	@Override

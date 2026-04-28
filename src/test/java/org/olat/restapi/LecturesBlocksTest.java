@@ -532,7 +532,6 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		lectureBlockVo.setEndDate(new Date());
 		lectureBlockVo.setMeetingTitle("A meeting");
 		lectureBlockVo.setMeetingUrl("https://www.openolat.com/meeting.mp4");
-		lectureBlockVo.setRecordingTitle("The recording");
 		lectureBlockVo.setRecordingUrl("https://www.openolat.com/recording.mp4");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
@@ -559,7 +558,6 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		Assert.assertNotNull(dbBlock.getEndDate());
 		Assert.assertEquals("A meeting", dbBlock.getMeetingTitle());
 		Assert.assertEquals("https://www.openolat.com/meeting.mp4", dbBlock.getMeetingUrl());
-		Assert.assertEquals("The recording", dbBlock.getRecordingTitle());
 		Assert.assertEquals("https://www.openolat.com/recording.mp4", dbBlock.getRecordingUrl());
 	}
 	
