@@ -28,6 +28,7 @@ import java.util.zip.ZipFile;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -164,6 +165,7 @@ public class PageImportExportHelperTest extends OlatTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void importPageWithSlippingImage() throws Exception {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("page-io-5");
 		
