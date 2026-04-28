@@ -26,7 +26,6 @@
 package org.olat.repository;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +34,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -305,22 +305,28 @@ public class RepositoryEntryImportExport {
 	
 	public RepositoryEntry importContent(RepositoryEntry newEntry, VFSContainer mediaContainer, Identity initialAuthor) {
 		if(!anyExportedPropertiesAvailable()) return newEntry;
+		
+		final Path baseDirectoryPath = baseDirectory.toPath().normalize();
 
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		if(StringHelper.containsNonWhitespace(getImageName())) {
-			File newFile = new File(baseDirectory, getImageName());
-			VFSLeaf newImage = new LocalFileImpl(newFile);
-			repositoryManager.setImage(newImage, newEntry, initialAuthor);
+			Path newPath = new File(baseDirectory, getImageName()).toPath().normalize();
+			if(newPath.startsWith(baseDirectoryPath)) {
+				VFSLeaf newImage = new LocalFileImpl(newPath.toFile());
+				repositoryManager.setImage(newImage, newEntry, initialAuthor);
+			}
 		}
 		if(StringHelper.containsNonWhitespace(getMovieName())) {
 			String movieName = getMovieName();
 			String extension = FileUtils.getFileSuffix(movieName);
-			File newFile = new File(baseDirectory, movieName);
-			try(InputStream inStream = new FileInputStream(newFile)) {
-				VFSLeaf movieLeaf = mediaContainer.createChildLeaf(newEntry.getKey() + "." + extension);
-				VFSManager.copyContent(inStream, movieLeaf, initialAuthor);
-			} catch(IOException e) {
-				log.error("", e);
+			Path newPath = new File(baseDirectory, movieName).toPath().normalize();
+			if(newPath.startsWith(baseDirectoryPath)) {
+				try(InputStream inStream = Files.newInputStream(newPath, StandardOpenOption.READ)) {
+					VFSLeaf movieLeaf = mediaContainer.createChildLeaf(newEntry.getKey() + "." + extension);
+					VFSManager.copyContent(inStream, movieLeaf, initialAuthor);
+				} catch(IOException e) {
+					log.error("", e);
+				}
 			}
 		}
 
