@@ -88,11 +88,11 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 
-			final Boolean marked = getFilteredOneClick(filters, CoursesIdentityController.FILTER_MARKED);
-			final List<String> status = getFilteredList(filters, CoursesIdentityController.FILTER_STATUS);
-			final String certificates = getFiltered(filters, CoursesIdentityController.FILTER_CERTIFICATES);
-			final List<String> assessment = getFilteredList(filters, CoursesIdentityController.FILTER_ASSESSMENT);
-			final String lastVisit = getFiltered(filters, CoursesIdentityController.FILTER_LAST_VISIT);
+			final Boolean marked = getFilteredOneClick(filters, CoursesIdentityListController.FILTER_MARKED);
+			final List<String> status = getFilteredList(filters, CoursesIdentityListController.FILTER_STATUS);
+			final String certificates = getFiltered(filters, CoursesIdentityListController.FILTER_CERTIFICATES);
+			final List<String> assessment = getFilteredList(filters, CoursesIdentityListController.FILTER_ASSESSMENT);
+			final String lastVisit = getFiltered(filters, CoursesIdentityListController.FILTER_LAST_VISIT);
 			final DateRange executionPeriod = getFilterRange(filters);
 
 			final Date now = new Date();
@@ -138,10 +138,10 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 		return refs.stream().anyMatch(ref -> {
 			return switch(ref) {
 				// Passed
-				case CoursesIdentityController.ASSESSMENT_PASSED
+				case CoursesIdentityListController.ASSESSMENT_PASSED
 					-> Boolean.TRUE.equals(entry.getAssessmentEntryPassed());
 				// Not passed
-				case CoursesIdentityController.ASSESSMENT_NOT_PASSED
+				case CoursesIdentityListController.ASSESSMENT_NOT_PASSED
 					-> Boolean.FALSE.equals(entry.getAssessmentEntryPassed());
 				default -> false;
 			};
@@ -161,9 +161,9 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 		Date nextRecertification = certificate == null ? null : certificate.getNextRecertificationDate();
 		boolean valid = nextRecertification == null || nextRecertification.after(now);
 		
-		return (CourseListController.CERTIFICATES_WITH.equals(ref) && certificate != null && valid)
-				|| (CourseListController.CERTIFICATES_WITHOUT.equals(ref) && certificate == null)
-				|| (CourseListController.CERTIFICATES_INVALID.equals(ref) && certificate != null && !valid);
+		return (CoursesIdentityListController.CERTIFICATES_WITH.equals(ref) && certificate != null && valid)
+				|| (CoursesIdentityListController.CERTIFICATES_WITHOUT.equals(ref) && certificate == null)
+				|| (CoursesIdentityListController.CERTIFICATES_INVALID.equals(ref) && certificate != null && !valid);
 	}
 	
 	private boolean acceptDateRange(DateRange range, CourseIdentityRow row) {
@@ -210,7 +210,7 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 	}
 	
 	private DateRange getFilterRange(List<FlexiTableFilter> filters) {
-		FlexiTableFilter pFilter = FlexiTableFilter.getFilter(filters, CoursesIdentityController.FILTER_PERIOD);
+		FlexiTableFilter pFilter = FlexiTableFilter.getFilter(filters, CoursesIdentityListController.FILTER_PERIOD);
 		if (pFilter instanceof FlexiTableDateRangeFilter dateRangeFilter) {
 			return dateRangeFilter.getDateRange();
 		}

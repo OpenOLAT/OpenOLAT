@@ -1,3 +1,17 @@
+#if($embedded)
+<div class="o_header_with_buttons">
+	<h3><i class="o_icon o_CourseModule_icon"> </i> $courseTitle</h3>
+	<div class="o_button_group">
+	#if($r.available("previous.course"))
+		$r.render("previous.course")
+	#end
+	#if($r.available("next.course"))
+		$r.render("next.course")
+	#end
+	</div>
+</div>
+#end
+
 <div class="o_eff_statement_details">
 #if($r.available("segments"))
 	$r.render("segments")

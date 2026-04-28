@@ -142,21 +142,29 @@ public class AssessmentIdentityCourseController extends BasicController
 	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable,
 			AssessmentToolSecurityCallback secCallback) {
+		this(ureq, wControl, stackPanel, courseEntry, coachCourseEnv, assessedIdentity, nodeSelectable, secCallback, true);
+	}
+
+	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable,
+			AssessmentToolSecurityCallback secCallback, boolean showLargeInfos) {
 		super(ureq, wControl);
-		
+
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
 		this.secCallback = secCallback;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentity = assessedIdentity;
-		
+
 		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
-		
+
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, null);
-		listenTo(infosController);
-		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
+		if (showLargeInfos) {
+			infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, null);
+			listenTo(infosController);
+			identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
+		}
 		
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);

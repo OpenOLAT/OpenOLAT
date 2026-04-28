@@ -1,5 +1,7 @@
 <div class="o_sel_lecture_participant_blocks"><div class="o_header_with_buttons">
+#if($r.isTrue($withTitle))
 <h3><i class="o_icon o_CourseModule_icon"> </i> $title</h3>
+#end
 #if($r.isNotNull($dateAndTime))
 	<div class="o_date text-muted">
 		<i class="o_icon o_icon-fw o_icon_calendar"> </i> $dateAndTime
