@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -48,8 +49,8 @@ public class CurriculumElementCatalogStatusEvaluator implements CatalogStatusEva
 	}
 
 	@Override
-	public boolean isVisibleStatusPeriod() {
-		return Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD_PERIOD).contains(status);
+	public boolean isStatusValid(Set<String> validStatus) {
+		return validStatus.contains(status.name());
 	}
 	
 	public static final CatalogStatusEvaluator create(CurriculumElementStatus status) {

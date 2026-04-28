@@ -86,11 +86,14 @@ public class RepositoryCatalogInfoFactory {
 			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
 					.map(RepositoryEntryStatusEnum::name)
 					.collect(Collectors.toSet());
+			Set<String> noPeriodStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
+					.map(RepositoryEntryStatusEnum::name)
+					.collect(Collectors.toSet());
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
 					false, true,
 					true, translator.translate("access.taxonomy.level"), details,
 					null, getCatalogStatusEvaluator(entry.getEntryStatus()), translator.translate("offer.available.in.status.course"),
-					availableStatuses, defaultStatuses,
+					availableStatuses, defaultStatuses, noPeriodStatuses,
 					false,
 					startDateAvailable,
 					endDateAvailable,
@@ -128,7 +131,7 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
-					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null,
+					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null, null,
 					false, startDateAvailable, endDateAvailable, editBusinessPath, translator.translate("access.open.catalog"),
 					null, null, null, showRQCode, null);
 		}
@@ -153,9 +156,9 @@ public class RepositoryCatalogInfoFactory {
 	}
 	
 	private static final class RepositoryEntryCatalogV1StatusEvaluator implements CatalogStatusEvaluator {
-		
+
 		private final boolean catalogEntryAvailable;
-		
+
 		public RepositoryEntryCatalogV1StatusEvaluator(boolean catalogEntryAvailable) {
 			this.catalogEntryAvailable = catalogEntryAvailable;
 		}
@@ -166,12 +169,12 @@ public class RepositoryCatalogInfoFactory {
 		}
 
 		@Override
-		public boolean isVisibleStatusPeriod() {
+		public boolean isStatusValid(Set<String> validStatus) {
 			return catalogEntryAvailable;
 		}
-		
+
 	}
-	
+
 	private static final class RepositoryEntryCatalogV2StatusEvaluator implements CatalogStatusEvaluator {
 
 		private final RepositoryEntryStatusEnum status;
@@ -186,10 +189,10 @@ public class RepositoryCatalogInfoFactory {
 		}
 
 		@Override
-		public boolean isVisibleStatusPeriod() {
-			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+		public boolean isStatusValid(Set<String> validStatus) {
+			return validStatus.contains(status.name());
 		}
-		
+
 	}
 	
 	public static final class RepositoryEntryCatalogSortPriorityProvider implements SortPriorityProvider {

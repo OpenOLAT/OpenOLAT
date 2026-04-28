@@ -184,6 +184,10 @@
 .o_list_unstyled_left {
 	padding-left: 20px;
 }
+.o_list_left_aligned {
+	padding-left: 0;
+	list-style-position: inside;
+}
 
 /* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
 .o_button_group {

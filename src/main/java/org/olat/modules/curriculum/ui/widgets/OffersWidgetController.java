@@ -174,7 +174,7 @@ public class OffersWidgetController extends FormBasicController {
 				.filter(Objects::nonNull)
 				.filter(OfferCatalogInfo::isPublished)
 				.toList();
-		OfferCatalogStatus internalCatalogStatus = OfferCatalogInfo.getCatalogStatus(internalCatalogInfos, statusEvaluator, fullyBooked);
+		OfferCatalogStatus internalCatalogStatus = OfferCatalogInfo.getCatalogStatus(internalCatalogInfos, fullyBooked);
 		flc.contextPut("internalCatalogCss", OfferCatalogInfo.getLabelCss(internalCatalogStatus));
 		flc.contextPut("internalCatalogIconCss", OfferCatalogInfo.getIconCss(internalCatalogStatus));
 		flc.contextPut("internalCatalogLabelName", OfferCatalogInfo.getLabelName(getTranslator(), internalCatalogStatus));
@@ -185,7 +185,7 @@ public class OffersWidgetController extends FormBasicController {
 					.filter(OfferCatalogInfo::isPublished)
 					.filter(OfferCatalogInfo::isWebPublished)
 					.toList();
-			OfferCatalogStatus externalCatalogStatus = OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, statusEvaluator, fullyBooked);
+			OfferCatalogStatus externalCatalogStatus = OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, fullyBooked);
 			flc.contextPut("externalCatalogCss", OfferCatalogInfo.getLabelCss(externalCatalogStatus));
 			flc.contextPut("externalCatalogIconCss", OfferCatalogInfo.getIconCss(externalCatalogStatus));
 			flc.contextPut("externalCatalogLabelName", OfferCatalogInfo.getLabelName(getTranslator(), externalCatalogStatus));
