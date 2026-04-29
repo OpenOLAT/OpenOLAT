@@ -71,7 +71,15 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Collection<? extends OrganisationRef> domainOrganisation = emailDomain != null? List.of(emailDomain.getOrganisation()): List.of();
+		Collection<? extends OrganisationRef> domainOrganisation;
+		if (emailDomain != null) {
+			domainOrganisation = List.of(emailDomain.getOrganisation());
+		} else if (organisations.size() == 1) {
+			// Pre-select the only available organisation (e.g. opened from the organisation admin tree)
+			domainOrganisation = List.of(organisations.get(0));
+		} else {
+			domainOrganisation = List.of();
+		}
 		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
 				domainOrganisation,
 				() -> organisations);
@@ -107,7 +115,7 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		organisationEl.clearError();
-		if (organisationEl.isEnabled() && organisationEl.getSelectedKey() == null) {
+		if (emailDomain == null && organisationEl.getSelectedKey() == null) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -139,8 +147,20 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (emailDomain == null) {
-			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
-			Organisation organisation = organisations.stream().filter(org -> organisationKey.equals(org.getKey())).findFirst().get();
+			String selectedKey = organisationEl.getSelectedKey();
+			Organisation organisation;
+			if (selectedKey != null) {
+				Long organisationKey = Long.valueOf(selectedKey);
+				organisation = organisations.stream().filter(org -> organisationKey.equals(org.getKey())).findFirst().orElse(null);
+			} else if (organisations.size() == 1) {
+				organisation = organisations.get(0);
+			} else {
+				organisation = null;
+			}
+			if (organisation == null) {
+				organisationEl.setErrorKey("form.legende.mandatory");
+				return;
+			}
 			emailDomain = organisationService.createOrganisationEmailDomain(organisation, domainEl.getValue());
 		}
 		
