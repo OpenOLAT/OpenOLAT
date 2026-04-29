@@ -430,7 +430,9 @@ public class ZipUtil {
 	 */
 	public static final String cleanFilename(String name) {
 		if(name != null && name.startsWith("/")) {
-			name = name.substring(1, name.length());
+			do {
+				name = name.substring(1, name.length());
+			} while(name.startsWith("/"));
 		}
 		return name;
 	}

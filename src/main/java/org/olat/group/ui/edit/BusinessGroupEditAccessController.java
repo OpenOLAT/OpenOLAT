@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.edit;
 
+import java.util.Set;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -85,7 +87,8 @@ public class BusinessGroupEditAccessController extends BasicController {
 		String periodStatusOption = translate("access.status.option");
 		String customPublishedIn = translate("access.published.in");
 		return new CatalogInfo(false, false, true, false, false, null, null, customPublishedIn,
-				new BusinessGroupStatusEvaluator(businessGroup.getGroupStatus()), periodStatusOption, null, null,
+				new BusinessGroupStatusEvaluator(businessGroup.getGroupStatus()), periodStatusOption, null,
+				Set.of(BusinessGroupStatusEnum.active.name()),
 				false, false, false, null, null, null, null, null, true, null);
 	}
 	
@@ -103,8 +106,8 @@ public class BusinessGroupEditAccessController extends BasicController {
 		}
 
 		@Override
-		public boolean isVisibleStatusPeriod() {
-			return BusinessGroupStatusEnum.active == status;
+		public boolean isStatusValid(Set<String> validStatus) {
+			return validStatus.contains(status.name());
 		}
 		
 	}

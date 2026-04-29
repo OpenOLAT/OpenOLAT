@@ -2472,6 +2472,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withNumberOfLectures(Visibility.SHOW)
 				.withExam(Visibility.SHOW)
 				.withOnlineMeeting(participant ? Visibility.SHOW : Visibility.HIDE)
+				.withOnlineRecording(participant ? Visibility.SHOW : Visibility.HIDE)
 				.withEdit(participant ? Visibility.NO : Visibility.SHOW)
 				.withRollCall(withRollCall)
 				.withAllMineSwitch(secCallback.viewAs() == LectureRoles.teacher, defaultShowAll)

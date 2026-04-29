@@ -118,6 +118,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private final int appealPeriod;
 	private final boolean withPrint;
 	private final boolean withAppeal;
+	private final boolean withTitle;
 	private final Identity assessedIdentity;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
@@ -134,15 +135,20 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private RepositoryService repositoryService;
 	
 	public ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Identity assessedIdentity) {
-		this(ureq, wControl, entry, assessedIdentity, true, true);
+		this(ureq, wControl, entry, assessedIdentity, true, true, true);
 	}
-	
+
+	public ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Identity assessedIdentity, boolean withTitle) {
+		this(ureq, wControl, entry, assessedIdentity, true, true, withTitle);
+	}
+
 	private ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, Identity assessedIdentity, boolean withPrint, boolean withAppeal) {
+			RepositoryEntry entry, Identity assessedIdentity, boolean withPrint, boolean withAppeal, boolean withTitle) {
 		super(ureq, wControl, "participant_blocks");
 		this.entry = entry;
 		this.withPrint = withPrint;
 		this.withAppeal = withAppeal;
+		this.withTitle = withTitle;
 		this.assessedIdentity = assessedIdentity;
 		appealEnabled = lectureModule.isAbsenceAppealEnabled();
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -159,6 +165,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("withTitle", Boolean.valueOf(withTitle));
 			if(withPrint) {
 				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
 				layoutCont.getFormItemComponent().addListener(this);
@@ -167,7 +174,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 
 				// entry lifecycle date information
 				initEntryLifecycleInformation(layoutCont);
-				
+
 				openCourseButton = uifactory.addFormLink("open.course", formLayout, Link.BUTTON);
 				openCourseButton.setIconLeftCSS("o_icon o_CourseModule_icon");
 			} else {
@@ -567,7 +574,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-			Controller printCtrl = new ParticipantLectureBlocksController(lureq, lwControl, entry, assessedIdentity, false, false);
+			Controller printCtrl = new ParticipantLectureBlocksController(lureq, lwControl, entry, assessedIdentity, false, false, true);
 			listenTo(printCtrl);
 			return printCtrl;
 		};				

@@ -248,7 +248,7 @@ public class UserListController extends FormBasicController implements Activatea
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		String fullname = userManager.getUserDisplayName(student);
-		studentCtrl = new CoursesIdentityController(ureq, bwControl, stackPanel, studentStat, student, model.getRowCount(), true);
+		studentCtrl = new CoursesIdentityController(ureq, bwControl, studentStat, student, model.getRowCount(), true);
 		
 		listenTo(studentCtrl);
 		stackPanel.popUpToController(this);

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -31,11 +30,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,9 +53,9 @@ public class CoachedIdentityInfoController extends UserInfoController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public CoachedIdentityInfoController(UserRequest ureq, WindowControl wControl, Form mainForm,
+	public CoachedIdentityInfoController(UserRequest ureq, WindowControl wControl,
 			Identity student, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
-		super(ureq, wControl, mainForm, profileConfig, portraitUser);
+		super(ureq, wControl, profileConfig, portraitUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.student = student;
 		initForm(ureq);
@@ -68,7 +67,7 @@ public class CoachedIdentityInfoController extends UserInfoController {
 
 		User user = student.getUser();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserPropertiesInfoController.DEFAULT_USAGE_IDENTIFYER, isAdministrativeUser);
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			String name = userPropertyHandler.getName();
 			if(UserConstants.NICKNAME.equals(name) || UserConstants.EMAIL.equals(name)

@@ -21,6 +21,7 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
@@ -96,35 +97,36 @@ public class OfferCatalogInfo {
 		OfferCatalogStatus status;
 		boolean active = true;
 		boolean withPeriod = false;
-		
+
 		Date from = DateUtils.getStartOfDay(offer.getValidFrom());
 		Date to = DateUtils.getEndOfDay(offer.getValidTo());
-		if (to != null && to.before(new Date())) {
-			status = OfferCatalogStatus.finished;
-			active = false;
-			withPeriod = true;
-		} else if (from != null && from.after(new Date())) {
-			status = OfferCatalogStatus.pending;
-			active = false;
-			withPeriod = true;
-		} else if ((from != null && from.before(new Date())) || (to != null && to.after(new Date()))) {
-			if (statusEvaluator != null && !statusEvaluator.isVisibleStatusPeriod()) {
-				status = OfferCatalogStatus.notAvailable;
-			} else {
-				status = OfferCatalogStatus.bookable;
-			}
-			withPeriod = true;
+		Set<String> offerValidStatus = offer.getValidStatus();
+
+		if (offerValidStatus.isEmpty()) {
+			boolean visible = statusEvaluator == null || statusEvaluator.isVisibleStatusNoPeriod();
+			status = visible ? OfferCatalogStatus.bookable : OfferCatalogStatus.notAvailable;
 		} else {
-			if (statusEvaluator != null && !statusEvaluator.isVisibleStatusNoPeriod()) {
+			boolean statusValid = statusEvaluator == null || statusEvaluator.isStatusValid(offerValidStatus);
+			if (!statusValid) {
 				status = OfferCatalogStatus.notAvailable;
+				withPeriod = from != null || to != null;
+			} else if (to != null && to.before(new Date())) {
+				status = OfferCatalogStatus.finished;
+				active = false;
+				withPeriod = true;
+			} else if (from != null && from.after(new Date())) {
+				status = OfferCatalogStatus.pending;
+				active = false;
+				withPeriod = true;
 			} else {
 				status = OfferCatalogStatus.bookable;
+				withPeriod = from != null || to != null;
 			}
 		}
-		
+
 		return new OfferCatalogInfo(status, active, withPeriod, from, to, offer.isCatalogPublish(), offer.isCatalogWebPublish());
 	}
-	
+
 	public static final String getIconCss(OfferCatalogStatus status) {
 		return switch (status) {
 		case pending -> "o_ac_offer_pending_icon";
@@ -168,28 +170,17 @@ public class OfferCatalogInfo {
 	/**
 	 * @return bookable, notAvailable, fullyBooked
 	 */
-	public static final OfferCatalogStatus getCatalogStatus(List<OfferCatalogInfo> offerCatalogInfos, CatalogStatusEvaluator statusEvaluator, boolean fullyBooked) {
-		OfferCatalogStatus catalogStatus = null;
+	public static final OfferCatalogStatus getCatalogStatus(List<OfferCatalogInfo> offerCatalogInfos, boolean fullyBooked) {
+		if (fullyBooked) {
+			return OfferCatalogStatus.fullyBooked;
+		}
 		boolean atLeastOneActive = offerCatalogInfos.stream().anyMatch(OfferCatalogInfo::isActive);
-		if (atLeastOneActive) {
-			if (fullyBooked) {
-				catalogStatus = OfferCatalogStatus.fullyBooked;
-			} else if(statusEvaluator != null) {
-				boolean statusVisible = offerCatalogInfos.stream().anyMatch(OfferCatalogInfo::isWithPeriod)
-						? statusEvaluator.isVisibleStatusPeriod()
-						: statusEvaluator.isVisibleStatusNoPeriod();
-				if (!statusVisible) {
-					catalogStatus = OfferCatalogStatus.notAvailable;
-				}
-			}
-			if (catalogStatus == null) {
-				catalogStatus = OfferCatalogStatus.bookable;
-			}
+		if (!atLeastOneActive) {
+			return OfferCatalogStatus.notAvailable;
 		}
-		if (catalogStatus == null) {
-			catalogStatus = OfferCatalogStatus.notAvailable;
-		}
-		return catalogStatus;
+		boolean atLeastOneBookable = offerCatalogInfos.stream()
+				.anyMatch(info -> OfferCatalogStatus.bookable == info.getStatus());
+		return atLeastOneBookable ? OfferCatalogStatus.bookable : OfferCatalogStatus.notAvailable;
 	}
 
 }

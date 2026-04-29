@@ -39,11 +39,11 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
@@ -83,9 +83,10 @@ public class RepositoryCatalogInfoFactory {
 				availableStatuses.add(SelectionValues.entry(status.name(), translator.translate(status.i18nKey()),
 						null, "o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true));
 			}
-			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
+			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
 					.map(RepositoryEntryStatusEnum::name)
 					.collect(Collectors.toSet());
+			
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
 					false, true,
 					true, translator.translate("access.taxonomy.level"), details,
@@ -153,9 +154,9 @@ public class RepositoryCatalogInfoFactory {
 	}
 	
 	private static final class RepositoryEntryCatalogV1StatusEvaluator implements CatalogStatusEvaluator {
-		
+
 		private final boolean catalogEntryAvailable;
-		
+
 		public RepositoryEntryCatalogV1StatusEvaluator(boolean catalogEntryAvailable) {
 			this.catalogEntryAvailable = catalogEntryAvailable;
 		}
@@ -166,12 +167,12 @@ public class RepositoryCatalogInfoFactory {
 		}
 
 		@Override
-		public boolean isVisibleStatusPeriod() {
+		public boolean isStatusValid(Set<String> validStatus) {
 			return catalogEntryAvailable;
 		}
-		
+
 	}
-	
+
 	private static final class RepositoryEntryCatalogV2StatusEvaluator implements CatalogStatusEvaluator {
 
 		private final RepositoryEntryStatusEnum status;
@@ -186,10 +187,10 @@ public class RepositoryCatalogInfoFactory {
 		}
 
 		@Override
-		public boolean isVisibleStatusPeriod() {
-			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+		public boolean isStatusValid(Set<String> validStatus) {
+			return validStatus.contains(status.name());
 		}
-		
+
 	}
 	
 	public static final class RepositoryEntryCatalogSortPriorityProvider implements SortPriorityProvider {

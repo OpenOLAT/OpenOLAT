@@ -174,13 +174,13 @@ public class CatalogInfo {
 	}
 
 	public interface CatalogStatusEvaluator {
-		
+
 		boolean isVisibleStatusNoPeriod();
-		
-		boolean isVisibleStatusPeriod();
-		
+
+		boolean isStatusValid(Set<String> validStatus);
+
 	}
-	
+
 	private static final class TrueStatusEvaluator implements CatalogStatusEvaluator {
 
 		@Override
@@ -189,10 +189,10 @@ public class CatalogInfo {
 		}
 
 		@Override
-		public boolean isVisibleStatusPeriod() {
+		public boolean isStatusValid(Set<String> validStatus) {
 			return true;
 		}
-		
+
 	}
 	
 	public interface SortPriorityProvider {

@@ -55,11 +55,8 @@ public interface ACService {
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_GUEST = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_OPEN = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
-	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD_PERIOD = RepositoryEntryStatusEnum.preparationToPublished();
 	public static final CurriculumElementStatus[] CESTATUS_ACTIVE_METHOD = new CurriculumElementStatus[] {
 			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active };
-	public static final CurriculumElementStatus[] CESTATUS_ACTIVE_METHOD_PERIOD = new CurriculumElementStatus[] {
-			CurriculumElementStatus.preparation, CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active };
 
 	/**
 	 *

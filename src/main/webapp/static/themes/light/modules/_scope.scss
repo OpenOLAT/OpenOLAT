@@ -86,3 +86,13 @@ form .o_form {
 dialog .o_scopes_dropdown {
 	min-width: 400px;
 }
+
+.o_scope_with_actions {
+	display: flex;
+	align-items: flex-start;
+	gap: $o-scopes-gap;
+
+	>div:has(.o_scopes) {
+		flex: 1;
+	}
+}

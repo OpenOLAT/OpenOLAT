@@ -83,7 +83,8 @@ public class UserDetailsController extends BasicController implements Activateab
 	private int numOfEntries;
 	private Link previousLink;
 	private Link nextLink;
-	
+
+	private boolean embedded;
 	private boolean inheritTools;
 	private EfficiencyStatementEntry statementEntry;
 	
@@ -104,16 +105,24 @@ public class UserDetailsController extends BasicController implements Activateab
 	private EfficiencyStatementManager efficiencyStatementManager;
 
 	public UserDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-	 	EfficiencyStatementEntry statementEntry, Identity assessedIdentity, String details,
-		int entryIndex, int numOfEntries, Segment selectSegment, boolean inheritTools) {
-		super(ureq, wControl);
-		
+			EfficiencyStatementEntry statementEntry, Identity assessedIdentity, String details,
+			int entryIndex, int numOfEntries, Segment selectSegment, boolean inheritTools) {
+		this(ureq, wControl, stackPanel, statementEntry, assessedIdentity, entryIndex, numOfEntries, selectSegment, false);
 		this.details = details;
+		this.inheritTools = inheritTools;
+	}
+
+	public UserDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			EfficiencyStatementEntry statementEntry, Identity assessedIdentity,
+			int entryIndex, int numOfEntries, Segment selectSegment, boolean embedded) {
+		super(ureq, wControl);
+
 		this.entryIndex = entryIndex;
 		this.stackPanel = stackPanel;
 		this.numOfEntries = numOfEntries;
 		this.statementEntry = statementEntry;
-		this.inheritTools = inheritTools;
+		this.embedded = embedded;
+		this.inheritTools = embedded;
 		
 		mainVC = createVelocityContainer("efficiency_details");
 
@@ -123,7 +132,26 @@ public class UserDetailsController extends BasicController implements Activateab
 		} else {
 			this.assessedIdentity = assessedIdentity;
 		}
-		
+
+		if (embedded) {
+			mainVC.contextPut("embedded", Boolean.TRUE);
+			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(entry.getDisplayname()));
+
+			previousLink = LinkFactory.createLink("previous.course", "previous.course", "previous", null,
+					getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
+			previousLink.setIconLeftCSS("o_icon o_icon_slide_backward");
+			previousLink.setTitle(translate("previous.course"));
+			previousLink.setEnabled(entryIndex > 0);
+			mainVC.put("previous.course", previousLink);
+
+			nextLink = LinkFactory.createLink("next.course", "next.course", "next", null,
+					getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
+			nextLink.setIconLeftCSS("o_icon o_icon_slide_forward");
+			nextLink.setTitle(translate("next.course"));
+			nextLink.setEnabled(entryIndex < numOfEntries - 1);
+			mainVC.put("next.course", nextLink);
+		}
+
 		try {
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 			segmentView.setDontShowSingleSegment(true);
@@ -159,16 +187,16 @@ public class UserDetailsController extends BasicController implements Activateab
 
 	@Override
 	public void initTools() {
-		if (!inheritTools) {
+		if (!inheritTools && !embedded) {
 			previousLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 			previousLink.setIconLeftCSS("o_icon o_icon_previous");
 			previousLink.setEnabled(entryIndex > 0);
 			stackPanel.addTool(previousLink);
-	
+
 			Link detailsCmp = LinkFactory.createToolLink("details.course", StringHelper.escapeHtml(details), this);
 			detailsCmp.setIconLeftCSS("o_icon o_icon_user");
 			stackPanel.addTool(detailsCmp);
-	
+
 			nextLink = LinkFactory.createToolLink("next", translate("next"), this);
 			nextLink.setIconLeftCSS("o_icon o_icon_next");
 			nextLink.setEnabled(entryIndex < numOfEntries);
@@ -244,7 +272,7 @@ public class UserDetailsController extends BasicController implements Activateab
 			Roles roles = ureq.getUserSession().getRoles();
 			boolean nodeSelectable = !roles.isLineManager() && !roles.isEducationManager();
 			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv,
-					assessedIdentity, nodeSelectable, secCallback);
+					assessedIdentity, nodeSelectable, secCallback, !embedded);
 			listenTo(assessmentCtrl);
 		}
 		mainVC.put("segmentCmp", assessmentCtrl.getInitialComponent());
@@ -255,7 +283,7 @@ public class UserDetailsController extends BasicController implements Activateab
 	private ParticipantLectureBlocksController doOpenLecturesBlock(UserRequest ureq) {
 		if(lectureBlocksCtrl == null) {
 			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
-			lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, getWindowControl(), entry, assessedIdentity);
+			lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, getWindowControl(), entry, assessedIdentity, false);
 			listenTo(lectureBlocksCtrl);
 		}
 		mainVC.put("segmentCmp", lectureBlocksCtrl.getInitialComponent());

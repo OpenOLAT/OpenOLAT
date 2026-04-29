@@ -204,4 +204,26 @@ public class ZipUtilTest extends OlatTestCase {
 
 		targetDir.deleteSilently();
 	}
+	
+	@Test
+	public void cleanFilename() {
+		final String cleanFilename = "test.xml";
+		String cleanedFilename = ZipUtil.cleanFilename(cleanFilename);
+		Assert.assertEquals(cleanFilename, cleanedFilename);
+	}
+	
+	@Test
+	public void cleanDirtyFilename() {
+		final String dirtyFilename = "/test.jpg";
+		String cleanedFilename = ZipUtil.cleanFilename(dirtyFilename);
+		Assert.assertEquals("test.jpg", cleanedFilename);
+	}
+	
+	@Test
+	public void cleanBadFilename() {
+		final String dirtyFilename = "/////test.jpg";
+		String cleanedFilename = ZipUtil.cleanFilename(dirtyFilename);
+		Assert.assertEquals("test.jpg", cleanedFilename);
+	}
+	
 }

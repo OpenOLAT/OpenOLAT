@@ -115,7 +115,9 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					
 					String displayText = crumb.getCustomDisplayText();
 					crumb.setTitle(displayText);
-					crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
+					if (i != breadCrumbs.size()-1) {
+						crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
+					}
 					renderer.render(crumb, sb, args);
 					crumb.setTitle(null);
 					crumb.setCustomDisplayText(displayText);

@@ -1,6 +1,12 @@
-<div class="o_book_on_behalf well">
-	<h2>$title</h2>
-	<div>
+<div class="o_book_on_behalf">
+	<div class="o_header_with_buttons">
+		<h3>
+			<i class="o_icon o_icon_user"> </i>
+			$title
+		</h3>
+	</div>
+	$r.render("portrait")
+	<div class="o_block_large">
 		#if($r.available("catalogEntryList"))
 			$r.render("catalogEntryList")
 		#end

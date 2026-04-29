@@ -21,12 +21,14 @@
 package org.olat.resource.accesscontrol.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.IconPanelItem;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -723,20 +726,20 @@ public class AccessConfigurationController extends FormBasicController {
 				.map(AccessInfo::getOfferCatalogInfo)
 				.filter(Objects::nonNull)
 				.toList();
-		OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(offerCatalogInfos, statusEvaluator, catalogInfo.isFullyBooked());
+		OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(offerCatalogInfos, catalogInfo.isFullyBooked());
 		return OfferCatalogInfo.getStatusLightLabel(getTranslator(), catalogStatus);
 	}
-	
+
 	public String getInternalCatalogStatus() {
 		List<OfferCatalogInfo> offerCatalogInfos = accessInfos.stream()
 				.map(AccessInfo::getOfferCatalogInfo)
 				.filter(Objects::nonNull)
 				.filter(OfferCatalogInfo::isPublished)
 				.toList();
-		OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(offerCatalogInfos, statusEvaluator, catalogInfo.isFullyBooked());
+		OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(offerCatalogInfos, catalogInfo.isFullyBooked());
 		return OfferCatalogInfo.getStatusLightLabel(getTranslator(), catalogStatus);
 	}
-	
+
 	public String getExternalCatalogStatus() {
 		if (catalogInfo.isWebCatalogSupported()) {
 			List<OfferCatalogInfo> externalCatalogInfos = accessInfos.stream()
@@ -745,7 +748,7 @@ public class AccessConfigurationController extends FormBasicController {
 					.filter(OfferCatalogInfo::isPublished)
 					.filter(OfferCatalogInfo::isWebPublished)
 					.toList();
-			OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, statusEvaluator, catalogInfo.isFullyBooked());
+			OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, catalogInfo.isFullyBooked());
 			return OfferCatalogInfo.getStatusLightLabel(getTranslator(), catalogStatus);
 		}
 		return null;
@@ -1124,28 +1127,63 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 
 		private void initDates() {
+			String statusLine = buildStatusLine();
+			String dateLine = buildDateLine();
+			if (statusLine != null && dateLine != null) {
+				dates = "<ul class=\"o_list_left_aligned\"><li>" + statusLine + "</li><li>" + dateLine + "</li></ul>";
+			} else if (statusLine != null) {
+				dates = statusLine;
+			} else {
+				dates = dateLine;
+			}
+		}
+
+		private String buildStatusLine() {
+			Set<String> statusKeys = offer.getValidStatus();
+			if (statusKeys.isEmpty()) {
+				statusKeys = catalogInfo.getDefaultStatuses();
+			}
+			if (statusKeys == null || statusKeys.isEmpty()) {
+				return null;
+			}
+			SelectionValues available = catalogInfo.getAvailableStatuses();
+			if (available == null) {
+				return translate("access.status.list", String.join(", ", statusKeys));
+			}
+			Set<String> presentKeys = statusKeys;
+			String joined = Arrays.stream(available.keys())
+					.filter(presentKeys::contains)
+					.map(key -> available.getValue(key) != null ? available.getValue(key) : key)
+					.collect(Collectors.joining(", "));
+			return translate("access.status.list", joined);
+		}
+
+		private String buildDateLine() {
 			Date from = offer.getValidFrom();
 			Date to = offer.getValidTo();
-			if (OfferCatalogInfo.OfferCatalogStatus.finished == offerCatalogInfo.getStatus()) {
-				dates = "<del>" + formatPeriod(from, to) + "</del>";
-			} else if (OfferCatalogInfo.OfferCatalogStatus.pending == offerCatalogInfo.getStatus()) {
-				dates = formatPeriod(from, to)
-					+ " | <strong>" + translate("access.period.starts.in", String.valueOf(DateUtils.countDays(new Date(), from))) + "</strong>";
-			} else if (OfferCatalogInfo.OfferCatalogStatus.notAvailable == offerCatalogInfo.getStatus()) {
-				dates = catalogInfo.getStatusPeriodOption();
-			} else if (OfferCatalogInfo.OfferCatalogStatus.bookable == offerCatalogInfo.getStatus()) {
-				if (to != null && DateUtils.isSameDay(to, new Date())) {
-					dates = formatPeriod(from, to)
-						+ " | <strong>" + translate("access.period.ends.today") + "</strong>";
-				} else if (to != null && to.after(new Date())) {
-					dates = formatPeriod(from, to)
-						+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
-				} else if (from != null && from.before(new Date())) {
-					dates = formatPeriod(from, to);
-				} else {
-					dates = catalogInfo.getStatusPeriodOption();
-				}
+			if (from == null && to == null) {
+				return null;
 			}
+			OfferCatalogInfo.OfferCatalogStatus status = offerCatalogInfo.getStatus();
+			if (OfferCatalogInfo.OfferCatalogStatus.finished == status) {
+				return "<del>" + formatPeriod(from, to) + "</del>";
+			}
+			if (OfferCatalogInfo.OfferCatalogStatus.pending == status) {
+				return formatPeriod(from, to)
+						+ " | <strong>" + translate("access.period.starts.in", String.valueOf(DateUtils.countDays(new Date(), from))) + "</strong>";
+			}
+			if (OfferCatalogInfo.OfferCatalogStatus.bookable == status) {
+				if (to != null && DateUtils.isSameDay(to, new Date())) {
+					return formatPeriod(from, to)
+							+ " | <strong>" + translate("access.period.ends.today") + "</strong>";
+				}
+				if (to != null && to.after(new Date())) {
+					return formatPeriod(from, to)
+							+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
+				}
+				return formatPeriod(from, to);
+			}
+			return formatPeriod(from, to);
 		}
 
 		private String formatPeriod(Date from, Date to) {

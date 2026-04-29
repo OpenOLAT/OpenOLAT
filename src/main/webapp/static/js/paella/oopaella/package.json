@@ -27,6 +27,7 @@
 		"paella-core": "^1.23.1"
 	},
 	"overrides": {
-		"serialize-javascript": "^7.0.3"
+		"serialize-javascript": "^7.0.3",
+		"uuid": ">=14.0.0"
 	}
 }

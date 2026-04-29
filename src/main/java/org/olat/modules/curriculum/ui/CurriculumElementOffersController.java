@@ -108,7 +108,7 @@ public class CurriculumElementOffersController extends BasicController {
 					"o_icon o_icon-fw o_icon_curriculum_status_" + status.name(),
 					null,
 					true)));
-		Set<String> defaultStatuses = Arrays.stream(ACService.CESTATUS_ACTIVE_METHOD_PERIOD)
+		Set<String> defaultStatuses = Arrays.stream(ACService.CESTATUS_ACTIVE_METHOD)
 				.map(CurriculumElementStatus::name)
 				.collect(Collectors.toSet());
 
