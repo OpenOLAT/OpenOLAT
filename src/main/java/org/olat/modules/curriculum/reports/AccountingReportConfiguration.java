@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,7 +79,6 @@ import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
@@ -94,16 +94,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class AccountingReportConfiguration extends TimeBoundReportConfiguration implements CurriculumReportConfiguration {
 
-	private String accessMethodType;
 	private Boolean excludeDeletedCurriculumElements;
-	
-	public String getAccessMethod() {
-		return accessMethodType;
-	}
-
-	public void setAccessMethod(String type) {
-		this.accessMethodType = type;
-	}
 
 	public void setExcludeDeletedCurriculumElements(Boolean excludeDeletedCurriculumElements) {
 		this.excludeDeletedCurriculumElements = excludeDeletedCurriculumElements;
@@ -132,9 +123,6 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 
 	@Override
 	protected String getI18nCategoryKey() {
-		if(StringHelper.containsNonWhitespace(accessMethodType)) {
-			return "report." + accessMethodType;
-		}
 		return "report.booking";
 	}
 
@@ -221,11 +209,6 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 		if (getExcludeDeletedCurriculumElements() != null) {
 			searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
-		}
-		if(StringHelper.containsNonWhitespace(getAccessMethod())) {
-			Class<? extends AccessMethod> type = CoreSpringFactory.getImpl(ACMethodDAO.class)
-					.getAvailableMethodClass(accessMethodType);
-			searchParams.setAccessMethodType(type);
 		}
 		
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
@@ -583,42 +566,71 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
 
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
-		List<String> worksheetNames = List.of(translator.translate("report.booking"));
 		
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
 		boolean withProgressAndstatus = selectedRights.contains(CourseProgressAndStatusRightProvider.RELATION_RIGHT);
 		boolean withAbsences = selectedRights.contains(LecturesAndAbsencesRightProvider.RELATION_RIGHT);
 		
-		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1, worksheetNames)) {
-			OpenXMLWorksheet sheet = workbook.nextWorksheet();
-			sheet.setHeaderRows(1);
-			generateHeader(sheet, userPropertyHandlers, locale);
-			
-			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
-			if(withProgressAndstatus) {
-				curriculumAccountingDao.loadAssessmentsInfos(bookingOrders, searchParams);
+		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
+		if(withProgressAndstatus) {
+			curriculumAccountingDao.loadAssessmentsInfos(bookingOrders, searchParams);
+		}
+		if(withAbsences) {
+			loadAbsences(bookingOrders);
+		}
+		
+		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
+		int numOfSheets = accessTypeToName.isEmpty() ? 1 : accessTypeToName.size();
+		
+		List<SheetDefinition> sheetDefs = new ArrayList<>();
+		if(accessTypeToName.isEmpty()) {
+			sheetDefs.add(new SheetDefinition(null, translator.translate("report.booking")));
+		} else {
+			for(Map.Entry<String, String> entry: accessTypeToName.entrySet()) {
+				sheetDefs.add(new SheetDefinition(entry.getKey(), entry.getValue()));
 			}
-			if(withAbsences) {
-				loadAbsences(bookingOrders);
-			}
+			Collections.sort(sheetDefs);
+		}
+		List<String> worksheetNames = sheetDefs.stream().map(SheetDefinition::name).toList();
+		
+		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, numOfSheets, worksheetNames)) {
+			for(SheetDefinition sheetDef:sheetDefs) {
+				List<BookingOrder> typedBookingOrders = sheetDef.type() == null
+						? bookingOrders
+						: filterBookingOrders(bookingOrders, sheetDef.type());
 			
-			Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
-			for (BookingOrder bookingOrder : bookingOrders) {
-				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName, 
-						educationalTypeIdToName, withProgressAndstatus, withAbsences,
-						statusTranslator, translator);
-				
-				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
-					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
-				}
-				if(implementationsInReport != null && bookingOrder.getImplementationKey() != null) {
-					implementationsInReport.add(new CurriculumElementRefImpl(bookingOrder.getImplementationKey()));
+				OpenXMLWorksheet sheet = workbook.nextWorksheet();
+				sheet.setHeaderRows(1);
+				generateHeader(sheet, userPropertyHandlers, locale);
+	
+				for (BookingOrder bookingOrder : typedBookingOrders) {
+					generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName, 
+							educationalTypeIdToName, withProgressAndstatus, withAbsences,
+							statusTranslator, translator);
+					
+					if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
+						curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
+					}
+					if(implementationsInReport != null && bookingOrder.getImplementationKey() != null) {
+						implementationsInReport.add(new CurriculumElementRefImpl(bookingOrder.getImplementationKey()));
+					}
 				}
 			}
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 		}
+	}
+	
+	private List<BookingOrder> filterBookingOrders(List<BookingOrder> bookingOrders, String type) {
+		List<BookingOrder> filteredOrders = new ArrayList<>();
+		for(BookingOrder bookingOrder:bookingOrders) {
+			AccessMethod method = bookingOrder.getAccessMethod();
+			if(method != null && type.equals(method.getType())) {
+				filteredOrders.add(bookingOrder);
+			}
+		}
+		return filteredOrders;
 	}
 
 	private Map<String, String> getEducationalTypeIdToName(Locale locale) {
