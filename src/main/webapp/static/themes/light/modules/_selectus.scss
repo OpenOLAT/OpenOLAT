@@ -174,7 +174,7 @@ div.f_rating_abstention, span.f_rating_abstention{ background-color:black; color
 	  @include button-variant(white, red, $btn-default-border);
 	}
 	&.o_btn_rating_on.o_btn_rating_abstain {
-	  @include button-variant(white, #eeeeee, $btn-default-border);
+	  @include button-variant(white, #555566, $btn-default-border);
 	}
 }
 

@@ -288,7 +288,7 @@ public class ApplicationOverviewController extends BasicController implements To
 			addReviewButton = LinkFactory.createButton(i18nKey, null, this);
 			addReviewButton.setTranslator(getTranslator());
 			addReviewButton.setElementCssClass("o_add_review_button");
-			addReviewButton.setIconLeftCSS("o_icon o_icon_reviews");
+			addReviewButton.setIconLeftCSS("o_icon o_icon-lg o_icon_reviews");
 			stackPanel.addTool(addReviewButton, Align.left);
 		}
 		

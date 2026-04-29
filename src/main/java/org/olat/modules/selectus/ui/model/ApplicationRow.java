@@ -34,6 +34,7 @@ public class ApplicationRow implements ApplicationLightRow, ApplicationRef {
 	private int numOfAssignedRatings;
 	private int numOfAssignments;
 	private String[] assigneeArray;
+	private String[] assigneeKeysArray;
 	private String[] sentEmailTemplates;
 	
 	private boolean reviewed;
@@ -224,6 +225,14 @@ public class ApplicationRow implements ApplicationLightRow, ApplicationRef {
 
 	public void setAssigneeArray(String[] assigneeArray) {
 		this.assigneeArray = assigneeArray;
+	}
+
+	public String[] getAssigneeKeysArray() {
+		return assigneeKeysArray;
+	}
+
+	public void setAssigneeKeysArray(String[] assigneeKeysArray) {
+		this.assigneeKeysArray = assigneeKeysArray;
 	}
 
 	public String[] getSentEmailTemplates() {

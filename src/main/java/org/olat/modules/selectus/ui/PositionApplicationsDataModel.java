@@ -8,10 +8,8 @@ package org.olat.modules.selectus.ui;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -35,7 +33,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
-import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.HighestDegreeType;
@@ -43,8 +40,6 @@ import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.Project;
 import org.olat.modules.selectus.model.application.ParallelApplication;
-import org.olat.modules.selectus.ui.PositionApplicationsController.RatingFilter;
-import org.olat.modules.selectus.ui.PositionApplicationsController.RatingFilterType;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
@@ -218,12 +213,18 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 			final Set<String> decisions = getFilteredList(filters, PositionApplicationsController.FILTER_DECISION);
+			final Set<String> assignees = getFilteredList(filters, PositionApplicationsController.FILTER_ASSIGNEE);
+			final Set<String> sentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITHOUT_SENT_EMAILS);
 			final Set<String> applicationStatus = getFilteredList(filters, PositionApplicationsController.FILTER_APPLICATION_STATUS);
+			final Set<String> myRating = getFilteredList(filters, PositionApplicationsController.FILTER_MY_RATING);
 			
 			List<ApplicationRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(ApplicationRow row:backupRows) {
 				boolean accept = accept(loweredSearchString, row)
+						&& acceptMyRating(myRating, row)
+						&& acceptAssignee(assignees, row)
 						&& acceptDecision(decisions, row)
+						&& acceptSentEmails(sentEmails, row)
 						&& acceptApplicationStatus(applicationStatus, row);
 				if(accept) {
 					filteredRows.add(row);
@@ -245,6 +246,23 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		return Set.of();
 	}
 	
+	private boolean acceptSentEmails(Set<String> mails, ApplicationRow row) {
+		if(mails == null || mails.isEmpty()) return true;
+		
+		String[] sentTemplates = row.getSentEmailTemplates();
+		if(sentTemplates == null || sentTemplates.length == 0) {
+			return mails.contains(PositionApplicationsController.FILTER_WITHOUT_SENT_EMAILS_KEY)
+					|| mails.contains(PositionApplicationsController.FILTER_WITHOUT_SENT_C_EMAILS_KEY);
+		}
+		
+		for(String sentTemplate:sentTemplates) {
+			if(mails.contains(sentTemplate)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private boolean acceptDecision(Set<String> status, ApplicationRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
@@ -261,6 +279,53 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 
 		ApplicationStatus applicationStatus = row.getApplication().getApplicationStatus();
 		return status.contains(applicationStatus.name());
+	}
+	
+	private boolean acceptAssignee(Set<String> assignees, ApplicationRow row) {
+		if(assignees == null || assignees.isEmpty()) return true;
+
+		if(row.getNumOfAssignments() > 0) {
+			String[] assigneesKeys = row.getAssigneeKeysArray();
+			if(assigneesKeys != null && assigneesKeys.length > 0) {
+				for(String assigneeKey:assigneesKeys) {
+					if(assignees.contains(assigneeKey)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean acceptMyRating(Set<String> ratings, ApplicationRow row) {
+		if(ratings == null || ratings.isEmpty()) return true;
+		
+		String stringuifiedRating = getMyRating(row);
+		if(PositionApplicationsController.FILTER_NULL_KEY.equals(stringuifiedRating)) {
+			if(ratings.contains(PositionApplicationsController.FILTER_NULL_KEY)) {
+				// Application with decision cannot be rated
+				Integer decision = row.getDecision();
+				return decision == null;
+			}
+			return false;
+		}
+		
+		return ratings.contains(stringuifiedRating);
+	}
+	
+	private String getMyRating(ApplicationRow row) {
+		UserRating rating = row.getCurrentRating();
+		if(rating == null || rating.getRating() == null) {
+			return PositionApplicationsController.FILTER_NULL_KEY;
+		}
+		int currentRating = rating.getRating().intValue();
+		return switch(currentRating) {
+			case 3 -> "A";
+			case 2 -> "B";
+			case 1 -> "C";
+			case -32 -> PositionApplicationsController.FILTER_ABSTAIN_KEY;
+			default -> PositionApplicationsController.FILTER_NULL_KEY;
+		};
 	}
 	
 	private boolean accept(String searchValue, ApplicationRow row) {
@@ -288,49 +353,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 		return val == null ? null : val.toString();
 	}
-	
-	private void filter(List<FlexiTableFilter> filters) {
-		boolean showAll = false;
-		Set<Long> sentEmailAppKeys = new HashSet<>();
-		for(FlexiTableFilter filter:filters) {
-			if(filter instanceof RatingFilter && RatingFilterType.showAll.equals(((RatingFilter)filter).type())) {
-				showAll = true;
-			} else if(filter instanceof RatingFilter && RatingFilterType.cMail.equals(((RatingFilter)filter).type())) {
-				sentEmailAppKeys = CoreSpringFactory.getImpl(RecruitingService.class).getApplicationKeySentEmails(position);
-			}
-		}
-		
-		if(showAll) {
-			for(FlexiTableFilter filter:filters) {
-				filter.setSelected(false);
-			}
-			super.setObjects(backupRows);
-		} else {
-			
-			List<RatingFilter> rFilters = new ArrayList<>();
-			for(FlexiTableFilter filter:filters) {
-				if(filter instanceof RatingFilter) {
-					rFilters.add((RatingFilter)filter);
-				}	
-			}
-
-			List<RatingFilter> ratingFilters = rFilters.stream()
-					.filter(f -> f.type() == RatingFilterType.rating).collect(Collectors.toList());
-			List<RatingFilter> mailFilters = rFilters.stream()
-					.filter(f -> f.type() == RatingFilterType.cMail).collect(Collectors.toList());
-			List<RatingFilter> categoryFilters = rFilters.stream()
-					.filter(f -> f.type() == RatingFilterType.category).collect(Collectors.toList());
-			List<ApplicationRow> filteredRows = new ArrayList<>(backupRows.size());	
-			for(ApplicationRow row:backupRows) {
-				if(acceptByRating(row, ratingFilters)
-						&& acceptByMail(row, mailFilters, sentEmailAppKeys)
-						&& acceptByCategory(row, categoryFilters)) {
-					filteredRows.add(row);
-				}
-			}
-			super.setObjects(filteredRows);
-		}
-	}
 
 	@Override
 	public void sort(SortKey orderBy) {
@@ -343,69 +365,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 			}
 		}
 	}
-	
-	private boolean acceptByRating(ApplicationRow row, List<RatingFilter> ratingFilters) {
-		if(ratingFilters.isEmpty()) return true;
 
-		for(RatingFilter filter:ratingFilters) {
-			if(acceptRating(filter.getRating(), row)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private boolean acceptByMail(ApplicationRow row, List<RatingFilter> mailFilters, Set<Long> sentEmailAppKeys) {
-		return mailFilters.isEmpty() || !sentEmailAppKeys.contains(row.getApplication().getKey());
-	}
-	
-	private boolean acceptByCategory(ApplicationRow row, List<RatingFilter> categoryFilters) {
-		if(categoryFilters.isEmpty()) return true;
-		for(RatingFilter filter:categoryFilters) {
-			if(row.getCategories() != null && acceptCategoryRow(row.getCategories(), filter.getFilter())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private boolean acceptCategoryRow(List<AppToCategory> categories, String filter) {
-		for(AppToCategory category:categories) {
-			if(filter.equalsIgnoreCase(category.getCategoryName())) {
-				return true;
-			}
-		}
-		return false;	
-	}
-	
-	private boolean acceptRating(float filterRating, ApplicationRow row) {
-		UserRating rating = row.getCurrentRating();
-		float currentRating = rating == null ? 0.0f : rating.getRating();
-		
-		// unrated -> no decision and no rating
-		if(filterRating <= 0.1) {
-			Integer decision = (Integer)getValueAt(row, Fields.decision.ordinal());
-			if(decision == null && (rating == null || rating.getRating() == null)) {
-				return true;
-			}
-		} else {
-			float diff = filterRating - currentRating;
-			if(Math.abs(diff) < 0.1) {
-				return true;
-			}
-			
-			Integer decision = (Integer)getValueAt(row, Fields.decision.ordinal());
-			if(decision != null) {
-				float diff2 = filterRating - decision;
-				if(Math.abs(diff2) < 0.1) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	
 	public String getRowCssClass(int row) {
 		StringBuilder sb = new StringBuilder(32);
 		ApplicationRow appRow = getObject(row);

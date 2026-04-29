@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -46,8 +47,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
@@ -76,10 +79,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.user.UserManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AddressOption;
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.AssignmentMethods;
@@ -93,8 +92,8 @@ import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.RecruitingTableContextualOption;
 import org.olat.modules.selectus.RecruitingTableOption;
-import org.olat.modules.selectus.SelectusReviewService;
 import org.olat.modules.selectus.SalutationGenerator;
+import org.olat.modules.selectus.SelectusReviewService;
 import org.olat.modules.selectus.TaggingService;
 import org.olat.modules.selectus.manager.RatingClosedException;
 import org.olat.modules.selectus.model.Application;
@@ -138,6 +137,7 @@ import org.olat.modules.selectus.ui.committee.assignment.AssignmentsData;
 import org.olat.modules.selectus.ui.committee.assignment.RemoveAssignment1CommitteeStep;
 import org.olat.modules.selectus.ui.committee.assignment.RemoveAssignmentStepCallback;
 import org.olat.modules.selectus.ui.comparator.AppToCategoryComparator;
+import org.olat.modules.selectus.ui.comparator.IdentityLastnameComparator;
 import org.olat.modules.selectus.ui.components.AcademicalDateCellRenderer;
 import org.olat.modules.selectus.ui.components.ApplicationURLCellRenderer;
 import org.olat.modules.selectus.ui.components.AssignmentsCellRenderer;
@@ -189,6 +189,9 @@ import org.olat.modules.selectus.ui.rejection.CEmail_2_OverviewStep;
 import org.olat.modules.selectus.ui.rejection.SendEmailRunnerCallback;
 import org.olat.modules.selectus.ui.rejection.TemplateForEmailController;
 import org.olat.modules.selectus.ui.review.ReviewEditController;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -201,9 +204,16 @@ import org.olat.modules.selectus.ui.review.ReviewEditController;
  */
 public class PositionApplicationsController extends FormBasicController implements FlexiTableCssDelegate, GenericEventListener, Activateable2 {
 
+	protected static final String FILTER_ASSIGNEE = "assignee";
 	protected static final String FILTER_DECISION = "decision";
+	protected static final String FILTER_MY_RATING = "myRating";
+	protected static final String FILTER_WITHOUT_SENT_EMAILS = "withoutSentEmails";
 	protected static final String FILTER_APPLICATION_STATUS = "applicationStatus";
+
 	protected static final String FILTER_NULL_KEY = "NULL";
+	protected static final String FILTER_ABSTAIN_KEY = "ABSTAIN";
+	protected static final String FILTER_WITHOUT_SENT_EMAILS_KEY = "withoutSentEmails";
+	protected static final String FILTER_WITHOUT_SENT_C_EMAILS_KEY = "withoutSentCEmails";
 	
 	private final RatingComparator ratingComparator = new RatingComparator();
 	
@@ -215,6 +225,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 	private final List<Tab> customTabs;
 
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab myAssignmentsTab;
+	private FlexiFiltersTab withoutSentEmailTab;
+	private FlexiFiltersTab applicationActiveTab;
 	
 	private final ApplicationAttributesDelegate projectAttributesDelegate
 		= new ApplicationAttributesDelegate(PositionApplicationAttributeTabEnum.project);
@@ -331,8 +344,6 @@ public class PositionApplicationsController extends FormBasicController implemen
 		privateOption = recruitingModule.getApplicationAddressPrivateOption();
 		businessOption = recruitingModule.getApplicationAddressBusinessOption();
 		
-		String name = translate("filter.my.assignments");
-
 		setRatingDeadline();
 
 		initForm(ureq);
@@ -910,14 +921,28 @@ public class PositionApplicationsController extends FormBasicController implemen
 		tabs.add(allTab);
 		
 		// Active (application status)
+		applicationActiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("applicationActive", translate("filter.application.active"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_APPLICATION_STATUS, ApplicationStatus.active.name())));
+		tabs.add(applicationActiveTab);
 
 		// Decision
 		
 		// Without sent emails
+		withoutSentEmailTab = FlexiFiltersTabFactory.tabWithImplicitFilters("withoutEmail", translate("filter.without.sent.email"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_WITHOUT_SENT_EMAILS, FILTER_WITHOUT_SENT_EMAILS_KEY)));
+		tabs.add(withoutSentEmailTab);
 		
 		// My assignment
+		myAssignmentsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("myAssignments", translate("filter.my.assignments"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNEE, getIdentity().getKey().toString())));
+		tabs.add(myAssignmentsTab);
 		
 		// Not rated
+		if(secCallback.canRate()) {
+			FlexiFiltersTab notRatedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("myRatings", translate("filter.application.notRated"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_MY_RATING, FILTER_NULL_KEY)));
+			tabs.add(notRatedTab);
+		}
 		
 		// Female
 		
@@ -946,7 +971,53 @@ public class PositionApplicationsController extends FormBasicController implemen
 		decisionKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.decision"),
 				FILTER_DECISION, decisionKV, true));
-
+		
+		// Emails
+		SelectionValues sentEmailsPK = new SelectionValues();
+		sentEmailsPK.add(SelectionValues.entry(FILTER_WITHOUT_SENT_EMAILS_KEY, translate("filter.not.sent.email")));
+		sentEmailsPK.add(SelectionValues.entry(recruitingModule.getMailTemplateRejectionTitle(),
+				translate("rejection.template.label." + recruitingModule.getMailTemplateRejectionTitle())));
+		if(mailTemplates != null && !mailTemplates.isEmpty()) {
+			for(PositionMailTemplateRef mailTemplate:mailTemplates) {
+				sentEmailsPK.add(SelectionValues.entry(mailTemplate.getName(), mailTemplate.getName()));
+			}
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.sent.email"),
+				FILTER_WITHOUT_SENT_EMAILS, sentEmailsPK, true));
+		
+		// Assignees
+		if(secCallback.canEditAssignments()) {
+			committeeAssignees = recruitingService.getCommittee(position, PositionRole.values());
+			if(committeeAssignees.size() > 1) {
+				Collections.sort(committeeAssignees, new IdentityLastnameComparator());
+			}
+			SelectionValues assigneesPK = new SelectionValues();
+			for(Identity member:committeeAssignees) {
+				String assignee = userManager.getUserDisplayName(member);
+				String label = translate("filter.assignment.to", new String[] { assignee } );
+				assigneesPK.add(SelectionValues.entry(member.getKey().toString(), label));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assignments"),
+					FILTER_ASSIGNEE, assigneesPK, true));
+		} else {
+			SelectionValues recertificationValues = new SelectionValues();
+			recertificationValues.add(SelectionValues.entry(getIdentity().getKey().toString(), translate("filter.my.assignments")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.my.assignments"),
+					FILTER_ASSIGNEE, recertificationValues, true));
+		}
+		
+		// My ratings
+		if(secCallback.canRate()) {
+			SelectionValues ratingPK = new SelectionValues();
+			ratingPK.add(SelectionValues.entry("A", translate("rating.2.filter")));
+			ratingPK.add(SelectionValues.entry("B", translate("rating.1.filter")));
+			ratingPK.add(SelectionValues.entry("C", translate("rating.0.filter")));
+			ratingPK.add(SelectionValues.entry(FILTER_ABSTAIN_KEY, translate("abstain.title")));
+			ratingPK.add(SelectionValues.entry(FILTER_NULL_KEY, translate("rating.not.rated")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("edit.application.my_rating"),
+					FILTER_MY_RATING, ratingPK, true));
+		}
+		
 		tableEl.setFilters(true, filters, true, false);
 	}
 	
@@ -1128,10 +1199,13 @@ public class PositionApplicationsController extends FormBasicController implemen
 			if(numOfAssignments != null && numOfAssignments.longValue() > 0l) {
 				List<ApplicationAssignmentLight> assignments = applicationToAssignments.get(application.getKey());
 				String[] assigneeArray = new String[assignments.size()];
+				String[] assigneeKeyArray = new String[assignments.size()];
 				for(int i=assignments.size(); i-->0; ) {
 					assigneeArray[i] = userManager.getUserDisplayName(assignments.get(i).getAssigneeKey());
+					assigneeKeyArray[i] = assignments.get(i).getAssigneeKey().toString();
 				}
 				row.setAssigneeArray(assigneeArray);
+				row.setAssigneeKeysArray(assigneeKeyArray);
 				row.setNumOfAssignments(numOfAssignments.intValue());
 			} else {
 				row.setNumOfAssignments(0);
@@ -1551,17 +1625,12 @@ public class PositionApplicationsController extends FormBasicController implemen
 		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Assignments".equalsIgnoreCase(type)) {
-				doSelectAssignmentFilter(ureq, entries.get(0).getOLATResourceable().getResourceableId());
+				tableEl.setSelectedFilterTab(ureq, myAssignmentsTab);
+				//TODO selectus filter
 			} else if(tableEl.getSelectedFilterTab() == null) {
 				tableEl.setSelectedFilterTab(ureq, allTab);
 			}
 		}
-	}
-	
-	private void doSelectAssignmentFilter(UserRequest ureq, Long identityKey) {
-		String fullName = userManager.getUserDisplayName(identityKey);
-		String label = translate("filter.assignment.to", new String[] { fullName } );
-		//TODO flexi ql tableEl.selectAdvanceFilter(ureq, label);
 	}
 
 	@Override
@@ -1600,8 +1669,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		} else if(this.copyApplicationsButton == source) {
 			doCopyApplications(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("delete".equals(se.getCommand())) {
 					ApplicationRow row = applicationsDataModel.getObject(se.getIndex());
 					doConfirmDelete(ureq, row.getApplication());
@@ -1617,6 +1685,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 				}
 			} else if(event instanceof FlexiTableSearchEvent ftse) {
 				applicationsDataModel.filter(ftse.getSearch(), ftse.getFilters());
+				tableEl.reset(true, true, false);
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				applicationsDataModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 				tableEl.reset(true, true, false);
 			}
 		} else if(source instanceof CustomRatingFormItem) {

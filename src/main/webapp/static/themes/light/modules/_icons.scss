@@ -17,6 +17,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: $brand-success;}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}
 .o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: $brand-danger }
+.o_icon_abstain { @include o-add-icon('hand', false); }
 .o_icon_accepted { @include o-add-icon('thumbs-up', false);}
 .o_icon_accessibility { @include o-add-icon('wheelchair');}
 .o_icon_actions { @include o-add-icon('ellipsis-v');}
@@ -473,6 +474,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_review_added { @include o-add-icon('check');}
 .o_icon_review_remove { @include o-add-icon('minus-square');}
 .o_icon_review_removed { @include o-add-icon('times');}
+.o_icon_reviews { @include o-add-icon('gauge');}
 .o_icon_reviewer { @include o-add-icon('user-md');}
 .o_icon_revision { @include o-add-icon('thumbs-down');}
 .o_icon_revoke { @include o-add-icon('rotate-left');}
