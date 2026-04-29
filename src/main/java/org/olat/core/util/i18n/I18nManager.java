@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
@@ -1946,19 +1947,22 @@ public class I18nManager {
 							targetBaseDir = i18nModule.getTransToolApplicationOptLanguagesSrcDir();
 						}
 						// Copy file
-						File targetFile = new File(targetBaseDir, jarEntryName);
-						targetFile.getParentFile().mkdirs();
-						FileUtils.save(jar.getInputStream(jarEntry), targetFile);
- 						// Check that saved properties file is empty, if so remove it 
-						Properties props = new Properties();
-						props.load(new FileInputStream(targetFile));
-						if (props.size() == 0) {
-							Files.deleteIfExists(targetFile.toPath());
-							// Delete empty parent dirs recursively
-							File parent = targetFile.getParentFile();
-							while (parent != null && parent.list() != null && parent.list().length == 0) {
-								Files.deleteIfExists(parent.toPath());
-								parent = parent.getParentFile();
+						Path targetPath = new File(targetBaseDir, jarEntryName).toPath().normalize();
+						if(targetPath.startsWith(targetBaseDir.toPath().normalize())) {
+							File targetFile = targetPath.toFile();
+							targetFile.getParentFile().mkdirs();
+							FileUtils.save(jar.getInputStream(jarEntry), targetFile);
+	 						// Check that saved properties file is empty, if so remove it 
+							Properties props = new Properties();
+							props.load(Files.newInputStream(targetPath));
+							if (props.size() == 0) {
+								Files.deleteIfExists(targetPath);
+								// Delete empty parent dirs recursively
+								File parent = targetFile.getParentFile();
+								while (parent != null && parent.list() != null && parent.list().length == 0) {
+									Files.deleteIfExists(parent.toPath());
+									parent = parent.getParentFile();
+								}
 							}
 						}
 						// Continue with next jar entry
