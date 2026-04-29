@@ -194,6 +194,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		initForm(ureq);
 		loadModel(null, true);
 		initFilters();// To collect some organisations
+		initFiltersPresets();
+		if (activeTab != null) {
+			tableEl.setSelectedFilterTab(ureq, activeTab);
+		} else if (allTab != null) {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+		}
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 		initSortSettings();
@@ -252,12 +258,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				.withPrimaryButton("o_icon_add", "add.curriculum", null)
 				.build());
 		
-		initFiltersPresets();
-		if (activeTab != null) {
-			tableEl.setSelectedFilterTab(ureq, activeTab);
-		} else if (allTab != null) {
-			tableEl.setSelectedFilterTab(ureq, allTab);
-		}
+	
 		
 		if(secCallback.canDeleteCurriculum()) {
 			tableEl.setMultiSelect(true);
