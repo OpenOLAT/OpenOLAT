@@ -105,6 +105,7 @@ import org.olat.modules.selectus.model.ApplicationRefereeStats;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
 import org.olat.modules.selectus.model.EmptyUserRating;
 import org.olat.modules.selectus.model.Notes;
+import org.olat.modules.selectus.model.PersonGender;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
 import org.olat.modules.selectus.model.PositionLight;
@@ -204,16 +205,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
  */
 public class PositionApplicationsController extends FormBasicController implements FlexiTableCssDelegate, GenericEventListener, Activateable2 {
 
-	protected static final String FILTER_ASSIGNEE = "assignee";
-	protected static final String FILTER_DECISION = "decision";
+	protected static final String FILTER_ASSIGNEE = "fassignee";
 	protected static final String FILTER_MY_RATING = "myRating";
-	protected static final String FILTER_WITHOUT_SENT_EMAILS = "withoutSentEmails";
-	protected static final String FILTER_APPLICATION_STATUS = "applicationStatus";
+	protected static final String FILTER_WITH_SENT_EMAILS = "fwithSentEmails";
+	protected static final String FILTER_WITHOUT_SENT_EMAILS = "fwithoutSentEmails";
 
 	protected static final String FILTER_NULL_KEY = "NULL";
 	protected static final String FILTER_ABSTAIN_KEY = "ABSTAIN";
-	protected static final String FILTER_WITHOUT_SENT_EMAILS_KEY = "withoutSentEmails";
-	protected static final String FILTER_WITHOUT_SENT_C_EMAILS_KEY = "withoutSentCEmails";
 	
 	private final RatingComparator ratingComparator = new RatingComparator();
 	
@@ -227,6 +225,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab myAssignmentsTab;
 	private FlexiFiltersTab withoutSentEmailTab;
+	private FlexiFiltersTab withoutSentCEmailTab;
 	private FlexiFiltersTab applicationActiveTab;
 	
 	private final ApplicationAttributesDelegate projectAttributesDelegate
@@ -920,34 +919,80 @@ public class PositionApplicationsController extends FormBasicController implemen
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
 		
-		// Active (application status)
-		applicationActiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("applicationActive", translate("filter.application.active"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_APPLICATION_STATUS, ApplicationStatus.active.name())));
-		tabs.add(applicationActiveTab);
+		// applicationStatus,withoutCEmails,,female,applicationADecision,
+		String[] defaultFilters = recruitingModule.getTableApplicationsDefaultAdvancedFilters();
+		
+		// Application active
+		if(isEnabled(defaultFilters, "applicationActive")) {
+			applicationActiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("applicationActive", translate("filter.application.active"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(Fields.applicationStatus.name(), ApplicationStatus.active.name())));
+			tabs.add(applicationActiveTab);
+		}
 
 		// Decision
+		if(isEnabled(defaultFilters, "applicationADecision")) {
+			FlexiFiltersTab decisionTab = FlexiFiltersTabFactory.tabWithImplicitFilters("applicationADecision", translate("decision.3.filter"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(Fields.decision.name(), "3")));
+			tabs.add(decisionTab);
+		}
+		if(isEnabled(defaultFilters, "applicationBDecision")) {
+			FlexiFiltersTab decisionTab = FlexiFiltersTabFactory.tabWithImplicitFilters("applicationBDecision", translate("decision.2.filter"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(Fields.decision.name(), "2")));
+			tabs.add(decisionTab);
+		}
+		if(isEnabled(defaultFilters, "applicationCDecision")) {
+			FlexiFiltersTab decisionTab = FlexiFiltersTabFactory.tabWithImplicitFilters("applicationCDecision", translate("decision.1.filter"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(Fields.decision.name(), "1")));
+			tabs.add(decisionTab);
+		}
 		
 		// Without sent emails
-		withoutSentEmailTab = FlexiFiltersTabFactory.tabWithImplicitFilters("withoutEmail", translate("filter.without.sent.email"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_WITHOUT_SENT_EMAILS, FILTER_WITHOUT_SENT_EMAILS_KEY)));
-		tabs.add(withoutSentEmailTab);
-		
+		if(isEnabled(defaultFilters, "withoutSentEmails")) {
+			List<String> templates = mailTemplates.stream()
+					.map(PositionMailTemplateRef::getName)
+					.collect(Collectors.toList());
+			templates.add("filter.no.template");
+			withoutSentEmailTab = FlexiFiltersTabFactory.tabWithImplicitFilters("withoutEmail", translate("filter.without.sent.email"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_WITHOUT_SENT_EMAILS, templates)));
+			tabs.add(withoutSentEmailTab);
+		}
+		if(isEnabled(defaultFilters, "withoutCEmails") && StringHelper.containsNonWhitespace(recruitingModule.getMailTemplateRejectionTitle())) {
+			withoutSentCEmailTab = FlexiFiltersTabFactory.tabWithImplicitFilters("withoutCEmails", translate("filter.c.email"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_WITHOUT_SENT_EMAILS, recruitingModule.getMailTemplateRejectionTitle())));
+			tabs.add(withoutSentCEmailTab);
+		}
+
 		// My assignment
-		myAssignmentsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("myAssignments", translate("filter.my.assignments"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNEE, getIdentity().getKey().toString())));
-		tabs.add(myAssignmentsTab);
+		if(isEnabled(defaultFilters, "assignments")) {
+			myAssignmentsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("myAssignments", translate("filter.my.assignments"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNEE, getIdentity().getKey().toString())));
+			tabs.add(myAssignmentsTab);
+		}
 		
 		// Not rated
-		if(secCallback.canRate()) {
+		if(secCallback.canRate() && isEnabled(defaultFilters, "notRated")) {
 			FlexiFiltersTab notRatedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("myRatings", translate("filter.application.notRated"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_MY_RATING, FILTER_NULL_KEY)));
 			tabs.add(notRatedTab);
 		}
 		
 		// Female
-		
+		if(isEnabled(defaultFilters, "female")) {
+			FlexiFiltersTab femaleTab = FlexiFiltersTabFactory.tabWithImplicitFilters("female", translate(PersonGender.female.i18nKey()),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(PositionApplicationsDataModel.Fields.gender.name(), translate(PersonGender.female.i18nKey()))));
+			tabs.add(femaleTab);
+		}
 		
 		tableEl.setFilterTabs(true, tabs);
+	}
+	
+	private boolean isEnabled(String[] list, String value) {
+		for(String element:list) {
+			if(value.equals(element)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void initFilters() {
@@ -960,7 +1005,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			applicationStatusPK.add(SelectionValues.entry(status.name(), translate("application.status.".concat(status.name()))));
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.status"),
-				FILTER_APPLICATION_STATUS, applicationStatusPK, true));
+				Fields.applicationStatus.name(), applicationStatusPK, true));
 		
 		// Decisions
 		SelectionValues decisionKV = new SelectionValues();
@@ -970,20 +1015,21 @@ public class PositionApplicationsController extends FormBasicController implemen
 		decisionKV.add(SelectionValues.entry("1", translate("decision.1.filter")));
 		decisionKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.decision"),
-				FILTER_DECISION, decisionKV, true));
+				Fields.decision.name(), decisionKV, true));
 		
-		// Emails
-		SelectionValues sentEmailsPK = new SelectionValues();
-		sentEmailsPK.add(SelectionValues.entry(FILTER_WITHOUT_SENT_EMAILS_KEY, translate("filter.not.sent.email")));
-		sentEmailsPK.add(SelectionValues.entry(recruitingModule.getMailTemplateRejectionTitle(),
-				translate("rejection.template.label." + recruitingModule.getMailTemplateRejectionTitle())));
+		// Without sent emails
+		SelectionValues templatesPK = new SelectionValues();
 		if(mailTemplates != null && !mailTemplates.isEmpty()) {
 			for(PositionMailTemplateRef mailTemplate:mailTemplates) {
-				sentEmailsPK.add(SelectionValues.entry(mailTemplate.getName(), mailTemplate.getName()));
+				templatesPK.add(SelectionValues.entry(mailTemplate.getName(), mailTemplate.getName()));
 			}
 		}
+		templatesPK.add(SelectionValues.entry(translate("filter.no.template"), translate("filter.no.template")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.not.sent.email"),
+				FILTER_WITHOUT_SENT_EMAILS, templatesPK, true));
+		// With sent emails
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.sent.email"),
-				FILTER_WITHOUT_SENT_EMAILS, sentEmailsPK, true));
+				FILTER_WITH_SENT_EMAILS, templatesPK, true));
 		
 		// Assignees
 		if(secCallback.canEditAssignments()) {
@@ -1017,6 +1063,17 @@ public class PositionApplicationsController extends FormBasicController implemen
 			filters.add(new FlexiTableMultiSelectionFilter(translate("edit.application.my_rating"),
 					FILTER_MY_RATING, ratingPK, true));
 		}
+		
+		// Gender
+		SelectionValues genderPK = new SelectionValues();
+		genderPK.add(SelectionValues.entry(FILTER_NULL_KEY, "-"));
+		PersonGender[] personGenders = recruitingModule.getPersonGenders();
+		for(PersonGender personGender:personGenders) {
+			genderPK.add(SelectionValues.entry(translate(personGender.i18nKey()), translate(personGender.i18nKey())));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate(Fields.gender.i18nHeaderKey()),
+				Fields.gender.name(), genderPK, true));
+		
 		
 		tableEl.setFilters(true, filters, true, false);
 	}

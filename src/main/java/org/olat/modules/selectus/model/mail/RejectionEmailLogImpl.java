@@ -69,6 +69,10 @@ public class RejectionEmailLogImpl implements RejectionEmailLog, Persistable {
 	@JoinColumn(name="fk_application_id", nullable=false, insertable=true, updatable=false)
 	private ApplicationLight application;
 	
+	public RejectionEmailLogImpl() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;

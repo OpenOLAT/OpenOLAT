@@ -212,20 +212,21 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
-			final Set<String> decisions = getFilteredList(filters, PositionApplicationsController.FILTER_DECISION);
+			//final Set<String> decisions = getFilteredList(filters, PositionApplicationsController.FILTER_DECISION);
 			final Set<String> assignees = getFilteredList(filters, PositionApplicationsController.FILTER_ASSIGNEE);
-			final Set<String> sentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITHOUT_SENT_EMAILS);
-			final Set<String> applicationStatus = getFilteredList(filters, PositionApplicationsController.FILTER_APPLICATION_STATUS);
 			final Set<String> myRating = getFilteredList(filters, PositionApplicationsController.FILTER_MY_RATING);
+			final Set<String> withSentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITH_SENT_EMAILS);
+			final Set<String> withoutSentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITHOUT_SENT_EMAILS);
+			final List<FieldFilter> fieldsFilters = getFilteredField(filters);
 			
 			List<ApplicationRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(ApplicationRow row:backupRows) {
 				boolean accept = accept(loweredSearchString, row)
 						&& acceptMyRating(myRating, row)
 						&& acceptAssignee(assignees, row)
-						&& acceptDecision(decisions, row)
-						&& acceptSentEmails(sentEmails, row)
-						&& acceptApplicationStatus(applicationStatus, row);
+						&& acceptWithSentEmails(withSentEmails, row)
+						&& acceptWithoutSentEmails(withoutSentEmails, row)
+						&& acceptFieldFilters(fieldsFilters, row);
 				if(accept) {
 					filteredRows.add(row);
 				}
@@ -237,6 +238,35 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 	}
 	
+	private record FieldFilter(Fields field, Set<String> set) {
+		//
+	}
+	
+	private List<FieldFilter> getFilteredField(List<FlexiTableFilter> filters) {
+		List<FieldFilter> fieldFilter = new ArrayList<>();
+		
+		for(FlexiTableFilter filter:filters) {
+			if(Fields.isValue(filter.getFilter())) {
+				Fields field = Fields.valueOf(filter.getFilter());
+				FieldFilter values = getFilteredField(filter, field);
+				if(values != null) {
+					fieldFilter.add(values);
+				}
+			}
+		}
+		
+		return fieldFilter;
+	}
+	
+	private FieldFilter getFilteredField(FlexiTableFilter filter, Fields field) {
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			Set<String> set =  filterValues != null && !filterValues.isEmpty() ? Set.copyOf(filterValues) : Set.of();
+			return new FieldFilter(field, set);
+		}
+		return null;
+	}
+	
 	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
     	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
 		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
@@ -246,39 +276,32 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		return Set.of();
 	}
 	
-	private boolean acceptSentEmails(Set<String> mails, ApplicationRow row) {
+	private boolean acceptWithSentEmails(Set<String> mails, ApplicationRow row) {
 		if(mails == null || mails.isEmpty()) return true;
 		
 		String[] sentTemplates = row.getSentEmailTemplates();
-		if(sentTemplates == null || sentTemplates.length == 0) {
-			return mails.contains(PositionApplicationsController.FILTER_WITHOUT_SENT_EMAILS_KEY)
-					|| mails.contains(PositionApplicationsController.FILTER_WITHOUT_SENT_C_EMAILS_KEY);
-		}
-		
-		for(String sentTemplate:sentTemplates) {
-			if(mails.contains(sentTemplate)) {
-				return true;
+		if(sentTemplates != null && sentTemplates.length > 0) {
+			for(String sentTemplate:sentTemplates) {
+				if(mails.contains(sentTemplate)) {
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 	
-	private boolean acceptDecision(Set<String> status, ApplicationRow row) {
-		if(status == null || status.isEmpty()) return true;
+	private boolean acceptWithoutSentEmails(Set<String> mails, ApplicationRow row) {
+		if(mails == null || mails.isEmpty()) return true;
 		
-		Integer decision = row.getApplication().getDecision();
-		if((decision == null || decision.intValue() <= 0) && status.contains(PositionApplicationsController.FILTER_NULL_KEY)
-				|| (decision != null && status.contains(decision.toString()))) {
-			return true;
+		String[] sentTemplates = row.getSentEmailTemplates();
+		if(sentTemplates != null && sentTemplates.length > 0) {
+			for(String sentTemplate:sentTemplates) {
+				if(mails.contains(sentTemplate)) {
+					return false;
+				}
+			}
 		}
-		return false;
-	}
-	
-	private boolean acceptApplicationStatus(Set<String> status, ApplicationRow row) {
-		if(status == null || status.isEmpty()) return true;
-
-		ApplicationStatus applicationStatus = row.getApplication().getApplicationStatus();
-		return status.contains(applicationStatus.name());
+		return true;
 	}
 	
 	private boolean acceptAssignee(Set<String> assignees, ApplicationRow row) {
@@ -326,6 +349,35 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 			case -32 -> PositionApplicationsController.FILTER_ABSTAIN_KEY;
 			default -> PositionApplicationsController.FILTER_NULL_KEY;
 		};
+	}
+	
+	private boolean acceptFieldFilters(List<FieldFilter> fieldsFilters, ApplicationRow row) {
+		if(fieldsFilters == null || fieldsFilters.isEmpty()) return true;
+		
+		boolean allOk = true;
+		for(FieldFilter fieldFilter:fieldsFilters) {
+			if(fieldFilter.set() != null) {
+				allOk &= acceptField(fieldFilter.set(), row, fieldFilter.field()); 
+			}
+		}
+		
+		return allOk;
+	}
+	
+	private boolean acceptField(Set<String> searchValues, ApplicationRow row, Fields field) {
+		if(searchValues == null || searchValues.isEmpty()) return true;
+		
+		Object val = getRawValueAt(row, field.ordinal());
+		if(val == null) {
+			return searchValues.contains(PositionApplicationsController.FILTER_NULL_KEY);
+		}
+		if(val instanceof String str) {
+			if(StringHelper.containsNonWhitespace(str)) {
+				return searchValues.contains(str);
+			}
+			return searchValues.contains(PositionApplicationsController.FILTER_NULL_KEY);
+		}
+		return false;
 	}
 	
 	private boolean accept(String searchValue, ApplicationRow row) {
@@ -507,13 +559,25 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 		return null;
 	}
+	
+	public Object getRawValueAt(ApplicationRow appRow, int col) {
+		ApplicationLight app = appRow.getApplication();
+		if(col >= 0 && col < FIELDS.length) {
+			return switch(FIELDS[col]) {
+				case applicationStatus -> app.getApplicationStatus().name();
+				case decision -> app.getDecision() == null ? null : app.getDecision().toString();
+				default -> getValueAt(appRow, col);
+			};
+		}
+		
+		return getValueAt(appRow, col);
+	}
 
 	@Override
 	public Object getValueAt(ApplicationRow appRow, int col) {
 		ApplicationLight app = appRow.getApplication();
 		if(col >= 0 && col < FIELDS.length) {
-			Fields field = FIELDS[col];
-			switch(field) {
+			switch(FIELDS[col]) {
 				case id: return app.getId();
 				case title: {
 					if(StringHelper.containsNonWhitespace(app.getPerson().getTitle())) {
@@ -869,6 +933,15 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		@Override
 		public String sortKey() {
 			return name();
+		}
+		
+		public static final boolean isValue(String val) {
+			for(Fields f:values()) {
+				if(f.name().equals(val)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }

@@ -85,6 +85,10 @@ public class RejectionEmailLogFullImpl implements RejectionEmailLogFull, Persist
 	@JoinColumn(name="fk_letter_id", nullable=true, insertable=true, updatable=true)
 	private Attachment letter;
 	
+	public RejectionEmailLogFullImpl() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;

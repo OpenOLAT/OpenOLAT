@@ -6,6 +6,7 @@
 package org.olat.modules.selectus.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +14,6 @@ import java.util.Map;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailerResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.olat.modules.selectus.DocumentType;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationLight;
@@ -27,6 +25,8 @@ import org.olat.modules.selectus.model.RejectionEmailLogFull;
 import org.olat.modules.selectus.model.mail.MailAttachment;
 import org.olat.modules.selectus.model.mail.RejectionEmailLogFullImpl;
 import org.olat.modules.selectus.model.mail.SentEmailTemplates;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -102,6 +102,7 @@ public class RejectionDAO  {
 
 	public void addLog(String templateName, String subject, String content, MailAttachment attachment, boolean rejected, ApplicationLight application, MailerResult result) {
 		RejectionEmailLogFullImpl log = new RejectionEmailLogFullImpl();
+		log.setCreationDate(new Date());
 		log.setApplication(application);
 		log.setStatus(result.getReturnCode());
 		log.setMailTemplate(templateName);
