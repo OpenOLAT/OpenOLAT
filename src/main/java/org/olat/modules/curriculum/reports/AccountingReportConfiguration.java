@@ -581,17 +581,15 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 		
 		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
-		int numOfSheets = accessTypeToName.isEmpty() ? 1 : accessTypeToName.size();
+		int numOfSheets = 1 + accessTypeToName.size();
 		
 		List<SheetDefinition> sheetDefs = new ArrayList<>();
-		if(accessTypeToName.isEmpty()) {
-			sheetDefs.add(new SheetDefinition(null, translator.translate("report.booking")));
-		} else {
-			for(Map.Entry<String, String> entry: accessTypeToName.entrySet()) {
-				sheetDefs.add(new SheetDefinition(entry.getKey(), entry.getValue()));
-			}
-			Collections.sort(sheetDefs);
+		for(Map.Entry<String, String> entry: accessTypeToName.entrySet()) {
+			sheetDefs.add(new SheetDefinition(entry.getKey(), entry.getValue()));
 		}
+		Collections.sort(sheetDefs);
+		sheetDefs.add(0, new SheetDefinition(null, translator.translate("report.booking.all")));
+		
 		List<String> worksheetNames = sheetDefs.stream().map(SheetDefinition::name).toList();
 		
 		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, numOfSheets, worksheetNames)) {
