@@ -418,17 +418,17 @@ public class PositionApplicationsController extends FormBasicController implemen
 		initColumnsModelApplicant(filters);
 		initColumnsModelAddress(filters);
 		initColumnsModelOrganization(filters);
-		initColumnsAdditionalPersonalData();
+		initColumnsAdditionalPersonalData(filters);
 		initColumnsModelBusinessAddress(filters);
 		initColumnsModelPrivateAddress(filters);
 		if(recruitingModule.isApplicationAcademicalBackgroundEnabled(position)) {
-			initColumnsModelAcademicalBackground();
+			initColumnsModelAcademicalBackground(filters);
 		}
 		if(position.isApplicationProject()) {
 			initColumnsModelProject(filters);
 		}
 		if(recruitingModule.isPositionCustomStepsEnabled()) {
-			initColumnsModelCustomTabs();
+			initColumnsModelCustomTabs(filters);
 		}
 		initColumnsModelTags();
 		initColumnsModelReference();
@@ -622,8 +622,8 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 	}
 	
-	private void initColumnsAdditionalPersonalData() {
-		personalDataAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
+	private void initColumnsAdditionalPersonalData(List<FlexiTableExtendedFilter> filters) {
+		personalDataAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale(), filters);
 	}
 	
 	private void initColumnsModelPrivateAddress(List<FlexiTableExtendedFilter> filters) {
@@ -639,7 +639,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 	}
 	
-	private void initColumnsModelAcademicalBackground() {
+	private void initColumnsModelAcademicalBackground(List<FlexiTableExtendedFilter> filters) {
 		if(recruitingModule.isApplicationAcademicalBackgroundNumberOfOriginalPublicationsEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.numberOfOriginalPublications, SELECT_POSITION));
 		}
@@ -748,7 +748,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.orcid, SELECT_POSITION));
 		}
 		
-		academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
+		academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale(), filters);
 	}
 	
 	private void initColumnsModelProject(List<FlexiTableExtendedFilter> filters) {
@@ -771,12 +771,12 @@ public class PositionApplicationsController extends FormBasicController implemen
 		initColumnModel(Fields.project, recruitingModule.getTableApplicationsProject(), new ProjectCellRenderer(), filters);
 		initColumnModel(Fields.projectDescription, recruitingModule.getTableApplicationsProjectDescription(),
 				new TooltipCellRenderer("o_icon_project_description"), filters);
-		projectAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
+		projectAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale(), filters);
 	}
 	
-	private void initColumnsModelCustomTabs() {
+	private void initColumnsModelCustomTabs(List<FlexiTableExtendedFilter> filters) {
 		for(ApplicationAttributesDelegate attributesDelegate:customTabsAttributesDelegate) {
-			attributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
+			attributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale(), filters);
 		}
 	}
 

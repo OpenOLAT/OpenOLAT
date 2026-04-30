@@ -159,11 +159,11 @@ public abstract class AbstractEmailController extends StepFormBasicController im
 			initColumnModel(Fields.projectFinancialImpact4, recruitingModule.getTableMailProjectFinancialImpact4Option());
 			initColumnModel(Fields.projectFinancialImpact5, recruitingModule.getTableMailProjectFinancialImpact5Option());
 			initColumnModel(Fields.projectDescription, recruitingModule.getTableMailProjectDescriptionOption(), new TooltipCellRenderer("o_icon_project_description"));
-			projectAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale());
+			projectAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale(), null);
 		}
 		
 		for(ApplicationAttributesDelegate attributesDelegates:customTabAttributesDelegates) {
-			attributesDelegates.initColumnsModel(columnsModel, position, null, getLocale());
+			attributesDelegates.initColumnsModel(columnsModel, position, null, getLocale(), null);
 		}
 		
 		if(recruitingModule.isCategoriesEnabledFor(position)) {
@@ -178,7 +178,7 @@ public abstract class AbstractEmailController extends StepFormBasicController im
 		
 		initColumnModel(Fields.organization, recruitingModule.getTableApplicationsOrganizationOption());
 		initColumnModel(Fields.unit, recruitingModule.getTableApplicationsOrganizationUnitOption());
-		personalDataAttributesDelegate.initColumnsModel(columnsModel,  position, null, getLocale());
+		personalDataAttributesDelegate.initColumnsModel(columnsModel,  position, null, getLocale(), null);
 		
 		//highest degree
 		if(recruitingModule.isApplicationAcademicalBackgroundEnabled(position)
@@ -197,7 +197,7 @@ public abstract class AbstractEmailController extends StepFormBasicController im
 							new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale())));
 				}
 			}
-			academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale());
+			academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale(), null);
 		}
 		
 		initColumnModel(Fields.applicationStatus, recruitingModule.getTableMailApplicationStatusOption());

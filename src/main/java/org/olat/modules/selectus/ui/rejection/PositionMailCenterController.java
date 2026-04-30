@@ -246,7 +246,7 @@ public class PositionMailCenterController extends FormBasicController {
 	}
 	
 	private void initColumnsAdditionalPersonalData() {
-		personalDataAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale());
+		personalDataAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale(), null);
 	}
 	
 	private void initColumnsModelAcademicalBackground() {
@@ -343,7 +343,7 @@ public class PositionMailCenterController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.orcid));
 		}
 		
-		academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale());
+		academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale(), null);
 	}
 	
 	private void initColumnsModelAddress() {
@@ -414,7 +414,7 @@ public class PositionMailCenterController extends FormBasicController {
 		initColumnModel(Fields.projectFinancialImpact5, recruitingModule.getTableMailProjectFinancialImpact5Option());
 		initColumnModel(Fields.projectDescription, recruitingModule.getTableMailProjectDescriptionOption(), new TooltipCellRenderer("o_icon_project_description"));
 		
-		projectAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale());
+		projectAttributesDelegate.initColumnsModel(columnsModel, position, null, getLocale(), null);
 	}
 
 	private void initColumnsModelCategories() {

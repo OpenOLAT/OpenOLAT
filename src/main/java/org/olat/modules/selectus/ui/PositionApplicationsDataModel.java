@@ -244,7 +244,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 	}
 	
-	private record FieldFilter(Fields field, Set<String> set, DateRange range, NumericalRange numericalRange, String text) {
+	private record FieldFilter(int column, Set<String> set, DateRange range, NumericalRange numericalRange, String text) {
 		//
 	}
 	
@@ -252,41 +252,47 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		List<FieldFilter> fieldFilter = new ArrayList<>();
 		
 		for(FlexiTableFilter filter:filters) {
+			int column;
 			if(Fields.isValue(filter.getFilter())) {
-				Fields field = Fields.valueOf(filter.getFilter());
-				FieldFilter values = getFilteredField(filter, field);
-				if(values != null) {
-					fieldFilter.add(values);
-				}
+				column = Fields.valueOf(filter.getFilter()).ordinal();
+			} else if(filter.getFilter().startsWith("filter.")) {
+				column = Integer.parseInt(filter.getFilter().substring(7));
+			} else {
+				continue;
+			}
+			
+			FieldFilter values = getFilteredField(filter, column);
+			if(values != null) {
+				fieldFilter.add(values);
 			}
 		}
 		
 		return fieldFilter;
 	}
 	
-	private FieldFilter getFilteredField(FlexiTableFilter filter, Fields field) {
+	private FieldFilter getFilteredField(FlexiTableFilter filter, int column) {
 		if(filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
 			List<String> filterValues = extendedFilter.getValues();
 			if(filterValues != null && !filterValues.isEmpty()) {
-				return new FieldFilter(field, Set.copyOf(filterValues), null, null, null);
+				return new FieldFilter(column, Set.copyOf(filterValues), null, null, null);
 			}
 			return null;
 		} else if(filter instanceof FlexiTableDateRangeFilter dateFilter) {
 			DateRange range = dateFilter.getDateRange();
 			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
-				return new FieldFilter(field, null, range, null, null);
+				return new FieldFilter(column, null, range, null, null);
 			}
 			return null;
 		} else if(filter instanceof FlexiTableNumericalRangeFilter numericalFilter) {
 			NumericalRange range = numericalFilter.getNumericalRange();
 			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
-				return new FieldFilter(field, null, null, range, null);
+				return new FieldFilter(column, null, null, range, null);
 			}
 			return null;
 		} else if(filter instanceof FlexiTableTextFilter textFilter) {
 			String text = textFilter.getValue();
 			if(StringHelper.containsNonWhitespace(text)) {
-				return new FieldFilter(field, null, null, null, text.toLowerCase());
+				return new FieldFilter(column, null, null, null, text.toLowerCase());
 			}
 			return null;
 		}
@@ -383,33 +389,33 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		boolean allOk = true;
 		for(FieldFilter fieldFilter:fieldsFilters) {
 			if(fieldFilter.set() != null) {
-				allOk &= acceptField(fieldFilter.set(), row, fieldFilter.field()); 
+				allOk &= acceptField(fieldFilter.set(), row, fieldFilter.column()); 
 			} else if(fieldFilter.range() != null) {
-				allOk &= acceptDateRange(fieldFilter.range(), row, fieldFilter.field()); 
+				allOk &= acceptDateRange(fieldFilter.range(), row, fieldFilter.column()); 
 			} else if(fieldFilter.numericalRange() != null) {
-				allOk &= acceptNumericalRange(fieldFilter.numericalRange(), row, fieldFilter.field()); 
+				allOk &= acceptNumericalRange(fieldFilter.numericalRange(), row, fieldFilter.column()); 
 			} else if(fieldFilter.text() != null) {
-				allOk &= acceptText(fieldFilter.text(), row, fieldFilter.field()); 
+				allOk &= acceptText(fieldFilter.text(), row, fieldFilter.column()); 
 			}
 		}
 		
 		return allOk;
 	}
 	
-	private boolean acceptText(String text, ApplicationRow row, Fields field) {
+	private boolean acceptText(String text, ApplicationRow row, int column) {
 		if(!StringHelper.containsNonWhitespace(text)) return true;
 		
-		Object val = getRawValueAt(row, field.ordinal());
+		Object val = getRawValueAt(row, column);
 		if(val instanceof String str) {
 			return accept(text, str);
 		}
 		return false;
 	}
 	
-	private boolean acceptDateRange(DateRange range, ApplicationRow row, Fields field) {
+	private boolean acceptDateRange(DateRange range, ApplicationRow row, int column) {
 		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
 		
-		Object val = getRawValueAt(row, field.ordinal());
+		Object val = getRawValueAt(row, column);
 		if(val instanceof Date date) {
 			if((range.getStart() != null && range.getStart().compareTo(date) > 0)
 					|| (range.getEnd() != null && range.getEnd().compareTo(date) < 0)) {
@@ -420,10 +426,10 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		return false;
 	}
 	
-	private boolean acceptNumericalRange(NumericalRange range, ApplicationRow row, Fields field) {
+	private boolean acceptNumericalRange(NumericalRange range, ApplicationRow row, int column) {
 		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
 		
-		Object val = getRawValueAt(row, field.ordinal());
+		Object val = getRawValueAt(row, column);
 		if(val instanceof String str && StringHelper.containsNonWhitespace(str)) {
 			try {
 				val = Double.valueOf(str);
@@ -441,10 +447,10 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		return false;
 	}
 	
-	private boolean acceptField(Set<String> searchValues, ApplicationRow row, Fields field) {
+	private boolean acceptField(Set<String> searchValues, ApplicationRow row, int column) {
 		if(searchValues == null || searchValues.isEmpty()) return true;
 		
-		Object val = getRawValueAt(row, field.ordinal());
+		Object val = getRawValueAt(row, column);
 		if(val == null) {
 			return searchValues.contains(PositionApplicationsController.FILTER_NULL_KEY);
 		}
@@ -453,6 +459,12 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 				return searchValues.contains(str);
 			}
 			return searchValues.contains(PositionApplicationsController.FILTER_NULL_KEY);
+		} else if (val instanceof String[] strArr) {
+			for(String str:strArr) {
+				if(StringHelper.containsNonWhitespace(str)) {
+					return searchValues.contains(str);
+				}
+			}
 		}
 		return false;
 	}

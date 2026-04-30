@@ -23,6 +23,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -33,6 +34,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
@@ -41,9 +47,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
@@ -69,6 +72,8 @@ import org.olat.modules.selectus.ui.components.LongTextRenderer;
 import org.olat.modules.selectus.ui.components.PercentageCellRenderer;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
 import org.olat.modules.selectus.ui.document.ApplicationXMLV2;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * 
@@ -1081,7 +1086,7 @@ public class ApplicationAttributesDelegate {
 		}
 	}
 	
-	public void initColumnsModel(FlexiTableColumnModel columnsModel, Position position, String action, Locale locale) {
+	public void initColumnsModel(FlexiTableColumnModel columnsModel, Position position, String action, Locale locale, List<FlexiTableExtendedFilter> filters) {
 		List<PositionAttributeDefinition> definitions = position.getAttributesDefinitions();
 		for(int i=0; i<definitions.size(); i++) {
 			PositionAttributeDefinition definition = definitions.get(i);
@@ -1108,12 +1113,56 @@ public class ApplicationAttributesDelegate {
 
 				column.setHeaderLabel(label);
 				columnsModel.addFlexiColumnModel(column);
+				
+				if(filters != null) {
+					initFilter(label, "filter." + (COLS_OFFSET + i), definition,  filters, locale);
+				}
 			}
 		}
 	}
 	
+	public void initFilter(String label, String filter, PositionAttributeDefinition definition,
+			List<FlexiTableExtendedFilter> filters, Locale locale) {
+		PositionAttributeDefinitionTypeEnum type = definition.getTypeEnum();
+		if(type == PositionAttributeDefinitionTypeEnum.number
+				|| type == PositionAttributeDefinitionTypeEnum.percentage) {
+			Translator translator = Util.createPackageTranslator(ApplicationAttributesDelegate.class, locale);
+			filters.add(new FlexiTableNumericalRangeFilter(label, filter, false,
+					translator.translate("from"), translator.translate("to")));
+		} else if(type == PositionAttributeDefinitionTypeEnum.text
+				|| type == PositionAttributeDefinitionTypeEnum.question) {
+			filters.add(new FlexiTableTextFilter(label, filter, false));
+		} else if(type == PositionAttributeDefinitionTypeEnum.date) {
+			filters.add(new FlexiTableDateRangeFilter(label, filter, false, false, locale));
+		} else if(type == PositionAttributeDefinitionTypeEnum.select) {
+			SelectConfiguration configuration = definition.getConfiguration(SelectConfiguration.class);
+			SelectionValues pk = filterOptions(configuration, locale);
+			if(configuration.isMultiple()) {
+				filters.add(new FlexiTableMultiSelectionFilter(label, filter, pk, false));
+			} else {
+				filters.add(new FlexiTableSingleSelectionFilter(label, filter, pk, false));
+			}
+		}
+	}
+	
+	private SelectionValues filterOptions(SelectConfiguration configuration, Locale locale) {
+		List<Option> options = configuration.getOptions();
+		SelectionValues keyValues = new SelectionValues();
+		for(Option option:options) {
+			String opt = option.getValue(locale, true);
+			keyValues.add(SelectionValues.entry(opt, opt));
+		}
+		
+		if(configuration.isOther()) {
+			Translator translator = Util.createPackageTranslator(ApplicationAttributesDelegate.class, locale);
+			keyValues.add(SelectionValues.entry(SELECT_OTHER, translator.translate("other")));
+		}
+		return keyValues;
+	}
+	
 	public boolean validateFormLabel(TextElement labelEl, PositionAttributeDefinition attributeDefinition, Position position) {
 		String val = labelEl.getValue();
+		
 		
 		List<PositionAttributeDefinition> attrs;
 		if(position != null) {
