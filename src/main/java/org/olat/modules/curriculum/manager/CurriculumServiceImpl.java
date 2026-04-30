@@ -84,6 +84,8 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAO;
 import org.olat.modules.coach.manager.CoachingDAO;
+import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
+import org.olat.modules.creditpoint.manager.CurriculumElementCreditPointConfigurationDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
@@ -232,6 +234,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
+	@Autowired
+	private CurriculumElementCreditPointConfigurationDAO curriculumElementConfigurationDao;
 	@Autowired
 	private CertificationProgramToCurriculumElementDAO certificationProgramToCurriculumElementDao;
 	@Autowired
@@ -555,6 +559,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		copyCurriculumElemenFiles(elementToClone, clone, doer);
+		
+		if(clone.isShowCreditPointsBenefit()) {
+			CurriculumElementCreditPointConfiguration config = curriculumElementConfigurationDao.loadConfiguration(elementToClone);
+			if(config != null && config.getCreditPointSystem() != null) {
+				CurriculumElementCreditPointConfiguration clonedConfig = curriculumElementConfigurationDao.createConfiguration(clone, config.getCreditPointSystem());
+				clonedConfig.setEnabled(config.isEnabled());
+				clonedConfig.setCreditPoints(config.getCreditPoints());
+				curriculumElementConfigurationDao.updateConfiguration(clonedConfig);
+			}
+		}
+		
 		if(settings.isCopyOwnersMemberships()) {
 			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.owner, doer, depth == 0);
 			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.curriculumelementowner, doer, depth == 0);
@@ -565,7 +580,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(settings.isCopyCoachesMemberships()) {
 			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.coach, doer, depth == 0);
 		}
-		
+
 		boolean hasTemplates = false;
 		if(settings.getCopyResources() == CopyResources.relation
 				|| settings.getCopyResources() == CopyResources.resource) {
@@ -678,6 +693,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				curriculumElementToTaxonomyLevelDao.createRelation(clone, taxonomyLevel);	
 			}
 		}
+		
+		
 		
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
