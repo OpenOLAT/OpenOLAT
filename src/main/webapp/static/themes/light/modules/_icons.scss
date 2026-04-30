@@ -999,6 +999,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_curriculum_status_active { @include o-add-icon('check');}
 .o_icon_curriculum_status_cancelled { @include o-add-icon('circle-xmark');}
 .o_icon_curriculum_status_finished { @include o-add-icon('ban');}
+.o_icon_curriculum_status_deleted { @include o-add-icon('trash-can');}
 .o_icon_curriculum_status_transition { @include o-add-icon('chevron-right');}
 
 /* Membership status (and pseudo status) */

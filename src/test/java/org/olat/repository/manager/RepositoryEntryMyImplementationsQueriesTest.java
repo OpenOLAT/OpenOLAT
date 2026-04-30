@@ -29,7 +29,6 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
@@ -61,7 +60,6 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 	
 	private static final String USER_PREFIX = random();
 	private static final List<CurriculumRoles> CE_PARTICIPANT = List.of(CurriculumRoles.participant);
-	private static final List<GroupRoles> PARTICIPANTS_ONLY = List.of(GroupRoles.participant);
 	
 	@Autowired
 	private DB dbInstance;
@@ -83,7 +81,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assert.assertNotNull(list);
 	}
 	
@@ -105,7 +103,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -128,7 +126,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -151,7 +149,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.isEmpty();
 	}
@@ -174,7 +172,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		boolean hasOneImplementation = myImplementationsQueries.hasImplementations(participant, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		boolean hasOneImplementation = myImplementationsQueries.hasImplementations(participant, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assert.assertTrue(hasOneImplementation);
 	}
 	
@@ -196,7 +194,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<Curriculum> list = myImplementationsQueries.getCurriculums(participant, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		List<Curriculum> list = myImplementationsQueries.getCurriculums(participant, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(list)
 			.containsExactly(curriculum);
 	}
@@ -233,13 +231,12 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 	}
 	
 	private void searchElement(Curriculum curriculum, CurriculumElementType elementType,
-			CurriculumElementStatus elementStatus, Collection<CurriculumRoles> roles,
+			CurriculumElementStatus elementStatus, List<CurriculumRoles> roles,
 			boolean assertFound) {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
 		CurriculumElement element = create(curriculum, elementType, elementStatus,identity, roles, false);
 		
-		List<GroupRoles> groupRoles = roles.stream().map(CurriculumRoles::name).map(GroupRoles::valueOf).toList();
-		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, groupRoles, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, roles, STATUS_WITHOUT_PREPARATION);
 		if (assertFound) {
 			Assertions.assertThat(implementations)
 				.contains(element);
@@ -261,7 +258,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		CurriculumElement element = create(curriculum, structureType, CurriculumElementStatus.confirmed, identity, List.of(), true);
 		
 		// Elements with reservation are display "in preparation"
-		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, PARTICIPANTS_ONLY, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		Assertions.assertThat(implementations).doesNotContain(element);
 	}
 	
@@ -314,8 +311,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
 		CurriculumElements elements = create(curriculum, implementationType, implementationStatus, elementType, elementStatus, identity, false);
 		
-		List<GroupRoles> groupRoles = List.of(GroupRoles.participant);
-		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, groupRoles, STATUS_WITHOUT_PREPARATION);
+		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(identity, false, CE_PARTICIPANT, STATUS_WITHOUT_PREPARATION);
 		if (assertFound) {
 			Assertions.assertThat(implementations)
 				.contains(elements.implementation())

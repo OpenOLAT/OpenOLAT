@@ -21,8 +21,8 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  *
@@ -31,12 +31,13 @@ import org.olat.core.id.Identity;
  *
  */
 public record ImplementationsListConfig(
-		List<GroupRoles> asRoles,
+		List<CurriculumRoles> asRoles,
 		Identity coachIdentity,
 		boolean withPreparation,
 		boolean withPreparationWarning,
 		boolean withEnhancedInfoHeader,
 		boolean withFormTitle,
+		boolean withFormLegend,
 		String helpUrl,
 		boolean withBookmarks,
 		boolean withId,
@@ -47,18 +48,19 @@ public record ImplementationsListConfig(
 		boolean withCalendar,
 		boolean withCancelledFilter) {
 
-	public static Builder builder(List<GroupRoles> asRoles) {
+	public static Builder builder(List<CurriculumRoles> asRoles) {
 		return new Builder(asRoles);
 	}
 
 	public static class Builder {
 
-		private final List<GroupRoles> asRoles;
+		private final List<CurriculumRoles> asRoles;
 		private Identity coachIdentity;
 		private boolean withPreparation;
 		private boolean withPreparationWarning;
 		private boolean withEnhancedInfoHeader;
 		private boolean withFormTitle;
+		private boolean withFormLegend;
 		private String helpUrl;
 		private boolean withBookmarks;
 		private boolean withId;
@@ -69,7 +71,7 @@ public record ImplementationsListConfig(
 		private boolean withCalendar;
 		private boolean withCancelledFilter;
 
-		private Builder(List<GroupRoles> asRoles) {
+		private Builder(List<CurriculumRoles> asRoles) {
 			this.asRoles = asRoles;
 		}
 
@@ -95,6 +97,11 @@ public record ImplementationsListConfig(
 
 		public Builder enableFormTitle() {
 			this.withFormTitle = true;
+			return this;
+		}
+
+		public Builder enableFormLegend() {
+			this.withFormLegend = true;
 			return this;
 		}
 
@@ -145,7 +152,7 @@ public record ImplementationsListConfig(
 
 		public ImplementationsListConfig build() {
 			return new ImplementationsListConfig(asRoles, coachIdentity, withPreparation, withPreparationWarning,
-					withEnhancedInfoHeader, withFormTitle, helpUrl, withBookmarks, withId,
+					withEnhancedInfoHeader, withFormTitle, withFormLegend, helpUrl, withBookmarks, withId,
 					extRefVisibilityDefault, withRoles, withStatus, withCompletion, withCalendar,
 					withCancelledFilter);
 		}

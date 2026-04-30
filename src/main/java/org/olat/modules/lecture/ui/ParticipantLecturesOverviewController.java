@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -72,6 +71,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -311,7 +311,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
 				.getCurriculumElements(assessedIdentity, roles, new ArrayList<>(curriculums), CurriculumElementStatus.notDeleted(),
 						new RepositoryEntryRuntimeType[]{ RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone },
-						List.of(GroupRoles.participant), true);
+						List.of(CurriculumRoles.participant), true);
 
 		List<CurriculumElementRepositoryEntryViews> elementsToAggregate = new ArrayList<>();
 		for(CurriculumElementRepositoryEntryViews view:elementsWithViews) {

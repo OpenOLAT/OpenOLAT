@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipStatus;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -698,7 +697,7 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status,
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, boolean entriesWithLecturesEnabled);
+			RepositoryEntryRuntimeType[] runtimeTypes, List<CurriculumRoles> asRoles, boolean entriesWithLecturesEnabled);
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 

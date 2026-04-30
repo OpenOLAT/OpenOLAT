@@ -1,4 +1,4 @@
-#if($r.isTrue($withTitle))
+#if($r.isTrue($withFormTitle))
 	<h2>
 		<i class="o_icon o_icon_curriculum"> </i> $r.translate("implementations.list.title")
 		#if($r.isNotEmpty($helpUrl))
@@ -6,4 +6,13 @@
 		#end
 	</h2>
 #end
+#if($r.isTrue($withFormLegend))
+<fieldset>
+	<legend>
+		<i class="o_icon o_icon-fw o_icon_curriculum"> </i> $r.translate("implementations.list.title")
+	</legend>
+#end
 $r.render("table")
+#if($r.isTrue($withFormLegend))
+</fieldset>
+#end

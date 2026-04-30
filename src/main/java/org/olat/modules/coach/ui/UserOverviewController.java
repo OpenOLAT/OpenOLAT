@@ -169,8 +169,6 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
-	private CurriculumService curriculumService;
-	@Autowired
 	private CoachingService coachingService;
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
@@ -304,7 +302,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			courseTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("enrollments"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ENROLLMENTS), null);
 				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee,
-						null, roleSecurityCallback, statEntry, false);
+						roleSecurityCallback, statEntry);
 				listenTo(courseListWrapperController);
 				return courseListWrapperController;
 			});

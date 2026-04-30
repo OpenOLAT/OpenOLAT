@@ -60,6 +60,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.ui.ImplementationsListConfig;
@@ -110,7 +111,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private final boolean guestOnly;
 	private final EventBus eventBus;
 	private final boolean participantsOnly;
-	private final List<GroupRoles> asRoles;
+	private final List<CurriculumRoles> asRoles;
 	
 	@Autowired
 	private ACService acService;
@@ -136,8 +137,8 @@ public class OverviewRepositoryListController extends BasicController implements
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		participantsOnly = repositoryModule.isMyCoursesParticipantsOnly();
 		asRoles = participantsOnly
-				? List.of(GroupRoles.participant)
-				: List.of(GroupRoles.participant, GroupRoles.coach);
+				? List.of(CurriculumRoles.participant)
+				: List.of(CurriculumRoles.participant, CurriculumRoles.coach);
 
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);

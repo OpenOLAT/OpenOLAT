@@ -66,34 +66,6 @@ public class RoleSecurityCallbackFactory {
 		}
 		return new RoleSecurityCallbackImpl(roleRights, limitToRole);
 	}
-	
-	/**
-	 * Creates a security callback for given right providers
-	 * 
-	 * @param rightProviders An array of rights as strings
-	 * @return A security callback
-	 */
-	public static RoleSecurityCallback createFromStringsList(List<String> rightProviders) {
-		return new RoleSecurityCallbackImpl(rightProviders, null);
-	}
-
-	/**
-	 * Creates a full-access security callback for use in the user admin context.
-	 *
-	 * @return A security callback granting all rights relevant for admin views
-	 */
-	public static RoleSecurityCallback createForAdmin() {
-		List<String> rights = List.of(
-			CoursesAndCurriculumRightProvider.RELATION_RIGHT,
-			CourseProgressAndStatusRightProvider.RELATION_RIGHT,
-			ViewEfficiencyStatementRightProvider.RELATION_RIGHT,
-			ViewCourseCalendarRightProvider.RELATION_RIGHT,
-			LecturesAndAbsencesRightProvider.RELATION_RIGHT,
-			CertificateEmailRightProvider.RELATION_RIGHT,
-			AdministrativePropertiesRightProvider.RELATION_RIGHT
-		);
-		return new RoleSecurityCallbackImpl(rights, null);
-	}
 
 	private static class RoleSecurityCallbackImpl implements RoleSecurityCallback {
 

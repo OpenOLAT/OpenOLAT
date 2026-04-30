@@ -84,6 +84,8 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAO;
 import org.olat.modules.coach.manager.CoachingDAO;
+import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
+import org.olat.modules.creditpoint.manager.CurriculumElementCreditPointConfigurationDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
@@ -232,6 +234,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
+	@Autowired
+	private CurriculumElementCreditPointConfigurationDAO curriculumElementConfigurationDao;
 	@Autowired
 	private CertificationProgramToCurriculumElementDAO certificationProgramToCurriculumElementDao;
 	@Autowired
@@ -557,6 +561,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		copyCurriculumElemenFiles(elementToClone, clone, doer);
+		
+		if(clone.isShowCreditPointsBenefit()) {
+			CurriculumElementCreditPointConfiguration config = curriculumElementConfigurationDao.loadConfiguration(elementToClone);
+			if(config != null && config.getCreditPointSystem() != null) {
+				CurriculumElementCreditPointConfiguration clonedConfig = curriculumElementConfigurationDao.createConfiguration(clone, config.getCreditPointSystem());
+				clonedConfig.setEnabled(config.isEnabled());
+				clonedConfig.setCreditPoints(config.getCreditPoints());
+				curriculumElementConfigurationDao.updateConfiguration(clonedConfig);
+			}
+		}
+		
 		if(settings.isCopyOwnersMemberships()) {
 			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.owner, doer, depth == 0);
 			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.curriculumelementowner, doer, depth == 0);
@@ -567,7 +582,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(settings.isCopyCoachesMemberships()) {
 			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.coach, doer, depth == 0);
 		}
-		
+
 		boolean hasTemplates = false;
 		if(settings.getCopyResources() == CopyResources.relation
 				|| settings.getCopyResources() == CopyResources.resource) {
@@ -680,6 +695,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				curriculumElementToTaxonomyLevelDao.createRelation(clone, taxonomyLevel);	
 			}
 		}
+		
+		
 		
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
@@ -1826,13 +1843,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		// For legacy reasons, both courses of both runtime types are loaded
 		return getCurriculumElements(identity, roles, curriculum, status,
 				RepositoryEntryRuntimeType.CURRICULAR_STANDALONE,
-				List.of(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant), false);
+				List.of(CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant), false);
 	}
 
 	@Override
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculums, CurriculumElementStatus[] status, 
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles,
+			RepositoryEntryRuntimeType[] runtimeTypes, List<CurriculumRoles> asRoles,
 			boolean entriesWithLecturesEnabled) {
 		if(curriculums == null || curriculums.isEmpty()) return List.of();
 		
@@ -1923,14 +1940,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	private List<RepositoryEntryMyView> internal(Identity identity, Roles roles, List<? extends CurriculumRef> curriculums,
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, List<RepositoryEntryRef> entriesRefs,
+			RepositoryEntryRuntimeType[] runtimeTypes, List<CurriculumRoles> asRoles, List<RepositoryEntryRef> entriesRefs,
 			boolean entriesWithLecturesEnabled) {
 		Collection<List<RepositoryEntryRef>> chunkedOfEntriesRefs = PersistenceHelper.collectionOfChunks(new ArrayList<>(entriesRefs), 5);
 		
 		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
 		params.setCurriculums(curriculums);
 		params.setRuntimeTypes(runtimeTypes);
-		params.setFilters(Filter.rolesFilters(asRoles));
+		List<GroupRoles> groupRoles = asRoles.stream()
+				.map(CurriculumRoles::name)
+				.filter(GroupRoles::isValue)
+				.map(GroupRoles::valueOf)
+				.toList();
+		params.setFilters(Filter.rolesFilters(groupRoles));
 		params.setWithLecturesEnabled(entriesWithLecturesEnabled);
 		
 		List<RepositoryEntryMyView> views = new ArrayList<>(entriesRefs.size());
