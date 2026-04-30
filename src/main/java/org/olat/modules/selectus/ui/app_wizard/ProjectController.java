@@ -23,8 +23,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.ApplicationFieldType;
 import org.olat.modules.selectus.ApplicationFieldType.Type;
 import org.olat.modules.selectus.RecruitingModule;
@@ -37,9 +35,11 @@ import org.olat.modules.selectus.model.position.TabConfiguration;
 import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.olat.modules.selectus.ui.components.IntegerLenientFormatter;
 import org.olat.modules.selectus.ui.components.ReflectionStaticElement;
 import org.olat.modules.selectus.ui.components.ReflectionStaticElement.ReflectionType;
 import org.olat.modules.selectus.ui.components.SelectusUIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -231,7 +231,7 @@ public class ProjectController extends FormBasicController {
 		String i18nPlaceholder = "edit.application.project.financialimpact.placeholder." + num;;
 		if(fieldType.getType() == Type.integer) {
 			IntegerElement el = uifactory.addIntegerElement(elementId, i18nLabel, 0, formLayout);
-			//TODO selectus el.setLenientFormatter(new IntegerLenientFormatter());
+			el.setLenientFormatter(new IntegerLenientFormatter());
 			el.setElementCssClass("form-inline");
 			el.setTextAddOn("edit.application.project.financialimpact.unit." + num);
 			el.setPlaceholderKey(i18nPlaceholder, null);

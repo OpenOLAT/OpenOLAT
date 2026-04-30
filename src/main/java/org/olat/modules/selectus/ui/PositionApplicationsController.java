@@ -46,8 +46,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -80,6 +83,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.selectus.AddressOption;
+import org.olat.modules.selectus.ApplicationFieldType;
+import org.olat.modules.selectus.ApplicationFieldType.Type;
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.AssignmentMethods;
 import org.olat.modules.selectus.AssignmentService;
@@ -408,17 +413,19 @@ public class PositionApplicationsController extends FormBasicController implemen
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.id, SELECT_POSITION));//EscapeMode.antisamy
 		
-		initColumnsModelApplicant();
-		initColumnsModelAddress();
-		initColumnsModelOrganization();
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		initColumnsModelApplicant(filters);
+		initColumnsModelAddress(filters);
+		initColumnsModelOrganization(filters);
 		initColumnsAdditionalPersonalData();
-		initColumnsModelBusinessAddress();
-		initColumnsModelPrivateAddress();
+		initColumnsModelBusinessAddress(filters);
+		initColumnsModelPrivateAddress(filters);
 		if(recruitingModule.isApplicationAcademicalBackgroundEnabled(position)) {
 			initColumnsModelAcademicalBackground();
 		}
 		if(position.isApplicationProject()) {
-			initColumnsModelProject();
+			initColumnsModelProject(filters);
 		}
 		if(recruitingModule.isPositionCustomStepsEnabled()) {
 			initColumnsModelCustomTabs();
@@ -427,7 +434,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		initColumnsModelReference();
 		initColumnsModelReviews();
 		initColumnsModelRatings();
-		initColumnsModelStaffInfos();
+		initColumnsModelStaffInfos(filters);
 		initColumnsModelActions();
 		
 		applicationsDataModel = new PositionApplicationsDataModel(getIdentity(), position, secCallback, getTranslator(), columnsModel);
@@ -441,7 +448,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		tableEl.setShowAllRowsEnabled(true);
 		
 		initFilterPresets();
-		initFilters();
+		initFilters(filters);
 		
 		String page = velocity_root + "/assignments_statistics.html";
 		statisticsContainer = FormLayoutContainer.createCustomFormLayout("statistics", getTranslator(), page);
@@ -572,38 +579,38 @@ public class PositionApplicationsController extends FormBasicController implemen
 		tableEl.setSortSettings(sortOptions);
 	}
 	
-	private void initColumnsModelApplicant() {
-		initColumnModel(Fields.title, recruitingModule.getTableApplicationsPersonTitleOption());
-		initColumnModel(Fields.firstName, recruitingModule.getTableApplicationsPersonFirstNameOption());
-		initColumnModel(Fields.lastName, recruitingModule.getTableApplicationsPersonLastNameOption());
-		initColumnModel(Fields.gender, recruitingModule.getTableApplicationsGenderOption(), new GenderCellRenderer());
-		initColumnModel(Fields.maritalStatus, recruitingModule.getTableApplicationsMaritalStatusOption());
-		initColumnModel(Fields.yearOfBirth, recruitingModule.getTableApplicationsYearOfBirthOption());
-		initColumnModel(Fields.birthday, recruitingModule.getTableApplicationsBirthdayOption(), new DateCellRenderer());
-		initColumnModel(Fields.academicTitle, recruitingModule.getTableApplicationPersonAcademicTitleOption());
+	private void initColumnsModelApplicant(List<FlexiTableExtendedFilter> filters) {
+		initColumnModel(Fields.title, recruitingModule.getTableApplicationsPersonTitleOption(), filters);
+		initColumnModel(Fields.firstName, recruitingModule.getTableApplicationsPersonFirstNameOption(), filters);
+		initColumnModel(Fields.lastName, recruitingModule.getTableApplicationsPersonLastNameOption(), filters);
+		initColumnModel(Fields.gender, recruitingModule.getTableApplicationsGenderOption(), new GenderCellRenderer(), filters);
+		initColumnModel(Fields.maritalStatus, recruitingModule.getTableApplicationsMaritalStatusOption(), filters);
+		initColumnModel(Fields.yearOfBirth, recruitingModule.getTableApplicationsYearOfBirthOption(), filters);
+		initDateColumnModel(Fields.birthday, recruitingModule.getTableApplicationsBirthdayOption(), filters);
+		initColumnModel(Fields.academicTitle, recruitingModule.getTableApplicationPersonAcademicTitleOption(), filters);
 	}
 	
-	private void initColumnsModelAddress() {
-		initColumnModel(Fields.nationality, recruitingModule.getTableApplicationsNationalityOption());
-		initColumnModel(Fields.additionalNationalities, recruitingModule.getTableApplicationsAdditionalNationalitiesOption());
-		initColumnModel(Fields.mail, recruitingModule.getTableApplicationsEMailOption());
-		initColumnModel(Fields.phone, recruitingModule.getTableApplicationsPhoneOption());
-		initColumnModel(Fields.mobilePhone, recruitingModule.getTableApplicationsMobilePhoneOption());
-		initColumnModel(Fields.disability, recruitingModule.getTableApplicationsDisabilityOption(), new DisabilityCellRenderer());
+	private void initColumnsModelAddress(List<FlexiTableExtendedFilter> filters) {
+		initColumnModel(Fields.nationality, recruitingModule.getTableApplicationsNationalityOption(), filters);
+		initColumnModel(Fields.additionalNationalities, recruitingModule.getTableApplicationsAdditionalNationalitiesOption(), filters);
+		initColumnModel(Fields.mail, recruitingModule.getTableApplicationsEMailOption(), filters);
+		initColumnModel(Fields.phone, recruitingModule.getTableApplicationsPhoneOption(), filters);
+		initColumnModel(Fields.mobilePhone, recruitingModule.getTableApplicationsMobilePhoneOption(), filters);
+		initColumnModel(Fields.disability, recruitingModule.getTableApplicationsDisabilityOption(), new DisabilityCellRenderer(), filters);
 	}
 	
-	private void initColumnsModelOrganization() {
-		initColumnModel(Fields.organization, recruitingModule.getTableApplicationsOrganizationOption());
-		initColumnModel(Fields.unit, recruitingModule.getTableApplicationsOrganizationUnitOption());
-		initColumnModel(Fields.currentPosition, recruitingModule.getTableApplicationsOrganizationCurrentPositionOption());
+	private void initColumnsModelOrganization(List<FlexiTableExtendedFilter> filters) {
+		initColumnModel(Fields.organization, recruitingModule.getTableApplicationsOrganizationOption(), filters);
+		initColumnModel(Fields.unit, recruitingModule.getTableApplicationsOrganizationUnitOption(), filters);
+		initColumnModel(Fields.currentPosition, recruitingModule.getTableApplicationsOrganizationCurrentPositionOption(), filters);
 	}
 	
-	private void initColumnsModelBusinessAddress() {
+	private void initColumnsModelBusinessAddress(List<FlexiTableExtendedFilter> filters) {
 		if(AddressOption.enabled.equals(businessOption) || AddressOption.optional.equals(businessOption)) {
-			initColumnModel(Fields.businessAddressLine1, recruitingModule.getTableApplicationsBusinessAddressLinesOption());
-			initColumnModel(Fields.businessAddressLine2, recruitingModule.getTableApplicationsBusinessAddressLinesOption());
-			initColumnModel(Fields.businessAddressLine3, recruitingModule.getTableApplicationsBusinessAddressLinesOption());
-			initColumnModel(Fields.businessZipcode, recruitingModule.getTableApplicationsBusinessZipcodeOption());
+			initColumnModel(Fields.businessAddressLine1, recruitingModule.getTableApplicationsBusinessAddressLinesOption(), filters);
+			initColumnModel(Fields.businessAddressLine2, recruitingModule.getTableApplicationsBusinessAddressLinesOption(), filters);
+			initColumnModel(Fields.businessAddressLine3, recruitingModule.getTableApplicationsBusinessAddressLinesOption(), filters);
+			initColumnModel(Fields.businessZipcode, recruitingModule.getTableApplicationsBusinessZipcodeOption(), filters);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.businessCity, SELECT_POSITION));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.businessCountry, SELECT_POSITION));
 			if(recruitingModule.isApplicationBusinessPhoneEnabled()) {
@@ -619,12 +626,12 @@ public class PositionApplicationsController extends FormBasicController implemen
 		personalDataAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
 	}
 	
-	private void initColumnsModelPrivateAddress() {
+	private void initColumnsModelPrivateAddress(List<FlexiTableExtendedFilter> filters) {
 		if(!AddressOption.disabled.equals(privateOption)) {
-			initColumnModel(Fields.addressLine1, recruitingModule.getTableApplicationsAddressLinesOption());
-			initColumnModel(Fields.addressLine2, recruitingModule.getTableApplicationsAddressLinesOption());
-			initColumnModel(Fields.addressLine3, recruitingModule.getTableApplicationsAddressLinesOption());
-			initColumnModel(Fields.zipcode, recruitingModule.getTableApplicationsZipcodeOption());
+			initColumnModel(Fields.addressLine1, recruitingModule.getTableApplicationsAddressLinesOption(), filters);
+			initColumnModel(Fields.addressLine2, recruitingModule.getTableApplicationsAddressLinesOption(), filters);
+			initColumnModel(Fields.addressLine3, recruitingModule.getTableApplicationsAddressLinesOption(), filters);
+			initColumnModel(Fields.zipcode, recruitingModule.getTableApplicationsZipcodeOption(), filters);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.city, SELECT_POSITION));
 			if (recruitingModule.isApplicationAddressCountryEnabled()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.country, SELECT_POSITION));
@@ -744,20 +751,26 @@ public class PositionApplicationsController extends FormBasicController implemen
 		academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
 	}
 	
-	private void initColumnsModelProject() {
-		initColumnModel(Fields.projectTitle, recruitingModule.getTableApplicationsProjectTitle());
-		initColumnModel(Fields.projectAcronym, recruitingModule.getTableApplicationsProjectAcronym());
-		initColumnModel(Fields.projectKeywords, recruitingModule.getTableApplicationsProjectKeywords());
-		initColumnModel(Fields.projectDisciplines, recruitingModule.getTableApplicationsProjectDisciplines());
-		initColumnModel(Fields.projectStartDate, recruitingModule.getTableApplicationsProjectStartDate(), new DateCellRenderer());
-		initColumnModel(Fields.projectDuration, recruitingModule.getTableApplicationsProjectDuration());
-		initColumnModel(Fields.projectFinancialImpact1, recruitingModule.getTableApplicationsProjectFinancialImpact1());
-		initColumnModel(Fields.projectFinancialImpact2, recruitingModule.getTableApplicationsProjectFinancialImpact2());
-		initColumnModel(Fields.projectFinancialImpact3, recruitingModule.getTableApplicationsProjectFinancialImpact3());
-		initColumnModel(Fields.projectFinancialImpact4, recruitingModule.getTableApplicationsProjectFinancialImpact4());
-		initColumnModel(Fields.projectFinancialImpact5, recruitingModule.getTableApplicationsProjectFinancialImpact5());
-		initColumnModel(Fields.project, recruitingModule.getTableApplicationsProject(), new ProjectCellRenderer());
-		initColumnModel(Fields.projectDescription, recruitingModule.getTableApplicationsProjectDescription(), new TooltipCellRenderer("o_icon_project_description"));
+	private void initColumnsModelProject(List<FlexiTableExtendedFilter> filters) {
+		initColumnModel(Fields.projectTitle, recruitingModule.getTableApplicationsProjectTitle(), filters);
+		initColumnModel(Fields.projectAcronym, recruitingModule.getTableApplicationsProjectAcronym(), filters);
+		initColumnModel(Fields.projectKeywords, recruitingModule.getTableApplicationsProjectKeywords(), filters);
+		initColumnModel(Fields.projectDisciplines, recruitingModule.getTableApplicationsProjectDisciplines(), filters);
+		initDateColumnModel(Fields.projectStartDate, recruitingModule.getTableApplicationsProjectStartDate(), filters);
+		initColumnModel(Fields.projectDuration, recruitingModule.getTableApplicationsProjectDuration(), filters);
+		initColumnModel(Fields.projectFinancialImpact1, recruitingModule.getTableApplicationsProjectFinancialImpact1(),
+				recruitingModule.getApplicationProjectFinancialImpact1Type(), filters);
+		initColumnModel(Fields.projectFinancialImpact2, recruitingModule.getTableApplicationsProjectFinancialImpact2(),
+				recruitingModule.getApplicationProjectFinancialImpact2Type(), filters);
+		initColumnModel(Fields.projectFinancialImpact3, recruitingModule.getTableApplicationsProjectFinancialImpact3(),
+				recruitingModule.getApplicationProjectFinancialImpact3Type(), filters);
+		initColumnModel(Fields.projectFinancialImpact4, recruitingModule.getTableApplicationsProjectFinancialImpact4(),
+				recruitingModule.getApplicationProjectFinancialImpact4Type(), filters);
+		initColumnModel(Fields.projectFinancialImpact5, recruitingModule.getTableApplicationsProjectFinancialImpact5(),
+				recruitingModule.getApplicationProjectFinancialImpact5Type(), filters);
+		initColumnModel(Fields.project, recruitingModule.getTableApplicationsProject(), new ProjectCellRenderer(), filters);
+		initColumnModel(Fields.projectDescription, recruitingModule.getTableApplicationsProjectDescription(),
+				new TooltipCellRenderer("o_icon_project_description"), filters);
 		projectAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale());
 	}
 	
@@ -843,19 +856,19 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 	}
 	
-	private void initColumnsModelStaffInfos() {
+	private void initColumnsModelStaffInfos(List<FlexiTableExtendedFilter> filters) {
 		if(secCallback.canSeeAd()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.ad, SELECT_POSITION));
 		}
 		
-		initColumnModel(Fields.submittedDate, recruitingModule.getTableApplicationsSubmittedDateOption(), new DateCellRenderer());
-		initColumnModel(Fields.submittedByStaff, recruitingModule.getTableApplicationsSubmittedByStaffOption());
-		initColumnModel(Fields.applicationStatus, recruitingModule.getTableApplicationsStatusOption());
-		initColumnModel(Fields.applicationStatusDate, recruitingModule.getTableApplicationsStatusDateOption(), new DateCellRenderer());
+		initDateColumnModel(Fields.submittedDate, recruitingModule.getTableApplicationsSubmittedDateOption(), filters);
+		initColumnModel(Fields.submittedByStaff, recruitingModule.getTableApplicationsSubmittedByStaffOption(), null);//TODO selectus special selection
+		initColumnModel(Fields.applicationStatus, recruitingModule.getTableApplicationsStatusOption(), null);// Special configurable list
+		initDateColumnModel(Fields.applicationStatusDate, recruitingModule.getTableApplicationsStatusDateOption(), filters);
 		
 		if(secCallback.canViewParalellApplications()) {
 			initColumnModel(Fields.parallelApplications, recruitingModule.getTableApplicationsStatusDateOption(),
-					new ParallelApplicationsCellRenderer(getLocale()));
+					new ParallelApplicationsCellRenderer(getLocale()), filters);
 		}
 	}
 	
@@ -900,15 +913,41 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 	}
 	
-	private void initColumnModel(Fields field, RecruitingTableOption option, FlexiCellRenderer render) {
+	private void initColumnModel(Fields field, RecruitingTableOption option, FlexiCellRenderer render, List<FlexiTableExtendedFilter> filters) {
 		if(!option.isDisabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION, render));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
+					SELECT_POSITION, render));
+			filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
 		}
 	}
 	
-	protected void initColumnModel(Fields field, RecruitingTableOption option) {
+	private void initDateColumnModel(Fields field, RecruitingTableOption option, List<FlexiTableExtendedFilter> filters) {
+		if(!option.isDisabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
+					SELECT_POSITION, new DateCellRenderer()));
+			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false,
+					getLocale()));
+		}
+	}
+	
+	protected void initColumnModel(Fields field, RecruitingTableOption option, List<FlexiTableExtendedFilter> filters) {
 		if(!option.isDisabled() && field.visible(excludedAttributesList)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION));
+			if(filters != null) {
+				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+			}
+		}
+	}
+	
+	protected void initColumnModel(Fields field, RecruitingTableOption option, ApplicationFieldType type, List<FlexiTableExtendedFilter> filters) {
+		if(!option.isDisabled() && field.visible(excludedAttributesList)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION));
+			if(type.getType() == Type.integer || type.getType() == Type.sum || type.getType() == Type.number) {
+				filters.add(new FlexiTableNumericalRangeFilter(translate(field.i18nHeaderKey()), field.name(), false,
+						translate("from"), translate("to")));
+			} else {
+				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+			}
 		}
 	}
 	
@@ -995,7 +1034,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		return false;
 	}
 	
-	private void initFilters() {
+	private void initFilters(List<FlexiTableExtendedFilter> filedsFilters) {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		// Application status
@@ -1074,6 +1113,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		filters.add(new FlexiTableMultiSelectionFilter(translate(Fields.gender.i18nHeaderKey()),
 				Fields.gender.name(), genderPK, true));
 		
+		filters.addAll(filedsFilters);
 		
 		tableEl.setFilters(true, filters, true, false);
 	}

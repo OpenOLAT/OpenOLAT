@@ -25,6 +25,9 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.InlineIntegerElement;
@@ -53,6 +56,7 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 	private String intValueErrorKey = "integer.element.int.error";
 
 	private int originalInt;
+	private Function<String,String> lenientFormatter;
 
 	/**
 	 * 
@@ -93,6 +97,11 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 	public void setIntValueCheck(String errorKey) {
 		intValueErrorKey = errorKey;
 	}
+	
+	@Override
+	public void setLenientFormatter(UnaryOperator<String> formatter) {
+		this.lenientFormatter = formatter;
+	}
 
 	@Override
 	public boolean validateIntValue() {
@@ -125,6 +134,11 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 		String paramId = String.valueOf(component.getFormDispatchId());
 		String invalue = getRootForm().getRequestParameter(paramId);
 		if (invalue != null) {
+			if(lenientFormatter != null) {
+				this.value = lenientFormatter.apply(invalue.trim());
+			} else {
+				this.value = invalue.trim();
+			}
 			this.value = invalue.trim();
 			// mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
@@ -187,17 +201,6 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 	public void reset() {
 		setIntValue(originalInt);
 		clearError();
-	}
-
-	/**
-	 * set a value by string is not allowed - use setIntValue instead.
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#setValue(java.lang.String)
-	 */
-	@Override
-	public void setValue(String value) {
-		throw new AssertException(
-				"Please use setIntValue for an IntegerElement!");
 	}
 
 	@Override

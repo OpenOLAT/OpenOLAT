@@ -25,6 +25,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -238,7 +244,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 	}
 	
-	private record FieldFilter(Fields field, Set<String> set) {
+	private record FieldFilter(Fields field, Set<String> set, DateRange range, NumericalRange numericalRange, String text) {
 		//
 	}
 	
@@ -259,10 +265,30 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 	}
 	
 	private FieldFilter getFilteredField(FlexiTableFilter filter, Fields field) {
-		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+		if(filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
 			List<String> filterValues = extendedFilter.getValues();
-			Set<String> set =  filterValues != null && !filterValues.isEmpty() ? Set.copyOf(filterValues) : Set.of();
-			return new FieldFilter(field, set);
+			if(filterValues != null && !filterValues.isEmpty()) {
+				return new FieldFilter(field, Set.copyOf(filterValues), null, null, null);
+			}
+			return null;
+		} else if(filter instanceof FlexiTableDateRangeFilter dateFilter) {
+			DateRange range = dateFilter.getDateRange();
+			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
+				return new FieldFilter(field, null, range, null, null);
+			}
+			return null;
+		} else if(filter instanceof FlexiTableNumericalRangeFilter numericalFilter) {
+			NumericalRange range = numericalFilter.getNumericalRange();
+			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
+				return new FieldFilter(field, null, null, range, null);
+			}
+			return null;
+		} else if(filter instanceof FlexiTableTextFilter textFilter) {
+			String text = textFilter.getValue();
+			if(StringHelper.containsNonWhitespace(text)) {
+				return new FieldFilter(field, null, null, null, text.toLowerCase());
+			}
+			return null;
 		}
 		return null;
 	}
@@ -358,10 +384,61 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		for(FieldFilter fieldFilter:fieldsFilters) {
 			if(fieldFilter.set() != null) {
 				allOk &= acceptField(fieldFilter.set(), row, fieldFilter.field()); 
+			} else if(fieldFilter.range() != null) {
+				allOk &= acceptDateRange(fieldFilter.range(), row, fieldFilter.field()); 
+			} else if(fieldFilter.numericalRange() != null) {
+				allOk &= acceptNumericalRange(fieldFilter.numericalRange(), row, fieldFilter.field()); 
+			} else if(fieldFilter.text() != null) {
+				allOk &= acceptText(fieldFilter.text(), row, fieldFilter.field()); 
 			}
 		}
 		
 		return allOk;
+	}
+	
+	private boolean acceptText(String text, ApplicationRow row, Fields field) {
+		if(!StringHelper.containsNonWhitespace(text)) return true;
+		
+		Object val = getRawValueAt(row, field.ordinal());
+		if(val instanceof String str) {
+			return accept(text, str);
+		}
+		return false;
+	}
+	
+	private boolean acceptDateRange(DateRange range, ApplicationRow row, Fields field) {
+		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
+		
+		Object val = getRawValueAt(row, field.ordinal());
+		if(val instanceof Date date) {
+			if((range.getStart() != null && range.getStart().compareTo(date) > 0)
+					|| (range.getEnd() != null && range.getEnd().compareTo(date) < 0)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean acceptNumericalRange(NumericalRange range, ApplicationRow row, Fields field) {
+		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
+		
+		Object val = getRawValueAt(row, field.ordinal());
+		if(val instanceof String str && StringHelper.containsNonWhitespace(str)) {
+			try {
+				val = Double.valueOf(str);
+			} catch (NumberFormatException e) {
+				//
+			}
+		}
+		if(val instanceof Number num) {
+			if((range.getStart() != null && range.getStart().compareTo(num.doubleValue()) > 0)
+					|| (range.getEnd() != null && range.getEnd().compareTo(num.doubleValue()) < 0)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	private boolean acceptField(Set<String> searchValues, ApplicationRow row, Fields field) {
