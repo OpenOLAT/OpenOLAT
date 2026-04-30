@@ -79,11 +79,11 @@
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.0.RC4</io.undertow>
 		<io.undertow.ee>2.0.0.RC1</io.undertow.ee>
-		<jackson.version>2.21.2</jackson.version>
+		<jackson.version>2.21.3</jackson.version>
 		<jackson.annotations.version>2.21</jackson.annotations.version>
-		<swagger.ui.version>5.32.4</swagger.ui.version>
+		<swagger.ui.version>5.32.5</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
-		<org.postgresql.version>42.7.10</org.postgresql.version>
+		<org.postgresql.version>42.7.11</org.postgresql.version>
 		<org.infinispan.version>16.1.3</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.43.0</version.selenium>
@@ -1599,7 +1599,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.21.0</version>
+			<version>1.22.0</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->

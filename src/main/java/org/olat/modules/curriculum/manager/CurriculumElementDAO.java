@@ -147,8 +147,6 @@ public class CurriculumElementDAO {
 		return element;
 	}
 	
-
-	
 	public CurriculumElement copyCurriculumElement(CurriculumElement elementToCopy,
 			String identifier, String displayName, Date beginDate, Date endDate,
 			CurriculumElement parentElement, Curriculum curriculum) {
@@ -169,6 +167,8 @@ public class CurriculumElementDAO {
 		copy.setRequirements(elementToCopy.getRequirements());
 		copy.setShowLectures(elementToCopy.isShowLectures());
 		copy.setShowOutline(elementToCopy.isShowOutline());
+		copy.setShowCertificateBenefit(elementToCopy.isShowCertificateBenefit());
+		copy.setShowCreditPointsBenefit(elementToCopy.isShowCreditPointsBenefit());
 		if(elementToCopy.getTaughtBys() != null) {
 			copy.setTaughtBys(elementToCopy.getTaughtBys());
 		}
