@@ -37,6 +37,7 @@ public record ImplementationsListConfig(
 		boolean withPreparationWarning,
 		boolean withEnhancedInfoHeader,
 		boolean withFormTitle,
+		boolean withFormLegend,
 		String helpUrl,
 		boolean withBookmarks,
 		boolean withId,
@@ -59,6 +60,7 @@ public record ImplementationsListConfig(
 		private boolean withPreparationWarning;
 		private boolean withEnhancedInfoHeader;
 		private boolean withFormTitle;
+		private boolean withFormLegend;
 		private String helpUrl;
 		private boolean withBookmarks;
 		private boolean withId;
@@ -95,6 +97,11 @@ public record ImplementationsListConfig(
 
 		public Builder enableFormTitle() {
 			this.withFormTitle = true;
+			return this;
+		}
+
+		public Builder enableFormLegend() {
+			this.withFormLegend = true;
 			return this;
 		}
 
@@ -145,7 +152,7 @@ public record ImplementationsListConfig(
 
 		public ImplementationsListConfig build() {
 			return new ImplementationsListConfig(asRoles, coachIdentity, withPreparation, withPreparationWarning,
-					withEnhancedInfoHeader, withFormTitle, helpUrl, withBookmarks, withId,
+					withEnhancedInfoHeader, withFormTitle, withFormLegend, helpUrl, withBookmarks, withId,
 					extRefVisibilityDefault, withRoles, withStatus, withCompletion, withCalendar,
 					withCancelledFilter);
 		}

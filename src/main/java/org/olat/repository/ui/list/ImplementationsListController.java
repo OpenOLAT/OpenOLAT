@@ -173,7 +173,8 @@ public class ImplementationsListController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("withTitle", Boolean.valueOf(config.withFormTitle()));
+			layoutCont.contextPut("withFormTitle", Boolean.valueOf(config.withFormTitle()));
+			layoutCont.contextPut("withFormLegend", Boolean.valueOf(config.withFormLegend()));
 			layoutCont.contextPut("helpUrl", config.helpUrl());
 		}
 		

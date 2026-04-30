@@ -45,6 +45,7 @@ import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.EnrollmentListController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.repository.ui.list.ImplementationsListController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,6 @@ public class CourseListWrapperController extends BasicController implements Acti
 	private TooledStackedPanel implementationsListStackPanel;
     
     private final Identity mentee;
-	private final ImplementationsListConfig config;
     private final Object statEntry;
     private final RoleSecurityCallback roleSecurityCallback;
 
@@ -72,19 +72,17 @@ public class CourseListWrapperController extends BasicController implements Acti
     private CurriculumModule curriculumModule;
 
 	public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			Identity mentee, ImplementationsListConfig config, RoleSecurityCallback roleSecurityCallback,
-			Object statEntry, boolean onlyImplementations) {
+			Identity mentee, RoleSecurityCallback roleSecurityCallback, Object statEntry) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.mentee = mentee;
-		this.config = config;
 		this.roleSecurityCallback = roleSecurityCallback;
 		this.statEntry = statEntry;
-
+		
 		mainVC = createVelocityContainer("course_list_wrapper");
-
-		List<Scope> scopes = new ArrayList<>(4);
+		
+		List<Scope> scopes = new ArrayList<>(2);
 		scopes.add(ScopeFactory.createScope(CMD_ALL_COURSES, translate("all.courses"), null, "o_icon o_icon-fw o_icon_curriculum"));
 		if(curriculumModule.isEnabled()) {
 			scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.education.products"),
@@ -92,16 +90,11 @@ public class CourseListWrapperController extends BasicController implements Acti
 		}
 		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
 		
-		if (onlyImplementations) {
-			mainVC.contextPut("showTitle", Boolean.TRUE);
-			doOpenImplementations(ureq);
-		} else {
-			mainVC.contextPut("showScopes", true);
-			doOpenAllCourses(ureq);
-		}
-
-        putInitialPanel(mainVC);
-    }
+		mainVC.contextPut("showScopes", true);
+		doOpenAllCourses(ureq);
+		
+		putInitialPanel(mainVC);
+	}
 
     @Override
     public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -152,8 +145,20 @@ public class CourseListWrapperController extends BasicController implements Acti
 			implementationsListStackPanel = new TooledStackedPanel("myliststack", getTranslator(), this);
 			implementationsListStackPanel.setToolbarEnabled(false);
 			
+			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(CurriculumRoles.participant))
+					.enableId()
+					.enableExtRefVisibilityDefault();
+			if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
+				configBuilder.enableStatus().enableCompletion();
+			}
+			if (roleSecurityCallback.canViewCalendar()) {
+				configBuilder.enableCalendar();
+			}
+			ImplementationsListConfig config = configBuilder.build();
+			
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_IMPLEMENTATIONS_LIST), null);
 			implementationsListCtrl = new ImplementationsListController(ureq, bwControl, implementationsListStackPanel, mentee, config);
+			listenTo(implementationsListCtrl);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {
 			implementationsListStackPanel.popUpToRootController(ureq);

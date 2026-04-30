@@ -68,9 +68,6 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListContr
 import org.olat.course.certificate.ui.CertificatesListOverviewController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
-import org.olat.modules.coach.RoleSecurityCallback;
-import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
-import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
@@ -88,6 +85,7 @@ import org.olat.modules.portfolio.ui.shared.InviteeBindersAdminController;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.CompetencesOverviewController;
 import org.olat.properties.Property;
+import org.olat.repository.ui.list.ImplementationsListController;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.PortraitUser;
@@ -179,11 +177,11 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserQuotaController quotaCtr;
 	private UserAccountController accountCtrl;
 	private UserRoleOverviewController rolesCtr;
-	private CourseListWrapperController courseListWrapperCtrl;
 	private UserRelationsController relationsCtrl;
 	private InviteeBindersAdminController portfolioCtr;
 	private GraderUserOverviewController graderOverviewCtrl;
 	private UserOpenOlatAuthenticationAdminController pwdCtr;
+	private ImplementationsListController implementationsCtrl;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
@@ -712,19 +710,22 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_EDU_PRODUCTS), uureq -> {
-				RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.createForAdmin();
+				TooledStackedPanel implementationsPanel = new TooledStackedPanel("implementations", getTranslator(), this);
+				implementationsPanel.setToolbarEnabled(false);
 				
 				ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(CurriculumRoles.curriculumElementsRoles()))
+						.enableFormLegend()
 						.enableId()
 						.enableExtRefVisibilityDefault()
 						.enableRoles()
 						.enableCalendar();
 				ImplementationsListConfig config = configBuilder.build();
 				
-				courseListWrapperCtrl = new CourseListWrapperController(uureq, getWindowControl(), stackPanel, identity,
-						config, roleSecurityCallback, null, true);
-				listenTo(courseListWrapperCtrl);
-				return courseListWrapperCtrl.getInitialComponent();
+				implementationsCtrl = new ImplementationsListController(uureq, getWindowControl(), implementationsPanel, identity, config);
+				listenTo(implementationsCtrl);
+				
+				implementationsPanel.pushController(translate(NLS_VIEW_EDU_PRODUCTS), implementationsCtrl);
+				return implementationsPanel;
 			});
 		}
 		
