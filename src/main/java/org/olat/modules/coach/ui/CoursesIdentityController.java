@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.admin.user.UserChangePasswordController;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -54,6 +53,7 @@ import org.olat.modules.coach.CoachingModule;
 import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.repository.ui.list.ImplementationsListController;
 import org.olat.user.PortraitUser;
@@ -279,7 +279,7 @@ public class CoursesIdentityController extends BasicController implements NextPr
 			implementationsListStackPanel.setToolbarEnabled(false);
 
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_IMPLEMENTATIONS_LIST), null);
-			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(GroupRoles.participant))
+			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(CurriculumRoles.participant))
 					.setCoachIdentity(getIdentity())
 					.enableFormTitle()
 					.enablePreparation()

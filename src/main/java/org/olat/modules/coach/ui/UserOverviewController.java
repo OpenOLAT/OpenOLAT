@@ -75,7 +75,9 @@ import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.curriculum.certificate.CertificateAndEfficiencyStatementWrapperController;
 import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.openbadges.ui.BadgesController;
@@ -168,8 +170,6 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private CalendarManager calendarManager;
 	@Autowired
 	private LectureModule lectureModule;
-	@Autowired
-	private CurriculumService curriculumService;
 	@Autowired
 	private CoachingService coachingService;
 	@Autowired
@@ -303,8 +303,21 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (roleSecurityCallback.canViewCoursesAndCurriculum()) {
 			courseTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("enrollments"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ENROLLMENTS), null);
+				
+				ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(CurriculumRoles.participant))
+						.enableId()
+						.enableExtRefVisibilityDefault()
+						.enableRoles();
+				if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
+					configBuilder.enableStatus().enableCompletion();
+				}
+				if (roleSecurityCallback.canViewCalendar()) {
+					configBuilder.enableCalendar();
+				}
+				ImplementationsListConfig config = configBuilder.build();
+				
 				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee,
-						null, roleSecurityCallback, statEntry, false);
+						config, roleSecurityCallback, statEntry, false);
 				listenTo(courseListWrapperController);
 				return courseListWrapperController;
 			});

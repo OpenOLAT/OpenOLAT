@@ -76,7 +76,8 @@ import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
 import org.olat.modules.creditpoint.ui.CreditPointUserController;
 import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationListController;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.ui.GraderUserOverviewController;
@@ -212,8 +213,6 @@ public class UserAdminController extends BasicController implements Activateable
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
-	@Autowired
-	private CurriculumService curriculumService;
 	@Autowired
 	private GradingModule gradingModule;
 	@Autowired
@@ -714,9 +713,16 @@ public class UserAdminController extends BasicController implements Activateable
 		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_EDU_PRODUCTS), uureq -> {
 				RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.createForAdmin();
-				// Current identity does not act as coach
+				
+				ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(CurriculumRoles.curriculumElementsRoles()))
+						.enableId()
+						.enableExtRefVisibilityDefault()
+						.enableRoles()
+						.enableCalendar();
+				ImplementationsListConfig config = configBuilder.build();
+				
 				courseListWrapperCtrl = new CourseListWrapperController(uureq, getWindowControl(), stackPanel, identity,
-						null, roleSecurityCallback, null, true);
+						config, roleSecurityCallback, null, true);
 				listenTo(courseListWrapperCtrl);
 				return courseListWrapperCtrl.getInitialComponent();
 			});

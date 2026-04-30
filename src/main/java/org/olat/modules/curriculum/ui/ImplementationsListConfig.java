@@ -21,8 +21,8 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  *
@@ -31,7 +31,7 @@ import org.olat.core.id.Identity;
  *
  */
 public record ImplementationsListConfig(
-		List<GroupRoles> asRoles,
+		List<CurriculumRoles> asRoles,
 		Identity coachIdentity,
 		boolean withPreparation,
 		boolean withPreparationWarning,
@@ -47,13 +47,13 @@ public record ImplementationsListConfig(
 		boolean withCalendar,
 		boolean withCancelledFilter) {
 
-	public static Builder builder(List<GroupRoles> asRoles) {
+	public static Builder builder(List<CurriculumRoles> asRoles) {
 		return new Builder(asRoles);
 	}
 
 	public static class Builder {
 
-		private final List<GroupRoles> asRoles;
+		private final List<CurriculumRoles> asRoles;
 		private Identity coachIdentity;
 		private boolean withPreparation;
 		private boolean withPreparationWarning;
@@ -69,7 +69,7 @@ public record ImplementationsListConfig(
 		private boolean withCalendar;
 		private boolean withCancelledFilter;
 
-		private Builder(List<GroupRoles> asRoles) {
+		private Builder(List<CurriculumRoles> asRoles) {
 			this.asRoles = asRoles;
 		}
 

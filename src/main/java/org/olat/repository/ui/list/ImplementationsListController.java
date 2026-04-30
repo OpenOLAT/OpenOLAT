@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -310,7 +309,7 @@ public class ImplementationsListController extends FormBasicController implement
 				false, config.asRoles(), status);
 		if (config.coachIdentity() != null) {
 			Set<Long> coachImplementationKeys = myImplementationsQueries
-					.searchImplementations(config.coachIdentity(), false, List.of(GroupRoles.coach), status).stream()
+					.searchImplementations(config.coachIdentity(), false, List.of(CurriculumRoles.coach), status).stream()
 					.map(CurriculumElement::getKey)
 					.collect(Collectors.toSet());
 			implementations = implementations.stream()

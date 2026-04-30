@@ -23,7 +23,6 @@ package org.olat.modules.coach.ui.curriculum.course;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.scope.Scope;
@@ -62,7 +61,7 @@ public class CourseListWrapperController extends BasicController implements Acti
 	private TooledStackedPanel implementationsListStackPanel;
     
     private final Identity mentee;
-	private final Identity coach;
+	private final ImplementationsListConfig config;
     private final Object statEntry;
     private final RoleSecurityCallback roleSecurityCallback;
 
@@ -73,13 +72,13 @@ public class CourseListWrapperController extends BasicController implements Acti
     private CurriculumModule curriculumModule;
 
 	public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			Identity mentee, Identity coach, RoleSecurityCallback roleSecurityCallback, Object statEntry,
-			boolean onlyImplementations) {
+			Identity mentee, ImplementationsListConfig config, RoleSecurityCallback roleSecurityCallback,
+			Object statEntry, boolean onlyImplementations) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.mentee = mentee;
-		this.coach = coach;
+		this.config = config;
 		this.roleSecurityCallback = roleSecurityCallback;
 		this.statEntry = statEntry;
 
@@ -154,18 +153,6 @@ public class CourseListWrapperController extends BasicController implements Acti
 			implementationsListStackPanel.setToolbarEnabled(false);
 			
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_IMPLEMENTATIONS_LIST), null);
-			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(GroupRoles.participant))
-					.setCoachIdentity(coach)
-					.enableId()
-					.enableExtRefVisibilityDefault()
-					.enableRoles();
-			if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
-				configBuilder.enableStatus().enableCompletion();
-			}
-			if (roleSecurityCallback.canViewCalendar()) {
-				configBuilder.enableCalendar();
-			}
-			ImplementationsListConfig config = configBuilder.build();
 			implementationsListCtrl = new ImplementationsListController(ureq, bwControl, implementationsListStackPanel, mentee, config);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {

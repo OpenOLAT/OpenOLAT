@@ -25,13 +25,13 @@ import java.util.Set;
 
 import jakarta.persistence.TypedQuery;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	
-	public boolean hasImplementations(IdentityRef identity, List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+	public boolean hasImplementations(IdentityRef identity, List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
 		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, roles, status);
 		if (elements != null && !elements.isEmpty()) {
 			return true;
@@ -73,7 +73,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	}
 
 	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly,
-			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+			List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
 		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, roles, status);
 		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, -1, roles, status);
 		elements.addAll(subMemberImplementations);
@@ -107,7 +107,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	}
 	
 	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
-			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+			List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
 		String query = """
 			select el from curriculumelement el
 			 inner join fetch el.type curElementType
@@ -124,7 +124,7 @@ public class RepositoryEntryMyImplementationsQueries {
 		
 		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", roles.stream().map(GroupRoles::name).toList())
+				.setParameter("roles", roles.stream().map(CurriculumRoles::name).toList())
 				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList());
 		if(maxResults > 0) {
 			elements = elements
@@ -135,7 +135,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	}
 	
 	private List<CurriculumElement> loadSubMemberImplementations(IdentityRef identity, int firstResult, int maxResults,
-			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+			List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
 		String query = """
 			select implementation from curriculumelement el
 			 inner join el.group as baseGroup
@@ -157,7 +157,7 @@ public class RepositoryEntryMyImplementationsQueries {
 		
 		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", roles.stream().map(GroupRoles::name).toList())
+				.setParameter("roles", roles.stream().map(CurriculumRoles::name).toList())
 				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList());
 		if(maxResults > 0) {
 			elements = elements
@@ -167,7 +167,7 @@ public class RepositoryEntryMyImplementationsQueries {
 		return elements.getResultList();
 	}
 	
-	public List<Curriculum> getCurriculums(IdentityRef identity, List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+	public List<Curriculum> getCurriculums(IdentityRef identity, List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
 		String query = """
 			select distinct cur from curriculumelement el
 			left join el.type curElementType
@@ -189,7 +189,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	
 		return dbInstance.getCurrentEntityManager().createQuery(query, Curriculum.class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", roles.stream().map(GroupRoles::name).toList())
+				.setParameter("roles", roles.stream().map(CurriculumRoles::name).toList())
 				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList())
 				.getResultList();
 	}

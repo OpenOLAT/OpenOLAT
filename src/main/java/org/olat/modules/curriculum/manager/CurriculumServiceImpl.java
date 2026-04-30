@@ -1826,13 +1826,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		// For legacy reasons, both courses of both runtime types are loaded
 		return getCurriculumElements(identity, roles, curriculum, status,
 				RepositoryEntryRuntimeType.CURRICULAR_STANDALONE,
-				List.of(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant), false);
+				List.of(CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant), false);
 	}
 
 	@Override
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculums, CurriculumElementStatus[] status, 
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles,
+			RepositoryEntryRuntimeType[] runtimeTypes, List<CurriculumRoles> asRoles,
 			boolean entriesWithLecturesEnabled) {
 		if(curriculums == null || curriculums.isEmpty()) return List.of();
 		
@@ -1923,14 +1923,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	private List<RepositoryEntryMyView> internal(Identity identity, Roles roles, List<? extends CurriculumRef> curriculums,
-			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles, List<RepositoryEntryRef> entriesRefs,
+			RepositoryEntryRuntimeType[] runtimeTypes, List<CurriculumRoles> asRoles, List<RepositoryEntryRef> entriesRefs,
 			boolean entriesWithLecturesEnabled) {
 		Collection<List<RepositoryEntryRef>> chunkedOfEntriesRefs = PersistenceHelper.collectionOfChunks(new ArrayList<>(entriesRefs), 5);
 		
 		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
 		params.setCurriculums(curriculums);
 		params.setRuntimeTypes(runtimeTypes);
-		params.setFilters(Filter.rolesFilters(asRoles));
+		List<GroupRoles> groupRoles = asRoles.stream()
+				.map(CurriculumRoles::name)
+				.filter(GroupRoles::isValue)
+				.map(GroupRoles::valueOf)
+				.toList();
+		params.setFilters(Filter.rolesFilters(groupRoles));
 		params.setWithLecturesEnabled(entriesWithLecturesEnabled);
 		
 		List<RepositoryEntryMyView> views = new ArrayList<>(entriesRefs.size());

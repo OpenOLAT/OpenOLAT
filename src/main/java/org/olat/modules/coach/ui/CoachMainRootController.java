@@ -49,6 +49,7 @@ import org.olat.modules.coach.ui.component.SearchStateEntry;
 import org.olat.modules.coach.ui.dashboard.CoachDashboardController;
 import org.olat.modules.coach.ui.manager.CoachReportsController;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
@@ -69,7 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CoachMainRootController extends BasicController implements Activateable2 {
 	
 	private final static ImplementationsListConfig IMPLEMENTATION_LIST_CONFIG = ImplementationsListConfig
-			.builder(List.of(GroupRoles.participant, GroupRoles.coach))
+			.builder(List.of(CurriculumRoles.participant, CurriculumRoles.coach))
 			.enablePreparation()
 			.enablePreparationWarning()
 			.enableFormTitle()
