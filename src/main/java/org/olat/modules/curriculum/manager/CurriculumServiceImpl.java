@@ -1428,6 +1428,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					role.name(), reason, false, null, null,
 					actor, adminNote);
 			events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
+			
+			removeTeacher(element, member, role.name());
 		}
 		
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
@@ -1478,10 +1480,59 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						actor, adminNote);
 			}
 			
+			removeTeacher(elementNode.getElement(), member, role);
+			
 			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
 				removeInheritedMembership(child, member, role, reason,  actor, adminNote, force, events);
 			}
 		}
+	}
+	
+	private void removeTeacher(CurriculumElement element, Identity identity, String role) {
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(element, identity);
+		if(!lectureBlocks.isEmpty()) {
+			LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+			List<GroupMembership> memberships = curriculumElementDao.getMemberships(element, identity);
+			if(hasTeacherAnOtherRoles(element, role, memberships)) {
+				return;// Has still an active role
+			}
+
+			for(LectureBlock lectureBlock:lectureBlocks) {
+				if(lectureBlock.getEntry() != null) {
+					List<GroupMembership> entryMemberships = repositoryEntryRelationDao.getMemberships(identity, lectureBlock.getEntry());
+					if(hasTeacherAnOtherRoles(element, role, entryMemberships)) {
+						continue;
+					}
+				}
+				
+				lectureService.removeTeacher(lectureBlock, identity);
+			}
+		}
+	}
+	
+	/**
+	 * Check if in the memberships of a course or an curriculum element, there
+	 * are the following roles, coach, master coach or owner. The current membership
+	 * on the element will be ignored (membership which match element and role).
+	 * 
+	 * @param element The curriculum element
+	 * @param role The role to be removed
+	 * @param memberships A list of memberships
+	 * @return true if has a role like coach, master coach or owner
+	 */
+	private boolean hasTeacherAnOtherRoles(CurriculumElement element, String role, List<GroupMembership> memberships) {
+		for(GroupMembership membership:memberships) {
+			if(membership.getGroup().equals(element.getGroup()) && role.equals(membership.getRole())) {
+				// We are removing this membership, don't take it in account
+				continue;
+			}
+			if(CurriculumRoles.coach.name().equals(membership.getRole())
+					|| CurriculumRoles.mastercoach.name().equals(membership.getRole())
+					|| CurriculumRoles.owner.name().equals(membership.getRole())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -157,6 +158,23 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(ownerRoles);
 		Assert.assertEquals(1, ownerRoles.size());
 		Assert.assertEquals(GroupRoles.owner.name(), ownerRoles.get(0));
+	}
+	
+	@Test
+	public void getMemberships() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("get-roles-1b-");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, defOrganisation);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.coach.name());
+		dbInstance.commit();
+		
+		List<GroupMembership> memberships = repositoryEntryRelationDao.getMemberships(id, re);
+		Assertions.assertThat(memberships)
+			.hasSize(1);
+		Assert.assertEquals(GroupRoles.coach.name(), memberships.get(0).getRole());
+		Assert.assertEquals(id, memberships.get(0).getIdentity());
 	}
 	
 	@Test

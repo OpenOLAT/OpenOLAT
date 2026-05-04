@@ -186,6 +186,40 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getLectureBlocksWithTeacher() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-40");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-41");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-15", "Curriculum with lectures", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		
+		LectureBlock lectureBlock1 = lectureBlockDao.createLectureBlock(entry, null);
+		lectureBlock1.setStartDate(new Date());
+		lectureBlock1.setEndDate(new Date());
+		lectureBlock1.setTitle("Hello teacher");
+		lectureBlock1 = lectureBlockDao.update(lectureBlock1);
+		lectureService.addTeacher(lectureBlock1, teacher1);
+		
+		LectureBlock lectureBlock2 = lectureBlockDao.createLectureBlock(entry, null);
+		lectureBlock2.setStartDate(new Date());
+		lectureBlock2.setEndDate(new Date());
+		lectureBlock2.setTitle("Hello teacher");
+		lectureBlock2 = lectureBlockDao.update(lectureBlock2);
+		lectureService.addTeacher(lectureBlock2, teacher2);
+		dbInstance.commitAndCloseSession();
+
+		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocks(element, teacher1);
+		Assertions.assertThat(blocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock1)
+			.doesNotContain(lectureBlock2);
+	}
+	
+	@Test
 	public void getLectureBlocksByRepositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);

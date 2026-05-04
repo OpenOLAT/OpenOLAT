@@ -29,6 +29,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -69,6 +70,7 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -109,6 +111,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -1087,5 +1091,104 @@ public class CurriculumServiceTest extends OlatTestCase {
 			.containsExactly(element12, element13, element11)
 			.map(CurriculumElement::getNumberImpl)
 			.containsExactly("1", "2", "3");
+	}
+	
+	@Test
+	public void removeTeacher() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-teacher-author");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-teacher");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-22", "Curriculum 22", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-22", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-copy-1-1", "Element to copy 1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		curriculumService.addMember(element1, teacher, CurriculumRoles.coach, author);
+		curriculumService.addMember(element11, teacher, CurriculumRoles.coach, author);
+		
+		LectureBlock lectureBlock1 = lectureService.createLectureBlock(element1, null);
+		lectureBlock1.setStartDate(new Date());
+		lectureBlock1.setEndDate(new Date());
+		lectureBlock1.setTitle("Hello curriculum teaching");
+		lectureBlock1.setPlannedLecturesNumber(4);
+		lectureBlock1 = lectureService.save(lectureBlock1, null);
+		
+		LectureBlock lectureBlock11 = lectureService.createLectureBlock(element11, entry);
+		lectureBlock11.setStartDate(new Date());
+		lectureBlock11.setEndDate(new Date());
+		lectureBlock11.setTitle("Hello curriculum teaching");
+		lectureBlock11.setPlannedLecturesNumber(4);
+		lectureBlock11 = lectureService.save(lectureBlock11, null);
+		
+		lectureService.addTeacher(lectureBlock1, teacher);
+		lectureService.addTeacher(lectureBlock11, teacher);
+		
+		dbInstance.commitAndCloseSession();
+		
+		curriculumService.removeMember(element1, teacher, CurriculumRoles.coach, GroupMembershipStatus.removed, author, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> teachers1 = lectureService.getTeachers(lectureBlock1);
+		Assert.assertTrue(teachers1.isEmpty());
+		
+		List<Identity> teachers11 = lectureService.getTeachers(lectureBlock11);
+		Assert.assertTrue(teachers11.isEmpty());
+	}
+	
+	/**
+	 * Remove teacher from lecture block if not coach of course or something else.
+	 * 
+	 */
+	@Test
+	public void removeTeacherButNotAlways() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-teacher-author");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-teacher");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-23", "Curriculum 23", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-23", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-copy-1-1", "Element to copy 1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		curriculumService.addMember(element1, teacher, CurriculumRoles.coach, author);
+		curriculumService.addMember(element11, teacher, CurriculumRoles.coach, author);
+		repositoryEntryRelationDao.addRole(teacher, entry, GroupRoles.coach.name());
+		
+		LectureBlock lectureBlock1 = lectureService.createLectureBlock(element1, null);
+		lectureBlock1.setStartDate(new Date());
+		lectureBlock1.setEndDate(new Date());
+		lectureBlock1.setTitle("Hello curriculum teaching");
+		lectureBlock1.setPlannedLecturesNumber(4);
+		lectureBlock1 = lectureService.save(lectureBlock1, null);
+		
+		LectureBlock lectureBlock11 = lectureService.createLectureBlock(element11, entry);
+		lectureBlock11.setStartDate(new Date());
+		lectureBlock11.setEndDate(new Date());
+		lectureBlock11.setTitle("Hello curriculum teaching");
+		lectureBlock11.setPlannedLecturesNumber(4);
+		lectureBlock11 = lectureService.save(lectureBlock11, null);
+		
+		lectureService.addTeacher(lectureBlock1, teacher);
+		lectureService.addTeacher(lectureBlock11, teacher);
+		
+		dbInstance.commitAndCloseSession();
+		
+		curriculumService.removeMember(element1, teacher, CurriculumRoles.coach, GroupMembershipStatus.removed, author, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> teachers1 = lectureService.getTeachers(lectureBlock1);
+		Assert.assertTrue(teachers1.isEmpty());
+		
+		List<Identity> teachers11 = lectureService.getTeachers(lectureBlock11);
+		Assertions.assertThat(teachers11)
+			.hasSize(1)
+			.containsExactly(teacher);
 	}
 }
