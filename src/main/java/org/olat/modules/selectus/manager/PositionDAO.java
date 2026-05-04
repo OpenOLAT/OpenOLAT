@@ -165,7 +165,9 @@ public class PositionDAO {
 			position = dbInstance.getCurrentEntityManager().merge(position);
 		}
 		//reload unit
-		position.getOrganisation();
+		if(position.getOrganisation() != null) {
+			position.getOrganisation().getDisplayName();
+		}
 		position.getAttributesDefinitions().size();
 		return position;
 	}

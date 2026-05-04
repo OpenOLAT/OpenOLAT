@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -43,8 +44,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.xml.XStreamHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -76,6 +75,8 @@ import org.olat.modules.selectus.ui.position.component.VisibleAttributeCellRende
 import org.olat.modules.selectus.ui.position.model.EditVisibilityStepSettings;
 import org.olat.modules.selectus.ui.position.model.PositionAdditionalAttributeRow;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.thoughtworks.xstream.XStream;
 
 /**
@@ -99,6 +100,12 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		positionXStream.omitField(PositionImpl.class, "key");
 		positionXStream.omitField(PositionImpl.class, "reviewDefinition");
 		positionXStream.omitField(PositionImpl.class, "attributesDefinitions");
+		positionXStream.omitField(PositionImpl.class, "committeeGroup");
+		positionXStream.omitField(PositionImpl.class, "committeeHeadGroup");
+		positionXStream.omitField(PositionImpl.class, "secretaryGroup");
+		positionXStream.omitField(PositionImpl.class, "exOfficioGroup");
+		positionXStream.omitField(OrganisationImpl.class, "group");
+		positionXStream.omitField(OrganisationImpl.class, "children");
 		
 		positionXStream.aliasPackage("com.frentix.recruiting", "org.olat.modules.selectus");
 	}

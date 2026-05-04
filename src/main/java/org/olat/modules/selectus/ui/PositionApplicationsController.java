@@ -431,7 +431,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			initColumnsModelCustomTabs(filters);
 		}
 		initColumnsModelTags();
-		initColumnsModelReference();
+		initColumnsModelReference(filters);
 		initColumnsModelReviews();
 		initColumnsModelRatings();
 		initColumnsModelStaffInfos(filters);
@@ -611,13 +611,13 @@ public class PositionApplicationsController extends FormBasicController implemen
 			initColumnModel(Fields.businessAddressLine2, recruitingModule.getTableApplicationsBusinessAddressLinesOption(), filters);
 			initColumnModel(Fields.businessAddressLine3, recruitingModule.getTableApplicationsBusinessAddressLinesOption(), filters);
 			initColumnModel(Fields.businessZipcode, recruitingModule.getTableApplicationsBusinessZipcodeOption(), filters);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.businessCity, SELECT_POSITION));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.businessCountry, SELECT_POSITION));
+			initColumnModel(Fields.businessCity, filters);
+			initColumnModel(Fields.businessCountry, filters);
 			if(recruitingModule.isApplicationBusinessPhoneEnabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.businessPhone, SELECT_POSITION));
+				initColumnModel(Fields.businessPhone, filters);
 			}
 			if(recruitingModule.isApplicationBusinessMailEnabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.businessMail, SELECT_POSITION));
+				initColumnModel(Fields.businessMail, filters);
 			}
 		}
 	}
@@ -632,31 +632,31 @@ public class PositionApplicationsController extends FormBasicController implemen
 			initColumnModel(Fields.addressLine2, recruitingModule.getTableApplicationsAddressLinesOption(), filters);
 			initColumnModel(Fields.addressLine3, recruitingModule.getTableApplicationsAddressLinesOption(), filters);
 			initColumnModel(Fields.zipcode, recruitingModule.getTableApplicationsZipcodeOption(), filters);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.city, SELECT_POSITION));
+			initColumnModel(Fields.city, filters);
 			if (recruitingModule.isApplicationAddressCountryEnabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.country, SELECT_POSITION));
+				initColumnModel(Fields.country, filters);
 			}
 		}
 	}
 	
 	private void initColumnsModelAcademicalBackground(List<FlexiTableExtendedFilter> filters) {
 		if(recruitingModule.isApplicationAcademicalBackgroundNumberOfOriginalPublicationsEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.numberOfOriginalPublications, SELECT_POSITION));
+			initColumnModel(Fields.numberOfOriginalPublications, filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundNumberOfFirstAuthorshipsEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.numberOfFirstAuthorships, SELECT_POSITION));
+			initColumnModel(Fields.numberOfFirstAuthorships, filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundNumberOfLastAuthorshipsEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.numberOfLastAuthorships, SELECT_POSITION));
+			initColumnModel(Fields.numberOfLastAuthorships, filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundCitationsEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.citations, SELECT_POSITION));
+			initColumnModel(Fields.citations, filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundImpactFactorEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.impactFactor, SELECT_POSITION));
+			initColumnModel(Fields.impactFactor, filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundHFactorEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.hFactor, SELECT_POSITION));
+			initColumnModel(Fields.hFactor, filters);
 		}
 		
 		//degree
@@ -665,18 +665,17 @@ public class PositionApplicationsController extends FormBasicController implemen
 
 			RecruitingTableOption highestDegreeOption = recruitingModule.getTableApplicationsHighestDegreeOption();
 			if(!highestDegreeOption.isDisabled() && !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_HIGHEST_DEGREE_TYPE)) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(highestDegreeOption.isVisible(), Fields.highestDegreeType, SELECT_POSITION));
+				initColumnModel(Fields.highestDegreeType, highestDegreeOption, filters);
 			}
-			
 			
 			RecruitingTableOption highestDegreeYearOption = recruitingModule.getTableApplicationsHighestDegreeYearOption();
 			if(!highestDegreeYearOption.isDisabled() && !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_HIGHEST_DEGREE_YEAR)) {
 				if(recruitingModule.isTableApplicationsHighestDegreeYearOnlyPhDOption()) {
-					columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(highestDegreeYearOption.isVisible(), Fields.highestDegreeYearPhD,
-						SELECT_POSITION, new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale())));
+					initDateColumnModel(Fields.highestDegreeYearPhD, highestDegreeYearOption,
+							new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale()), filters);
 				} else {
-					columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(highestDegreeYearOption.isVisible(), Fields.highestDegreeYear,
-							SELECT_POSITION, new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale())));
+					initDateColumnModel(Fields.highestDegreeYear, highestDegreeYearOption,
+							new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale()), filters);
 				}
 			}
 
@@ -686,66 +685,56 @@ public class PositionApplicationsController extends FormBasicController implemen
 			}
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundWorkedInAcademiaSinceEnabled()) {
-			RecruitingTableOption highestDegreeYearOption = recruitingModule.getTableApplicationsWorkedInAcademiaSinceOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(highestDegreeYearOption.isVisible(), Fields.workedInAcademiaSince, SELECT_POSITION));
+			initColumnModel(Fields.workedInAcademiaSince, recruitingModule.getTableApplicationsWorkedInAcademiaSinceOption(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundWorkedOutAcademiaSinceEnabled()) {
-			RecruitingTableOption highestDegreeYearOption = recruitingModule.getTableApplicationsWorkedOutAcademiaSinceOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(highestDegreeYearOption.isVisible(), Fields.workedOutAcademiaSince, SELECT_POSITION));
+			initColumnModel(Fields.workedOutAcademiaSince, recruitingModule.getTableApplicationsWorkedOutAcademiaSinceOption(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundWorkedOutAcademiaCareSinceEnabled()) {
-			RecruitingTableOption highestDegreeYearOption = recruitingModule.getTableApplicationsWorkedOutAcademiaCareSinceOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(highestDegreeYearOption.isVisible(), Fields.workedOutAcademiaCareSince, SELECT_POSITION));
+			initColumnModel(Fields.workedOutAcademiaCareSince, recruitingModule.getTableApplicationsWorkedOutAcademiaCareSinceOption(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundCareerDescriptionEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.careerDescription, SELECT_POSITION));
+			initColumnModel(Fields.careerDescription, filters);
 		}
 
 		//dissertation
 		if(recruitingModule.isApplicationAcademicalBackgroundDissertationTitleEnabled()
-				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION)
-				) {
-			RecruitingTableOption dissertationTitleOption = recruitingModule.getTableApplicationsDissertationTitleOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(dissertationTitleOption.isVisible(), Fields.dissertationTitle, SELECT_POSITION));
+				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION)) {
+			initColumnModel(Fields.dissertationTitle, recruitingModule.getTableApplicationsDissertationTitleOption(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundDissertationDateEnabled()
 				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION)) {
 			RecruitingTableOption dissertationDateOption = recruitingModule.getTableApplicationsDissertationDateOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(dissertationDateOption.isVisible(), Fields.dissertationDate,
-					SELECT_POSITION, new AcademicalDateCellRenderer(recruitingModule.getApplicationAcademicalBackgroundDissertationDateFormat(), getLocale())));
+			initDateColumnModel(Fields.dissertationDate, dissertationDateOption,
+					new AcademicalDateCellRenderer(recruitingModule.getApplicationAcademicalBackgroundDissertationDateFormat(), getLocale()), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundDissertationInstitutionEnabled()
 				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION)) {
-			RecruitingTableOption dissertationInstitutionOption = recruitingModule.getTableApplicationsDissertationInstitutionOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(dissertationInstitutionOption.isVisible(), Fields.dissertationInstitution, SELECT_POSITION));
+			initColumnModel(Fields.dissertationInstitution, recruitingModule.getTableApplicationsDissertationInstitutionOption(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundDissertationKeyword1Enabled()
 				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION_KEYWORD1)) {
-			RecruitingTableOption dissertationKeyword1Option = recruitingModule.getTableApplicationsDissertationKeyword1Option();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(dissertationKeyword1Option.isVisible(), Fields.dissertationKeyword1, SELECT_POSITION));
+			initColumnModel(Fields.dissertationKeyword1, recruitingModule.getTableApplicationsDissertationKeyword1Option(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundDissertationKeyword2Enabled()
 				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION_KEYWORD2)) {
-			RecruitingTableOption dissertationKeyword2Option = recruitingModule.getTableApplicationsDissertationKeyword2Option();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(dissertationKeyword2Option.isVisible(), Fields.dissertationKeyword2, SELECT_POSITION));
+			initColumnModel(Fields.dissertationKeyword2, recruitingModule.getTableApplicationsDissertationKeyword2Option(), filters);
 		}
 		if(recruitingModule.isApplicationAcademicalBackgroundDissertationKeyword3Enabled()
 				&& !excludedAttributesList.contains(RecruitingModule.APP_ACADEMIC_DISSERTATION_KEYWORD3)) {
-			RecruitingTableOption dissertationKeyword3Option = recruitingModule.getTableApplicationsDissertationKeyword3Option();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(dissertationKeyword3Option.isVisible(), Fields.dissertationKeyword3, SELECT_POSITION));
+			initColumnModel(Fields.dissertationKeyword3, recruitingModule.getTableApplicationsDissertationKeyword3Option(), filters);
 		}
 		
 		//habilitation
 		if(recruitingModule.isApplicationAcademicalBackgroundHabilitationEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.habilitationTitle, SELECT_POSITION));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.habilitationDate,
-					SELECT_POSITION, new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.habilitationInstitution, SELECT_POSITION));
+			initColumnModel(Fields.habilitationTitle, filters);
+			initDateColumnModel(Fields.habilitationDate, new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale()), filters);
+			initColumnModel(Fields.habilitationInstitution, filters);
 		}
 		
 		//orcid
 		if(recruitingModule.isApplicationAcademicalBackgroundOrcidEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Fields.orcid, SELECT_POSITION));
+			initColumnModel(Fields.orcid, filters);
 		}
 		
 		academicalBackgroundAttributesDelegate.initColumnsModel(columnsModel, position, SELECT_POSITION, getLocale(), filters);
@@ -782,30 +771,28 @@ public class PositionApplicationsController extends FormBasicController implemen
 
 	private void initColumnsModelTags() {
 		if(recruitingModule.isCategoriesEnabledFor(position)) {
+			// Filter is special
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Fields.categories, new CategoriesCellRenderer()));
 		}
 	}
 	
-	private void initColumnsModelReference() {
+	private void initColumnsModelReference(List<FlexiTableExtendedFilter> filters) {
 		if(recruitingModule.isReferenceEnabled()) {
 			RecruitingTableOption providedOption = recruitingModule.getTableApplicationsProvidedExpertsRecommendationsOption();
 			if((position.isExpertRecommendationEnabled() || position.isRefereeRecommendationEnabled()) && !providedOption.isDisabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(providedOption.isVisible(), Fields.providedExpertsRecommendations, SELECT_POSITION));
+				initColumnModel(Fields.providedExpertsRecommendations, providedOption, filters);
 			}
 			RecruitingTableOption expertsOption = recruitingModule.getTableApplicationsExpertsOption();
 			if(position.isExpertRecommendationEnabled() && !expertsOption.isDisabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(expertsOption.isVisible(), Fields.experts, SELECT_POSITION,
-						new ReferencesStatsCellRenderer(ReferenceType.expert)));
+				initColumnModel(Fields.experts, expertsOption, new ReferencesStatsCellRenderer(ReferenceType.expert), filters);
 			}
 			RecruitingTableOption refereesOption = recruitingModule.getTableApplicationsRefereesOption();
 			if(position.isRefereeRecommendationEnabled() && !refereesOption.isDisabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(refereesOption.isVisible(), Fields.recommendations, SELECT_POSITION,
-						new ReferencesStatsCellRenderer(ReferenceType.recommendation)));
+				initColumnModel(Fields.recommendations, refereesOption, new ReferencesStatsCellRenderer(ReferenceType.recommendation), filters);
 			}
 			RecruitingTableOption comparativeExpertsOption = recruitingModule.getTableApplicationsComparativeExpertsOption();
 			if(recruitingModule.isComparativeAssessmentExpertsEnabled() && position.isComparativeAssessmentExpertEnabled() && !comparativeExpertsOption.isDisabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(comparativeExpertsOption.isVisible(), Fields.comparativeExperts, SELECT_POSITION,
-						new ReferencesStatsCellRenderer(ReferenceType.comparativeAssessmentExpert)));
+				initColumnModel(Fields.comparativeExperts, refereesOption, new ReferencesStatsCellRenderer(ReferenceType.comparativeAssessmentExpert), filters);
 			}
 		}
 	}
@@ -930,7 +917,30 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 	}
 	
-	protected void initColumnModel(Fields field, RecruitingTableOption option, List<FlexiTableExtendedFilter> filters) {
+	private void initDateColumnModel(Fields field, FlexiCellRenderer render, List<FlexiTableExtendedFilter> filters) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, field,
+				SELECT_POSITION, render));
+		filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+	}
+	
+	private void initDateColumnModel(Fields field, RecruitingTableOption option, FlexiCellRenderer render, List<FlexiTableExtendedFilter> filters) {
+		if(!option.isDisabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
+					SELECT_POSITION, render));
+			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+		}
+	}
+	
+	protected void initColumnModel(Fields field,  List<FlexiTableExtendedFilter> filters) {
+		if(field.visible(excludedAttributesList)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, field, SELECT_POSITION));
+			if(filters != null) {
+				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+			}
+		}
+	}
+	
+	private void initColumnModel(Fields field, RecruitingTableOption option, List<FlexiTableExtendedFilter> filters) {
 		if(!option.isDisabled() && field.visible(excludedAttributesList)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION));
 			if(filters != null) {
@@ -939,7 +949,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 	}
 	
-	protected void initColumnModel(Fields field, RecruitingTableOption option, ApplicationFieldType type, List<FlexiTableExtendedFilter> filters) {
+	private void initColumnModel(Fields field, RecruitingTableOption option, ApplicationFieldType type, List<FlexiTableExtendedFilter> filters) {
 		if(!option.isDisabled() && field.visible(excludedAttributesList)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION));
 			if(type.getType() == Type.integer || type.getType() == Type.sum || type.getType() == Type.number) {

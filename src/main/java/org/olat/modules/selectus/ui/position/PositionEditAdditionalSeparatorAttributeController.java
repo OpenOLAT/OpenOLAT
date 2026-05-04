@@ -79,7 +79,7 @@ public class PositionEditAdditionalSeparatorAttributeController extends FormBasi
 		
 		displayEl.clearError();
 		if(!displayEl.isOneSelected()) {
-			displayEl.setErrorKey("form.legende.mandatory", null);
+			displayEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
