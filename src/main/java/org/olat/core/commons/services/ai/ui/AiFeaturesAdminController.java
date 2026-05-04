@@ -166,6 +166,11 @@ public class AiFeaturesAdminController extends FormBasicController {
 				}
 			}
 		}
+		// Default to the first provider when nothing is configured yet, so the
+		// dependent model dropdown can be populated on initial form load.
+		if (!spis.isEmpty() && !spiEl.isOneSelected()) {
+			spiEl.select(keys[0], true);
+		}
 		return spiEl;
 	}
 

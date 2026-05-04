@@ -33,6 +33,7 @@ import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.OrganisationRoles;
@@ -1822,6 +1823,23 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(coach, members.get(0));
+	}
+	
+	@Test
+	public void getMemberships() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-teacher-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24b", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24b", "4. Element (b)",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, actor);
+		dbInstance.commitAndCloseSession();
+		
+		List<GroupMembership> members = curriculumElementDao.getMemberships(element, coach);
+		Assertions.assertThat(members)
+			.hasSize(1);
+		Assert.assertEquals(coach, members.get(0).getIdentity());
 	}
 	
 	@Test

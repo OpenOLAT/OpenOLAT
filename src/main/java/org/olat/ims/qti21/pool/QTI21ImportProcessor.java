@@ -57,7 +57,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
-import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
+import org.olat.ims.qti21.model.xml.QtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
@@ -239,7 +239,7 @@ public class QTI21ImportProcessor {
 			XMLOutputFactory xof = XMLFactories.newXMLOutputFactory();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 			SAXParser saxParser = XMLFactories.newSAXParser();
-			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, infos);
+			QtiWorksHandler myHandler = new QtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);
 		} catch(Exception e) {

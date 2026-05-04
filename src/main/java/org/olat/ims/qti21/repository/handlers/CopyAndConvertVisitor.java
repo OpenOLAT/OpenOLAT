@@ -53,11 +53,10 @@ import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.BadRessourceHelper;
-import org.olat.ims.qti21.model.xml.Onyx38ToQtiWorksHandler;
-import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21ExplorerHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
 import org.olat.ims.qti21.model.xml.QTI21Infos.InputType;
+import org.olat.ims.qti21.model.xml.QtiWorksHandler;
 import org.xml.sax.ext.DefaultHandler2;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -148,8 +147,8 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	/**
 	 * Convert the XML files, assessmentItem or assessmentTest
 	 * 
-	 * @param inputFile
-	 * @param outputFile
+	 * @param inputFile The input file
+	 * @param outputFile The output file
 	 */
 	public boolean convertXmlFile(Path inputFile, Path outputFile) {
 		try {
@@ -160,11 +159,9 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 				fileInfos.setEditor(infos.getEditor());
 				fileInfos.setVersion(infos.getVersion());
 			}
-			if(onyx38Family(fileInfos)) {
-				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), Onyx38ToQtiWorksHandler::new);
-			} else if(onyxWebFamily(fileInfos)) {
+			if(onyxWebFamily(fileInfos)) {
 				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), xtw ->
-					 new OnyxToQtiWorksHandler(xtw, infos));
+					 new QtiWorksHandler(xtw, infos));
 				
 				if(validated && fileInfos.getType() == InputType.assessmentItem) {
 					//check templateVariables
@@ -178,13 +175,6 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 			log.error("", e);
 			return false;
 		}
-	}
-	
-	private boolean onyx38Family(QTI21Infos fileInfos) {
-		if(fileInfos == null || fileInfos.getEditor() == null) return false;
-		String version = fileInfos.getVersion();
-		return "Onyx Editor".equals(fileInfos.getEditor()) && version != null &&
-				(version.startsWith("2.") || version.startsWith("3."));
 	}
 	
 	private boolean onyxWebFamily(QTI21Infos fileInfos) {

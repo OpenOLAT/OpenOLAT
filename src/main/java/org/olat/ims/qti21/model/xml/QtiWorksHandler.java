@@ -28,20 +28,21 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
- * It converts Onyx final to qtiWorks. It fix:<br>
+ * It handles assessment test or item as input and fix some common errors:<br>
  * <ul>
  * 	<li>imsmanifest: type from "imsqti_assessment_xmlv2p1" to "imsqti_test_xmlv2p1"</li>
  *  <li>assessmentTest: surround rubricBlock's text only content with &lt;p&gt;</li>
  *  <li>assesementItem: surround itemBody's text only with &lt;p&gt;</li>
- *  <li>assesementItem: strip html code from &lt;prompt&gt;
+ *  <li>assesementItem: strip html code from &lt;prompt&gt;</li>
+ *  <li>label: replaced with span</li>
  * </ul>
  * 
  * 
  * Initial date: 25.06.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class OnyxToQtiWorksHandler extends DefaultHandler2 {
+public class QtiWorksHandler extends DefaultHandler2 {
 	
 	private final QTI21Infos infos;
 	private final XMLStreamWriter xtw;
@@ -52,10 +53,7 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	private boolean rubricBlock = false;
 	private StringBuilder rubricCharacterBuffer;
 	
-	private boolean prompt = false;
-	
-	
-	public OnyxToQtiWorksHandler(XMLStreamWriter xtw, QTI21Infos infos) {
+	public QtiWorksHandler(XMLStreamWriter xtw, QTI21Infos infos) {
 		this.xtw = xtw;
 		this.infos = infos;
 	}
@@ -84,10 +82,6 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	public void startElement(String uri, String localName, String qName, Attributes attributes)
 	throws SAXException {
 		try {
-			if(prompt) {
-				return;
-			}
-			
 			if(itemBody) {
 				String characters = itemCharacterBuffer.toString().trim();
 				if(characters.length() > 0) {
@@ -132,8 +126,6 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				writeObjectElementAttributes(attributes);
 			} else if("img".equals(qName)) {
 				writeImgElementAttributes(attributes);
-			} else if("customOperator".equals(qName)) {
-				writeCustomOperatorAttributes(attributes);
 			} else if("mapTolResponse".equals(qName)) {
 				writeMapTo1ResponseElement(attributes);
 			}  else {
@@ -151,11 +143,7 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 			} else if("rubricBlock".equals(qName)) {
 				rubricBlock = true;
 				rubricCharacterBuffer = new StringBuilder();
-			} else if("prompt".equals(qName)) {
-				prompt = true;
 			}
-			
-			
 		} catch (XMLStreamException e) {
 			throw new SAXException(e);
 		}
@@ -229,34 +217,6 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				String attrValue = attributes.getValue(i);
 				xtw.writeAttribute(attrQName, attrValue);
 			}
-		}
-	}
-	
-	/**
-	 * The customOperator accept the class attribute or the definition attribute but not
-	 * both at the same time.
-	 * 
-	 * @param attributes The attributes
-	 * @param withDefinition true if you want to write the definition attribute, false if you want to skip it
-	 * @throws XMLStreamException
-	 */
-	private void writeCustomOperatorAttributes(Attributes attributes)
-	throws XMLStreamException {
-		String customOperatorDefinition = attributes.getValue("definition");
-		boolean maxima = "MAXIMA".equals(customOperatorDefinition);
-		if(maxima) {
-			xtw.writeAttribute("class", "org.olat.ims.qti21.manager.extensions.MaximaOperator");
-		}
-		
-		int numOfAttributes = attributes.getLength();
-		for(int i=0;i<numOfAttributes; i++) {
-			String attrQName = attributes.getQName(i);
-			if(maxima && "class".equals(attrQName)) {
-				continue;
-			}
-			
-			String attrValue = attributes.getValue(i);
-			xtw.writeAttribute(attrQName, attrValue);
 		}
 	}
 	
@@ -362,12 +322,6 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				
 				rubricBlock = false;
 				rubricCharacterBuffer = null;
-			} else if(prompt) {
-				if(!"prompt".equals(qName)) {
-					return;//only print characters
-				} else {
-					prompt = false;
-				}
 			}
 			xtw.writeEndElement();
 		} catch (XMLStreamException e) {

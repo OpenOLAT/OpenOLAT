@@ -1364,6 +1364,18 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public List<GroupMembership> getMemberships(CurriculumElementRef element, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select membership from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where el.key=:elementKey and membership.identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GroupMembership.class)
+				.setParameter("elementKey", element.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
 
 	public List<CurriculumElementMembershipHistory> getMembershipInfosAndHistory(CurriculumElementMembershipHistorySearchParameters params) {
 		
