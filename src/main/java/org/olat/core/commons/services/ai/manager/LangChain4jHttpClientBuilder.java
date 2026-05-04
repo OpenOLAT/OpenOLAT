@@ -29,10 +29,15 @@ import dev.langchain4j.http.client.HttpClientBuilder;
 
 /**
  * LangChain4j {@link HttpClientBuilder} that creates {@link LangChain4jHttpClient}
- * instances backed by OpenOlat's {@link HttpClientService}. Timeouts are managed
- * centrally by the HttpClientService configuration, so connect/read timeout
- * setters are accepted but have no effect (the values from
- * {@code HttpClientModule} are used instead).
+ * instances backed by OpenOlat's {@link HttpClientService}. The connect
+ * timeout is always taken from OpenOlat's central
+ * {@code HttpClientModule} configuration and the builder setter is ignored.
+ * The {@code readTimeout} setter, by contrast, is honoured: LangChain4j's
+ * ChatModel builders translate their {@code .timeout(Duration)} value into
+ * {@link #readTimeout(Duration)}, which is then applied as a per-request
+ * socket-timeout override in {@link LangChain4jHttpClient}. When
+ * {@code readTimeout} is not set, the socket timeout falls through to the
+ * global default (30 s from {@code http.connect.socket.timeout}).
  *
  * Initial date: 2026-03-23<br>
  * @author gnaegi@frentix.com, https://www.frentix.com
@@ -66,6 +71,6 @@ public class LangChain4jHttpClientBuilder implements HttpClientBuilder {
 
 	@Override
 	public HttpClient build() {
-		return new LangChain4jHttpClient(CoreSpringFactory.getImpl(HttpClientService.class));
+		return new LangChain4jHttpClient(CoreSpringFactory.getImpl(HttpClientService.class), readTimeout);
 	}
 }

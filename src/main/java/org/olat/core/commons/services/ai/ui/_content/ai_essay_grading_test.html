@@ -1,0 +1,108 @@
+#if($error)
+  <div class="o_warning" style="margin-bottom: 1rem;">
+    <h5>$r.translate("ai.feature.essay-grading.test.error.title")</h5>
+    <p>$r.escapeHtml($error)</p>
+  </div>
+#end
+
+<h4 style="margin-bottom: 0.5rem;">$r.escapeHtml($referenceLabel)</h4>
+<div style="background: #f5f5f5; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.9em;">
+  <p><strong>Reference excerpt:</strong> $r.escapeHtml($referenceExcerpt)</p>
+  <p><strong>Model answer:</strong> $r.escapeHtml($modelAnswer)</p>
+</div>
+
+<div class="o_form">
+  $r.render("essayGrading.answer")
+  $r.render("essayGrading.submit")
+</div>
+
+#if($suggestionView)
+  <hr/>
+  <h3 style="margin-bottom: 0.5rem;">$r.translate("ai.feature.essay-grading.test.success.title")</h3>
+
+  <h4 style="margin-bottom: 0.25rem;">Content signals</h4>
+  <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
+    <tr><td style="width: 180px;"><strong>Key points hit</strong></td>
+      <td>
+        #if($suggestionView.contentSignals.keyPointsHit.isEmpty())
+          <em>none</em>
+        #else
+          <ul style="margin: 0;">
+            #foreach($hit in $suggestionView.contentSignals.keyPointsHit)
+              <li><strong>$r.escapeHtml($hit.id)</strong> — $r.escapeHtml($hit.evidence)</li>
+            #end
+          </ul>
+        #end
+      </td></tr>
+    <tr><td><strong>Key points missed</strong></td>
+      <td>
+        #if($suggestionView.contentSignals.keyPointsMissed.isEmpty())
+          <em>none</em>
+        #else
+          <ul style="margin: 0;">
+            #foreach($miss in $suggestionView.contentSignals.keyPointsMissed)
+              <li><strong>$r.escapeHtml($miss.id)</strong> — $r.escapeHtml($miss.reason)</li>
+            #end
+          </ul>
+        #end
+      </td></tr>
+    <tr><td><strong>Coherence</strong></td>
+      <td>#if($suggestionView.contentSignals.coherenceNote == "")<em>none</em>#else$r.escapeHtml($suggestionView.contentSignals.coherenceNote)#end</td></tr>
+    <tr><td><strong>Argument</strong></td>
+      <td>#if($suggestionView.contentSignals.argumentNote == "")<em>none</em>#else$r.escapeHtml($suggestionView.contentSignals.argumentNote)#end</td></tr>
+    <tr><td><strong>Relevance</strong></td>
+      <td>#if($suggestionView.contentSignals.relevanceNote == "")<em>none</em>#else$r.escapeHtml($suggestionView.contentSignals.relevanceNote)#end</td></tr>
+  </table>
+
+  <h4 style="margin-bottom: 0.25rem;">Language signals</h4>
+  <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
+    <tr><td style="width: 180px;"><strong>Grammar issues</strong></td>
+      <td>
+        #if($suggestionView.languageSignals.grammarIssues.isEmpty())
+          <em>none</em>
+        #else
+          <ul style="margin: 0;">
+            #foreach($g in $suggestionView.languageSignals.grammarIssues)
+              <li>$r.escapeHtml($g.span) — $r.escapeHtml($g.note) ($r.escapeHtml($g.severity))</li>
+            #end
+          </ul>
+        #end
+      </td></tr>
+    <tr><td><strong>Spelling issues</strong></td>
+      <td>
+        #if($suggestionView.languageSignals.spellingIssues.isEmpty())
+          <em>none</em>
+        #else
+          <ul style="margin: 0;">
+            #foreach($s in $suggestionView.languageSignals.spellingIssues)
+              <li>$r.escapeHtml($s.word) &rarr; $r.escapeHtml($s.suggestion)</li>
+            #end
+          </ul>
+        #end
+      </td></tr>
+  </table>
+
+  <h4 style="margin-bottom: 0.25rem;">Feedback to student</h4>
+  <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
+    <tr><td style="width: 180px;"><strong>What went well</strong></td>
+      <td>#if($suggestionView.feedbackToStudent.whatWentWell == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.whatWentWell)#end</td></tr>
+    <tr><td><strong>What is missing</strong></td>
+      <td>#if($suggestionView.feedbackToStudent.whatIsMissing == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.whatIsMissing)#end</td></tr>
+    <tr><td><strong>Next step</strong></td>
+      <td>#if($suggestionView.feedbackToStudent.nextStep == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.nextStep)#end</td></tr>
+  </table>
+
+  <h4 style="margin-bottom: 0.25rem;">Overall</h4>
+  <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
+    <tr><td style="width: 180px;"><strong>Overall assessment</strong></td>
+      <td>#if($suggestionView.overallAssessment == "")<em>none</em>#else$r.escapeHtml($suggestionView.overallAssessment)#end</td></tr>
+    <tr><td><strong>Estimated score</strong></td>
+      <td>$r.escapeHtml($suggestionView.estimatedScorePercent) %</td></tr>
+    <tr><td><strong>Off-topic flag</strong></td>
+      <td>$r.escapeHtml($suggestionView.offTopicFlag)</td></tr>
+    <tr><td><strong>Confidence</strong></td>
+      <td>$r.escapeHtml($suggestionView.confidence)</td></tr>
+    <tr><td><strong>Feedback to coach</strong></td>
+      <td>#if($suggestionView.feedbackToCoach == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToCoach)#end</td></tr>
+  </table>
+#end

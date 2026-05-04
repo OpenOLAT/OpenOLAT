@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
  *
  * Initial date: 22.05.2024<br>
  *
- * @author Florian Gnägi, gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 @Service
@@ -48,6 +48,20 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_MC_GENERATOR_MODEL = "ai.feature.mc-question-generator.model";
 	private static final String AI_IMG_DESC_SPI = "ai.feature.image-description-generator.spi";
 	private static final String AI_IMG_DESC_MODEL = "ai.feature.image-description-generator.model";
+	private static final String AI_ESSAY_GENERATION_SPI = "ai.feature.essay.generation.spi";
+	private static final String AI_ESSAY_GENERATION_MODEL = "ai.feature.essay.generation.model";
+	private static final String AI_ESSAY_GRADING_SPI = "ai.feature.essay.grading.spi";
+	private static final String AI_ESSAY_GRADING_MODEL = "ai.feature.essay.grading.model";
+
+	// Per-user rate limit defaults (calls / minute / identity). Sized so a
+	// fast-typing learner submitting essay answers across many questions in a
+	// course is not throttled, but a scripted loop that re-submits the same
+	// answer is. The author-side generation budget is tighter — generation
+	// calls are far more expensive than grading calls.
+	// TODO Wire to persisted properties via setStringProperty()/getStringPropertyValue
+	// once the admin UI surface for per-feature rate limits exists.
+	private static final int DEFAULT_ESSAY_GRADING_MAX_CALLS_PER_MINUTE_PER_USER = 30;
+	private static final int DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER = 10;
 
 	// List of all Spring-registered SPI implementations (OpenAI, Anthropic)
 	private List<AiSPI> springProviders = List.of();
@@ -61,6 +75,10 @@ public class AiModule extends AbstractSpringModule {
 	private String mcGeneratorModel;
 	private String imgDescSpiId;
 	private String imgDescModel;
+	private String essayGenerationSpiId;
+	private String essayGenerationModel;
+	private String essayGradingSpiId;
+	private String essayGradingModel;
 
 	/**
 	 * Spring constructor
@@ -89,6 +107,10 @@ public class AiModule extends AbstractSpringModule {
 		mcGeneratorModel = getStringPropertyValue(AI_MC_GENERATOR_MODEL, mcGeneratorModel);
 		imgDescSpiId = getStringPropertyValue(AI_IMG_DESC_SPI, imgDescSpiId);
 		imgDescModel = getStringPropertyValue(AI_IMG_DESC_MODEL, imgDescModel);
+		essayGenerationSpiId = getStringPropertyValue(AI_ESSAY_GENERATION_SPI, essayGenerationSpiId);
+		essayGenerationModel = getStringPropertyValue(AI_ESSAY_GENERATION_MODEL, essayGenerationModel);
+		essayGradingSpiId = getStringPropertyValue(AI_ESSAY_GRADING_SPI, essayGradingSpiId);
+		essayGradingModel = getStringPropertyValue(AI_ESSAY_GRADING_MODEL, essayGradingModel);
 	}
 
 	/**
@@ -205,5 +227,81 @@ public class AiModule extends AbstractSpringModule {
 	 */
 	public GenericAiSPI getGenericAiSPI() {
 		return genericAiSPI;
+	}
+
+	// ---------------------------------------------------------------------
+	// Essay feature — generation + grading routing
+	// ---------------------------------------------------------------------
+
+	/**
+	 * @return true: the essay-question generator feature is configured and the
+	 *         backing SPI is enabled
+	 */
+	public boolean isEssayGenerationEnabled() {
+		return resolveProvider(essayGenerationSpiId) != null
+				&& StringHelper.containsNonWhitespace(essayGenerationModel);
+	}
+
+	/**
+	 * @return true: the essay grading (formative feedback) feature is
+	 *         configured and the backing SPI is enabled
+	 */
+	public boolean isEssayGradingEnabled() {
+		return resolveProvider(essayGradingSpiId) != null
+				&& StringHelper.containsNonWhitespace(essayGradingModel);
+	}
+
+	public String getEssayGenerationSpiId() {
+		return essayGenerationSpiId;
+	}
+
+	public String getEssayGenerationModel() {
+		return essayGenerationModel;
+	}
+
+	public void setEssayGenerationConfig(String spiId, String model) {
+		this.essayGenerationSpiId = spiId;
+		this.essayGenerationModel = model;
+		setStringProperty(AI_ESSAY_GENERATION_SPI, StringHelper.containsNonWhitespace(spiId) ? spiId : "", true);
+		setStringProperty(AI_ESSAY_GENERATION_MODEL, StringHelper.containsNonWhitespace(model) ? model : "", true);
+	}
+
+	public String getEssayGradingSpiId() {
+		return essayGradingSpiId;
+	}
+
+	public String getEssayGradingModel() {
+		return essayGradingModel;
+	}
+
+	public void setEssayGradingConfig(String spiId, String model) {
+		this.essayGradingSpiId = spiId;
+		this.essayGradingModel = model;
+		setStringProperty(AI_ESSAY_GRADING_SPI, StringHelper.containsNonWhitespace(spiId) ? spiId : "", true);
+		setStringProperty(AI_ESSAY_GRADING_MODEL, StringHelper.containsNonWhitespace(model) ? model : "", true);
+	}
+
+	/**
+	 * Per-user rate limit for essay-grading submit calls. Counts of accepted
+	 * grading jobs in a sliding 60-second window; when the count reaches this
+	 * value the next {@code submit(...)} fails fast with
+	 * {@link org.olat.core.commons.services.ai.essay.AiRateLimitExceededException}.
+	 *
+	 * @return positive call count (calls per minute per identity)
+	 */
+	public int getEssayGradingMaxCallsPerMinutePerUser() {
+		return DEFAULT_ESSAY_GRADING_MAX_CALLS_PER_MINUTE_PER_USER;
+	}
+
+	/**
+	 * Per-user rate limit for AI question generation submit calls. Same
+	 * sliding-window semantics as
+	 * {@link #getEssayGradingMaxCallsPerMinutePerUser()} but tighter — each
+	 * generation call drives multiple expensive provider invocations.
+	 *
+	 * @return positive call count (calls per minute per identity)
+	 */
+	public int getEssayGenerationMaxCallsPerMinutePerUser() {
+		return DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER;
 	}
 }

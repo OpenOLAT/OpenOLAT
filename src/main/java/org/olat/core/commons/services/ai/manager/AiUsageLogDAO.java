@@ -26,13 +26,14 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiUsageLog;
 import org.olat.core.commons.services.ai.AiUsageLogSearchParams;
-import org.olat.core.commons.services.ai.model.AiUsageLogStats;
 import org.olat.core.commons.services.ai.AiUsageLogSearchParams.OrderBy;
 import org.olat.core.commons.services.ai.AiUsageLogStatus;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.AiUsageLogImpl;
+import org.olat.core.commons.services.ai.model.AiUsageLogStats;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,6 +94,29 @@ public class AiUsageLogDAO {
 		}
 	}
 
+	/**
+	 * Populate the essay-grading specific columns on an existing usage log
+	 * row. Called from {@code EssayFormativeFeedbackService} right after the
+	 * SPI call so the row persisted by {@code AiLoggingChatModel} carries
+	 * full provenance (grading row id, content hash, prompt template
+	 * version, tier, assessment-item session).
+	 */
+	public void updateEssayFields(Long key, String assessmentItemIdentifier, String contentHashAtCall,
+			String promptTemplateVersion,
+			org.olat.core.commons.services.ai.essay.AiGradingTier tier,
+			Long assessmentItemSessionKey) {
+		if (key == null) {
+			return;
+		}
+		AiUsageLogImpl log = dbInstance.getCurrentEntityManager().find(AiUsageLogImpl.class, key);
+		if (log == null) return;
+		if (assessmentItemIdentifier != null) log.setAssessmentItemIdentifier(assessmentItemIdentifier);
+		if (contentHashAtCall != null) log.setContentHashAtCall(contentHashAtCall);
+		if (promptTemplateVersion != null) log.setPromptTemplateVersion(promptTemplateVersion);
+		if (tier != null) log.setTier(tier);
+		if (assessmentItemSessionKey != null) log.setAssessmentItemSessionKey(assessmentItemSessionKey);
+	}
+
 	public AiUsageLogStats getStats(AiUsageLogSearchParams params) {
 		QueryBuilder query = new QueryBuilder();
 		query.append("select coalesce(sum(log.totalTokens), 0) from aiusagelog log");
@@ -112,6 +136,35 @@ public class AiUsageLogDAO {
 				.createQuery(query.toString(), Long.class);
 		applyParameters(dbQuery, params);
 		return dbQuery.getSingleResult().intValue();
+	}
+
+	/**
+	 * Count usage log rows for a single identity and AI feature created at or
+	 * after {@code since}. Used by the per-user submit rate limiter on the
+	 * essay grading and essay/MC question generation services.
+	 *
+	 * @param identityKey the caller's identity key (must not be {@code null})
+	 * @param aiFeature   the {@link AiFeature#getType()} value to scope to
+	 *                    (must not be {@code null}); rows whose feature does
+	 *                    not match are ignored
+	 * @param since       lower bound on {@code creationDate}; rows older than
+	 *                    this are ignored (must not be {@code null})
+	 * @return number of matching rows; never negative
+	 */
+	public int countByIdentityFeatureSince(Long identityKey, String aiFeature, Date since) {
+		if (identityKey == null || aiFeature == null || since == null) {
+			return 0;
+		}
+		TypedQuery<Long> dbQuery = dbInstance.getCurrentEntityManager()
+				.createQuery("select count(log) from aiusagelog log"
+						+ " where log.identity.key = :identityKey"
+						+ " and log.aiFeature = :aiFeature"
+						+ " and log.creationDate >= :since", Long.class)
+				.setParameter("identityKey", identityKey)
+				.setParameter("aiFeature", aiFeature)
+				.setParameter("since", since);
+		Long count = dbQuery.getSingleResult();
+		return count == null ? 0 : count.intValue();
 	}
 
 	public List<AiUsageLog> getUsageLogs(AiUsageLogSearchParams params, int firstResult, int maxResults) {

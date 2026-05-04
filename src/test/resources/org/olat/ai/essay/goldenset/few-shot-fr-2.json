@@ -1,0 +1,41 @@
+{
+  "meta": { "language": "fr-CH", "difficulty": "UNDERSTAND", "category": "partial" },
+  "kit": {
+    "referenceExcerpt": "Une démocratie représentative repose sur trois principes : élections libres, séparation des pouvoirs, protection des libertés fondamentales.",
+    "modelAnswer": "La démocratie représentative combine des élections libres, la séparation des pouvoirs et la protection des libertés individuelles.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Élections libres", "weight": 0.35, "required": true },
+      { "id": "kp2", "text": "Séparation des pouvoirs", "weight": 0.35, "required": true },
+      { "id": "kp3", "text": "Protection des libertés fondamentales", "weight": 0.3, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Contenu", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Langue", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "UNDERSTAND",
+    "learningObjective": "Nommer les trois piliers d'une démocratie représentative",
+    "language": "fr-CH",
+    "contentHash": "fixture-fr-2-hash"
+  },
+  "studentAnswer": "Une démocratie représentative a des élections libres pour choisir les représentants. Les gens votent librement.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "des élections libres pour choisir les représentants" }
+      ],
+      "keyPointsMissed": [
+        { "id": "kp2", "reason": "La séparation des pouvoirs n'est pas mentionnée." },
+        { "id": "kp3", "reason": "La protection des libertés fondamentales manque." }
+      ]
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "NONE",
+    "confidence": "MEDIUM",
+    "feedbackToStudent": {
+      "whatWentWell": "Tu identifies correctement les élections libres comme pilier.",
+      "whatIsMissing": "Deux piliers manquent : la séparation des pouvoirs et la protection des libertés.",
+      "nextStep": "Complète en nommant les deux autres piliers et en expliquant brièvement pourquoi chacun est nécessaire."
+    }
+  },
+  "notes": "Only 1/3 key points. Partial answer."
+}

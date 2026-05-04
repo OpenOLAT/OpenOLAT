@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.spi.openAI;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  *
  * Initial date: 22.05.2024<br>
  *
- * @author gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 @Service
@@ -119,13 +120,21 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 
 	@Override
 	public ChatModel buildChatModel(String modelName, int maxTokens) {
-		return OpenAiChatModel.builder()
+		return buildChatModel(modelName, maxTokens, null);
+	}
+
+	@Override
+	public ChatModel buildChatModel(String modelName, int maxTokens, Duration timeout) {
+		var builder = OpenAiChatModel.builder()
 				.httpClientBuilder(new LangChain4jHttpClientBuilder())
 				.apiKey(apiKey)
 				.modelName(modelName)
 				.maxCompletionTokens(maxTokens)
-				.supportedCapabilities(Set.of(Capability.RESPONSE_FORMAT_JSON_SCHEMA))
-				.build();
+				.supportedCapabilities(Set.of(Capability.RESPONSE_FORMAT_JSON_SCHEMA));
+		if (timeout != null) {
+			builder.timeout(timeout);
+		}
+		return builder.build();
 	}
 
 	@Override

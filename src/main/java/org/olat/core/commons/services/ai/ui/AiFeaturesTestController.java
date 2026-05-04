@@ -21,8 +21,11 @@ package org.olat.core.commons.services.ai.ui;
 
 import java.util.Locale;
 
+import org.olat.core.commons.services.ai.AiEssayGenerationService;
+import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -42,7 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
  *
  * Initial date: 20.03.2026<br>
  *
- * @author gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 public class AiFeaturesTestController extends BasicController {
@@ -277,13 +280,21 @@ public class AiFeaturesTestController extends BasicController {
 
 	private final AiMCQuestionService mcQuestionService;
 	private final AiImageDescriptionService imageDescriptionService;
+	private final AiEssayGenerationService aiEssayGenerationService;
+	private final AiEssayGradingService aiEssayGradingService;
 	private CloseableModalController cmc;
+	private AiEssayGenerationTestController essayGenTestCtrl;
+	private AiEssayGradingTestController essayGradingTestCtrl;
 
 	public AiFeaturesTestController(UserRequest ureq, WindowControl wControl,
-			AiMCQuestionService mcQuestionService, AiImageDescriptionService imageDescriptionService) {
+			AiMCQuestionService mcQuestionService, AiImageDescriptionService imageDescriptionService,
+			AiEssayGenerationService aiEssayGenerationService, AiEssayGradingService aiEssayGradingService,
+			AiModule aiModule) {
 		super(ureq, wControl);
 		this.mcQuestionService = mcQuestionService;
 		this.imageDescriptionService = imageDescriptionService;
+		this.aiEssayGenerationService = aiEssayGenerationService;
+		this.aiEssayGradingService = aiEssayGradingService;
 		putInitialPanel(new org.olat.core.gui.components.panel.SimpleStackedPanel("aiTestPanel"));
 	}
 
@@ -322,6 +333,30 @@ public class AiFeaturesTestController extends BasicController {
 		showModal(vc, "Image Description Generator Test");
 	}
 
+	public void testEssayGeneration(UserRequest ureq, String spiId, String modelName) {
+		cleanUp();
+		essayGenTestCtrl = new AiEssayGenerationTestController(ureq, getWindowControl(), spiId, modelName,
+				aiEssayGenerationService);
+		listenTo(essayGenTestCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				essayGenTestCtrl.getInitialComponent(), true,
+				translate("ai.feature.essay-generation.test.title"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	public void testEssayGrading(UserRequest ureq, String spiId, String modelName) {
+		cleanUp();
+		essayGradingTestCtrl = new AiEssayGradingTestController(ureq, getWindowControl(), spiId, modelName,
+				aiEssayGradingService);
+		listenTo(essayGradingTestCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				essayGradingTestCtrl.getInitialComponent(), true,
+				translate("ai.feature.essay-grading.test.title"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void showModal(VelocityContainer vc, String title) {
 		cleanUp();
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -332,7 +367,11 @@ public class AiFeaturesTestController extends BasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(essayGenTestCtrl);
+		removeAsListenerAndDispose(essayGradingTestCtrl);
 		cmc = null;
+		essayGenTestCtrl = null;
+		essayGradingTestCtrl = null;
 	}
 
 	@Override

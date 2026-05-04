@@ -1,0 +1,48 @@
+{
+  "meta": { "language": "en-GB", "difficulty": "APPLY", "category": "partial-l2" },
+  "kit": {
+    "referenceExcerpt": "The supply-and-demand model explains price formation in a competitive market. When supply exceeds demand at the current price, sellers lower the price until demand rises to meet supply. When demand exceeds supply, prices rise until the imbalance resolves. The price at which quantity supplied equals quantity demanded is the equilibrium price.",
+    "modelAnswer": "Supply and demand determine prices in a market. Excess supply pushes prices down; excess demand pushes them up. Prices stabilise at the equilibrium where supply equals demand.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Excess supply lowers prices", "weight": 0.3, "required": true },
+      { "id": "kp2", "text": "Excess demand raises prices", "weight": 0.3, "required": true },
+      { "id": "kp3", "text": "Equilibrium: supply = demand at a specific price", "weight": 0.4, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Content", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Language", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "APPLY",
+    "learningObjective": "Explain how supply and demand determine the equilibrium price",
+    "language": "en-GB",
+    "contentHash": "fixture-en-2-hash"
+  },
+  "studentAnswer": "When are to many products the price go low. Also when the peoples want much the price go up. The balanced is when many products same as wanted peoples.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "to many products the price go low" },
+        { "id": "kp2", "evidence": "peoples want much the price go up" },
+        { "id": "kp3", "evidence": "balanced is when many products same as wanted peoples" }
+      ],
+      "keyPointsMissed": [],
+      "coherenceNote": "The three mechanisms are present, though the terminology is loose."
+    },
+    "languageSignals": {
+      "grammarIssues": [
+        { "span": "to many", "note": "Use 'too many'.", "severity": "minor" },
+        { "span": "the peoples want", "note": "'People' is already plural; 'peoples' refers to ethnic groups.", "severity": "major" },
+        { "span": "the balanced is", "note": "Should be noun: 'the balance' or 'the equilibrium'.", "severity": "major" }
+      ],
+      "spellingIssues": []
+    },
+    "offTopicFlag": "NONE",
+    "confidence": "MEDIUM",
+    "feedbackToStudent": {
+      "whatWentWell": "All three core ideas are present: excess supply lowering price, excess demand raising it, and the balance point.",
+      "whatIsMissing": "The economic terms — equilibrium, supply, demand — are not used.",
+      "nextStep": "Revise your sentences using the terms 'supply', 'demand', and 'equilibrium price' instead of descriptive phrasing."
+    }
+  },
+  "notes": "Strong content, weak language — exercises the split-scoring behaviour. Content score is high, language score should be visibly lower."
+}

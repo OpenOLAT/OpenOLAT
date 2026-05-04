@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * Initial date: 22.05.2024<br>
  *
- * @author Florian Gnaegi, gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 public class AiConfigurationAdminController extends BasicController {
@@ -191,6 +191,14 @@ public class AiConfigurationAdminController extends BasicController {
 		String configuredImgDescSpiId = aiModule.getImgDescSpiId();
 		if (deleteCandidate.getId().equals(configuredImgDescSpiId)) {
 			aiModule.setImageDescriptionGeneratorConfig("", "");
+		}
+		String configuredEssayGenSpiId = aiModule.getEssayGenerationSpiId();
+		if (deleteCandidate.getId().equals(configuredEssayGenSpiId)) {
+			aiModule.setEssayGenerationConfig("", "");
+		}
+		String configuredEssayGradingSpiId = aiModule.getEssayGradingSpiId();
+		if (deleteCandidate.getId().equals(configuredEssayGradingSpiId)) {
+			aiModule.setEssayGradingConfig("", "");
 		}
 
 		deleteCandidate = null;

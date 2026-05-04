@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OpenOlat AI Pulse Icon — STATIC variant (idle / done state).
+  Iridescent gradient ∞ stroke, no animation.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 80 80"
+     width="80" height="80"
+     role="img"
+     aria-label="OpenOlat AI">
+  <defs>
+    <linearGradient id="aip-rainbow-static" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#ff5f9e"/>
+      <stop offset="33%"  stop-color="#a855f7"/>
+      <stop offset="66%"  stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <path fill="none" stroke="url(#aip-rainbow-static)" stroke-width="3.5"
+        stroke-linecap="round" stroke-linejoin="round"
+        d="M 40,40 C 40,32.3 33.7,26 26,26 C 18.3,26 12,32.3 12,40
+           C 12,47.7 18.3,54 26,54 C 33.7,54 40,47.7 40,40
+           C 40,32.3 46.3,26 54,26 C 61.7,26 68,32.3 68,40
+           C 68,47.7 61.7,54 54,54 C 46.3,54 40,47.7 40,40 Z"/>
+</svg>

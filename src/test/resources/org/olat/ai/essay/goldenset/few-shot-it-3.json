@@ -1,0 +1,38 @@
+{
+  "meta": { "language": "it-CH", "difficulty": "EVALUATE", "category": "too-short" },
+  "kit": {
+    "referenceExcerpt": "Un argomento valido è un argomento la cui struttura logica garantisce che, se le premesse sono vere, la conclusione è necessariamente vera. Un argomento solido è un argomento valido con premesse effettivamente vere.",
+    "modelAnswer": "La validità riguarda la struttura: se le premesse fossero vere, la conclusione seguirebbe necessariamente. La solidità richiede in più che le premesse siano effettivamente vere.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Validità = struttura logica corretta", "weight": 0.5, "required": true },
+      { "id": "kp2", "text": "Solidità = validità + premesse vere", "weight": 0.5, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Contenuto", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Lingua", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "EVALUATE",
+    "learningObjective": "Distinguere validità e solidità di un argomento",
+    "language": "it-CH",
+    "contentHash": "fixture-it-3-hash"
+  },
+  "studentAnswer": "Sono diversi.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [],
+      "keyPointsMissed": [
+        { "id": "kp1", "reason": "La definizione di validità manca." },
+        { "id": "kp2", "reason": "La definizione di solidità manca." }
+      ]
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "LIKELY_OFF_TOPIC",
+    "confidence": "LOW",
+    "feedbackToStudent": {
+      "whatWentWell": "Hai riconosciuto che i due concetti sono diversi.",
+      "whatIsMissing": "Nessuna delle due definizioni viene data.",
+      "nextStep": "Definisci separatamente 'validità' e 'solidità' e mostra con un esempio quando un argomento è valido ma non solido."
+    }
+  },
+  "notes": "Too-short pre-filter should trigger; grader still produces honest feedback."
+}

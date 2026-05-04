@@ -22,6 +22,7 @@ package org.olat.ims.qti21.ui.editor;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -59,6 +60,7 @@ import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.DrawingEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.EssayAiGradingEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
@@ -110,6 +112,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 	private Controller itemEditor;
 	private Controller scoreEditor;
 	private Controller feedbackEditor;
+	private Controller aiGradingEditor;
 	private PoolEditorController poolEditor;
 	private MetadataController metadataCtrl;
 	private AssessmentItemPreviewController displayCtrl;
@@ -131,6 +134,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 	private QPoolService qpoolService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private AiModule aiModule;
 
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
 										  ResolvedAssessmentItem resolvedAssessmentItem,
@@ -538,6 +543,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
 		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
+
+		// "AI feedback" tab — shown whenever the feature is admin-enabled and
+		// we have an item file on disk (which gives us the question directory
+		// for ai-grading.json). Hidden in the QTI test composer (testEntry != null);
+		// the AI grading metadata is edited from the question pool / ceditor only.
+		if (aiModule != null && aiModule.isEssayGradingEnabled() && itemFile != null && testEntry == null) {
+			aiGradingEditor = new EssayAiGradingEditorController(ureq, getWindowControl(),
+					essayItemBuilder, itemFile.getParentFile(), readOnly);
+			listenTo(aiGradingEditor);
+			tabbedPane.addTab(translate("form.essay.ai.grading"),
+					"o_sel_assessment_item_ai_grading", aiGradingEditor);
+		}
+
 		return essayItemBuilder;
 	}
 	

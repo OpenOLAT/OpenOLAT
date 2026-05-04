@@ -1,0 +1,40 @@
+{
+  "meta": { "language": "fr-CH", "difficulty": "ANALYSE", "category": "well-answered" },
+  "kit": {
+    "referenceExcerpt": "L'effet de serre est le phénomène par lequel certains gaz atmosphériques — principalement la vapeur d'eau, le CO₂, le méthane — absorbent une partie du rayonnement infrarouge émis par la Terre et le renvoient vers la surface, élevant ainsi la température moyenne.",
+    "modelAnswer": "L'effet de serre est causé par des gaz atmosphériques qui absorbent le rayonnement infrarouge terrestre et le réémettent vers la surface, ce qui réchauffe l'atmosphère. Sans lui, la Terre serait trop froide pour la vie.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Gaz absorbent le rayonnement infrarouge", "weight": 0.4, "required": true },
+      { "id": "kp2", "text": "Réémission vers la surface augmente la température", "weight": 0.4, "required": true },
+      { "id": "kp3", "text": "Exemples de gaz à effet de serre", "weight": 0.2, "required": false }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Contenu", "weight": 0.6, "scope": "CONTENT" },
+      { "id": "language", "name": "Langue", "weight": 0.4, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "ANALYSE",
+    "learningObjective": "Expliquer le mécanisme de l'effet de serre",
+    "language": "fr-CH",
+    "contentHash": "fixture-fr-1-hash"
+  },
+  "studentAnswer": "Les gaz à effet de serre comme le CO₂ et la vapeur d'eau absorbent le rayonnement infrarouge émis par la Terre. Ils le renvoient en partie vers la surface, ce qui réchauffe l'atmosphère. Sans cet effet, la température moyenne de la planète serait bien plus basse.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "absorbent le rayonnement infrarouge émis par la Terre" },
+        { "id": "kp2", "evidence": "renvoient en partie vers la surface, ce qui réchauffe l'atmosphère" },
+        { "id": "kp3", "evidence": "CO₂ et la vapeur d'eau" }
+      ],
+      "keyPointsMissed": []
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "NONE",
+    "confidence": "HIGH",
+    "feedbackToStudent": {
+      "whatWentWell": "Tu décris clairement l'absorption et la réémission, avec des exemples concrets de gaz.",
+      "whatIsMissing": "Tu pourrais chiffrer l'effet : environ +33 °C par rapport à une Terre sans atmosphère.",
+      "nextStep": "Ajoute une estimation quantitative de la température moyenne avec et sans effet de serre."
+    }
+  },
+  "notes": "All key points covered."
+}

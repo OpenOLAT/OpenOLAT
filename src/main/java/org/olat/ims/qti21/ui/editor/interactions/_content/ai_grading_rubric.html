@@ -1,0 +1,25 @@
+#if($r.isNotEmpty($rows))
+	<table class="table table-condensed o_essay_ai_grading_rubric">
+		<thead>
+			<tr>
+				<th>$r.translate("ai.grading.rubric.name")</th>
+				<th>$r.translate("ai.grading.rubric.descriptor")</th>
+				<th>$r.translate("ai.grading.rubric.weight")</th>
+				<th>$r.translate("ai.grading.rubric.scope")</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		#foreach($row in $rows)
+			<tr>
+				<td>$r.render(${row.getName()})</td>
+				<td>$r.render(${row.getDescriptor()})</td>
+				<td>$r.render(${row.getWeight()})</td>
+				<td>$r.render(${row.getScope()})</td>
+				<td>$r.render(${row.getRemoveButton()})</td>
+			</tr>
+		#end
+		</tbody>
+	</table>
+#end
+<div class="form-inline o_essay_ai_grading_rubric_add">$r.render("ai.grading.rubric.add")</div>

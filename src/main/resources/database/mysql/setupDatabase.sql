@@ -5055,8 +5055,43 @@ create table o_ai_usage_log (
    a_req_num_messages bigint,
    a_req_text_length bigint,
    a_cache_creation_input_tokens bigint,
+   a_assessment_item_identifier varchar(64),
+   a_content_hash_at_call     varchar(64),
+   a_prompt_template_version  varchar(40),
+   a_tier                     varchar(16),
+   a_assessment_item_session_key bigint,
    primary key (id)
 );
+
+create table o_essay_generation_job (
+  a_id                    bigint not null auto_increment,
+  a_creationdate          datetime not null,
+  a_lastmodified          datetime not null,
+  a_created_by_fk         bigint not null,
+  a_state                 varchar(24) not null,
+  a_progress_json         mediumtext,
+  a_error_json            mediumtext,
+  primary key (a_id),
+  constraint essay_gen_job_createdby_fk foreign key (a_created_by_fk) references o_bs_identity (id)
+) engine=InnoDB;
+
+create table o_essay_feedback_job (
+  a_id                          bigint not null auto_increment,
+  a_creationdate                datetime not null,
+  a_lastmodified                datetime not null,
+  a_storage_path                varchar(1024),
+  a_question_id                 varchar(64),
+  a_identity_fk                 bigint not null,
+  a_assessment_item_session_key bigint,
+  a_student_answer              mediumtext not null,
+  a_state                       varchar(24) not null,
+  a_feedback_json               mediumtext,
+  a_error_message               varchar(2048),
+  a_started_at                  datetime,
+  a_completed_at                datetime,
+  primary key (a_id),
+  constraint essay_fb_job_identity_fk foreign key (a_identity_fk) references o_bs_identity (id)
+) engine=InnoDB;
 
 -- feed tag (blog/podcast)
 create table o_feed_tag (
@@ -6735,6 +6770,10 @@ create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 
 -- AI
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
+create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
+create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
+create index idx_essay_fb_job_identity_state on o_essay_feedback_job (a_identity_fk, a_state);
+create index idx_essay_fb_job_question on o_essay_feedback_job (a_storage_path, a_question_id);
 
 -- feed tags
 alter table o_feed_tag add constraint tag_feed_idx foreign key (fk_feed) references o_feed (id);

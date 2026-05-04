@@ -53,6 +53,10 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XMLFactories;
+import org.olat.core.commons.services.ai.essay.AiSourceCompanion;
+import org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStore;
+import org.olat.core.commons.services.ai.essay.EssayAiGrading;
+import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.QTI21Constants;
@@ -75,6 +79,8 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.DefaultExportFormat;
@@ -113,6 +119,20 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private QuestionPoolModule qpoolModule;
+	@Autowired
+	private EssayAiGradingFileStore essayAiGradingFileStore;
+	@Autowired
+	private AiSourceCompanionFileStore aiSourceCompanionFileStore;
+
+	/**
+	 * Tool-name prefix written by the AI generators on the QTI item, see
+	 * {@code NewAiItemController} (MC) and {@code EssayGenerationQuizPartSinkImpl}
+	 * (essay / ceditor). Items carrying this prefix should land in the pool with
+	 * status "review" so a human verifies them before they go productive.
+	 */
+	private static final String AI_GENERATOR_TOOL_PREFIX = "OpenOlat.AI.";
 	
 	private static final List<ExportFormatOptions> formats = new ArrayList<>(4);
 	static {
@@ -361,11 +381,30 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 		String editor = null;
 		String editorVersion = null;
-		if(StringHelper.containsNonWhitespace(assessmentItem.getToolName())) {
-			editor = assessmentItem.getToolName();
-		}
-		if(StringHelper.containsNonWhitespace(assessmentItem.getToolVersion())) {
-			editorVersion = assessmentItem.getToolVersion();
+		// Prefer the on-disk AI provenance companions over the QTI toolName.
+		// The AI essay / MC generators leave the QTI toolName at the default
+		// "OpenOLAT" value (so the standard editor recognises the item) and
+		// instead persist their provenance in companion files next to the
+		// item XML. Order: ai-grading.json (essay, richer payload) wins over
+		// ai-source.json (MC + fallback).
+		File materialDirRoot = itemFile.getParentFile();
+		EssayAiGrading aiGrading = essayAiGradingFileStore.load(materialDirRoot);
+		if (aiGrading != null && StringHelper.containsNonWhitespace(aiGrading.getGeneratorSpi())) {
+			editor = AI_GENERATOR_TOOL_PREFIX + "QTI12.Generator." + aiGrading.getGeneratorSpi();
+			editorVersion = aiGrading.getGeneratorModel();
+		} else {
+			AiSourceCompanion aiSource = aiSourceCompanionFileStore.load(materialDirRoot);
+			if (aiSource != null && StringHelper.containsNonWhitespace(aiSource.getSpi())) {
+				editor = AI_GENERATOR_TOOL_PREFIX + "QTI12.Generator." + aiSource.getSpi();
+				editorVersion = aiSource.getModel();
+			} else {
+				if (StringHelper.containsNonWhitespace(assessmentItem.getToolName())) {
+					editor = assessmentItem.getToolName();
+				}
+				if (StringHelper.containsNonWhitespace(assessmentItem.getToolVersion())) {
+					editorVersion = assessmentItem.getToolVersion();
+				}
+			}
 		}
 
 		String originalItemFilename = itemFile.getName();
@@ -384,7 +423,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		manifest.write(new File(itemStorage, "imsmanifest.xml"));
 		
 		//process material
-		File materialDirRoot = itemFile.getParentFile();
 		List<String> materials = ImportExportHelper.getMaterials(assessmentItem);
 		for(String material:materials) {
 			if(material.indexOf("://") < 0) {// material can be an external URL
@@ -395,7 +433,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 						if(!itemMaterialFile.getParentFile().exists()) {
 							itemMaterialFile.getParentFile().mkdirs();
 						}
-						
+
 						Files.copy(materialFile.toPath(), itemMaterialFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					}
 				} catch (IOException e) {
@@ -403,10 +441,51 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 				}
 			}
 		}
-		
+
+		// Copy AI provenance companions (ai-grading.json for essays,
+		// ai-source.json for MC and as a fallback). They live next to the
+		// QTI item XML in the source question dir and must travel along into
+		// the pool so the AI Feedback editor and the runtime grading both
+		// work after pool round-trip — and so the AI provenance is preserved.
+		copyCompanion(materialDirRoot, itemStorage,
+				EssayAiGradingFileStore.FILENAME, qitem.getKey());
+		copyCompanion(materialDirRoot, itemStorage,
+				AiSourceCompanionFileStore.FILENAME, qitem.getKey());
+
+		// AI-generated items must land in the pool with status "review" so a
+		// human verifies them before they go productive. Detection: the
+		// derived editor metadata starts with the OpenOlat AI generator
+		// prefix — populated above either from the on-disk companion files
+		// or from the legacy QTI toolName attribute. Honoured only when the
+		// formal review process is disabled (otherwise the pool's own review
+		// workflow drives the status).
+		if (StringHelper.containsNonWhitespace(editor)
+				&& editor.startsWith(AI_GENERATOR_TOOL_PREFIX)
+				&& !qpoolModule.isReviewProcessEnabled()) {
+			qitem.setQuestionStatus(QuestionStatus.review);
+			qpoolService.updateItem(qitem);
+		}
+
 		return qitem;
 	}
-	
+
+	/**
+	 * Copy a single companion file (e.g. {@code ai-grading.json},
+	 * {@code ai-source.json}) from the source question dir into the pool's
+	 * item storage dir, if present. No-op when the source file is missing.
+	 */
+	private void copyCompanion(File sourceDir, File targetDir, String filename, Long itemKey) {
+		if (sourceDir == null || targetDir == null || filename == null) return;
+		File source = new File(sourceDir, filename);
+		if (!source.isFile()) return;
+		try {
+			File target = new File(targetDir, filename);
+			Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			log.error("Failed to copy {} into pool item {}", filename, itemKey, e);
+		}
+	}
+
 	public QuestionItemFull getFullQuestionItem(QuestionItemShort qitem) {
 		return questionItemDao.loadById(qitem.getKey());
 	}

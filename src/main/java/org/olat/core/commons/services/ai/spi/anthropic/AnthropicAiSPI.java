@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.spi.anthropic;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ import dev.langchain4j.model.chat.ChatModel;
  *
  * Initial date: 19.02.2026<br>
  *
- * @author gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 @Service
@@ -119,13 +120,21 @@ public class AnthropicAiSPI extends AbstractSpringModule implements AiSPI, AiApi
 
 	@Override
 	public ChatModel buildChatModel(String modelName, int maxTokens) {
-		return AnthropicChatModel.builder()
+		return buildChatModel(modelName, maxTokens, null);
+	}
+
+	@Override
+	public ChatModel buildChatModel(String modelName, int maxTokens, Duration timeout) {
+		var builder = AnthropicChatModel.builder()
 				.httpClientBuilder(new LangChain4jHttpClientBuilder())
 				.apiKey(apiKey)
 				.modelName(modelName)
 				.maxTokens(maxTokens)
-				.supportedCapabilities(Set.of(Capability.RESPONSE_FORMAT_JSON_SCHEMA))
-				.build();
+				.supportedCapabilities(Set.of(Capability.RESPONSE_FORMAT_JSON_SCHEMA));
+		if (timeout != null) {
+			builder.timeout(timeout);
+		}
+		return builder.build();
 	}
 
 	@Override

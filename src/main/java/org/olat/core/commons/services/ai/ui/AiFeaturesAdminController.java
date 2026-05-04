@@ -48,12 +48,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Admin form to configure which AI provider and model to use for each AI
- * feature. Currently supports: MC Question Generator, Image Description Generator.
- * Each feature has an enable toggle, a provider dropdown, and a model selector.
+ * feature. Currently supports: MC Question Generator, Image Description
+ * Generator, Essay Question Generator, Essay Grading. Each feature has an
+ * enable toggle, a provider dropdown, and a model selector.
  *
  * Initial date: 25.02.2026<br>
  *
- * @author gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 public class AiFeaturesAdminController extends FormBasicController {
@@ -74,6 +75,22 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private FormItem imgDescModelEl;
 	private FormLink imgDescTestLink;
 
+	// Essay Question Generator elements — removed and re-added to maintain ordering
+	private SpacerElement essayGenSpacer;
+	private StaticTextElement essayGenTitle;
+	private FormToggle essayGenEnabledEl;
+	private SingleSelection essayGenSpiEl;
+	private FormItem essayGenModelEl;
+	private FormLink essayGenTestLink;
+
+	// Essay Grading elements — removed and re-added to maintain ordering
+	private SpacerElement essayGradingSpacer;
+	private StaticTextElement essayGradingTitle;
+	private FormToggle essayGradingEnabledEl;
+	private SingleSelection essayGradingSpiEl;
+	private FormItem essayGradingModelEl;
+	private FormLink essayGradingTestLink;
+
 	// Buttons — removed and re-added to maintain ordering
 	private FormLayoutContainer buttonsCont;
 
@@ -86,6 +103,10 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private AiMCQuestionService mcQuestionService;
 	@Autowired
 	private AiImageDescriptionService imageDescriptionService;
+	@Autowired
+	private org.olat.core.commons.services.ai.AiEssayGenerationService aiEssayGenerationService;
+	@Autowired
+	private org.olat.core.commons.services.ai.AiEssayGradingService aiEssayGradingService;
 
 	public AiFeaturesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -109,7 +130,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		mcEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		mcEnabledEl.toggle(mcEnabled);
 
-		mcGeneratorSpiEl = buildSpiDropdown("mc.spi", aiModule.getMCGeneratorSpiId(), formLayout);
+		mcGeneratorSpiEl = buildSpiDropdown("mc.spi", aiModule.getMCGeneratorSpiId(), formLayout,
+				aiModule.getEnabledProviders());
 
 		// ---- Image Description Generator section ----
 		imgDescSpacer = uifactory.addSpacerElement("imgDescSpacer", formLayout, false);
@@ -122,7 +144,36 @@ public class AiFeaturesAdminController extends FormBasicController {
 		imgDescEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		imgDescEnabledEl.toggle(imgDescEnabled);
 
-		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout);
+		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout,
+				aiModule.getEnabledProviders());
+
+		// ---- Essay Question Generator section ----
+		essayGenSpacer = uifactory.addSpacerElement("essayGenSpacer", formLayout, false);
+		essayGenTitle = uifactory.addStaticTextElement("essayGenTitle", null,
+				"<h4>" + translate(AiFeature.EssayGeneration.getI18nKey()) + "</h4>", formLayout);
+
+		boolean essayGenEnabled = aiModule.isEssayGenerationEnabled();
+		essayGenEnabledEl = uifactory.addToggleButton("essayGen.enabled", "ai.feature.enabled",
+				translate("on"), translate("off"), formLayout);
+		essayGenEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		essayGenEnabledEl.toggle(essayGenEnabled);
+
+		essayGenSpiEl = buildSpiDropdown("essayGen.spi", aiModule.getEssayGenerationSpiId(), formLayout,
+				aiModule.getEnabledProviders());
+
+		// ---- Essay Grading section ----
+		essayGradingSpacer = uifactory.addSpacerElement("essayGradingSpacer", formLayout, false);
+		essayGradingTitle = uifactory.addStaticTextElement("essayGradingTitle", null,
+				"<h4>" + translate(AiFeature.EssayGrading.getI18nKey()) + "</h4>", formLayout);
+
+		boolean essayGradingEnabled = aiModule.isEssayGradingEnabled();
+		essayGradingEnabledEl = uifactory.addToggleButton("essayGrading.enabled", "ai.feature.enabled",
+				translate("on"), translate("off"), formLayout);
+		essayGradingEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		essayGradingEnabledEl.toggle(essayGradingEnabled);
+
+		essayGradingSpiEl = buildSpiDropdown("essayGrading.spi", aiModule.getEssayGradingSpiId(), formLayout,
+				aiModule.getEnabledProviders());
 
 		// Save button
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -133,12 +184,16 @@ public class AiFeaturesAdminController extends FormBasicController {
 		// Create initial model elements and set visibility
 		doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
 		doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
+		doUpdateEssayGenModelDropdown(getSelectedKey(essayGenSpiEl));
+		doUpdateEssayGradingModelDropdown(getSelectedKey(essayGradingSpiEl));
 		updateMcVisibility();
 		updateImgDescVisibility();
+		updateEssayGenVisibility();
+		updateEssayGradingVisibility();
 	}
 
-	private SingleSelection buildSpiDropdown(String elName, String currentSpiId, FormItemContainer container) {
-		List<AiSPI> spis = aiModule.getEnabledProviders();
+	private SingleSelection buildSpiDropdown(String elName, String currentSpiId, FormItemContainer container,
+			List<AiSPI> spis) {
 		String[] keys;
 		String[] values;
 		if (spis.isEmpty()) {
@@ -180,6 +235,10 @@ public class AiFeaturesAdminController extends FormBasicController {
 			doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
 		} else if (source == imgDescSpiEl) {
 			doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
+		} else if (source == essayGenSpiEl) {
+			doUpdateEssayGenModelDropdown(getSelectedKey(essayGenSpiEl));
+		} else if (source == essayGradingSpiEl) {
+			doUpdateEssayGradingModelDropdown(getSelectedKey(essayGradingSpiEl));
 		} else if (source == mcEnabledEl) {
 			if (mcEnabledEl.isOn()) {
 				doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
@@ -192,10 +251,26 @@ public class AiFeaturesAdminController extends FormBasicController {
 			} else {
 				updateImgDescVisibility();
 			}
+		} else if (source == essayGenEnabledEl) {
+			if (essayGenEnabledEl.isOn()) {
+				doUpdateEssayGenModelDropdown(getSelectedKey(essayGenSpiEl));
+			} else {
+				updateEssayGenVisibility();
+			}
+		} else if (source == essayGradingEnabledEl) {
+			if (essayGradingEnabledEl.isOn()) {
+				doUpdateEssayGradingModelDropdown(getSelectedKey(essayGradingSpiEl));
+			} else {
+				updateEssayGradingVisibility();
+			}
 		} else if (source == mcTestLink) {
 			doTestMcGenerator(ureq);
 		} else if (source == imgDescTestLink) {
 			doTestImgDescGenerator(ureq);
+		} else if (source == essayGenTestLink) {
+			doTestEssayGeneration(ureq);
+		} else if (source == essayGradingTestLink) {
+			doTestEssayGrading(ureq);
 		}
 	}
 
@@ -229,6 +304,28 @@ public class AiFeaturesAdminController extends FormBasicController {
 		}
 	}
 
+	private void updateEssayGenVisibility() {
+		boolean on = essayGenEnabledEl.isOn();
+		essayGenSpiEl.setVisible(on);
+		if (essayGenModelEl != null) {
+			essayGenModelEl.setVisible(on);
+		}
+		if (essayGenTestLink != null) {
+			essayGenTestLink.setVisible(on && hasSpiSelected(essayGenSpiEl) && hasModelValue(essayGenModelEl));
+		}
+	}
+
+	private void updateEssayGradingVisibility() {
+		boolean on = essayGradingEnabledEl.isOn();
+		essayGradingSpiEl.setVisible(on);
+		if (essayGradingModelEl != null) {
+			essayGradingModelEl.setVisible(on);
+		}
+		if (essayGradingTestLink != null) {
+			essayGradingTestLink.setVisible(on && hasSpiSelected(essayGradingSpiEl) && hasModelValue(essayGradingModelEl));
+		}
+	}
+
 	private void doUpdateMcModelDropdown(String spiId) {
 		if (mcGeneratorModelEl != null) {
 			formLayout.remove(mcGeneratorModelEl);
@@ -237,6 +334,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 			formLayout.remove(mcTestLink);
 		}
 		removeImgDescSection();
+		removeEssayGenSection();
+		removeEssayGradingSection();
 		formLayout.remove(buttonsCont);
 
 		mcGeneratorModelEl = buildModelElement(spiId, "ai.feature.model",
@@ -247,6 +346,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		mcTestLink.setIconLeftCSS("o_icon o_icon_ai");
 
 		reAddImgDescSection();
+		reAddEssayGenSection();
+		reAddEssayGradingSection();
 		formLayout.add(buttonsCont);
 		updateMcVisibility();
 	}
@@ -258,6 +359,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (imgDescTestLink != null) {
 			formLayout.remove(imgDescTestLink);
 		}
+		removeEssayGenSection();
+		removeEssayGradingSection();
 		formLayout.remove(buttonsCont);
 
 		imgDescModelEl = buildModelElement(spiId, "ai.feature.image-description-generator.model",
@@ -267,8 +370,52 @@ public class AiFeaturesAdminController extends FormBasicController {
 		imgDescTestLink.setGhost(true);
 		imgDescTestLink.setIconLeftCSS("o_icon o_icon_ai");
 
+		reAddEssayGenSection();
+		reAddEssayGradingSection();
 		formLayout.add(buttonsCont);
 		updateImgDescVisibility();
+	}
+
+	private void doUpdateEssayGenModelDropdown(String spiId) {
+		if (essayGenModelEl != null) {
+			formLayout.remove(essayGenModelEl);
+		}
+		if (essayGenTestLink != null) {
+			formLayout.remove(essayGenTestLink);
+		}
+		removeEssayGradingSection();
+		formLayout.remove(buttonsCont);
+
+		essayGenModelEl = buildModelElement(spiId, "ai.feature.model",
+				getModelsForSpi(spiId), aiModule.getEssayGenerationModel());
+
+		essayGenTestLink = uifactory.addFormLink("essayGen.test", "essayGen.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
+		essayGenTestLink.setGhost(true);
+		essayGenTestLink.setIconLeftCSS("o_icon o_icon_ai");
+
+		reAddEssayGradingSection();
+		formLayout.add(buttonsCont);
+		updateEssayGenVisibility();
+	}
+
+	private void doUpdateEssayGradingModelDropdown(String spiId) {
+		if (essayGradingModelEl != null) {
+			formLayout.remove(essayGradingModelEl);
+		}
+		if (essayGradingTestLink != null) {
+			formLayout.remove(essayGradingTestLink);
+		}
+		formLayout.remove(buttonsCont);
+
+		essayGradingModelEl = buildModelElement(spiId, "ai.feature.model",
+				getModelsForSpi(spiId), aiModule.getEssayGradingModel());
+
+		essayGradingTestLink = uifactory.addFormLink("essayGrading.test", "essayGrading.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
+		essayGradingTestLink.setGhost(true);
+		essayGradingTestLink.setIconLeftCSS("o_icon o_icon_ai");
+
+		formLayout.add(buttonsCont);
+		updateEssayGradingVisibility();
 	}
 
 	private void removeImgDescSection() {
@@ -294,6 +441,58 @@ public class AiFeaturesAdminController extends FormBasicController {
 		}
 		if (imgDescTestLink != null) {
 			formLayout.add(imgDescTestLink);
+		}
+	}
+
+	private void removeEssayGenSection() {
+		if (essayGenModelEl != null) {
+			formLayout.remove(essayGenModelEl);
+		}
+		if (essayGenTestLink != null) {
+			formLayout.remove(essayGenTestLink);
+		}
+		formLayout.remove(essayGenSpiEl);
+		formLayout.remove(essayGenEnabledEl);
+		formLayout.remove(essayGenTitle);
+		formLayout.remove(essayGenSpacer);
+	}
+
+	private void reAddEssayGenSection() {
+		formLayout.add(essayGenSpacer);
+		formLayout.add(essayGenTitle);
+		formLayout.add(essayGenEnabledEl);
+		formLayout.add(essayGenSpiEl);
+		if (essayGenModelEl != null) {
+			formLayout.add(essayGenModelEl);
+		}
+		if (essayGenTestLink != null) {
+			formLayout.add(essayGenTestLink);
+		}
+	}
+
+	private void removeEssayGradingSection() {
+		if (essayGradingModelEl != null) {
+			formLayout.remove(essayGradingModelEl);
+		}
+		if (essayGradingTestLink != null) {
+			formLayout.remove(essayGradingTestLink);
+		}
+		formLayout.remove(essayGradingSpiEl);
+		formLayout.remove(essayGradingEnabledEl);
+		formLayout.remove(essayGradingTitle);
+		formLayout.remove(essayGradingSpacer);
+	}
+
+	private void reAddEssayGradingSection() {
+		formLayout.add(essayGradingSpacer);
+		formLayout.add(essayGradingTitle);
+		formLayout.add(essayGradingEnabledEl);
+		formLayout.add(essayGradingSpiEl);
+		if (essayGradingModelEl != null) {
+			formLayout.add(essayGradingModelEl);
+		}
+		if (essayGradingTestLink != null) {
+			formLayout.add(essayGradingTestLink);
 		}
 	}
 
@@ -365,9 +564,33 @@ public class AiFeaturesAdminController extends FormBasicController {
 		testCtrl.testImgDescGenerator(spiId, model);
 	}
 
+	private void doTestEssayGeneration(UserRequest ureq) {
+		String spiId = getSelectedSpiId(essayGenSpiEl);
+		String model = extractModelValue(essayGenModelEl);
+		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
+			showError("ai.feature.test.not.configured");
+			return;
+		}
+		ensureTestCtrl(ureq);
+		testCtrl.testEssayGeneration(ureq, spiId, model);
+	}
+
+	private void doTestEssayGrading(UserRequest ureq) {
+		String spiId = getSelectedSpiId(essayGradingSpiEl);
+		String model = extractModelValue(essayGradingModelEl);
+		if (!StringHelper.containsNonWhitespace(spiId) || !StringHelper.containsNonWhitespace(model)) {
+			showError("ai.feature.test.not.configured");
+			return;
+		}
+		ensureTestCtrl(ureq);
+		testCtrl.testEssayGrading(ureq, spiId, model);
+	}
+
 	private void ensureTestCtrl(UserRequest ureq) {
 		if (testCtrl == null) {
-			testCtrl = new AiFeaturesTestController(ureq, getWindowControl(), mcQuestionService, imageDescriptionService);
+			testCtrl = new AiFeaturesTestController(ureq, getWindowControl(),
+					mcQuestionService, imageDescriptionService,
+					aiEssayGenerationService, aiEssayGradingService, aiModule);
 			listenTo(testCtrl);
 		}
 	}
@@ -383,6 +606,12 @@ public class AiFeaturesAdminController extends FormBasicController {
 		}
 		if (imgDescEnabledEl.isOn() && hasSpiSelected(imgDescSpiEl) && imgDescModelEl != null) {
 			allOk &= validateModelElement(imgDescModelEl);
+		}
+		if (essayGenEnabledEl.isOn() && hasSpiSelected(essayGenSpiEl) && essayGenModelEl != null) {
+			allOk &= validateModelElement(essayGenModelEl);
+		}
+		if (essayGradingEnabledEl.isOn() && hasSpiSelected(essayGradingSpiEl) && essayGradingModelEl != null) {
+			allOk &= validateModelElement(essayGradingModelEl);
 		}
 
 		return allOk;
@@ -424,6 +653,26 @@ public class AiFeaturesAdminController extends FormBasicController {
 		} else {
 			aiModule.setImageDescriptionGeneratorConfig("", "");
 			logAudit("Image description generator disabled");
+		}
+
+		if (essayGenEnabledEl.isOn()) {
+			String essayGenSpiId = getSelectedSpiId(essayGenSpiEl);
+			String essayGenModel = extractModelValue(essayGenModelEl);
+			aiModule.setEssayGenerationConfig(essayGenSpiId, essayGenModel);
+			logAudit("Essay question generator configured: provider=" + essayGenSpiId + ", model=" + essayGenModel);
+		} else {
+			aiModule.setEssayGenerationConfig("", "");
+			logAudit("Essay question generator disabled");
+		}
+
+		if (essayGradingEnabledEl.isOn()) {
+			String essayGradingSpiId = getSelectedSpiId(essayGradingSpiEl);
+			String essayGradingModel = extractModelValue(essayGradingModelEl);
+			aiModule.setEssayGradingConfig(essayGradingSpiId, essayGradingModel);
+			logAudit("Essay grading configured: provider=" + essayGradingSpiId + ", model=" + essayGradingModel);
+		} else {
+			aiModule.setEssayGradingConfig("", "");
+			logAudit("Essay grading disabled");
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);

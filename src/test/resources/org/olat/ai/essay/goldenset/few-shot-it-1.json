@@ -1,0 +1,38 @@
+{
+  "meta": { "language": "it-CH", "difficulty": "UNDERSTAND", "category": "well-answered" },
+  "kit": {
+    "referenceExcerpt": "Il ciclo dell'acqua comprende evaporazione, condensazione, precipitazione e scorrimento. L'acqua passa continuamente fra oceani, atmosfera e terra.",
+    "modelAnswer": "Il ciclo dell'acqua è il passaggio continuo dell'acqua attraverso evaporazione, condensazione, precipitazione e scorrimento fra oceani, atmosfera e suolo.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Quattro fasi: evaporazione, condensazione, precipitazione, scorrimento", "weight": 0.6, "required": true },
+      { "id": "kp2", "text": "Ciclicità fra oceani, atmosfera e terra", "weight": 0.4, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Contenuto", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Lingua", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "UNDERSTAND",
+    "learningObjective": "Descrivere le fasi del ciclo dell'acqua",
+    "language": "it-CH",
+    "contentHash": "fixture-it-1-hash"
+  },
+  "studentAnswer": "Il ciclo dell'acqua è composto da quattro fasi: l'evaporazione degli oceani, la condensazione nelle nuvole, la precipitazione sotto forma di pioggia o neve, e lo scorrimento che riporta l'acqua ai fiumi e poi di nuovo al mare.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "quattro fasi: l'evaporazione ... condensazione ... precipitazione ... scorrimento" },
+        { "id": "kp2", "evidence": "oceani ... nuvole ... fiumi ... di nuovo al mare" }
+      ],
+      "keyPointsMissed": []
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "NONE",
+    "confidence": "HIGH",
+    "feedbackToStudent": {
+      "whatWentWell": "Tutte le quattro fasi sono nominate e collegate in modo ciclico.",
+      "whatIsMissing": "Potresti aggiungere il ruolo dell'energia solare come motore del ciclo.",
+      "nextStep": "Integra una frase sul ruolo del sole come fonte di energia che guida l'evaporazione."
+    }
+  },
+  "notes": "Full answer with cycle."
+}

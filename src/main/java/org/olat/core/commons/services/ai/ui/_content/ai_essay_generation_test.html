@@ -1,0 +1,83 @@
+#if($error)
+  <div class="o_warning" style="margin-bottom: 1rem;">
+    <h5>$r.translate("ai.feature.essay-generation.test.error.title")</h5>
+    <p>$r.escapeHtml($error)</p>
+  </div>
+#end
+
+<div class="o_form">
+  $r.render("essayGen.prompt")
+  $r.render("essayGen.submit")
+</div>
+
+#if($draftViews && !$draftViews.isEmpty())
+  <hr/>
+  <h3 style="margin-bottom: 0.5rem;">$r.translate("ai.feature.essay-generation.test.success.title")</h3>
+
+  #foreach($draft in $draftViews)
+    <h4 style="margin: 0.75rem 0 0.25rem;">Draft #$draft.index</h4>
+    <table class="table table-condensed table-bordered" style="margin-bottom: 0.5rem;">
+      <tr><td style="width: 180px;"><strong>Learning objective</strong></td>
+        <td>$r.escapeHtml($draft.learningObjective)</td></tr>
+      <tr><td><strong>Reference excerpt</strong></td>
+        <td>$r.escapeHtml($draft.referenceExcerpt)</td></tr>
+      <tr><td><strong>Stimulus</strong></td>
+        <td>$r.escapeHtml($draft.stimulus)</td></tr>
+      <tr><td><strong>Model answer</strong></td>
+        <td>$r.escapeHtml($draft.modelAnswer)</td></tr>
+      <tr><td><strong>Bloom level</strong></td>
+        <td>$r.escapeHtml($draft.bloomLevel)</td></tr>
+      <tr><td><strong>Language tag</strong></td>
+        <td>#if($draft.languageTag == "")<em>none</em>#else$r.escapeHtml($draft.languageTag)#end</td></tr>
+      <tr><td><strong>Token estimate</strong></td>
+        <td>$r.escapeHtml($draft.tokenEstimate)</td></tr>
+      <tr><td><strong>Difficulty</strong></td>
+        <td>$r.escapeHtml($draft.difficulty)</td></tr>
+      <tr><td><strong>Grading hints</strong></td>
+        <td>#if($draft.gradingHints == "")<em>none</em>#else$r.escapeHtml($draft.gradingHints)#end</td></tr>
+      <tr><td><strong>Common misconceptions</strong></td>
+        <td>
+          #if($draft.commonMisconceptions.isEmpty())
+            <em>none</em>
+          #else
+            <ul style="margin: 0;">
+              #foreach($m in $draft.commonMisconceptions)
+                <li>$r.escapeHtml($m)</li>
+              #end
+            </ul>
+          #end
+        </td></tr>
+      <tr><td><strong>Key points</strong></td>
+        <td>
+          #if($draft.keyPoints.isEmpty())
+            <em>none</em>
+          #else
+            <ul style="margin: 0;">
+              #foreach($kp in $draft.keyPoints)
+                <li>
+                  <strong>$r.escapeHtml($kp.id)</strong> — $r.escapeHtml($kp.text)
+                  (weight $r.escapeHtml($kp.weight)#if($kp.required == "true"), <span class="o_tag">required</span>#end)
+                </li>
+              #end
+            </ul>
+          #end
+        </td></tr>
+      <tr><td><strong>Rubric criteria</strong></td>
+        <td>
+          #if($draft.rubricCriteria.isEmpty())
+            <em>none</em>
+          #else
+            <ul style="margin: 0;">
+              #foreach($rc in $draft.rubricCriteria)
+                <li>
+                  <strong>$r.escapeHtml($rc.id)</strong> — $r.escapeHtml($rc.name) [$r.escapeHtml($rc.scope)]
+                  (weight $r.escapeHtml($rc.weight))
+                  #if($rc.descriptor != "")<br/><em>$r.escapeHtml($rc.descriptor)</em>#end
+                </li>
+              #end
+            </ul>
+          #end
+        </td></tr>
+    </table>
+  #end
+#end

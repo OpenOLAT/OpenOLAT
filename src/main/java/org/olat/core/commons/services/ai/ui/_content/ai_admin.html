@@ -1,4 +1,10 @@
 <div class="clearfix">
+	<h2 class="o_ai_admin_header" style="display:flex; align-items:center; gap:0.6rem; margin-top:0;">
+		#set( $aiPulseExtraClass = "o_ai_pulse_xs" )
+		#parse("/org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html")
+		#set( $aiPulseExtraClass = "" )
+		<span>$r.translate('ai.admin.title')</span>
+	</h2>
 	$r.render("segments")<br>
 
 	#if($r.available("segmentCmp"))

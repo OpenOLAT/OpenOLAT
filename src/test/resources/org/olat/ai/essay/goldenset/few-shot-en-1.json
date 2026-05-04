@@ -1,0 +1,42 @@
+{
+  "meta": { "language": "en-GB", "difficulty": "ANALYSE", "category": "well-answered" },
+  "kit": {
+    "referenceExcerpt": "A feedback loop is a system in which the output of a process is fed back as input, modifying subsequent behaviour. Negative feedback stabilises systems by counteracting deviations from a target state; positive feedback amplifies deviations, leading to exponential change or instability.",
+    "modelAnswer": "A feedback loop is a mechanism where the output of a process affects its own input. Negative feedback stabilises a system by reducing deviations; positive feedback amplifies them. Examples are thermostats (negative) and microphone-speaker squeal (positive).",
+    "keyPoints": [
+      { "id": "kp1", "text": "Definition: output feeds back into input", "weight": 0.3, "required": true },
+      { "id": "kp2", "text": "Negative feedback stabilises", "weight": 0.35, "required": true },
+      { "id": "kp3", "text": "Positive feedback amplifies", "weight": 0.35, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Content", "weight": 0.6, "scope": "CONTENT" },
+      { "id": "organisation", "name": "Organisation", "weight": 0.2, "scope": "CONTENT" },
+      { "id": "language", "name": "Language", "weight": 0.2, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "ANALYSE",
+    "learningObjective": "Distinguish negative from positive feedback loops",
+    "language": "en-GB",
+    "contentHash": "fixture-en-1-hash"
+  },
+  "studentAnswer": "A feedback loop happens when the output of a system is routed back to its input. Negative feedback makes the system stable because it pushes back against changes, like a thermostat bringing the room back to 20 °C. Positive feedback amplifies changes instead — for example a microphone picking up its own speaker and producing a louder and louder howl.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "output of a system is routed back to its input" },
+        { "id": "kp2", "evidence": "Negative feedback makes the system stable" },
+        { "id": "kp3", "evidence": "Positive feedback amplifies changes" }
+      ],
+      "keyPointsMissed": [],
+      "coherenceNote": "Clear contrast with one concrete example for each type."
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "NONE",
+    "confidence": "HIGH",
+    "feedbackToStudent": {
+      "whatWentWell": "You clearly distinguish negative from positive feedback and illustrate both with apt examples.",
+      "whatIsMissing": "You could mention what happens to positive feedback without any damping — it often ends in saturation or breakdown.",
+      "nextStep": "Extend the microphone example: explain what limits the howl and why positive feedback rarely runs forever."
+    }
+  },
+  "notes": "All three key points addressed with evidence and examples. HIGH confidence."
+}

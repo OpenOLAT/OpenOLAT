@@ -1,0 +1,38 @@
+{
+  "meta": { "language": "fr-CH", "difficulty": "APPLY", "category": "language-mismatch" },
+  "kit": {
+    "referenceExcerpt": "La loi de Newton F = m · a relie la force F appliquée à un corps, sa masse m, et son accélération a.",
+    "modelAnswer": "Avec F = 20 N et m = 4 kg, l'accélération vaut a = F/m = 5 m/s².",
+    "keyPoints": [
+      { "id": "kp1", "text": "Appliquer F = m · a", "weight": 0.6, "required": true },
+      { "id": "kp2", "text": "Résultat numérique correct avec unité", "weight": 0.4, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Contenu", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Langue", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "APPLY",
+    "learningObjective": "Appliquer la loi de Newton pour calculer une accélération",
+    "language": "fr-CH",
+    "contentHash": "fixture-fr-3-hash"
+  },
+  "studentAnswer": "The answer is a equals F divided by m so 20 over 4 is 5 meters per second squared.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "a equals F divided by m" },
+        { "id": "kp2", "evidence": "5 meters per second squared" }
+      ],
+      "keyPointsMissed": []
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "LANGUAGE_MISMATCH",
+    "confidence": "MEDIUM",
+    "feedbackToStudent": {
+      "whatWentWell": "Le calcul est correct et l'unité est présente.",
+      "whatIsMissing": "Ta réponse est en anglais, alors que la question était en français.",
+      "nextStep": "Reformule ta réponse en français en utilisant la notation F = m · a."
+    }
+  },
+  "notes": "Correct content, wrong language. Pre-filter flags LANGUAGE_MISMATCH; grader still scores content fairly."
+}

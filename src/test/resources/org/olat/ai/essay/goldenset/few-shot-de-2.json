@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "language": "de-CH",
+    "difficulty": "ANALYSE",
+    "category": "partial"
+  },
+  "kit": {
+    "referenceExcerpt": "Gewaltenteilung beschreibt das Prinzip, staatliche Macht auf drei voneinander unabhängige Gewalten zu verteilen: Legislative (Gesetzgebung), Exekutive (Umsetzung) und Judikative (Rechtsprechung). Dieses Prinzip soll Machtmissbrauch verhindern und ist in den meisten westlichen Demokratien verankert.",
+    "modelAnswer": "Die Gewaltenteilung verteilt staatliche Macht auf drei Organe: die Legislative setzt Gesetze, die Exekutive setzt sie um, die Judikative spricht Recht. Die Trennung soll Machtmissbrauch verhindern, weil keine einzelne Instanz allein entscheidet.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Drei Gewalten: Legislative, Exekutive, Judikative", "weight": 0.4, "required": true },
+      { "id": "kp2", "text": "Jede Gewalt mit eigener Funktion (Gesetze/Umsetzung/Rechtsprechung)", "weight": 0.3, "required": true },
+      { "id": "kp3", "text": "Zweck: Verhinderung von Machtmissbrauch", "weight": 0.3, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Inhalt", "weight": 0.6, "scope": "CONTENT" },
+      { "id": "organisation", "name": "Aufbau", "weight": 0.2, "scope": "CONTENT" },
+      { "id": "language", "name": "Sprache", "weight": 0.2, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "ANALYSE",
+    "learningObjective": "Die Gewaltenteilung und ihren Zweck erklären",
+    "language": "de-CH",
+    "contentHash": "fixture-de-2-hash"
+  },
+  "studentAnswer": "Gewaltenteilung bedeutet, dass es drei Gewalten gibt: die Legislative, die Exekutive und die Judikative. So bleibt alles geordnet.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "drei Gewalten: die Legislative, die Exekutive und die Judikative" }
+      ],
+      "keyPointsMissed": [
+        { "id": "kp2", "reason": "Die Funktionen der einzelnen Gewalten werden nicht erklärt." },
+        { "id": "kp3", "reason": "Der Zweck (Verhinderung von Machtmissbrauch) fehlt; ‚geordnet' ist zu vage." }
+      ]
+    },
+    "languageSignals": {
+      "grammarIssues": [],
+      "spellingIssues": []
+    },
+    "offTopicFlag": "NONE",
+    "confidence": "MEDIUM",
+    "feedbackToStudent": {
+      "whatWentWell": "Du nennst die drei Gewalten korrekt und in der richtigen Reihenfolge.",
+      "whatIsMissing": "Es fehlen die Aufgaben der einzelnen Gewalten und der eigentliche Zweck der Gewaltenteilung.",
+      "nextStep": "Beschreibe für jede Gewalt eine konkrete Aufgabe und erläutere, wieso die Trennung Machtmissbrauch verhindert."
+    }
+  },
+  "notes": "Nur ein von drei Schlüsselpunkten adressiert; keine Sprachprobleme. MEDIUM confidence."
+}

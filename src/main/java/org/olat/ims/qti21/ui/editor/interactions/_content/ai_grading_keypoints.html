@@ -1,0 +1,23 @@
+#if($r.isNotEmpty($rows))
+	<table class="table table-condensed o_essay_ai_grading_kp">
+		<thead>
+			<tr>
+				<th>$r.translate("ai.grading.keypoint.text")</th>
+				<th>$r.translate("ai.grading.keypoint.weight")</th>
+				<th>$r.translate("ai.grading.keypoint.required")</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		#foreach($row in $rows)
+			<tr>
+				<td>$r.render(${row.getText()})</td>
+				<td>$r.render(${row.getWeight()})</td>
+				<td>$r.render(${row.getRequired()})</td>
+				<td>$r.render(${row.getRemoveButton()})</td>
+			</tr>
+		#end
+		</tbody>
+	</table>
+#end
+<div class="form-inline o_essay_ai_grading_kp_add">$r.render("ai.grading.keypoint.add")</div>

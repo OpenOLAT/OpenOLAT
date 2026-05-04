@@ -501,3 +501,107 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 		}
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Essay AI correction overlay + feedback block.
+// Rendered inside the .o_quiz_question container while an async grading
+// job is in flight, and replaced by the feedback block when it completes.
+// ---------------------------------------------------------------------------
+.o_quiz .o_quiz_question.o_essay_ai_correction_host {
+	position: relative !important;
+	min-height: 200px;
+
+	&.o_essay_ai_correction_in_progress .o_qti_item_body,
+	&.o_essay_ai_correction_in_progress .itemTitle {
+		opacity: 0.6;
+		pointer-events: none;
+	}
+
+	.o_essay_ai_correction_overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background-color: rgba(0, 0, 0, 0.6);
+		border-radius: $border-radius-base;
+		z-index: 100;
+		color: #fff;
+
+		.o_icon {
+			font-size: 3rem;
+			margin-bottom: 1rem;
+			color: #fff;
+		}
+
+		.o_essay_ai_correction_message {
+			font-size: 1.1rem;
+			color: #fff;
+		}
+	}
+
+	// Hide the QTI "submitted / awaiting correction" badge once the AI
+	// feedback box has rendered — the badge is misleading after grading.
+	&:has(.o_essay_ai_correction_box) .o_assessmentitem_status.o_labeled.submitted {
+		display: none;
+	}
+}
+
+.o_essay_ai_correction_error {
+	margin-top: 1rem;
+}
+
+.o_essay_ai_correction_box {
+	margin-top: 1.25rem;
+	background-color: $o-box-warning-bg;
+	border: 1px solid $o-box-warning-color;
+	border-radius: $border-radius-base;
+	padding: 1rem 1.25rem;
+
+	h4.o_essay_ai_correction_title {
+		margin: 0 0 0.75rem 0;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		.o_icon {
+			font-size: 1.4rem;
+		}
+	}
+
+	.o_essay_ai_correction_feedback {
+		> div {
+			margin-bottom: 0.75rem;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		.o_essay_ai_correction_overall p,
+		.o_essay_ai_correction_wentwell p,
+		.o_essay_ai_correction_missing p,
+		.o_essay_ai_correction_nextstep p {
+			margin: 0.25rem 0 0 0;
+		}
+
+		.o_essay_ai_correction_badges {
+			display: flex;
+			gap: 0.5rem;
+			flex-wrap: wrap;
+
+			.label {
+				display: inline-block;
+			}
+		}
+
+		.o_essay_ai_correction_language_details {
+			summary {
+				cursor: pointer;
+				font-weight: bold;
+				padding: 0.25rem 0;
+			}
+		}
+	}
+}

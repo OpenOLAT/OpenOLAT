@@ -36,6 +36,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.stream.XMLOutputFactory;
@@ -43,6 +44,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.ai.essay.EssayAiGrading;
+import org.olat.core.commons.services.ai.essay.EssayGradingIntegrityException;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
@@ -53,6 +56,8 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentItemAiGradingMarker;
+import org.olat.ims.qti21.model.xml.AssessmentItemAiGradingMarker.Marker;
 import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
@@ -178,16 +183,22 @@ public class QTI21ImportProcessor {
 			QTI21Infos infos = getInfos(imsmanifestPath);
 			convertXmlFile(assessmentItemPath, outputFile.toPath(), infos);
 
+			// Verify AI-grading companion + marker integrity before any
+			// further processing. Throws EssayGradingIntegrityException on
+			// hash mismatch or inconsistent (marker without companion / vice
+			// versa) packages.
+			verifyAiGradingIntegrity(assessmentItemPath, outputFile);
+
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(qtiService.jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new FileResourceLocator();
-			ResourceLocator inputResourceLocator = 
+			ResourceLocator inputResourceLocator =
 					ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-			
+
 			URI assessmentObjectSystemId = outputFile.toURI();
 			AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
 			ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			
+
 			if(!AssessmentItemChecker.checkAndCorrect(assessmentItem)) {
 				qtiService.persistAssessmentObject(outputFile, assessmentItem);
 			}
@@ -227,12 +238,89 @@ public class QTI21ImportProcessor {
 				}
 			}
 			return qitem;
+		} catch (EssayGradingIntegrityException eige) {
+			// Surface AI-grading integrity failures; the caller (pool import
+			// driver) decides how to display the diagnostic. The item is
+			// rejected and not added to the pool.
+			log.warn("AI grading integrity failed for pool import: {}", eige.getMessage());
+			throw eige;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
+	/**
+	 * Verify the integrity of an AI-grading-augmented QTI essay item before
+	 * downstream parsing.
+	 * <p>
+	 * Four cases:
+	 * <ul>
+	 *   <li>Neither marker nor companion → no-op (classic QTI).</li>
+	 *   <li>Both present, hash match → strip the marker from the persisted
+	 *       XML (it gets regenerated on export). The companion JSON is left
+	 *       in place next to the item resource so it round-trips on the next
+	 *       export.</li>
+	 *   <li>Both present, hash mismatch →
+	 *       {@link EssayGradingIntegrityException}.</li>
+	 *   <li>Only one of the two →
+	 *       {@link EssayGradingIntegrityException}.</li>
+	 * </ul>
+	 * The companion file is read from the source location (the import zip
+	 * directory) and copied into the output directory for round-tripping.
+	 */
+	void verifyAiGradingIntegrity(Path sourceItemPath, File outputItemFile) throws IOException {
+		// sourceItemPath may live inside a zip filesystem (jdk.nio.zipfs.ZipPath)
+		// when the import comes from a .zip — ZipPath does not support toFile().
+		// Use NIO Path operations throughout for the source side.
+		Path sourceParent = sourceItemPath.getParent();
+		Path sourceCompanion = sourceParent == null ? null : sourceParent.resolve("ai-grading.json");
+		boolean companionPresent = sourceCompanion != null && Files.exists(sourceCompanion);
+
+		var doc = AssessmentItemAiGradingMarker.readXmlFile(outputItemFile);
+		Optional<Marker> markerOpt = doc == null ? Optional.empty()
+				: AssessmentItemAiGradingMarker.extract(doc);
+
+		if (!companionPresent && markerOpt.isEmpty()) {
+			return;
+		}
+		if (companionPresent && markerOpt.isEmpty()) {
+			throw new EssayGradingIntegrityException(
+					"Inconsistent package: companion without marker (" + sourceItemPath + ")");
+		}
+		if (!companionPresent && markerOpt.isPresent()) {
+			throw new EssayGradingIntegrityException(
+					"Inconsistent package: marker without companion (" + sourceItemPath + ")");
+		}
+
+		Marker marker = markerOpt.get();
+		if (marker.version() > EssayAiGrading.CURRENT_VERSION) {
+			throw new EssayGradingIntegrityException(
+					"AI grading schema version newer than supported by this "
+							+ "OpenOlat installation. Please update OpenOlat. (got="
+							+ marker.version() + ", expected<=" + EssayAiGrading.CURRENT_VERSION + ")");
+		}
+
+		byte[] companionBytes = Files.readAllBytes(sourceCompanion);
+		String freshHash = EssayAiGrading.sha256Hex(companionBytes);
+		if (marker.hash() == null || !marker.hash().equals(freshHash)) {
+			throw new EssayGradingIntegrityException(
+					"AI grading integrity check failed: hash " + marker.hash()
+							+ " expected " + freshHash);
+		}
+
+		// Hash matches. Strip the marker from the persisted XML so the file
+		// stored in qpool storage is the "clean" QTI form. The on-disk
+		// ai-grading.json companion is the source of truth for the grading
+		// metadata — copy it next to the output item so future exports can
+		// re-inject the marker with the current hash.
+		AssessmentItemAiGradingMarker.remove(doc);
+		AssessmentItemAiGradingMarker.writeXmlFile(doc, outputItemFile);
+
+		File destCompanion = new File(outputItemFile.getParentFile(), "ai-grading.json");
+		Files.write(destCompanion.toPath(), companionBytes);
+	}
+
 	private void convertXmlFile(Path inputFile, Path outputFile, QTI21Infos infos) {
 		try(InputStream in = Files.newInputStream(inputFile);
 				Writer out = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {

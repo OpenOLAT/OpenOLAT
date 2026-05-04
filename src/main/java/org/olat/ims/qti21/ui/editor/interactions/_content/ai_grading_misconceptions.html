@@ -1,0 +1,19 @@
+#if($r.isNotEmpty($rows))
+	<table class="table table-condensed o_essay_ai_grading_misconception">
+		<thead>
+			<tr>
+				<th>$r.translate("ai.grading.misconception.text")</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		#foreach($row in $rows)
+			<tr>
+				<td>$r.render(${row.getText()})</td>
+				<td>$r.render(${row.getRemoveButton()})</td>
+			</tr>
+		#end
+		</tbody>
+	</table>
+#end
+<div class="form-inline o_essay_ai_grading_misconception_add">$r.render("ai.grading.misconception.add")</div>

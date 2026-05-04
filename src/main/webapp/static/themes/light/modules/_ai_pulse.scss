@@ -1,0 +1,112 @@
+/* ==========================================================================
+ * OpenOlat AI Pulse Icon
+ * --------------------------------------------------------------------------
+ * Animated 80×80 SVG indicator for AI activity. Iridescent (Siri-style)
+ * gradient stroke + traveling colored flares + ambient sparkles.
+ *
+ * Usage (inline SVG, recommended):
+ *   <svg class="o_ai_pulse o_ai_pulse_lg" viewBox="0 0 80 80"> ... </svg>
+ *   Add `o_ai_pulse_active` to play the working animation.
+ *
+ * The inline SVG markup lives in:
+ *   org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html
+ *
+ * Drop-in <img> alternative:
+ *   <img src="$r.staticLink('images/openolat/o_ai_pulse_icon_active.svg')"/>
+ * ========================================================================== */
+
+.o_ai_pulse {
+	display: inline-block;
+	overflow: visible;
+	line-height: 0;            /* avoid baseline gap when inline-block */
+	width: 80px;
+	height: 80px;
+
+	/* Stroke layers — share the iridescent gradient. */
+	use.lobe {
+		fill: none;
+		stroke: url(#aip-rainbow);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.core { stroke-width: 3.5; }
+	.glow { stroke-width: 5;   opacity: 0; }
+	.halo { stroke-width: 8;   opacity: 0; }
+
+	.breath {
+		transform-box: view-box;
+		transform-origin: 50% 50%;
+	}
+	.flares { opacity: 0; }
+
+	.spark {
+		transform-box: fill-box;
+		transform-origin: center;
+	}
+	/* Idle — fixed sparkles twinkle slowly so the icon never feels frozen. */
+	.spark-fixed   { animation: aip-spark-idle 4.8s ease-in-out infinite; }
+	.spark-ambient { opacity: 0; }
+
+	/* Active — full treatment: breath, halo, glow, flares, dramatic twinkle. */
+	&.o_ai_pulse_active {
+		.breath { animation: aip-breath 3.2s ease-in-out infinite; }
+		.halo   { animation: aip-halo   3.2s ease-in-out infinite; }
+		.glow   { animation: aip-glow   3.2s ease-in-out infinite; }
+		.core   { animation: aip-core   3.2s ease-in-out infinite; }
+		.flares { opacity: 1; }
+		.spark-fixed   { animation: aip-twinkle-fixed   2.6s ease-in-out infinite; }
+		.spark-ambient { animation: aip-twinkle-ambient 2.8s ease-in-out infinite; }
+	}
+}
+
+/* Size helpers — apply to the <svg class="o_ai_pulse o_ai_pulse_md"> element. */
+.o_ai_pulse_xs { width:  32px; height:  32px; }
+.o_ai_pulse_sm { width:  40px; height:  40px; }
+.o_ai_pulse_md { width:  64px; height:  64px; }
+.o_ai_pulse_lg { width:  80px; height:  80px; }
+.o_ai_pulse_xl { width: 120px; height: 120px; }
+
+/* Inverse / badge — colored circle background, white-ish icon stays
+   readable thanks to the saturated gradient palette. */
+.o_ai_pulse_badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	padding: 8px;
+	background: $brand-primary;
+	color: #fff;
+}
+
+/* Reduced motion — drop the animation entirely; keep a tasteful resting frame. */
+@media (prefers-reduced-motion: reduce) {
+	.o_ai_pulse * { animation: none !important; }
+	.o_ai_pulse.o_ai_pulse_active {
+		.halo   { opacity: 0.30; }
+		.glow   { opacity: 0.55; }
+		.core   { opacity: 1; }
+		.flares { opacity: 0; }
+	}
+	.o_ai_pulse {
+		.spark-fixed   { opacity: 0.55; }
+		.spark-ambient { opacity: 0; }
+	}
+}
+
+/* Keyframes — global so the rules above can reference them by name. */
+@keyframes aip-breath { 0%,100% { transform: scale(0.97); } 50% { transform: scale(1.04); } }
+@keyframes aip-halo   { 0%,100% { opacity: 0.25; } 50% { opacity: 0.55; } }
+@keyframes aip-glow   { 0%,100% { opacity: 0.45; } 50% { opacity: 0.75; } }
+@keyframes aip-core   { 0%,100% { opacity: 0.90; } 50% { opacity: 1.00; } }
+@keyframes aip-spark-idle {
+	0%, 100% { opacity: 0.35; transform: scale(0.80) rotate(0deg);  }
+	50%      { opacity: 0.75; transform: scale(1.05) rotate(20deg); }
+}
+@keyframes aip-twinkle-fixed {
+	0%, 100% { opacity: 0.55; transform: scale(0.85) rotate(0deg);  }
+	50%      { opacity: 1.00; transform: scale(1.25) rotate(50deg); }
+}
+@keyframes aip-twinkle-ambient {
+	0%, 100% { opacity: 0;    transform: scale(0.50) rotate(0deg);  }
+	50%      { opacity: 0.95; transform: scale(1.10) rotate(70deg); }
+}

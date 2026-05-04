@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "language": "de-CH",
+    "difficulty": "ANALYSE",
+    "category": "well-answered"
+  },
+  "kit": {
+    "referenceExcerpt": "Die Fotosynthese ist ein biochemischer Prozess, bei dem Pflanzen unter Nutzung von Lichtenergie aus Kohlendioxid und Wasser Glukose und Sauerstoff herstellen. Der Prozess läuft in den Chloroplasten ab und gliedert sich in eine Lichtreaktion und eine Dunkelreaktion. In der Lichtreaktion werden ATP und NADPH gebildet; in der Dunkelreaktion (Calvin-Zyklus) wird CO₂ zu Glukose reduziert.",
+    "modelAnswer": "Die Fotosynthese ist ein lichtgetriebener Prozess in den Chloroplasten, der aus CO₂ und H₂O Glukose erzeugt. Sie besteht aus einer Lichtreaktion, in der ATP und NADPH gebildet werden, und einer Dunkelreaktion (Calvin-Zyklus), in der das CO₂ reduziert wird. Ohne beide Phasen kann die Pflanze keinen Zucker herstellen.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Zwei Phasen: Licht- und Dunkelreaktion", "weight": 0.4, "required": true },
+      { "id": "kp2", "text": "Lichtreaktion liefert ATP und NADPH", "weight": 0.3, "required": true },
+      { "id": "kp3", "text": "Dunkelreaktion (Calvin) reduziert CO₂ zu Glukose", "weight": 0.3, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Inhalt", "weight": 0.6, "scope": "CONTENT" },
+      { "id": "organisation", "name": "Aufbau", "weight": 0.2, "scope": "CONTENT" },
+      { "id": "language", "name": "Sprache", "weight": 0.2, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "ANALYSE",
+    "learningObjective": "Die zwei Phasen der Fotosynthese und ihre Funktion erklären",
+    "language": "de-CH",
+    "contentHash": "fixture-de-1-hash"
+  },
+  "studentAnswer": "Die Fotosynthese besteht aus zwei Phasen. In der Lichtreaktion fängt das Chlorophyll Licht ein; dadurch entsteht ATP und NADPH. In der Dunkelreaktion, dem Calvin-Zyklus, wird das CO₂ mithilfe dieser Energieträger zu Glukose umgebaut. Beide Phasen brauchen sich gegenseitig.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp1", "evidence": "Die Fotosynthese besteht aus zwei Phasen" },
+        { "id": "kp2", "evidence": "entsteht ATP und NADPH" },
+        { "id": "kp3", "evidence": "wird das CO₂ ... zu Glukose umgebaut" }
+      ],
+      "keyPointsMissed": [],
+      "coherenceNote": "Klare Abfolge, sauber verknüpft."
+    },
+    "languageSignals": {
+      "grammarIssues": [],
+      "spellingIssues": []
+    },
+    "offTopicFlag": "NONE",
+    "confidence": "HIGH",
+    "feedbackToStudent": {
+      "whatWentWell": "Du unterscheidest Licht- und Dunkelreaktion klar und nennst für beide die zentrale Funktion.",
+      "whatIsMissing": "Du könntest noch erwähnen, dass beide Phasen in den Chloroplasten ablaufen.",
+      "nextStep": "Ergänze den Ort der Reaktion und erkläre, wieso Chloroplasten dafür spezialisiert sind."
+    }
+  },
+  "notes": "Alle drei Schlüsselpunkte adressiert, präzise Formulierungen, korrekte Fachterminologie. Hohe Konfidenz."
+}

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OpenOlat AI Pulse Icon — ACTIVE variant (kissing circles, always animates).
+  Drop-in <img src="..."> friendly. Animations run inside the SVG.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 80 80"
+     width="80" height="80"
+     class="ai-pulse active"
+     role="img"
+     aria-label="OpenOlat AI working">
+  <defs>
+    <path id="aip-route"
+          d="M 40,40 C 40,32.3 33.7,26 26,26 C 18.3,26 12,32.3 12,40 C 12,47.7 18.3,54 26,54 C 33.7,54 40,47.7 40,40 C 40,32.3 46.3,26 54,26 C 61.7,26 68,32.3 68,40 C 68,47.7 61.7,54 54,54 C 46.3,54 40,47.7 40,40 Z"/>
+    <path id="aip-spark" d="M 0,-3.5 Q 0.6,-0.6 3.5,0 Q 0.6,0.6 0,3.5 Q -0.6,0.6 -3.5,0 Q -0.6,-0.6 0,-3.5 Z"/>
+    <linearGradient id="aip-rainbow" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#ff5f9e"/>
+      <stop offset="25%"  stop-color="#c14bdb"/>
+      <stop offset="50%"  stop-color="#3b82f6"/>
+      <stop offset="75%"  stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#ff5f9e"/>
+      <animateTransform attributeName="gradientTransform" type="rotate"
+                        from="0 0.5 0.5" to="360 0.5 0.5"
+                        dur="9s" repeatCount="indefinite"/>
+    </linearGradient>
+    <filter id="aip-halo"  x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.5"/></filter>
+    <filter id="aip-glow"  x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.2"/></filter>
+    <filter id="aip-flare" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.4"/></filter>
+    <filter id="aip-spark-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="0.6"/></filter>
+  </defs>
+  <style>
+    use.lobe { fill: none; stroke: url(#aip-rainbow); stroke-linecap: round; stroke-linejoin: round; }
+    .core { stroke-width: 3.5; animation: aip-core 3.2s ease-in-out infinite; }
+    .glow { stroke-width: 5;   animation: aip-glow 3.2s ease-in-out infinite; }
+    .halo { stroke-width: 8;   animation: aip-halo 3.2s ease-in-out infinite; }
+    .breath { transform-box: view-box; transform-origin: 50% 50%;
+              animation: aip-breath 3.2s ease-in-out infinite; }
+    .spark { transform-box: fill-box; transform-origin: center; }
+    .spark-fixed   { animation: aip-twinkle-fixed   2.6s ease-in-out infinite; }
+    .spark-ambient { animation: aip-twinkle-ambient 2.8s ease-in-out infinite; }
+
+    @keyframes aip-breath { 0%,100% { transform: scale(0.97); } 50% { transform: scale(1.04); } }
+    @keyframes aip-halo   { 0%,100% { opacity: 0.25; } 50% { opacity: 0.55; } }
+    @keyframes aip-glow   { 0%,100% { opacity: 0.45; } 50% { opacity: 0.75; } }
+    @keyframes aip-core   { 0%,100% { opacity: 0.90; } 50% { opacity: 1.00; } }
+    @keyframes aip-twinkle-fixed   { 0%,100% { opacity: 0.55; transform: scale(0.85) rotate(0deg);  } 50% { opacity: 1.0;  transform: scale(1.25) rotate(50deg); } }
+    @keyframes aip-twinkle-ambient { 0%,100% { opacity: 0;    transform: scale(0.50) rotate(0deg);  } 50% { opacity: 0.95; transform: scale(1.10) rotate(70deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; }
+      .halo { opacity: 0.30; } .glow { opacity: 0.55; } .core { opacity: 1; }
+      .flares { display: none; }
+      .spark-fixed { opacity: 0.7; } .spark-ambient { opacity: 0; }
+    }
+  </style>
+  <g class="breath">
+    <use href="#aip-route" class="lobe halo" filter="url(#aip-halo)"/>
+    <use href="#aip-route" class="lobe glow" filter="url(#aip-glow)"/>
+    <use href="#aip-route" class="lobe core"/>
+  </g>
+  <g class="flares">
+    <circle r="4.2" fill="#ff5f9e" filter="url(#aip-flare)" opacity="0.85"><animateMotion dur="3.0s" repeatCount="indefinite" rotate="auto"><mpath href="#aip-route"/></animateMotion></circle>
+    <circle r="1.6" fill="#ffd1e3"><animateMotion dur="3.0s" repeatCount="indefinite" rotate="auto"><mpath href="#aip-route"/></animateMotion></circle>
+    <circle r="3.8" fill="#a855f7" filter="url(#aip-flare)" opacity="0.85"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="-1.2s"><mpath href="#aip-route"/></animateMotion></circle>
+    <circle r="1.4" fill="#e9d5ff"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="-1.2s"><mpath href="#aip-route"/></animateMotion></circle>
+    <circle r="4.0" fill="#22d3ee" filter="url(#aip-flare)" opacity="0.85"><animateMotion dur="4.2s" repeatCount="indefinite" rotate="auto" begin="-2.0s"><mpath href="#aip-route"/></animateMotion></circle>
+    <circle r="1.5" fill="#cffafe"><animateMotion dur="4.2s" repeatCount="indefinite" rotate="auto" begin="-2.0s"><mpath href="#aip-route"/></animateMotion></circle>
+  </g>
+  <g class="sparkles" filter="url(#aip-spark-glow)">
+    <g transform="translate(10 14) scale(1.00)"><use class="spark spark-fixed" href="#aip-spark" fill="#ff5f9e" style="animation-delay:  0.0s"/></g>
+    <g transform="translate(30  8) scale(0.70)"><use class="spark spark-fixed" href="#aip-spark" fill="#22d3ee" style="animation-delay: -0.6s"/></g>
+    <g transform="translate(60 12) scale(0.85)"><use class="spark spark-fixed" href="#aip-spark" fill="#a855f7" style="animation-delay: -1.3s"/></g>
+    <g transform="translate(74 28) scale(0.55)"><use class="spark spark-fixed" href="#aip-spark" fill="#ff5f9e" style="animation-delay: -2.1s"/></g>
+    <g transform="translate(76 52) scale(0.75)"><use class="spark spark-fixed" href="#aip-spark" fill="#22d3ee" style="animation-delay: -2.8s"/></g>
+    <g transform="translate(62 68) scale(0.60)"><use class="spark spark-fixed" href="#aip-spark" fill="#a855f7" style="animation-delay: -3.5s"/></g>
+    <g transform="translate(38 74) scale(0.85)"><use class="spark spark-fixed" href="#aip-spark" fill="#ff5f9e" style="animation-delay: -4.1s"/></g>
+    <g transform="translate(12 66) scale(0.70)"><use class="spark spark-fixed" href="#aip-spark" fill="#22d3ee" style="animation-delay: -4.6s"/></g>
+    <g transform="translate( 4 42) scale(0.50)"><use class="spark spark-fixed" href="#aip-spark" fill="#a855f7" style="animation-delay: -0.4s"/></g>
+    <g transform="translate(50  6) scale(0.55)"><use class="spark spark-ambient" href="#aip-spark" fill="#22d3ee" style="animation-delay: -0.2s"/></g>
+    <g transform="translate(78 38) scale(0.40)"><use class="spark spark-ambient" href="#aip-spark" fill="#a855f7" style="animation-delay: -0.8s"/></g>
+    <g transform="translate(54 76) scale(0.55)"><use class="spark spark-ambient" href="#aip-spark" fill="#22d3ee" style="animation-delay: -1.4s"/></g>
+    <g transform="translate(22 74) scale(0.50)"><use class="spark spark-ambient" href="#aip-spark" fill="#ff5f9e" style="animation-delay: -1.9s"/></g>
+    <g transform="translate( 4 58) scale(0.40)"><use class="spark spark-ambient" href="#aip-spark" fill="#a855f7" style="animation-delay: -1.1s"/></g>
+    <g transform="translate( 4 22) scale(0.45)"><use class="spark spark-ambient" href="#aip-spark" fill="#22d3ee" style="animation-delay: -0.5s"/></g>
+  </g>
+</svg>

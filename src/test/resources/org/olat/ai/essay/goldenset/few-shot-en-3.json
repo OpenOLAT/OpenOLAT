@@ -1,0 +1,39 @@
+{
+  "meta": { "language": "en-GB", "difficulty": "UNDERSTAND", "category": "gibberish" },
+  "kit": {
+    "referenceExcerpt": "Mitochondria are membrane-bound organelles found in most eukaryotic cells; they generate most of the cell's ATP through oxidative phosphorylation.",
+    "modelAnswer": "Mitochondria produce most of a eukaryotic cell's ATP via oxidative phosphorylation, which is why they are called the powerhouses of the cell.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Mitochondria produce ATP", "weight": 0.5, "required": true },
+      { "id": "kp2", "text": "Via oxidative phosphorylation", "weight": 0.3, "required": false },
+      { "id": "kp3", "text": "Found in eukaryotic cells", "weight": 0.2, "required": false }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Content", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Language", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "UNDERSTAND",
+    "learningObjective": "Explain the role of mitochondria in energy production",
+    "language": "en-GB",
+    "contentHash": "fixture-en-3-hash"
+  },
+  "studentAnswer": "asdf qwerty lorem ipsum blah blah mito stuff happens in cell pow pow",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [],
+      "keyPointsMissed": [
+        { "id": "kp1", "reason": "ATP production is not mentioned." },
+        { "id": "kp2", "reason": "Oxidative phosphorylation is not mentioned." }
+      ]
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "GIBBERISH",
+    "confidence": "LOW",
+    "feedbackToStudent": {
+      "whatWentWell": "You submitted an answer.",
+      "whatIsMissing": "The answer does not describe the role of mitochondria in energy production.",
+      "nextStep": "Revise your answer: state what mitochondria produce and by which process."
+    }
+  },
+  "notes": "Gibberish pre-filter should mark it; LLM should still produce honest structured feedback with LOW confidence."
+}

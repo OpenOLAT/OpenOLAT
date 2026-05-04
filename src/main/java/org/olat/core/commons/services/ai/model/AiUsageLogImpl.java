@@ -38,6 +38,7 @@ import jakarta.persistence.TemporalType;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.ai.AiUsageLog;
 import org.olat.core.commons.services.ai.AiUsageLogStatus;
+import org.olat.core.commons.services.ai.essay.AiGradingTier;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 
@@ -126,6 +127,20 @@ public class AiUsageLogImpl implements AiUsageLog, Persistable {
 	private Long requestTextLength;
 	@Column(name = "a_cache_creation_input_tokens", nullable = true, insertable = true, updatable = false)
 	private Long cacheCreationInputTokens;
+
+	// Essay grading trace — five nullable columns added in alter_21_0_x_to_21_1_0.
+	// They are set only on essay-grading calls; other AI features leave them null.
+	@Column(name = "a_assessment_item_identifier", nullable = true, insertable = true, updatable = false, length = 64)
+	private String assessmentItemIdentifier;
+	@Column(name = "a_content_hash_at_call", nullable = true, insertable = true, updatable = false)
+	private String contentHashAtCall;
+	@Column(name = "a_prompt_template_version", nullable = true, insertable = true, updatable = false)
+	private String promptTemplateVersion;
+	@Column(name = "a_tier", nullable = true, insertable = true, updatable = false)
+	@Enumerated(EnumType.STRING)
+	private AiGradingTier tier;
+	@Column(name = "a_assessment_item_session_key", nullable = true, insertable = true, updatable = false)
+	private Long assessmentItemSessionKey;
 
 	@Override
 	public Long getKey() {
@@ -476,5 +491,55 @@ public class AiUsageLogImpl implements AiUsageLog, Persistable {
 	@Override
 	public void setCacheCreationInputTokens(Long cacheCreationInputTokens) {
 		this.cacheCreationInputTokens = cacheCreationInputTokens;
+	}
+
+	@Override
+	public String getAssessmentItemIdentifier() {
+		return assessmentItemIdentifier;
+	}
+
+	@Override
+	public void setAssessmentItemIdentifier(String assessmentItemIdentifier) {
+		this.assessmentItemIdentifier = assessmentItemIdentifier;
+	}
+
+	@Override
+	public String getContentHashAtCall() {
+		return contentHashAtCall;
+	}
+
+	@Override
+	public void setContentHashAtCall(String contentHashAtCall) {
+		this.contentHashAtCall = contentHashAtCall;
+	}
+
+	@Override
+	public String getPromptTemplateVersion() {
+		return promptTemplateVersion;
+	}
+
+	@Override
+	public void setPromptTemplateVersion(String promptTemplateVersion) {
+		this.promptTemplateVersion = promptTemplateVersion;
+	}
+
+	@Override
+	public AiGradingTier getTier() {
+		return tier;
+	}
+
+	@Override
+	public void setTier(AiGradingTier tier) {
+		this.tier = tier;
+	}
+
+	@Override
+	public Long getAssessmentItemSessionKey() {
+		return assessmentItemSessionKey;
+	}
+
+	@Override
+	public void setAssessmentItemSessionKey(Long assessmentItemSessionKey) {
+		this.assessmentItemSessionKey = assessmentItemSessionKey;
 	}
 }

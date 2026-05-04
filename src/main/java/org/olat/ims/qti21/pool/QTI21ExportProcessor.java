@@ -30,15 +30,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -48,6 +51,8 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentItemAiGradingMarker;
+import org.olat.ims.qti21.model.xml.AssessmentItemAiGradingMarker.Marker;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
@@ -93,7 +98,7 @@ public class QTI21ExportProcessor {
 		File rootDirectory = qpoolFileStorage.getDirectory(dir);
 
 		String rootDir = "qitem_" + qitem.getKey();
-		
+
 		File imsmanifest = new File(rootDirectory, "imsmanifest.xml");
 		ManifestBuilder manifestBuilder;
 		if(imsmanifest.exists()) {
@@ -101,14 +106,14 @@ public class QTI21ExportProcessor {
 		} else {
 			manifestBuilder = new ManifestBuilder();
 		}
-		
+
 		File resourceFile = new File(rootDirectory, qitem.getRootFilename());
 		URI assessmentItemUri = resourceFile.toURI();
-		
+
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 				.loadAndResolveAssessmentItemForCopy(assessmentItemUri, rootDirectory);
 		enrichWithMetadata(qitem, resolvedAssessmentItem, manifestBuilder);
-		
+
 		try(OutputStream out = new ShieldOutputStream(zout)) {
 			zout.putNextEntry(new ZipEntry(rootDir + "/imsmanifest.xml"));
 			manifestBuilder.write(out);
@@ -117,21 +122,133 @@ public class QTI21ExportProcessor {
 			log.error("", e);
 		}
 
+		// AI grading companion (if any) lives on disk next to the QTI item XML
+		// as ai-grading.json. Read those bytes verbatim and (re)inject the
+		// <ooExt:aiGrading hash="..."/> marker into the item XML before the
+		// bytes go into the zip so the integrity hash matches at import time.
+		AiGradingExportArtefacts aiArtefacts = collectAiGradingArtefacts(resourceFile);
+
 		try {
 			Files.walkFileTree(rootDirectory.toPath(), new SimpleFileVisitor<Path>() {
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					String filename = file.getFileName().toString();
-					if(!"imsmanifest.xml".equals(filename) && !filename.startsWith(".")) {
-						String relPath = rootDirectory.toPath().relativize(file).toString();
+					if("imsmanifest.xml".equals(filename) || filename.startsWith(".")) {
+						return FileVisitResult.CONTINUE;
+					}
+					String relPath = rootDirectory.toPath().relativize(file).toString();
+					if (aiArtefacts != null && aiArtefacts.itemXmlBytes != null
+							&& file.toFile().equals(resourceFile)) {
+						// Replace the on-disk item XML with the marker-injected
+						// bytes so the marker round-trips without mutating the
+						// source on disk.
+						addBytesToZip(rootDir + "/" + relPath, aiArtefacts.itemXmlBytes, zout);
+					} else if (aiArtefacts != null
+							&& "ai-grading.json".equals(filename)
+							&& aiArtefacts.companionBytes != null) {
+						// Use the freshly-serialised companion bytes; ignores
+						// any stale copy on disk so the export is deterministic.
+						addBytesToZip(rootDir + "/" + relPath, aiArtefacts.companionBytes, zout);
+					} else {
 						ZipUtil.addFileToZip(rootDir + "/" + relPath, file, zout);
 					}
 					return FileVisitResult.CONTINUE;
 				}
 			});
+
+			// If we have companion bytes but no on-disk file existed, add a
+			// new entry next to the item resource.
+			if (aiArtefacts != null && aiArtefacts.companionBytes != null
+					&& !aiArtefacts.companionExistedOnDisk) {
+				String relItem = rootDirectory.toPath().relativize(resourceFile.toPath()).toString();
+				String parentRel = relItem.contains("/")
+						? relItem.substring(0, relItem.lastIndexOf('/') + 1) : "";
+				addBytesToZip(rootDir + "/" + parentRel + "ai-grading.json",
+						aiArtefacts.companionBytes, zout);
+			}
 		} catch (IOException e) {
 			log.error("", e);
 		}
+	}
+
+	private static void addBytesToZip(String entryName, byte[] bytes, ZipOutputStream zout)
+			throws IOException {
+		zout.putNextEntry(new ZipEntry(entryName));
+		zout.write(bytes);
+		zout.closeEntry();
+	}
+
+	/**
+	 * Build the AI grading export artefacts (companion JSON + marker-injected
+	 * item XML) for a pool question. The companion is the on-disk
+	 * {@code ai-grading.json} next to the QTI item XML — the file store is
+	 * authoritative. Returns {@code null} when the item has no on-disk
+	 * companion (classic QTI flow).
+	 */
+	private AiGradingExportArtefacts collectAiGradingArtefacts(File resourceFile) {
+		try {
+			File existingCompanion = new File(resourceFile.getParentFile(), "ai-grading.json");
+			if (!existingCompanion.exists()) {
+				return null;
+			}
+
+			byte[] companionBytes = Files.readAllBytes(existingCompanion.toPath());
+			String hash = EssayAiGrading.sha256Hex(companionBytes);
+
+			// Pull kitId / generatedAt from the file when available so the
+			// marker carries them across the export. Both default to fresh
+			// values if missing.
+			String kitId = null;
+			Instant generatedAt = null;
+			try {
+				com.fasterxml.jackson.databind.JsonNode root =
+						new com.fasterxml.jackson.databind.ObjectMapper().readTree(companionBytes);
+				kitId = root.path("kitId").asText(null);
+				String gen = root.path("generatedAt").asText(null);
+				if (gen != null && !gen.isBlank()) {
+					generatedAt = Instant.parse(gen);
+				}
+			} catch (Exception ignore) {
+				// Fall through to defaults below.
+			}
+			if (kitId == null || kitId.isBlank()) {
+				kitId = UUID.randomUUID().toString();
+			}
+			if (generatedAt == null) {
+				generatedAt = Instant.now();
+			}
+
+			byte[] itemXmlBytes = injectMarkerIntoItemXml(resourceFile,
+					new Marker(hash, EssayAiGrading.CURRENT_VERSION, kitId, generatedAt));
+
+			AiGradingExportArtefacts out = new AiGradingExportArtefacts();
+			out.companionBytes = companionBytes;
+			out.itemXmlBytes = itemXmlBytes;
+			out.companionExistedOnDisk = true;
+			return out;
+		} catch (Exception e) {
+			log.warn("Failed to assemble AI grading artefacts for {}: {}",
+					resourceFile, e.getMessage());
+			return null;
+		}
+	}
+
+	private byte[] injectMarkerIntoItemXml(File itemFile, Marker marker) throws IOException {
+		var doc = AssessmentItemAiGradingMarker.readXmlFile(itemFile);
+		if (doc == null) {
+			// Fall back to copying the bytes unchanged.
+			return Files.readAllBytes(itemFile.toPath());
+		}
+		AssessmentItemAiGradingMarker.inject(doc, marker);
+		String xml = AssessmentItemAiGradingMarker.toXmlString(doc);
+		return xml == null ? Files.readAllBytes(itemFile.toPath())
+				: xml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+	}
+
+	private static final class AiGradingExportArtefacts {
+		byte[] companionBytes;
+		byte[] itemXmlBytes;
+		boolean companionExistedOnDisk;
 	}
 	
 	public ResolvedAssessmentItem exportToQTIEditor(QuestionItemFull fullItem, File questionContainer)

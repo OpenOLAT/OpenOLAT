@@ -21,20 +21,25 @@ package org.olat.core.commons.services.ai.manager;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.http.Header;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.httpclient.HttpClientModule;
 import org.olat.core.util.httpclient.HttpClientService;
 
 import dev.langchain4j.exception.HttpException;
@@ -49,7 +54,16 @@ import dev.langchain4j.http.client.sse.ServerSentEventParser;
  * LangChain4j {@link HttpClient} implementation that delegates to OpenOlat's
  * {@link HttpClientService} (Apache HttpClient). This ensures all AI provider
  * HTTP calls go through the centrally configured HTTP infrastructure, including
- * proxy settings, timeouts, and connection pooling.
+ * proxy settings and connection pooling.
+ * <p>
+ * The global socket/read timeout defaults to {@code http.connect.socket.timeout}
+ * (30s) from {@code HttpClientModule}. A per-call override can be provided via
+ * {@link LangChain4jHttpClientBuilder#readTimeout(Duration)} — the LangChain4j
+ * ChatModel builders translate their {@code .timeout(Duration)} value into
+ * that call, and it is then applied as a per-request
+ * {@link RequestConfig#getSocketTimeout()} override so only calls that
+ * explicitly raise the ceiling wait longer than the global default. Essay
+ * generation, for example, overrides this to 3 minutes.
  *
  * Initial date: 2026-03-23<br>
  * @author gnaegi@frentix.com, https://www.frentix.com
@@ -57,9 +71,15 @@ import dev.langchain4j.http.client.sse.ServerSentEventParser;
 public class LangChain4jHttpClient implements HttpClient {
 
 	private final HttpClientService httpClientService;
+	private final Duration readTimeout;
 
 	public LangChain4jHttpClient(HttpClientService httpClientService) {
+		this(httpClientService, null);
+	}
+
+	public LangChain4jHttpClient(HttpClientService httpClientService, Duration readTimeout) {
 		this.httpClientService = httpClientService;
+		this.readTimeout = readTimeout;
 	}
 
 	@Override
@@ -125,7 +145,7 @@ public class LangChain4jHttpClient implements HttpClient {
 	}
 
 	private HttpUriRequest toApacheRequest(HttpRequest request) {
-		HttpUriRequest apacheRequest;
+		HttpRequestBase apacheRequest;
 		if (request.method() == HttpMethod.POST) {
 			HttpPost post = new HttpPost(request.url());
 			if (request.body() != null) {
@@ -143,6 +163,19 @@ public class LangChain4jHttpClient implements HttpClient {
 					values.forEach(value -> apacheRequest.addHeader(name, value));
 				}
 			});
+		}
+		if (readTimeout != null) {
+			// Per-request override: raise only the socket/read timeout ceiling
+			// for this call; preserve the other timeouts from HttpClientModule
+			// so the global HTTP defaults stay in effect for connect and
+			// connection-request timings.
+			HttpClientModule httpClientModule = CoreSpringFactory.getImpl(HttpClientModule.class);
+			RequestConfig perRequestConfig = RequestConfig.custom()
+					.setConnectTimeout(httpClientModule.getHttpConnectTimeout())
+					.setConnectionRequestTimeout(httpClientModule.getHttpConnectRequestTimeout())
+					.setSocketTimeout((int) readTimeout.toMillis())
+					.build();
+			apacheRequest.setConfig(perRequestConfig);
 		}
 		return apacheRequest;
 	}

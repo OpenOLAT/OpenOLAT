@@ -40,6 +40,8 @@
 		<class>org.olat.commons.coordinate.cluster.lock.LockImpl</class>
 		<class>org.olat.commons.info.model.InfoMessageImpl</class>
 		<class>org.olat.commons.lifecycle.LifeCycleEntry</class>
+		<class>org.olat.core.commons.services.ai.essay.EssayGenerationJob</class>
+		<class>org.olat.core.commons.services.ai.essay.EssayFeedbackJob</class>
 		<class>org.olat.core.commons.services.ai.model.AiUsageLogImpl</class>
 		<class>org.olat.core.commons.services.csp.model.CSPLogImpl</class>
 		<class>org.olat.core.commons.services.doceditor.model.AccessImpl</class>

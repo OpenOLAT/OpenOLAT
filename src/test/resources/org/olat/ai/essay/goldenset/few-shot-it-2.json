@@ -1,0 +1,41 @@
+{
+  "meta": { "language": "it-CH", "difficulty": "ANALYSE", "category": "partial" },
+  "kit": {
+    "referenceExcerpt": "La selezione naturale agisce quando individui di una popolazione presentano variazioni ereditabili, queste variazioni influenzano la sopravvivenza o la riproduzione, e solo alcuni individui trasmettono i propri geni alla generazione successiva.",
+    "modelAnswer": "La selezione naturale richiede tre elementi: variazione ereditabile fra individui, differenze nella sopravvivenza o riproduzione legate a queste variazioni, e la conseguente trasmissione preferenziale di certi geni.",
+    "keyPoints": [
+      { "id": "kp1", "text": "Variazione ereditabile", "weight": 0.35, "required": true },
+      { "id": "kp2", "text": "Differenze di sopravvivenza o riproduzione", "weight": 0.35, "required": true },
+      { "id": "kp3", "text": "Trasmissione preferenziale alla generazione successiva", "weight": 0.3, "required": true }
+    ],
+    "rubricCriteria": [
+      { "id": "content", "name": "Contenuto", "weight": 0.7, "scope": "CONTENT" },
+      { "id": "language", "name": "Lingua", "weight": 0.3, "scope": "LANGUAGE" }
+    ],
+    "bloomLevel": "ANALYSE",
+    "learningObjective": "Identificare i tre elementi della selezione naturale",
+    "language": "it-CH",
+    "contentHash": "fixture-it-2-hash"
+  },
+  "studentAnswer": "La selezione naturale funziona quando gli individui più adatti sopravvivono di più. I più deboli muoiono.",
+  "expected": {
+    "contentSignals": {
+      "keyPointsHit": [
+        { "id": "kp2", "evidence": "individui più adatti sopravvivono di più" }
+      ],
+      "keyPointsMissed": [
+        { "id": "kp1", "reason": "Manca il ruolo della variazione ereditabile." },
+        { "id": "kp3", "reason": "Manca la trasmissione dei geni alla generazione successiva." }
+      ]
+    },
+    "languageSignals": { "grammarIssues": [], "spellingIssues": [] },
+    "offTopicFlag": "NONE",
+    "confidence": "MEDIUM",
+    "feedbackToStudent": {
+      "whatWentWell": "Hai colto l'idea che gli individui più adatti hanno un vantaggio.",
+      "whatIsMissing": "Mancano due elementi: la variazione ereditabile come base e la trasmissione dei geni vantaggiosi alla generazione successiva.",
+      "nextStep": "Riformula la risposta menzionando la variazione genetica iniziale e il passaggio dei geni ai discendenti."
+    }
+  },
+  "notes": "1/3 key points."
+}

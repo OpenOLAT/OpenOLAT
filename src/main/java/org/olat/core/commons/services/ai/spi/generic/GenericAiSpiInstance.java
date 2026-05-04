@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.spi.generic;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +48,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  *
  * Initial date: 09.03.2026<br>
  *
- * @author gnaegi@frentix.com, https://www.frentix.com
+ * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
 public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI {
@@ -103,6 +104,11 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI {
 
 	@Override
 	public ChatModel buildChatModel(String modelName, int maxTokens) {
+		return buildChatModel(modelName, maxTokens, null);
+	}
+
+	@Override
+	public ChatModel buildChatModel(String modelName, int maxTokens, Duration timeout) {
 		var builder = OpenAiChatModel.builder()
 				.httpClientBuilder(new LangChain4jHttpClientBuilder())
 				.baseUrl(baseUrl)
@@ -113,6 +119,9 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI {
 			builder.apiKey(apiKey);
 		} else {
 			builder.apiKey("no-key");
+		}
+		if (timeout != null) {
+			builder.timeout(timeout);
 		}
 		return builder.build();
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -50,6 +51,22 @@ public interface AiSPI {
 	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
 
 	public ChatModel buildChatModel(String modelName, int maxTokens);
+
+	/**
+	 * Build a {@link ChatModel} with an explicit per-call timeout. The
+	 * {@code timeout} is forwarded to the LangChain4j ChatModel builder's
+	 * {@code .timeout(Duration)} setter and ends up as a per-request
+	 * socket-timeout override on the underlying Apache HttpClient (see
+	 * {@link org.olat.core.commons.services.ai.manager.LangChain4jHttpClientBuilder}).
+	 * A {@code null} timeout falls back to the global default socket
+	 * timeout from {@code HttpClientModule}. The default implementation
+	 * ignores the timeout and delegates to
+	 * {@link #buildChatModel(String, int)} for backwards compatibility with
+	 * providers that do not support per-call timeouts.
+	 */
+	public default ChatModel buildChatModel(String modelName, int maxTokens, Duration timeout) {
+		return buildChatModel(modelName, maxTokens);
+	}
 
 	public List<String> getAvailableModels();
 
