@@ -299,6 +299,10 @@ public class ACOfferDAO {
 		offerCopy.setValidFrom(validFrom);
 		offerCopy.setValidTo(validTo);
 		offerCopy.setValidDateConfig(offer.getValidDateConfig());
+		if(offerCopy instanceof OfferImpl copyImpl && offer instanceof OfferImpl offerImpl) {
+			copyImpl.setToken(offerImpl.getToken());
+			copyImpl.setOpenAccess(offerImpl.isOpenAccess());
+		}
 		dbInstance.getCurrentEntityManager().persist(offerCopy);
 		return offerCopy;
 	}
