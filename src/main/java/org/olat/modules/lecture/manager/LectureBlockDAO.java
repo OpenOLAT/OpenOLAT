@@ -267,6 +267,28 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef curriculumElement, IdentityRef teacher) {
+		String query = """
+				select block from lectureblock as block
+				inner join block.teacherGroup as teacherGroup
+				where (block.curriculumElement.key=:curriculumElementKey
+				or block.entry.key in (select v.key from repositoryentry v
+				  inner join v.groups as baseGroups
+				  inner join baseGroups.group as baseGroup
+				  inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)
+				  where curEl.key = :curriculumElementKey
+				))
+				and exists (select teacherMembership.key from bgroupmember teacherMembership
+				  where teacherMembership.group.key=teacherGroup.key and teacherMembership.identity.key=:teacherKey
+				)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LectureBlock.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.setParameter("teacherKey", teacher.getKey())
+				.getResultList();
+	}
+	
 	public long countLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select count(distinct block.key) from lectureblock block")
