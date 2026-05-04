@@ -1,0 +1,36 @@
+## ============================================================================
+##  AI Questions submit hook — always rendered, never hidden.
+##
+##  On form submit (before the AJAX round-trip completes) this script does
+##  two things in one synchronous tick:
+##    1. Suppresses the global window busy spinner for exactly one round-trip
+##       so no grey full-screen overlay flashes before the pulse appears.
+##    2. Adds `o_ai_questions_generating` to the form's root fieldset so
+##       the CSS overlay becomes visible *instantly* — the user sees the
+##       pulse the moment they click the submit button.
+##
+##  Both suppressions are lifted by the overlay script once the AJAX response
+##  is applied and the overlay fragment is in the DOM.
+## ============================================================================
+<script>
+(function() {
+	"use strict";
+	var formEl = document.getElementById('$formName');
+	if (!formEl) return;
+	formEl.addEventListener('submit', function() {
+		// 1. Patch out the global busy spinner for exactly one round-trip.
+		//    The overlay script restores it via window._ooAiQOrigSpinner.
+		if (typeof window.showAjaxSpinner === 'function' && !window._ooAiQOrigSpinner) {
+			window._ooAiQOrigSpinner = window.showAjaxSpinner;
+			window.showAjaxSpinner = function() { /* suppressed for AI submit */ };
+		}
+
+		// 2. Show the overlay immediately by adding the activator class to the
+		//    fieldset — no round-trip needed for the visual feedback.
+		var fieldset = formEl.querySelector('fieldset.o_ai_questions_form_wrap');
+		if (fieldset) {
+			fieldset.classList.add('o_ai_questions_generating');
+		}
+	}, { once: true });
+})();
+</script>

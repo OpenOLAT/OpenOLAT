@@ -31,8 +31,6 @@ import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
-import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
-import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -172,7 +170,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private MetadataBulkChangeController bulkChangeCtrl;
 	private ImportSourcesController importSourcesCtrl;
 	private NewItemOptionsController newItemOptionsCtrl;
-	private NewAiItemController newAiItemCtrl;
+	private NewAiQuestionsImportController newAiQuestionsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ReferencableEntriesSearchController importTestCtrl;
 	private ConversionConfirmationController conversionConfirmationCtrl;
@@ -494,21 +492,18 @@ public class QuestionListController extends AbstractItemListController implement
 				QItemCreationCmdEvent qicce = (QItemCreationCmdEvent)event;
 				doCreateNewItem(ureq, qicce.getTitle(), qicce.getTaxonomyLevel(), qicce.getFactory());
 			}
-		} else if(source == newAiItemCtrl) {
-			if (event instanceof AiServiceFailedEvent) {
-				AiServiceFailedEvent failedEvent = (AiServiceFailedEvent) event;
-				showError("ai.error", "<p class='b_warning'>" + failedEvent.getErrorDetails());
-			} else if (event.equals(Event.FAILED_EVENT)) {
-				showError("ai.error", "");
-			} else if (event instanceof AiQuestionItemsCreatedEvent) {
-				AiQuestionItemsCreatedEvent createdEvent = (AiQuestionItemsCreatedEvent) event;
-				List<QuestionItem> questionItems = createdEvent.getQuestionItems();
-				// TODO update model
-				showInfo("ai.questions.created", questionItems.size() + "");
-				fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_CREATED));
-			}  
-			cmc.deactivate();
-			cleanUp();			
+		} else if(source == newAiQuestionsCtrl) {
+			// The new dialog manages its own polling and pulse state. We close
+			// the modal on DONE / FAILED / CANCELLED and let the table refresh
+			// pick up new items via the QPoolEvent the dialog already fired.
+			if (event == Event.DONE_EVENT || event == Event.FAILED_EVENT
+					|| event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+				if (event == Event.DONE_EVENT) {
+					fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_CREATED));
+				}
+			}
 		} else if(source == selectGroupCtrl) {
 			cmc.deactivate();
 			if(event instanceof BusinessGroupSelectionEvent) {
@@ -702,6 +697,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(conversionConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(copyConfirmationCtrl);
+		removeAsListenerAndDispose(newAiQuestionsCtrl);
 		cmc = null;
 		addController = null;
 		createTestOverviewCtrl = null;
@@ -713,6 +709,7 @@ public class QuestionListController extends AbstractItemListController implement
 		conversionConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
 		copyConfirmationCtrl = null;
+		newAiQuestionsCtrl = null;
 	}
 	
 	protected void updateRows(List<QuestionItem> items) {
@@ -818,12 +815,17 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 
 	private void doChooseNewAiItem(UserRequest ureq) {
-		removeAsListenerAndDispose(newItemOptionsCtrl);
-		newAiItemCtrl = new NewAiItemController(ureq, getWindowControl());
-		listenTo(newAiItemCtrl);
-		
+		removeAsListenerAndDispose(newAiQuestionsCtrl);
+		Long taxonomyKey = null;
+		if (getSource() instanceof TaxonomyLevelItemsSource tliSource && tliSource.getTaxonomyLevel() != null) {
+			taxonomyKey = tliSource.getTaxonomyLevel().getKey();
+		}
+		newAiQuestionsCtrl = new NewAiQuestionsImportController(ureq, getWindowControl(), taxonomyKey);
+		listenTo(newAiQuestionsCtrl);
+
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), newAiItemCtrl.getInitialComponent(), true, translate("new.ai.item"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				newAiQuestionsCtrl.getInitialComponent(), true, translate("new.ai.item"));
 		cmc.activate();
 		listenTo(cmc);
 	}

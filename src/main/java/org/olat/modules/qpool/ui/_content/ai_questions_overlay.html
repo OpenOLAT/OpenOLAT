@@ -1,0 +1,52 @@
+## ============================================================================
+##  Pool AI questions — generation overlay (pulse + waiting label + auto-poll)
+##
+##  This fragment is rendered as a sibling of the form items inside the
+##  fieldset. CSS class `o_ai_questions_overlay` keeps it hidden (display:none)
+##  until the fieldset also carries `o_ai_questions_generating`, at which point
+##  the overlay becomes display:flex and covers the form via position:absolute.
+##
+##  The hidden poll link is "clicked" by a JS setTimeout so the controller
+##  gets a poll tick every $aiGenerationPollDelayMs without blocking the
+##  server thread.
+## ============================================================================
+<div id="$r.getCId()" class="o_ai_questions_overlay" role="status" aria-live="polite">
+	#set( $aiPulseExtraClass = "o_ai_pulse_active o_ai_pulse_lg" )
+	#parse("/org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html")
+	#set( $aiPulseExtraClass = "" )
+	<div class="o_ai_questions_waiting_label">$r.escapeHtml($aiGenerationWaitingLabel)</div>
+	<div class="o_ai_questions_poll_wrap" style="display:none;">$r.render("ai.questions.poll")</div>
+</div>
+<script>
+(function() {
+	// Restore showAjaxSpinner if the submit hook suppressed it, then clear any
+	// busy indicator that appeared during the round-trip before the overlay arrived.
+	if (window._ooAiQOrigSpinner) {
+		window.showAjaxSpinner = window._ooAiQOrigSpinner;
+		window._ooAiQOrigSpinner = null;
+	}
+	if (typeof removeAjaxBusy === 'function') {
+		removeAjaxBusy();
+	}
+
+	// Ensure the generating class is present on the fieldset (the submit hook
+	// already adds it client-side before the round-trip; this is the server-side
+	// confirmation that keeps it active after the AJAX response is applied).
+	var overlay = document.getElementById('$r.getCId()');
+	if (overlay) {
+		var fieldset = overlay.closest('fieldset');
+		if (fieldset) {
+			fieldset.classList.add('o_ai_questions_generating');
+		}
+	}
+
+	var delay = parseInt('$aiGenerationPollDelayMs', 10) || 3000;
+	if (delay <= 0) return;
+	setTimeout(function() {
+		var host = document.getElementById('$r.getCId()');
+		if (!host) return;
+		var poll = host.querySelector('.o_ai_questions_poll');
+		if (poll) { poll.click(); }
+	}, delay);
+})();
+</script>
