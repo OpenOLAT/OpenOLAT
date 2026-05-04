@@ -52,42 +52,47 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
-import uk.ac.ed.ph.jqtiplus.validation.TestValidationResult;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.validation.ItemValidationResult;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
- * 
- * Initial date: 3 févr. 2017<br>
+ * Test that some external items will be corrected to be read by QtiWorks
+ *  
+ *  
+ * Initial date: 25.06.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @RunWith(Parameterized.class)
-public class OnyxToQtiWorksAssessementTestsTest {
+public class ExternalAssessementItemsTest {
 	
-	private static final Logger log = Tracing.createLoggerFor(OnyxToQtiWorksAssessementTestsTest.class);
+	private static final Logger log = Tracing.createLoggerFor(ExternalAssessementItemsTest.class);
 	
 	@Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "assessment-test-3-8.xml" }
+                { "match-with-latex-5-11.xml", new QTI21Infos() },
+                { "maxima-7-6-1.xml", new QTI21Infos() }
         });
     }
     
     private String xmlFilename;
+    private QTI21Infos infos;
     
-    public OnyxToQtiWorksAssessementTestsTest(String xmlFilename) {
-    	this.xmlFilename = xmlFilename;
-    }
+	public ExternalAssessementItemsTest(String xmlFilename, QTI21Infos infos) {
+		this.xmlFilename = xmlFilename;
+		this.infos = infos;
+	}
 
 	@Test
-	public void fixAssessmentTest()
+	public void fixItem()
 	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
-		URL xmlUrl = OnyxToQtiWorksAssessementTestsTest.class.getResource("resources/onyx/" + xmlFilename);
+		URL xmlUrl = ExternalAssessementItemsTest.class.getResource("resources/onyx/" + xmlFilename);
 		File xmlFile = new File(xmlUrl.toURI());
 		File tmpDir = new File(WebappHelper.getTmpDir(), "onyx" + UUID.randomUUID());
 		tmpDir.mkdirs();
@@ -97,9 +102,9 @@ public class OnyxToQtiWorksAssessementTestsTest {
 				Writer out = Files.newBufferedWriter(outputFile.toPath(), StandardCharsets.UTF_8)) {
 			XMLOutputFactory xof = XMLFactories.newXMLOutputFactory();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
-	
+
 			SAXParser saxParser = XMLFactories.newSAXParser();
-			DefaultHandler2 myHandler = new Onyx38ToQtiWorksHandler(xtw);
+			DefaultHandler2 myHandler = new QtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);
 		} catch(Exception e1) {
@@ -110,20 +115,21 @@ public class OnyxToQtiWorksAssessementTestsTest {
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
 		ResourceLocator fileResourceLocator = new PathResourceLocator(outputFile.toPath());
         AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
-        ResolvedAssessmentTest resolvedAssessmentTest = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(outputFile.toURI());
-        Assert.assertNotNull(resolvedAssessmentTest);
-        AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-        
-        TestValidationResult testResult = assessmentObjectXmlLoader.loadResolveAndValidateTest(outputFile.toURI());
-        BadResourceException e = testResult.getResolvedAssessmentTest().getTestLookup().getBadResourceException();
+        ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(outputFile.toURI());
+        Assert.assertNotNull(resolvedAssessmentItem);
+        AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+
+        // validation is only 
+        ItemValidationResult itemResult = assessmentObjectXmlLoader.loadResolveAndValidateItem(outputFile.toURI());
+        BadResourceException e = itemResult.getResolvedAssessmentItem().getItemLookup().getBadResourceException();
 		if(e != null) {
 			StringBuilder err = new StringBuilder();
 			BadRessourceHelper.extractMessage(e, err);
 			log.error(err.toString());
 		}
-
         FileUtils.deleteDirsAndFiles(tmpDir.toPath());
-        Assert.assertNotNull(assessmentTest);
-        Assert.assertFalse(xmlFilename + " has fatal errors", BadRessourceHelper.hasFatalErrors(e));
+        
+        Assert.assertNotNull(assessmentItem);
+        Assert.assertFalse(BadRessourceHelper.hasFatalErrors(e));
 	}
 }

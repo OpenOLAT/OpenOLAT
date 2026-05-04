@@ -394,7 +394,7 @@ public class AssessmentTestFactory {
 			List<SectionPart> sectionParts = section.getSectionParts();
 			for(SectionPart sectionPart:sectionParts) {
 				if(sectionPart instanceof AssessmentSection) {
-					boolean fixed = ((AssessmentSection)sectionPart).getFixed();
+					boolean fixed = sectionPart.getFixed();
 					allFloating &= !fixed;
 				} else {
 					allFloating &= false;

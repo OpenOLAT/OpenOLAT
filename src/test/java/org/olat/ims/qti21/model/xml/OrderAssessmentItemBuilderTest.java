@@ -22,6 +22,9 @@ package org.olat.ims.qti21.model.xml;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,12 +37,17 @@ import org.junit.Test;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.interactions.OrderAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -47,6 +55,7 @@ import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
@@ -111,5 +120,60 @@ public class OrderAssessmentItemBuilderTest {
 		}
 		
 		FileUtils.deleteDirsAndFiles(itemFile.toPath());
+	}
+	
+	/**
+	 * Test a version 3.6 of the order interaction without feedback
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void extractOrderFromExternalEditor() throws URISyntaxException {
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/onyx/order-3-6.xml");
+		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
+		
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		OrderAssessmentItemBuilder itemBuilder = new OrderAssessmentItemBuilder(assessmentItem, qtiSerializer);
+		Assert.assertEquals(Double.valueOf(1.0d), itemBuilder.getMaxScoreBuilder().getScore());
+		Assert.assertEquals(4, itemBuilder.getChoices().size());
+	}
+	
+	/**
+	 * Test a version modern of the order interaction with feedbacks
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void extractOrderWithFeedbacksFromExternalEdtior() throws URISyntaxException {
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/onyx/order-feedback.xml");
+		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
+		
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		OrderAssessmentItemBuilder itemBuilder = new OrderAssessmentItemBuilder(assessmentItem, qtiSerializer);
+		Assert.assertEquals(3, itemBuilder.getChoices().size());
+		
+		//scoring
+		Assert.assertEquals(ScoreEvaluation.allCorrectAnswers, itemBuilder.getScoreEvaluationMode());
+		ScoreBuilder maxScoreBuilder = itemBuilder.getMaxScoreBuilder();
+		Assert.assertEquals(10.0d, maxScoreBuilder.getScore(), 0.00001d);
+		
+		// check standard feedback
+		ModalFeedbackBuilder correctFeedback = itemBuilder.getCorrectFeedback();
+		Assert.assertNotNull(correctFeedback);
+		Assert.assertTrue(correctFeedback.isCorrectRule());
+		Assert.assertEquals("<p>Gut gemacht!</p>", correctFeedback.getText());
+		
+		ModalFeedbackBuilder incorrectFeedback = itemBuilder.getIncorrectFeedback();
+		Assert.assertNotNull(incorrectFeedback);
+		Assert.assertTrue(incorrectFeedback.isIncorrectRule());
+		Assert.assertEquals("<p>Bitte noch einmal ordnen!</p>", incorrectFeedback.getText());
+	}
+	
+	private AssessmentItem loadAssessmentItem(URL itemUrl) throws URISyntaxException {
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(Paths.get(itemUrl.toURI()));
+        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
+        ResolvedAssessmentItem item = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(itemUrl.toURI());
+		return item.getItemLookup().getRootNodeHolder().getRootNode();
 	}
 }
