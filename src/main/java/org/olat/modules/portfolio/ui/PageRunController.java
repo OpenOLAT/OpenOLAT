@@ -865,8 +865,13 @@ public class PageRunController extends BasicController implements TooledControll
 	private void openMarkdownImport(UserRequest ureq, String targetContainerId, int targetColumn,
 			String referenceElementId, PageElementTarget target) {
 		removeAsListenerAndDispose(markdownImportCtrl);
+		// Allow AI question generation only in contexts where the author may
+		// create quiz elements. In the e-portfolio (PageSettings.full) the
+		// author is the student, who is not allowed to create quiz parts —
+		// canCreateQuiz is false there and the AI section is hidden.
+		boolean allowAiQuestionGeneration = settings.isCanCreateQuiz();
 		markdownImportCtrl = new MarkdownImportController(ureq, getWindowControl(), page, settings.getAiOres(), settings.getSubIdent(),
-				targetContainerId, targetColumn, referenceElementId, target);
+				targetContainerId, targetColumn, referenceElementId, target, allowAiQuestionGeneration);
 		listenTo(markdownImportCtrl);
 
 		Translator mdTranslator = Util.createPackageTranslator(MarkdownImportController.class, getLocale());

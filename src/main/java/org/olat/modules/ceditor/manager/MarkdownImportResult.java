@@ -21,16 +21,21 @@ package org.olat.modules.ceditor.manager;
 
 import java.util.List;
 
+import org.olat.modules.ceditor.model.jpa.ContainerPart;
+
 /**
  * Result of a markdown-to-page conversion and persistence.
  *
  * @param warnings   Warning i18n keys with tab-separated arguments for partial conversion issues
+ * @param container  The ContainerPart that wraps the imported parts (newly created or pre-existing);
+ *                   {@code null} if the markdown produced no parts.
  *
  * Initial date: 2026-03-11<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com
  */
 public record MarkdownImportResult(
-	List<String> warnings
+	List<String> warnings,
+	ContainerPart container
 ) {
 	public boolean hasWarnings() {
 		return warnings != null && !warnings.isEmpty();

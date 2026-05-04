@@ -25,6 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
+import org.olat.core.commons.services.ai.essay.EssayAiGrading;
+import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
+import org.olat.core.commons.services.ai.essay.EssayFeedbackJobService;
+import org.olat.core.commons.services.ai.essay.FormativeFeedback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -47,6 +54,7 @@ import org.olat.ims.qti21.OutcomesAssessmentItemListener;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 import org.olat.ims.qti21.ui.ResponseInput;
@@ -55,6 +63,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
+import org.olat.modules.ceditor.manager.EssayGenerationQuizPartSinkImpl;
 import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
@@ -91,6 +100,32 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private int questionIndex = 0;
 	private ProgressBar progressBar;
 	private Map<String, Boolean> questionPassedState = new HashMap<>();
+	private QuizQuestion currentQuizQuestion;
+
+	/** Async AI correction — per-question state. Reset on each new question. */
+	private Long aiCorrectionJobKey;
+	/** Maximum poll attempts before the UI gives up (≈ 35 s at 2-s cadence). */
+	private static final int MAX_POLL_ATTEMPTS = 18;
+	/** Generation poll cadence (matches QuizEditorController for parity). */
+	private static final int AI_GEN_POLL_DELAY_MS = 3000;
+	private static final int MAX_AI_GEN_POLL_ATTEMPTS = 90;
+	private Link aiGenerationPollLink;
+	private int aiGenerationPollAttempts = 0;
+	/** Threshold (inclusive) above which an AI-graded essay counts as
+	 *  passed in the final quiz summary. Aligned with the assessment-bucket
+	 *  boundaries (50 = "mittelmässig" and above). */
+	private static final int AI_CORRECTION_PASS_THRESHOLD_PERCENT = 50;
+	private int aiCorrectionPollAttempts = 0;
+	/** Hidden link clicked by a JS setTimeout to re-dispatch a poll. */
+	private Link aiCorrectionPollLink;
+	/** Question identifier the in-flight AI correction belongs to. We snapshot
+	 *  it at trigger time because by the time the polling tick runs the
+	 *  current quiz question may have advanced. */
+	private String aiCorrectionForQuestionId;
+	/** Flattened view map rendered by quiz_run.html when feedback is ready. */
+	private Map<String, Object> aiCorrectionFeedbackView;
+	private String aiCorrectionError;
+	private boolean aiCorrectionVisible;
 
 	@Autowired
 	private ContentEditorQti contentEditorQti;
@@ -100,6 +135,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private AssessmentService assessmentService;
 	@Autowired
 	private MediaDAO mediaDAO;
+	@Autowired
+	private EssayAiGradingFileStore essayAiGradingFileStore;
+	@Autowired
+	private EssayFeedbackJobService essayFeedbackJobService;
 
 	public QuizRunController(UserRequest ureq, WindowControl wControl, QuizPart quizPart, boolean editable,
 							 RepositoryEntry entry, String subIdent) {
@@ -137,14 +176,28 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void initQuestionPassedStates() {
 		questionPassedState = new HashMap<>();
+		// Build a lookup of question id -> whether it uses manual grading so
+		// essays (etc.) are not falsely marked as failed on resume (they always
+		// score 0 since there is no automatic correctness check).
+		Map<String, Boolean> manualIds = new HashMap<>();
+		List<QuizQuestion> configured = quizPart.getSettings().getQuestions();
+		if (configured != null) {
+			for (QuizQuestion q : configured) {
+				if (q != null && StringHelper.containsNonWhitespace(q.getId())) {
+					manualIds.put(q.getId(), isManuallyGradedType(q));
+				}
+			}
+		}
 		AssessmentTestSession lastSession = qtiService.getResumableAssessmentItemsSession(getIdentity(),
 				null, entry, subIdent, entry, false);
 		if (lastSession != null) {
 			List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(lastSession);
 			for (AssessmentItemSession itemSession : itemSessions) {
 				int score = itemSession.getScore() != null ? itemSession.getScore().intValue() : 0;
-				if (StringHelper.containsNonWhitespace(itemSession.getAssessmentItemIdentifier())) {
-					questionPassedState.put(itemSession.getAssessmentItemIdentifier(), score > 0);
+				String itemId = itemSession.getAssessmentItemIdentifier();
+				if (StringHelper.containsNonWhitespace(itemId)) {
+					boolean manual = Boolean.TRUE.equals(manualIds.get(itemId));
+					questionPassedState.put(itemId, manual || score > 0);
 				}
 			}
 		}
@@ -168,15 +221,45 @@ public class QuizRunController extends BasicController implements PageRunElement
 		updateImage(ureq);
 
 		mainVC.contextPut("quizOutcomeClass", "");
-		mainVC.contextPut("title", quizPart.getSettings().getTitle());
+		String rawTitle = quizPart.getSettings().getTitle();
+		String aiState = "";
+		String displayTitle = rawTitle;
+		if (rawTitle != null && rawTitle.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER)) {
+			aiState = "generating";
+			displayTitle = rawTitle.substring(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER.length()).trim();
+		} else if (rawTitle != null && rawTitle.startsWith(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER)) {
+			aiState = "failed";
+			displayTitle = rawTitle.substring(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER.length()).trim();
+		}
+		mainVC.contextPut("aiState", aiState);
+		mainVC.contextPut("title", displayTitle);
 		mainVC.contextPut("description", substituteVariables(quizPart.getSettings().getDescription()));
 		startButton = LinkFactory.createButton("quiz.start", mainVC, this);
 		startButton.setIconLeftCSS("o_icon o_icon-fw o_icon_play");
 		startButton.setPrimary(true);
-		startButton.setEnabled(!editable);
+		startButton.setEnabled(!editable && !"generating".equals(aiState));
+		startButton.setVisible(!"generating".equals(aiState));
 		startButton.setTitle("quiz.start");
 		startButton.setAriaLabel("quiz.start");
 		mainVC.put("quiz.start", startButton);
+
+		// Generation-state polling: while the marker is still on the title,
+		// re-fetch the QuizPart from DB on every tick and re-render so the
+		// page editor preview reflects completion as soon as the async job
+		// finishes. Idempotent — once the marker is gone the link is dropped
+		// from the DOM and the JS interval auto-clears.
+		if ("generating".equals(aiState)) {
+			if (aiGenerationPollLink == null) {
+				aiGenerationPollLink = LinkFactory.createCustomLink(
+						"ai.generation.poll", "ai.generation.poll", "",
+						Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS, mainVC, this);
+				aiGenerationPollLink.setCustomDisplayText("");
+				aiGenerationPollLink.setElementCssClass("o_ai_generation_poll");
+			}
+			mainVC.contextPut("aiGenerationPollDelayMs", Integer.valueOf(AI_GEN_POLL_DELAY_MS));
+		} else {
+			mainVC.contextPut("aiGenerationPollDelayMs", Integer.valueOf(0));
+		}
 	}
 
 	private void updateImage(UserRequest ureq) {
@@ -200,6 +283,26 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 		updateProgressBar();
 		progressBar.setActual(questionIndex + 1);
+
+		// AI correction state → template flags. Only one of the three blocks
+		// is rendered at a time (overlay while pending, feedback on done,
+		// error on timeout/fail). All three stay empty for manual essays.
+		mainVC.contextPut("aiCorrectionVisible", aiCorrectionVisible);
+		mainVC.contextPut("aiCorrectionFeedback", aiCorrectionFeedbackView);
+		mainVC.contextPut("aiCorrectionError", aiCorrectionError);
+		mainVC.contextPut("aiCorrectionWaitingLabel", translate("ai.essay.correction.waiting"));
+		if (aiCorrectionVisible) {
+			if (aiCorrectionPollLink == null) {
+				aiCorrectionPollLink = LinkFactory.createCustomLink(
+						"ai.correction.poll", "ai.correction.poll", "",
+						Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS, mainVC, this);
+				aiCorrectionPollLink.setCustomDisplayText("");
+				aiCorrectionPollLink.setElementCssClass("o_essay_ai_correction_poll");
+			}
+			mainVC.contextPut("aiCorrectionPollDelayMs", Integer.valueOf(2000));
+		} else {
+			mainVC.contextPut("aiCorrectionPollDelayMs", Integer.valueOf(0));
+		}
 	}
 
 	private void updateProgressBar() {
@@ -286,7 +389,215 @@ public class QuizRunController extends BasicController implements PageRunElement
 			reset();
 			doStart(ureq);
 			updateUI(ureq);
+		} else if (aiCorrectionPollLink != null && source == aiCorrectionPollLink) {
+			doPollAiCorrection(ureq);
+		} else if (aiGenerationPollLink != null && source == aiGenerationPollLink) {
+			doPollAiGeneration(ureq);
 		}
+	}
+
+	/**
+	 * Generation poll tick — re-fetches the QuizPart from DB and re-renders
+	 * if the {@code [AI:generating]} marker is still on its title. Stops at
+	 * {@link #MAX_AI_GEN_POLL_ATTEMPTS} as a defensive client-side cap.
+	 * Mirrors the pattern in {@link QuizEditorController}.
+	 */
+	private void doPollAiGeneration(UserRequest ureq) {
+		aiGenerationPollAttempts++;
+		QuizPart fresh = CoreSpringFactory.getImpl(DB.class)
+				.getCurrentEntityManager().find(QuizPart.class, quizPart.getKey());
+		if (fresh != null) {
+			quizPart = fresh;
+		}
+		String rawTitle = quizPart.getSettings().getTitle();
+		boolean stillGenerating = rawTitle != null
+				&& rawTitle.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER);
+		if (aiGenerationPollAttempts >= MAX_AI_GEN_POLL_ATTEMPTS && stillGenerating) {
+			QuizSettings settings = quizPart.getSettings();
+			settings.setTitle(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER + " timeout");
+			stillGenerating = false;
+		}
+		if (stillGenerating) {
+			// Suppress repaint — interval keeps firing on its own schedule.
+			mainVC.setDirty(false);
+		} else {
+			updateUI(ureq);
+			mainVC.setDirty(true);
+		}
+	}
+
+	/**
+	 * Poll tick — invoked by the hidden {@code poll} link which is
+	 * re-clicked via a JS {@code setTimeout} on every render while the
+	 * overlay is visible. Stops after {@link #MAX_POLL_ATTEMPTS} ticks
+	 * (client-side safety cap ≈ 35 s at the 2-s cadence).
+	 */
+	private void doPollAiCorrection(UserRequest ureq) {
+		if (aiCorrectionJobKey == null) {
+			return;
+		}
+		aiCorrectionPollAttempts++;
+		EssayFeedbackJobService.JobStatusView status = essayFeedbackJobService.getStatus(aiCorrectionJobKey, getIdentity());
+		boolean stateChanged = true;
+		if (status == null || status.state() == null) {
+			// Job vanished — treat as failed, drop overlay with an error message.
+			aiCorrectionError = translate("ai.essay.correction.failed");
+			finishAiCorrection();
+		} else {
+			switch (status.state()) {
+				case DONE -> {
+					FormativeFeedback feedback = essayFeedbackJobService.parseFeedback(status.feedbackJson());
+					aiCorrectionFeedbackView = AiEssayFeedbackViewFlattener.flatten(feedback, getTranslator());
+					if (aiCorrectionFeedbackView == null) {
+						aiCorrectionError = translate("ai.essay.correction.failed");
+					} else {
+						applyAiScoreToPassedState(feedback);
+					}
+					finishAiCorrection();
+				}
+				case FAILED -> {
+					aiCorrectionError = translate("ai.essay.correction.failed");
+					finishAiCorrection();
+				}
+				case TIMEOUT -> {
+					aiCorrectionError = translate("ai.essay.correction.timeout");
+					finishAiCorrection();
+				}
+				case PENDING, RUNNING -> {
+					if (aiCorrectionPollAttempts >= MAX_POLL_ATTEMPTS) {
+						aiCorrectionError = translate("ai.essay.correction.timeout");
+						finishAiCorrection();
+					} else {
+						// Still running — no observable state change. Skip
+						// re-render so the SVG animation in the overlay does
+						// not restart on every poll tick.
+						stateChanged = false;
+					}
+				}
+			}
+		}
+		if (stateChanged) {
+			updateQuizUI();
+		} else {
+			// Suppress the otherwise-default repaint that the click event
+			// triggers. The browser-side setInterval keeps firing on its own
+			// schedule, independent of server-driven re-renders.
+			mainVC.setDirty(false);
+		}
+	}
+
+	/**
+	 * Translate the AI-grader's self-estimated score percent into the quiz
+	 * summary's passed/failed state for the question that produced the
+	 * grading. ≥ {@link #AI_CORRECTION_PASS_THRESHOLD_PERCENT}% → passed,
+	 * otherwise failed. {@link FormativeFeedback.Type#REJECTED} and
+	 * {@link FormativeFeedback.Type#REFUSED_LONG} (pre-filter rejections)
+	 * count as failed.
+	 */
+	private void applyAiScoreToPassedState(FormativeFeedback feedback) {
+		if (aiCorrectionForQuestionId == null) {
+			return;
+		}
+		boolean passed = false;
+		if (feedback != null && feedback.type() == FormativeFeedback.Type.OK
+				&& feedback.suggestion() != null) {
+			int percent = feedback.suggestion().estimatedScorePercent();
+			passed = percent >= AI_CORRECTION_PASS_THRESHOLD_PERCENT;
+		}
+		questionPassedState.put(aiCorrectionForQuestionId, passed);
+	}
+
+	private void finishAiCorrection() {
+		aiCorrectionJobKey = null;
+		aiCorrectionVisible = false;
+		aiCorrectionPollAttempts = 0;
+	}
+
+	/**
+	 * Reset the AI-correction overlay state when moving to a fresh
+	 * question. The feedback view from a prior question must not leak
+	 * into the current one.
+	 */
+	private void resetAiCorrectionState() {
+		aiCorrectionJobKey = null;
+		aiCorrectionForQuestionId = null;
+		aiCorrectionPollAttempts = 0;
+		aiCorrectionVisible = false;
+		aiCorrectionFeedbackView = null;
+		aiCorrectionError = null;
+	}
+
+	/**
+	 * Called after the learner submits a response. If the current
+	 * question is an essay backed by an {@link EssayAiGrading} row we
+	 * trigger the async AI correction job and show the overlay. Manual
+	 * essay items (no grading row) fall through to the legacy
+	 * "Awaiting correction" behaviour unchanged.
+	 */
+	private void triggerAiCorrectionIfEssay(UserRequest ureq, String studentAnswer) {
+		if (currentQuizQuestion == null) {
+			logDebug("AI correction skipped: currentQuizQuestion is null");
+			return;
+		}
+		if (!isManuallyGradedType(currentQuizQuestion)) {
+			logDebug("AI correction skipped: type " + currentQuizQuestion.getType() + " is not manually graded");
+			return;
+		}
+		QTI21QuestionType type = QTI21QuestionType.safeValueOf(currentQuizQuestion.getType());
+		if (type != QTI21QuestionType.essay) {
+			logDebug("AI correction skipped: type " + type + " is not essay");
+			return;
+		}
+		if (!StringHelper.containsNonWhitespace(studentAnswer)) {
+			// Empty answer → no AI grading possible. The default "passed=true"
+			// fallback applied by outcomes(...) for manually-graded items would
+			// otherwise inflate the quiz summary. Downgrade the entry now so
+			// the final score reflects reality.
+			if (StringHelper.containsNonWhitespace(currentQuizQuestion.getId())) {
+				questionPassedState.put(currentQuizQuestion.getId(), Boolean.FALSE);
+			}
+			logDebug("AI correction skipped: empty studentAnswer");
+			return;
+		}
+		ContentEditorQti.QuizQuestionStorageInfo storageInfo =
+				contentEditorQti.getStorageInfo(quizPart, currentQuizQuestion);
+		if (storageInfo == null || storageInfo.questionDirectory() == null) {
+			logDebug("AI correction skipped: no question storage info for "
+					+ currentQuizQuestion.getId());
+			return;
+		}
+		EssayAiGrading grading = essayAiGradingFileStore.load(storageInfo.questionDirectory());
+		if (grading == null) {
+			logDebug("AI correction skipped: no ai-grading.json next to QTI item for assessmentItemIdentifier="
+					+ currentQuizQuestion.getId()
+					+ " (quiz may have been generated before the file-store refactor — regenerate to enable AI correction)");
+			return;
+		}
+		Long itemSessionKey = null;
+		if (assessmentItemDisplayController instanceof QuizAssessmentItemDisplayController quizCtrl) {
+			itemSessionKey = quizCtrl.getItemSessionKey();
+		}
+		try {
+			aiCorrectionJobKey = essayFeedbackJobService.submit(quizPart.getStoragePath(),
+					currentQuizQuestion.getId(), studentAnswer, itemSessionKey, getIdentity());
+			aiCorrectionForQuestionId = currentQuizQuestion.getId();
+			aiCorrectionPollAttempts = 0;
+			aiCorrectionVisible = true;
+			aiCorrectionFeedbackView = null;
+			aiCorrectionError = null;
+			logInfo("AI correction job " + aiCorrectionJobKey
+					+ " submitted for assessmentItemIdentifier=" + currentQuizQuestion.getId());
+		} catch (AiRateLimitExceededException rl) {
+			logInfo("Essay AI correction throttled: " + rl.getMessage());
+			aiCorrectionError = translate("ai.essay.feedback.error.ratelimit");
+			aiCorrectionVisible = false;
+		} catch (Exception e) {
+			logError("Failed to submit essay AI correction job", e);
+			aiCorrectionError = translate("ai.essay.correction.failed");
+			aiCorrectionVisible = false;
+		}
+		updateQuizUI();
+		mainVC.setDirty(true);
 	}
 
 	private void reset() {
@@ -354,7 +665,9 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	private void doShowQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
+		currentQuizQuestion = quizQuestion;
 		mainVC.contextPut("quizOutcomeClass", "");
+		resetAiCorrectionState();
 		updateUI(ureq);
 
 		ContentEditorQti.QuizQuestionStorageInfo storageInfo = contentEditorQti.getStorageInfo(quizPart, quizQuestion);
@@ -403,10 +716,36 @@ public class QuizRunController extends BasicController implements PageRunElement
 		if (sessionStatus.equals(SessionStatus.FINAL)) {
 			if (StringHelper.containsNonWhitespace(resultIdentifier)) {
 				updateRunStatus(AssessmentRunStatus.running);
-				questionPassedState.put(resultIdentifier, score >= 1);
-				mainVC.contextPut("quizOutcomeClass", score >= 1 ? "o_correct" : "o_incorrect");
+				if (isManuallyGradedType(currentQuizQuestion)) {
+					// Essay / upload / drawing items have no auto-scoring. Any
+					// submitted response is valid and must NOT be rendered as
+					// "wrong". We treat the submission as passed so progress
+					// counters and the "show solution" flow behave correctly.
+					questionPassedState.put(resultIdentifier, Boolean.TRUE);
+					mainVC.contextPut("quizOutcomeClass", "o_submitted");
+				} else {
+					boolean passed = score != null && score >= 1;
+					questionPassedState.put(resultIdentifier, passed);
+					mainVC.contextPut("quizOutcomeClass", passed ? "o_correct" : "o_incorrect");
+				}
 			}
 		}
+	}
+
+	/**
+	 * True for question types that have no automatic correctness check
+	 * (essay, upload, drawing). The learner's submission can only be graded
+	 * manually or via AI grading — the zero-score outcome must not be
+	 * rendered as "wrong".
+	 */
+	private static boolean isManuallyGradedType(QuizQuestion quizQuestion) {
+		if (quizQuestion == null || !StringHelper.containsNonWhitespace(quizQuestion.getType())) {
+			return false;
+		}
+		QTI21QuestionType type = QTI21QuestionType.safeValueOf(quizQuestion.getType());
+		return type == QTI21QuestionType.essay
+				|| type == QTI21QuestionType.upload
+				|| type == QTI21QuestionType.drawing;
 	}
 
 	private enum State {
@@ -458,7 +797,49 @@ public class QuizRunController extends BasicController implements PageRunElement
 		@Override
 		public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier,
 				ResponseInput> fileResponseMap, String candidateComment, FormItem source) {
+			// Snapshot the student's free-text answer BEFORE calling super: the
+			// QTI engine does not keep the raw pre-binding strings after
+			// response processing. Only essays send a StringInput — other types
+			// (MC, upload, ...) produce no answer here.
+			String essayAnswer = extractEssayAnswer(stringResponseMap);
 			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, source);
+			// Kick off the async AI correction job (if the question is an essay
+			// backed by an EssayAiGrading row) AFTER super has persisted the
+			// item session — we need its key for provenance on the usage log.
+			triggerAiCorrectionIfEssay(ureq, essayAnswer);
 		}
+
+		Long getItemSessionKey() {
+			return itemSession == null ? null : itemSession.getKey();
+		}
+	}
+
+	/**
+	 * Extract the learner's free-text essay answer from the QTI string
+	 * response map. Essays use a single {@code RESPONSE} identifier; if
+	 * more than one string response is present we concatenate them with
+	 * a newline separator. Returns {@code null} if the map is empty or
+	 * carries no non-blank strings (e.g. non-essay interactions).
+	 */
+	private static String extractEssayAnswer(Map<Identifier, ResponseInput> stringResponseMap) {
+		if (stringResponseMap == null || stringResponseMap.isEmpty()) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		for (Map.Entry<Identifier, ResponseInput> entry : stringResponseMap.entrySet()) {
+			if (entry.getValue() instanceof ResponseInput.StringInput si) {
+				String[] data = si.getResponseData();
+				if (data != null) {
+					for (String piece : data) {
+						if (StringHelper.containsNonWhitespace(piece)) {
+							if (sb.length() > 0) sb.append('\n');
+							sb.append(piece);
+						}
+					}
+				}
+			}
+		}
+		String joined = sb.toString().trim();
+		return joined.isEmpty() ? null : joined;
 	}
 }

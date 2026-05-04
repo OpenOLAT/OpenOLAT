@@ -220,28 +220,22 @@ public class ContentEditorQti {
 	}
 
 	public void deleteQuestion(QuizPart quizPart, QuizQuestion quizQuestion) {
-		File questionFile = contentEditorFileStorage.getFile(quizQuestion.getXmlFilePath());
-		try {
-			Files.deleteIfExists(questionFile.toPath());
-		} catch (IOException e) {
-			logger.error("Failed to delete question XML '{}': {}", questionFile.toPath().toString(), e);
-		}
-
+		// The question directory holds the QTI XML plus any companion files
+		// (ai-grading.json, ai-source.json, attached media). Recursive delete
+		// covers all of them in one pass.
 		File questionsDir = contentEditorFileStorage.getFile(quizPart.getStoragePath());
 		File questionDir = new File(questionsDir, quizQuestion.getId());
-		try {
-			Files.deleteIfExists(questionDir.toPath());
-		} catch (IOException e) {
-			logger.error("Failed to delete question directory '{}': {}", questionDir.toPath().toString(), e);
+		if (!FileUtils.deleteDirsAndFiles(questionDir, true, true)) {
+			logger.error("Failed to delete question directory '{}'", questionDir.toPath().toString());
 		}
 	}
 
 	public void deleteQuestionsDirectory(QuizPart quizPart) {
+		// Recursive delete — the directory contains one subdirectory per
+		// question, each with the QTI XML plus companion files.
 		File questionsDir = contentEditorFileStorage.getFile(quizPart.getStoragePath());
-		try {
-			Files.deleteIfExists(questionsDir.toPath());
-		} catch (IOException e) {
-			logger.warn("Failed to delete the questions directory '{}': e", questionsDir.toPath().toString(), e);
+		if (!FileUtils.deleteDirsAndFiles(questionsDir, true, true)) {
+			logger.warn("Failed to delete the questions directory '{}'", questionsDir.toPath().toString());
 		}
 	}
 

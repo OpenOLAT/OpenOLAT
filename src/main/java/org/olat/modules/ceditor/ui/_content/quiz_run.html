@@ -8,9 +8,34 @@
 		<img src='$r.staticLink("/images/media/transparent_16_9.png")' alt="$r.translate('background.image')"/>
 	#end
 		<div class="o_quiz_panel">
+			#if($aiState == "generating")
+				<div style="text-align:center; margin-bottom:1rem;">
+					#set( $aiPulseExtraClass = "o_ai_pulse_active o_ai_pulse_lg" )
+					#parse("/org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html")
+					#set( $aiPulseExtraClass = "" )
+				</div>
+			#end
 			<div class="o_quiz_title">$r.escapeHtml($title)</div>
 			<div class="o_quiz_description">$r.escapeHtml($description)</div>
 			<div class="o_quiz_button">$r.render("quiz.start")</div>
+			#if($aiState == "generating")
+				<div class="o_ai_generation_poll_wrap" style="display:none;">$r.render("ai.generation.poll")</div>
+				<script>
+				(function() {
+					var componentId = '$r.getCId()';
+					var key = '__aiGenerationPoll_' + componentId;
+					if (window[key]) { return; }
+					var delay = parseInt('$aiGenerationPollDelayMs', 10) || 3000;
+					window[key] = setInterval(function() {
+						var host = document.getElementById(componentId);
+						if (!host) { clearInterval(window[key]); window[key] = null; return; }
+						var poll = host.querySelector('.o_ai_generation_poll');
+						if (!poll) { clearInterval(window[key]); window[key] = null; return; }
+						poll.click();
+					}, delay);
+				})();
+				</script>
+			#end
 		</div>
 	</div>
   #end
@@ -23,8 +48,153 @@
 		<div class="o_quiz_progress">
 			$r.render("progressBar")
 		</div>
-		<div class="o_quiz_question">
+		<div class="o_quiz_question o_essay_ai_correction_host#if($aiCorrectionVisible) o_essay_ai_correction_in_progress#end">
 			$r.render("question")
+			#if($aiCorrectionVisible)
+				<div class="o_essay_ai_correction_overlay" role="status" aria-live="polite">
+					#set( $aiPulseExtraClass = "o_ai_pulse_active o_ai_pulse_lg" )
+					#parse("/org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html")
+					#set( $aiPulseExtraClass = "" )
+					<div class="o_essay_ai_correction_message">$r.escapeHtml($aiCorrectionWaitingLabel)</div>
+				</div>
+				## Hidden poll link re-clicked by a JS setInterval below until
+				## the overlay disappears. The interval lives on `window` so it
+				## survives across re-renders (the overlay element stays in
+				## the DOM untouched while the job is still PENDING/RUNNING,
+				## because the server suppresses re-render in that case to
+				## keep the SVG animation alive). The interval auto-clears
+				## when the poll link is no longer in the DOM (state changed
+				## → server re-rendered → overlay block removed).
+				<div class="o_essay_ai_correction_poll_wrap" style="display:none;">$r.render("ai.correction.poll")</div>
+				<script>
+				(function() {
+					var componentId = '$r.getCId()';
+					var key = '__aiCorrectionPoll_' + componentId;
+					if (window[key]) { return; } // already running
+					var delay = parseInt('$aiCorrectionPollDelayMs', 10) || 2000;
+					window[key] = setInterval(function() {
+						var host = document.getElementById(componentId);
+						if (!host) {
+							clearInterval(window[key]); window[key] = null; return;
+						}
+						var poll = host.querySelector('.o_essay_ai_correction_poll');
+						if (!poll) {
+							clearInterval(window[key]); window[key] = null; return;
+						}
+						poll.click();
+					}, delay);
+				})();
+				</script>
+			#end
+			#if($aiCorrectionError)
+				<div class="o_essay_ai_correction_error alert alert-warning" role="alert">
+					$r.escapeHtml($aiCorrectionError)
+				</div>
+			#end
+			#if($aiCorrectionFeedback)
+				<div class="o_essay_ai_correction_box">
+				<h4 class="o_essay_ai_correction_title">
+					#set( $aiPulseExtraClass = "o_ai_pulse_xs" )
+					#parse("/org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html")
+					#set( $aiPulseExtraClass = "" )
+					<span>$r.translate('ai.essay.correction.box.title')</span>
+				</h4>
+				<div class="o_essay_ai_correction_feedback">
+					#if($aiCorrectionFeedback.type == "REJECTED" || $aiCorrectionFeedback.type == "REFUSED_LONG")
+						<div class="alert alert-info">
+							$r.escapeHtml($aiCorrectionFeedback.rejectionMessage)
+						</div>
+					#else
+						#if($aiCorrectionFeedback.overallAssessment && $aiCorrectionFeedback.overallAssessment != "")
+							<div class="o_essay_ai_correction_overall"><h5>$r.translate('ai.essay.correction.overall')</h5><p>$r.escapeHtml($aiCorrectionFeedback.overallAssessment)</p></div>
+						#end
+
+						#set($fb = $aiCorrectionFeedback.feedbackToStudent)
+						#if($fb)
+							<div class="o_essay_ai_correction_feedback_student">
+								#if($fb.whatWentWell && $fb.whatWentWell != "")
+									<div class="o_essay_ai_correction_wentwell"><h5>$r.translate('ai.essay.correction.whatwentwell')</h5><p>$r.escapeHtml($fb.whatWentWell)</p></div>
+								#end
+								#if($fb.whatIsMissing && $fb.whatIsMissing != "")
+									<div class="o_essay_ai_correction_missing"><h5>$r.translate('ai.essay.correction.whatismissing')</h5><p>$r.escapeHtml($fb.whatIsMissing)</p></div>
+								#end
+								#if($fb.nextStep && $fb.nextStep != "")
+									<div class="o_essay_ai_correction_nextstep"><h5>$r.translate('ai.essay.correction.nextstep')</h5><p>$r.escapeHtml($fb.nextStep)</p></div>
+								#end
+							</div>
+						#end
+
+						#if($aiCorrectionFeedback.keyPointsHit && !$aiCorrectionFeedback.keyPointsHit.isEmpty())
+							<div class="o_essay_ai_correction_keypoints_hit">
+								<h5>$r.translate('ai.essay.correction.keypoints.hit')</h5>
+								<ul>
+								#foreach($kp in $aiCorrectionFeedback.keyPointsHit)
+									<li>#if($kp.evidence && $kp.evidence != "")$r.escapeHtml($kp.evidence)#end</li>
+								#end
+								</ul>
+							</div>
+						#end
+						#if($aiCorrectionFeedback.keyPointsMissed && !$aiCorrectionFeedback.keyPointsMissed.isEmpty())
+							<div class="o_essay_ai_correction_keypoints_missed">
+								<h5>$r.translate('ai.essay.correction.keypoints.missed')</h5>
+								<ul>
+								#foreach($kp in $aiCorrectionFeedback.keyPointsMissed)
+									<li>#if($kp.reason && $kp.reason != "")$r.escapeHtml($kp.reason)#end</li>
+								#end
+								</ul>
+							</div>
+						#end
+
+						#set($hasLanguageIssues = (($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty()) || ($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())))
+						#if($hasLanguageIssues)
+							<details class="o_essay_ai_correction_language_details">
+								<summary class="h5">$r.translate('ai.essay.correction.language.toggle')</summary>
+								#if($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty())
+									<div class="o_essay_ai_correction_grammar">
+										<h5>$r.translate('ai.essay.correction.grammar')</h5>
+										<ul>
+										#foreach($g in $aiCorrectionFeedback.grammarIssues)
+											<li>#if($g.span && $g.span != "")"<em>$r.escapeHtml($g.span)</em>" — #end$r.escapeHtml($g.note)</li>
+										#end
+										</ul>
+									</div>
+								#end
+								#if($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())
+									<div class="o_essay_ai_correction_spelling">
+										<h5>$r.translate('ai.essay.correction.spelling')</h5>
+										<ul>
+										#foreach($sp in $aiCorrectionFeedback.spellingIssues)
+											<li>$r.escapeHtml($sp.word) &rarr; <em>$r.escapeHtml($sp.suggestion)</em></li>
+										#end
+										</ul>
+									</div>
+								#end
+							</details>
+						#end
+
+						<div class="o_essay_ai_correction_badges">
+							#if($aiCorrectionFeedback.offTopicFlag && $aiCorrectionFeedback.offTopicFlag != "" && $aiCorrectionFeedback.offTopicFlag != "NONE")
+								<span class="label label-warning">$r.escapeHtml($aiCorrectionFeedback.offTopicFlag)</span>
+							#end
+							#if($aiCorrectionFeedback.confidence && $aiCorrectionFeedback.confidence != "")
+								<span class="label $aiCorrectionFeedback.confidenceClass">$r.translate('ai.essay.correction.confidence'): $r.escapeHtml($aiCorrectionFeedback.confidence)</span>
+							#end
+							#if($aiCorrectionFeedback.assessmentLabel && $aiCorrectionFeedback.assessmentLabel != "")
+								<span class="label $aiCorrectionFeedback.assessmentClass">$r.escapeHtml($aiCorrectionFeedback.assessmentLabel)</span>
+							#end
+						</div>
+
+						#if($aiCorrectionFeedback.warnings && !$aiCorrectionFeedback.warnings.isEmpty())
+							<div class="o_essay_ai_correction_warnings">
+								#foreach($w in $aiCorrectionFeedback.warnings)
+									<div class="alert alert-info">$r.escapeHtml($w.message)</div>
+								#end
+							</div>
+						#end
+					#end
+				</div>
+				</div>
+			#end
 		</div>
 	</div>
   #end

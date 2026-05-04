@@ -31,10 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.ai.AiEssayGenerationService;
+import org.olat.core.commons.services.ai.essay.EssayGenerationService;
+import org.olat.core.commons.services.ai.essay.EssayGenerationService.GenerationRequest;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -52,8 +57,13 @@ import org.olat.core.util.docxToMarkdown.DocxToMarkdownResult;
 import org.olat.core.util.docxToMarkdown.DocxToMarkdownService;
 import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.manager.EssayGenerationQuizPartSinkImpl;
 import org.olat.modules.ceditor.manager.MarkdownImportResult;
 import org.olat.modules.ceditor.manager.MarkdownImportService;
+import org.olat.modules.ceditor.model.QuizSettings;
+import org.olat.modules.ceditor.model.jpa.ContainerPart;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.ui.event.MarkdownImportDoneEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,10 +96,22 @@ public class MarkdownImportController extends FormBasicController {
 	private final int targetColumn;
 	private final String referenceElementId;
 	private final PageElementTarget target;
+	/** When false, the AI question generation form section (toggle + count fields)
+	 *  is not added to the form at all. Used by contexts where authors are not
+	 *  allowed to create quiz elements (e.g. e-portfolio: students are authors). */
+	private final boolean allowAiQuestionGeneration;
 
 	private SingleSelection modeEl;
 	private FileElement fileUploadEl;
 	private TextAreaElement markdownTextEl;
+	private FormToggle aiGenerateEl;
+	private IntegerElement aiMcCountEl;
+	private IntegerElement aiEssayCountEl;
+
+	private static final int DEFAULT_AI_MC_COUNT = 2;
+	private static final int DEFAULT_AI_ESSAY_COUNT = 2;
+	private static final int MIN_AI_COUNT = 0;
+	private static final int MAX_AI_COUNT = 5;
 
 	private File tempUnzipDir;
 
@@ -99,10 +121,17 @@ public class MarkdownImportController extends FormBasicController {
 	private MarkdownImportService markdownImportService;
 	@Autowired
 	private DocxToMarkdownService docxToMarkdownService;
+	@Autowired
+	private PageService pageService;
+	@Autowired
+	private EssayGenerationService essayGenerationService;
+	@Autowired
+	private AiEssayGenerationService aiEssayGenerationService;
 
 	public MarkdownImportController(UserRequest ureq, WindowControl wControl, Page page, OLATResourceable aiOres,
 			String subIdent, String targetContainerId, int targetColumn,
-			String referenceElementId, PageElementTarget target) {
+			String referenceElementId, PageElementTarget target,
+			boolean allowAiQuestionGeneration) {
 		super(ureq, wControl);
 		this.page = page;
 		this.aiOres = aiOres;
@@ -111,6 +140,7 @@ public class MarkdownImportController extends FormBasicController {
 		this.targetColumn = targetColumn;
 		this.referenceElementId = referenceElementId;
 		this.target = target;
+		this.allowAiQuestionGeneration = allowAiQuestionGeneration;
 		initForm(ureq);
 	}
 
@@ -138,6 +168,29 @@ public class MarkdownImportController extends FormBasicController {
 		markdownTextEl = uifactory.addTextAreaElement("import.text", "import.text", -1, 15, 80, false, false, "", formLayout);
 		markdownTextEl.setVisible(false);
 
+		// Optional: generate AI questions from imported content (MVP toggle).
+		// Toggle + two count fields (MC + essay). Fields are visible only when
+		// the toggle is on; counts default to 2 and are validated on submit.
+		if (isAiQuestionGenerationAvailable()) {
+			aiGenerateEl = uifactory.addToggleButton("import.ai.generate", "import.ai.generate.label",
+					translate("on"), translate("off"), formLayout);
+			aiGenerateEl.setHelpText(translate("import.ai.generate.help"));
+			aiGenerateEl.addActionListener(FormEvent.ONCHANGE);
+			// MVP default: AI question generation is opted-in by default so the
+			// MC + essay count fields render visible from the start.
+			aiGenerateEl.toggleOn();
+
+			aiMcCountEl = uifactory.addIntegerElement("import.ai.generate.mc.count",
+					"import.ai.generate.mc.count", DEFAULT_AI_MC_COUNT, formLayout);
+			aiMcCountEl.setDisplaySize(3);
+
+			aiEssayCountEl = uifactory.addIntegerElement("import.ai.generate.essay.count",
+					"import.ai.generate.essay.count", DEFAULT_AI_ESSAY_COUNT, formLayout);
+			aiEssayCountEl.setDisplaySize(3);
+
+			updateAiCountsVisibility();
+		}
+
 		// Buttons
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
@@ -152,6 +205,10 @@ public class MarkdownImportController extends FormBasicController {
 			fileUploadEl.setVisible(isFileMode);
 			fileUploadEl.setMandatory(isFileMode);
 			markdownTextEl.setVisible(!isFileMode);
+			flc.setDirty(true);
+		}
+		if (source == aiGenerateEl) {
+			updateAiCountsVisibility();
 			flc.setDirty(true);
 		}
 		if (event instanceof UploadFileElementEvent) {
@@ -185,7 +242,52 @@ public class MarkdownImportController extends FormBasicController {
 			}
 		}
 
+		// Range-validate AI question counts only when the toggle is on —
+		// otherwise the fields are hidden and their values don't matter.
+		if (aiGenerateEl != null && aiGenerateEl.isOn()) {
+			if (aiMcCountEl != null) {
+				aiMcCountEl.clearError();
+				if (!isInAiCountRange(aiMcCountEl)) {
+					aiMcCountEl.setErrorKey("import.ai.generate.count.error.range");
+					allOk = false;
+				}
+			}
+			if (aiEssayCountEl != null) {
+				aiEssayCountEl.clearError();
+				if (!isInAiCountRange(aiEssayCountEl)) {
+					aiEssayCountEl.setErrorKey("import.ai.generate.count.error.range");
+					allOk = false;
+				}
+			}
+		}
+
 		return allOk;
+	}
+
+	/** True if the element holds an integer in [MIN_AI_COUNT, MAX_AI_COUNT]. */
+	private boolean isInAiCountRange(IntegerElement el) {
+		String raw = el.getValue();
+		if (!StringHelper.containsNonWhitespace(raw)) {
+			return false;
+		}
+		try {
+			int v = Integer.parseInt(raw.trim());
+			return v >= MIN_AI_COUNT && v <= MAX_AI_COUNT;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
+	/** Show the two count fields only while the AI toggle is on. */
+	private void updateAiCountsVisibility() {
+		if (aiGenerateEl == null) return;
+		boolean on = aiGenerateEl.isOn();
+		if (aiMcCountEl != null) {
+			aiMcCountEl.setVisible(on);
+		}
+		if (aiEssayCountEl != null) {
+			aiEssayCountEl.setVisible(on);
+		}
 	}
 
 	@Override
@@ -243,7 +345,72 @@ public class MarkdownImportController extends FormBasicController {
 
 		MarkdownImportResult result = markdownImportService.convertAndPersist(markdown, page, getIdentity(), aiOres,
 				subIdent, basePath, getLocale(), targetContainerId, targetColumn, referenceElementId, target);
+
+		// Optional post-step: if the author asked for AI questions, append a
+		// placeholder QuizPart inside the same ContainerPart that wraps the
+		// imported parts (so import + AI questions render as one logical block)
+		// and submit a generation job. The completion hook
+		// (EssayGenerationQuizPartSinkImpl) attaches the accepted drafts as
+		// QTI essay items asynchronously.
+		if (isAiGenerationRequested() && isAiQuestionGenerationAvailable()) {
+			try {
+				submitAiQuestionGeneration(markdown, result.container());
+			} catch (Exception e) {
+				logError("Failed to submit AI essay generation job for page " + page.getKey(), e);
+				// Fall through: import itself succeeded.
+			}
+		}
+
 		fireEvent(ureq, new MarkdownImportDoneEvent(result.warnings()));
+	}
+
+	private boolean isAiGenerationRequested() {
+		return aiGenerateEl != null && aiGenerateEl.isOn();
+	}
+
+	/**
+	 * AI question generation is only offered if (1) the caller allows it,
+	 * (2) the provider is configured, and (3) we have a resolvable
+	 * RepositoryEntry key (required so the jobs + grading rows can be linked
+	 * back). The caller-allowed gate is what hides the section in contexts
+	 * where authors must not create quiz elements (e.g. the e-portfolio).
+	 */
+	private boolean isAiQuestionGenerationAvailable() {
+		if (!allowAiQuestionGeneration) return false;
+		if (aiOres == null || aiOres.getResourceableId() == null) return false;
+		try {
+			return aiEssayGenerationService != null && aiEssayGenerationService.isEnabled();
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private void submitAiQuestionGeneration(String markdown, ContainerPart importContainer) {
+		if (!StringHelper.containsNonWhitespace(markdown)) return;
+
+		// Append the placeholder QuizPart inside the same container the import
+		// service used for the imported parts (so the placeholder renders as
+		// the last element of that block). If no container is available (e.g.
+		// the markdown produced no parts), fall back to a page-level append.
+		QuizPart placeholder = new QuizPart();
+		QuizSettings settings = placeholder.getSettings();
+		settings.setTitle(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER + " "
+				+ translate("import.ai.generate.placeholder.title"));
+		settings.setDescription(translate("import.ai.generate.placeholder.description"));
+		placeholder.setSettings(settings);
+		if (importContainer != null) {
+			placeholder = markdownImportService.appendNewPartToContainer(page, importContainer, placeholder);
+		} else {
+			placeholder = (QuizPart) pageService.appendNewPagePart(page, placeholder);
+		}
+
+		Long repoEntryKey = aiOres.getResourceableId();
+		int essayCount = aiEssayCountEl != null ? aiEssayCountEl.getIntValue() : DEFAULT_AI_ESSAY_COUNT;
+		int mcCount = aiMcCountEl != null ? aiMcCountEl.getIntValue() : DEFAULT_AI_MC_COUNT;
+		GenerationRequest request = GenerationRequest.forQuizPart(
+				markdown, repoEntryKey, getLocale(), getIdentity(),
+				page.getKey(), placeholder.getKey(), essayCount, mcCount);
+		essayGenerationService.submit(request);
 	}
 
 	/**

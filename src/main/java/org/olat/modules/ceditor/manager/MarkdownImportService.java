@@ -119,7 +119,7 @@ public class MarkdownImportService {
 			String subIdent, File basePath, Locale locale, String targetContainerId, int targetColumn,
 			String referenceElementId, PageElementTarget target) {
 		if (markdown == null || markdown.isBlank()) {
-			return new MarkdownImportResult(List.of());
+			return new MarkdownImportResult(List.of(), null);
 		}
 
 		// 1a. Pre-process math blocks FIRST so $$...$$ content is replaced with
@@ -152,6 +152,7 @@ public class MarkdownImportService {
 
 		// 4. Persist parts in container
 		List<PagePart> parts = visitor.getParts();
+		ContainerPart effectiveContainer = null;
 		if (!parts.isEmpty()) {
 			// Resolve target container BEFORE appending parts (appending changes the last element)
 			int[] resolvedColumn = new int[]{ 0 };
@@ -177,7 +178,7 @@ public class MarkdownImportService {
 					column.getElementIds().addAll(elementIds);
 				}
 				resolvedContainer.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
-				pageService.updatePart(resolvedContainer);
+				effectiveContainer = pageService.updatePart(resolvedContainer);
 			} else {
 				ContainerSettings containerSettings = new ContainerSettings();
 				containerSettings.setType(ContainerLayout.block_1col);
@@ -186,11 +187,32 @@ public class MarkdownImportService {
 
 				ContainerPart containerPart = new ContainerPart();
 				containerPart.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
-				pageService.appendNewPagePart(page, containerPart);
+				effectiveContainer = pageService.appendNewPagePart(page, containerPart);
 			}
 		}
 
-		return new MarkdownImportResult(visitor.getWarnings());
+		return new MarkdownImportResult(visitor.getWarnings(), effectiveContainer);
+	}
+
+	/**
+	 * Append a new {@link PagePart} to the given page and register it inside
+	 * the first column of the provided container. Uses the same pattern as
+	 * {@link #convertAndPersist}: persist the part on the page, then add its
+	 * element id to the container column and persist the updated container.
+	 *
+	 * @param page      the page the container belongs to
+	 * @param container the container that should embed the new part (must not be null)
+	 * @param part      the part to append
+	 * @return the managed part returned by the PageService
+	 */
+	public <U extends PagePart> U appendNewPartToContainer(Page page, ContainerPart container, U part) {
+		U persisted = pageService.appendNewPagePart(page, part);
+		ContainerSettings settings = container.getContainerSettings();
+		ContainerColumn column = settings.getColumn(0);
+		column.getElementIds().add(persisted.getId());
+		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
+		pageService.updatePart(container);
+		return persisted;
 	}
 
 	/**

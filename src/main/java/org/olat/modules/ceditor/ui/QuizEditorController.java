@@ -56,6 +56,7 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
+import org.olat.modules.ceditor.manager.EssayGenerationQuizPartSinkImpl;
 import org.olat.modules.ceditor.model.QuizElement;
 import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.QuizSettings;
@@ -91,6 +92,15 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	private FormLink addQuestionButton;
 	private FormLink commandsButton;
 
+	/** AI generation polling — re-checks the QuizPart row periodically while
+	 *  the placeholder marker is still on its title. Each poll re-fetches the
+	 *  entity from the DB and re-renders the editor. Capped to roughly the
+	 *  generation timeout (~3 minutes at the 3-second cadence). */
+	private static final int AI_GEN_POLL_DELAY_MS = 3000;
+	private static final int MAX_AI_GEN_POLL_ATTEMPTS = 90;
+	private FormLink aiGenerationPollLink;
+	private int aiGenerationPollAttempts = 0;
+
 	private HeaderCommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
 	private SelectItemController selectItemController;
@@ -105,10 +115,30 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	private ContentEditorQti contentEditorQti;
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private org.olat.core.commons.services.ai.AiModule aiModule;
 
 	public QuizEditorController(UserRequest ureq, WindowControl wControl,
 								QuizPart quizPart, PageElementStore<QuizElement> store) {
 		super(ureq, wControl, "quiz_editor");
+		// Refresh from DB so the editor never shows "generating" based on a
+		// stale in-memory copy from the page editor cache. The AI sink
+		// removes the GENERATING_TITLE_MARKER asynchronously after the job
+		// finishes, but the page editor may still hold the pre-update copy.
+		// em.find() on a managed entity returns the cached instance, so
+		// detach first to force a real DB read.
+		var em = dbInstance.getCurrentEntityManager();
+		Long key = quizPart.getKey();
+		if (key != null) {
+			if (em.contains(quizPart)) {
+				em.refresh(quizPart);
+			} else {
+				QuizPart fresh = em.find(QuizPart.class, key);
+				if (fresh != null) {
+					quizPart = fresh;
+				}
+			}
+		}
 		this.quizPart = quizPart;
 		this.store = store;
 
@@ -281,7 +311,9 @@ public class QuizEditorController extends FormBasicController implements PageEle
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (addQuestionButton == source) {
+		if (aiGenerationPollLink != null && source == aiGenerationPollLink) {
+			doPollAiGeneration();
+		} else if (addQuestionButton == source) {
 			doAddQuestion(ureq);
 		} else if (commandsButton == source) {
 			doCommands(ureq);
@@ -307,8 +339,59 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	}
 
 	private void updateUI() {
-		flc.contextPut("title", quizPart.getSettings().getTitle());
-		addQuestionButton.setEnabled(canAddQuestions());
+		String rawTitle = quizPart.getSettings().getTitle();
+		String aiState = "";
+		String displayTitle = rawTitle;
+		if (rawTitle != null && rawTitle.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER)) {
+			aiState = "generating";
+			displayTitle = rawTitle.substring(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER.length()).trim();
+		} else if (rawTitle != null && rawTitle.startsWith(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER)) {
+			aiState = "failed";
+			displayTitle = rawTitle.substring(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER.length()).trim();
+		}
+		flc.contextPut("aiState", aiState);
+		flc.contextPut("title", displayTitle);
+		flc.contextPut("aiGenerationWaitingLabel", translate("ai.generation.editor.waiting"));
+		if ("generating".equals(aiState)) {
+			if (aiGenerationPollLink == null) {
+				aiGenerationPollLink = uifactory.addFormLink(
+						"ai.generation.poll", "ai.generation.poll", "", "",
+						flc, Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+				aiGenerationPollLink.setElementCssClass("o_ai_generation_poll");
+			}
+			// First poll fires fast so any state that changed while the editor
+			// was hidden (e.g. AI finished during page-editor pre-render) is
+			// reflected as soon as the user opens edit mode. Subsequent polls
+			// fall back to the normal cadence to avoid hammering the server
+			// during a long generation run.
+			int delay = aiGenerationPollAttempts == 0 ? 500 : AI_GEN_POLL_DELAY_MS;
+			flc.contextPut("aiGenerationPollDelayMs", Integer.valueOf(delay));
+		} else {
+			flc.contextPut("aiGenerationPollDelayMs", Integer.valueOf(0));
+		}
+		addQuestionButton.setEnabled(canAddQuestions() && !"generating".equals(aiState));
+	}
+
+	/** Poll tick — invoked by the hidden link clicked from a JS setTimeout
+	 *  while the placeholder marker is still on the title. Re-fetches the
+	 *  QuizPart from the DB and refreshes the editor. */
+	private void doPollAiGeneration() {
+		aiGenerationPollAttempts++;
+		QuizPart fresh = dbInstance.getCurrentEntityManager().find(QuizPart.class, quizPart.getKey());
+		if (fresh != null) {
+			quizPart = fresh;
+		}
+		if (aiGenerationPollAttempts >= MAX_AI_GEN_POLL_ATTEMPTS) {
+			// Give up — the user can manually reload the page editor.
+			QuizSettings settings = quizPart.getSettings();
+			String title = settings.getTitle();
+			if (title != null && title.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER)) {
+				settings.setTitle(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER + " timeout");
+			}
+		}
+		loadModel();
+		updateUI();
+		flc.setDirty(true);
 	}
 
 	private boolean canAddQuestions() {
@@ -353,6 +436,10 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			return;
 		}
 
+		// Essay items are only allowed in the pool import when AI essay
+		// grading is configured — otherwise the imported essay would have
+		// no automatic correction path inside the page-quiz runtime.
+		boolean essayAllowed = aiModule != null && aiModule.isEssayGradingEnabled();
 		List<QItemType> itemTypes = questionPoolService.getAllItemTypes();
 		List<QItemType> excludedItemTypes = new ArrayList<>();
 		for (QItemType qItemType : itemTypes) {
@@ -361,6 +448,9 @@ public class QuizEditorController extends FormBasicController implements PageEle
 					|| qItemType.getType().equalsIgnoreCase(QuestionType.FIB.name())
 					|| qItemType.getType().equalsIgnoreCase(QuestionType.NUMERICAL.name())
 					|| qItemType.getType().equalsIgnoreCase(QuestionType.INLINECHOICE.name())) {
+				continue;
+			}
+			if (essayAllowed && qItemType.getType().equalsIgnoreCase(QuestionType.ESSAY.name())) {
 				continue;
 			}
 			excludedItemTypes.add(qItemType);

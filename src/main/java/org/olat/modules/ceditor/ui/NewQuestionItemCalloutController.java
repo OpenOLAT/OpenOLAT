@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -35,7 +36,6 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
 import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,6 +52,8 @@ public class NewQuestionItemCalloutController extends BasicController {
 
 	@Autowired
 	private ContentEditorQti contentEditorQti;
+	@Autowired
+	private AiModule aiModule;
 
 	public NewQuestionItemCalloutController(UserRequest ureq, WindowControl wControl, QuizPart quizPart) {
 		super(ureq, wControl);
@@ -65,6 +67,12 @@ public class NewQuestionItemCalloutController extends BasicController {
 		addLink("quiz.question.fib", QTI21QuestionType.fib, links);
 		addLink("quiz.question.numerical", QTI21QuestionType.numerical, links);
 		addLink("quiz.question.inlinechoice", QTI21QuestionType.inlinechoice, links);
+		// Essay items only get an automatic grading path when the AI essay
+		// grading is configured. Without it they would have no scoring path
+		// in this in-page quiz, so we hide the option entirely.
+		if (aiModule != null && aiModule.isEssayGradingEnabled()) {
+			addLink("quiz.question.essay", QTI21QuestionType.essay, links);
+		}
 
 		mainVC.contextPut("links", links);
 		putInitialPanel(mainVC);
