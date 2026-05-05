@@ -16,6 +16,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -29,8 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.AcademicalBackground;
 import org.olat.modules.selectus.model.AcademicalBackgroundImpl;
@@ -43,6 +42,7 @@ import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 import org.olat.modules.selectus.ui.AcademicalDateFormat;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -435,7 +435,8 @@ public class AcademicalBackgroundController extends FormBasicController {
 	
 	private void initCustomAttributes(FormItemContainer formLayout) {
 		if(attributesDelegate.hasSomeAttributes(application)) {
-			uifactory.addSpacerElement("add-attributes-spacer", formLayout, false);	
+			SpacerElement spacer = uifactory.addSpacerElement("add-attributes-spacer", formLayout, false);
+			spacer.setElementCssClass("o_sel_spacer_academic_add_attributes");
 			attributesDelegate.initAdditionalAttributes(formLayout, additionalAttributesEl, application, admin, editable, getLocale());
 		}
 	}

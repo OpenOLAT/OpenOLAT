@@ -14,6 +14,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -219,7 +220,8 @@ public class ProjectController extends FormBasicController {
 	
 	private void initCustomAttributes(FormItemContainer formLayout) {
 		if(attributesDelegate.hasSomeAttributes(application)) {
-			uifactory.addSpacerElement("project-add-attributes-spacer", formLayout, false);
+			SpacerElement spacer = uifactory.addSpacerElement("project-add-attributes-spacer", formLayout, false);
+			spacer.setElementCssClass("o_sel_spacer_project_add_attributes");
 			attributesDelegate.initAdditionalAttributes(formLayout, additionalAttributesEl, application, admin, editable, getLocale());
 		}
 	}

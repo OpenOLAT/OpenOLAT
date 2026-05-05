@@ -22,6 +22,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -444,7 +445,8 @@ public class EditPersonController extends FormBasicController {
 		mailEl.setMandatory(true);
 		mailEl.setEnabled(editable);
 		
-		uifactory.addSpacerElement("secund_spacer", formLayout, false);
+		SpacerElement spacer = uifactory.addSpacerElement("secund_spacer", formLayout, false);
+		spacer.setElementCssClass("o_sel_spacer_person_secund");
 	}
 	
 	private void initNationalitiesForm(Person person, FormItemContainer formLayout) {
@@ -560,7 +562,8 @@ public class EditPersonController extends FormBasicController {
 		currentPositionEl.setEnabled(editable);
 		
 		if(organizationEl.isVisible() || unitEl.isVisible() || currentPositionEl.isVisible()) {
-			uifactory.addSpacerElement("secund_spacer", formLayout, false);
+			SpacerElement spacer = uifactory.addSpacerElement("secund_spacer", formLayout, false);
+			spacer.setElementCssClass("o_sel_spacer_person_secund");
 			infosTitleEl.setVisible(true);
 		}
 	}
