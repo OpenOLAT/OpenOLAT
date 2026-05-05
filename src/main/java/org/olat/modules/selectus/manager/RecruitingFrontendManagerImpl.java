@@ -1265,7 +1265,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public Identity createCommitteeIdentity(String username, User newUser, boolean ldap, boolean azure,
-			Position position, MailFormatter mailToStaff, Organisation organisation, Identity doer) {
+			Position position, Organisation organisation, Identity doer) {
 		// Init preferences
 		newUser.getPreferences().setLanguage("en");
 		newUser.getPreferences().setInformSessionTimeout(true);
@@ -1285,24 +1285,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 					null, null, null, username, null, organisation, null, doer);
 			
 			log.info("Created user username::{}", username);
-		}
-		
-		if(mailToStaff != null) {
-			try {
-				OrganisationUnit organisationSettings = organisationUnitDao.loadOrganisationUnitByPosition(position);
-				String body = mailToStaff.getBody(ident);
-				String to = recruitingModule.getStaffMail(position, organisationSettings);
-				String from = recruitingModule.getStaffMail(position, organisationSettings);
-				String subject = mailToStaff.getSubject(ident);
-
-				MailerResult mailerResult = new MailerResult();
-				new MailerSender(bcProvider, keyStore).send(from, to, null, subject, body, null, mailerResult);
-				if(mailerResult.getReturnCode() != MailerResult.OK) {
-					log.error("Cannot send email to staff");
-				}
-			} catch (Exception e) {
-				log.error("Cannot send email to staff", e);
-			}
 		}
 
 		return ident;

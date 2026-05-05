@@ -76,8 +76,8 @@ import org.olat.modules.selectus.manager.TemplatesCache;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
+import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 import org.olat.modules.selectus.ui.document.PDFApplicationCombinedHelper;
-import org.olat.modules.selectus.ui.main.ExportTableDataModel;
 import org.olat.modules.selectus.ui.resources.FOPMediaResource;
 
 /**

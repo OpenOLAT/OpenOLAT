@@ -20,7 +20,7 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 import org.olat.modules.selectus.ui.committee.list.PositionCommitteeController;
-import org.olat.modules.selectus.ui.main.DefaultExportTableDataModel;
+import org.olat.modules.selectus.ui.components.DefaultExportTableDataModel;
 
 /**
  * 

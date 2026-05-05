@@ -37,8 +37,8 @@ import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
 import org.olat.modules.selectus.model.position.TabConfiguration;
 import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
+import org.olat.modules.selectus.ui.components.DefaultExportTableDataModel;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
-import org.olat.modules.selectus.ui.main.DefaultExportTableDataModel;
 
 /**
  * 

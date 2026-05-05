@@ -26,7 +26,7 @@ import org.olat.core.util.io.ShieldOutputStream;
 
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.FOPTableExport;
-import org.olat.modules.selectus.ui.main.ExportTableDataModel;
+import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 
 /**
  * 

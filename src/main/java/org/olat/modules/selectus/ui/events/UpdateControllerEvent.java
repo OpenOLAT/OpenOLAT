@@ -18,7 +18,7 @@
  * http://www.frentix.com<br>
  * <p>
  */
-package org.olat.modules.selectus.ui.main;
+package org.olat.modules.selectus.ui.events;
 
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;

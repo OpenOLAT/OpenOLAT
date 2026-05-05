@@ -104,6 +104,6 @@ public class CommitteeWizardFinishCallback implements StepRunnerCallback {
 			newUser.setProperty(handler.getName(), value);
 		}
 		Organisation organisation = organisationService.getDefaultOrganisation();//
-		return erFrontendManager.createCommitteeIdentity(tIdentity.getName(), newUser, tIdentity.isLdap(), tIdentity.isAzure(), position, null, organisation, doer);
+		return erFrontendManager.createCommitteeIdentity(tIdentity.getName(), newUser, tIdentity.isLdap(), tIdentity.isAzure(), position, organisation, doer);
 	}
 }

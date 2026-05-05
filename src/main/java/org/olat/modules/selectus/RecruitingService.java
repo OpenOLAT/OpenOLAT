@@ -24,7 +24,6 @@ import org.olat.core.id.User;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
-import org.olat.modules.selectus.manager.MailFormatter;
 import org.olat.modules.selectus.manager.MailerSender;
 import org.olat.modules.selectus.manager.RatingClosedException;
 import org.olat.modules.selectus.model.AcceptPolicyEnum;
@@ -440,7 +439,7 @@ public interface RecruitingService {
 	 * @return
 	 */
 	public Identity createCommitteeIdentity(String username, User newUser, boolean ldap, boolean azure,
-			Position position, MailFormatter mailToStaff, Organisation organisation, Identity doer);
+			Position position, Organisation organisation, Identity doer);
 	
 	/**
 	 * Check if the OLAT Resource exists to prevent a nested doInSync

@@ -176,6 +176,6 @@ public class AddFeedbacksMemberFinishCallback implements StepRunnerCallback {
 			newUser.setProperty(handler.getName(), value);
 		}
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		return recruitingService.createCommitteeIdentity(tIdentity.getName(), newUser, tIdentity.isLdap(), tIdentity.isAzure(), null, null, organisation, doer);
+		return recruitingService.createCommitteeIdentity(tIdentity.getName(), newUser, tIdentity.isLdap(), tIdentity.isAzure(), null, organisation, doer);
 	}
 }

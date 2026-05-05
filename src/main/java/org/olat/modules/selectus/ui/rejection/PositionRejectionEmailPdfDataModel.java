@@ -14,7 +14,7 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.MailLogInfos;
 import org.olat.modules.selectus.model.RejectionEmailLog;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
-import org.olat.modules.selectus.ui.main.DefaultExportTableDataModel;
+import org.olat.modules.selectus.ui.components.DefaultExportTableDataModel;
 
 /**
  * 

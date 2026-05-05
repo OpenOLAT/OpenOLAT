@@ -19,7 +19,7 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.Country;
 import org.olat.modules.selectus.model.HighestDegreeType;
 import org.olat.modules.selectus.ui.comparator.UserRatingComparator;
-import org.olat.modules.selectus.ui.main.DefaultExportTableDataModel;
+import org.olat.modules.selectus.ui.components.DefaultExportTableDataModel;
 
 /**
  * 

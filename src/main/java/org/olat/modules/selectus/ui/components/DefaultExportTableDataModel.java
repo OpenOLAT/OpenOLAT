@@ -18,10 +18,11 @@
  * http://www.frentix.com<br>
  * <p>
  */
+package org.olat.modules.selectus.ui.components;
 
-package org.olat.modules.selectus.ui.main;
+import java.util.List;
 
-import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.components.table.DefaultTableDataModel;
 
 /**
  * 
@@ -32,16 +33,29 @@ import org.olat.core.gui.components.table.TableDataModel;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface ExportTableDataModel<U> extends TableDataModel<U> {
-	
-	public int[] getExportColumnIndex();
-	
-	public String getHeader(int col);
-	
-	public String getFieldNameAt(int col);
-	
-	public Class<?> getTypeAt(int row, int col);
-	
-	public Object getValueForExportAt(int row, int col);
+public abstract class DefaultExportTableDataModel<U> extends DefaultTableDataModel<U> implements ExportTableDataModel<U> {
 
+	public DefaultExportTableDataModel(List<U> objects) {
+		super(objects);
+	}
+	
+	@Override
+	public int[] getExportColumnIndex() {
+		int numOfColumns = getColumnCount();
+		int[] columns = new int[numOfColumns];
+		for(int i=columns.length; i-->0; ) {
+			columns[i] = i;
+		}
+		return columns;
+	}
+
+	@Override
+	public Class<?> getTypeAt(int col, int row) {
+		return Object.class;
+	}
+
+	@Override
+	public Object getValueForExportAt(int row, int col) {
+		return getValueAt(row, col);
+	}
 }

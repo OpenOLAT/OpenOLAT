@@ -19,22 +19,29 @@
  * <p>
  */
 
-package org.olat.modules.selectus.manager;
+package org.olat.modules.selectus.ui.components;
 
-import org.olat.core.id.Identity;
+import org.olat.core.gui.components.table.TableDataModel;
 
 /**
  * 
  * Description:<br>
- * A class the format the email send after the creation of an info message
  * 
  * <P>
- * Initial Date:  24 aug. 2010 <br>
+ * Initial Date:  17 aug. 2010 <br>
+ *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface MailFormatter {
+public interface ExportTableDataModel<U> extends TableDataModel<U> {
+	
+	public int[] getExportColumnIndex();
+	
+	public String getHeader(int col);
+	
+	public String getFieldNameAt(int col);
+	
+	public Class<?> getTypeAt(int row, int col);
+	
+	public Object getValueForExportAt(int row, int col);
 
-		public String getSubject(Identity member);
-		
-		public String getBody(Identity member);
 }

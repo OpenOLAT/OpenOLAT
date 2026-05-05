@@ -36,8 +36,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-
-import org.olat.modules.selectus.ui.main.ExportTableDataModel;
+import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 
 
 /**

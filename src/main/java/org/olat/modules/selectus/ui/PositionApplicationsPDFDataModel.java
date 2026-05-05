@@ -21,7 +21,7 @@ import org.olat.modules.selectus.model.Country;
 import org.olat.modules.selectus.model.HighestDegreeType;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
-import org.olat.modules.selectus.ui.main.DefaultExportTableDataModel;
+import org.olat.modules.selectus.ui.components.DefaultExportTableDataModel;
 
 /**
  * 

@@ -168,7 +168,9 @@ import org.olat.modules.selectus.ui.events.ApplicationChangeEvent;
 import org.olat.modules.selectus.ui.events.DecisionEvent;
 import org.olat.modules.selectus.ui.events.FinalDecisionChangeEvent;
 import org.olat.modules.selectus.ui.events.PositionApplicationEvent;
+import org.olat.modules.selectus.ui.events.PushControllerEvent;
 import org.olat.modules.selectus.ui.events.RatingChangedEvent;
+import org.olat.modules.selectus.ui.events.UpdateControllerEvent;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.FeedbackHelper;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.AddFeedbacksMemberFinishCallback;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.Contact0FilterStep;
@@ -179,8 +181,6 @@ import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.FeedbackMembers
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.Remove1SelectStep;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.RemoveFeedbacksMemberFinishCallback;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.RemoveMembersContext;
-import org.olat.modules.selectus.ui.main.PushControllerEvent;
-import org.olat.modules.selectus.ui.main.UpdateControllerEvent;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 import org.olat.modules.selectus.ui.model.ApplicationAssignmentLightTransient;
 import org.olat.modules.selectus.ui.model.ApplicationRow;
