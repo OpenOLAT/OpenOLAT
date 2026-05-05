@@ -2433,7 +2433,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 			boolean teacher = !reSecurity.isParticipant() && (lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity()) || reSecurity.isCoach());
-			boolean adminRole = reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+			boolean adminRole = reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager();
 			boolean principalRole = reSecurity.isPrincipal() || reSecurity.isCurriculumManager();
 			boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 			LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
