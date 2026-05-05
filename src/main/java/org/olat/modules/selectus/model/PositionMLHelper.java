@@ -253,19 +253,22 @@ public class PositionMLHelper {
 	public static String getApplicationConfirmationMailTemplate(Position position, Locale locale) {
 		String textEn = position.getApplicationConfirmationMailTemplate();
 		String textDe = position.getApplicationConfirmationMailTemplateDe();
-		return RecruitingHelper.mlStringLenient(textEn, textDe, locale);
+		String textFr = position.getApplicationConfirmationMailTemplateFr();
+		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
 	}
 	
 	public static String getApplicationConfirmationWithRefereeManagementMailTemplate(Position position, Locale locale) {
 		String textEn = position.getApplicationConfirmationWithRefereeManagementMailTemplate();
 		String textDe = position.getApplicationConfirmationWithRefereeManagementMailTemplateDe();
-		return RecruitingHelper.mlStringLenient(textEn, textDe, locale);
+		String textFr = position.getApplicationConfirmationWithRefereeManagementMailTemplateFr();
+		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
 	}
 	
 	public static String getApplicationDuplicateConfirmationMailTemplate(Position position, Locale locale) {
 		String textEn = position.getApplicationConfirmationDuplicateMailTemplate();
 		String textDe = position.getApplicationConfirmationDuplicateMailTemplateDe();
-		return RecruitingHelper.mlStringLenient(textEn, textDe, locale);
+		String textFr = position.getApplicationConfirmationDuplicateMailTemplateFr();
+		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
 	}
 	
 

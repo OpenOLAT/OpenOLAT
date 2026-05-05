@@ -114,12 +114,14 @@ public class RecruitingHelper {
 		return cal;
 	}
 	
-	public static String mlStringLenient(String textEn, String textDe, Locale locale) {
+	public static String mlStringLenient(String textEn, String textDe, String textFr, Locale locale) {
 		String val = null;
 		if(locale != null) {
 			if(locale.getLanguage().equals("de")) {
 				val = textDe;
-			} else if(locale.getLanguage().equals("en")) {
+			} else if(locale.getLanguage().equals("fr")) {
+				val = textFr;
+ 			} else if(locale.getLanguage().equals("en")) {
 				val =textEn;
 			}
 		}
@@ -129,6 +131,9 @@ public class RecruitingHelper {
 		}
 		if(!StringHelper.containsNonWhitespace(val)) {
 			val = textDe;
+		}
+		if(!StringHelper.containsNonWhitespace(val)) {
+			val = textFr;
 		}
 		return val;
 	}

@@ -99,6 +99,7 @@ public class SelectConfiguration implements AttributeConfiguration {
 		private String key;
 		private String value;
 		private String valueDe;
+		private String valueFr;
 		
 		public String getKey() {
 			return key;
@@ -124,19 +125,33 @@ public class SelectConfiguration implements AttributeConfiguration {
 			this.valueDe = valueDe;
 		}
 		
+		public String getValueFr() {
+			return valueFr;
+		}
+
+		public void setValueFr(String valueFr) {
+			this.valueFr = valueFr;
+		}
+		
 		public String getValue(Locale locale) {
 			if(locale != null && locale.getLanguage().equals("de")) {
 				return getValueDe();
+			}
+			if(locale != null && locale.getLanguage().equals("fr")) {
+				return getValueFr();
 			}
 			return getValue();
 		}
 		
 		public String getValue(Locale locale, boolean lenient) {
 			if(lenient) {
-				return RecruitingHelper.mlStringLenient(getValue(), getValueDe(), locale);
+				return RecruitingHelper.mlStringLenient(getValue(), getValueDe(), getValueFr(), locale);
 			}
 			if(locale != null && locale.getLanguage().equals("de")) {
 				return getValueDe();
+			}
+			if(locale != null && locale.getLanguage().equals("fr")) {
+				return getValueFr();
 			}
 			return getValue(locale);
 		}
@@ -144,19 +159,23 @@ public class SelectConfiguration implements AttributeConfiguration {
 		public void setValue(String text, Locale locale) {
 			if(locale != null && locale.getLanguage().equals("de")) {
 				setValueDe(text);
-			} else {
+			} else if(locale != null && locale.getLanguage().equals("fr")) {
+				setValueFr(text);
+ 			} else {
 				setValue(text);
 			}
 		}
 		
 		public boolean isInList(List<String> list) {
 			return (StringHelper.containsNonWhitespace(value) && list.contains(value))
-					|| (StringHelper.containsNonWhitespace(valueDe) && list.contains(valueDe));
+					|| (StringHelper.containsNonWhitespace(valueDe) && list.contains(valueDe))
+					|| (StringHelper.containsNonWhitespace(valueFr) && list.contains(valueFr));
 		}
 		
 		public boolean isOption(String val) {
 			return (StringHelper.containsNonWhitespace(value) && value.equals(val))
-					|| (StringHelper.containsNonWhitespace(valueDe) && valueDe.equals(val));
+					|| (StringHelper.containsNonWhitespace(valueDe) && valueDe.equals(val))
+					|| (StringHelper.containsNonWhitespace(valueFr) && valueFr.contains(val));
 		}
 	}
 }

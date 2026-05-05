@@ -1172,6 +1172,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		if(tabConfiguration != null) {
 			tempConfiguration.setTitle(tabConfiguration.getTitle());
 			tempConfiguration.setTitleDe(tabConfiguration.getTitleDe());
+			tempConfiguration.setTitleFr(tabConfiguration.getTitleFr());
 		}
 		
 		for(TextElement helpEl:helpEls) {
