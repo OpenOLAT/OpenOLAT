@@ -2684,6 +2684,78 @@ public class CourseElementTest extends Deployments {
 	
 	
 	/**
+	 * An author create a course with a page element. It configures
+	 * the course node to allow coaches to edit the page. It add a coach
+	 * to the course which add a title to the page.
+	 * 
+	 * @param loginPage
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithPageImportMarkdown()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String courseTitle = "Page " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateCourseForm(courseTitle, true)
+			.assertOnInfos()
+			.clickToolbarBack();
+
+		String pageNodeTitle = "Page";
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle)
+			.edit()
+			.createNode("cepage")
+			.nodeTitle(pageNodeTitle);
+		
+		//publish and go to the course element
+		editor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		editor
+			.clickToolbarBack();
+		course
+			.tree()
+			.assertWithTitleSelected(pageNodeTitle);
+
+		// Go to the course element and check the 
+		CoursePageFragment coachCourse = new CoursePageFragment(browser);
+		coachCourse
+			.tree()
+			.assertWithTitleSelected(pageNodeTitle);
+
+		String content = "# Loi de Poisson\\n\\nEn th\u00E9orie des probabilit\u00E9s et en statistiques, la loi de Poisson est une loi de probabilit\u00E9 discr\u00E8te.\\n\\nElle doit son nom \u00E0 Sim\u00E9on Denis Poisson, qui l&#39;a introduite en 1837.";
+		
+		PageElementPage page = new PageElementPage(browser)
+			.assertOnPageElement();
+			
+		page.openEditor()
+			.importMarkdown(content)
+			.assertOnTitle("Loi de Poisson", 1);
+		
+		page.closeEditor();
+		
+		new ContentViewPage(browser)
+			.assertOnTitle("Loi de Poisson", 1);
+	}
+	
+	
+	/**
 	 * An author creates a survey with a multiple choice
 	 * and a single choice. He uses it in a course. A
 	 * participant of the course participates to the

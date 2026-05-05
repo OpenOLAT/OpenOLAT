@@ -92,6 +92,8 @@ public class MarkdownImportController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_import_markdown_form");
+		
 		String[] modeKeys = { MODE_FILE, MODE_TEXT };
 		String[] modeValues = { translate("import.markdown.mode.file"), translate("import.markdown.mode.text") };
 		modeEl = uifactory.addRadiosHorizontal("import.mode", "import.markdown.mode", formLayout, modeKeys, modeValues);
@@ -104,6 +106,7 @@ public class MarkdownImportController extends FormBasicController {
 		fileUploadEl.setMaxUploadSizeKB(MAX_UPLOAD_SIZE_KB, "import.markdown.file.toolarge", null);
 
 		markdownTextEl = uifactory.addTextAreaElement("import.markdown.text", "import.markdown.text", -1, 15, 80, false, false, "", formLayout);
+		markdownTextEl.setElementCssClass("o_sel_import_text");
 		markdownTextEl.setVisible(false);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
