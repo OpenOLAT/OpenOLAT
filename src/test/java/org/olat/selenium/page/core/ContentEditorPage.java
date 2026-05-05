@@ -27,6 +27,7 @@ import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -191,6 +192,26 @@ public class ContentEditorPage extends ContentViewPage {
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_ce_collect_citation_form");
 		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_ce_add_citation");
+		return this;
+	}
+	
+	public ContentEditorPage importMarkdown(String content) {
+		By importContentBy = By.cssSelector(".o_ce_add_main_btns a.o_sel_import_markdown");
+		OOGraphene.click(importContentBy, browser);
+		
+		OOGraphene.waitModalDialog(browser);
+		
+		By importTextBy = By.xpath("//fieldset[contains(@class,'o_sel_import_markdown_form')]//input[@name='import.mode'][@value='text']");
+		OOGraphene.waitElement(importTextBy, browser).click();
+		
+		By textareaBy = By.cssSelector("fieldset.o_sel_import_markdown_form .o_sel_import_text textarea");
+		WebElement textareaEl = OOGraphene.waitElement(textareaBy, browser);
+		OOGraphene.textarea(textareaEl, content, browser);
+		
+		By importBy = By.cssSelector(".o_sel_import_markdown_form button.btn.btn-primary.o_button_dirty");
+		OOGraphene.click(importBy, browser);
+		
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
