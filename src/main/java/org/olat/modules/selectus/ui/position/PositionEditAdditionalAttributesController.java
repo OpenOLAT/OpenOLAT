@@ -104,6 +104,8 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		positionXStream.omitField(PositionImpl.class, "committeeHeadGroup");
 		positionXStream.omitField(PositionImpl.class, "secretaryGroup");
 		positionXStream.omitField(PositionImpl.class, "exOfficioGroup");
+		positionXStream.omitField(OrganisationImpl.class, "root");
+		positionXStream.omitField(OrganisationImpl.class, "parent");
 		positionXStream.omitField(OrganisationImpl.class, "group");
 		positionXStream.omitField(OrganisationImpl.class, "children");
 		
