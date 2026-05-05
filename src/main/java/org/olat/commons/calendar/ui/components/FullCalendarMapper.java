@@ -19,6 +19,7 @@
  */
 package org.olat.commons.calendar.ui.components;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -32,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.CoreSpringFactory;
@@ -55,12 +57,14 @@ public class FullCalendarMapper implements Mapper {
 	private static final DateTimeFormatter formatLocalDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 	private static final DateTimeFormatter formatOffsetDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
+	private final ZoneId defaultZoneId;
 	private final FullCalendarComponent fcC;
 	private final CalendarManager calendarManager;
 	
 	public FullCalendarMapper(FullCalendarComponent fcC) {
 		this.fcC = fcC;
 		calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
+		defaultZoneId = CoreSpringFactory.getImpl(CalendarModule.class).getDefaultZoneId();
 	}
 
 	/**
@@ -170,15 +174,17 @@ public class FullCalendarMapper implements Mapper {
 			if(allDay) {
 				jsonEvent.put("start", formatDate(event.getBegin()));
 			} else {
-				jsonEvent.put("start", formatDateTime(event.getBegin()));
+				ZonedDateTime calBegin = event.getBegin().withZoneSameInstant(defaultZoneId);
+				jsonEvent.put("start", formatDateTime(calBegin));
 			}
 		}
 		if(event.getEnd() != null) {
 			if(allDay) {
-				ZonedDateTime calEnd = event.getEnd().plusDays(1);
+				ZonedDateTime calEnd = event.getEnd();
 				jsonEvent.put("end", formatDate(calEnd));
 			} else {
-				jsonEvent.put("end", formatDateTime(event.getEnd()));
+				ZonedDateTime calEnd = event.getEnd().withZoneSameInstant(defaultZoneId);
+				jsonEvent.put("end", formatDateTime(calEnd));
 			}
 		}
 		if(event.getLocation() != null) {
