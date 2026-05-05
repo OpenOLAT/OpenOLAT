@@ -223,11 +223,6 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		previewLink.setVisible(enabled);
 		variablesButton.setVisible(enabled);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Date getFeedbackDeadline() {
 		String dayStr = feedbackDeadlineDayElement.getValue();

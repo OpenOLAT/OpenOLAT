@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -22,12 +21,11 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.PolicyLink;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionProfessorship;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -68,16 +66,6 @@ public class PositionRatingPolicyController extends FormBasicController implemen
 	
 	public Position getPosition() {
 		return position;
-	}
-	
-	@Override
-	public FormItem getInitialFormItem() {
-		return flc;
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override

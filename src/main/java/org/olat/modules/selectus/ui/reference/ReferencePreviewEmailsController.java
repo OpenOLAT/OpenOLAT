@@ -105,11 +105,6 @@ public class ReferencePreviewEmailsController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(previousButton == source) {
 			select(mailListEl.getSelected() - 1);

@@ -113,11 +113,6 @@ public class ApplicationMemberFeedbackMainController extends BasicController {
 			applicationTitleFirstLastName			// 4
 		};
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

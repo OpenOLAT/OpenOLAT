@@ -286,11 +286,6 @@ public class ApplicationEditController extends FormBasicController {
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {

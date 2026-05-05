@@ -99,11 +99,6 @@ public class SendFeedbackInvitationController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String subjectTemplate = subjectEl.getValue();
 		template.setSubjectTemplate(subjectTemplate);

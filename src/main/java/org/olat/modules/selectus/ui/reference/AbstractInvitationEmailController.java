@@ -75,7 +75,7 @@ public class AbstractInvitationEmailController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IRCols.dateInvitation, new DateCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IRCols.dateLastReminder, new DateCellRenderer()));
 		
-		dataModel = new SelectForInvitationEmailDataModel(salutationGenerator, getTranslator(), getLocale(), columnsModel);
+		dataModel = new SelectForInvitationEmailDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
 		tableEl.setElementCssClass("o_sel_position_invitation_list");
@@ -118,11 +118,6 @@ public class AbstractInvitationEmailController extends StepFormBasicController {
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-	}
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override

@@ -143,11 +143,6 @@ public class ApplyToApplicationMainController extends BasicController implements
 		String listUrl = RecruitingHelper.getLinkToPositionList();
 		layoutMainVC.contextPut("positionListUrl", listUrl);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void reset(UserRequest ureq) {
 		Application application = recruitingService.createTempApplication(null, false);

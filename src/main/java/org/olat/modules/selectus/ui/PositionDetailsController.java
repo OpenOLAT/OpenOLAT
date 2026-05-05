@@ -80,11 +80,6 @@ public class PositionDetailsController extends FormBasicController implements Ac
 
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

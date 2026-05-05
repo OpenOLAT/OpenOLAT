@@ -91,11 +91,6 @@ public class ReviewEditConfigurationController extends FormBasicController imple
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public Position getPosition() {
 		return position;
 	}
@@ -338,15 +333,15 @@ public class ReviewEditConfigurationController extends FormBasicController imple
 				if(StringHelper.isLong(el.getValue()) && Integer.parseInt(el.getValue()) > 1) {
 					// ok
 				} else {
-					el.setErrorKey("review.step.form.error", null);
+					el.setErrorKey("review.step.form.error");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				el.setErrorKey("review.step.form.error", null);
+				el.setErrorKey("review.step.form.error");
 				allOk &= false;
 			}
 		} else {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -357,7 +352,7 @@ public class ReviewEditConfigurationController extends FormBasicController imple
 		boolean allOk = true;
 		el.clearError();
 		if(!el.isOneSelected()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;

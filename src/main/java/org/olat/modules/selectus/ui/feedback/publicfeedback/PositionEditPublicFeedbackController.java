@@ -148,11 +148,6 @@ public class PositionEditPublicFeedbackController extends FormBasicController im
 		boolean feedbackEnabled = enableFeedbackEl.isAtLeastSelected(1);
 		feedbackDeadlineContainer.setVisible(feedbackEnabled);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Date getPublicFeedbackDeadline() {
 		String dayStr = feedbackDeadlineDayElement.getValue();

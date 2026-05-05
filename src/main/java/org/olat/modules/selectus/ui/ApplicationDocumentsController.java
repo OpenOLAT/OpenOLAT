@@ -15,6 +15,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -268,15 +269,10 @@ public class ApplicationDocumentsController extends FormBasicController {
 	}
 	
 	@Override
-	public FormItem getInitialFormItem() {
-		return flc;
-	}
-
-	@Override
-	protected void doDispose() {
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//
 	}
-	
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

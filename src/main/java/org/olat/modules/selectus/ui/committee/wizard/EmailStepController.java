@@ -58,11 +58,6 @@ public class EmailStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public FormItem getStepFormItem() {
 		return emailController.getInitialFormItem();
 	}

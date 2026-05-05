@@ -84,11 +84,6 @@ public class InstructionsStepController extends StepFormBasicController {
 		
 		formLayout.add("instructions", documentsController.getInitialFormItem());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

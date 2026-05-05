@@ -98,11 +98,6 @@ public class RecruitingFooterController extends BasicController implements Locka
 		
 		putInitialPanel(vc);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void lock() {

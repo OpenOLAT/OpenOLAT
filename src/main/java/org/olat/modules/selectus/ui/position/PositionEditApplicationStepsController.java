@@ -162,11 +162,6 @@ public class PositionEditApplicationStepsController extends BasicController impl
 			tabPane.setSelectedPane(ureq, 0);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public Position getPosition() {

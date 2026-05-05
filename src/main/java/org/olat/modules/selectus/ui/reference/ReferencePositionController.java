@@ -78,11 +78,6 @@ public class ReferencePositionController extends BasicController {
 		String positionValue = translate("reference.position.details.text", positionTitleArgs);
 		positionDetailsCtrl.setPositionTitle(positionValue);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

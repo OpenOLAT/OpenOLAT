@@ -100,6 +100,7 @@ public class ApplicationStatusController extends FormBasicController {
 					translate("decision.2"), translate("decision.1")	
 			};
 			decisionEl = uifactory.addDropdownSingleselect("edit.decision", layoutCont, decisionKeys, decisionValues, null);
+			decisionEl.setDomReplacementWrapperRequired(false);
 			decisionEl.addActionListener(FormEvent.ONCHANGE);
 			//TODO selectus decisionEl.setAriaLabel("edit.decision");
 			
@@ -157,14 +158,9 @@ public class ApplicationStatusController extends FormBasicController {
 			layoutCont.contextPut("statusComment", comment.toString());
 		}
 	}
-	
-	@Override
-	public FormItem getInitialFormItem() {
-		return flc;
-	}
 
 	@Override
-	protected void doDispose() {
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//
 	}
 

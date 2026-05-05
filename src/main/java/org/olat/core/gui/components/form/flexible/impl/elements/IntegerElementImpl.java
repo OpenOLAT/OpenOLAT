@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.InlineIntegerElement;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date: 22.06.2007 <br>
@@ -118,11 +119,13 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 	}
 
 	private boolean intValueCheck() {
-		try {
-			Integer.parseInt(getValue());
-		} catch (NumberFormatException nfe) {
-			setErrorKey(intValueErrorKey);
-			return false;
+		if(StringHelper.containsNonWhitespace(getValue())) {
+			try {
+				Integer.parseInt(getValue());
+			} catch (NumberFormatException nfe) {
+				setErrorKey(intValueErrorKey);
+				return false;
+			}
 		}
 		return true;
 	}
@@ -205,7 +208,6 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 
 	@Override
 	public boolean validate() {
-		//
 		super.validate();
 		if (hasError()) {
 			return false; // stop if super found already an error
@@ -224,7 +226,7 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 		}
 		if(!isMinValueCheck()) {
 			return false;
-		}		
+		}
 		// else no error
 		clearError();
 		return true;

@@ -131,11 +131,6 @@ public class ReferenceSubmitController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

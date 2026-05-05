@@ -233,9 +233,4 @@ public abstract class AbstractEmailController extends StepFormBasicController im
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, renderer));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

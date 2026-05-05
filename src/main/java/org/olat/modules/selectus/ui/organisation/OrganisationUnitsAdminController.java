@@ -105,11 +105,6 @@ public class OrganisationUnitsAdminController extends FormBasicController {
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-
-	@Override
-	protected void doDispose() {
-		// 
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

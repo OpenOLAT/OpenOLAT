@@ -42,11 +42,6 @@ public class RecruitingMinimalTopNavController extends BasicController implement
 		closeLink = LinkFactory.createLink("header.topnav.close", topNavVC, this);
 		putInitialPanel(topNavVC);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 	
 	@Override
 	public void lock() {

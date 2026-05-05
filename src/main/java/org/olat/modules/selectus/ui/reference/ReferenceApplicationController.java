@@ -68,11 +68,6 @@ public class ReferenceApplicationController extends FormBasicController {
 		nextButton = uifactory.addFormLink("next", formLayout, Link.BUTTON);
 		nextButton.setVisible(application.getKey() != null && !preview);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

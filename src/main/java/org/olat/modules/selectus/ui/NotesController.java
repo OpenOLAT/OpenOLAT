@@ -105,11 +105,6 @@ public class NotesController extends FormBasicController {
 			return null;
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

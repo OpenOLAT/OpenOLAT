@@ -404,11 +404,6 @@ public class PositionDocumentsConfigurationController extends FormBasicControlle
 	}
 	
 	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
-	
-	@Override
 	public Position getPosition() {
 		return position;
 	}

@@ -56,11 +56,6 @@ public class FilterStatusController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formNext(UserRequest ureq) {
 		Collection<String> selectedStatus = filterEl.getSelectedKeys();
 		if(selectedStatus.isEmpty()) {

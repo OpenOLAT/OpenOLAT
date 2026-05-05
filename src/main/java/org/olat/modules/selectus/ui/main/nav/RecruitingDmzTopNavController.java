@@ -49,11 +49,6 @@ public class RecruitingDmzTopNavController extends BasicController implements Lo
 
 		putInitialPanel(topNavVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//nothing to dispose
-	}
 
 	@Override
 	public void lock() {

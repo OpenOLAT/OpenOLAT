@@ -192,11 +192,6 @@ public class PositionListOverviewController extends BasicController implements T
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		removeModalControllers();
 		if(entries == null || entries.isEmpty()) {

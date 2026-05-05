@@ -112,11 +112,6 @@ public class ApplyToPositionListController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static class PositionWrapper {
 		

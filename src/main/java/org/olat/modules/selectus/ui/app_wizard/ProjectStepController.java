@@ -43,11 +43,6 @@ public class ProjectStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public FormItem getStepFormItem() {
 		return projectController.getInitialFormItem();
 	}

@@ -110,11 +110,6 @@ public class MemberFeedbacksController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(MemberFeedCols.positionTitle.name(), true));
 		tableEl.setSortSettings(sortOptions);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void loadModel() {
 		List<ApplicationFeedback> feedbacks = feedbackService.getApplicationFeedbacks(getIdentity());

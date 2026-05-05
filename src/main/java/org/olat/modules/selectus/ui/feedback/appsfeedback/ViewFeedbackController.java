@@ -46,11 +46,6 @@ public class ViewFeedbackController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(closeButton == source) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);

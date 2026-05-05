@@ -96,11 +96,6 @@ public class PositionAcceptRatingPolicyController extends FormBasicController im
 	public List<AcceptPolicyEnum> getPolicyToAcceptList() {
 		return policyToAcceptList;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -153,11 +148,6 @@ public class PositionAcceptRatingPolicyController extends FormBasicController im
 				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 				layoutCont.contextPut("message", message);
 			}
-		}
-		
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

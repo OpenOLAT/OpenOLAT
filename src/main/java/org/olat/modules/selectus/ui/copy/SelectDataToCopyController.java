@@ -205,11 +205,6 @@ public class SelectDataToCopyController extends StepFormBasicController {
 		}
 		return row;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

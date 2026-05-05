@@ -55,11 +55,6 @@ public class ApplicationCommitteeCommentController extends FormBasicController {
 			commentEl.setFocus(true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public Application commitChanges(Application app) {
 		this.application = app;

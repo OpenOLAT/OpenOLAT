@@ -78,11 +78,6 @@ public class PublicFeedbackMainController extends MainLayoutBasicController impl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		String id = getFeedbackId(ureq);
 		Identity identity = ureq.getIdentity();

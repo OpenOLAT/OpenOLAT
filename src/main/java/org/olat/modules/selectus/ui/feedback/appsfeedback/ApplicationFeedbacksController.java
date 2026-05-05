@@ -134,11 +134,6 @@ public class ApplicationFeedbacksController extends FormBasicController implemen
 		}
 		return row;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

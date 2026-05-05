@@ -31,15 +31,7 @@ public class RemoveAssignmentsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-
 }

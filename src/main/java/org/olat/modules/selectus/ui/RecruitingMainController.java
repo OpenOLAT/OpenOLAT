@@ -88,11 +88,6 @@ public class RecruitingMainController extends BasicController implements Activat
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == stackPanel) {
 			if(event instanceof PopEvent) {

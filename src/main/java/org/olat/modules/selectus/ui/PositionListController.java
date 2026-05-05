@@ -353,11 +353,6 @@ public class PositionListController extends FormBasicController implements Toole
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

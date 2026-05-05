@@ -236,11 +236,6 @@ public class MemberEditController extends FormBasicController {
 		}
 		return "";
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

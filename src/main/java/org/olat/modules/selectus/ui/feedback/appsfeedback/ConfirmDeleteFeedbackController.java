@@ -78,11 +78,6 @@ public class ConfirmDeleteFeedbackController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(deleteButton == source) {
 			doDelete(ureq);

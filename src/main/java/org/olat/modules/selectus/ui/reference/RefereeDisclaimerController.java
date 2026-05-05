@@ -91,11 +91,6 @@ public class RefereeDisclaimerController extends FormBasicController {
 		flc.contextPut("showLegend", Boolean.FALSE);
 		return translate("disclaimer.terms.of.usage");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

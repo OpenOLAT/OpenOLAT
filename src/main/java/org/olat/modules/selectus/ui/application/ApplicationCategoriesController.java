@@ -139,8 +139,8 @@ public class ApplicationCategoriesController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		//super.propagateDirtinessToContainer(fiSrc, event);
 	}
 
 	@Override

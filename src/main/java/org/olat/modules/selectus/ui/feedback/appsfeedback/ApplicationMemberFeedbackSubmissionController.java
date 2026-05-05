@@ -79,11 +79,6 @@ public class ApplicationMemberFeedbackSubmissionController extends FormBasicCont
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Action action;
 		String before;

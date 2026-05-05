@@ -308,11 +308,6 @@ public class ApplicationReferenceListController extends FormBasicController {
 			comparativeExpertTableEl.reloadData();
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

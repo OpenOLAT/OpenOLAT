@@ -53,11 +53,6 @@ public class EditPersonStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public FormItem getStepFormItem() {
 		return editPersonController.getInitialFormItem();
 	}

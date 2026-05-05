@@ -446,11 +446,6 @@ public class ApplicationReferenceEditController extends FormBasicController {
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private ReferenceRequestStatus getRequestStatus() {
 		return requestEl.isOneSelected() ? ReferenceRequestStatus.valueOf(requestEl.getSelectedKey()) : ReferenceRequestStatus.notAnswered;
 	}

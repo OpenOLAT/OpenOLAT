@@ -97,11 +97,6 @@ public class SearchApplicationsController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(ResultsField.lastName.name(), true));
 		tableEl.setSortSettings(sortOptions);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

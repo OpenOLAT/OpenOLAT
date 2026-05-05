@@ -85,11 +85,6 @@ public class BatchDecisionController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

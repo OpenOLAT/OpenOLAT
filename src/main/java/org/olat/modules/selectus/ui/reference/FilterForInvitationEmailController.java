@@ -86,11 +86,6 @@ public class FilterForInvitationEmailController extends StepFormBasicController 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		ReferenceSearchParameters params = new ReferenceSearchParameters();
 		params.setApplications(emailVar.getApplications());

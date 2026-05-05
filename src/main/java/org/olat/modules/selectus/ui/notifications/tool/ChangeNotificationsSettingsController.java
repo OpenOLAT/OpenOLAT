@@ -75,11 +75,6 @@ public class ChangeNotificationsSettingsController extends BasicController {
 		notificationUserSettingsCtrl = null;
 		cmc = null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doEditNotificationSettings(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);

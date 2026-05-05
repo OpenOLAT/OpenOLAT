@@ -104,11 +104,6 @@ public class ApplicationAssignmentsController extends FormBasicController {
 			dropdown.setEmbbeded(true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<Identity> assignees = assignmentService.getAssignees(application);
@@ -154,6 +149,11 @@ public class ApplicationAssignmentsController extends FormBasicController {
 		removeAsListenerAndDispose(addAssignmentWizardController);
 		removeAssignmentWizardController = null;
 		addAssignmentWizardController = null;
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		//
 	}
 
 	@Override

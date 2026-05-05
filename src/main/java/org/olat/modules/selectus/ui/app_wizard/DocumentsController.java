@@ -263,11 +263,6 @@ public class DocumentsController extends FormBasicController {
 	protected void doDispose() {
 		mainForm.removeSubFormListener(this);
 	}
-
-	@Override
-	public FormItem getInitialFormItem() {
-		return flc;
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

@@ -113,11 +113,6 @@ public class RejectionFilterController extends StepFormBasicController {
 		excludeEl.setVisible(!excludeKeyValues.isEmpty());
 		excludeEl.addActionListener(FormEvent.ONCHANGE);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

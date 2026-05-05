@@ -153,11 +153,6 @@ public class PositionEditConfirmationStepController extends FormBasicController 
 			formLayout.add(cancelButton);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

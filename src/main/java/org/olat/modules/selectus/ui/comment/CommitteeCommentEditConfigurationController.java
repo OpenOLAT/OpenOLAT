@@ -147,11 +147,6 @@ public class CommitteeCommentEditConfigurationController extends FormBasicContro
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
 			updateUI();

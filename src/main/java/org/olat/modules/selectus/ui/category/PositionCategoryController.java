@@ -170,11 +170,6 @@ public class PositionCategoryController extends FormBasicController implements P
 			positionTableEl.reset(true, true, true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

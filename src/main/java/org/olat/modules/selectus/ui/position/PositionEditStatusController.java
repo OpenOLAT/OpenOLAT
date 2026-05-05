@@ -313,11 +313,6 @@ public class PositionEditStatusController extends FormBasicController implements
 	}
 	
 	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
-	
-	@Override
 	public Position getPosition() {
 		return position;
 	}

@@ -82,11 +82,6 @@ public class ReferenceMainController extends MainLayoutBasicController implement
 		layoutMainVC.put("content", new Panel("empty"));
 		putInitialPanel(layoutMainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

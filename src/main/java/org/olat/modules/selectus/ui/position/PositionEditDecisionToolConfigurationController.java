@@ -86,12 +86,6 @@ public class PositionEditDecisionToolConfigurationController extends FormBasicCo
 		cancelButton.setVisible(!readOnly);
 	}
 	
-	
-	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
-	
 	@Override
 	public Position getPosition() {
 		return position;
@@ -100,7 +94,6 @@ public class PositionEditDecisionToolConfigurationController extends FormBasicCo
 	@Override
 	public void updatePosition(Position updatedPosition) {
 		this.position = updatedPosition;
-
 	}
 
 	@Override

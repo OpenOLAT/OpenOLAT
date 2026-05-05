@@ -77,11 +77,6 @@ public class PositionEditAdditionalAttributePlaceholderController extends FormBa
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}

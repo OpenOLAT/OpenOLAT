@@ -46,13 +46,6 @@ public class CustomStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-
-
-	@Override
 	public FormItem getStepFormItem() {
 		return customAttributesCtrl.getInitialFormItem();
 	}

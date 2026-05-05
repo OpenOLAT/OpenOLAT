@@ -288,11 +288,6 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 			membersFeedbackTableEl.reset(true, true, true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Date getPublicFeedbackDeadline() {
 		String dayStr = feedbackDeadlineDayElement.getValue();

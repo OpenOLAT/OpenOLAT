@@ -34,11 +34,6 @@ public class RecruitingWizardTopNavController extends BasicController implements
 		VelocityContainer topNavVC = createVelocityContainer("dmztopnav");
 		putInitialPanel(topNavVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//nothing to dispose
-	}
 
 	@Override
 	public void lock() {

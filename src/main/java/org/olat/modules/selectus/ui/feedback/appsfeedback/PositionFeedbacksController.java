@@ -264,11 +264,6 @@ public class PositionFeedbacksController extends FormBasicController {
 		}
 		return keyValues;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void reloadModel() {
 		loadModel();

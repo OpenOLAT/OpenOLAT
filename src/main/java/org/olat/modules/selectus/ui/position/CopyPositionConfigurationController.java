@@ -240,11 +240,6 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		}
 		return false;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Set<Locale> getSelectedLocale() {
 		Collection<String> availableLanguages = availableLanguageEls.getSelectedKeys();

@@ -73,11 +73,6 @@ public class PositionEditReferenceController extends BasicController implements 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public Position getPosition() {
 		return position;
 	}

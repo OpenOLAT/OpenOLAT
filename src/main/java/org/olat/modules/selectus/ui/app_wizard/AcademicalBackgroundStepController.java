@@ -48,11 +48,6 @@ public class AcademicalBackgroundStepController extends StepFormBasicController 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public FormItem getStepFormItem() {
 		return backgroundController.getInitialFormItem();
 	}

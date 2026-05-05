@@ -350,11 +350,6 @@ public class PositionCommitteeController extends FormBasicController implements 
 			row.setNumOfAssignments(numOfAssignments); // second
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void initTools() {

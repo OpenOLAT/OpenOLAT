@@ -237,11 +237,6 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	public Position getPosition() {
 		return position;
 	}

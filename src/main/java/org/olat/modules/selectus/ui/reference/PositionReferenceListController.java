@@ -294,11 +294,6 @@ public class PositionReferenceListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), col));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void updatePosition(Position updatedPosition) {
 		this.position = updatedPosition;

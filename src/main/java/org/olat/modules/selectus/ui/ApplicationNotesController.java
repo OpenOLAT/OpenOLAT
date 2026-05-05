@@ -90,11 +90,6 @@ public class ApplicationNotesController extends FormBasicController {
 			container.add(editNotesLink);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -114,6 +109,11 @@ public class ApplicationNotesController extends FormBasicController {
 		} else {
 			super.event(ureq, source, event);
 		}
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		//
 	}
 
 	@Override

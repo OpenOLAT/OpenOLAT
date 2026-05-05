@@ -81,11 +81,6 @@ public class RecruitingTopNavController extends BasicController implements Locka
 		
 		putInitialPanel(topNavVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void lock() {

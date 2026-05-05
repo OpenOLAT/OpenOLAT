@@ -55,11 +55,6 @@ public class ApplicationMemoController extends FormBasicController {
 			memoEl.setFocus(true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected Application commitChanges(Application app) {
 		this.application = app;

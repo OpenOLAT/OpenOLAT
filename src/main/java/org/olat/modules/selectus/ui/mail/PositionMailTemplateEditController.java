@@ -234,11 +234,6 @@ public class PositionMailTemplateEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= RecruitingHelper.validateTextElement(nameEl, 255, true, new OWASPAntiSamyXSSFilter());

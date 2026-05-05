@@ -85,11 +85,6 @@ public class ReviewConfigurationController extends BasicController implements Po
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}

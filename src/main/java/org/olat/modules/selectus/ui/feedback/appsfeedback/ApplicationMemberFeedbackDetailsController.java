@@ -66,11 +66,6 @@ public class ApplicationMemberFeedbackDetailsController extends FormBasicControl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(nextButton == source) {
 			fireEvent(ureq, Event.DONE_EVENT);

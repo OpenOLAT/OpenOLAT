@@ -207,11 +207,6 @@ public class ApplicationFeedbackMemberEditController extends FormBasicController
 		feedbackDeadlineYearElement.setMandatory(true);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private Date getFeedbackDeadline() {
 		String dayStr = feedbackDeadlineDayElement.getValue();
 		String monthStr = feedbackDeadlineMonthElement.getSelectedKey();

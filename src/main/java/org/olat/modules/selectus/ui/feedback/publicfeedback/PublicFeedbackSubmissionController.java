@@ -126,11 +126,6 @@ public class PublicFeedbackSubmissionController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Action action;
 		String before;

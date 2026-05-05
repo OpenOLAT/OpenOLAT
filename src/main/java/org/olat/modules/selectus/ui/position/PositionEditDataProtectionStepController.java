@@ -110,11 +110,6 @@ public class PositionEditDataProtectionStepController extends FormBasicControlle
 		dataProtectionCtrl = null;
 		cmc = null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

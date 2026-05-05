@@ -91,11 +91,6 @@ public class PositionMailTemplateResetController extends FormBasicController {
 		deleteButton = uifactory.addFormLink("reset", formLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

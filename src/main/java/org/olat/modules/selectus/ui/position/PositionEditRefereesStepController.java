@@ -159,11 +159,6 @@ public class PositionEditRefereesStepController extends FormBasicController impl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(refereesCtrl == source) {
 			cmc.deactivate();

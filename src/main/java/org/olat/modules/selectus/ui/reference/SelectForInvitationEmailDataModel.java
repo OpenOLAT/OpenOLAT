@@ -15,8 +15,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
-
-import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 
@@ -31,16 +29,11 @@ public class SelectForInvitationEmailDataModel extends DefaultFlexiTableDataMode
 	
 	private static final IRCols[] COLS = IRCols.values();
 	
-	private final Locale locale;
 	private final Translator translator;
-	private final SalutationGenerator salutationGenerator;
 	
-	public SelectForInvitationEmailDataModel(SalutationGenerator salutationGenerator,
-			Translator translator, Locale locale, FlexiTableColumnModel columnModel) {
+	public SelectForInvitationEmailDataModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
-		this.locale = locale;
 		this.translator = translator;
-		this.salutationGenerator = salutationGenerator;
 	}
 
 	@Override

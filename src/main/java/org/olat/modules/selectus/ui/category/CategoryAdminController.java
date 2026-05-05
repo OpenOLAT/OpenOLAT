@@ -77,11 +77,6 @@ public class CategoryAdminController extends FormBasicController {
 				.withMessageI18nKey("category.table.empty")
 				.build());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<Category> categories = taggingService.getSystemCategories();

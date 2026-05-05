@@ -66,11 +66,6 @@ public class ConfirmDeleteAdditionalAttributesController extends FormBasicContro
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

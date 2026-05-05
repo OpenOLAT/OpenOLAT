@@ -100,11 +100,6 @@ public class OverviewMembersToContactController extends StepFormBasicController 
 				.withMessageI18nKey("apps.feedbacks.emtpy")
 				.build());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		if(feedbacksContext.getSelectedMembers() == null) {

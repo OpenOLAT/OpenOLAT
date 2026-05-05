@@ -418,11 +418,6 @@ public class ReferenceTabbedController extends BasicController {
 		helpLink.setTarget("_blank");
 		helpLink.setUrl(Settings.getServerContextPathURI() + templateUrl);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

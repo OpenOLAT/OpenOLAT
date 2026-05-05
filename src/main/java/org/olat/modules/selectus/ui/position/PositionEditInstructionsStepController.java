@@ -227,11 +227,6 @@ public class PositionEditInstructionsStepController extends FormBasicController 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Event doneEvent = Event.DONE_EVENT;
 		if(position.getKey() != null) {

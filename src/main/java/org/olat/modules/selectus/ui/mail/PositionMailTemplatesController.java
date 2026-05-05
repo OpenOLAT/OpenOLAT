@@ -191,11 +191,6 @@ implements PositionEditableController, FlexiTableCssDelegate {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmResetCtrl == source || addTemplateCtrl == source
 				|| editPositionMLTemplateCtrl == source || editPositionTemplateCtrl == source

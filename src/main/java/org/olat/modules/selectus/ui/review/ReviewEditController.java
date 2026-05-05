@@ -90,11 +90,6 @@ public class ReviewEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String applicantName = salutationGenerator.getFullname(application, getLocale());
 		setFormDescription("edit.review.text", new String[] { applicantName });

@@ -154,10 +154,6 @@ public class SelectCommitteeController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-	@Override
 	protected void formOK(UserRequest ureq) {
 		importCommittee.clearCommittee();
 		List<CommitteeRow> rows = membersDataModel.getObjects();

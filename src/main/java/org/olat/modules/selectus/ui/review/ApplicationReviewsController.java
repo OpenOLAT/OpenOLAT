@@ -135,11 +135,6 @@ public class ApplicationReviewsController extends FormBasicController implements
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		orderButton = uifactory.addFormLink("order", "order.desc", null, formLayout, Link.BUTTON);
 		orderButton.setIconLeftCSS("o_icon o_icon_toggle_on");

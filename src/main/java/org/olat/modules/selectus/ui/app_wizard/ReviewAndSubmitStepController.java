@@ -46,11 +46,6 @@ public class ReviewAndSubmitStepController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public FormItem getStepFormItem() {

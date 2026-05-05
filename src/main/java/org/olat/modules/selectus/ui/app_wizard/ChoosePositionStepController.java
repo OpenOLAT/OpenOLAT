@@ -149,11 +149,6 @@ public class ChoosePositionStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(languagesSelection == source) {
 			if(languagesSelection.isOneSelected()) {

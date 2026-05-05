@@ -116,11 +116,6 @@ public class PositionEditAdditionalTextAttributeController extends FormBasicCont
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		for(TextElement textEl:textEls) {

@@ -148,11 +148,6 @@ public class PositionEditController extends BasicController implements Activatea
 	public Position getPosition() {
 		return position;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void initTools() {

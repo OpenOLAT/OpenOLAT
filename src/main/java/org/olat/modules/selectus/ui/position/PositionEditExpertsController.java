@@ -208,12 +208,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 		}
 		return expertTemplate;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
+
 	@Override
 	public Position getPosition() {
 		return position;

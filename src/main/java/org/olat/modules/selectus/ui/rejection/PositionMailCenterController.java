@@ -446,11 +446,6 @@ public class PositionMailCenterController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, field, renderer));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void loadModel(Position updatePosition) {
 		this.position = updatePosition;

@@ -141,11 +141,6 @@ public class ApplicationController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(categoriesController == source) {
 			if(event == Event.CHANGED_EVENT) {
@@ -157,18 +152,14 @@ public class ApplicationController extends FormBasicController {
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		if(fiSrc instanceof SingleSelection) {
-			super.propagateDirtinessToContainer(fiSrc, fe);
-		}
+		//
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof SingleSelection && "edit.decision".equals(source.getName())) {
-			SingleSelection decisionEl = (SingleSelection)source;
+		if(source instanceof SingleSelection decisionEl && "edit.decision".equals(decisionEl.getName())) {
 			if(decisionEl.isOneSelected()) {
-				String key = decisionEl.getSelectedKey();
-				doChangeDecision(ureq, key);
+				doChangeDecision(ureq, decisionEl.getSelectedKey());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -64,11 +64,6 @@ public class ClosedApplicationMessageController extends FormBasicController {
 		};
 		layoutCont.contextPut("i18nArguments", i18nArguments);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
