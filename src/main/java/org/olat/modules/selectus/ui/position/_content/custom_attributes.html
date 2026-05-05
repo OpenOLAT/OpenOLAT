@@ -4,6 +4,14 @@
 	$r.render("helps")
 </fieldset>
 #end
+
+#if($r.visible("headings"))
+<fieldset>
+	<legend>$r.translate("edit.headings.title")</legend>
+	$r.render("headings")
+</fieldset>
+#end
+
 #if($r.visible("standard.attributes.table"))
 <fieldset class="o_block_bottom">
 	<legend>$r.translate("standard.attributes.title")</legend>

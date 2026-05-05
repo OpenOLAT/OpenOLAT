@@ -194,7 +194,7 @@ public class PositionEditConfirmationStepController extends FormBasicController 
 		
 		String before = auditService.toAuditXml(position);
 
-		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null);
+		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null, null);
 		
 		position = recruitingService.savePosition(position);
 		dbInstance.commit();

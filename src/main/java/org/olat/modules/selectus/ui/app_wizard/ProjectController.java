@@ -15,6 +15,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -124,6 +125,14 @@ public class ProjectController extends FormBasicController {
 			setFormDescription("wizard.edit_project.explanation");
 		}
 		formLayout.setElementCssClass("o_sel_edit_project");
+		
+		String heading = tabConfiguration.getHeading(getLocale());
+		if(StringHelper.containsNonWhitespace(heading)) {
+			StaticTextElement headingEl = uifactory.addStaticTextElement("project-data", "wizard.edit_project.legend", "", formLayout);
+			headingEl.setElementCssClass("o_static_heading");
+			headingEl.setLabel(heading, null, false);
+		}
+		
 		initProject(formLayout);
 		initCustomAttributes(formLayout);
 	}

@@ -139,6 +139,14 @@ public class AcademicalBackgroundController extends FormBasicController {
 			setFormDescription("wizard.edit_background.explanation");
 		}
 		formLayout.setElementCssClass("o_sel_academical_background");
+		
+		String heading = tabConfiguration.getHeading(getLocale());
+		if(StringHelper.containsNonWhitespace(heading)) {
+			StaticTextElement headingEl = uifactory.addStaticTextElement("academic-data", "academical_background", "", formLayout);
+			headingEl.setElementCssClass("o_static_heading");
+			headingEl.setLabel(heading, null, false);
+		}
+		
 		initAcademicalBackground(formLayout);
 		initCustomAttributes(formLayout);
 	}

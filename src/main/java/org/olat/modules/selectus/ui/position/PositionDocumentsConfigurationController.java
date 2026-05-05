@@ -497,7 +497,7 @@ public class PositionDocumentsConfigurationController extends FormBasicControlle
 
 		commitSettings();
 		
-		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null);
+		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null, null);
 
 		position = recruitingService.savePosition(position);
 		dbInstance.commit();

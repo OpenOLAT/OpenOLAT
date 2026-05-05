@@ -221,7 +221,7 @@ public class PositionEditReviewAndSubmitStepController extends FormBasicControll
 
 		commitChanges();
 
-		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null);
+		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null, null);
 		
 		position = recruitingService.savePosition(position);
 		dbInstance.commit();

@@ -234,6 +234,67 @@ public class TabsConfigurationDelegate {
 		return i18n;
 	}
 	
+	public void updateHeadings(List<Locale> positionLanguages, TabConfiguration configuration,
+			FormLayoutContainer helpContainer, List<TextElement> headingEls) {
+		List<Locale> missingLocales = new ArrayList<>(positionLanguages);
+		for(TextElement headingEl:headingEls) {
+			Object locale = headingEl.getUserObject();
+			headingEl.setVisible(positionLanguages.contains(locale));
+			missingLocales.remove(locale);
+		}
+		
+		for(Locale locale:missingLocales) {
+			TextElement textEl = initHeading(locale, positionLanguages, configuration, helpContainer);
+			headingEls.add(textEl);
+		}
+		
+		for(TextElement headingEl:headingEls) {
+			Locale locale = (Locale)headingEl.getUserObject();
+			headingEl.setVisible(positionLanguages.contains(locale));
+			labelHeading(locale, positionLanguages, headingEl);
+		}
+	}
+	
+	public FormLayoutContainer initHeadings(List<Locale> positionLanguages, TabConfiguration configuration,
+			FormItemContainer formLayout, Form mainForm, List<TextElement> headingsEls, boolean readOnly) {
+		FormLayoutContainer headingContainer = FormLayoutContainer.createDefaultFormLayout_2_10("headings", formLayout.getTranslator());
+		formLayout.add("headings", headingContainer);
+		headingContainer.setRootForm(mainForm);
+		for(Locale locale:positionLanguages) {
+			TextElement textEl = initHeading(locale, positionLanguages, configuration, headingContainer);
+			textEl.setEnabled(!readOnly);
+			headingsEls.add(textEl);
+		}
+		return headingContainer;
+	}
+	
+	private TextElement initHeading(Locale locale, List<Locale> positionLanguages, TabConfiguration configuration, FormItemContainer headingContainer) {
+		String lang = locale.getLanguage();
+		String text = configuration.getHeading(locale);
+		String id = "attr_name_heading_" + lang;
+		String i18nLabel = "edit.heading.name";
+		TextElement textEl = uifactory.addTextElement(id, i18nLabel, 255, text, headingContainer);
+		labelHeading(locale, positionLanguages, textEl);
+		textEl.setUserObject(locale);
+		return textEl;
+	}
+	
+	private void labelHeading(Locale locale, List<Locale> positionLanguages, TextElement textEl) {
+		String lang = locale.getLanguage();
+		if(positionLanguages.size() > 1) {
+			textEl.setLabel("edit.heading.name_ml", new String[]{ lang });
+			textEl.setElementCssClass("o_sel_help_name_" + lang);
+		} else {
+			textEl.setElementCssClass("o_sel_help_name");
+		}
+		
+		String i18nHint = "edit.heading.hint";
+		String hint = textEl.getTranslator().translate(i18nHint);
+		if(StringHelper.containsNonWhitespace(hint)) {
+			textEl.setHelpText(hint);
+		}
+	}
+	
 	public FormLayoutContainer initHelpTexts(List<Locale> positionLanguages, TabConfiguration configuration,
 			FormItemContainer formLayout, Form mainForm, List<TextElement> helpEls, List<TextElement> additionalHelpEls,
 			WindowControl wControl, boolean richText, boolean readOnly) {
@@ -293,7 +354,7 @@ public class TabsConfigurationDelegate {
 		}
 	}
 	
-	public void save(Position position, TabConfiguration configuration, List<TextElement> helpEls, List<TextElement> additionalHelpEls) {
+	public void save(Position position, TabConfiguration configuration, List<TextElement> helpEls, List<TextElement> additionalHelpEls, List<TextElement> headingsEls) {
 		for(TextElement helpEl:helpEls) {
 			Locale locale = (Locale)helpEl.getUserObject();
 			configuration.setHelp(helpEl.getValue(), locale);
@@ -302,6 +363,12 @@ public class TabsConfigurationDelegate {
 			for(TextElement additionalHelpEl:additionalHelpEls) {
 				Locale locale = (Locale)additionalHelpEl.getUserObject();
 				configuration.setAdditionalHelp(additionalHelpEl.getValue(), locale);
+			}
+		}
+		if(headingsEls != null) {
+			for(TextElement headingEl:headingsEls) {
+				Locale locale = (Locale)headingEl.getUserObject();
+				configuration.setHeading(headingEl.getValue(), locale);
 			}
 		}
 		position.setTabConfiguration(configuration.getTab(), configuration);

@@ -122,9 +122,11 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 	private FormLink addSeparatorButton;
 	private FormLink addStaticTextButton;
 	
-	private List<FormLink> previewButtons = new ArrayList<>(2);
-	private List<TextElement> helpEls = new ArrayList<>(2);
+	private List<FormLink> previewButtons = new ArrayList<>(3);
+	private List<TextElement> helpEls = new ArrayList<>(3);
+	private List<TextElement> headingsEls = new ArrayList<>(3);
 	private FormLayoutContainer helpContainer;
+	private FormLayoutContainer headingContainer;
 	private FlexiTableElement standardTableEl;
 	private FlexiTableElement additionalTableEl;
 	private PositionEditStandardAttributesDataModel standardTableModel;
@@ -213,6 +215,8 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		positionLanguages = recruitingModule.getPositionLocales(position);
 		tabsConfigurationDelegate.updateHelps(positionLanguages, tabConfiguration, helpContainer,
 				helpEls, null, getWindowControl(), false);
+		tabsConfigurationDelegate.updateHeadings(positionLanguages, tabConfiguration,
+				headingContainer, headingsEls);
 		
 		configurations = feedbackService.getApplicationsFeedbackConfigurations(position);
 		visibilityStepSettings = new EditVisibilityStepSettings(position, configurations);
@@ -245,6 +249,8 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		if(position != null) {
 			helpContainer = tabsConfigurationDelegate
 					.initHelpTexts(positionLanguages, tabConfiguration, formLayout, mainForm, helpEls, null, getWindowControl(), false, readOnly);
+			headingContainer = tabsConfigurationDelegate
+					.initHeadings(positionLanguages, tabConfiguration, formLayout, mainForm, headingsEls, readOnly);
 		}
 		initFormAdditionalAttributes(formLayout, ureq);
 		initFormStandardAttributes(formLayout);
@@ -652,7 +658,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 	 */
 	private void savePosition() {
 		
-		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null);
+		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, null, headingsEls);
 		
 		// remove deleted attributes
 		List<PositionAttributeDefinition> toDelete = new ArrayList<>();
@@ -1178,6 +1184,11 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		for(TextElement helpEl:helpEls) {
 			Locale loc = (Locale)helpEl.getUserObject();
 			tempConfiguration.setHelp(helpEl.getValue(), loc);
+		}
+		
+		for(TextElement headingEl:headingsEls) {
+			Locale loc = (Locale)headingEl.getUserObject();
+			tempConfiguration.setHeading(headingEl.getValue(), loc);
 		}
 		
 		if(tab == PositionApplicationAttributeTabEnum.personalData) {

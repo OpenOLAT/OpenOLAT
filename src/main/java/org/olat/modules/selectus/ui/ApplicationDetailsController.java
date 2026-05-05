@@ -133,6 +133,11 @@ public class ApplicationDetailsController extends FormBasicController {
 		projectLayout.setRootForm(mainForm);
 		formLayout.add(projectLayout);
 		projectLayout.setVisible(false);
+		
+		TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.project);
+		if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
+			projectLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+		}
 	
 		if(recruitingModule.isApplicationProjectTitleEnabled() && StringHelper.containsNonWhitespace(project.getTitle())
 				&& secCallback.canViewField(RecruitingModule.APP_SECTION_PROJECT, RecruitingModule.APP_PROJECT_TITLE)) {
@@ -223,6 +228,13 @@ public class ApplicationDetailsController extends FormBasicController {
 			FormLayoutContainer personInfosLayout = FormLayoutContainer.createTableCondensedLayout("personInfos", getTranslator());
 			personInfosLayout.setRootForm(mainForm);
 			formLayout.add(personInfosLayout);
+			
+			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.personalData);
+			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
+				personInfosLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+			} else {
+				personInfosLayout.setFormTitle(translate("contact.data"));
+			}
 			
 			String id = application.getId() == null ? "" : application.getId().toString();
 			if(StringHelper.containsNonWhitespace(id)
@@ -356,7 +368,7 @@ public class ApplicationDetailsController extends FormBasicController {
 			FormLayoutContainer additionalInfosLayout = FormLayoutContainer.createTableCondensedLayout("additionalPersonalData", getTranslator());
 			additionalInfosLayout.setRootForm(mainForm);
 			formLayout.add(additionalInfosLayout);
-	
+
 			personalDataAttributesDelegate.initAdditionalAttributesDetails(formLayout, additionalInfosLayout, mainForm,
 					application, RecruitingModule.APP_SECTION_PERSON, secCallback, getLocale());
 		}
@@ -560,6 +572,11 @@ public class ApplicationDetailsController extends FormBasicController {
 			backgroundLayout.setRootForm(mainForm);
 			formLayout.add(backgroundLayout);
 			backgroundLayout.setVisible(false);
+			
+			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.academicalBackground);
+			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
+				backgroundLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+			}
 			
 			AcademicalBackground background = application.getAcademicalBackground();
 			if(background != null) {

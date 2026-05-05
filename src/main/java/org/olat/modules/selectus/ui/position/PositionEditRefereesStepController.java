@@ -206,7 +206,7 @@ public class PositionEditRefereesStepController extends FormBasicController impl
 	}
 
 	private void save() {
-		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, additionalHelpEls);
+		tabsConfigurationDelegate.save(position, tabConfiguration, helpEls, additionalHelpEls, null);
 		position = recruitingService.savePosition(position);
 		dbInstance.commit();
 	}

@@ -183,6 +183,11 @@ public class ReviewAndSubmitController extends FormBasicController {
 			personInfosLayout.setRootForm(mainForm);
 			formLayout.add(personInfosLayout);
 			
+			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.personalData);
+			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
+				personInfosLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+			}
+			
 			String fullname = StringHelper.escapeHtml(RecruitingHelper.formatFullName(application, getTranslator()));
 			uifactory.addStaticTextElement("fullname", "edit.application.name", fullname, personInfosLayout);
 			
@@ -469,6 +474,11 @@ public class ReviewAndSubmitController extends FormBasicController {
 			FormLayoutContainer projectLayout = FormLayoutContainer.createTableCondensedLayout("project", getTranslator());
 			projectLayout.setRootForm(mainForm);
 			formLayout.add(projectLayout);
+			
+			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.project);
+			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
+				projectLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+			}
 
 			if(recruitingModule.isApplicationProjectTitleEnabled()
 					&& StringHelper.containsNonWhitespace(project.getTitle())) {
@@ -543,6 +553,11 @@ public class ReviewAndSubmitController extends FormBasicController {
 			
 			AcademicalBackground background = application.getAcademicalBackground();
 			if(background != null) {
+				
+				TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.academicalBackground);
+				if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
+					backgroundLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+				}
 			
 				if(background.getNumberOfOriginalPublications() != null && background.getNumberOfOriginalPublications().intValue() > 0
 						&& recruitingModule.isApplicationAcademicalBackgroundNumberOfOriginalPublicationsEnabled()) {

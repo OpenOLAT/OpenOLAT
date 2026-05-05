@@ -27,6 +27,9 @@ public class TabConfiguration {
 	private String title;
 	private String titleDe;
 	private String titleFr;
+	private String heading;
+	private String headingDe;
+	private String headingFr;
 	private boolean disabled;
 	
 	public TabConfiguration() {
@@ -97,6 +100,48 @@ public class TabConfiguration {
 		setTitle(title);
 	}
 	
+	public String getHeading() {
+		return heading;
+	}
+
+	public void setHeading(String heading) {
+		this.heading = heading;
+	}
+
+	public String getHeadingDe() {
+		return headingDe;
+	}
+
+	public void setHeadingDe(String headingDe) {
+		this.headingDe = headingDe;
+	}
+
+	public String getHeadingFr() {
+		return headingFr;
+	}
+
+	public void setHeadingFr(String headingFr) {
+		this.headingFr = headingFr;
+	}
+	
+	public String getHeading(Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			return getHeadingDe();
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			return getHeadingFr();
+		}
+		return getHeading();
+	}
+	
+	public void setHeading(String title, Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			setHeadingDe(title);
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			setHeadingFr(title);
+		}
+		setHeading(title);
+	}
+
 	public String getHelp() {
 		return help;
 	}
