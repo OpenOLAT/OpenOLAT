@@ -26,13 +26,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionAttributeDefinition;
 import org.olat.modules.selectus.model.PositionLight;
+import org.olat.modules.selectus.model.PositionLightWithStatistics;
 import org.olat.modules.selectus.model.PositionMLHelper;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.ui.RecruitingHelper;
@@ -72,6 +73,7 @@ public class CopyPositionListController extends FormBasicController {
 		globalAttributes = recruitingService.getGlobalAttributeDefinition();
 		
 		initForm(ureq);
+		loadModel(ureq);
 		if(orderBys != null && orderBys.length > 0 && orderBys[0] != null) {
 			tableEl.sort(orderBys[0]);
 		}
@@ -100,8 +102,7 @@ public class CopyPositionListController extends FormBasicController {
 		copyColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(copyColumn);
 
-		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "positions", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
@@ -131,6 +132,13 @@ public class CopyPositionListController extends FormBasicController {
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("position.list.empty")
 				.build());
+	}
+	
+	private void loadModel(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		List<PositionLightWithStatistics> positions = recruitingService
+				.getPositionsLightWithStatistics(getIdentity(), roles, globalAttributes, getLocale());
+		positionsDataModel.setObjects(positions);
 	}
 
 	@Override

@@ -5,7 +5,6 @@
  */
 package org.olat.modules.selectus.ui.copy;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.modules.selectus.model.ApplicationLight;
@@ -42,7 +41,7 @@ public class CopyApplicationContext implements ChoosePosition {
 	
 	@Override
 	public List<Position> getExcludedPositions() {
-		return sourcePosition == null ? Collections.emptyList() : Collections.singletonList(sourcePosition);
+		return sourcePosition == null ? List.of() : List.of(sourcePosition);
 	}
 
 	@Override

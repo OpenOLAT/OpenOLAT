@@ -6,11 +6,9 @@
 package org.olat.modules.selectus.ui.committee.imp;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.PositionRole;
@@ -37,7 +35,7 @@ public class ImportCommitteeMembers implements ChoosePosition {
 	
 	@Override
 	public List<Position> getExcludedPositions() {
-		return targetPosition == null ? Collections.emptyList() : Collections.singletonList(targetPosition);
+		return targetPosition == null ? List.of() : List.of(targetPosition);
 	}
 
 	public PositionLight getSourcePosition() {

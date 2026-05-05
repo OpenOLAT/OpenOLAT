@@ -102,7 +102,6 @@ public class ApplicationStatusController extends FormBasicController {
 			decisionEl = uifactory.addDropdownSingleselect("edit.decision", layoutCont, decisionKeys, decisionValues, null);
 			decisionEl.setDomReplacementWrapperRequired(false);
 			decisionEl.addActionListener(FormEvent.ONCHANGE);
-			//TODO selectus decisionEl.setAriaLabel("edit.decision");
 			
 			String decision;
 			if(application.getDecision() != null && application.getDecision().intValue() > 0) {

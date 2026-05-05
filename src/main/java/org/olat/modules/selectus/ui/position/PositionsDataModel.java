@@ -10,8 +10,10 @@ import static org.olat.modules.selectus.ui.events.SelectPositionLightEvent.SELEC
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -26,17 +28,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.selectus.model.Position;
-import org.olat.modules.selectus.model.PositionAttributeDefinition;
 import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.PositionLightWithStatistics;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.ui.PositionListController;
+import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
+import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate.FieldFilter;
 
 /**
  * 
@@ -52,32 +54,19 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 	private static final Fields[] COLS = Fields.values();
 	
 	private final Locale locale;
-	private final List<PositionAttributeDefinition> globalDefinitions;
-
-	private List<Position> excludedPositions;
 	private List<PositionLightWithStatistics> backupList;
 	
-	public PositionsDataModel(FlexiTableColumnModel columnsModel, IdentityEnvironment identityEnv,
-			List<PositionAttributeDefinition> globalDefinitions, Locale locale) {
+	public PositionsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		CoreSpringFactory.autowireObject(this);
 		this.locale = locale;
-		this.globalDefinitions = globalDefinitions;
-	}
-	
-	public List<Position> getExcludedPositions() {
-		return excludedPositions;
-	}
-
-	public void setExcludedPositions(List<Position> excludedPositions) {
-		this.excludedPositions = excludedPositions;
 	}
 
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			try {
-				List<PositionLightWithStatistics> views = new PositionsSortDelegate(orderBy, this, null).sort();
+				List<PositionLightWithStatistics> views = new PositionsSortDelegate(orderBy, this, locale).sort();
 				super.setObjects(views);
 			} catch (Exception e) {
 				log.error("", e);
@@ -92,10 +81,15 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 					? null : searchString.toLowerCase();
 
 			final List<String> status = getFilteredList(filters, PositionListController.FILTER_STATUS_KEY);
+			final List<String> organisations = getFilteredList(filters, PositionListController.FILTER_ORGANISATION_KEY);
 			List<PositionLightWithStatistics> filteredRows = new ArrayList<>(backupList.size());
+			final List<FieldFilter> fieldsFilters = getFilteredField(filters);
+			
 			for(PositionLightWithStatistics row:backupList) {
 				boolean accept = acceptStatus(status, row)
-						&& accept(loweredSearchString, row);
+						&& accept(loweredSearchString, row)
+						&& acceptOrganisations(organisations, row)
+						&& acceptFieldFilters(fieldsFilters, row);
 				if(accept) {
 					filteredRows.add(row);
 				}
@@ -106,12 +100,18 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 		}
 	}
 	
-	private DateRange getFilterDate(List<FlexiTableFilter> filters, String filterName) {
-		FlexiTableFilter dFilter = FlexiTableFilter.getFilter(filters, filterName);
-		if(dFilter instanceof FlexiTableDateRangeFilter dateFilter && dateFilter.getDateRange() != null) {
-			return dateFilter.getDateRange();
+	private List<FieldFilter> getFilteredField(List<FlexiTableFilter> filters) {
+		List<FieldFilter> fieldFilter = new ArrayList<>();
+		for(FlexiTableFilter filter:filters) {
+			if(filter.getFilter().startsWith("filter.")) {
+				int column = Integer.parseInt(filter.getFilter().substring(7));
+				FieldFilter values = ApplicationAttributesDelegate.getFilterValue(filter, column);
+				if(values != null) {
+					fieldFilter.add(values);
+				}
+			}
 		}
-		return null;
+		return fieldFilter;
 	}
 	
 	private List<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
@@ -138,6 +138,99 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 		if(status == null || status.isEmpty()) return true;
 		return status.contains(row.getStatus());
 	}
+	
+	private boolean acceptOrganisations(List<String> organisations, PositionLightWithStatistics row) {
+		if(organisations == null || organisations.isEmpty()) return true;
+		
+		Organisation organisation = row.getOrganisation();
+		return organisation != null && organisations.contains(organisation.getKey().toString());
+	}
+	
+	private boolean acceptFieldFilters(List<FieldFilter> fieldsFilters, PositionLightWithStatistics row) {
+		if(fieldsFilters == null || fieldsFilters.isEmpty()) return true;
+		
+		boolean allOk = true;
+		for(FieldFilter fieldFilter:fieldsFilters) {
+			if(fieldFilter.set() != null) {
+				allOk &= acceptField(fieldFilter.set(), row, fieldFilter.column()); 
+			} else if(fieldFilter.range() != null) {
+				allOk &= acceptDateRange(fieldFilter.range(), row, fieldFilter.column()); 
+			} else if(fieldFilter.numericalRange() != null) {
+				allOk &= acceptNumericalRange(fieldFilter.numericalRange(), row, fieldFilter.column()); 
+			} else if(fieldFilter.text() != null) {
+				allOk &= acceptText(fieldFilter.text(), row, fieldFilter.column()); 
+			}
+		}
+		
+		return allOk;
+	}
+	
+	private boolean acceptDateRange(DateRange range, PositionLightWithStatistics row, int column) {
+		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
+		
+		Object val = getRawValueAt(row, column);
+		if(val instanceof Date date) {
+			if((range.getStart() != null && range.getStart().compareTo(date) > 0)
+					|| (range.getEnd() != null && range.getEnd().compareTo(date) < 0)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean acceptText(String text, PositionLightWithStatistics row, int column) {
+		if(!StringHelper.containsNonWhitespace(text)) return true;
+		
+		Object val = getRawValueAt(row, column);
+		if(val instanceof String str) {
+			return accept(text, str);
+		}
+		return false;
+	}
+	
+	private boolean acceptNumericalRange(NumericalRange range, PositionLightWithStatistics row, int column) {
+		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
+		
+		Object val = getRawValueAt(row, column);
+		if(val instanceof String str && StringHelper.containsNonWhitespace(str)) {
+			try {
+				val = Double.valueOf(str);
+			} catch (NumberFormatException e) {
+				//
+			}
+		}
+		if(val instanceof Number num) {
+			if((range.getStart() != null && range.getStart().compareTo(num.doubleValue()) > 0)
+					|| (range.getEnd() != null && range.getEnd().compareTo(num.doubleValue()) < 0)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean acceptField(Set<String> searchValues, PositionLightWithStatistics row, int column) {
+		if(searchValues == null || searchValues.isEmpty()) return true;
+		
+		Object val = getRawValueAt(row, column);
+		if(val == null) {
+			return searchValues.contains(PositionListController.FILTER_NULL_KEY);
+		}
+		if(val instanceof String str) {
+			if(StringHelper.containsNonWhitespace(str)) {
+				return searchValues.contains(str);
+			}
+			return searchValues.contains(PositionListController.FILTER_NULL_KEY);
+		} else if (val instanceof String[] strArr) {
+			for(String str:strArr) {
+				if(StringHelper.containsNonWhitespace(str)) {
+					return searchValues.contains(str);
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public String getUrl(Component source, Object object, String action) {
@@ -146,13 +239,16 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 		}
 		return null;
 	}
+	
+	private Object getRawValueAt(PositionLightWithStatistics row, int col) {
+		return getValueAt(row, col);
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		PositionLightWithStatistics member = getObject(row);
 		return getValueAt(member, col);
 	}
-	
 
 	@Override
 	public Object getValueAt(PositionLightWithStatistics position, int col) {

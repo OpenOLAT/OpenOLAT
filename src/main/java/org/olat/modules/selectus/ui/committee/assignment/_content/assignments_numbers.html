@@ -3,8 +3,8 @@
 	<span class="form-control-static">$r.translate("assignments.max")</span> $r.render("assignmentsmax")
 </div>
 #if($f.hasError("assignmentsmax"))
-	$r.render("assignmentsmax_ERROR")
+	$r.render("assignmentsmax","error")
 #end
 #if($f.hasError("assignmentsadditional"))
-	$r.render("assignmentsadditional_ERROR")
+	$r.render("assignmentsadditional","error")
 #end

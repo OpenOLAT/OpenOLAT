@@ -27,9 +27,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentOption;
 import org.olat.modules.selectus.DocumentType;
@@ -43,6 +40,7 @@ import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 import org.olat.modules.selectus.pdf.PDFUtility;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -268,21 +266,19 @@ public class DocumentsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		for(DocumentElement fileEl:fileElements) {
-			allOk &= validEncryption(fileEl.getFileElement());
+			allOk &= validEncryption(ureq, fileEl.getFileElement());
 		}
 		if(combinedFileEl != null) {
-			allOk &= validEncryption(combinedFileEl);
+			allOk &= validEncryption(ureq, combinedFileEl);
 		}
 		return allOk;
 	}
 	
-	private boolean validEncryption(FileElement fileEl) {
+	private boolean validEncryption(UserRequest ureq, FileElement fileEl) {
 		File file = fileEl.getUploadFile();
 		boolean ok = true;
 		
-		List<ValidationStatus> status = new ArrayList<>();
-		//TODO selectus fileEl.validate(status);
-		ok &= status.isEmpty();
+		ok &= validateFormItem(ureq, fileEl);
 		
 		if(ok) {
 			if(file != null && file.exists() && getFileType(fileEl) == DocumentType.pdf) {

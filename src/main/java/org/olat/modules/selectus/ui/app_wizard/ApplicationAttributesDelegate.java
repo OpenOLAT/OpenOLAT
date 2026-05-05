@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -35,8 +36,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -1158,6 +1161,39 @@ public class ApplicationAttributesDelegate {
 			keyValues.add(SelectionValues.entry(SELECT_OTHER, translator.translate("other")));
 		}
 		return keyValues;
+	}
+	
+	public static FieldFilter getFilterValue(FlexiTableFilter filter, int column) {
+		if(filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				return new FieldFilter(column, Set.copyOf(filterValues), null, null, null);
+			}
+			return null;
+		} else if(filter instanceof FlexiTableDateRangeFilter dateFilter) {
+			DateRange range = dateFilter.getDateRange();
+			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
+				return new FieldFilter(column, null, range, null, null);
+			}
+			return null;
+		} else if(filter instanceof FlexiTableNumericalRangeFilter numericalFilter) {
+			NumericalRange range = numericalFilter.getNumericalRange();
+			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
+				return new FieldFilter(column, null, null, range, null);
+			}
+			return null;
+		} else if(filter instanceof FlexiTableTextFilter textFilter) {
+			String text = textFilter.getValue();
+			if(StringHelper.containsNonWhitespace(text)) {
+				return new FieldFilter(column, null, null, null, text.toLowerCase());
+			}
+			return null;
+		}
+		return null;
+	}
+	
+	public record FieldFilter(int column, Set<String> set, DateRange range, NumericalRange numericalRange, String text) {
+		//
 	}
 	
 	public boolean validateFormLabel(TextElement labelEl, PositionAttributeDefinition attributeDefinition, Position position) {

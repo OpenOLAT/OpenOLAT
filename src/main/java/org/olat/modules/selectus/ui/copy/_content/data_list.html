@@ -9,21 +9,12 @@
 
 	#set($tableId = "copy.selection")
 	<div class='form-group $f.getElementCssClass($tableId) #if($f.hasError($tableId)) has-feedback has-error #end clearfix'>
-		$r.render("${tableId}_LABEL", "$f.getItemId($tableId)", "col-sm-3")
-		<div class='col-sm-9 col-sm-offset-3'>
-			$r.render(${tableId}, "form")
-			#if($f.hasError($tableId))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#end
-		</div>
-		#if($f.hasExample($tableId))
-			<div class="o_form_example help-block col-sm-offset-3 col-sm-9">
-				$r.render("${tableId}_EXAMPLE")
-			</div>
-		#end
+		$r.render("${tableId}", "label")
+		$r.render("${tableId}", "0_12")
+		
 		#if($f.hasError($tableId))
-			<div class="col-sm-offset-3 col-sm-9">
-				$r.render("${tableId}_ERROR")
+			<div class="">
+				$r.render("${tableId}","error")
 			</div>
 		#end
 	</div>

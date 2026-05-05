@@ -45,7 +45,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -67,6 +66,7 @@ import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.model.attributes.PositionAttributeDefinitionComparator;
 import org.olat.modules.selectus.model.attributes.SelectConfiguration;
 import org.olat.modules.selectus.model.attributes.TextConfiguration;
+import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.LongTextRenderer;
 import org.olat.modules.selectus.ui.components.PercentageCellRenderer;
@@ -103,9 +103,11 @@ public class PositionListController extends FormBasicController implements Toole
 	
 	private static final String PREFS_ID = "recruitingPositionFlexiList-v3.1";
 	public static final int CUSTOM_ATTRIBUTES_COLS_OFFSET = 50000;
-
+	
 	public static final String FILTER_STATUS_KEY = "status";
 	public static final String FILTER_ORGANISATION_KEY = "organisation";
+	
+	public static final String FILTER_NULL_KEY = "NULL";
 	
 	private Link addPosition;
 	private Link searchButton;
@@ -128,6 +130,8 @@ public class PositionListController extends FormBasicController implements Toole
 	private final RecruitingSecurityCallback secCallback;
 	private final List<Organisation> organisations;
 	private final List<PositionAttributeDefinition> globalAttributes;
+	private final ApplicationAttributesDelegate attributesDelegate
+		= new ApplicationAttributesDelegate(PositionApplicationAttributeTabEnum.global);
 
 	@Autowired @Qualifier("reportGenerator")
 	private ReportGenerator reportGenerator;
@@ -218,8 +222,7 @@ public class PositionListController extends FormBasicController implements Toole
 			columnsModel.addFlexiColumnModel(deleteColumn);
 		}
 		
-		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "positions", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);
@@ -292,11 +295,12 @@ public class PositionListController extends FormBasicController implements Toole
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.position.status"),
 				FILTER_STATUS_KEY, statusKV, true));
 		
-		for(PositionAttributeDefinition globalAttribute:globalAttributes) {
-			//TODO custom attributes
+		for(int i=0; i<globalAttributes.size(); i++) {
+			PositionAttributeDefinition definition = globalAttributes.get(i);
+			attributesDelegate.initFilter(definition.getLabel(getLocale(), true), "filter." + (CUSTOM_ATTRIBUTES_COLS_OFFSET + i), definition, filters, getLocale());
 		}
 		
-		tableEl.setFilters(true, filters, true, true);
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	public int getNumOfPositions() {
@@ -517,8 +521,9 @@ public class PositionListController extends FormBasicController implements Toole
 	}
 	
 	private void addPosition(UserRequest ureq) {
-		//TODO selectus organisation
-		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		Organisation defaultOrganisation = organisations.isEmpty()
+				? organisationService.getDefaultOrganisation()
+				: organisations.get(0);
 		Position newPosition = recruitingService.createPosition(defaultOrganisation);
 		PositionRole positionRole = recruitingService.getRole(newPosition, getIdentity());
 		RecruitingPositionSecurityCallback positionSecCallback

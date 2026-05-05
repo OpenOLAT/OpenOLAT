@@ -7,6 +7,8 @@ package org.olat.modules.selectus.ui.committee.imp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
@@ -26,12 +28,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
-import org.olat.modules.selectus.model.PositionAttributeDefinition;
+import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionLight;
+import org.olat.modules.selectus.model.PositionLightWithStatistics;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
@@ -52,8 +55,7 @@ public class ChoosePositionController extends StepFormBasicController {
 	private PositionsDataModel positionsDataModel;
 
 	private final ChoosePosition importCommittee;
-	private final List<PositionAttributeDefinition> globalAttributes;
-	
+
 	@Autowired
 	private RecruitingModule recruitingModule;
 	@Autowired
@@ -66,9 +68,8 @@ public class ChoosePositionController extends StepFormBasicController {
 		super(ureq, wControl, form, runContext, LAYOUT_CUSTOM, "position_list");
 		setTranslator(Util.createPackageTranslator(RecruitingHelper.class, getLocale(), getTranslator()));
 		this.importCommittee = importCommittee;
-		globalAttributes = recruitingService.getGlobalAttributeDefinition();
 		initForm(ureq);
-		tableEl.reloadData();
+		loadModel(ureq);
 	}
 	
 	@Override
@@ -103,9 +104,7 @@ public class ChoosePositionController extends StepFormBasicController {
 		copyColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(copyColumn);
 
-		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		positionsDataModel = new PositionsDataModel(columnsModel, identityEnv, globalAttributes, getLocale());
-		positionsDataModel.setExcludedPositions(importCommittee.getExcludedPositions());
+		positionsDataModel = new PositionsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setExportEnabled(false);
@@ -134,6 +133,23 @@ public class ChoosePositionController extends StepFormBasicController {
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("position.list.empty")
 				.build());
+	}
+	
+	private void loadModel(UserRequest ureq) {
+		Set<Long> excludedPositions = importCommittee.getExcludedPositions().stream()
+				.map(Position::getKey)
+				.collect(Collectors.toSet());
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		List<PositionLightWithStatistics> allPositions = recruitingService
+				.getPositionsLightWithStatistics(getIdentity(), roles, List.of(), getLocale());
+		List<PositionLightWithStatistics> positions = new ArrayList<>(allPositions.size());
+		for(PositionLightWithStatistics position:allPositions) {
+			if(!excludedPositions.contains(position.getKey())) {
+				positions.add(position);
+			}	
+		}
+		positionsDataModel.setObjects(positions);
 	}
 
 	@Override

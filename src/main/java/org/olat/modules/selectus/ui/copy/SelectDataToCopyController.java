@@ -88,8 +88,6 @@ public class SelectDataToCopyController extends StepFormBasicController {
 		hasPublicFeedback = recruitingModule.isMembersFeedbackEnabled()
 				&& feedbackService.hasFeedbackConfigurationEnabled(position);
 		
-		
-		
 		initForm(ureq);
 		loadModel();
 	}
@@ -211,7 +209,7 @@ public class SelectDataToCopyController extends StepFormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		boolean selected = false;
-		for(SelectionData data:this.dataModel.getObjects()) {
+		for(SelectionData data:dataModel.getObjects()) {
 			selected |= data.getSelectionEl().isAtLeastSelected(1);
 		}
 		

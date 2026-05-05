@@ -25,12 +25,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -47,6 +43,7 @@ import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.Project;
 import org.olat.modules.selectus.model.application.ParallelApplication;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
+import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate.FieldFilter;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
@@ -244,10 +241,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 	}
 	
-	private record FieldFilter(int column, Set<String> set, DateRange range, NumericalRange numericalRange, String text) {
-		//
-	}
-	
 	private List<FieldFilter> getFilteredField(List<FlexiTableFilter> filters) {
 		List<FieldFilter> fieldFilter = new ArrayList<>();
 		
@@ -261,42 +254,13 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 				continue;
 			}
 			
-			FieldFilter values = getFilteredField(filter, column);
+			FieldFilter values = ApplicationAttributesDelegate.getFilterValue(filter, column);
 			if(values != null) {
 				fieldFilter.add(values);
 			}
 		}
 		
 		return fieldFilter;
-	}
-	
-	private FieldFilter getFilteredField(FlexiTableFilter filter, int column) {
-		if(filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
-			List<String> filterValues = extendedFilter.getValues();
-			if(filterValues != null && !filterValues.isEmpty()) {
-				return new FieldFilter(column, Set.copyOf(filterValues), null, null, null);
-			}
-			return null;
-		} else if(filter instanceof FlexiTableDateRangeFilter dateFilter) {
-			DateRange range = dateFilter.getDateRange();
-			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
-				return new FieldFilter(column, null, range, null, null);
-			}
-			return null;
-		} else if(filter instanceof FlexiTableNumericalRangeFilter numericalFilter) {
-			NumericalRange range = numericalFilter.getNumericalRange();
-			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
-				return new FieldFilter(column, null, null, range, null);
-			}
-			return null;
-		} else if(filter instanceof FlexiTableTextFilter textFilter) {
-			String text = textFilter.getValue();
-			if(StringHelper.containsNonWhitespace(text)) {
-				return new FieldFilter(column, null, null, null, text.toLowerCase());
-			}
-			return null;
-		}
-		return null;
 	}
 	
 	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {

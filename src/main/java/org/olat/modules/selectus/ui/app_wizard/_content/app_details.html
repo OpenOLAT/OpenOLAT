@@ -83,8 +83,8 @@
 	#if($r.available("acceptTerms"))
 	<div class="col-sm-12 o_clearfix o_sel_accept_terms">
 		$r.render("acceptTerms")
-		#if($f.hasError("acceptTerms") && $r.available("acceptTerms_ERROR"))
-			$r.render("acceptTerms_ERROR")
+		#if($f.hasError("acceptTerms"))
+			$r.render("acceptTerms","error")
 		#end
 	</div>
 	#end

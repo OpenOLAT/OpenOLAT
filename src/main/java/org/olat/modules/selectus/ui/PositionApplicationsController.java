@@ -1773,7 +1773,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			doContactMembersOfApplicationsFeedback(ureq);
 		} else if(batchRemoveFeedbackMembersButton == source) {
 			doRemoveMembersOfApplicationsFeedback(ureq);
-		} else if(this.copyApplicationsButton == source) {
+		} else if(copyApplicationsButton == source) {
 			doCopyApplications(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
