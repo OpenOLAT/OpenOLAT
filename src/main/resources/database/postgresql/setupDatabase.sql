@@ -5144,6 +5144,7 @@ create table o_selectus_position (
    mailsetting varchar(32) default null,
    mailsender varchar(255) default null,
    mailbcc varchar(255) default null,
+   position_duplicate_app_allowed varchar(32) default null,
    committee_mail_template text default null,
    committee_mail_letter text default null,
    conf_mail_template text default null,

@@ -54,6 +54,8 @@ import org.olat.core.util.filter.Filter;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.DocumentType;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationAlgorithm;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationOption;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.manager.MailerSender;
@@ -113,6 +115,8 @@ public class PositionEditProfileController extends FormBasicController implement
 	private RichTextElement messageToCommitteeEl;
 	private StaticTextElement messageToCommitteeExplanationEl;
 	private MultipleSelectionElement messageToCommitteeEnableEl;
+	
+	private SingleSelection duplicateApplicationEl;
 	
 	private Position position;
 	private OrganisationUnit organisationSettings;
@@ -401,6 +405,25 @@ public class PositionEditProfileController extends FormBasicController implement
 		}
 		
 		uifactory.addSpacerElement("sep8", formLayout, false);
+		
+		RecruitingDuplicateApplicationOption allowDuplicateApplications = recruitingModule.getApplicationDuplicateEmailsAllowed();
+		if(allowDuplicateApplications == RecruitingDuplicateApplicationOption.AT_POSITION) {
+			String duplicateHintI18n = recruitingModule.getApplicationDuplicateAlgorithm() == RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME
+					? "duplicate.setting.hint.names"
+					: "duplicate.setting.hint.email";
+			uifactory.addStaticTextElement("duplicate.hint", null, translate(duplicateHintI18n), formLayout);
+			
+			SelectionValues duplicatePK = new SelectionValues();
+			duplicatePK.add(SelectionValues.entry(RecruitingDuplicateApplicationOption.ALLOWED.name(), translate("duplicate.allowed")));
+			duplicatePK.add(SelectionValues.entry(RecruitingDuplicateApplicationOption.NOT_ALLOWED.name(), translate("duplicate.not.allowed")));
+			duplicateApplicationEl = uifactory.addRadiosHorizontal("duplicate.setting", "duplicate.setting", formLayout, duplicatePK.keys(), duplicatePK.values());
+			if(position.getDuplicateApplicationAllowedEnum() != null) {
+				duplicateApplicationEl.select(position.getDuplicateApplicationAllowedEnum().name(), true);
+			} else {
+				duplicateApplicationEl.select(RecruitingDuplicateApplicationOption.NOT_ALLOWED.name(), true);
+			}
+			uifactory.addSpacerElement("sep8b", formLayout, false);
+		}
 
 		String[] enabledValues = new String[]{ translate("enable") };
 		String message = position.getMessageToCommitte();
@@ -1054,6 +1077,10 @@ public class PositionEditProfileController extends FormBasicController implement
 			if(doc3 != null) {
 				position.setDocument3(doc3);
 			}
+		}
+		
+		if(duplicateApplicationEl != null && duplicateApplicationEl.isOneSelected()) {
+			position.setDuplicateApplicationAllowedEnum(RecruitingDuplicateApplicationOption.valueOf(duplicateApplicationEl.getSelectedKey()));
 		}
 		
 		if(messageToCommitteeEnableEl.isAtLeastSelected(1)) {

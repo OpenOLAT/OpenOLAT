@@ -32,6 +32,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentType;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationOption;
 import org.olat.modules.selectus.model.position.TabConfiguration;
 import org.olat.modules.selectus.model.position.TabsConfiguration;
 import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
@@ -342,6 +343,9 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	private boolean systemTagsEnabled = false;
 	@Column(name="position_tags_enable", nullable=true, insertable=true, updatable=true)
 	private boolean positionTagsEnabled = false;
+	
+	@Column(name="position_duplicate_app_allowed", nullable=true, insertable=true, updatable=true)
+	private String duplicateApplicationAllowed;
 	
 	@ManyToOne(targetEntity=PositionReviewDefinitionImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_review_definition_id", nullable=true, insertable=true, updatable=true)
@@ -2167,6 +2171,32 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Override
 	public void setPositionTagsEnabled(boolean positionTagsEnabled) {
 		this.positionTagsEnabled = positionTagsEnabled;
+	}
+
+	@Override
+	public RecruitingDuplicateApplicationOption getDuplicateApplicationAllowedEnum() {
+		String val = getDuplicateApplicationAllowed();
+		return StringHelper.containsNonWhitespace(val)
+				? RecruitingDuplicateApplicationOption.valueOf(val)
+				: null;
+	}
+
+	@Override
+	public void setDuplicateApplicationAllowedEnum(RecruitingDuplicateApplicationOption allowed) {
+		if(allowed == null) {
+			setDuplicateApplicationAllowed(null);
+		} else {
+			setDuplicateApplicationAllowed(allowed.name());
+		}
+	}
+
+	public String getDuplicateApplicationAllowed() {
+		return duplicateApplicationAllowed;
+	}
+
+	public void setDuplicateApplicationAllowed(String allowed) {
+		// String because they want perhaps the algorithm configured at position level
+		this.duplicateApplicationAllowed = allowed;
 	}
 
 	@Override

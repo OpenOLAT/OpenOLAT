@@ -295,15 +295,50 @@ public class ApplicationDAOTest extends OlatTestCase {
 		secondTryApp.getPerson().setFirstName("John");
 		secondTryApp.getPerson().setLastName("Find");
 		secondTryApp.getPerson().setMail("john.smith@frentix.com");
-		boolean isUnique = applicationDao.checkUniqueApplication(secondTryApp);
+		boolean isUnique = applicationDao.checkUniqueApplicationByEmail(secondTryApp);
 		Assert.assertFalse(isUnique);
 		
 		Application uniqueTryApp = applicationDao.createApplication(pos);
 		uniqueTryApp.getPerson().setFirstName("John");
 		uniqueTryApp.getPerson().setLastName("Find");
 		uniqueTryApp.getPerson().setMail("john.smith.zac.6432@frentix.com");
-		boolean isReallyUnique = applicationDao.checkUniqueApplication(uniqueTryApp);
+		boolean isReallyUnique = applicationDao.checkUniqueApplicationByEmail(uniqueTryApp);
 		Assert.assertTrue(isReallyUnique);
+	}
+	
+	@Test
+	public void checkUniqueApplicationWithFirstnameLastname() {
+		// create app with the reference email
+		Position pos = createRandomPosition(PositionStatus.closedAndNoRating);
+		Application app = applicationDao.createApplication(pos);
+		Person person = app.getPerson();
+		person.setFirstName("John");
+		person.setLastName("Find");
+		person.setMail("john.smith@frentix.com");
+		app = applicationDao.saveTempApplication(app, true);
+		dbInstance.commitAndCloseSession();
+		
+		// transient
+		Application secondTryApp = applicationDao.createApplication(pos);
+		secondTryApp.getPerson().setFirstName("John");
+		secondTryApp.getPerson().setLastName("Find");
+		secondTryApp.getPerson().setMail("john.smith@frentix.com");
+		boolean isUnique = applicationDao.checkUniqueApplicationByEmailFistnameLastname(secondTryApp);
+		Assert.assertFalse(isUnique);
+		
+		Application uniqueTryApp = applicationDao.createApplication(pos);
+		uniqueTryApp.getPerson().setFirstName("John");
+		uniqueTryApp.getPerson().setLastName("Find");
+		uniqueTryApp.getPerson().setMail("john.smith.zac.6432@frentix.com");
+		boolean isReallyUnique = applicationDao.checkUniqueApplicationByEmailFistnameLastname(uniqueTryApp);
+		Assert.assertTrue(isReallyUnique);
+		
+		Application childApp= applicationDao.createApplication(pos);
+		childApp.getPerson().setFirstName("Gabriella");
+		childApp.getPerson().setLastName("Find");
+		childApp.getPerson().setMail("john.smith@frentix.com");
+		boolean childIsUnique = applicationDao.checkUniqueApplicationByEmailFistnameLastname(childApp);
+		Assert.assertTrue(childIsUnique);
 	}
 	
 	@Test

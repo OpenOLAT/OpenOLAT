@@ -17,6 +17,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentType;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationOption;
 import org.olat.modules.selectus.model.position.TabConfiguration;
 import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 import org.olat.modules.selectus.model.review.PositionReviewDefinition;
@@ -510,6 +511,10 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public boolean isPositionTagsEnabled();
 	
 	public void setPositionTagsEnabled(boolean enabled);
+	
+	public RecruitingDuplicateApplicationOption getDuplicateApplicationAllowedEnum();
+
+	public void setDuplicateApplicationAllowedEnum(RecruitingDuplicateApplicationOption allowed);
 
 	public boolean isValid();
 	

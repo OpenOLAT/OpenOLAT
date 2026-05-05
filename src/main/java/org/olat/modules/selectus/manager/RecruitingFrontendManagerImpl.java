@@ -52,6 +52,7 @@ import org.olat.modules.selectus.AnonymiseService;
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.DocumentType;
 import org.olat.modules.selectus.ParallelApplicationScope;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationAlgorithm;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.manager.comparator.ApplicationCommentCreationDateComparator;
@@ -582,7 +583,11 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public boolean checkUniqueApplication(Application app) {
-		return applicationDao.checkUniqueApplication(app);
+		RecruitingDuplicateApplicationAlgorithm duplicateAlgorithm = recruitingModule.getApplicationDuplicateAlgorithm();
+		if(duplicateAlgorithm == RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME) {
+			return applicationDao.checkUniqueApplicationByEmailFistnameLastname(app);
+		}
+		return applicationDao.checkUniqueApplicationByEmail(app);
 	}
 
 	@Override

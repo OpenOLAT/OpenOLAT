@@ -566,7 +566,7 @@ public class ApplyToApplicationMainController extends BasicController implements
 					numOfRecommendations		// 21
 				};
 
-			if(recruitingModule.isApplicationDuplicateEmailsAllowed() || recruitingService.checkUniqueApplication(app)) {
+			if(recruitingModule.isApplicationDuplicateEmailsAllowed(position) || recruitingService.checkUniqueApplication(app)) {
 				boolean referenceApplicantManagement = recruitingModule.isReferenceApplicantManagement() && position.isApplicantRefereeManagementEnabled();
 				if(referenceApplicantManagement) {
 					List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(app.getPerson().getMail()));

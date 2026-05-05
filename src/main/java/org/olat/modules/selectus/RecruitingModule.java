@@ -233,6 +233,8 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	@Value("${application.duplicate.email:false}")
 	private String applicationDuplicateEmail;
+	@Value("${application.duplicate.algorithm:email}")
+	private String applicationDuplicateAlgorithm;
 	
 	@Value("${role.exofficio.enable:disabled}")
 	private String roleExOfficio;
@@ -2061,11 +2063,37 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		return "enabled".equals(committeeComment);
 	}
 	
+	public RecruitingDuplicateApplicationAlgorithm getApplicationDuplicateAlgorithm() {
+		if("emailFirstnameLastname".equalsIgnoreCase(applicationDuplicateAlgorithm)) {
+			return RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME;
+		}
+		return RecruitingDuplicateApplicationAlgorithm.EMAIL;
+	}
+	
 	/**
 	 * @return true if an applicant with the same email can propose several applications.
 	 */
-	public boolean isApplicationDuplicateEmailsAllowed() {
-		return "true".equals(applicationDuplicateEmail);
+	public RecruitingDuplicateApplicationOption getApplicationDuplicateEmailsAllowed() {
+		return RecruitingDuplicateApplicationOption.propertyOf(applicationDuplicateEmail);
+	}
+	
+	public boolean isApplicationDuplicateEmailsAllowed(Position position) {
+		RecruitingDuplicateApplicationOption opt = getApplicationDuplicateEmailsAllowed();
+		if(opt == RecruitingDuplicateApplicationOption.ALLOWED) {
+			return true;
+		}
+		if(opt == RecruitingDuplicateApplicationOption.NOT_ALLOWED) {
+			return false;
+		}
+		
+		RecruitingDuplicateApplicationOption positionOption = position.getDuplicateApplicationAllowedEnum();
+		if(positionOption == RecruitingDuplicateApplicationOption.ALLOWED) {
+			return true;
+		}
+		if(positionOption == RecruitingDuplicateApplicationOption.NOT_ALLOWED) {
+			return false;
+		}
+		return false;
 	}
 
 	public boolean isRoleExOfficioEnabled() {

@@ -352,7 +352,7 @@ implements PositionEditableController, FlexiTableCssDelegate {
 					isCustomized(position.getApplicationConfirmationWithRefereeManagementMailTemplate(), position.getApplicationConfirmationWithRefereeManagementMailTemplateDe(), position.getApplicationConfirmationWithRefereeManagementMailTemplateFr(), position.getApplicationConfirmationWithRefereeManagementMailLetter()),
 					position.isApplicantRefereeManagementEnabled(), false));
 		}
-		if(!recruitingModule.isApplicationDuplicateEmailsAllowed() && acceptedTypes.contains(Type.confirmationApplicationDuplicate)) {
+		if(!recruitingModule.isApplicationDuplicateEmailsAllowed(position) && acceptedTypes.contains(Type.confirmationApplicationDuplicate)) {
 			rows.add(new PositionMailTemplateRow(null, translate("type.confirmationApplicationDuplicate"),
 					Type.confirmationApplicationDuplicate, translate("recipient.applicant"),
 					isCustomized(position.getApplicationConfirmationDuplicateMailTemplate(), position.getApplicationConfirmationDuplicateMailTemplateDe(), position.getApplicationConfirmationDuplicateMailTemplateFr(), position.getApplicationConfirmationDuplicateMailLetter()),

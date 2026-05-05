@@ -173,7 +173,7 @@ public class ApplicationDAO {
 		return saveApplication(application);
 	}
 
-	public boolean checkUniqueApplication(Application application) {
+	public boolean checkUniqueApplicationByEmail(Application application) {
 		Position position = application.getPosition();
 		if(position == null || application.getPerson() == null) return false;
 		
@@ -181,6 +181,25 @@ public class ApplicationDAO {
 				.createNamedQuery("numOfApplicationsByPositionAndMail", Number.class)
 				.setParameter("positionKey", position.getKey())
 				.setParameter("mail", application.getPerson().getMail().toLowerCase())
+				.getSingleResult();
+		return (countMail != null && countMail.intValue() == 0);
+	}
+	
+	public boolean checkUniqueApplicationByEmailFistnameLastname(Application application) {
+		Position position = application.getPosition();
+		if(position == null || application.getPerson() == null) return false;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(app.id) from rapplication app")
+		  .append(" where app.position.key=:positionKey and lower(app.person.email)=:mail")
+		  .append(" and lower(app.person.firstName)=:firstName and lower(app.person.lastName)=:lastName");
+		
+		Number countMail = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("positionKey", position.getKey())
+				.setParameter("mail", application.getPerson().getMail().toLowerCase())
+				.setParameter("firstName", application.getPerson().getFirstName().toLowerCase())
+				.setParameter("lastName", application.getPerson().getLastName().toLowerCase())
 				.getSingleResult();
 		return (countMail != null && countMail.intValue() == 0);
 	}

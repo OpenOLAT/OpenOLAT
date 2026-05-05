@@ -5122,6 +5122,7 @@ create table o_selectus_position (
    mailsetting text(32) default null,
    mailsender text(255) default null,
    mailbcc text(255) default null,
+   position_duplicate_app_allowed text(32) default null,
    committee_mail_template mediumtext default null,
    committee_mail_letter mediumtext default null,
    conf_mail_template mediumtext default null,
