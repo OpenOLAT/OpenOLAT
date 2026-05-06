@@ -10,11 +10,11 @@ import java.io.OutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * 
  * Initial date: 13 avr. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LetterMediaResource implements MediaResource {
@@ -102,12 +102,9 @@ public class LetterMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition", "filename*=UTF-8''" + StringHelper.urlEncodeUTF8(secureLabel));
 
 		try(OutputStream out = hres.getOutputStream()) {
-			String indexFile = "letter_" + CodeHelper.getForeverUniqueID() + ".html";
-			//TODO selectus pdfService.convert(letter, indexFile, PdfOutputOptions.defaultOptions(), out);
+			pdfService.convert(letter, PdfOutputOptions.defaultOptions(), out);
 		} catch(Exception e) {
 			log.error("", e);
 		}
 	}
-	
-	
 }

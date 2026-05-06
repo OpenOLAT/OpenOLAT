@@ -19,14 +19,11 @@
  */
 package org.olat.core.commons.services.pdf.dispatcher;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfModule;
@@ -49,6 +46,10 @@ import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 
@@ -98,6 +99,8 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 			} else if(origUri.contains("close-window")) {
 				response.setStatus(HttpServletResponse.SC_OK);
 			} else if(delivery.getDirectory() != null) {
+				renderHTMLContent(delivery, response);
+			}  else if(delivery.getHTMLContent() != null) {
 				renderFile(delivery, filename, response);
 			} else if(delivery.getControllerCreator() != null) {
 				renderController(delivery, request, response);
@@ -158,6 +161,23 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 			}
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		}
+	}
+	
+	private void renderHTMLContent(PdfDelivery delivery, HttpServletResponse response)
+	throws IOException {
+		try {
+			response.setCharacterEncoding("UTF-8");
+		} catch (Exception e) {
+			log.warn("", e);
+		}
+		String content = delivery.getHTMLContent();
+		response.setContentType("text/html");
+		response.setContentLength(content.length());
+		try(InputStream in = new ByteArrayInputStream(content.getBytes())) {
+			FileUtils.cpio(in, response.getOutputStream(), "static");
+		} catch(Exception ex) {
+			log.error("", ex);
 		}
 	}
 }

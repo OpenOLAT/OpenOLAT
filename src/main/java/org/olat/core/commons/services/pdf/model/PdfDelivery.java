@@ -41,6 +41,7 @@ public class PdfDelivery implements Serializable {
 	private final PdfOutputOptions options;
 	
 	private String directory;
+	private String content;
 	private Identity identity;
 	
 	private Window window;
@@ -67,6 +68,14 @@ public class PdfDelivery implements Serializable {
 
 	public void setDirectory(String directory) {
 		this.directory = directory;
+	}
+
+	public String getHTMLContent() {
+		return content;
+	}
+
+	public void setHTMLContent(String content) {
+		this.content = content;
 	}
 
 	public Identity getIdentity() {

@@ -712,9 +712,9 @@ public class PositionLetterEditController extends FormBasicController {
 			
 			StringOutput sb = new StringOutput(content.length() + 4096);
 			sb.append(head);
-			appendStaticJs(sb, "js/jquery/jquery-3.7.0.min.js");
-			appendStaticJs(sb, "js/letter/editor.js");
-			appendStaticCss(sb, "js/letter/editor.css");
+			appendStaticJs(sb, "js/jquery/jquery-3.7.1.min.js");
+			appendStaticJs(sb, "js/jquery/letter/editor.js");
+			appendStaticCss(sb, "js/jquery/letter/editor.css");
 			appendEditorJs(sb);
 			sb.append(body);
 			return sb.toString();

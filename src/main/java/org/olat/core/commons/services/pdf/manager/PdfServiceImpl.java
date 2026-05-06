@@ -52,6 +52,11 @@ public class PdfServiceImpl implements PdfService {
 	}
 	
 	@Override
+	public void convert(String htmlContent, PdfOutputOptions options, OutputStream out) {
+		pdfModule.getPdfServiceProvider().convert(htmlContent, options, out);
+	}
+	
+	@Override
 	public MediaResource convert(String filename, Identity identity, ControllerCreator creator, WindowControl wControl, PdfOutputOptions options) {
 		return new PdfControllerResource(filename, identity, creator, wControl, options);
 	}
