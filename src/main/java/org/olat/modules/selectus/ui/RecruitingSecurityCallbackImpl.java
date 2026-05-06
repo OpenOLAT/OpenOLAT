@@ -36,7 +36,7 @@ public class RecruitingSecurityCallbackImpl implements RecruitingSecurityCallbac
 	
 	@Override
 	public boolean canAddPosition() {
-		return roles.isSelectusManager() || roles.isAdministrator();//TODO selectus remove admin.
+		return roles.isSelectusManager();
 	}
 
 	@Override
@@ -99,16 +99,16 @@ public class RecruitingSecurityCallbackImpl implements RecruitingSecurityCallbac
 		return roles.isSelectusManager();
 	}
 
-	//staff and committee secretary
+	// Selectus manager and committee secretary as configured
 	@Override
 	public boolean canSendMailToCommittee() {
 		return roles.isSelectusManager();
 	}
 	
-	// staff and committee secretary
+	// Selectus manager and committee secretary as configured
 	@Override
 	public boolean canSearchApplications() {
-		return roles.isSelectusManager() || canSearchApplicationsByRoles();//TODO selectus
+		return roles.isSelectusManager() || canSearchApplicationsByRoles();
 	}
 	
 	private boolean canSearchApplicationsByRoles() {

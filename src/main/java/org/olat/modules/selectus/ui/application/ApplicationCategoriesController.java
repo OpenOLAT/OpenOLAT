@@ -102,6 +102,7 @@ public class ApplicationCategoriesController extends FormBasicController {
 		editCategoriesButton.setDomReplacementWrapperRequired(false);
 		editCategoriesButton.setIconLeftCSS("o_icon o_icon_edit");
 		editCategoriesButton.setAriaLabel(translate("aria.edit.categories"));
+		editCategoriesButton.setAriaRole("button");
 		editCategoriesButton.setVisible(canEdit);
 		
 		saveCategoriesButton = uifactory.addFormSubmitButton("save.categories", "save.categories", formLayout);

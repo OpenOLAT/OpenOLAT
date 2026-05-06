@@ -15,7 +15,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -83,15 +82,8 @@ public class DataProtectionStepController extends StepFormBasicController {
 	}
 	
 	private String getOrganisationUtilMail() {
-		String mail = null;
-		if(position.getOrganisation() != null) {
-			//TODO selectus load unit
-			mail = position.getOrganisation().toString();
-		}
-		if(!StringHelper.containsNonWhitespace(mail)) {
-			mail = recruitingModule.getStaffMail();
-		}
-		return mail;
+		OrganisationUnit organisationSettings = recruitingService.getOrganisationUnit(position);
+		return recruitingModule.getStaffMail(position, organisationSettings);
 	}
 
 	@Override

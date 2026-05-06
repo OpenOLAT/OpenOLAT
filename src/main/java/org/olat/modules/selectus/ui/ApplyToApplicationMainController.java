@@ -483,13 +483,10 @@ public class ApplyToApplicationMainController extends BasicController implements
 			final String staffMail = recruitingModule.getStaffMail(position, organisationSettings);
 			final Identity headOfCommittee = recruitingService.getHeadOfCommittee(position);
 			final Identity secretary = recruitingService.getSecretary(position);
-			final String mailSignature;
-			if(position.getOrganisation() != null) {
-				//TODO selectus load unit
-				mailSignature = position.getOrganisation().toString();
-			} else {
-				mailSignature = getTranslator().translate("email.signature");
-			}
+			final String mailSignature = organisationSettings != null && StringHelper.containsNonWhitespace(organisationSettings.getMailSignature())
+					? organisationSettings.getMailSignature()
+					: getTranslator().translate("email.signature");
+	
 			String refereeDeadlineStr = "-";
 			String refereeDeadlineDeStr = "-";
 			Date refereeDeadline = position.getRefereeRecommandationDeadline();
@@ -654,13 +651,6 @@ public class ApplyToApplicationMainController extends BasicController implements
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			reset(ureq);
-			
-			/*
-			//TODO selectus
-			StringBuilder sb = new StringBuilder();
-			sb.append("if(window.opener != null) { window.close(); } ");
-			wControl.getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
-			*/
 			return Step.NOSTEP;
 		}
 	}

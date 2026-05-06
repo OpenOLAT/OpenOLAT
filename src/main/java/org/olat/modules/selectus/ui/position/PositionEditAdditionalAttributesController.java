@@ -830,6 +830,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		FormLink editButton = uifactory.addFormLink("edit_".concat(attrKey), "edit", "", null, null, Link.LINK | Link.NONTRANSLATED);
 		editButton.setDomReplacementWrapperRequired(false);
 		editButton.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+		editButton.setTitle(translate("edit"));
 		editButton.setUserObject(row);
 		editButton.setVisible(!readOnly);
 		editButton.setEnabled(!readOnly);
@@ -838,6 +839,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		FormLink upButton = uifactory.addFormLink("up_".concat(attrKey), "up", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		upButton.setDomReplacementWrapperRequired(false);
 		upButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
+		upButton.setTitle(translate("up"));
 		upButton.setUserObject(row);
 		upButton.setVisible(!readOnly);
 		row.setUpButton(upButton);
@@ -845,6 +847,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		FormLink downButton = uifactory.addFormLink("down_".concat(attrKey), "down", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		downButton.setDomReplacementWrapperRequired(false);
 		downButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
+		downButton.setTitle(translate("down"));
 		downButton.setUserObject(row);
 		downButton.setVisible(!readOnly);
 		row.setDownButton(downButton);
@@ -852,6 +855,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		FormLink deleteButton = uifactory.addFormLink("delete_".concat(attrKey), "delete", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		deleteButton.setDomReplacementWrapperRequired(false);
 		deleteButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+		deleteButton.setTitle(translate("delete"));
 		deleteButton.setUserObject(row);
 		deleteButton.setVisible(!readOnly);
 		row.setDeleteButton(deleteButton);

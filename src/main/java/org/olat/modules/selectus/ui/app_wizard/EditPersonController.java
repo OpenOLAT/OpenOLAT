@@ -479,9 +479,8 @@ public class EditPersonController extends FormBasicController {
 		if(recruitingModule.isApplicationPersonAdditionalNationalitiesEnabled()) {
 			if(recruitingModule.isApplicationPersonAdditionalNationalitiesUseCountry()) {
 				CountryKeysValues nationKeysValues = generateAdditionalCountryKeysAndValues(addNationalities);
-				//TODO selectus dropdown
-				additionalNationalitieSelectionEl = uifactory.addCheckboxesVertical("add.nationalities", "edit.application.additional.nationalities", formLayout,
-						nationKeysValues.getKeys(), nationKeysValues.getValues(), 1);
+				additionalNationalitieSelectionEl = uifactory.addCheckboxesDropdown("add.nationalities", "edit.application.additional.nationalities", formLayout,
+						nationKeysValues.getKeys(), nationKeysValues.getValues());
 				additionalNationalitieSelectionEl.setMandatory(!admin && !recruitingModule.isApplicationPersonAdditionalNationalitiesOptional());
 				additionalNationalitieSelectionEl.setElementCssClass("o_sel_edit_person_add_nationalities");
 				additionalNationalitieSelectionEl.setEnabled(editable);

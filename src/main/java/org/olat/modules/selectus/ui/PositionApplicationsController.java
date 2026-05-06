@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -871,8 +872,10 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 		
 		if(secCallback.canNotes()) {
-			DefaultFlexiColumnModel notesColumn = new DefaultFlexiColumnModel(Fields.notes, "notes", new NotesCellRenderer());
-			//TODO selectus notesColumn.setActionAriaLabel(translate(Fields.notes.i18nHeaderKey()));
+			DefaultFlexiColumnModel notesColumn = new DefaultFlexiColumnModel(Fields.notes, "notes");
+			StaticFlexiCellRenderer notesCellRenderer = new StaticFlexiCellRenderer("notes", new NotesCellRenderer());
+			notesCellRenderer.setLinkTitle(translate(Fields.notes.i18nHeaderKey()));
+			notesColumn.setCellRenderer(notesCellRenderer);
 			columnsModel.addFlexiColumnModel(notesColumn);
 		} 
 
@@ -1123,6 +1126,15 @@ public class PositionApplicationsController extends FormBasicController implemen
 		filters.add(new FlexiTableMultiSelectionFilter(translate(Fields.gender.i18nHeaderKey()),
 				Fields.gender.name(), genderPK, true));
 		
+		// Submitted by
+		SelectionValues submittedByPK = new SelectionValues();
+		String byStaff = translate("application.status.submittedByStaff.short");
+		submittedByPK.add(SelectionValues.entry(byStaff, byStaff));
+		String byApplicant = translate("application.status.submittedByApplicant.short");
+		submittedByPK.add(SelectionValues.entry(byApplicant, byApplicant));
+		filters.add(new FlexiTableSingleSelectionFilter(translate(Fields.submittedByStaff.i18nHeaderKey()),
+				Fields.submittedByStaff.name(), submittedByPK, true));
+	
 		filters.addAll(filedsFilters);
 		
 		tableEl.setFilters(true, filters, true, false);

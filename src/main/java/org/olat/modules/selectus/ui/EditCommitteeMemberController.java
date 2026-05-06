@@ -194,7 +194,7 @@ public class EditCommitteeMemberController extends FormBasicController {
 			// Check if email is not already taken
 			List<Identity> exists = um.findIdentitiesByEmail(List.of(email));
 			//TODO selectus
-			if (exists.size() > 1 || (exists.size() == 0 && !exists.get(0).equals(member))) {
+			if (exists.size() > 1 || (exists.size() == 1 && !exists.get(0).equals(member))) {
 				// Oups, email already taken, display error
 				emailTextElement.setErrorKey("new.error.email.choosen");
 				allOk &= false;

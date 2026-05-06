@@ -230,7 +230,6 @@ public class AcademicalBackgroundController extends FormBasicController {
 		String workedSinceInfos = translate("edit.application.highestdegreeWorkedSince.infos");
 		StaticTextElement workedSinceLabel = uifactory.addStaticTextElement("workedSince.label", "edit.application.highestdegreeWorkedSince", workedSinceInfos, formLayout);
 		workedSinceLabel.setElementCssClass("o_static_heading");
-		//TODO selectus workedSinceLabel.setParagraphCssClass("o_static_heading_infos");
 		workedSinceLabel.setVisible(workedSinceEnabled);
 
 		String workedInAcademiaSince = background == null ? null : background.getWorkedInAcademiaSince();

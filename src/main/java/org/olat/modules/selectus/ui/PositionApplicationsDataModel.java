@@ -215,7 +215,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
-			//final Set<String> decisions = getFilteredList(filters, PositionApplicationsController.FILTER_DECISION);
 			final Set<String> assignees = getFilteredList(filters, PositionApplicationsController.FILTER_ASSIGNEE);
 			final Set<String> myRating = getFilteredList(filters, PositionApplicationsController.FILTER_MY_RATING);
 			final Set<String> withSentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITH_SENT_EMAILS);
@@ -760,7 +759,8 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 				case notes: return getNotes(appRow);
 				case submittedDate: return app.getCreationDate();
 				case submittedByStaff: return app.isSubmittedByStaff()
-						? translator.translate("application.status.submittedByStaff.short") : translator.translate("application.status.submittedByApplicant.short");
+						? translator.translate("application.status.submittedByStaff.short")
+						: translator.translate("application.status.submittedByApplicant.short");
 				case applicationStatus: return translator.translate("application.status.".concat(app.getApplicationStatus().name()));
 				case applicationStatusDate: return app.getStatusDate();
 				case parallelApplications: return appRow.getParallelApplications();

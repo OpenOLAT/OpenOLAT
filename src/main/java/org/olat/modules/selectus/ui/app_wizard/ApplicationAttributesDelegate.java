@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -258,16 +259,16 @@ public class ApplicationAttributesDelegate {
 		PositionAttributeDefinition definition = valueWithDefinition.getDefinition();
 		StaticTextConfiguration config = definition.getConfiguration(StaticTextConfiguration.class);
 		TextDisplay display = config == null ? null : config.getDisplay();
-		String text = config == null ? "" : config.getText(locale);
+		String text = config == null ? "" : StringHelper.xssScan(config.getText(locale));
 		if(StringHelper.containsNonWhitespace(text)) {
 			text = Formatter.escWithBR(text).toString();
 		}
-
-		StaticTextElement element = uifactory.addStaticTextElement(elementId(definition), null, text, formLayout);
-		element.setLabel("", null, false);
-		if(display != null) {
-			//TODO selectus element.setParagraphCssClass(display.cssClass());
+		if(StringHelper.containsNonWhitespace(display.cssClass())) {
+			text = "<p class='" + display.cssClass() + "'>" + text + "</p>";
 		}
+		StaticTextElement element = uifactory.addStaticTextElement(elementId(definition), null, text, formLayout);
+		element.setLabel(null, null, false);
+		element.setDomWrapperElement(DomWrapperElement.div);
 		valueWithDefinition.setPrimaryItem(element);
 		return element;
 	}
@@ -405,9 +406,8 @@ public class ApplicationAttributesDelegate {
 		
 		MultipleSelectionElement element;
 		if(configuration.getDisplay() == Display.dropdown) {
-			//TODO selectus addCheckboxesDropdown
-			element = uifactory.addCheckboxesVertical(elementId(definition), "custom.attribute", formLayout,
-					keyValues.keys(), keyValues.values(), 2);
+			element = uifactory.addCheckboxesDropdown(elementId(definition), "custom.attribute", formLayout,
+					keyValues.keys(), keyValues.values());
 			String placeholder = definition.getPlaceholder(locale, true);
 			if(!StringHelper.containsNonWhitespace(placeholder)) {
 				placeholder = formLayout.getTranslator().translate("custom.attribute.please.choose");
@@ -1170,19 +1170,29 @@ public class ApplicationAttributesDelegate {
 				return new FieldFilter(column, Set.copyOf(filterValues), null, null, null);
 			}
 			return null;
-		} else if(filter instanceof FlexiTableDateRangeFilter dateFilter) {
+		}
+		if(filter instanceof FlexiTableSingleSelectionFilter selectionFilter) {
+			String filterValue = selectionFilter.getValue();
+			if(StringHelper.containsNonWhitespace(filterValue)) {
+				return new FieldFilter(column, Set.of(filterValue), null, null, null);
+			}
+			return null;
+		}
+		if(filter instanceof FlexiTableDateRangeFilter dateFilter) {
 			DateRange range = dateFilter.getDateRange();
 			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
 				return new FieldFilter(column, null, range, null, null);
 			}
 			return null;
-		} else if(filter instanceof FlexiTableNumericalRangeFilter numericalFilter) {
+		}
+		if(filter instanceof FlexiTableNumericalRangeFilter numericalFilter) {
 			NumericalRange range = numericalFilter.getNumericalRange();
 			if(range != null && (range.getStart() != null || range.getEnd() != null)) {
 				return new FieldFilter(column, null, null, range, null);
 			}
 			return null;
-		} else if(filter instanceof FlexiTableTextFilter textFilter) {
+		}
+		if(filter instanceof FlexiTableTextFilter textFilter) {
 			String text = textFilter.getValue();
 			if(StringHelper.containsNonWhitespace(text)) {
 				return new FieldFilter(column, null, null, null, text.toLowerCase());

@@ -29,10 +29,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.DocumentType;
 import org.olat.modules.selectus.RecruitingModule;
@@ -49,6 +45,8 @@ import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.position.PositionEditProfileController.DocumentElement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -141,11 +139,7 @@ public class ReferenceSubmitController extends FormBasicController {
 			letterEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
-			List<ValidationStatus> fileStatus = new ArrayList<>();
-			//TODO selectus letterEl.validate(fileStatus);
-			if(!fileStatus.isEmpty()) {
-				allOk &= false;
-			}
+			allOk &= validateFormItem(ureq, letterEl);
 		}
 		
 		for(MultipleSelectionElement disclaimerEl:disclaimersEl) {
