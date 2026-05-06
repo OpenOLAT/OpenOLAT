@@ -61,8 +61,8 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsContext;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileStep;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFinishStepCallback;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
-import org.olat.modules.curriculum.ui.widgets.RootImplementationWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.RootImplementationWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -81,6 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumManagerRootController extends BasicController implements Activateable2 {
 
 	private final Link importButton;
+	private final Link todosLink;
 	private final Link reportsLink;
 	private final Link curriculumsLink;
 	private final Link lecturesBlocksLink;
@@ -94,6 +95,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private  final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	private CurriculumReportsController reportsCtrl;
+	private CurriculumMangerToDoListController todosCtrl;
 	private DashboardController overviewCtrl;
 	private StepsMainRunController importCurriculumsCtrl;
 	private LectureListRepositoryController lecturesCtrl;
@@ -155,6 +157,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
 		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
 		lecturesBlocksLink.setVisible(lecturesSecCallback.viewAs() != null && lectureModule.isEnabled());
+		
+		todosLink = LinkFactory.createLink("curriculum.todos", "todos", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		todosLink.setIconLeftCSS("o_icon o_icon-xl o_icon_todo_task");
+		todosLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_todos");
 		
 		reportsLink = LinkFactory.createLink("curriculum.reports", "reports", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
@@ -248,6 +254,16 @@ public class CurriculumManagerRootController extends BasicController implements 
 		importCurriculumsCtrl = null;
 	}
 
+	private void doOpenToDos(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(todosCtrl);
+
+		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("ToDos", 0l), null);
+		todosCtrl = new CurriculumMangerToDoListController(ureq, subControl);
+		listenTo(todosCtrl);
+		toolbarPanel.pushController(translate("curriculum.todos"), todosCtrl);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == curriculumsLink) {
@@ -257,6 +273,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if (source == lecturesBlocksLink) {
 			List<ContextEntry> relevant = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 			doOpenLecturesBlocks(ureq).activate(ureq, relevant, null);
+		} else if (source == todosLink) {
+			doOpenToDos(ureq);
 		} else if(source == reportsLink) {
 			doOpenReports(ureq);
 		} else if(source == certificationProgramsLink) {
