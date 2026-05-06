@@ -1683,6 +1683,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		boolean sslEnabled = Boolean.parseBoolean(WebappHelper.getMailConfig("sslEnabled"));
 		boolean sslCheckCertificate = Boolean.parseBoolean(WebappHelper.getMailConfig("sslCheckCertificate"));
 		boolean startTls = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpStarttls"));
+		boolean tls12 = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpTls12"));
+		boolean tls13and12 = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpTls13andTls12"));
 		
 		Authenticator smtpAuth;
 		if (WebappHelper.isMailHostAuthenticationEnabled()) {
@@ -1707,6 +1709,11 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			p.put("mail.smtp.ssl.trust", mailhost);
 		}
 		p.put("mail.smtp.sendpartial", Boolean.TRUE);
+		if(tls13and12) {
+			p.put("mail.smtp.ssl.protocols", "TLSv1.3 TLSv1.2");
+		} else if(tls12) {
+			p.put("mail.smtp.ssl.protocols", "TLSv1.2");
+		}
 		
 		Session mailSession;
 		if (smtpAuth == null) {

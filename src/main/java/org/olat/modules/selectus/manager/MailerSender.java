@@ -46,10 +46,11 @@ import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.Store;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.render.velocity.VelocityFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.impl.HtmlFilter;
@@ -320,7 +321,6 @@ public class MailerSender {
 			MailAttachment attachment, MailerResult result) {
 		MimeMessage msg = null;
 		try {
-			//TODO selectus
 			msg = CoreSpringFactory.getImpl(MailManagerImpl.class).createMessage(subject, from);
 			msg.setFrom(from);
 			msg.setReplyTo(replyTo);				
@@ -356,14 +356,7 @@ public class MailerSender {
 		if(attachment == null || !StringHelper.containsNonWhitespace(attachment.getContentToPdf())) return true; // Nothing to do
 		
 		try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-			String filename = attachment.getFilename();
-			String suffix = FileUtils.getFileSuffix(filename);
-			if(suffix != null && suffix.length() > 0) {
-				filename = filename.substring(0, filename.length() - suffix.length() - 1);
-			}
-			filename = FileUtils.normalizeFilename(filename) + "." + suffix;
-			//TODO selectus convert html -> need implementation in AbstractPdfSPI
-			//CoreSpringFactory.getImpl(PdfService.class).convert(attachment.getContentToPdf(), filename, PdfOutputOptions.defaultOptions(), out);
+			CoreSpringFactory.getImpl(PdfService.class).convert(attachment.getContentToPdf(), PdfOutputOptions.defaultOptions(), out);
 			byte[] content = out.toByteArray();
 			attachment.setContent(content);
 			attachment.setMimeType("application/pdf");
@@ -451,7 +444,6 @@ public class MailerSender {
 				mm = gen.generate(bodyPart);
 			}
 
-			//TODO selectus
 			msg = CoreSpringFactory.getImpl(MailManagerImpl.class).createMessage(subject, from);
 			msg.setFrom(from);
 			msg.setReplyTo(replyTo);				
