@@ -74,6 +74,10 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if (!hasComponents) {
 			sb.append(" o_empty");
 		}
+		if(!dropdown.isEnabled()) {
+			sb.append(" disabled");
+		}
+		
 		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
 		sb.append("' id='").append(btnDomID);
 		sb.append("' data-toggle='dropdown'");
@@ -82,6 +86,12 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.appendHtmlAttributeEscaped(dropdown.getAriaLabel());
 			sb.append("\"");
 		}
+		if(!dropdown.isEnabled() && StringHelper.containsNonWhitespace(dropdown.getTextReasonForDisabling())) {
+			sb.append(" title=\"")
+			  .appendHtmlAttributeEscaped(dropdown.getTextReasonForDisabling())
+			  .append("\"");
+		}
+		
 		sb.append(">");
 
 		String dropdownInnerCss = dropdown.getInnerCSS();
@@ -122,7 +132,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.append("</a>");
 		}
 		String itemsDomID = "dd_items_" + dropdown.getDispatchID();
-		if (hasComponents) {
+		if (hasComponents && dropdown.isEnabled()) {
 			sb.append("<ul class='dropdown-menu");
 			if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 				sb.append(" ").append(dropdown.getElementCssClass());

@@ -355,9 +355,8 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		dropdown.setDomReplacementWrapperRequired(false);
 		formLayout.add("add.custom.attribute.list", dropdown);
 		dropdown.setVisible(maxAttributes > 0 && !readOnly);
-		//TODO selectus
-		//dropdown.setTextReasonForDisabling(translate("add.custom.attribute.max.number",
-		//		new String[] { Integer.toString(maxAttributes) }));
+		dropdown.setTextReasonForDisabling(translate("add.custom.attribute.max.number",
+				new String[] { Integer.toString(maxAttributes) }));
 		
 		dropdown.addElement(addSingleLineTextButton);
 		dropdown.addElement(addSelectButton);

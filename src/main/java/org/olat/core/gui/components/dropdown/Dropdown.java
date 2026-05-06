@@ -67,6 +67,7 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private String ariaLabel;
 	private boolean labeledToggle = false;
 	private boolean labeledMenu = false;
+	private String textReasonForDisabling;
 	private List<Component> components = new ArrayList<>();
 	
 	public Dropdown(String name, String i18nKey, boolean domReplacementWrapperRequired, Translator translator) {
@@ -182,6 +183,14 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 
 	public boolean isLabeledMenu() {
 		return labeledMenu;
+	}
+	
+	protected String getTextReasonForDisabling() {
+		return textReasonForDisabling;
+	}
+
+	public void setTextReasonForDisabling(String textReasonForDisabling) {
+		this.textReasonForDisabling = textReasonForDisabling;
 	}
 
 	public void addComponent(Component component) {

@@ -16,11 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.Position;
@@ -29,6 +26,9 @@ import org.olat.modules.selectus.model.Reference;
 import org.olat.modules.selectus.model.ReferenceRequestStatus;
 import org.olat.modules.selectus.model.ReferenceToApplication;
 import org.olat.modules.selectus.model.ReferenceType;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -101,6 +101,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deleteApplicationsWithReferenceToThreeApplications() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = createRandomPosition(PositionStatus.published);
 		Application app1 = applicationDao.createApplication(position);
 		app1 = applicationDao.saveApplication(app1);
@@ -121,9 +122,9 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(referenceToApp2);
 		Assert.assertNotNull(referenceToApp3);
 		
-		recruitingService.deleteApplication(app3);
-		recruitingService.deleteApplication(app2);
-		recruitingService.deleteApplication(app1);
+		recruitingService.deleteApplication(app3, actor);
+		recruitingService.deleteApplication(app2, actor);
+		recruitingService.deleteApplication(app1, actor);
 		
 		List<Reference> references = referenceDao.getReferences(position, null, false);
 		Assert.assertTrue(references.isEmpty());
@@ -131,6 +132,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deleteApplicationsWithMixedReferenceToApplications() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = createRandomPosition(PositionStatus.published);
 		Application app1 = applicationDao.createApplication(position);
 		app1 = applicationDao.saveApplication(app1);
@@ -152,9 +154,9 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(referenceToApp2);
 		Assert.assertNotNull(referenceToApp3);
 		
-		recruitingService.deleteApplication(app3);
-		recruitingService.deleteApplication(app2);
-		recruitingService.deleteApplication(app1);
+		recruitingService.deleteApplication(app3, actor);
+		recruitingService.deleteApplication(app2, actor);
+		recruitingService.deleteApplication(app1, actor);
 		
 		List<Reference> references = referenceDao.getReferences(position, null, false);
 		Assert.assertTrue(references.isEmpty());
@@ -162,6 +164,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deleteApplicationWithReferenceToTwoApplications() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = createRandomPosition(PositionStatus.published);
 		Application app1 = applicationDao.createApplication(position);
 		app1 = applicationDao.saveApplication(app1);
@@ -183,7 +186,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(referenceToApp2);
 		Assert.assertNotNull(referenceToApp3);
 		
-		recruitingService.deleteApplication(app1);
+		recruitingService.deleteApplication(app1, actor);
 		
 		List<Reference> references = referenceDao.getReferences(position, ReferenceType.comparativeAssessmentExpert, false);
 		Assert.assertTrue(references.isEmpty());
@@ -236,6 +239,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deleteApplicationParanoiaWithReferenceToTwoApplications() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = createRandomPosition(PositionStatus.published);
 		Application app1 = applicationDao.createApplication(position);
 		app1 = applicationDao.saveApplication(app1);
@@ -278,7 +282,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(compAssessment2ToApp2);
 		Assert.assertNotNull(compAssessment2ToApp3);
 		
-		recruitingService.deleteApplication(app1);
+		recruitingService.deleteApplication(app1, actor);
 		
 		List<Reference> referencesApp2 = referenceDao.getReferences(app2, null);
 		Assertions.assertThat(referencesApp2)

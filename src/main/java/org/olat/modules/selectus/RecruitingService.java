@@ -238,7 +238,7 @@ public interface RecruitingService {
 	 */
 	public void sendToApplicant(Application app, Position position, ApplicationMailTemplate template, boolean bcc);
 	
-	public void deleteApplication(Application app);
+	public void deleteApplication(Application app, Identity doer);
 	
 
 	public Application getApplication(ApplicationShort app);

@@ -2240,7 +2240,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		String messageI18n = "audit.log.application.deleted";
 		String[] messageArgs = new String[] { salutationGenerator.getTitleFullname(reloadedApp, getLocale()), reloadedApp.getId().toString() };
 		
-		recruitingService.deleteApplication(reloadedApp);
+		recruitingService.deleteApplication(reloadedApp, getIdentity());
 
 		auditService.auditApplicationLog(Action.delete, ActionTarget.application, before, null, messageI18n, messageArgs, getTranslator(), position, reloadedApp, getIdentity());
 		logAudit("Application deleted: " + reloadedApp.toString(), null);

@@ -341,11 +341,8 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		}
 		dbInstance.commit();
 		
-		//TODO selectus
-		/*
-		bigDataCache.forceDelete(position.getKey().toString());
-		bigDataCache.forceDelete(EXPERT_OPINIONS_PREFIX + position.getKey().toString());
-		*/
+		pdfCache.forceDelete(position.getKey().toString());
+		pdfCache.forceDelete(EXPERT_OPINIONS_PREFIX + position.getKey().toString());
 		
 		//delete reviews
 		if(reviewDefinition != null) {
@@ -564,7 +561,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public Application saveApplication(Application app) {
 		if(app.getPosition().getKey() != null) {
-			//TODO selectus bigDataCache.invalidate(app.getPosition().getKey().toString());
+			pdfCache.invalidate(app.getPosition().getKey().toString());
 		}
 		app = applicationDao.saveApplication(app);
 		app.getPosition().getKey();
@@ -580,7 +577,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public Application saveTempApplication(Application app, boolean removeTempFlag) {
 		if(app.getPosition().getKey() != null) {
-			//TODO selectus bigDataCache.invalidate(app.getPosition().getKey().toString());
+			pdfCache.invalidate(app.getPosition().getKey().toString());
 		}
 		Application mergedApp = applicationDao.saveTempApplication(app, removeTempFlag);
 		mergedApp.getPosition().getKey();
@@ -643,7 +640,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 
 	@Override
-	public void deleteApplication(Application app) {
+	public void deleteApplication(Application app, Identity doer) {
 		if(app.getPosition().getKey() != null) {
 			String cacheKey = app.getPosition().getKey().toString();
 			pdfCache.invalidate(cacheKey);
@@ -680,14 +677,13 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		dbInstance.commit();
 		
 		if(applicant != null && !isIdentityInUse(applicant)) {
-			CoreSpringFactory.getImpl(UserLifecycleManager.class).deleteIdentity(applicant, null);//TODO selectus add doer
+			CoreSpringFactory.getImpl(UserLifecycleManager.class).deleteIdentity(applicant, doer);
 		}
 	}
 	
-	//TODO selectus, delete lifecycle 
 	private boolean isIdentityInUse(Identity identity) {
 		Roles roles = baseSecurity.getRoles(identity);
-		if(roles.isUserManager() || roles.isAdministrator() || roles.isSelectusManager()) {//TODO selectus
+		if(roles.isManager()) {
 			return true;
 		}
 		if(positionDao.isInCommittee(identity)) {
@@ -876,7 +872,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public Attachment setAttachmentDatas(Application app, Attachment attachment, byte[] bytes, String filename, DocumentType fileType) {
 		if(app.getPosition().getKey() != null) {
-			//TODO selectus bigDataCache.invalidate(app.getPosition().getKey().toString());
+			pdfCache.invalidate(app.getPosition().getKey().toString());
 		}
 		String type = fileType == null ? DocumentType.pdf.name() : fileType.name();
 		return applicationDao.setAttachmentDatas(attachment, filename, type, bytes);
@@ -959,7 +955,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	public Attachment setAttachmentDatas(Position position, Reference reference, Attachment attachment, String filename, DocumentType fileType, byte[] bytes) {
 		if(reference.getReferenceType() == ReferenceType.expert) {
 			if(position.getKey() != null) {
-				//TODO selectus bigDataCache.invalidate(EXPERT_OPINIONS_PREFIX + position.getKey().toString());
+				pdfCache.invalidate(EXPERT_OPINIONS_PREFIX + position.getKey().toString());
 			}
 		}
 		String type = fileType == null ? DocumentType.pdf.name() : fileType.name();
