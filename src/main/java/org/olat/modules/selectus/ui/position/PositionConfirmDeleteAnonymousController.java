@@ -148,7 +148,7 @@ public class PositionConfirmDeleteAnonymousController extends FormBasicControlle
 			attributesDelegate.commitChanges(additionalAttributesEl, position);
 		}
 		position = recruitingService.savePosition(position);
-		recruitingService.toReportPositionOnly(position);
+		recruitingService.toReportPositionOnly(position, getIdentity());
 		dbInstance.commit();
 		getLogger().info(Tracing.M_AUDIT, "To report only position: {}", position.getKey());
 		fireEvent(ureq, Event.DONE_EVENT);

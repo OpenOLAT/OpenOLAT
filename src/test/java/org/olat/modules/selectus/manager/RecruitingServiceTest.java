@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentType;
@@ -93,6 +94,7 @@ public class RecruitingServiceTest extends OlatTestCase {
 	
 	@Test
 	public void deletePosition() throws IOException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = selectusService.createPosition(defaultUnitTestOrganisation);
 		position.setPlaningsNumber("TR-808");
 		position.setPositionTitle("Prof.");
@@ -131,7 +133,7 @@ public class RecruitingServiceTest extends OlatTestCase {
 		app = selectusService.saveApplication(app);
 		dbInstance.commitAndCloseSession();
 
-		selectusService.deletePosition(position);
+		selectusService.deletePosition(position, actor);
 		dbInstance.commit();
 	}
 }

@@ -236,17 +236,19 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 	
 	@Override
-	public void deletePosition(Position position) {
-		deletePosition(position, false);
+	public void deletePosition(Position position, Identity doer) {
+		log.info("Delete position {}", position);
+		deletePosition(position, false, doer);
 	}
 	
 	@Override
-	public void toReportPositionOnly(Position position) {
+	public void toReportPositionOnly(Position position, Identity doer) {
+		log.info("Anonymize position {}", position);
 		position = anonymiseService.anonymise(position);
-		deletePosition(position, true);
+		deletePosition(position, true, doer);
 	}
 	
-	private void deletePosition(Position position, boolean reportOnly) {
+	private void deletePosition(Position position, boolean reportOnly, Identity doer) {
 		position = positionDao.loadPositionByKey(position.getKey());
 		
 		if(recruitingModule.isAttachmenOnFileSystem()) {
@@ -358,7 +360,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		
 		for(Identity applicant:applicants) {
 			if(applicant != null && !isIdentityInUse(applicant)) {
-				CoreSpringFactory.getImpl(UserLifecycleManager.class).deleteIdentity(applicant, null);//TODO selectus add doer
+				CoreSpringFactory.getImpl(UserLifecycleManager.class).deleteIdentity(applicant, doer);
 			}
 		}
 	}

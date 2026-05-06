@@ -23,8 +23,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
@@ -43,6 +41,7 @@ import org.olat.modules.selectus.ui.events.DeletePositionAnonymousEvent;
 import org.olat.modules.selectus.ui.events.DeletePositionPermanentlyEvent;
 import org.olat.modules.selectus.ui.rejection.PositionRejectionEmailPdfDataModel;
 import org.olat.modules.selectus.ui.resources.ArchiveMediaResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -167,7 +166,7 @@ public class PositionConfirmDeleteController extends FormBasicController {
 	
 	private void doDeletePermanently() {
 		position = erFrontendManager.getPosition(position.getKey());
-		erFrontendManager.deletePosition(position);
+		erFrontendManager.deletePosition(position, getIdentity());
 		logAudit("Position deleted: " + position.toStringFull(), null);
 	}
 }

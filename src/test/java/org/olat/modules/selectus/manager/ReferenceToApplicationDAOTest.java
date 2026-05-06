@@ -194,6 +194,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deletePositionWithReferenceToApplications() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = createRandomPosition(PositionStatus.published);
 		Application app = applicationDao.createApplication(position);
 		app = applicationDao.saveApplication(app);
@@ -209,11 +210,12 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 		Assert.assertEquals(app, referenceToApp.getApplication());
 		Assert.assertEquals(ref, referenceToApp.getReference());
 		
-		recruitingService.deletePosition(position);
+		recruitingService.deletePosition(position, actor);
 	}
 	
 	@Test
 	public void deletePositionWithReferenceToThreeApplications() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position position = createRandomPosition(PositionStatus.published);
 		Application app1 = applicationDao.createApplication(position);
 		app1 = applicationDao.saveApplication(app1);
@@ -234,7 +236,7 @@ public class ReferenceToApplicationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(referenceToApp2);
 		Assert.assertNotNull(referenceToApp3);
 		
-		recruitingService.deletePosition(position);
+		recruitingService.deletePosition(position, actor);
 	}
 	
 	@Test

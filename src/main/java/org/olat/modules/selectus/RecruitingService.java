@@ -88,13 +88,21 @@ public interface RecruitingService {
 	
 	public Position savePosition(Position position);
 	
-	public void deletePosition(Position position);
+	/**
+	 * Delete the position definitively.
+	 * 
+	 * @param position The position to delete
+	 * @param doer The actor
+	 */
+	public void deletePosition(Position position, Identity doer);
 	
 	/**
-	 * Anonymise and transform the position for reporting only purposer
-	 * @param position
+	 * Anonymise and transform the position for reporting only purpose.
+	 * 
+	 * @param position The position to anonymise
+	 * @param doer The actor
 	 */
-	public void toReportPositionOnly(Position position);
+	public void toReportPositionOnly(Position position, Identity doer);
 
 	public Position getPosition(Long positionKey);
 	

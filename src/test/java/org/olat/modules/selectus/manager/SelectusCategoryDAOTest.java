@@ -14,15 +14,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Category;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionStatus;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -165,6 +165,7 @@ public class SelectusCategoryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deletePositionWithCategory() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Position positionToDelete = createRandomPosition(PositionStatus.closed);
 		String categoryName = UUID.randomUUID().toString();
 		Category systemCategory = categoryDao.createCategory(categoryName, null, null);
@@ -180,7 +181,7 @@ public class SelectusCategoryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		positionToDelete = recruitingService.getPosition(positionToDelete.getKey());
-		recruitingService.deletePosition(positionToDelete);
+		recruitingService.deletePosition(positionToDelete, actor);
 		dbInstance.commitAndCloseSession();
 		
 		Category reloadedSystemCategory = categoryDao.loadCategory(systemCategory.getKey());

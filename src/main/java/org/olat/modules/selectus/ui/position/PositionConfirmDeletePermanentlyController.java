@@ -108,7 +108,7 @@ public class PositionConfirmDeletePermanentlyController extends FormBasicControl
 	
 	private void doDeletePermanently() {
 		position = recruitingService.getPosition(position.getKey());
-		recruitingService.deletePosition(position);
+		recruitingService.deletePosition(position, getIdentity());
 		logAudit("Position deleted: " + position.toStringFull(), null);
 	}
 
