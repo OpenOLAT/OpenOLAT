@@ -40,7 +40,6 @@ import org.olat.modules.selectus.model.Attachment;
 import org.olat.modules.selectus.model.CommitteeMembershipsStats;
 import org.olat.modules.selectus.model.DecisionRubric;
 import org.olat.modules.selectus.model.DecisionRubricDefinition;
-import org.olat.modules.selectus.model.ExternalUserResults;
 import org.olat.modules.selectus.model.MailLogInfos;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.OrganisationUnit;
@@ -419,13 +418,6 @@ public interface RecruitingService {
 	 */
 	public Identity getCommitteeMember(String email);
 	
-	/**
-	 * 
-	 * @param searchString
-	 * @return
-	 */
-	public ExternalUserResults searchUsers(String searchString, OAuth2Tokens oauth2Tokens, Locale locale);
-
 	/**
 	 * Find identity in selectus database or on LDAP (ldap user are not automatically imported)
 	 * 

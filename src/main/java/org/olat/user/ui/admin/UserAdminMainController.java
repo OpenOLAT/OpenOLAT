@@ -86,6 +86,8 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.ldap.LDAPLoginModule;
+import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureModule;
@@ -99,6 +101,7 @@ import org.olat.user.ui.admin.bulk.tempuser.CreateTemporaryUsersCallback;
 import org.olat.user.ui.admin.lifecycle.DeletedUsersController;
 import org.olat.user.ui.admin.lifecycle.NewUsersNotificationsController;
 import org.olat.user.ui.admin.lifecycle.UserLifecycleOverviewController;
+import org.olat.user.ui.importexternal.ImportExternalUserController;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -122,6 +125,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private Link importLink;
 	private Link userLifecycleLink;
 	private Link createTempUsersLink;
+	private Link importExternalUsersLink;
 	private MenuTree menuTree;
 	private TooledStackedPanel content;
 	
@@ -130,6 +134,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private UserCreateController createCtrl;
 	private UserImportController importCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
+	private ImportExternalUserController importExternalUserCtrl;
 	private StepsMainRunController createTemporaryUsersController;
 
 	private final Roles identityRoles;
@@ -139,6 +144,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private LockResult lock;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LDAPLoginModule ldapModule;
 	@Autowired
 	private ProjectModule projectModule;
 	@Autowired
@@ -151,6 +158,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OAuthLoginModule oauthLoginModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -204,6 +213,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			importLink.setElementCssClass("o_sel_useradmin_import");
 			content.addTool(importLink, Align.right);
 			
+			if (((ldapModule.isLDAPEnabled() && ldapModule.isLdapLookupEnabled())
+					|| (oauthLoginModule.isAzureAdfsEnabled() && oauthLoginModule.isAzureLookupEnabled()))) {
+				importExternalUsersLink = LinkFactory.createToolLink("externalusersimport", translate("menu.externalusersimport"), this, "o_icon_import");
+				importExternalUsersLink.setElementCssClass("o_sel_useradmin_external_import");
+				content.addTool(importExternalUsersLink, Align.right);
+			}
+			
 			createTempUsersLink = LinkFactory.createToolLink("utmpcreate", translate("menu.ucreate.tmp"), this, "o_icon_add_member");
 			createTempUsersLink.setElementCssClass("o_sel_useradmin_tmp_users");
 			content.addTool(createTempUsersLink, Align.right);
@@ -240,6 +256,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			doCreateTemporaryUsers(ureq);
 		} else if(importLink == source) {
 			doImportUser(ureq);
+		} else if(importExternalUsersLink == source) {
+			doImportExternalUser(ureq);
 		} else if(userLifecycleLink == source) {
 			doUserLifecycle(ureq);
 		}
@@ -343,6 +361,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		addToHistory(ureq, importCtrl);
 		listenTo(importCtrl);
 		content.pushController(translate("menu.usersimport"), importCtrl);
+	}
+	
+	private void doImportExternalUser(UserRequest ureq) {
+		removeAsListenerAndDispose(importCtrl);
+		
+		Organisation preselectedOrganisation = getPreselectedOrganisation();
+		importExternalUserCtrl = new ImportExternalUserController(ureq, getWindowControl(), preselectedOrganisation);
+		addToHistory(ureq, importExternalUserCtrl);
+		listenTo(importExternalUserCtrl);
+		content.pushController(translate("menu.externalusersimport"), importExternalUserCtrl);
 	}
 	
 	private Controller pushController(UserRequest ureq, TreeNode treeNode) {

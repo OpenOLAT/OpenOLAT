@@ -771,6 +771,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
+	public List<Authentication> getAuthentications(List<? extends IdentityRef> identities) {
+		return authenticationDao.getAuthentications(identities);
+	}
+
+	@Override
 	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String issuer, final String externalId,
 			final String authUserName, final String credentials, final Encoder.Algorithm algorithm) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstanceWithoutCheck(provider, ident.getKey());

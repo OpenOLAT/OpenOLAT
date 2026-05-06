@@ -42,6 +42,7 @@ import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -296,7 +297,7 @@ public class LDAPDAO {
 	public Attributes searchByEmail(String email, String[] returningAttrs, LdapContext ctx) {
 		List<String> ldapBases = syncConfiguration.getLdapBases();
 		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
-		String ldapUserMailAttribute = "mail";//TODO selectus
+		String ldapUserMailAttribute = syncConfiguration.getLDAPAttributeName(UserConstants.EMAIL);
 		
 		String filter = "(&" + ldapUserFilter + "(" + ldapUserMailAttribute + "=" + email + "))";
 		SearchControls ctls = new SearchControls();

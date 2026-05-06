@@ -88,8 +88,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserCreateController extends BasicController  {
 
-	private final NewUserForm createUserForm;
+	private Object userObject;
 	
+	private final NewUserForm createUserForm;
+
 	@Autowired
 	private UserManager userManager;
 	
@@ -106,6 +108,26 @@ public class UserCreateController extends BasicController  {
 		listenTo(createUserForm);
 
 		putInitialPanel(createUserForm.getInitialComponent());
+	}
+	
+	public String getUsername() {
+		return createUserForm.getUsername();
+	}
+	
+	public void prefill(Identity identity) {
+		createUserForm.prefill(identity);
+	}
+	
+	public String getAndRemoveFormTitle() {
+		return createUserForm.getAndRemoveFormTitle();
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	@Override
@@ -200,8 +222,36 @@ class NewUserForm extends FormBasicController {
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), managerRoles,
 				OrganisationRoles.administrator, OrganisationRoles.rolesmanager, OrganisationRoles.usermanager);
 		initForm(ureq);
-	}	 
+	}
 	
+	public String getUsername() {
+		return usernameTextElement.getValue();
+	}
+	
+	public void prefill(Identity identity) {
+		usernameTextElement.setValue(identity.getName());
+		if(StringHelper.containsNonWhitespace(identity.getName())
+				&& identity instanceof TransientIdentity transientIdentity
+				&& transientIdentity.isLdap()) {
+			usernameTextElement.setEnabled(false);
+		}
+		
+		if(emailTextElement != null) {
+			emailTextElement.setValue(identity.getUser().getEmail());
+		}
+		
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			String propName = userPropertyHandler.getName();
+			String propValue = identity.getUser().getProperty(propName, getLocale());
+			if(StringHelper.containsNonWhitespace(propValue)) {
+				FormItem item = flc.getFormComponent(propName);
+				if(item instanceof TextElement textItem) {
+					textItem.setValue(propValue);
+				}
+			}
+		}
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.newuser");

@@ -19,15 +19,11 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
@@ -45,6 +41,11 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -485,13 +486,30 @@ public class AuthenticationDAO {
 	 * @return A list of authentications
 	 */
 	public List<Authentication> getAuthentications(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-		  .append(" inner join auth.identity as ident")
-		  .append(" where ident.key=:identityKey");
+		String sb = """
+				select auth from authentication as auth
+				inner join auth.identity as ident
+				where ident.key=:identityKey""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Authentication.class)
+				.createQuery(sb, Authentication.class)
 				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<Authentication> getAuthentications(List<? extends IdentityRef> identities) {
+		if(identities == null || identities.isEmpty()) return new ArrayList<>();
+		
+		String sb = """
+				select auth from authentication as auth
+				inner join auth.identity as ident
+				where ident.key in (:identityKeys)""";
+		
+		List<Long> identityKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.toList();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Authentication.class)
+				.setParameter("identityKeys", identityKeys)
 				.getResultList();
 	}
 	

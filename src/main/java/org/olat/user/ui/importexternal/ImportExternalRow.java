@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ldap.ui;
+package org.olat.user.ui.importexternal;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;

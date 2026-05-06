@@ -26,13 +26,13 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ldap.LDAPLoginModule;
-import org.olat.ldap.ui.ImportExternalUserSearchController;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.ui.RecruitingMainController;
+import org.olat.user.ui.importexternal.ImportExternalUserSearchController;
 
 /**
  * 

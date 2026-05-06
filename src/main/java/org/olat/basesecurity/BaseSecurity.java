@@ -304,12 +304,20 @@ public interface BaseSecurity {
 	
 
 	/**
-	 * Return the List of associated Authentications.
+	 * Return the list of associated Authentications.
 	 * 
-	 * @param identity
-	 * @return a list of Authentication
+	 * @param identity The identity
+	 * @return A list of Authentication
 	 */
 	public List<Authentication> getAuthentications(IdentityRef identity);
+	
+	/**
+	 * Return the list of associated Authentications.
+	 * 
+	 * @param identities A list of identities
+	 * @return A list of Authentication
+	 */
+	public List<Authentication> getAuthentications(List<? extends IdentityRef> identities);
 
 	/**
 	 * @param identity

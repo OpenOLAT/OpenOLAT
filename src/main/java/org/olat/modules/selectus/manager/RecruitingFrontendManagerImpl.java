@@ -28,7 +28,6 @@ import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OAuth2Tokens;
-import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.CoreSpringFactory;
@@ -76,7 +75,6 @@ import org.olat.modules.selectus.model.CommitteeMembershipSummary;
 import org.olat.modules.selectus.model.CommitteeMembershipsStats;
 import org.olat.modules.selectus.model.DecisionRubric;
 import org.olat.modules.selectus.model.DecisionRubricDefinition;
-import org.olat.modules.selectus.model.ExternalUserResults;
 import org.olat.modules.selectus.model.MailLogInfos;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.OrganisationUnit;
@@ -1090,73 +1088,6 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		}
 		
 		return null;
-	}
-
-	@Override
-	public ExternalUserResults searchUsers(String searchString, OAuth2Tokens oauth2Tokens, Locale locale) {
-		SearchIdentityParams searchParams = new SearchIdentityParams();
-		searchParams.setSearchString(searchString);
-		List<Identity> identities = baseSecurity.getIdentitiesByPowerSearch(null, 0, 2000);
-
-		Set<String> emailDuplicates = new HashSet<>();
-		Set<String> usernameDuplicates = new HashSet<>();
-		for(Identity identity:identities) {
-			String email = identity.getUser().getProperty(UserConstants.EMAIL, locale);
-			if(StringHelper.containsNonWhitespace(email)) {
-				emailDuplicates.add(email);
-			}
-			email = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, locale);
-			if(StringHelper.containsNonWhitespace(email)) {
-				emailDuplicates.add(email);
-			}
-			String userName = identity.getName();
-			if(StringHelper.containsNonWhitespace(userName)) {
-				usernameDuplicates.add(userName);
-			}
-		}
-		
-		Set<String> existingUsers = new HashSet<>();
-		if(oauthLoginModule.isAzureAdfsEnabled() && oauthLoginModule.isAzureLookupEnabled() && oauth2Tokens != null) {
-			TeamsErrors errors = new TeamsErrors();
-			List<TransientIdentity> azureIdentities = microsoftGraphDao
-					.toIdentity(microsoftGraphDao.searchUsers(searchString, oauth2Tokens, errors));
-			cleanDuplicates(identities, azureIdentities, emailDuplicates, usernameDuplicates, existingUsers, locale);
-		}
-		if(ldapModule.isLDAPEnabled() && ldapModule.isLdapLookupEnabled()) {
-			List<TransientIdentity> ldapIdentities = ldapManager.search(searchString);
-			cleanDuplicates(identities, ldapIdentities, emailDuplicates, usernameDuplicates, existingUsers, locale);
-		}
-		return new ExternalUserResults(identities, new ArrayList<>(existingUsers));
-	}
-	
-	/**
-	 * Remove users which email or user name is the same as someone in selectus
-	 */
-	
-	private void cleanDuplicates(List<Identity> identities, List<TransientIdentity> foundIdentities,
-			Set<String> emailDuplicates, Set<String> usernameDuplicates, Set<String> existingUsers, Locale locale) {
-		if(foundIdentities == null || foundIdentities.isEmpty()) return;
-		
-		for(TransientIdentity ldapIdentity:foundIdentities) {
-			String email = ldapIdentity.getUser().getProperty(UserConstants.EMAIL, locale);
-			if(StringHelper.containsNonWhitespace(email) && emailDuplicates.contains(email)) {
-				existingUsers.add(email);
-				continue;
-			}
-			email = ldapIdentity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, locale);
-			if(StringHelper.containsNonWhitespace(email) && emailDuplicates.contains(email)) {
-				existingUsers.add(email);
-				continue;
-			}
-			
-			String username = ldapIdentity.getName();
-			if(username != null && usernameDuplicates.contains(username)) {
-				existingUsers.add(username);
-				continue;
-			}
-			
-			identities.add(ldapIdentity);
-		}
 	}
 
 	@Override

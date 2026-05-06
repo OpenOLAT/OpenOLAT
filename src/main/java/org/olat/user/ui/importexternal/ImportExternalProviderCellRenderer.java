@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ldap.ui;
+package org.olat.user.ui.importexternal;
 
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -48,21 +48,15 @@ public class ImportExternalProviderCellRenderer implements FlexiCellRenderer {
 		String i18nProviderKey = null;
 		if(cellValue == null) {
 			Object obj = source.getFormItem().getTableDataModel().getObject(row);
-			if(obj instanceof ImportExternalRow) {
-				ImportExternalRow tRow = (ImportExternalRow)obj;
-				if(tRow.getIdentity() instanceof TransientIdentity tIdentity) {
-					/*
-					//TODO selectus
-					if(tIdentity.isLdap()) {
-						i18nProviderKey = "table.provider.ldap";
-					} else if(tIdentity.isAzure()) {
-						i18nProviderKey = "table.provider.azure";
-					}
-					*/
+			if(obj instanceof ImportExternalRow tRow
+					&& tRow.getIdentity() instanceof TransientIdentity tIdentity) {
+				if(tIdentity.isLdap()) {
+					i18nProviderKey = "table.provider.ldap";
+				} else if(tIdentity.isAzure()) {
+					i18nProviderKey = "table.provider.azure";
 				}
 			}
-		} else if(cellValue instanceof String) {
-			String provider = (String)cellValue;
+		} else if(cellValue instanceof String provider) {
 			i18nProviderKey = "table.provider.".concat(provider.toLowerCase());
 		}
 		

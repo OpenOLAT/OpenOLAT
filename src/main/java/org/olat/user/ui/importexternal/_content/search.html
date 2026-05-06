@@ -1,0 +1,23 @@
+#if($r.visible("email"))
+	<div class="o_info">$msg</div>
+	#if($r.isNotEmpty($warningToken))
+	<div class="o_warning">$warningToken</div>
+	#end
+	<div class="input-group">
+		$r.render("email")
+		<span class="input-group-btn">$r.render("search")</span>
+	</div>
+#end
+#if($f.hasError("email"))
+	<div class="">
+		$r.render("email","error")
+	</div>
+#end
+<div class="o_block">
+	$r.render("table")
+	#if($r.visible("select"))
+	<div class="o_button_group">
+		$r.render("select")
+	</div>
+	#end
+</div>

@@ -30,7 +30,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.ldap.LDAPLoginModule;
-import org.olat.ldap.ui.ImportExternalUserSearchController;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,6 +37,7 @@ import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.committee.wizard.CommitteeMember;
 import org.olat.modules.selectus.ui.committee.wizard.CommitteeMemberStatus;
+import org.olat.user.ui.importexternal.ImportExternalUserSearchController;
 
 /**
  * 

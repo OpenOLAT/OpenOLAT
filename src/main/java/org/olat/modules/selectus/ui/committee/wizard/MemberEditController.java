@@ -37,12 +37,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.ldap.ui.ImportExternalUserSearchController;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.UsernameValidationRulesFactory;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.importexternal.ImportExternalUserSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.olat.modules.selectus.ui.RecruitingMainController;

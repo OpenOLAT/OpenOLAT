@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ldap.ui;
+package org.olat.user.ui.importexternal;
 
 import java.util.List;
 import java.util.Locale;
@@ -65,11 +65,11 @@ implements SortableFlexiTableDataModel<ImportExternalRow> {
 	@Override
 	public Object getValueAt(ImportExternalRow row, int col) {
 		if(col >= 0 && col < FIELDS.length) {
-			switch(FIELDS[col]) {
-				case username: return row.getUsername();
-				case authenticationProvider: return row.getAuthenticationProvider();
-				default: return "ERROR";
-			}
+			return switch(FIELDS[col]) {
+				case username -> row.getUsername();
+				case authenticationProvider -> row.getAuthenticationProvider();
+				default -> "ERROR";
+			};
 		}
 		
 		if(col >= ImportExternalUserSearchController.OFFSET_INDEX && col < ImportExternalUserSearchController.OFFSET_INDEX + userPropertyHandlers.size()) {
