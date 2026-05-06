@@ -66,6 +66,7 @@ import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -112,7 +113,7 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 
 	@Override
 	public String getBusinessPath(ToDoTask toDoTask) {
-		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0]";
+		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 
 	@Override

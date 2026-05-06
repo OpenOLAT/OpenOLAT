@@ -26,11 +26,16 @@ $r.render("searchField")
 	</fieldset>
 	#end
 
-	#if($r.visible("curriculum.reports"))
+	#if($r.visible("curriculum.todos") || $r.visible("curriculum.reports"))
 	<fieldset>
 		<legend>$r.translate("curriculum.productivity.title")</legend>
 		<ul class="o_mega_buttons">
-			<li>$r.render("curriculum.reports")</li>
+			#if($r.visible("curriculum.todos"))
+				<li>$r.render("curriculum.todos")</li>
+			#end
+			#if($r.visible("curriculum.reports"))
+				<li>$r.render("curriculum.reports")</li>
+			#end
 		</ul>
 	</fieldset>
 	#end

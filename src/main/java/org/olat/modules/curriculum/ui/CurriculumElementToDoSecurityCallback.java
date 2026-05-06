@@ -63,7 +63,7 @@ public class CurriculumElementToDoSecurityCallback implements ToDoTaskSecurityCa
 
 	@Override
 	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-		return ToDoStatus.deleted != toDoTask.getStatus() &&  secCallback.canEditCurriculumElement(element);
+		return ToDoStatus.deleted != toDoTask.getStatus() && secCallback.canEditCurriculumElement(element);
 	}
 
 	@Override

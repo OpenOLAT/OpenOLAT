@@ -62,6 +62,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
 import org.olat.modules.todo.ui.ToDoUIFactory;
@@ -103,7 +104,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			return null;
 		}
 		Long elementKey = Long.valueOf(toDoTask.getOriginSubPath());
-		return "[CurriculumAdmin:0][Curriculum:" + toDoTask.getOriginId() + "][CurriculumElement:" + elementKey + "][ToDos:0]";
+		return "[CurriculumAdmin:0][Curriculum:" + toDoTask.getOriginId() + "][CurriculumElement:" + elementKey + "][ToDos:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 
 	@Override
@@ -134,10 +135,10 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	@Override
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
 			String originSubPath) {
-		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(originId));
+		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(originSubPath)));
 		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
 				element.getKey().toString(), element.getCurriculum().getDisplayName(), element.getDisplayName());
-		return createEditController(ureq, wControl, null, element, context);
+		return createEditController(ureq, wControl, null, null, element, context);
 	}
 
 	@Override
@@ -153,18 +154,21 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	@Override
 	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
 			ToDoTask sourceToDoTask, boolean showContext) {
-		return null;
+		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(sourceToDoTask.getOriginSubPath())));
+		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
+				element.getKey().toString(), element.getCurriculum().getDisplayName(), element.getDisplayName());
+		return createEditController(ureq, wControl, null, sourceToDoTask, element, context);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, boolean showSingleAssignee) {
 		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(toDoTask.getOriginSubPath())));
-		return createEditController(ureq, wControl, toDoTask, element, toDoTask);
+		return createEditController(ureq, wControl, toDoTask, null, element, toDoTask);
 	}
 
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			CurriculumElement element, ToDoContext context) {
+			ToDoTask toDoTaskCopySource, CurriculumElement element, ToDoContext context) {
 		Set<Identity> candidates = getCandidates(element).stream()
 				.map(CurriculumMember::getIdentity)
 				.collect(Collectors.toSet());
@@ -176,7 +180,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				? ToDoTaskContextConfig.picker(new CurriculumElementContextPicker(effectiveRoot.getKey(), element.getKey()), context)
 				: ToDoTaskContextConfig.off(context);
 		CurriculumElementToDoMemberProvider memberSearchProvider = new CurriculumElementToDoMemberProvider(element);
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, null,
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource,
 				contextConfig,
 				ToDoTaskMemberConfig.search(candidates, memberSearchProvider).notMandatory(),
 				ToDoTaskMemberConfig.search(candidates, memberSearchProvider),

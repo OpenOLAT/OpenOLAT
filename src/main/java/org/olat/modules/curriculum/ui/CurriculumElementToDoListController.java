@@ -78,7 +78,7 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 	public CurriculumElementToDoListController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement element, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_todos", CurriculumElementToDoProvider.TYPE,
-				element.getKey(), null);
+				element.getCurriculum().getKey(), element.getKey().toString());
 		this.element = element;
 		this.secCallback = secCallback;
 		
