@@ -9,22 +9,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.model.RecruitingAuditLog;
 import org.olat.modules.selectus.model.RecruitingAuditLogLight;
 import org.olat.modules.selectus.model.log.RecruitingAuditLogSearchParameters;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -110,6 +111,36 @@ public class RecruitingAuditLogReadDAOTest extends OlatTestCase {
 		Assert.assertNotNull(logs);
 		Assert.assertEquals(1, logs.size());
 		Assert.assertEquals(log, logs.get(0));
+	}
+	
+	@Test
+	public void getPositionLogsWithOrganisation() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-12");
+		Identity nonId = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-13");
+		Position position = createRandomPosition(PositionStatus.published);
+		Organisation organisation = organisationService
+				.createOrganisation("Org-audit-position-unit-test", "Org-audit-position-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		position.setOrganisation(organisation);
+		position = positionDao.savePosition(position);
+		dbInstance.commitAndCloseSession();
+		
+		organisationService.addMember(organisation, id, OrganisationRoles.selectusmanager, id);
+
+		RecruitingAuditLog log = recruitingAuditLogDao.auditLog(RecruitingAuditLog.Action.add, RecruitingAuditLog.ActionTarget.position,
+				"Large before", "Larger after", "Hello", null, null, position, null, null, null, null, null, null, id);
+		dbInstance.commitAndCloseSession();
+		
+		RecruitingAuditLogSearchParameters params = new RecruitingAuditLogSearchParameters();
+		params.setPosition(position);
+		params.setOrganisation(true);
+		List<RecruitingAuditLog> logs = recruitingAuditLogDao.getPositionLogs(id, params);
+		Assertions.assertThat(logs)
+			.hasSize(1)
+			.containsExactly(log);
+		
+		List<RecruitingAuditLog> nonLogs = recruitingAuditLogDao.getPositionLogs(nonId, params);
+		Assertions.assertThat(nonLogs)
+			.isEmpty();
 	}
 	
 	@Test

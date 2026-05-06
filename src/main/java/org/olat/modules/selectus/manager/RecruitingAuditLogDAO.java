@@ -382,11 +382,13 @@ public class RecruitingAuditLogDAO {
 		}
 		
 		if(params.isOrganisation()) {
-			//limit to the organisation unit
-			//TODO selectus load mail settings
+			// Limit to the organisation of the position
 			sb.and()
-			  .append(" exists (select orgMember.key from rorganisationunitmember as orgMember, rorganisationunit as org, rposition as pos where")
-			  .append("  orgMember.identity.key=:readerKey and orgMember.organisationUnit.key=org.key and pos.organisationUnit.key=org.key and pos.key=log.positionKey")
+			  .append(" exists (select rMembership.key from rposition as pos")
+			  .append("  inner join pos.organisation as rorg")
+			  .append("  inner join rorg.group rGroup")
+			  .append("  inner join rGroup.members rMembership")
+			  .append("  where pos.key=log.positionKey and rMembership.identity.key=:readerKey")
 			  .append(")");
 		}
 		

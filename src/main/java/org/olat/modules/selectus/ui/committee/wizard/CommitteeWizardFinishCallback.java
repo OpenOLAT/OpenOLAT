@@ -97,13 +97,12 @@ public class CommitteeWizardFinishCallback implements StepRunnerCallback {
 		// Create transient user without firstName,lastName, email
 		User newUser = userManager.createUser(tIdentity.getFirstName(), tIdentity.getLastName(), tIdentity.getEmail());
 		// Now add data from user fields (firstName,lastName and email are mandatory)
-		//TODO selectus
 		List<UserPropertyHandler> handlers = userManager.getUserPropertyHandlersFor(MembersController.formIdentifyer, true);
 		for (UserPropertyHandler handler: handlers) {
 			String value = tIdentity.getProperty(handler.getName());
 			newUser.setProperty(handler.getName(), value);
 		}
-		Organisation organisation = organisationService.getDefaultOrganisation();//
+		Organisation organisation = organisationService.getDefaultOrganisation();
 		return erFrontendManager.createCommitteeIdentity(tIdentity.getName(), newUser, tIdentity.isLdap(), tIdentity.isAzure(), position, organisation, doer);
 	}
 }

@@ -16,7 +16,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -41,12 +40,6 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.RegistrationModule;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -55,6 +48,11 @@ import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.ui.committee.wizard.MembersController;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.RegistrationModule;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -75,7 +73,6 @@ public class EditCommitteeMemberController extends FormBasicController {
 	private Map<String, String> formContext;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
-	private TextElement emailTextElement;
 	private SingleSelection roleElement;
 	private FormLink sendPasswordLink;
 	
@@ -175,7 +172,7 @@ public class EditCommitteeMemberController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		// validate special rules for each user property
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {			
@@ -186,25 +183,11 @@ public class EditCommitteeMemberController extends FormBasicController {
 				allOk &= false;				
 			}
 		}
-		// special test on email address: validate if email is already used
-		if (emailTextElement != null) {	
-			emailTextElement.clearError();
-			
-			String email = emailTextElement.getValue();
-			// Check if email is not already taken
-			List<Identity> exists = um.findIdentitiesByEmail(List.of(email));
-			//TODO selectus
-			if (exists.size() > 1 || (exists.size() == 1 && !exists.get(0).equals(member))) {
-				// Oups, email already taken, display error
-				emailTextElement.setErrorKey("new.error.email.choosen");
-				allOk &= false;
-			}
-		}
-		
+
 		//only security, it must always one be selected 
 		allOk &= roleElement.isOneSelected();
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private PositionRole getRole() {

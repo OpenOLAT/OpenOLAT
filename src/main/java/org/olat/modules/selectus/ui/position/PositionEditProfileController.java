@@ -919,21 +919,23 @@ public class PositionEditProfileController extends FormBasicController implement
 				departmentLanguagesEl.isEmpty() || !recruitingModule.isPositionPrefillDepartment()) return;
 		if(!organisationEl.isOneSelected() || ORG_UNIT_EMPTY_KEY.equals(organisationEl.getSelectedKey())) return;
 		
-		//TODO selectus load mail settings 
-		/*
-		OrganisationUnit selectedUnit = null;
-		for(TextElement departmentEl:departmentLanguagesEl) {
-			if(!StringHelper.containsNonWhitespace(departmentEl.getValue())) {
-				if(selectedUnit == null) {
-					String selectOrgunitKey = organisationEl.getSelectedKey();
-					selectedUnit = erFrontendManager.getOrganisationUnit(Long.valueOf(selectOrgunitKey));
+		Organisation selectOrganisation = getSelectedOrganisation();
+		if(selectOrganisation != null) {
+			OrganisationUnit selectedUnit = null;
+			for(TextElement departmentEl:departmentLanguagesEl) {
+				if(!StringHelper.containsNonWhitespace(departmentEl.getValue())) {
+					if(selectedUnit == null && selectOrganisation != null) {
+						selectedUnit = erFrontendManager.getOrganisationUnit(selectOrganisation);
+						if(selectedUnit == null) {
+							break;
+						}
+					}
+					Locale locale = (Locale)departmentEl.getUserObject();
+					String unitName = selectedUnit.getMLName(locale);
+					departmentEl.setValue(unitName);
 				}
-
-				Locale locale = (Locale)departmentEl.getUserObject();
-				String unitName = selectedUnit.getMLName(locale);
-				departmentEl.setValue(unitName);
 			}
-		}*/
+		}
 	}
 	
 	private void removeDocument(Attachment attachment) {
