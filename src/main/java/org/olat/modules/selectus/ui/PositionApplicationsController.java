@@ -850,7 +850,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		}
 		
 		initDateColumnModel(Fields.submittedDate, recruitingModule.getTableApplicationsSubmittedDateOption(), filters);
-		initColumnModel(Fields.submittedByStaff, recruitingModule.getTableApplicationsSubmittedByStaffOption(), null);//TODO selectus special selection
+		initColumnModel(Fields.submittedByStaff, recruitingModule.getTableApplicationsSubmittedByStaffOption(), null);
 		initColumnModel(Fields.applicationStatus, recruitingModule.getTableApplicationsStatusOption(), null);// Special configurable list
 		initDateColumnModel(Fields.applicationStatusDate, recruitingModule.getTableApplicationsStatusDateOption(), filters);
 		

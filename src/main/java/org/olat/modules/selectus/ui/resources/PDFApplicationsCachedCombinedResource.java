@@ -9,21 +9,26 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.Position;
+import org.olat.modules.selectus.pdf.PDFDataProvider;
+import org.olat.modules.selectus.ui.document.PDFApplicationCombinedHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -98,11 +103,9 @@ public class PDFApplicationsCachedCombinedResource implements MediaResource {
 			if(size != null && size.intValue() > 0) {
 				response.setContentLength(size.intValue());
 			}
-			//TODO selectus
-			/*s
+			
 			PositionDataProvider provider = new PositionDataProvider();
 			erFrontendManager.stream(position, provider, bout);
-			*/
 		} catch (IOException e) {
 			log.error("Cannot generate batch combined files for: " + position, e);
 		}
@@ -113,8 +116,7 @@ public class PDFApplicationsCachedCombinedResource implements MediaResource {
 		//
 	}
 	
-	/*
-	private class PositionDataProvider implements BigDataProvider {
+	private class PositionDataProvider implements PDFDataProvider {
 		
 		@Autowired
 		private DB dbInstance;
@@ -162,5 +164,4 @@ public class PDFApplicationsCachedCombinedResource implements MediaResource {
 			}
 		}
 	}
-	*/
 }

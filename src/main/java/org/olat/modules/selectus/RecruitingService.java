@@ -7,6 +7,7 @@
  */
 package org.olat.modules.selectus;
 
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +65,7 @@ import org.olat.modules.selectus.model.RejectionEmailLogFull;
 import org.olat.modules.selectus.model.application.ParallelApplication;
 import org.olat.modules.selectus.model.mail.SentEmailTemplates;
 import org.olat.modules.selectus.model.references.ReferenceSearchParameters;
+import org.olat.modules.selectus.pdf.PDFDataProvider;
 
 /**
  * 
@@ -380,22 +382,24 @@ public interface RecruitingService {
 	public void deleteCachedStream(Position position);
 	
 	/**
-	 * Stream and cached the stream on the disk using the BigDataCache
-	 * @param position
-	 * @param provider
-	 * @param out
-	 * @return
+	 * Stream and cached the stream on the disk using a cache.
+	 * 
+	 * @param position The position
+	 * @param provider The provider
+	 * @param out The output stream
+	 * @return The size of the archive
 	 */
-	//TODO selectus public Long stream(Position position, BigDataProvider provider, OutputStream out);
+	public Long stream(Position position, PDFDataProvider provider, OutputStream out);
 	
 	/**
+	 * Stream and cached the stream on the disk using a cache.
 	 * 
-	 * @param position
-	 * @param provider
-	 * @param out
-	 * @return
+	 * @param position The position
+	 * @param provider The data provider
+	 * @param out The output stream
+	 * @return The size of the archive
 	 */
-	//TODO selectus public Long streamExpertOpinions(Position position, BigDataProvider provider, OutputStream out);
+	public Long streamExpertOpinions(Position position, PDFDataProvider provider, OutputStream out);
 	
 
 	/**

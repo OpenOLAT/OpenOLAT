@@ -399,7 +399,7 @@ public class PDFApplicationCombinedHelper {
     	
 		// Construct fop with desired output format
 		Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out);
-		print(doc);
+		//print(doc);
 
 		Transformer transformer = CoreSpringFactory.getImpl(TemplatesCache.class)
 				.getTransformer(xsltName);

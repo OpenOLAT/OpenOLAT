@@ -6,6 +6,7 @@
 package org.olat.modules.selectus.manager;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -31,6 +32,8 @@ import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
@@ -41,7 +44,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
@@ -103,6 +105,8 @@ import org.olat.modules.selectus.model.mail.SentEmailTemplates;
 import org.olat.modules.selectus.model.references.ReferenceSearchParameters;
 import org.olat.modules.selectus.model.review.PositionReviewDefinition;
 import org.olat.modules.selectus.model.review.ReviewElementDefinition;
+import org.olat.modules.selectus.pdf.PDFDataCache;
+import org.olat.modules.selectus.pdf.PDFDataProvider;
 import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.resource.OLATResource;
@@ -202,19 +206,21 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Autowired
 	private OAuthLoginModule oauthLoginModule;
 	
-	//TODO selectus
-	//private final BigDataCache bigDataCache = new BigDataCache();
+	private final PDFDataCache pdfCache = new PDFDataCache();
 	private final BouncyCastleProvider bcProvider = new BouncyCastleProvider();
 	private final PKCS12KeyStoreSpi.BCPKCS12KeyStore keyStore = new PKCS12KeyStoreSpi.BCPKCS12KeyStore();
 	
+	@Autowired
+	public RecruitingFrontendManagerImpl(FolderModule folderModule) {
+		log.debug("FolderModule loaded {}", folderModule);
+	}
+	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		File rootCache = new File(new File(WebappHelper.getUserDataRoot(), "tmp"), "combinedapps");
-		/*
-		bigDataCache.setRootCache(rootCache);
-		bigDataCache.setUseCache(true);
-		bigDataCache.init();
-		*/
+		File rootCache = new File(new File(FolderConfig.getCanonicalTmpDir(), "selectus"), "combinedapps");
+		pdfCache.setRootCache(rootCache);
+		pdfCache.setUseCache(true);
+		pdfCache.init();
 	}
 
 	@Override
@@ -640,8 +646,8 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	public void deleteApplication(Application app) {
 		if(app.getPosition().getKey() != null) {
 			String cacheKey = app.getPosition().getKey().toString();
-			//TODO selectus bigDataCache.invalidate(cacheKey);
-			//bigDataCache.invalidate(EXPERT_OPINIONS_PREFIX + cacheKey);
+			pdfCache.invalidate(cacheKey);
+			pdfCache.invalidate(EXPERT_OPINIONS_PREFIX + cacheKey);
 		}
 		notesDao.deleteNotes(app);
 		rejectionDao.deleteApplication(app);
@@ -1020,37 +1026,37 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	public Long streamSize(Position position) {
 		if(position.getKey() == null) return 0l;
 		String cacheKey = position.getKey().toString();
-		return 0l;//TODO selectus bigDataCache.getSize(cacheKey);
+		return pdfCache.getSize(cacheKey);
 	}
 
 	@Override
 	public Long streamExpertOpinionsSize(Position position) {
 		if(position.getKey() == null) return 0l;
 		String cacheKey = position.getKey().toString();
-		return 0l;//TODO selectus bigDataCache.getSize(EXPERT_OPINIONS_PREFIX + cacheKey);
+		return pdfCache.getSize(EXPERT_OPINIONS_PREFIX + cacheKey);
 	}
 
 	@Override
 	public void deleteCachedStream(Position position) {
 		if(position.getKey() == null) return;
 		String cacheKey = position.getKey().toString();
-		//TODO selectus bigDataCache.forceDelete(cacheKey);
-		//bigDataCache.forceDelete(EXPERT_OPINIONS_PREFIX + cacheKey);
+		pdfCache.forceDelete(cacheKey);
+		pdfCache.forceDelete(EXPERT_OPINIONS_PREFIX + cacheKey);
 	}
-/*
+
 	@Override
-	public Long stream(Position position, BigDataProvider provider, OutputStream out) {
+	public Long stream(Position position, PDFDataProvider provider, OutputStream out) {
 		if(position.getKey() == null) return 0l;
 		String cacheKey = position.getKey().toString();
-		return 0l;//TODO selectus bigDataCache.stream(cacheKey, provider, out);
+		return pdfCache.stream(cacheKey, provider, out);
 	}
 	
 	@Override
-	public Long streamExpertOpinions(Position position, BigDataProvider provider, OutputStream out) {
+	public Long streamExpertOpinions(Position position, PDFDataProvider provider, OutputStream out) {
 		if(position.getKey() == null) return 0l;
 		String cacheKey = EXPERT_OPINIONS_PREFIX + position.getKey().toString();
-		return 0l;//TODO selectus bigDataCache.stream(cacheKey, provider, out);
-	}*/
+		return pdfCache.stream(cacheKey, provider, out);
+	}
 
 	@Override
 	public Identity getCommitteeMember(String email) {
