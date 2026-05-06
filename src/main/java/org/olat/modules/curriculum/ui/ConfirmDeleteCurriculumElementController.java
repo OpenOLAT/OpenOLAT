@@ -37,6 +37,10 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,11 +58,14 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 	private final List<RepositoryEntry> references;
 	private final List<CurriculumElement> descendants;
 	private final CurriculumElement curriculumElement;
+	private final long toDoCount;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private ToDoService toDoService;
 	
 	public ConfirmDeleteCurriculumElementController(UserRequest ureq, WindowControl wControl,
 			String message, String confirmation, String confirmButton,
@@ -78,8 +85,27 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 		elements.addAll(descendants);
 		membersKeys = curriculumService.getMemberKeys(elements, CurriculumRoles.participant.name(), CurriculumRoles.coach.name(), CurriculumRoles.owner.name(),
 				 CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name());
-		
+
+		toDoCount = countToDoTasks(elements);
+
 		initForm(ureq);
+	}
+
+	private long countToDoTasks(List<CurriculumElementRef> elements) {
+		if (curriculumElement.getCurriculum() == null) {
+			return 0;
+		}
+		List<String> originSubPaths = elements.stream()
+				.map(ref -> ref.getKey().toString())
+				.toList();
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
+		params.setOriginIds(List.of(curriculumElement.getCurriculum().getKey()));
+		params.setOriginSubPaths(originSubPaths);
+		params.setOriginDeleted(Boolean.FALSE);
+		params.setStatus(ToDoStatus.OPEN_TO_DONE);
+		Long count = toDoService.getToDoTaskCount(params);
+		return count != null ? count : 0;
 	}
 	
 	@Override
@@ -100,6 +126,11 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 			impact.append("<li>")
 		          .append(translate("curriculums.elements.bulk.delete.impacts.members", String.valueOf(membersKeys.size())))
 		          .append("</li>");
+		}
+		if(toDoCount > 0) {
+			impact.append("<li>")
+			      .append(translate("curriculums.elements.bulk.delete.impacts.todos", String.valueOf(toDoCount)))
+			      .append("</li>");
 		}
 		impact.append("</ul>");
 

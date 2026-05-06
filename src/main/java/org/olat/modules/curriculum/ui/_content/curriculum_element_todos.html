@@ -1,0 +1,23 @@
+<fieldset>
+	<legend><i class="o_icon o_icon-fw o_icon_todo_task"> </i> $r.translate("tab.todos")</legend>
+	#if($r.available("curriculum.element.todo.create") || $r.visible("search.all.levels"))
+		<div class="o_flex_first_grow">
+			<div>
+				#if($r.visible("search.all.levels"))
+				<div class="btn-group">
+					$r.render("search.all.levels")
+					$r.render("search.this.level")
+				</div>
+				#end
+			</div>
+			#if($r.available("curriculum.element.todo.create"))
+			<div class="btn-group">
+				$r.render("curriculum.element.todo.create")
+			</div>
+			#end
+		</div>
+	#end
+	<div class="o_block_top">
+		$r.render("table")
+	</div>
+</fieldset>

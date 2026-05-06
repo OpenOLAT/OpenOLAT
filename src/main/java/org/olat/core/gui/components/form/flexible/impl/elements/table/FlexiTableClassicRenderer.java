@@ -327,7 +327,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		}
 
 		SelectionMode selectionMode = ftE.getSelectionMode();
-		if(selectionMode == SelectionMode.multi && ftE.isRowSelectionEnabled()) {
+		if(selectionMode != null && selectionMode != SelectionMode.disabled && ftE.isRowSelectionEnabled()) {
 			target.append(" onclick=\"o_ffTableToggleRowListener('").append(rowIdPrefix).append(row).append("','o_row_selected');")
 		          .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 		    		  new NameValuePair("chkbox", Integer.toString(row))))

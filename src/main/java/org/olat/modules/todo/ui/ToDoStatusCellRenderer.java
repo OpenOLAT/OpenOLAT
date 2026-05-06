@@ -21,6 +21,7 @@ package org.olat.modules.todo.ui;
 
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -39,7 +40,9 @@ public class ToDoStatusCellRenderer extends IconCssCellRenderer {
 	@Override
 	protected String getCellValue(Object val) {
 		if (val instanceof ToDoTaskRow row) {
-			return row.getStatusText();
+			return StringHelper.containsNonWhitespace(row.getStatusText()) 
+					? row.getStatusText()
+					: ToDoUIFactory.getDisplayName(translator, row.getStatus());
 		}
 		return null;
 	}
@@ -48,14 +51,6 @@ public class ToDoStatusCellRenderer extends IconCssCellRenderer {
 	protected String getIconCssClass(Object val) {
 		if (val instanceof ToDoTaskRow row) {
 			return "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(row.getStatus());
-		}
-		return null;
-	}
-
-	@Override
-	protected String getHoverText(Object val) {
-		if (val instanceof ToDoTaskRow row) {
-			return ToDoUIFactory.getDisplayName(translator, row.getStatus());
 		}
 		return null;
 	}

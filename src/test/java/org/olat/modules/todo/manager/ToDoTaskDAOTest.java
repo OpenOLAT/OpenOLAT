@@ -457,7 +457,34 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		searchParams.setAssigneeRightsNull(Boolean.FALSE);
 		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTaskNotNull);
 	}
-	
+
+	@Test
+	public void shouldLoad_filter_assigneeAvailable() {
+		Identity assignee = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		Identity delegatee = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+
+		ToDoTask withAssignee = createRandomToDoTask();
+		toDoService.updateMember(assignee, withAssignee, List.of(assignee), List.of());
+
+		ToDoTask noMembers = createRandomToDoTask();
+
+		ToDoTask onlyDelegatee = createRandomToDoTask();
+		toDoService.updateMember(assignee, onlyDelegatee, List.of(), List.of(delegatee));
+
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setToDoTasks(List.of(withAssignee, noMembers, onlyDelegatee));
+		assertThat(sut.loadToDoTasks(searchParams))
+				.containsExactlyInAnyOrder(withAssignee, noMembers, onlyDelegatee);
+
+		searchParams.setAssigneeAvailable(Boolean.TRUE);
+		assertThat(sut.loadToDoTasks(searchParams))
+				.containsExactlyInAnyOrder(withAssignee);
+
+		searchParams.setAssigneeAvailable(Boolean.FALSE);
+		assertThat(sut.loadToDoTasks(searchParams))
+				.containsExactlyInAnyOrder(noMembers, onlyDelegatee);
+	}
+
 	@Test
 	public void shouldLoad_filter_collectionKeys() {
 		String type = random();

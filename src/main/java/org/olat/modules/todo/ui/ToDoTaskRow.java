@@ -49,6 +49,7 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	private Long key;
 	private Long collectionKey;
 	private Date creationDate;
+	private String creationByName;
 	private Date contentModifiedDate;
 	private String title;
 	private String displayName;
@@ -149,6 +150,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public String getCreationByName() {
+		return creationByName;
+	}
+
+	public void setCreationByName(String creationByName) {
+		this.creationByName = creationByName;
 	}
 
 	public Date getContentModifiedDate() {

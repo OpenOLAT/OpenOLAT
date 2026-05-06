@@ -49,9 +49,12 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -166,16 +169,25 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask toDoTaskCopySource, boolean showContext, RepositoryEntry repositoryEntry, ToDoContext context,
 			MemberSelection assigneeSelection) {
-		Collection<Identity> assigneeCandidates = List.of();
-		if (MemberSelection.readOnly != assigneeSelection) {
+		ToDoTaskMemberConfig assigneeConfig;
+		if (MemberSelection.readOnly == assigneeSelection) {
+			assigneeConfig = ToDoTaskMemberConfig.readOnly();
+		} else if (MemberSelection.disabled == assigneeSelection) {
+			assigneeConfig = ToDoTaskMemberConfig.disabled();
+		} else {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repositoryEntry);
-			assigneeCandidates = reSecurity.isEntryAdmin()
+			Collection<Identity> assigneeCandidates = reSecurity.isEntryAdmin()
 					? repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
 					: repositoryService.getCoachedParticipants(ureq.getIdentity(), repositoryEntry);
+			assigneeConfig = ToDoTaskMemberConfig.candidatesSingle(assigneeCandidates);
 		}
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource, showContext, List.of(context),
-				context, courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS,
-				assigneeSelection, assigneeCandidates, List.of(), MemberSelection.disabled, List.of());
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(List.of(context), context)
+				: ToDoTaskContextConfig.off(context);
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource, contextConfig,
+				assigneeConfig, ToDoTaskMemberConfig.disabled(),
+				ToDoTaskMemberSelection.empty(),
+				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS);
 	}
 
 	@Override

@@ -110,8 +110,8 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	@Override
 	public Object getValueAt(ToDoTaskRow row, int col) {
 		switch(COLS[col]) {
-		case id: return row.getKey();
 		case creationDate: return row.getCreationDate();
+		case creationBy: return row.getCreationByName();
 		case contentLastModifiedDate: return row.getContentModifiedDate();
 		case title: return row.getTitleItems();
 		case status: return row;
@@ -135,8 +135,8 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	}
 	
 	public enum ToDoTaskCols implements FlexiSortableColumnDef {
-		id("task.id"),
 		creationDate("task.creation.date"),
+		creationBy("created.by"),
 		contentLastModifiedDate("task.content.modified.date"),
 		title("task.title"),
 		status("task.status"),

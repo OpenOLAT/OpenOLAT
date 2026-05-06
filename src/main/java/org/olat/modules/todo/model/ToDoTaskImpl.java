@@ -102,11 +102,11 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@Transient
 	private ToDoRight[] assigneeRightsEnum;
 	
-	@Column(name="t_type", nullable=true, insertable=true, updatable=false)
+	@Column(name="t_type", nullable=true, insertable=true, updatable=true)
 	private String type;
-	@Column(name="t_origin_id", nullable=true, insertable=true, updatable=false)
+	@Column(name="t_origin_id", nullable=true, insertable=true, updatable=true)
 	private Long originId;
-	@Column(name="t_origin_subpath", nullable=true, insertable=true, updatable=false)
+	@Column(name="t_origin_subpath", nullable=true, insertable=true, updatable=true)
 	private String originSubPath;
 	@Column(name="t_origin_title", nullable=true, insertable=true, updatable=true)
 	private String originTitle;
@@ -257,6 +257,7 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 		return type;
 	}
 
+	@Override
 	public void setType(String type) {
 		this.type = type;
 	}
@@ -300,6 +301,7 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 		return originId;
 	}
 
+	@Override
 	public void setOriginId(Long originId) {
 		this.originId = originId;
 	}
@@ -309,6 +311,7 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 		return originSubPath;
 	}
 
+	@Override
 	public void setOriginSubPath(String originSubPath) {
 		this.originSubPath = originSubPath;
 	}

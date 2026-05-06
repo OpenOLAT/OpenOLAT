@@ -4,24 +4,42 @@
 		$r.render("task.title", "vertical", "form")
 	</div>
 	#if($r.available("task.context"))
-		$r.render("task.context", "vertical", "form")
+		#if($r.available("contextChangeLink"))
+			<div class="form-group">
+				$r.render("task.context", "label")
+				<div class="input-group">
+					$r.render("task.context", "form")
+					$r.render("contextChangeLink", "inputgroupaddon")
+				</div>
+			</div>
+		#else
+			$r.render("task.context", "vertical", "form")
+		#end
 	#end
 	$r.render("tags", "vertical", "form")
-	#if($r.available("assigneeCont"))
-		<div class="o_form_button_right">
-	#end
-	$r.render("task.assigned", "vertical", "form")
-	#if($r.available("assigneeCont"))
-		$r.render("assigneeCont", "vertical", "form")
+	#if($r.available("assigneeAddLink"))
+		<div class="form-group">
+			$r.render("task.assigned", "label")
+			<div class="input-group">
+				$r.render("task.assigned", "form")
+				$r.render("assigneeAddLink", "inputgroupaddon")
+			</div>
+			$r.render("task.assigned", "error")
 		</div>
+	#else
+		$r.render("task.assigned", "vertical", "form")
 	#end
-	#if($r.available("delegateeCont"))
-		<div class="o_form_button_right">
-	#end
-	$r.render("task.delegated", "vertical", "form")
-	#if($r.available("delegateeCont"))
-		$r.render("delegateeCont", "vertical", "form")
+	#if($r.available("delegateeAddLink"))
+		<div class="form-group">
+			$r.render("task.delegated", "label")
+			<div class="input-group">
+				$r.render("task.delegated", "form")
+				$r.render("delegateeAddLink", "inputgroupaddon")
+			</div>
+			$r.render("task.delegated", "error")
 		</div>
+	#else
+		$r.render("task.delegated", "vertical", "form")
 	#end
 	<div class="o_form_two_cols">
 		$r.render("task.status", "horizontal", "form")

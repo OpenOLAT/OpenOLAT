@@ -29,6 +29,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_RESOURCES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_STRUCTURE;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_TODOS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -114,6 +115,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int absencesTab;
 	private int offersTab;
 	private int metadataTab;
+	private int todosTab;
 
 	private Dropdown statusDropdown;
 	private Link nextButton;
@@ -143,6 +145,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumElementStatusChangeController statusChangeCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
+	private CurriculumElementToDoListController todosCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	private ConfirmDeleteCurriculumElementController deleteCurriculumElementCtrl;
 	
@@ -552,6 +555,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			return userManagementCtrl.getInitialComponent();
 		}, false);
 		
+		// To-dos
+		if (secCallback.canViewToDos()) {
+			todosTab = tabPane.addTab(ureq, translate("tab.todos"), "o_sel_curriculum_todos", uureq -> {
+				WindowControl subControl = addToHistory(uureq, OresHelper
+						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_TODOS), null);
+				todosCtrl = new CurriculumElementToDoListController(uureq, subControl, curriculumElement, secCallback);
+				listenTo(todosCtrl);
+				return todosCtrl.getInitialComponent();
+			}, true);
+		}
+
 		// Offers
 		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
 				&& secCallback.canViewCatalogSettings(curriculumElement)) {
@@ -664,6 +678,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			if(userManagementCtrl != null) {
 				userManagementCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
+		} else if(CONTEXT_TODOS.equalsIgnoreCase(type) && todosTab > 0) {
+			tabPane.setSelectedPane(ureq, todosTab);
 		} else if(CONTEXT_OFFERS.equalsIgnoreCase(type) && offersTab > 0) {
 			tabPane.setSelectedPane(ureq, offersTab);
 		} else if(CONTEXT_METADATA.equalsIgnoreCase(type) && metadataTab > 0) {

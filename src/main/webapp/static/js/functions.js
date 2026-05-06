@@ -2946,7 +2946,7 @@ function o_debounce(func, timeout = 300){
  
  function o_ffTableToggleRowListener(rowId, cssClass) {
   	o_ffTableToggleRowCheck(rowId, cssClass);
-  	const checkEl = jQuery('#' + rowId + ">td.o_multiselect>input");
+  	const checkEl = jQuery('#' + rowId + ">td.o_multiselect>input, #" + rowId + ">td.o_singleselect>input");
  	if(checkEl.length > 0) {
  		const checked = jQuery('#' + rowId).hasClass(cssClass);
  		checkEl.get(0).checked = checked;

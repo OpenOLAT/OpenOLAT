@@ -158,6 +158,16 @@ public class ToDoTaskSearchParams {
 		this.assigneeRightsNull = assigneeRightsNull;
 	}
 
+	private Boolean assigneeAvailable;
+
+	public Boolean getAssigneeAvailable() {
+		return assigneeAvailable;
+	}
+
+	public void setAssigneeAvailable(Boolean assigneeAvailable) {
+		this.assigneeAvailable = assigneeAvailable;
+	}
+
 	public Collection<Long> getCollectionKeys() {
 		return collectionKeys;
 	}
