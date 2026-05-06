@@ -121,6 +121,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public static final String CONTEXT_METADATA = "Metadata";
 	public static final String CONTEXT_REPORTS = "Reports";
 	public static final String CONTEXT_ABSENCES = "Absences";
+	public static final String CONTEXT_TODOS = "ToDos";
 	public static final String CONTEXT_CONFIRMED = "Confirmed";
 	public static final String CONTEXT_CANCELLED = "Cancelled";
 	public static final String CONTEXT_FINISHED = "Finished";

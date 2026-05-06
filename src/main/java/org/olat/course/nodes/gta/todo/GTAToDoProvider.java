@@ -40,9 +40,11 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -123,8 +125,14 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, boolean showSingleAssignee) {
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, showContext, List.of(toDoTask), toDoTask,
-				null, ASSIGNEE_RIGHTS, MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of());
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(List.of(toDoTask), toDoTask)
+				: ToDoTaskContextConfig.off(toDoTask);
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, contextConfig,
+				ToDoTaskMemberConfig.disabled(),
+				ToDoTaskMemberConfig.disabled(),
+				ToDoTaskMemberSelection.empty(),
+				null, ASSIGNEE_RIGHTS);
 	}
 
 	@Override

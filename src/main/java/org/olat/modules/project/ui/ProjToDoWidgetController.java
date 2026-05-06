@@ -66,6 +66,7 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 		
 		initForm(ureq);
 		doSelectFilterTab(null);
+		setAndLoadPersistedPreferences(ureq, "proj-todo-widget." + project.getKey());
 		reload(ureq);
 	}
 
@@ -114,11 +115,6 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	@Override
 	protected boolean isCustomizeColumns() {
 		return false;
-	}
-	
-	@Override
-	protected String getPreferenceId() {
-		return "proj-todo-widget." + project.getKey();
 	}
 	
 	@Override

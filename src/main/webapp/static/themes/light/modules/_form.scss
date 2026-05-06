@@ -1382,4 +1382,29 @@ dialog {
 		}
 	}
 }
+
+/* Restore border-radius on .form-control elements inside a non-addon span
+   within an .input-group (e.g. disabled TextElement renders as
+   <span id="X_wp"><input class="form-control"></span>) */
+.input-group > span:not(.input-group-addon) > .form-control {
+	border-radius: 0;
+}
+.input-group > span:not(.input-group-addon):first-child > .form-control {
+	border-top-left-radius: $input-border-radius;
+	border-bottom-left-radius: $input-border-radius;
+}
+.input-group > span:not(.input-group-addon):last-child > .form-control {
+	border-top-right-radius: $input-border-radius;
+	border-bottom-right-radius: $input-border-radius;
+}
+
+/* When a button-group dropdown (rendered by MultipleSelectionElement with
+   Layout.dropdown) is the first item of an .input-group, square the right
+   corners of its inner .btn so it merges with the .input-group-addon.
+   The renderer always wraps the .button-group in an outer <div>, so we
+   step through that wrapper. */
+.input-group > div:first-child > .button-group.dropdown > .btn.dropdown-toggle {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
 	

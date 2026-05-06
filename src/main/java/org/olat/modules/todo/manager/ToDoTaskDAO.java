@@ -317,6 +317,17 @@ public class ToDoTaskDAO {
 		if (searchParams.getAssigneeRightsNull() != null) {
 			sb.and().append("toDoTask.assigneeRights is ").append("not ", !searchParams.getAssigneeRightsNull()).append("null");
 		}
+		if (searchParams.getAssigneeAvailable() != null) {
+			if (searchParams.getAssigneeAvailable().booleanValue()) {
+				sb.and().append("exists (select 1 from bgroupmember as am");
+				sb.append("  where am.group.key = toDoTask.baseGroup.key");
+				sb.append("    and am.role = '").append(ToDoRole.assignee.name()).append("')");
+			} else {
+				sb.and().append("not exists (select 1 from bgroupmember as am");
+				sb.append("  where am.group.key = toDoTask.baseGroup.key");
+				sb.append("    and am.role = '").append(ToDoRole.assignee.name()).append("')");
+			}
+		}
 		if (searchParams.getCollectionKeys() != null && !searchParams.getCollectionKeys().isEmpty()) {
 			sb.and().append("toDoTask.collection.key in :collectionKeys");
 		}

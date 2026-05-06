@@ -46,10 +46,13 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDefaultMemberSearchProvider;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -141,9 +144,14 @@ public class QualityToDoEditController extends FormBasicController {
 			tagInfos = toDoService.getTagInfos(tagSearchParams, null);
 		}
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
-				availableContexts, currentContext, MemberSelection.search, memberCandidates, assignees,
-				MemberSelection.search, memberCandidates, delegatees, tagInfos, true);
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(availableContexts, currentContext)
+				: ToDoTaskContextConfig.off(currentContext);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig,
+				ToDoTaskMemberConfig.search(memberCandidates, ToDoTaskDefaultMemberSearchProvider.INSTANCE),
+				ToDoTaskMemberConfig.search(memberCandidates, ToDoTaskDefaultMemberSearchProvider.INSTANCE),
+				new ToDoTaskMemberSelection(assignees, delegatees),
+				tagInfos, true);
 		if (toDoTask != null) {
 			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
 			toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);

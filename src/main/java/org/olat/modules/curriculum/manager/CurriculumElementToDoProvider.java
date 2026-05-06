@@ -17,17 +17,15 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo.manager;
+package org.olat.modules.curriculum.manager;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -40,11 +38,19 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.instantMessaging.InstantMessagingService;
-import org.olat.instantMessaging.model.Buddy;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.curriculum.ui.CurriculumElementContextPicker;
+import org.olat.modules.curriculum.ui.CurriculumElementToDoMemberProvider;
+import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoContextFilter;
-import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
@@ -54,146 +60,143 @@ import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
-import org.olat.modules.todo.ui.ToDoTaskDefaultMemberSearchProvider;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
-import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
- * Initial date: 4 Oct 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ * Initial date: 29 Apr 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
-public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
-	
-	public static final String TYPE = "personal";
-	private static final List<ToDoContext> CONTEXTS = List.of(ToDoContext.of(TYPE));
-	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.all};
-	
+public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextFilter {
+
+	public static final String TYPE = "curriculum.element";
+	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.status};
+
 	@Autowired
-	private ToDoModule toDoModule;
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private InstantMessagingService instantMessagingService;
-	@Autowired
-	private BaseSecurity securityManager;
 
 	@Override
 	public String getType() {
 		return TYPE;
 	}
-	
+
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return curriculumModule.isEnabled();
 	}
 
 	@Override
 	public String getBusinessPath(ToDoTask toDoTask) {
-		return "[HomeSite:0][ToDos:0][" + ToDoTaskListController.TYPE_TODO +":"  + toDoTask.getKey() + "]";
+		if (toDoTask.getOriginId() == null || toDoTask.getOriginSubPath() == null) {
+			return null;
+		}
+		Long elementKey = Long.valueOf(toDoTask.getOriginSubPath());
+		return "[CurriculumAdmin:0][Curriculum:" + toDoTask.getOriginId() + "][CurriculumElement:" + elementKey + "][ToDos:0]";
 	}
 
 	@Override
 	public String getDisplayName(Locale locale) {
-		return Util.createPackageTranslator(ToDoUIFactory.class, locale).translate("personal.type");
+		return Util.createPackageTranslator(CurriculumUIFactory.class, locale).translate("curriculum.element.todo.provider.name");
 	}
-	
+
 	@Override
 	public String getContextFilterType() {
 		return TYPE;
 	}
-	
+
 	@Override
 	public int getFilterSortOrder() {
-		return 100;
+		return 150;
 	}
-	
+
 	@Override
 	public String getModifiedBy(Locale locale, ToDoTask toDoTask) {
 		return null;
 	}
 
 	@Override
-	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath,
-			ToDoStatus status) {
+	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status) {
 		updateStatus(doer, toDoTask, status);
 	}
 
 	@Override
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
 			String originSubPath) {
-		return createEditController(ureq, wControl, null, null, true);
+		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(originId));
+		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
+				element.getKey().toString(), element.getCurriculum().getDisplayName(), element.getDisplayName());
+		return createEditController(ureq, wControl, null, element, context);
 	}
-	
+
 	@Override
 	public boolean isCopyable() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isRestorable() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
 			ToDoTask sourceToDoTask, boolean showContext) {
-		return createEditController(ureq, wControl, null, sourceToDoTask, true);
+		return null;
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, boolean showSingleAssignee) {
-		return createEditController(ureq, wControl, toDoTask, null, showContext);
+		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(toDoTask.getOriginSubPath())));
+		return createEditController(ureq, wControl, toDoTask, element, toDoTask);
 	}
 
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			ToDoTask sourceToDoTask, boolean showContext) {
-		ToDoTaskSearchParams tagInfoSearchParams = new ToDoTaskSearchParams();
-		tagInfoSearchParams.setAssigneeOrDelegatee(ureq.getIdentity());
-		
-		String assigneeConfig = toDoModule.getPersonalAssigneeCandidate();
-		String delegateeConfig = toDoModule.getPersonalDelegateeCandidate();
-		ToDoTaskMemberConfig assigneeMemberConfig = switch (assigneeConfig) {
-			case ToDoModule.PERSONAL_CANDIDATE_NONE -> ToDoTaskMemberConfig.disabled();
-			case ToDoModule.PERSONAL_CANDIDATE_BUDDIES -> ToDoTaskMemberConfig.candidates(getMemberCandidates(ureq.getIdentity()));
-			default -> ToDoTaskMemberConfig.search(ToDoTaskDefaultMemberSearchProvider.INSTANCE);
-		};
-		Collection<Identity> delegateeCandidates = ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(assigneeConfig)
-				? assigneeMemberConfig.getCandidates()
-				: getMemberCandidates(ureq.getIdentity());
-		ToDoTaskMemberConfig delegateeMemberConfig = switch (delegateeConfig) {
-			case ToDoModule.PERSONAL_CANDIDATE_NONE -> ToDoTaskMemberConfig.disabled();
-			case ToDoModule.PERSONAL_CANDIDATE_BUDDIES -> ToDoTaskMemberConfig.candidates(delegateeCandidates);
-			default -> ToDoTaskMemberConfig.search(ToDoTaskDefaultMemberSearchProvider.INSTANCE);
-		};
-
-		ToDoTaskContextConfig contextConfig = showContext
-				? ToDoTaskContextConfig.dropdown(CONTEXTS, CONTEXTS.get(0))
-				: ToDoTaskContextConfig.off(CONTEXTS.get(0));
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, contextConfig,
-				assigneeMemberConfig, delegateeMemberConfig,
-				new ToDoTaskMemberSelection(List.of(ureq.getIdentity()), List.of()),
-				tagInfoSearchParams, ASSIGNEE_RIGHTS);
-	}
-	
-	private Set<Identity> getMemberCandidates(Identity identity) {
-		Set<Long> buddyIdentityKeys = instantMessagingService.getBuddyGroups(identity, true).stream()
-				.flatMap(buddyGroup -> buddyGroup.getBuddy().stream())
-				.filter(buddy -> !buddy.isAnonym())
-				.map(Buddy::getIdentityKey)
+			CurriculumElement element, ToDoContext context) {
+		Set<Identity> candidates = getCandidates(element).stream()
+				.map(CurriculumMember::getIdentity)
 				.collect(Collectors.toSet());
-		Set<Identity> buddyIdentities = new HashSet<>(securityManager.loadIdentityByKeys(buddyIdentityKeys));
-		buddyIdentities.add(identity);
-		return buddyIdentities;
+		CurriculumElement implementation = curriculumService.getImplementationOf(element);
+		CurriculumElement effectiveRoot = implementation != null ? implementation : element;
+		CurriculumElementType implementationType = effectiveRoot.getType();
+		boolean isStructuredProduct = implementationType == null || !implementationType.isSingleElement();
+		ToDoTaskContextConfig contextConfig = isStructuredProduct
+				? ToDoTaskContextConfig.picker(new CurriculumElementContextPicker(effectiveRoot.getKey(), element.getKey()), context)
+				: ToDoTaskContextConfig.off(context);
+		CurriculumElementToDoMemberProvider memberSearchProvider = new CurriculumElementToDoMemberProvider(element);
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null,
+				contextConfig,
+				ToDoTaskMemberConfig.search(candidates, memberSearchProvider).notMandatory(),
+				ToDoTaskMemberConfig.search(candidates, memberSearchProvider),
+				ToDoTaskMemberSelection.empty(),
+				createTagSearchParams(element), ASSIGNEE_RIGHTS);
+	}
+
+	public List<CurriculumMember> getCandidates(CurriculumElement element) {
+		SearchMemberParameters elementParams = new SearchMemberParameters(element);
+		elementParams.setRoles(List.of(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner));
+		List<CurriculumMember> elementMembers = curriculumService.getCurriculumElementsMembers(elementParams);
+
+		SearchMemberParameters curriculumParams = new SearchMemberParameters(element.getCurriculum());
+		curriculumParams.setRoles(List.of(CurriculumRoles.curriculummanager, CurriculumRoles.curriculumowner));
+		List<CurriculumMember> curriculumMembers = curriculumService.getCurriculumMembers(curriculumParams);
+
+		List<CurriculumMember> members = new ArrayList<>(elementMembers.size() + curriculumMembers.size());
+		members.addAll(elementMembers);
+		members.addAll(curriculumMembers);
+		return members;
 	}
 
 	@Override
@@ -217,7 +220,15 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 				translator.translate("task.delete.confirmation.confirm"),
 				translator.translate("delete"), ButtonType.danger);
 	}
-	
+
+	private ToDoTaskSearchParams createTagSearchParams(CurriculumElement element) {
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		params.setOriginIds(List.of(element.getCurriculum().getKey()));
+		params.setOriginSubPaths(List.of(element.getKey().toString()));
+		return params;
+	}
+
 	private ToDoTask getToDoTask(ToDoTaskRef toDoTaskRef, boolean active) {
 		ToDoTask toDoTask = toDoService.getToDoTask(toDoTaskRef);
 		if (toDoTask == null) {
@@ -228,9 +239,9 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		}
 		return toDoTask;
 	}
-	
+
 	private void updateStatus(Identity doer, ToDoTaskRef toDoTask, ToDoStatus status) {
-		ToDoTask reloadedToDoTask = getToDoTask(toDoTask, true);
+		ToDoTask reloadedToDoTask = getToDoTask(toDoTask, false);
 		if (reloadedToDoTask == null) {
 			return;
 		}
@@ -238,7 +249,7 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		if (previousStatus == status) {
 			return;
 		}
-		
+
 		reloadedToDoTask.setStatus(status);
 		reloadedToDoTask.setContentModifiedDate(new Date());
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
