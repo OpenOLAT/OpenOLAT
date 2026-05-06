@@ -52,6 +52,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
@@ -99,7 +100,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 
 	@Override
 	public String getBusinessPath(ToDoTask toDoTask) {
-		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0]";
+		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 
 	@Override

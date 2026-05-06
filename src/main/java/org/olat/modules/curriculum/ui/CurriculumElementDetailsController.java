@@ -679,7 +679,11 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				userManagementCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if(CONTEXT_TODOS.equalsIgnoreCase(type) && todosTab > 0) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			tabPane.setSelectedPane(ureq, todosTab);
+			if(todosCtrl != null) {
+				todosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if(CONTEXT_OFFERS.equalsIgnoreCase(type) && offersTab > 0) {
 			tabPane.setSelectedPane(ureq, offersTab);
 		} else if(CONTEXT_METADATA.equalsIgnoreCase(type) && metadataTab > 0) {

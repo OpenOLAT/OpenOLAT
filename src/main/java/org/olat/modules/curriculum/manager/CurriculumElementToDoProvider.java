@@ -62,6 +62,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
 import org.olat.modules.todo.ui.ToDoUIFactory;
@@ -103,7 +104,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			return null;
 		}
 		Long elementKey = Long.valueOf(toDoTask.getOriginSubPath());
-		return "[CurriculumAdmin:0][Curriculum:" + toDoTask.getOriginId() + "][CurriculumElement:" + elementKey + "][ToDos:0]";
+		return "[CurriculumAdmin:0][Curriculum:" + toDoTask.getOriginId() + "][CurriculumElement:" + elementKey + "][ToDos:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 
 	@Override
