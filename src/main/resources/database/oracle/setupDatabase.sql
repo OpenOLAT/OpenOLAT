@@ -5141,8 +5141,7 @@ create table o_essay_generation_job (
   a_state              varchar2(24 char) not null,
   a_progress_json      clob,
   a_error_json         clob,
-  primary key (a_id),
-  constraint essay_gen_job_createdby_fk foreign key (a_created_by_fk) references o_bs_identity (id)
+  primary key (a_id)
 );
 
 create table o_essay_feedback_job (
@@ -5159,8 +5158,7 @@ create table o_essay_feedback_job (
   a_error_message               varchar2(2048 char),
   a_started_at                  timestamp,
   a_completed_at                timestamp,
-  primary key (a_id),
-  constraint essay_fb_job_identity_fk foreign key (a_identity_fk) references o_bs_identity (id)
+  primary key (a_id)
 );
 
 -- feed tag (blog/podcast)
@@ -7033,6 +7031,11 @@ create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
 create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
 create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
+alter table o_essay_generation_job add constraint essay_gen_job_createdby_fk foreign key (a_created_by_fk) references o_bs_identity (id);
+create index idx_essay_gen_job_createdby on o_essay_generation_job (a_created_by_fk);
+
+alter table o_essay_feedback_job add constraint essay_fb_job_identity_fk foreign key (a_identity_fk) references o_bs_identity (id);
+create index idx_essay_fb_job_identity on o_essay_feedback_job (a_identity_fk);
 create index idx_essay_fb_job_identity_state on o_essay_feedback_job (a_identity_fk, a_state);
 create index idx_essay_fb_job_question on o_essay_feedback_job (a_storage_path, a_question_id);
 

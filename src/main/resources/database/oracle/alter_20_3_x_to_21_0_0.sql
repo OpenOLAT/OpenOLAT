@@ -148,9 +148,7 @@ alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lect
 create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);
 
 
--- ============================================================
--- Table: o_essay_generation_job
--- ============================================================
+-- AI essay generation job
 create table o_essay_generation_job (
   a_id                 number(20) generated always as identity,
   a_creationdate       timestamp not null,
@@ -159,29 +157,24 @@ create table o_essay_generation_job (
   a_state              varchar2(24 char) not null,
   a_progress_json      clob,
   a_error_json         clob,
-  primary key (a_id),
-  constraint essay_gen_job_createdby_fk foreign key (a_created_by_fk) references o_bs_identity (id)
+  primary key (a_id)
 );
 
+alter table o_essay_generation_job add constraint essay_gen_job_createdby_fk foreign key (a_created_by_fk) references o_bs_identity (id);
+create index idx_essay_gen_job_createdby on o_essay_generation_job (a_created_by_fk);
 
--- ============================================================
--- Extension: o_ai_usage_log — five new nullable columns
--- ============================================================
-alter table o_ai_usage_log add (
-  a_assessment_item_identifier   varchar2(64 char),
-  a_content_hash_at_call         varchar2(64 char),
-  a_prompt_template_version      varchar2(40 char),
-  a_tier                         varchar2(16 char),
-  a_assessment_item_session_key  number(20)
-);
+-- AI usage log essay extension
+alter table o_ai_usage_log add a_assessment_item_identifier varchar2(64 char);
+alter table o_ai_usage_log add a_content_hash_at_call varchar2(64 char);
+alter table o_ai_usage_log add a_prompt_template_version varchar2(40 char);
+alter table o_ai_usage_log add a_tier varchar2(16 char);
+alter table o_ai_usage_log add a_assessment_item_session_key number(20);
 
 create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
 create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 
 
--- ============================================================
--- Table: o_essay_feedback_job
--- ============================================================
+-- AI essay feedback job
 create table o_essay_feedback_job (
   a_id                          number(20) generated always as identity,
   a_creationdate                timestamp not null,
@@ -196,9 +189,10 @@ create table o_essay_feedback_job (
   a_error_message               varchar2(2048 char),
   a_started_at                  timestamp,
   a_completed_at                timestamp,
-  primary key (a_id),
-  constraint essay_fb_job_identity_fk foreign key (a_identity_fk) references o_bs_identity (id)
+  primary key (a_id)
 );
 
+alter table o_essay_feedback_job add constraint essay_fb_job_identity_fk foreign key (a_identity_fk) references o_bs_identity (id);
+create index idx_essay_fb_job_identity on o_essay_feedback_job (a_identity_fk);
 create index idx_essay_fb_job_identity_state on o_essay_feedback_job (a_identity_fk, a_state);
 create index idx_essay_fb_job_question on o_essay_feedback_job (a_storage_path, a_question_id);
