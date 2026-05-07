@@ -48,6 +48,8 @@ import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
 import org.olat.modules.selectus.ui.events.SelectPositionLightEvent;
+import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
+import org.olat.modules.selectus.ui.fql.PositionApplicationsFilterDataModelDelegate;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 import org.olat.modules.selectus.ui.model.ApplicationRow;
 import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
@@ -212,7 +214,10 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 
 	@Override
 	public void filter(String searchString,  List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
+		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
+			String query = searchString.substring(4, searchString.length());
+			flexiSearch(query);
+		} else if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 			final Set<String> assignees = getFilteredList(filters, PositionApplicationsController.FILTER_ASSIGNEE);
@@ -238,6 +243,19 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		} else {
 			super.setObjects(backupRows);
 		}
+	}
+	
+	private boolean flexiSearch(String query) {
+		boolean allErrors = false;
+		if(StringHelper.containsNonWhitespace(query)) {
+			FilteredResults<ApplicationRow> results = new PositionApplicationsFilterDataModelDelegate(position, this, translator)
+					.flexiSearch("", query, backupRows);
+			allErrors = results.isAllErrors();
+			super.setObjects(results.getRows());
+		} else {
+			super.setObjects(backupRows);
+		}
+		return allErrors;
 	}
 	
 	private List<FieldFilter> getFilteredField(List<FlexiTableFilter> filters) {
@@ -448,9 +466,8 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		super.setObjects(backupRows);
 	}
 
-	protected static final String toYear(Object val) {
-		if(val instanceof Date) {
-			Date date = (Date)val;
+	public static final String toYear(Object val) {
+		if(val instanceof Date date) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(date);
 			return Integer.toString(cal.get(Calendar.YEAR));
