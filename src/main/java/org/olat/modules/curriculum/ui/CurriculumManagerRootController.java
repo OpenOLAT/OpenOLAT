@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileStep;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFinishStepCallback;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumManagerToDoTasksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.RootImplementationWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
@@ -104,6 +105,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumManagerToDoTasksWidgetController toDoTasksWidgetCtrl;
 	private RootImplementationWidgetController implementationWidgetCtrl;
 	private CertificationProgramListController certificationProgramListCtrl;
 
@@ -194,6 +196,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 
+		toDoTasksWidgetCtrl = new CurriculumManagerToDoTasksWidgetController(ureq, getWindowControl());
+		listenTo(toDoTasksWidgetCtrl);
+		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
+
 		mainVC.put("dashboard", overviewCtrl.getInitialComponent());
 	}
 
@@ -223,6 +229,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 				subEntries = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 			}
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("ToDos".equalsIgnoreCase(type) && todosLink.isVisible()) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenToDos(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if("Reports".equalsIgnoreCase(type) && reportsLink.isVisible()) {
 			doOpenReports(ureq);
 		} else if("Certification".equalsIgnoreCase(type) && certificationProgramsLink.isVisible()) {
@@ -237,7 +246,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 			if(event == Event.DONE_EVENT) {
 				doSearch(ureq, searchFieldCtrl.getSearchString());
 			}
-		} else if(implementationWidgetCtrl == source || lectureBlocksWidgetCtrl == source || lecturesCtrl == source) {
+		} else if(implementationWidgetCtrl == source || lectureBlocksWidgetCtrl == source
+				|| lecturesCtrl == source || toDoTasksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
@@ -252,16 +262,6 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private void cleanUp() {
 		removeAsListenerAndDispose(importCurriculumsCtrl);
 		importCurriculumsCtrl = null;
-	}
-
-	private void doOpenToDos(UserRequest ureq) {
-		toolbarPanel.popUpToRootController(ureq);
-		removeAsListenerAndDispose(todosCtrl);
-
-		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("ToDos", 0l), null);
-		todosCtrl = new CurriculumMangerToDoListController(ureq, subControl);
-		listenTo(todosCtrl);
-		toolbarPanel.pushController(translate("curriculum.todos"), todosCtrl);
 	}
 
 	@Override
@@ -361,6 +361,17 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), lecturesCtrl);
 		return lecturesCtrl;
+	}
+
+	private CurriculumMangerToDoListController doOpenToDos(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(todosCtrl);
+
+		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("ToDos", 0l), null);
+		todosCtrl = new CurriculumMangerToDoListController(ureq, subControl);
+		listenTo(todosCtrl);
+		toolbarPanel.pushController(translate("curriculum.todos"), todosCtrl);
+		return todosCtrl;
 	}
 	
 	private CurriculumReportsController doOpenReports(UserRequest ureq) {

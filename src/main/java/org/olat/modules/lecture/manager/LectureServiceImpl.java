@@ -689,7 +689,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity) {
 		AbsenceNotice notice = absenceNoticeDao.loadAbsenceNotice(absenceNotice.getKey());
 		if(notice == null) return; // nothing to do
-		internalDeleteAbsenceNotice(absenceNotice, actingIdentity);
+		internalDeleteAbsenceNotice(notice, actingIdentity);
 	}
 	
 	private void internalDeleteAbsenceNotice(AbsenceNotice notice, Identity actingIdentity) {

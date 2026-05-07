@@ -280,12 +280,6 @@ public class CourseWidgetController extends TableWidgetController
 				String.valueOf(numFinished)));
 	}
 
-	private void setUrl(FormLink link, String businessPath) {
-		link.setUserObject(businessPath);
-		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(businessPath);
-		link.setUrl(url);
-	}
-
 	private void updateTable(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
 		Predicate<? super CourseStatEntry> filterPredicate = getFilterPredicate(markedKeys);
 		List<CourseRow> rows = courseStatistics.stream()

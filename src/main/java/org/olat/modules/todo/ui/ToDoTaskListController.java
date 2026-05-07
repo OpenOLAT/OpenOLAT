@@ -135,11 +135,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final Logger log = Tracing.createLoggerFor(ToDoTaskListController.class);
 	
 	public static final String TYPE_TODO = "ToDo";
-	private static final String TAB_ID_MY = "My";
+	public static final String TAB_ID_MY = "My";
 	public static final String TAB_ID_ALL = "All";
-	private static final String TAB_ID_OPEN = "Open";
-	private static final String TAB_ID_OVERDUE = "Overdue";
-	private static final String TAB_ID_NEW = "New";
+	public static final String TAB_ID_OPEN = "Open";
+	public static final String TAB_ID_OVERDUE = "Overdue";
+	public static final String TAB_ID_NEW = "New";
 	private static final String TAB_ID_UNASSIGNED = "Unassigned";
 	private static final String TAB_ID_DONE = "Done";
 	public static final String TAB_ID_DELETED = "Deleted";
