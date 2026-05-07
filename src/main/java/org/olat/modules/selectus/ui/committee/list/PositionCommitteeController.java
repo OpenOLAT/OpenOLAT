@@ -389,8 +389,7 @@ public class PositionCommitteeController extends FormBasicController implements 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent e = (SelectionEvent)event;
+			if(event instanceof SelectionEvent e) {
 				int rowId = e.getIndex();
 				if(rowId >= 0 && rowId < membersDataModel.getRowCount()) {
 					CommitteeMemberRow member = membersDataModel.getObject(rowId);
@@ -403,22 +402,23 @@ public class PositionCommitteeController extends FormBasicController implements 
 						doEditMember(ureq, member.getIdentity(), null);
 					} else if("assignments".equals(e.getCommand())) {
 						doJumpToAssignments(ureq, member.getIdentity());
+					} else if("delete".equals(e.getCommand())) {
+						doConfirmRemove(ureq, member.getIdentity(), member.getRole());
 					}
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if(cmd == null) {
 				//ignore
-			} else if(cmd.startsWith("edit_")) {
-				SpecialRoleIdentity ident = (SpecialRoleIdentity)link.getUserObject();
+			} else if(cmd.startsWith("edit_")
+					&& link.getUserObject() instanceof SpecialRoleIdentity ident) {
 				doEditMember(ureq, ident.getIdentity(), ident.getRole());
-			} else if(cmd.startsWith("remove_")) {
-				SpecialRoleIdentity ident = (SpecialRoleIdentity)link.getUserObject();
+			} else if(cmd.startsWith("remove_")
+					&& link.getUserObject() instanceof SpecialRoleIdentity ident) {
 				doConfirmRemove(ureq, ident.getIdentity(), ident.getRole());
-			} else if(cmd.startsWith("mail_")) {
-				SpecialRoleIdentity ident = (SpecialRoleIdentity)link.getUserObject();
+			} else if(cmd.startsWith("mail_")
+					&& link.getUserObject() instanceof SpecialRoleIdentity ident) {
 				doSendMail(ureq, ident.getIdentity(), ident.getRole());
 			}
 		}

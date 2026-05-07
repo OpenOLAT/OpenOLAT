@@ -69,6 +69,10 @@ public class MembersValidator {
 		// validate if username does match the syntactical login requirements
 		if(member.getIdentity() instanceof TransientIdentity) {
 			String loginName = member.getIdentity().getName();
+			if(!StringHelper.containsNonWhitespace(loginName)) {
+				return CommitteeMemberStatus.notValid;
+			}
+			
 			ValidationResult validationResult = usernameSyntaxValidator.validate(loginName, member.getIdentity());
 			if (!StringHelper.containsNonWhitespace(loginName) || !validationResult.isValid()) {			
 				return CommitteeMemberStatus.notValid;
@@ -99,9 +103,8 @@ public class MembersValidator {
 			}
 			if(MailHelper.isValidEmailAddress(email)) {
 				// Check if email is not already taken
-				Identity exists = userManager.findUniqueIdentityByEmail(email);//TODO selectus
-				if ((exists != null && member.getIdentity() == null) ||
-						(exists != null && member.getIdentity() != null && !exists.equals(member.getIdentity()))) {
+				boolean allowed = userManager.isEmailAllowed(email, member.getIdentity().getUser());
+				if (!allowed) {
 					return CommitteeMemberStatus.notValid;
 				}
 			} else {

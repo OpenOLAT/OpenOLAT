@@ -305,6 +305,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_media { @include o-add-icon('image');}
 .o_icon_mediacenter { @include o-add-icon('folder-open');}
 .o_icon_membersmanagement { @include o-add-icon('users');}
+.o_icon_member_not_valid { @include o-add-icon('exclamation-triangle'); color: $brand-warning; }
+.o_icon_member_skipped { @include o-add-icon('minus-circle'); color: #A87E7E; }
+.o_icon_member_valid { @include o-add-icon('check'); color: $brand-success; }
 .o_icon_menuhandel { @include o-add-icon('bars');}
 .o_icon_message { @include o-add-icon('envelope');}
 .o_icon_message_open { @include o-add-icon('envelope-open');}
@@ -341,6 +344,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_under { @include o-add-icon('mail-reply');}
 .o_icon_node_up_down { @include o-add-icon('arrows-v');}
 .o_icon_non_members { @include o-add-icon('person-circle-minus');}
+.o_icon_not_available {  @include o-add-icon('exclamation'); color: $brand-danger;}
 .o_icon_notes { @include o-add-icon('sticky-note', true);}
 .o_icon_notes_empty { @include o-add-icon('sticky-note', false);}
 .o_icon_not_correct { @include o-add-icon('times'); color: $brand-danger }

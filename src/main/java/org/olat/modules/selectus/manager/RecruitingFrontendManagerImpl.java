@@ -1212,19 +1212,17 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		// Save everything in database
 		Identity ident;
 		if(ldap) {
-			// Create Identity TODO selectus make it in LDAP manager
 			ident = baseSecurity.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
 					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, null, username, null, organisation, null, doer);
-			log.info("Created LDAP user username::{}", username);
+			log.info("Created committee LDAP user username::{}", username);
 		} else if(azure) {
 			ident = baseSecurity.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
 					MicrosoftAzureADFSProvider.PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, username, null, organisation, null, doer);
-			log.info("Created Azure user username::{}", username);
+			log.info("Created committee Azure user username::{}", username);
 		} else {
 			ident = baseSecurity.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
 					null, null, null, username, null, organisation, null, doer);
-			
-			log.info("Created user username::{}", username);
+			log.info("Created committee user username::{}", username);
 		}
 
 		return ident;
