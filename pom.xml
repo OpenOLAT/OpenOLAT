@@ -2202,7 +2202,7 @@
 		<dependency>
 			<groupId>com.frentix.flexiql</groupId>
 			<artifactId>flexiql</artifactId>
-			<version>0.3.1</version>
+			<version>0.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
