@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -100,10 +101,20 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		return null;
 	}
 	
-	public FlexiCellRenderer wrapCellLink(FlexiCellRenderer renderer) {
+	protected FlexiCellRenderer wrapCellLink(FlexiCellRenderer renderer) {
 		StaticFlexiCellRenderer staticRenderer = new StaticFlexiCellRenderer(CMD_ROW_CLICKED, renderer);
 		staticRenderer.setLinkCSS("o_cell_stretch_full o_link_uncolored");
 		return staticRenderer;
+	}
+	
+	protected void setUrl(FormLink link, String businessPath) {
+		setUrl(link, businessPath, businessPath);
+	}
+	
+	protected void setUrl(FormLink link, String businessPath, String businessPathFull) {
+		link.setUserObject(businessPath);
+		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(businessPathFull);
+		link.setUrl(url);
 	}
 	
 	@Override

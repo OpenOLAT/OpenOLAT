@@ -25,7 +25,6 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.WindowControl;
@@ -115,12 +114,6 @@ public class CoachLectureBlocksWidgetController extends LectureBlocksWidgetContr
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void setUrl(FormLink link, String businessPath) {
-		link.setUserObject(businessPath);
-		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(businessPath);
-		link.setUrl(url);
 	}
 	
 	private void doOpenLectureBlock(UserRequest ureq, int index) {
