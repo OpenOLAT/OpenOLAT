@@ -20,8 +20,10 @@
 package org.olat.core.commons.services.ai.essay;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -198,7 +200,7 @@ public class EssayFormativeFeedbackServiceStaticsTest {
 		GradingSuggestion s = new GradingSuggestion(null, null,
 				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.HIGH,
 				new GradingSuggestion.StudentFeedback("well", "missing", "next"),
-				"coach note", "overall", 75);
+				"coach note", "overall", 75, List.of());
 		GradingSuggestion sanitised = EssayFormativeFeedbackService.sanitiseForStudent(s);
 		assertEquals(GradingSuggestion.OffTopicFlag.NONE, sanitised.offTopicFlag());
 		assertEquals(GradingSuggestion.Confidence.HIGH, sanitised.confidence());
@@ -216,6 +218,153 @@ public class EssayFormativeFeedbackServiceStaticsTest {
 
 	// ---------------------------------------------------------------- helpers
 
+	// ---------------------------------------------------------------- sanitiseAnnotatedParagraphs — XSS
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_scriptTagStrippedFromSpanText() {
+		AnnotatedSpan span = new AnnotatedSpan(
+				"<script>alert('xss')</script>correct text", MarkKind.CORRECT, null);
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(span), "feedback");
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of(para));
+
+		assertNotNull(result);
+		assertEquals(1, result.size());
+		String text = result.get(0).spans().get(0).text();
+		assertFalse("script tag must be stripped from span text", text.contains("<script>"));
+		assertFalse("alert must be stripped from span text", text.contains("alert"));
+	}
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_emTagStrippedFromSpanText() {
+		// span text must be plain text — even allowed tags are stripped from text fields
+		AnnotatedSpan span = new AnnotatedSpan("<em>emphasis</em> in span", MarkKind.CORRECT, null);
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(span), "feedback");
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of(para));
+
+		String text = result.get(0).spans().get(0).text();
+		assertFalse("em tag must be stripped from span text field (must be plain text)", text.contains("<em>"));
+		assertTrue("text content must survive", text.contains("emphasis"));
+	}
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_onclickStrippedFromComment() {
+		AnnotatedSpan span = new AnnotatedSpan("good text", MarkKind.CORRECT,
+				"nice<img src=x onerror=alert(1)>work");
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(span), "feedback");
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of(para));
+
+		String comment = result.get(0).spans().get(0).comment();
+		assertFalse("img/onerror must be stripped from comment", comment.contains("onerror"));
+		assertFalse("img tag must be stripped from comment", comment.contains("<img"));
+	}
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_emTagPreservedInParagraphFeedback() {
+		AnnotatedSpan span = new AnnotatedSpan("text", MarkKind.NEUTRAL, null);
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(span), "<em>Good</em> paragraph.");
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of(para));
+
+		String feedback = result.get(0).paragraphFeedback();
+		assertTrue("em is in the allowed tag list for paragraphFeedback", feedback.contains("<em>"));
+	}
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_nullInputReturnsEmptyList() {
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(null);
+		assertNotNull(result);
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_emptyInputReturnsEmptyList() {
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of());
+		assertNotNull(result);
+		assertTrue(result.isEmpty());
+	}
+
+	// ---------------------------------------------------------------- verifyOrFallback
+
+	@Test
+	public void verifyOrFallback_matchingSpansPassThrough() {
+		List<AnnotatedSpan> spans = List.of(
+				new AnnotatedSpan("Hello ", MarkKind.CORRECT, null),
+				new AnnotatedSpan("world.", MarkKind.NEUTRAL, null));
+		AnnotatedParagraph para = new AnnotatedParagraph(spans, "Good paragraph.");
+		AnnotatedParagraph result = EssayFormativeFeedbackService.verifyOrFallback(para, "Hello world.");
+
+		assertNotNull(result);
+		assertEquals(2, result.spans().size());
+		assertEquals("Good paragraph.", result.paragraphFeedback());
+	}
+
+	@Test
+	public void verifyOrFallback_whitespaceCollapsedComparison() {
+		// Extra internal whitespace in concatenation — must still pass
+		List<AnnotatedSpan> spans = List.of(
+				new AnnotatedSpan("Hello  ", MarkKind.NEUTRAL, null),
+				new AnnotatedSpan("world.", MarkKind.NEUTRAL, null));
+		AnnotatedParagraph para = new AnnotatedParagraph(spans, "ok");
+		AnnotatedParagraph result = EssayFormativeFeedbackService.verifyOrFallback(para, "Hello world.");
+
+		assertNotNull(result);
+		// collapsed match — spans are preserved
+		assertEquals(2, result.spans().size());
+	}
+
+	@Test
+	public void verifyOrFallback_mismatchFallsBackToNeutralSpan() {
+		List<AnnotatedSpan> spans = List.of(
+				new AnnotatedSpan("completely wrong text", MarkKind.CORRECT, null));
+		AnnotatedParagraph para = new AnnotatedParagraph(spans, "Mismatch feedback.");
+		AnnotatedParagraph result = EssayFormativeFeedbackService.verifyOrFallback(
+				para, "The original paragraph text.");
+
+		assertNotNull(result);
+		assertEquals(1, result.spans().size());
+		AnnotatedSpan fallback = result.spans().get(0);
+		assertEquals("The original paragraph text.", fallback.text());
+		assertEquals(MarkKind.NEUTRAL, fallback.kind());
+		// paragraphFeedback is preserved from the original para
+		assertEquals("Mismatch feedback.", result.paragraphFeedback());
+	}
+
+	@Test
+	public void verifyOrFallback_nullParaFallsBackToNeutralSpan() {
+		AnnotatedParagraph result = EssayFormativeFeedbackService.verifyOrFallback(
+				null, "The original text.");
+
+		assertNotNull(result);
+		assertEquals(1, result.spans().size());
+		assertEquals(MarkKind.NEUTRAL, result.spans().get(0).kind());
+		assertEquals("The original text.", result.spans().get(0).text());
+	}
+
+	@Test
+	public void verifyOrFallback_emptyParagraphWithEmptySpansIsValid() {
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(), "");
+		AnnotatedParagraph result = EssayFormativeFeedbackService.verifyOrFallback(para, "");
+
+		assertNotNull(result);
+		assertTrue(result.spans().isEmpty());
+	}
+
+	// ---------------------------------------------------------------- collapseWhitespace
+
+	@Test
+	public void collapseWhitespace_null() {
+		assertEquals("", EssayFormativeFeedbackService.collapseWhitespace(null));
+	}
+
+	@Test
+	public void collapseWhitespace_multipleSpaces() {
+		assertEquals("a b c", EssayFormativeFeedbackService.collapseWhitespace("a  b   c"));
+	}
+
+	@Test
+	public void collapseWhitespace_newlines() {
+		assertEquals("a b", EssayFormativeFeedbackService.collapseWhitespace("a\nb"));
+	}
+
 	private EssayAiGrading buildGrading(String ref, String model, String kpJson, String rcJson) {
 		EssayAiGrading g = new EssayAiGrading();
 		g.setReferenceExcerpt(ref);
@@ -229,6 +378,6 @@ public class EssayFormativeFeedbackServiceStaticsTest {
 		return new GradingSuggestion(null, null,
 				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.HIGH,
 				new GradingSuggestion.StudentFeedback(whatWentWell, "missing", "next step"),
-				"coach", "overall assessment", 80);
+				"coach", "overall assessment", 80, List.of());
 	}
 }

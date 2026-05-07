@@ -24,8 +24,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.ai.essay.AnnotatedParagraph;
+import org.olat.core.commons.services.ai.essay.AnnotatedSpan;
 import org.olat.core.commons.services.ai.essay.FormativeFeedback;
 import org.olat.core.commons.services.ai.essay.GradingSuggestion;
+import org.olat.core.commons.services.ai.essay.MarkKind;
 import org.olat.core.commons.services.ai.essay.RejectionReason;
 import org.olat.core.gui.translator.Translator;
 
@@ -176,7 +179,51 @@ final class AiEssayFeedbackViewFlattener {
 		}
 		v.put("warnings", warnings);
 
+		// Annotated paragraphs for the direct inline view.
+		// Each entry: { "feedback": String, "spans": List<Map> }
+		// Each span:  { "text": String, "kind": String (lowercase), "comment": String, "cssClass": String }
+		List<Map<String, Object>> annotatedParagraphs = new ArrayList<>();
+		List<AnnotatedParagraph> apList = s.annotatedParagraphs();
+		if (apList != null) {
+			for (AnnotatedParagraph ap : apList) {
+				if (ap == null) continue;
+				Map<String, Object> paraMap = new LinkedHashMap<>();
+				paraMap.put("feedback", nullToEmpty(ap.paragraphFeedback()));
+				List<Map<String, String>> spanMaps = new ArrayList<>();
+				if (ap.spans() != null) {
+					for (AnnotatedSpan span : ap.spans()) {
+						if (span == null) continue;
+						Map<String, String> sm = new LinkedHashMap<>();
+						sm.put("text", nullToEmpty(span.text()));
+						String kindStr = span.kind() == null ? MarkKind.NEUTRAL.name().toLowerCase()
+								: span.kind().name().toLowerCase();
+						sm.put("kind", kindStr);
+						sm.put("comment", nullToEmpty(span.comment()));
+						sm.put("cssClass", markCssClass(span.kind()));
+						spanMaps.add(sm);
+					}
+				}
+				paraMap.put("spans", spanMaps);
+				annotatedParagraphs.add(paraMap);
+			}
+		}
+		v.put("annotatedParagraphs", annotatedParagraphs);
+
 		return v;
+	}
+
+	/**
+	 * CSS class for an inline mark span.
+	 * NEUTRAL maps to an empty string (plain text, no badge styling).
+	 */
+	static String markCssClass(MarkKind kind) {
+		if (kind == null) return "";
+		return switch (kind) {
+			case CORRECT -> "o_ai_mark_correct";
+			case AMBIGUOUS -> "o_ai_mark_ambiguous";
+			case WRONG -> "o_ai_mark_wrong";
+			case NEUTRAL -> "";
+		};
 	}
 
 	private static String nullToEmpty(String s) {

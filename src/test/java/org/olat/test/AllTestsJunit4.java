@@ -129,6 +129,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.ai.content.AiContentHardenerTest.class,
 	org.olat.core.commons.services.ai.essay.AiGradingTierTest.class,
 	org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStoreTest.class,
+	org.olat.core.commons.services.ai.essay.AnnotatedSpanParagraphTest.class,
 	org.olat.core.commons.services.ai.essay.EssayAiGradingFileStoreTest.class,
 	org.olat.core.commons.services.ai.essay.EssayAiGradingPojoTest.class,
 	org.olat.core.commons.services.ai.essay.EssayFormativeFeedbackServiceStaticsTest.class,

@@ -105,6 +105,37 @@
 							$r.escapeHtml($aiCorrectionFeedback.rejectionMessage)
 						</div>
 					#else
+						#if($aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
+							<div class="o_ai_feedback_view_toggle" role="toolbar" aria-label="$r.escapeHtml($r.translate('ai.essay.feedback.view.title'))">
+								<button type="button" class="btn btn-default btn-xs o_sel_ai_feedback_view"
+										data-target="summary">$r.escapeHtml($r.translate('ai.essay.feedback.view.summary'))</button>
+								<button type="button" class="btn btn-default btn-xs o_sel_ai_feedback_view active"
+										data-target="direct">$r.escapeHtml($r.translate('ai.essay.feedback.view.direct'))</button>
+							</div>
+						#end
+
+						#if($aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
+						<div class="o_ai_feedback_view o_ai_feedback_view_direct">
+							#foreach($para in $aiCorrectionFeedback.annotatedParagraphs)
+								<blockquote class="o_ai_essay_direct">
+									<p class="o_ai_para">
+										#foreach($span in $para.spans)
+											#if($span.cssClass == "")
+												$r.escapeHtml($span.text)
+											#else
+												<span class="$span.cssClass"#if($span.comment != "") title="$r.escapeHtml($span.comment)"#end>$r.escapeHtml($span.text)</span>
+											#end
+										#end
+									</p>
+								</blockquote>
+								#if($para.feedback != "")
+									<aside class="o_ai_paragraph_feedback">$para.feedback</aside>
+								#end
+							#end
+						</div>
+						<div class="o_ai_feedback_view o_ai_feedback_view_summary" style="display:none;">
+						#end
+
 						#if($aiCorrectionFeedback.overallAssessment && $aiCorrectionFeedback.overallAssessment != "")
 							<div class="o_essay_ai_correction_overall"><h5>$r.translate('ai.essay.correction.overall')</h5><p>$r.escapeHtml($aiCorrectionFeedback.overallAssessment)</p></div>
 						#end
@@ -147,8 +178,8 @@
 
 						#set($hasLanguageIssues = (($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty()) || ($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())))
 						#if($hasLanguageIssues)
-							<details class="o_essay_ai_correction_language_details">
-								<summary class="h5">$r.translate('ai.essay.correction.language.toggle')</summary>
+							<div class="o_essay_ai_correction_language">
+								<h5>$r.translate('ai.essay.correction.language.title')</h5>
 								#if($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty())
 									<div class="o_essay_ai_correction_grammar">
 										<h5>$r.translate('ai.essay.correction.grammar')</h5>
@@ -169,7 +200,7 @@
 										</ul>
 									</div>
 								#end
-							</details>
+							</div>
 						#end
 
 						<div class="o_essay_ai_correction_badges">
@@ -191,9 +222,32 @@
 								#end
 							</div>
 						#end
+
+						#if($aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
+						</div><!-- /.o_ai_feedback_view_summary -->
+						#end
 					#end
 				</div>
 				</div>
+
+				#if($aiCorrectionFeedback && $aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
+				<script>
+				(function() {
+					var btns = document.querySelectorAll('.o_essay_ai_correction_box .o_sel_ai_feedback_view');
+					btns.forEach(function(btn) {
+						btn.addEventListener('click', function() {
+							var target = btn.getAttribute('data-target');
+							var box = btn.closest('.o_essay_ai_correction_box');
+							btns.forEach(function(b) { b.classList.remove('active'); });
+							btn.classList.add('active');
+							box.querySelectorAll('.o_ai_feedback_view').forEach(function(view) {
+								view.style.display = view.classList.contains('o_ai_feedback_view_' + target) ? '' : 'none';
+							});
+						});
+					});
+				})();
+				</script>
+				#end
 			#end
 		</div>
 	</div>

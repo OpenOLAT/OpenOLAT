@@ -91,6 +91,28 @@ public interface EssayGradingAiService {
 			- estimatedScorePercent: your self-estimated holistic score on a 0–100 scale (advisory only, \
 			the server weights the rubric itself).
 
+			Also produce `annotatedParagraphs`: an array, one entry per paragraph of the student's \
+			answer. Each entry has `spans` (the paragraph reproduced verbatim, broken into segments \
+			each tagged CORRECT / AMBIGUOUS / WRONG / NEUTRAL) and `paragraphFeedback` (one to two \
+			sentences explaining what was good and what to improve in this paragraph).
+
+			Crucial constraint for annotatedParagraphs: when the spans are concatenated back together \
+			they MUST exactly equal the original paragraph text. Do not paraphrase or summarise the \
+			student's words.
+
+			Mark as TIGHTLY as you can: highlight only the specific words or short phrases that drive \
+			the classification, not the whole sentence. Examples of good tight markings:
+			- If only the verb of a sentence is wrong, mark just the verb (e.g. only "increased" inside \
+			"the temperature increased due to ...") and leave the rest of the sentence as NEUTRAL.
+			- If only a date or number is incorrect, mark only that token, not the surrounding clause.
+			- If a key term is correctly used, mark just the term, not the entire sentence around it.
+			Whole-sentence markings are only justified when the entire sentence is uniformly correct, \
+			ambiguous, or wrong. NEUTRAL spans hold the unmarked connective text between tight markings; \
+			use NEUTRAL freely so the CORRECT / AMBIGUOUS / WRONG signal stands out.
+
+			Comments inside spans are optional — only add them on a CORRECT, AMBIGUOUS or WRONG span \
+			when there is a specific concrete remark worth ≤120 characters.
+
 			Rules:
 			- Do NOT invent key-point ids. Every id you reference must be in the list above.
 			- Do NOT reveal the model answer verbatim to the student.

@@ -283,9 +283,114 @@ public class EssayFormativeFeedbackService {
 						stripToSafeHtml(fb.whatWentWell()),
 						stripToSafeHtml(fb.whatIsMissing()),
 						stripToSafeHtml(fb.nextStep()));
+		List<AnnotatedParagraph> sanitisedParagraphs = sanitiseAnnotatedParagraphs(in.annotatedParagraphs());
 		return new GradingSuggestion(in.contentSignals(), in.languageSignals(), in.offTopicFlag(),
 				in.confidence(), safeFb, stripToSafeHtml(in.feedbackToCoach()),
-				stripToSafeHtml(in.overallAssessment()), in.estimatedScorePercent());
+				stripToSafeHtml(in.overallAssessment()), in.estimatedScorePercent(), sanitisedParagraphs);
+	}
+
+	/**
+	 * Sanitise the annotated-paragraphs list. Each {@link AnnotatedSpan#text()},
+	 * {@link AnnotatedSpan#comment()}, and {@link AnnotatedParagraph#paragraphFeedback()}
+	 * is run through the same XSS filter + tag-whitelist pipeline as the other
+	 * free-form student-facing strings.
+	 * <p>
+	 * Returns an empty list when {@code paragraphs} is {@code null}.
+	 */
+	static List<AnnotatedParagraph> sanitiseAnnotatedParagraphs(List<AnnotatedParagraph> paragraphs) {
+		if (paragraphs == null || paragraphs.isEmpty()) {
+			return List.of();
+		}
+		List<AnnotatedParagraph> result = new ArrayList<>(paragraphs.size());
+		for (AnnotatedParagraph para : paragraphs) {
+			if (para == null) {
+				continue;
+			}
+			List<AnnotatedSpan> cleanSpans;
+			if (para.spans() == null || para.spans().isEmpty()) {
+				cleanSpans = List.of();
+			} else {
+				cleanSpans = new ArrayList<>(para.spans().size());
+				for (AnnotatedSpan span : para.spans()) {
+					if (span == null) {
+						continue;
+					}
+					// text must stay plain — strip all HTML including allowed tags
+					// because it will be placed inside a <span> by the template
+					String cleanText = stripToPlainText(span.text());
+					String cleanComment = stripToPlainText(span.comment());
+					cleanSpans.add(new AnnotatedSpan(cleanText, span.kind(), cleanComment));
+				}
+			}
+			String cleanFeedback = stripToSafeHtml(para.paragraphFeedback());
+			result.add(new AnnotatedParagraph(cleanSpans, cleanFeedback));
+		}
+		return result;
+	}
+
+	/**
+	 * Verify that spans in {@code para} concatenate back to {@code originalParagraph}.
+	 * Comparison is case-insensitive and whitespace-collapsed.
+	 * <p>
+	 * Returns the paragraph unchanged when the invariant holds. When it is
+	 * violated, logs a {@code WARN} and returns a single {@link MarkKind#NEUTRAL}
+	 * span containing the original paragraph text, so the grading run is not
+	 * aborted.
+	 */
+	public static AnnotatedParagraph verifyOrFallback(AnnotatedParagraph para, String originalParagraph) {
+		if (para == null) {
+			String safe = originalParagraph == null ? "" : originalParagraph;
+			return new AnnotatedParagraph(
+					List.of(new AnnotatedSpan(safe, MarkKind.NEUTRAL, null)), "");
+		}
+		List<AnnotatedSpan> spans = para.spans();
+		if (spans == null || spans.isEmpty()) {
+			// empty spans for an empty paragraph is acceptable
+			if (originalParagraph == null || originalParagraph.isEmpty()) {
+				return para;
+			}
+			log.warn("annotatedParagraphs span integrity failure: spans list is empty but original paragraph is not; falling back to NEUTRAL span");
+			return new AnnotatedParagraph(
+					List.of(new AnnotatedSpan(originalParagraph, MarkKind.NEUTRAL, null)),
+					para.paragraphFeedback());
+		}
+		StringBuilder concat = new StringBuilder();
+		for (AnnotatedSpan s : spans) {
+			if (s != null && s.text() != null) {
+				concat.append(s.text());
+			}
+		}
+		String collapsed = collapseWhitespace(concat.toString());
+		String expected = collapseWhitespace(originalParagraph == null ? "" : originalParagraph);
+		if (collapsed.equalsIgnoreCase(expected)) {
+			return para;
+		}
+		log.warn("annotatedParagraphs span integrity failure: concatenated spans do not match original paragraph; falling back to NEUTRAL span. expected='{}' got='{}'",
+				expected, collapsed);
+		return new AnnotatedParagraph(
+				List.of(new AnnotatedSpan(
+						originalParagraph == null ? "" : originalParagraph,
+						MarkKind.NEUTRAL, null)),
+				para.paragraphFeedback());
+	}
+
+	/** Collapse all whitespace sequences (including newlines) to a single space and trim. */
+	static String collapseWhitespace(String s) {
+		if (s == null || s.isEmpty()) return "";
+		return s.replaceAll("\\s+", " ").trim();
+	}
+
+	/**
+	 * Strip ALL HTML tags, leaving only text content. Used for span text and
+	 * comment fields which will be placed verbatim inside element attributes or
+	 * inline text nodes by the Velocity template.
+	 */
+	private static String stripToPlainText(String in) {
+		if (in == null || in.isEmpty()) return in;
+		String xssClean = FilterFactory.getXSSFilter().filter(in);
+		if (xssClean == null) return "";
+		// Strip every tag (including allowed ones — these fields must be plain text)
+		return xssClean.replaceAll("(?is)<[^>]*>", "");
 	}
 
 	/**

@@ -153,6 +153,6 @@ public class FormativeFeedbackFactoryTest {
 
 	private GradingSuggestion buildSuggestion() {
 		return new GradingSuggestion(null, null, GradingSuggestion.OffTopicFlag.NONE,
-				GradingSuggestion.Confidence.HIGH, null, "", "Good answer", 85);
+				GradingSuggestion.Confidence.HIGH, null, "", "Good answer", 85, List.of());
 	}
 }

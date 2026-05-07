@@ -23,6 +23,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 
 import dev.langchain4j.model.output.structured.Description;
 
@@ -63,7 +65,10 @@ public record GradingSuggestion(
 		@Description("Holistic 1–2 sentence overall assessment of the answer in the student's language (max ~400 chars)")
 		String overallAssessment,
 		@Description("Model's self-estimated holistic score on a 0–100 scale; advisory only, server-side weighting is authoritative")
-		int estimatedScorePercent) {
+		int estimatedScorePercent,
+		@JsonSetter(nulls = Nulls.AS_EMPTY)
+		@Description("Inline annotation of the student's answer: one entry per paragraph, each paragraph reproduced verbatim as tagged spans (CORRECT / AMBIGUOUS / WRONG / NEUTRAL) plus a one-to-two sentence paragraph-level feedback note. Empty list when not provided.")
+		List<AnnotatedParagraph> annotatedParagraphs) {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record ContentSignals(

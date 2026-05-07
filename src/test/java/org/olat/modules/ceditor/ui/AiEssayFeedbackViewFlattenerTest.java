@@ -30,9 +30,12 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.olat.core.commons.services.ai.essay.AiGradingTier;
+import org.olat.core.commons.services.ai.essay.AnnotatedParagraph;
+import org.olat.core.commons.services.ai.essay.AnnotatedSpan;
 import org.olat.core.commons.services.ai.essay.FormativeFeedback;
 import org.olat.core.commons.services.ai.essay.GradingSuggestion;
 import org.olat.core.commons.services.ai.essay.LengthPreFilter;
+import org.olat.core.commons.services.ai.essay.MarkKind;
 import org.olat.core.commons.services.ai.essay.RejectionReason;
 
 /**
@@ -279,7 +282,7 @@ public class AiEssayFeedbackViewFlattenerTest {
 		GradingSuggestion suggestion = new GradingSuggestion(content, null,
 				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.HIGH,
 				new GradingSuggestion.StudentFeedback("well", "missing", "next"),
-				"coach", "overall", 80);
+				"coach", "overall", 80, List.of());
 		FormativeFeedback fb = FormativeFeedback.ok(AiGradingTier.SHORT, suggestion, List.of(), 1L);
 		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
 
@@ -291,12 +294,131 @@ public class AiEssayFeedbackViewFlattenerTest {
 		assertEquals("kp2", missed.get(0).get("id"));
 	}
 
+	// ---------------------------------------------------------------- markCssClass
+
+	@Test
+	public void markCssClass_correct() {
+		assertEquals("o_ai_mark_correct", AiEssayFeedbackViewFlattener.markCssClass(MarkKind.CORRECT));
+	}
+
+	@Test
+	public void markCssClass_ambiguous() {
+		assertEquals("o_ai_mark_ambiguous", AiEssayFeedbackViewFlattener.markCssClass(MarkKind.AMBIGUOUS));
+	}
+
+	@Test
+	public void markCssClass_wrong() {
+		assertEquals("o_ai_mark_wrong", AiEssayFeedbackViewFlattener.markCssClass(MarkKind.WRONG));
+	}
+
+	@Test
+	public void markCssClass_neutral() {
+		assertEquals("", AiEssayFeedbackViewFlattener.markCssClass(MarkKind.NEUTRAL));
+	}
+
+	@Test
+	public void markCssClass_null() {
+		assertEquals("", AiEssayFeedbackViewFlattener.markCssClass(null));
+	}
+
+	// ---------------------------------------------------------------- flatten — annotatedParagraphs
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void flatten_annotatedParagraphs_twoParagraphsMixedKinds() {
+		// Paragraph 1: two spans — CORRECT + NEUTRAL
+		List<AnnotatedSpan> spans1 = List.of(
+				new AnnotatedSpan("Paris is the capital", MarkKind.CORRECT, "Right!"),
+				new AnnotatedSpan(" of France.", MarkKind.NEUTRAL, null));
+		AnnotatedParagraph para1 = new AnnotatedParagraph(spans1, "Good paragraph.");
+
+		// Paragraph 2: two spans — WRONG + AMBIGUOUS
+		List<AnnotatedSpan> spans2 = List.of(
+				new AnnotatedSpan("The war started in 1945", MarkKind.WRONG, "Wrong year"),
+				new AnnotatedSpan(" due to complex reasons.", MarkKind.AMBIGUOUS, null));
+		AnnotatedParagraph para2 = new AnnotatedParagraph(spans2, "Check your dates.");
+
+		GradingSuggestion suggestion = new GradingSuggestion(null, null,
+				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.MEDIUM,
+				new GradingSuggestion.StudentFeedback("well", "missing", "next"),
+				"", "overall", 65, List.of(para1, para2));
+		FormativeFeedback fb = FormativeFeedback.ok(AiGradingTier.SHORT, suggestion, List.of(), 1L);
+
+		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
+		assertNotNull(v);
+
+		List<Map<String, Object>> paras = (List<Map<String, Object>>) v.get("annotatedParagraphs");
+		assertNotNull(paras);
+		assertEquals(2, paras.size());
+
+		// Paragraph 1
+		Map<String, Object> p1 = paras.get(0);
+		assertEquals("Good paragraph.", p1.get("feedback"));
+		List<Map<String, String>> s1 = (List<Map<String, String>>) p1.get("spans");
+		assertEquals(2, s1.size());
+		assertEquals("correct", s1.get(0).get("kind"));
+		assertEquals("o_ai_mark_correct", s1.get(0).get("cssClass"));
+		assertEquals("Right!", s1.get(0).get("comment"));
+		assertEquals("neutral", s1.get(1).get("kind"));
+		assertEquals("", s1.get(1).get("cssClass"));
+
+		// Paragraph 2
+		Map<String, Object> p2 = paras.get(1);
+		assertEquals("Check your dates.", p2.get("feedback"));
+		List<Map<String, String>> s2 = (List<Map<String, String>>) p2.get("spans");
+		assertEquals(2, s2.size());
+		assertEquals("wrong", s2.get(0).get("kind"));
+		assertEquals("o_ai_mark_wrong", s2.get(0).get("cssClass"));
+		assertEquals("Wrong year", s2.get(0).get("comment"));
+		assertEquals("ambiguous", s2.get(1).get("kind"));
+		assertEquals("o_ai_mark_ambiguous", s2.get(1).get("cssClass"));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void flatten_annotatedParagraphs_emptyListWhenNone() {
+		GradingSuggestion suggestion = buildSuggestion(75);
+		FormativeFeedback fb = FormativeFeedback.ok(AiGradingTier.SHORT, suggestion, List.of(), 1L);
+		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
+
+		List<Map<String, Object>> paras = (List<Map<String, Object>>) v.get("annotatedParagraphs");
+		assertNotNull(paras);
+		assertTrue(paras.isEmpty());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void flatten_annotatedParagraphs_failSoftFallbackNeutralSpan() {
+		// Simulate the fail-soft path: a paragraph that has a single NEUTRAL span
+		// (as produced by verifyOrFallback when the LLM returned bad spans)
+		AnnotatedSpan fallbackSpan = new AnnotatedSpan(
+				"The student wrote this entire paragraph.", MarkKind.NEUTRAL, null);
+		AnnotatedParagraph fallbackPara = new AnnotatedParagraph(
+				List.of(fallbackSpan), "Model spans did not match — shown as plain text.");
+
+		GradingSuggestion suggestion = new GradingSuggestion(null, null,
+				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.LOW,
+				new GradingSuggestion.StudentFeedback("ok", "improve", "next"),
+				"", "overall", 40, List.of(fallbackPara));
+		FormativeFeedback fb = FormativeFeedback.ok(AiGradingTier.SHORT, suggestion, List.of(), 2L);
+
+		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
+		List<Map<String, Object>> paras = (List<Map<String, Object>>) v.get("annotatedParagraphs");
+
+		assertEquals(1, paras.size());
+		List<Map<String, String>> spans = (List<Map<String, String>>) paras.get(0).get("spans");
+		assertEquals(1, spans.size());
+		assertEquals("neutral", spans.get(0).get("kind"));
+		assertEquals("", spans.get(0).get("cssClass"));
+		assertEquals("The student wrote this entire paragraph.", spans.get(0).get("text"));
+	}
+
 	// ---------------------------------------------------------------- helpers
 
 	private GradingSuggestion buildSuggestion(int percent) {
 		return new GradingSuggestion(null, null,
 				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.HIGH,
 				new GradingSuggestion.StudentFeedback("well done", "could improve", "next step"),
-				"coach note", "overall assessment", percent);
+				"coach note", "overall assessment", percent, List.of());
 	}
 }

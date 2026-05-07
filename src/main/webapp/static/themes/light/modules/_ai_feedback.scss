@@ -1,0 +1,102 @@
+/* ==========================================================================
+ * OpenOlat AI Essay Direct Feedback View
+ * --------------------------------------------------------------------------
+ * Styles for the inline annotated-paragraph view produced by
+ * AiEssayFeedbackViewFlattener. The view toggle toolbar, colour-coded mark
+ * spans, per-paragraph feedback asides, and the blockquote container all
+ * live here so they stay separate from the pulse-icon animation rules.
+ * ========================================================================== */
+
+/* --------------------------------------------------------------------------
+ * View toggle toolbar — relies on default Bootstrap .btn sizing.
+ * ---------------------------------------------------------------------- */
+.o_ai_feedback_view_toggle {
+	display: flex;
+	gap: 0.25rem;
+	margin-bottom: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Blockquote container — one blockquote per paragraph; the per-paragraph
+ * feedback aside renders BETWEEN consecutive blockquotes (outside).
+ * ---------------------------------------------------------------------- */
+.o_ai_essay_direct {
+	border-left: 3px solid rgba($brand-primary, 0.35);
+	padding: 0.75rem 1rem;
+	margin: 0 0 0.5rem;
+	background: transparent;
+	font-style: normal;     /* override Bootstrap blockquote italic */
+	font-size: inherit;
+	color: inherit;
+
+	p.o_ai_para {
+		margin-bottom: 0;
+	}
+}
+
+/* --------------------------------------------------------------------------
+ * Per-paragraph feedback — sits OUTSIDE the blockquote between paragraphs.
+ * Uses the standard body font size so it reads as a peer comment, not a
+ * footnote.
+ * ---------------------------------------------------------------------- */
+.o_ai_paragraph_feedback {
+	color: $text-muted;
+	background: rgba(0, 0, 0, 0.04);
+	border-radius: 3px;
+	padding: 0.5rem 0.75rem;
+	margin: 0 0 0.75rem 0.5rem;
+	border-left: 2px solid rgba($brand-primary, 0.25);
+
+	p {
+		margin: 0;
+	}
+}
+
+/* --------------------------------------------------------------------------
+ * Inline mark spans
+ * ---------------------------------------------------------------------- */
+.o_ai_mark_correct {
+	background: rgba(76, 175, 80, 0.18);
+	border-radius: 2px;
+	padding: 0 1px;
+	cursor: default;
+
+	&[title]:hover {
+		background: rgba(76, 175, 80, 0.32);
+	}
+}
+
+.o_ai_mark_ambiguous {
+	background: rgba(255, 193, 7, 0.22);
+	border-radius: 2px;
+	padding: 0 1px;
+	cursor: default;
+
+	&[title]:hover {
+		background: rgba(255, 193, 7, 0.38);
+	}
+}
+
+.o_ai_mark_wrong {
+	background: rgba(244, 67, 54, 0.18);
+	border-radius: 2px;
+	padding: 0 1px;
+	cursor: default;
+	text-decoration-line: underline;
+	text-decoration-style: wavy;
+	text-decoration-color: rgba(244, 67, 54, 0.55);
+	text-underline-offset: 2px;
+
+	&[title]:hover {
+		background: rgba(244, 67, 54, 0.30);
+	}
+}
+
+/* --------------------------------------------------------------------------
+ * Reduced motion — remove wavy underline animation artefacts
+ * ---------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	.o_ai_mark_wrong {
+		text-decoration-style: solid;
+	}
+}
