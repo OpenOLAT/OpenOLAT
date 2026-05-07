@@ -1098,10 +1098,10 @@ public class PositionApplicationsController extends FormBasicController implemen
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assignments"),
 					FILTER_ASSIGNEE, assigneesPK, true));
 		} else {
-			SelectionValues recertificationValues = new SelectionValues();
-			recertificationValues.add(SelectionValues.entry(getIdentity().getKey().toString(), translate("filter.my.assignments")));
+			SelectionValues myAssignmentPK = new SelectionValues();
+			myAssignmentPK.add(SelectionValues.entry(getIdentity().getKey().toString(), translate("filter.my.assignments")));
 			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.my.assignments"),
-					FILTER_ASSIGNEE, recertificationValues, true));
+					FILTER_ASSIGNEE, myAssignmentPK, true));
 		}
 		
 		// My ratings
@@ -1744,12 +1744,35 @@ public class PositionApplicationsController extends FormBasicController implemen
 		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Assignments".equalsIgnoreCase(type)) {
-				tableEl.setSelectedFilterTab(ureq, myAssignmentsTab);
-				//TODO selectus filter
-			} else if(tableEl.getSelectedFilterTab() == null) {
-				tableEl.setSelectedFilterTab(ureq, allTab);
+				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
+				activateAssignmentFilter(ureq, identityKey);
+			} else if("myAssignments".equalsIgnoreCase(type)) {
+				activateAssignmentFilter(ureq, getIdentity().getKey());
+			} else {
+				FlexiFiltersTab tab = tableEl.getFilterTabById(type);
+				if(tab != null) {
+					tableEl.setSelectedFilterTab(ureq, tab);
+				} else {
+					tableEl.setSelectedFilterTab(ureq, allTab);
+				}
 			}
 		}
+	}
+	
+	private void activateAssignmentFilter(UserRequest ureq, Long identityKey) {
+		if(identityKey == null || Long.valueOf(0).equals(identityKey)) return;
+		
+		boolean me = getIdentity().getKey().equals(identityKey);
+		if(me) {
+			tableEl.setSelectedFilterTab(ureq, myAssignmentsTab);
+			tableEl.sort(Fields.myAssignment.name(), true);
+		} else {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+			tableEl.setFiltersValues(tableEl.getQuickSearchString(), excludedAttributesList,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNEE, identityKey.toString())));
+			applicationsDataModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		}
+		tableEl.reset(true, true, true);
 	}
 
 	@Override
@@ -1805,8 +1828,11 @@ public class PositionApplicationsController extends FormBasicController implemen
 			} else if(event instanceof FlexiTableSearchEvent ftse) {
 				applicationsDataModel.filter(ftse.getSearch(), ftse.getFilters());
 				tableEl.reset(true, true, false);
-			} else if(event instanceof FlexiTableFilterTabEvent) {
+			} else if(event instanceof FlexiTableFilterTabEvent ftfte) {
 				applicationsDataModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+				if(ftfte.getTab() == myAssignmentsTab) {
+					tableEl.sort(Fields.myAssignment.name(), true);
+				}
 				tableEl.reset(true, true, false);
 			}
 		} else if(source instanceof CustomRatingFormItem) {
