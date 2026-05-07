@@ -43,17 +43,41 @@ public interface AiEssayGenerationService {
 
 	boolean isEnabled();
 
-	List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
+	default List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
 			List<AiContentChunk> chunks,
 			List<String> learningObjectives,
 			List<AiBloomLevel> targetBloomLevels,
 			int numberOfQuestions,
-			Locale language);
+			Locale language) {
+		return generateEssayQuestions(usageContext, chunks, learningObjectives, targetBloomLevels,
+				null, numberOfQuestions, language);
+	}
 
 	List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
 			List<AiContentChunk> chunks,
 			List<String> learningObjectives,
 			List<AiBloomLevel> targetBloomLevels,
+			Integer targetDifficulty,
+			int numberOfQuestions,
+			Locale language);
+
+	default List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
+			List<AiContentChunk> chunks,
+			List<String> learningObjectives,
+			List<AiBloomLevel> targetBloomLevels,
+			int numberOfQuestions,
+			Locale language,
+			String spiId,
+			String modelName) {
+		return generateEssayQuestions(usageContext, chunks, learningObjectives, targetBloomLevels,
+				null, numberOfQuestions, language, spiId, modelName);
+	}
+
+	List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
+			List<AiContentChunk> chunks,
+			List<String> learningObjectives,
+			List<AiBloomLevel> targetBloomLevels,
+			Integer targetDifficulty,
 			int numberOfQuestions,
 			Locale language,
 			String spiId,

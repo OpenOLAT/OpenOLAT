@@ -28,7 +28,7 @@ import dev.langchain4j.model.output.structured.Description;
 
 /**
  *
- * Parsed data from chat response to build a question
+ * Parsed data from chat response to build a question.
  *
  * Initial date: 22.05.2024<br>
  *
@@ -46,10 +46,50 @@ public class MCQuestionData {
 	private String keywords;
 	@Description("The multiple choice question text, self-contained, no reference to 'the text' or 'the passage'")
 	private String question;
-	@Description("List of correct answer strings, each verifiably true based on the input")
-	private List<String> correctAnswers = new ArrayList<>();
-	@Description("List of wrong answer strings, each plausible but unambiguously incorrect")
-	private List<String> wrongAnswers = new ArrayList<>();
+	@Description("List of correct answer options, each with a text and a one-sentence feedback explaining why this answer is correct")
+	private List<McAnswerOption> correctAnswers = new ArrayList<>();
+	@Description("List of wrong answer options, each with a text and a one-sentence feedback explaining why this answer is incorrect")
+	private List<McAnswerOption> wrongAnswers = new ArrayList<>();
+
+	/**
+	 * A single answer option with the displayed text and a per-option feedback
+	 * sentence shown as a modal feedback when the learner selects this choice.
+	 * <p>
+	 * Jackson requires a no-arg constructor and standard getters/setters so that
+	 * LangChain4j can deserialise the structured AI response.
+	 */
+	public static class McAnswerOption {
+		@Description("The answer text shown to the learner.")
+		private String text;
+		@Description("One-sentence explanation of why this option is correct or wrong, shown as modal feedback when the learner selects this option.")
+		private String feedback;
+
+		/** No-arg constructor required by Jackson / LangChain4j deserialisation. */
+		public McAnswerOption() {
+			//
+		}
+
+		public McAnswerOption(String text, String feedback) {
+			this.text = text;
+			this.feedback = feedback;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
+
+		public String getFeedback() {
+			return feedback;
+		}
+
+		public void setFeedback(String feedback) {
+			this.feedback = feedback;
+		}
+	}
 
 	public String getTitle() {
 		return title;
@@ -81,25 +121,25 @@ public class MCQuestionData {
 	public void setQuestion(String question) {
 		this.question = question;
 	}
-	public List<String> getCorrectAnswers() {
+	public List<McAnswerOption> getCorrectAnswers() {
 		return correctAnswers;
 	}
-	public void setCorrectAnswers(List<String> correctAnswers) {
+	public void setCorrectAnswers(List<McAnswerOption> correctAnswers) {
 		this.correctAnswers = correctAnswers;
 	}
-	public void addCorrectAnswer(String correctAnswer) {
-		if (StringHelper.containsNonWhitespace(correctAnswer)) {
+	public void addCorrectAnswer(McAnswerOption correctAnswer) {
+		if (correctAnswer != null && StringHelper.containsNonWhitespace(correctAnswer.getText())) {
 			this.correctAnswers.add(correctAnswer);
 		}
 	}
-	public List<String> getWrongAnswers() {
+	public List<McAnswerOption> getWrongAnswers() {
 		return wrongAnswers;
 	}
-	public void setWrongAnswers(List<String> wrongAnswers) {
+	public void setWrongAnswers(List<McAnswerOption> wrongAnswers) {
 		this.wrongAnswers = wrongAnswers;
 	}
-	public void addWrongAnswer(String wrongAnswer) {
-		if (StringHelper.containsNonWhitespace(wrongAnswer)) {
+	public void addWrongAnswer(McAnswerOption wrongAnswer) {
+		if (wrongAnswer != null && StringHelper.containsNonWhitespace(wrongAnswer.getText())) {
 			this.wrongAnswers.add(wrongAnswer);
 		}
 	}

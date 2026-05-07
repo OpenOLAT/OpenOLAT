@@ -135,6 +135,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.ai.essay.EssayGenerationJobPayloadStoreTest.class,
 	org.olat.core.commons.services.ai.essay.EssayItemDraftKeyPointTest.class,
 	org.olat.core.commons.services.ai.essay.FormativeFeedbackFactoryTest.class,
+	org.olat.core.commons.services.ai.essay.GenerationRequestFactoryTest.class,
 	org.olat.core.commons.services.ai.essay.GeneratedItemValidatorTest.class,
 	org.olat.core.commons.services.ai.essay.GibberishPreFilterTest.class,
 	org.olat.core.commons.services.ai.essay.LanguagePreFilterTest.class,

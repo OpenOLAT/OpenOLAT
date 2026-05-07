@@ -54,11 +54,19 @@ public interface EssayGenerationAiService {
 			Target these learning objectives:
 			{{learningObjectives}}
 
+			{{targetDifficulty}}
+
 			For each item you MUST produce ALL of the following fields:
 			- stimulus: Self-contained task statement, no reference to "the text".
 			- modelAnswer: A concise reference answer that fully satisfies the question.
-			- keyPoints: A list of 2–5 ids (kp1, kp2, …) with text, weight, required flag.
-			- rubricCriteria: A list of 2–4 ids (c1, c2, …) with name, descriptor, weight, scope CONTENT or LANGUAGE.
+			- keyPoints: A list of ids (kp1, kp2, …) with text, weight, required flag. \
+			The number of key points MUST scale with the question's difficulty so easy questions \
+			are not over-constrained: difficulty 1 → 1–2 key points, difficulty 2 → 2–3, \
+			difficulty 3 → 2–3, difficulty 4 → 3–4, difficulty 5 → 4–5. The harder the question, \
+			the more aspects the student must cover to score well.
+			- rubricCriteria: A list of ids (c1, c2, …) with name, descriptor, weight, scope \
+			CONTENT or LANGUAGE. Number of criteria MUST also scale with difficulty: difficulty 1–2 → \
+			1–2 criteria, difficulty 3 → 2–3, difficulty 4–5 → 3–4.
 			- bloomLevel: The Bloom level this item targets.
 			- questionTitle: A short label (max 120 characters) of WHAT this specific question asks. \
 			Distinct per question, suitable as a list/menu title. NOT the learning objective, NOT the answer. \
@@ -95,6 +103,7 @@ public interface EssayGenerationAiService {
 			@V("number") int number,
 			@V("bloomLevels") String bloomLevels,
 			@V("learningObjectives") String learningObjectives,
+			@V("targetDifficulty") String targetDifficulty,
 			@V("language") String language,
 			@V("chunks") String chunks);
 

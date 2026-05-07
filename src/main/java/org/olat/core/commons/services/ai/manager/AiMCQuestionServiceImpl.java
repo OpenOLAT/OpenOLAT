@@ -19,12 +19,14 @@
  */
 package org.olat.core.commons.services.ai.manager;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.service.MCQuestionAiService;
@@ -64,12 +66,21 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 	}
 
 	@Override
-	public AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number) {
-		return generateMCQuestionsResponse(usageContext, input, number, aiModule.getMCGeneratorSpiId(), aiModule.getMCGeneratorModel());
+	public AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number,
+			List<AiBloomLevel> bloomLevels, Integer targetDifficulty, List<String> learningObjectives) {
+		return generateMCQuestionsResponse(usageContext, input, number,
+				bloomLevels, targetDifficulty, learningObjectives,
+				aiModule.getMCGeneratorSpiId(), aiModule.getMCGeneratorModel());
 	}
 
 	@Override
 	public AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number, String spiId, String modelName) {
+		return generateMCQuestionsResponse(usageContext, input, number, null, null, List.of(), spiId, modelName);
+	}
+
+	private AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number,
+			List<AiBloomLevel> bloomLevels, Integer targetDifficulty, List<String> learningObjectives,
+			String spiId, String modelName) {
 		AiMCQuestionsResponse response = new AiMCQuestionsResponse();
 		AiSPI spi = aiModule.resolveProvider(spiId);
 		if (spi == null) {
@@ -88,11 +99,22 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 			ChatModel chatModel = cachedAiService.chatModel();
 
 			String language = locale.getDisplayLanguage(Locale.ENGLISH);
+			String bloomLevelsStr = bloomLevels == null || bloomLevels.isEmpty()
+					? "UNDERSTAND, APPLY"
+					: bloomLevels.stream().map(Enum::name).reduce((a, b) -> a + ", " + b).orElse("UNDERSTAND");
+			String targetDifficultyStr = targetDifficulty == null
+					? ""
+					: "Calibrate distractor plausibility and recall depth to a target difficulty of "
+					  + targetDifficulty + " on a 1-5 scale (1 = easiest, 5 = hardest).";
+			String objectives = learningObjectives == null || learningObjectives.isEmpty()
+					? ""
+					: "- " + String.join("\n- ", learningObjectives);
+
 			AiServices<MCQuestionAiService> builder = AiServices.builder(MCQuestionAiService.class);
 			AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId, AiFeature.MCQuestionGenerator.getType(), usageContext);
 			MCQuestionAiService service = builder.build();
 
-			service.generateQuestions(number, 2, 3, language, input)
+			service.generateQuestions(number, 2, 3, language, bloomLevelsStr, targetDifficultyStr, objectives, input)
 					.forEach(response::addQuestion);
 
 		} catch (Exception e) {

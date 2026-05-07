@@ -95,16 +95,18 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 	@Override
 	public List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
 			List<AiContentChunk> chunks, List<String> learningObjectives,
-			List<AiBloomLevel> targetBloomLevels, int numberOfQuestions, Locale language) {
+			List<AiBloomLevel> targetBloomLevels, Integer targetDifficulty,
+			int numberOfQuestions, Locale language) {
 		return generateEssayQuestions(usageContext, chunks, learningObjectives, targetBloomLevels,
-				numberOfQuestions, language, aiModule.getEssayGenerationSpiId(),
+				targetDifficulty, numberOfQuestions, language, aiModule.getEssayGenerationSpiId(),
 				aiModule.getEssayGenerationModel());
 	}
 
 	@Override
 	public List<EssayItemDraft> generateEssayQuestions(AiUsageContext usageContext,
 			List<AiContentChunk> chunks, List<String> learningObjectives,
-			List<AiBloomLevel> targetBloomLevels, int numberOfQuestions, Locale language,
+			List<AiBloomLevel> targetBloomLevels, Integer targetDifficulty,
+			int numberOfQuestions, Locale language,
 			String spiId, String modelName) {
 		AiSPI spi = aiModule.resolveProvider(spiId);
 		if (spi == null) {
@@ -127,12 +129,16 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 			String objectives = learningObjectives == null || learningObjectives.isEmpty()
 					? "- Understand the key concepts in the provided source material."
 					: "- " + String.join("\n- ", learningObjectives);
+			String targetDifficultyStr = targetDifficulty == null
+					? ""
+					: "Target difficulty (1 = easiest, 5 = hardest, on a Bloom-aware scale): " + targetDifficulty
+					  + ". Each generated question's `difficulty` field should match this target as closely as possible.";
 			String languageName = language == null ? "English" : language.getDisplayLanguage(Locale.ENGLISH);
 			String serialisedChunks = serialiseChunks(chunks);
 
 			List<EssayItemDraft> drafts = service.generateEssayQuestions(
 					numberOfQuestions <= 0 ? 1 : numberOfQuestions,
-					bloomLevelsStr, objectives, languageName, serialisedChunks);
+					bloomLevelsStr, objectives, targetDifficultyStr, languageName, serialisedChunks);
 			return drafts == null ? List.of() : drafts;
 		} catch (AiEssayGenerationException e) {
 			throw e;

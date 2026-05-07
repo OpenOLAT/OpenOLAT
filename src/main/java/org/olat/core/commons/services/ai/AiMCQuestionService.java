@@ -19,6 +19,9 @@
  */
 package org.olat.core.commons.services.ai;
 
+import java.util.List;
+
+import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 
@@ -34,7 +37,12 @@ public interface AiMCQuestionService {
 	
 	boolean isEnabled();
 
-	AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number);
+	default AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number) {
+		return generateMCQuestionsResponse(usageContext, input, number, null, null, List.of());
+	}
+
+	AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number,
+			List<AiBloomLevel> bloomLevels, Integer targetDifficulty, List<String> learningObjectives);
 
 	AiMCQuestionsResponse generateMCQuestionsResponse(AiUsageContext usageContext, String input, int number, String spiId, String modelName);
 

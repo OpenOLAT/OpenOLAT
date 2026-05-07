@@ -22,22 +22,29 @@ package org.olat.modules.qpool.ui;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService.GenerationRequest;
+import org.olat.core.commons.services.ai.ui.AiAdminController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.util.Util;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -96,6 +103,9 @@ public class NewAiQuestionsImportController extends FormBasicController {
 	private TextAreaElement contentEl;
 	private IntegerElement aiMcCountEl;
 	private IntegerElement aiEssayCountEl;
+	private MultipleSelectionElement aiBloomEl;
+	private SingleSelection aiDifficultyEl;
+	private TextAreaElement aiObjectivesEl;
 
 	private File tempFile;
 	/** Last heuristic-derived defaults so we can re-suggest when the source changes. */
@@ -122,7 +132,7 @@ public class NewAiQuestionsImportController extends FormBasicController {
 	 *                         with it; pass {@code null} to leave them unbound
 	 */
 	public NewAiQuestionsImportController(UserRequest ureq, WindowControl wControl, Long taxonomyLevelKey) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AiAdminController.class, ureq.getLocale()));
 		this.taxonomyLevelKey = taxonomyLevelKey;
 		initForm(ureq);
 	}
@@ -169,6 +179,39 @@ public class NewAiQuestionsImportController extends FormBasicController {
 			aiEssayCountEl.setDisplaySize(3);
 			aiEssayCountEl.setHelpTextKey("ai.questions.count.help", null);
 		}
+
+		// Bloom levels — multi-select checkboxes, default UNDERSTAND + APPLY.
+		// All AI labels resolve via the AI bundle, set as fallback translator on the controller.
+		SelectionValues bloomKV = new SelectionValues();
+		for (AiBloomLevel level : AiBloomLevel.values()) {
+			bloomKV.add(SelectionValues.entry(level.name(), translate("bloom." + level.name().toLowerCase())));
+		}
+		aiBloomEl = uifactory.addCheckboxesHorizontal("ai.bloom", "ai.bloom.label",
+				formLayout, bloomKV.keys(), bloomKV.values());
+		aiBloomEl.setHelpTextKey("ai.bloom.help", null);
+		aiBloomEl.select(AiBloomLevel.UNDERSTAND.name(), true);
+		aiBloomEl.select(AiBloomLevel.APPLY.name(), true);
+
+		// Target difficulty — single-select dropdown, default unspecified
+		String[] difficultyKeys = { "unspecified", "1", "2", "3", "4", "5" };
+		String[] difficultyValues = {
+			translate("ai.difficulty.unspecified"),
+			translate("difficulty.1"),
+			translate("difficulty.2"),
+			translate("difficulty.3"),
+			translate("difficulty.4"),
+			translate("difficulty.5")
+		};
+		aiDifficultyEl = uifactory.addDropdownSingleselect("ai.difficulty", "ai.difficulty.label",
+				formLayout, difficultyKeys, difficultyValues);
+		aiDifficultyEl.setHelpTextKey("ai.difficulty.help", null);
+		aiDifficultyEl.select("unspecified", true);
+
+		// Learning objectives — optional textarea
+		aiObjectivesEl = uifactory.addTextAreaElement("ai.objectives", "ai.objectives.label",
+				-1, 6, 80, false, false, "", formLayout);
+		aiObjectivesEl.setPlaceholderKey("ai.objectives.placeholder", null);
+		aiObjectivesEl.setHelpTextKey("ai.objectives.help", null);
 
 		// Initial suggested counts based on an empty input (so all fields have a starting value).
 		applySuggestedCounts(0);
@@ -278,9 +321,21 @@ public class NewAiQuestionsImportController extends FormBasicController {
 		}
 		int essayCount = aiEssayCountEl == null ? 0 : readCount(aiEssayCountEl);
 		int mcCount = readCount(aiMcCountEl);
+
+		// Parse Bloom levels
+		List<AiBloomLevel> bloomLevels = parseBloomLevels(aiBloomEl.getSelectedKeys().stream().toList());
+
+		// Parse target difficulty (null when unspecified)
+		Integer targetDifficulty = parseDifficulty(
+				aiDifficultyEl.isOneSelected() ? aiDifficultyEl.getSelectedKey() : "unspecified");
+
+		// Parse learning objectives (one per line, trim, drop empties)
+		List<String> learningObjectives = parseObjectives(aiObjectivesEl.getValue());
+
 		GenerationRequest request = GenerationRequest.forPool(input,
 				/* repositoryEntryKey */ null, getLocale(), getIdentity(),
-				essayCount, mcCount, taxonomyLevelKey);
+				essayCount, mcCount, taxonomyLevelKey,
+				bloomLevels, targetDifficulty, learningObjectives);
 		try {
 			essayGenerationService.submit(request);
 		} catch (AiRateLimitExceededException rl) {
@@ -344,6 +399,54 @@ public class NewAiQuestionsImportController extends FormBasicController {
 			tempFile = null;
 		}
 		super.doDispose();
+	}
+
+	// ------------------------------------------------------------ Parsing helpers (package-private for tests)
+
+	/**
+	 * Converts a list of Bloom-level key strings (enum names) to
+	 * {@link AiBloomLevel} values. An empty or null list falls back to
+	 * {@code [UNDERSTAND, APPLY]}.
+	 */
+	static List<AiBloomLevel> parseBloomLevels(List<String> selectedKeys) {
+		if (selectedKeys == null || selectedKeys.isEmpty()) {
+			return List.of(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY);
+		}
+		List<AiBloomLevel> levels = selectedKeys.stream()
+				.map(AiBloomLevel::valueOf)
+				.toList();
+		return levels.isEmpty() ? List.of(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY) : levels;
+	}
+
+	/**
+	 * Parses the difficulty dropdown key. {@code "unspecified"} (or any
+	 * non-numeric value) returns {@code null}; {@code "1"}–{@code "5"} returns
+	 * the corresponding {@link Integer}.
+	 */
+	static Integer parseDifficulty(String key) {
+		if (key == null || "unspecified".equals(key)) {
+			return null;
+		}
+		try {
+			return Integer.parseInt(key);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Splits the learning-objectives textarea value by newline, trims each
+	 * line, and drops blank lines. Returns an empty list for {@code null} or
+	 * whitespace-only input.
+	 */
+	static List<String> parseObjectives(String raw) {
+		if (!StringHelper.containsNonWhitespace(raw)) {
+			return List.of();
+		}
+		return Arrays.stream(raw.split("\n"))
+				.map(String::trim)
+				.filter(s -> !s.isEmpty())
+				.toList();
 	}
 
 	// ------------------------------------------------------------ Heuristic

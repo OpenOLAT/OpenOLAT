@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.olat.core.commons.services.ai.model.MCQuestionData.McAnswerOption;
 
 /**
  * Unit tests for the AI model classes:
@@ -87,16 +88,16 @@ public class AiModelTest {
 	@Test
 	public void aiMCQuestionData_addCorrectAnswer_nonBlank_added() {
 		MCQuestionData data = new MCQuestionData();
-		data.addCorrectAnswer("Correct answer");
+		data.addCorrectAnswer(new McAnswerOption("Correct answer", "It is correct because it is verifiably true."));
 		assertEquals(1, data.getCorrectAnswers().size());
-		assertEquals("Correct answer", data.getCorrectAnswers().get(0));
+		assertEquals("Correct answer", data.getCorrectAnswers().get(0).getText());
 	}
 
 	@Test
 	public void aiMCQuestionData_addCorrectAnswer_blank_filtered() {
 		MCQuestionData data = new MCQuestionData();
-		data.addCorrectAnswer("   ");
-		data.addCorrectAnswer("");
+		data.addCorrectAnswer(new McAnswerOption("   ", "feedback"));
+		data.addCorrectAnswer(new McAnswerOption("", "feedback"));
 		data.addCorrectAnswer(null);
 		assertEquals(0, data.getCorrectAnswers().size());
 	}
@@ -104,16 +105,16 @@ public class AiModelTest {
 	@Test
 	public void aiMCQuestionData_addWrongAnswer_nonBlank_added() {
 		MCQuestionData data = new MCQuestionData();
-		data.addWrongAnswer("Wrong answer");
+		data.addWrongAnswer(new McAnswerOption("Wrong answer", "It is incorrect because the date is wrong."));
 		assertEquals(1, data.getWrongAnswers().size());
-		assertEquals("Wrong answer", data.getWrongAnswers().get(0));
+		assertEquals("Wrong answer", data.getWrongAnswers().get(0).getText());
 	}
 
 	@Test
 	public void aiMCQuestionData_addWrongAnswer_blank_filtered() {
 		MCQuestionData data = new MCQuestionData();
-		data.addWrongAnswer("  ");
-		data.addWrongAnswer("");
+		data.addWrongAnswer(new McAnswerOption("  ", "feedback"));
+		data.addWrongAnswer(new McAnswerOption("", "feedback"));
 		assertEquals(0, data.getWrongAnswers().size());
 	}
 

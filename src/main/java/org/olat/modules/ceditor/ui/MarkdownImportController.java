@@ -32,20 +32,25 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.ai.AiEssayGenerationService;
+import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService.GenerationRequest;
+import org.olat.core.commons.services.ai.ui.AiAdminController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.util.Util;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -107,6 +112,9 @@ public class MarkdownImportController extends FormBasicController {
 	private FormToggle aiGenerateEl;
 	private IntegerElement aiMcCountEl;
 	private IntegerElement aiEssayCountEl;
+	private MultipleSelectionElement aiBloomEl;
+	private SingleSelection aiDifficultyEl;
+	private TextAreaElement aiObjectivesEl;
 
 	private static final int DEFAULT_AI_MC_COUNT = 2;
 	private static final int DEFAULT_AI_ESSAY_COUNT = 2;
@@ -132,7 +140,7 @@ public class MarkdownImportController extends FormBasicController {
 			String subIdent, String targetContainerId, int targetColumn,
 			String referenceElementId, PageElementTarget target,
 			boolean allowAiQuestionGeneration) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AiAdminController.class, ureq.getLocale()));
 		this.page = page;
 		this.aiOres = aiOres;
 		this.subIdent = subIdent;
@@ -187,6 +195,39 @@ public class MarkdownImportController extends FormBasicController {
 			aiEssayCountEl = uifactory.addIntegerElement("import.ai.generate.essay.count",
 					"import.ai.generate.essay.count", DEFAULT_AI_ESSAY_COUNT, formLayout);
 			aiEssayCountEl.setDisplaySize(3);
+
+			// Bloom levels — multi-select checkboxes, default UNDERSTAND + APPLY.
+			// All AI labels resolve via the AI bundle, set as fallback translator on the controller.
+			SelectionValues bloomKV = new SelectionValues();
+			for (AiBloomLevel level : AiBloomLevel.values()) {
+				bloomKV.add(SelectionValues.entry(level.name(), translate("bloom." + level.name().toLowerCase())));
+			}
+			aiBloomEl = uifactory.addCheckboxesHorizontal("ai.bloom", "ai.bloom.label",
+					formLayout, bloomKV.keys(), bloomKV.values());
+			aiBloomEl.setHelpTextKey("ai.bloom.help", null);
+			aiBloomEl.select(AiBloomLevel.UNDERSTAND.name(), true);
+			aiBloomEl.select(AiBloomLevel.APPLY.name(), true);
+
+			// Target difficulty — single-select dropdown, default unspecified
+			String[] difficultyKeys = { "unspecified", "1", "2", "3", "4", "5" };
+			String[] difficultyValues = {
+				translate("ai.difficulty.unspecified"),
+				translate("difficulty.1"),
+				translate("difficulty.2"),
+				translate("difficulty.3"),
+				translate("difficulty.4"),
+				translate("difficulty.5")
+			};
+			aiDifficultyEl = uifactory.addDropdownSingleselect("ai.difficulty", "ai.difficulty.label",
+					formLayout, difficultyKeys, difficultyValues);
+			aiDifficultyEl.setHelpTextKey("ai.difficulty.help", null);
+			aiDifficultyEl.select("unspecified", true);
+
+			// Learning objectives — optional textarea
+			aiObjectivesEl = uifactory.addTextAreaElement("ai.objectives", "ai.objectives.label",
+					-1, 6, 80, false, false, "", formLayout);
+			aiObjectivesEl.setPlaceholderKey("ai.objectives.placeholder", null);
+			aiObjectivesEl.setHelpTextKey("ai.objectives.help", null);
 
 			updateAiCountsVisibility();
 		}
@@ -278,7 +319,7 @@ public class MarkdownImportController extends FormBasicController {
 		}
 	}
 
-	/** Show the two count fields only while the AI toggle is on. */
+	/** Show AI controls only while the AI toggle is on. */
 	private void updateAiCountsVisibility() {
 		if (aiGenerateEl == null) return;
 		boolean on = aiGenerateEl.isOn();
@@ -287,6 +328,15 @@ public class MarkdownImportController extends FormBasicController {
 		}
 		if (aiEssayCountEl != null) {
 			aiEssayCountEl.setVisible(on);
+		}
+		if (aiBloomEl != null) {
+			aiBloomEl.setVisible(on);
+		}
+		if (aiDifficultyEl != null) {
+			aiDifficultyEl.setVisible(on);
+		}
+		if (aiObjectivesEl != null) {
+			aiObjectivesEl.setVisible(on);
 		}
 	}
 
@@ -407,9 +457,33 @@ public class MarkdownImportController extends FormBasicController {
 		Long repoEntryKey = aiOres.getResourceableId();
 		int essayCount = aiEssayCountEl != null ? aiEssayCountEl.getIntValue() : DEFAULT_AI_ESSAY_COUNT;
 		int mcCount = aiMcCountEl != null ? aiMcCountEl.getIntValue() : DEFAULT_AI_MC_COUNT;
+
+		// Parse Bloom levels
+		List<AiBloomLevel> bloomLevels = aiBloomEl == null ? List.of(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY)
+				: aiBloomEl.getSelectedKeys().stream()
+						.map(AiBloomLevel::valueOf)
+						.toList();
+
+		// Parse target difficulty (null when unspecified)
+		Integer targetDifficulty = null;
+		if (aiDifficultyEl != null && aiDifficultyEl.isOneSelected()
+				&& !"unspecified".equals(aiDifficultyEl.getSelectedKey())) {
+			targetDifficulty = Integer.parseInt(aiDifficultyEl.getSelectedKey());
+		}
+
+		// Parse learning objectives (one per line, trim, drop empties)
+		List<String> learningObjectives = List.of();
+		if (aiObjectivesEl != null && StringHelper.containsNonWhitespace(aiObjectivesEl.getValue())) {
+			learningObjectives = java.util.Arrays.stream(aiObjectivesEl.getValue().split("\n"))
+					.map(String::trim)
+					.filter(s -> !s.isEmpty())
+					.toList();
+		}
+
 		GenerationRequest request = GenerationRequest.forQuizPart(
 				markdown, repoEntryKey, getLocale(), getIdentity(),
-				page.getKey(), placeholder.getKey(), essayCount, mcCount);
+				page.getKey(), placeholder.getKey(), essayCount, mcCount,
+				bloomLevels, targetDifficulty, learningObjectives);
 		essayGenerationService.submit(request);
 	}
 

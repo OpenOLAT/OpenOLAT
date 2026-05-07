@@ -219,6 +219,7 @@ public class EssayGenerationService {
 							chunks,
 							safeList(request.learningObjectives()),
 							safeList(request.targetBloomLevels()),
+							request.targetDifficulty(),
 							essayCount,
 							request.language() == null ? Locale.ENGLISH : request.language());
 
@@ -286,7 +287,10 @@ public class EssayGenerationService {
 								.resourceId(resourceId)
 								.build();
 						AiMCQuestionsResponse mcResponse = aiMCQuestionService
-								.generateMCQuestionsResponse(usageContext, scrubbedMarkdown, mcCount);
+								.generateMCQuestionsResponse(usageContext, scrubbedMarkdown, mcCount,
+										safeList(request.targetBloomLevels()),
+										request.targetDifficulty(),
+										safeList(request.learningObjectives()));
 						if (mcResponse == null || !mcResponse.isSuccess()) {
 							String raw = mcResponse == null ? "no response" : mcResponse.getError();
 							// Log the full raw body for developers, but surface a
@@ -715,6 +719,7 @@ public class EssayGenerationService {
 			int targetQuestionCount,
 			int mcQuestionCount,
 			List<AiBloomLevel> targetBloomLevels,
+			Integer targetDifficulty,
 			List<String> learningObjectives,
 			Locale language,
 			Identity requester,
@@ -743,7 +748,7 @@ public class EssayGenerationService {
 			return new GenerationRequest(pageMarkdown, repositoryEntryKey,
 					DEFAULT_QUESTION_COUNT, 0,
 					Arrays.asList(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY),
-					List.of(), language, requester, null, null,
+					null, List.of(), language, requester, null, null,
 					GenerationDestination.DRAWER, null);
 		}
 
@@ -759,12 +764,36 @@ public class EssayGenerationService {
 		public static GenerationRequest forQuizPart(String pageMarkdown, Long repositoryEntryKey,
 				Locale language, Identity requester, Long pageKey, Long quizPartKey,
 				int essayQuestionCount, int mcQuestionCount) {
+			return forQuizPart(pageMarkdown, repositoryEntryKey, language, requester,
+					pageKey, quizPartKey, essayQuestionCount, mcQuestionCount,
+					null, null, null);
+		}
+
+		/**
+		 * Extended factory for the Markdown-import → QuizPart flow with
+		 * author-controllable Bloom levels, target difficulty, and learning
+		 * objectives.
+		 * <p>
+		 * When {@code targetBloomLevels} is {@code null} or empty the default
+		 * {@code [UNDERSTAND, APPLY]} is used. When {@code learningObjectives}
+		 * is {@code null} an empty list is used. {@code targetDifficulty} may
+		 * be {@code null} (LLM self-assigns difficulty).
+		 */
+		public static GenerationRequest forQuizPart(String pageMarkdown, Long repositoryEntryKey,
+				Locale language, Identity requester, Long pageKey, Long quizPartKey,
+				int essayQuestionCount, int mcQuestionCount,
+				List<AiBloomLevel> targetBloomLevels, Integer targetDifficulty,
+				List<String> learningObjectives) {
 			int essayCount = essayQuestionCount < 0 ? 0 : essayQuestionCount;
 			int mcCount = mcQuestionCount < 0 ? 0 : mcQuestionCount;
+			List<AiBloomLevel> bloomLevels = (targetBloomLevels == null || targetBloomLevels.isEmpty())
+					? Arrays.asList(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY)
+					: targetBloomLevels;
+			List<String> objectives = learningObjectives == null ? List.of() : learningObjectives;
 			return new GenerationRequest(pageMarkdown, repositoryEntryKey,
 					essayCount, mcCount,
-					Arrays.asList(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY),
-					List.of(), language, requester, pageKey, quizPartKey,
+					bloomLevels, targetDifficulty, objectives,
+					language, requester, pageKey, quizPartKey,
 					GenerationDestination.QUIZ_PART, null);
 		}
 
@@ -783,12 +812,39 @@ public class EssayGenerationService {
 		public static GenerationRequest forPool(String sourceText, Long repositoryEntryKey,
 				Locale language, Identity requester,
 				int essayQuestionCount, int mcQuestionCount, Long taxonomyLevelKey) {
+			return forPool(sourceText, repositoryEntryKey, language, requester,
+					essayQuestionCount, mcQuestionCount, taxonomyLevelKey,
+					null, null, null);
+		}
+
+		/**
+		 * Extended factory for the question-pool import flow with
+		 * author-controllable Bloom levels, target difficulty, and learning
+		 * objectives.
+		 * <p>
+		 * When {@code targetBloomLevels} is {@code null} or empty the default
+		 * {@code [UNDERSTAND, APPLY]} is used. When {@code learningObjectives}
+		 * is {@code null} an empty list is used. {@code targetDifficulty} may
+		 * be {@code null} (LLM self-assigns difficulty).
+		 *
+		 * @param taxonomyLevelKey optional taxonomy level the items should
+		 *                         be stamped with; may be {@code null}
+		 */
+		public static GenerationRequest forPool(String sourceText, Long repositoryEntryKey,
+				Locale language, Identity requester,
+				int essayQuestionCount, int mcQuestionCount, Long taxonomyLevelKey,
+				List<AiBloomLevel> targetBloomLevels, Integer targetDifficulty,
+				List<String> learningObjectives) {
 			int essayCount = essayQuestionCount < 0 ? 0 : essayQuestionCount;
 			int mcCount = mcQuestionCount < 0 ? 0 : mcQuestionCount;
+			List<AiBloomLevel> bloomLevels = (targetBloomLevels == null || targetBloomLevels.isEmpty())
+					? Arrays.asList(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY)
+					: targetBloomLevels;
+			List<String> objectives = learningObjectives == null ? List.of() : learningObjectives;
 			return new GenerationRequest(sourceText, repositoryEntryKey,
 					essayCount, mcCount,
-					Arrays.asList(AiBloomLevel.UNDERSTAND, AiBloomLevel.APPLY),
-					List.of(), language, requester, null, null,
+					bloomLevels, targetDifficulty, objectives,
+					language, requester, null, null,
 					GenerationDestination.POOL, taxonomyLevelKey);
 		}
 	}

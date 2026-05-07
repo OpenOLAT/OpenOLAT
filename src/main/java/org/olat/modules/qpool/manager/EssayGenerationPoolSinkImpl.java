@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.ui.AiAdminController;
 import org.olat.core.commons.services.ai.essay.AiSourceCompanion;
 import org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStore;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
@@ -39,9 +40,11 @@ import org.olat.core.commons.services.ai.essay.EssayItemDraft;
 import org.olat.core.commons.services.ai.model.MCQuestionData;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.ims.qti21.pool.AiQtiItemFactory;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
@@ -120,7 +123,9 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 			return created;
 		}
 		Locale loc = locale == null ? Locale.ENGLISH : locale;
-		String solutionTitle = "de".equals(loc.getLanguage()) ? "Lösung" : "Solution";
+		Translator translator = Util.createPackageTranslator(AiAdminController.class, loc);
+		String solutionTitle = translator.translate("ai.solution.title");
+		String wrongTitle = translator.translate("mc.feedback.wrong.title");
 
 		TaxonomyLevel taxonomyLevel = resolveTaxonomyLevel(taxonomyLevelKey);
 
@@ -128,7 +133,7 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 		// essays appear at the top, matching the order users entered the request.
 		if (mcQuestions != null) {
 			for (MCQuestionData mc : mcQuestions) {
-				QuestionItem item = persistMcItem(owner, mc, loc, solutionTitle, taxonomyLevel);
+				QuestionItem item = persistMcItem(owner, mc, loc, solutionTitle, wrongTitle, taxonomyLevel);
 				if (item != null) {
 					created.add(item.getKey());
 				}
@@ -162,11 +167,12 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 	}
 
 	private QuestionItem persistMcItem(Identity owner, MCQuestionData data, Locale locale,
-			String solutionTitle, TaxonomyLevel taxonomyLevel) {
+			String solutionTitle, String wrongTitle, TaxonomyLevel taxonomyLevel) {
 		try {
 			String spiId = aiModule == null ? null : aiModule.getMCGeneratorSpiId();
 			String model = aiModule == null ? null : aiModule.getMCGeneratorModel();
-			AiQtiItemFactory.McItem built = aiQtiItemFactory.buildMcItem(data, locale, solutionTitle, spiId, model);
+			AiQtiItemFactory.McItem built = aiQtiItemFactory.buildMcItem(data, locale, solutionTitle,
+					wrongTitle, spiId, model);
 			if (built == null) {
 				return null;
 			}

@@ -20,9 +20,13 @@
 package org.olat.modules.qpool.ui;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
+import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 
 /**
  * Unit tests for the {@code suggestedEssayCount} and {@code suggestedMcCount}
@@ -150,5 +154,111 @@ public class NewAiQuestionsImportControllerTest {
 			assertTrue("MC count must be > essay count for length=" + len + " (essay=" + essay + ", mc=" + mc + ")",
 					mc > essay);
 		}
+	}
+
+	// ---------------------------------------------------------------- parseObjectives
+
+	@Test
+	public void parseObjectives_emptyStringReturnsEmptyList() {
+		assertEquals(List.of(), NewAiQuestionsImportController.parseObjectives(""));
+	}
+
+	@Test
+	public void parseObjectives_nullReturnsEmptyList() {
+		assertEquals(List.of(), NewAiQuestionsImportController.parseObjectives(null));
+	}
+
+	@Test
+	public void parseObjectives_whitespaceOnlyReturnsEmptyList() {
+		assertEquals(List.of(), NewAiQuestionsImportController.parseObjectives("   \n  \n  "));
+	}
+
+	@Test
+	public void parseObjectives_trimsAndDropsBlanks() {
+		List<String> result = NewAiQuestionsImportController.parseObjectives(" line one  \n  \n line two\n");
+		assertEquals(List.of("line one", "line two"), result);
+	}
+
+	@Test
+	public void parseObjectives_singleLineNoNewline() {
+		List<String> result = NewAiQuestionsImportController.parseObjectives("single objective");
+		assertEquals(List.of("single objective"), result);
+	}
+
+	@Test
+	public void parseObjectives_unicodeAndLeadingTrailingSpacesPreservedWithinLine() {
+		// Leading/trailing whitespace around the whole line is trimmed, but
+		// content within the trimmed value (including unicode) is kept intact.
+		List<String> result = NewAiQuestionsImportController.parseObjectives("  Évaluer les résultats  \n  学习目标  ");
+		assertEquals(2, result.size());
+		assertEquals("Évaluer les résultats", result.get(0));
+		assertEquals("学习目标", result.get(1));
+	}
+
+	// ---------------------------------------------------------------- parseDifficulty
+
+	@Test
+	public void parseDifficulty_unspecifiedReturnsNull() {
+		assertNull(NewAiQuestionsImportController.parseDifficulty("unspecified"));
+	}
+
+	@Test
+	public void parseDifficulty_nullKeyReturnsNull() {
+		assertNull(NewAiQuestionsImportController.parseDifficulty(null));
+	}
+
+	@Test
+	public void parseDifficulty_validLevels1to5() {
+		for (int i = 1; i <= 5; i++) {
+			Integer result = NewAiQuestionsImportController.parseDifficulty(String.valueOf(i));
+			assertEquals(Integer.valueOf(i), result);
+		}
+	}
+
+	@Test
+	public void parseDifficulty_nonNumericReturnsNull() {
+		assertNull(NewAiQuestionsImportController.parseDifficulty("hard"));
+		assertNull(NewAiQuestionsImportController.parseDifficulty(""));
+		assertNull(NewAiQuestionsImportController.parseDifficulty("abc"));
+	}
+
+	// ---------------------------------------------------------------- parseBloomLevels
+
+	@Test
+	public void parseBloomLevels_nullFallsBackToUnderstandApply() {
+		List<AiBloomLevel> result = NewAiQuestionsImportController.parseBloomLevels(null);
+		assertTrue(result.contains(AiBloomLevel.UNDERSTAND));
+		assertTrue(result.contains(AiBloomLevel.APPLY));
+		assertEquals(2, result.size());
+	}
+
+	@Test
+	public void parseBloomLevels_emptyFallsBackToUnderstandApply() {
+		List<AiBloomLevel> result = NewAiQuestionsImportController.parseBloomLevels(List.of());
+		assertTrue(result.contains(AiBloomLevel.UNDERSTAND));
+		assertTrue(result.contains(AiBloomLevel.APPLY));
+		assertEquals(2, result.size());
+	}
+
+	@Test
+	public void parseBloomLevels_selectedKeysRoundTrip() {
+		List<String> keys = List.of(AiBloomLevel.ANALYSE.name(), AiBloomLevel.EVALUATE.name());
+		List<AiBloomLevel> result = NewAiQuestionsImportController.parseBloomLevels(keys);
+		assertEquals(2, result.size());
+		assertTrue(result.contains(AiBloomLevel.ANALYSE));
+		assertTrue(result.contains(AiBloomLevel.EVALUATE));
+	}
+
+	@Test
+	public void parseBloomLevels_allSixLevels() {
+		List<String> keys = List.of(
+				AiBloomLevel.REMEMBER.name(),
+				AiBloomLevel.UNDERSTAND.name(),
+				AiBloomLevel.APPLY.name(),
+				AiBloomLevel.ANALYSE.name(),
+				AiBloomLevel.EVALUATE.name(),
+				AiBloomLevel.CREATE.name());
+		List<AiBloomLevel> result = NewAiQuestionsImportController.parseBloomLevels(keys);
+		assertEquals(6, result.size());
 	}
 }

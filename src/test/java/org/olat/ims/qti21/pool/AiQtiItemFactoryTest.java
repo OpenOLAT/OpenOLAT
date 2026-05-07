@@ -24,7 +24,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
+import org.olat.core.commons.services.ai.model.MCQuestionData;
+import org.olat.core.commons.services.ai.model.MCQuestionData.McAnswerOption;
 
 /**
  * Unit tests for the static helpers of {@link AiQtiItemFactory}:
@@ -104,5 +108,69 @@ public class AiQtiItemFactoryTest {
 		String result = AiQtiItemFactory.stimulusToHtml("Ümlauts: äöü. Chinese: 中文");
 		assertTrue(result.contains("äöü"));
 		assertTrue(result.contains("中文"));
+	}
+
+	// ---------------------------------------------------------------- McAnswerOption shape
+
+	@Test
+	public void mcAnswerOption_noArgCtorAndSetters() {
+		McAnswerOption opt = new McAnswerOption();
+		opt.setText("Paris");
+		opt.setFeedback("Paris is the capital of France.");
+		assertEquals("Paris", opt.getText());
+		assertEquals("Paris is the capital of France.", opt.getFeedback());
+	}
+
+	@Test
+	public void mcAnswerOption_convenienceCtor() {
+		McAnswerOption opt = new McAnswerOption("London", "London is the capital of the United Kingdom.");
+		assertEquals("London", opt.getText());
+		assertEquals("London is the capital of the United Kingdom.", opt.getFeedback());
+	}
+
+	@Test
+	public void mcQuestionData_addCorrectAnswer_ignoresNullAndBlankText() {
+		MCQuestionData data = new MCQuestionData();
+		data.addCorrectAnswer(null);
+		data.addCorrectAnswer(new McAnswerOption("  ", "some feedback"));
+		data.addCorrectAnswer(new McAnswerOption("Valid answer", "explanation"));
+		assertEquals(1, data.getCorrectAnswers().size());
+		assertEquals("Valid answer", data.getCorrectAnswers().get(0).getText());
+	}
+
+	@Test
+	public void mcQuestionData_addWrongAnswer_ignoresNullAndBlankText() {
+		MCQuestionData data = new MCQuestionData();
+		data.addWrongAnswer(null);
+		data.addWrongAnswer(new McAnswerOption("", "some feedback"));
+		data.addWrongAnswer(new McAnswerOption("Plausible distractor", "explanation"));
+		assertEquals(1, data.getWrongAnswers().size());
+		assertEquals("Plausible distractor", data.getWrongAnswers().get(0).getText());
+	}
+
+	@Test
+	public void mcQuestionData_feedbackMayBeNull() {
+		// The feedback field is optional — a null feedback must not break construction.
+		McAnswerOption opt = new McAnswerOption("Answer", null);
+		assertNotNull(opt);
+		assertEquals("Answer", opt.getText());
+		assertFalse("Null feedback must not be treated as non-blank",
+				opt.getFeedback() != null && !opt.getFeedback().isBlank());
+	}
+
+	@Test
+	public void mcQuestionData_setCorrectAndWrongAnswers_roundTrip() {
+		MCQuestionData data = new MCQuestionData();
+		List<McAnswerOption> correct = List.of(
+				new McAnswerOption("Correct A", "Feedback A"),
+				new McAnswerOption("Correct B", "Feedback B"));
+		List<McAnswerOption> wrong = List.of(
+				new McAnswerOption("Wrong X", "Feedback X"));
+		data.setCorrectAnswers(correct);
+		data.setWrongAnswers(wrong);
+		assertEquals(2, data.getCorrectAnswers().size());
+		assertEquals("Feedback A", data.getCorrectAnswers().get(0).getFeedback());
+		assertEquals(1, data.getWrongAnswers().size());
+		assertEquals("Wrong X", data.getWrongAnswers().get(0).getText());
 	}
 }

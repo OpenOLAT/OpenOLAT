@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.ui.AiAdminController;
 import org.olat.core.commons.services.ai.essay.AiSourceCompanion;
 import org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStore;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
@@ -297,7 +298,7 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 			String model = aiModule == null ? null : aiModule.getMCGeneratorModel();
 
 			AiQtiItemFactory.McItem built = aiQtiItemFactory.buildMcItem(
-					data, locale, solutionTitle(locale), spiId, model);
+					data, locale, solutionTitle(locale), wrongTitle(locale), spiId, model);
 			if (built == null) {
 				return null;
 			}
@@ -364,6 +365,12 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 	}
 
 	private String solutionTitle(Locale locale) {
-		return translator(locale).translate("ai.quiz.solution.title");
+		return Util.createPackageTranslator(AiAdminController.class, locale)
+				.translate("ai.solution.title");
+	}
+
+	private String wrongTitle(Locale locale) {
+		return Util.createPackageTranslator(AiAdminController.class, locale)
+				.translate("mc.feedback.wrong.title");
 	}
 }

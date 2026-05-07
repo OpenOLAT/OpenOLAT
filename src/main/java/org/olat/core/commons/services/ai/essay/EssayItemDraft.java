@@ -48,10 +48,10 @@ public record EssayItemDraft(
 		@Description("Reference model answer that fully satisfies the question; used for grading")
 		String modelAnswer,
 		@JsonProperty(required = true)
-		@Description("Required and optional key points the student answer should cover; at least one entry")
+		@Description("Required and optional key points the student answer should cover. Count scales with difficulty: 1-2 for easy (difficulty 1), up to 4-5 for hard (difficulty 5). At least one entry.")
 		List<KeyPoint> keyPoints,
 		@JsonProperty(required = true)
-		@Description("Rubric criteria scoring dimensions (content + language) with weights summing to 1.0; at least one entry")
+		@Description("Rubric criteria scoring dimensions (content + language) with weights summing to 1.0. Count scales with difficulty: 1-2 for easy, up to 3-4 for hard. At least one entry.")
 		List<RubricCriterion> rubricCriteria,
 		@JsonProperty(required = true)
 		@Description("Bloom taxonomy level of the question")
