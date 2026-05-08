@@ -95,7 +95,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	public static final String DATE_REF_SAME_DAY_BEGIN = "SAME_DAY_BEGIN";
 	public static final String DATE_REF_SAME_DAY_END   = "SAME_DAY_END";
 
-	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.status};
+	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.all};
 
 	@Autowired
 	private CurriculumModule curriculumModule;
