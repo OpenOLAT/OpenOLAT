@@ -93,6 +93,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.video.VideoAssessmentService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
@@ -724,9 +725,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 		dbInstance.commitAndCloseSession();
 
+		//delete task video sessions and segments
+		CoreSpringFactory.getImpl(VideoAssessmentService.class).deleteRepositoryEntryData(entry);
+		dbInstance.commit();
+		
 		//delete all test sessions
 		assessmentTestSessionDao.deleteAllUserTestSessionsByCourse(entry);
 		dbInstance.commit();
+
 		//nullify the reference
 		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);

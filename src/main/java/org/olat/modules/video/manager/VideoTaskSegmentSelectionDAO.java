@@ -100,6 +100,19 @@ public class VideoTaskSegmentSelectionDAO {
 		return query.executeUpdate();
 	}
 	
+	public int deleteAllSegmentSelectionsByCourse(RepositoryEntry entry) {
+		String query = """
+				delete from videotasksegmentselection as selection
+				where selection.taskSession.key in (select tsession.key from videotasksession tsession
+				  where tsession.repositoryEntry.key=:courseEntryKey
+				)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("courseEntryKey", entry.getKey())
+				.executeUpdate();
+	}
+	
 	public int deleteSegementSelections(IdentityRef identity) {
 		String query = """
 				delete from videotasksegmentselection as selection

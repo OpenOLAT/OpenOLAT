@@ -106,6 +106,14 @@ public interface VideoAssessmentService {
 	
 	public long deleteTaskSessions(RepositoryEntry entry, String subIdent);
 	
+	/**
+	 * Delete all task session and segments of the course.
+	 * 
+	 * @param re The course
+	 * @return true if ok
+	 */
+	public boolean deleteRepositoryEntryData(RepositoryEntry re);
+	
 	public long deleteTaskSessions(List<Identity> identities, RepositoryEntry courseEntry, String subIdent);
 
 }
