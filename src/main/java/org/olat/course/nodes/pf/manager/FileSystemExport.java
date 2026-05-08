@@ -214,11 +214,11 @@ public class FileSystemExport implements MediaResource {
 				private String boxesEnabled(String relPath) {
 					if (pfNode.hasParticipantBoxConfigured() && relPath.contains(PFManager.FILENAME_DROPBOX)) {
 						return relPath.replace(PFManager.FILENAME_DROPBOX, translator.translate(PFCourseNode.FOLDER_DROP_BOX));
-					} else if (pfNode.hasCoachBoxConfigured() && relPath.contains(PFManager.FILENAME_RETURNBOX)) {
-						return relPath.replace(PFManager.FILENAME_RETURNBOX, translator.translate(PFCourseNode.FOLDER_RETURN_BOX));
-					} else {
-						return null;
 					}
+					if (pfNode.hasCoachBoxConfigured() && relPath.contains(PFManager.FILENAME_RETURNBOX)) {
+						return relPath.replace(PFManager.FILENAME_RETURNBOX, translator.translate(PFCourseNode.FOLDER_RETURN_BOX));
+					}
+					return null;
 				}			
 				
 				@Override
@@ -227,7 +227,7 @@ public class FileSystemExport implements MediaResource {
 					if ((relPath = containsID(relPath)) != null
 							&& (relPath = boxesEnabled(relPath)) != null
 							&& !file.toFile().isHidden()) {
-						zout.putNextEntry(new ZipEntry(ZipUtil.escapeZIPPath(targetPath + relPath)));
+						zout.putNextEntry(new ZipEntry(escapeZIPFile(targetPath + relPath)));
 						copyFile(file, zout);
 						zout.closeEntry();
 					}
@@ -254,6 +254,15 @@ public class FileSystemExport implements MediaResource {
 		}
 	}
 	
+	private static String escapeZIPFile(String s) {
+		int lastIndex = s.lastIndexOf('/');
+		if(lastIndex > 0) {
+			String path = ZipUtil.escapeZIPPath(s.substring(0, lastIndex));
+			s = path + ZipUtil.escapeZIPFilename(s.substring(lastIndex));
+		}
+		return s;
+	}
+	
 	private static void copyFile(Path file, ZipOutputStream zout) {
 		try(OutputStream out= new ShieldOutputStream(zout)) {
 			Files.copy(file, zout);
@@ -261,5 +270,4 @@ public class FileSystemExport implements MediaResource {
 			log.error("Cannot zip {}", file, e);
 		}
 	}
-	
 }

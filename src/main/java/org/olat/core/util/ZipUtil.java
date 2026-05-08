@@ -115,6 +115,12 @@ public class ZipUtil {
 		return s.replace('?', '_').replace('\\', '_').replace(' ', '_').replace("*", "-");
 	}
 	
+	public static String escapeZIPFilename(String s) {
+		if(s == null) return "";
+		//replace some separator with an underscore
+		return s.replace('?', '_').replace('\\', '_').replace("*", "-");
+	}
+	
 	public static boolean isReadable(File zipFile) {
 		try(InputStream in = new FileInputStream(zipFile);
 				ZipInputStream oZip = new ZipInputStream(in)) {
