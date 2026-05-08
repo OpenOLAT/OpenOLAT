@@ -93,11 +93,11 @@ public class TabConfiguration {
 	public void setTitle(String title, Locale locale) {
 		if(locale != null && locale.getLanguage().equals("de")) {
 			setTitleDe(title);
-		}
-		if(locale != null && locale.getLanguage().equals("fr")) {
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
 			setTitleFr(title);
+		} else {
+			setTitle(title);
 		}
-		setTitle(title);
 	}
 	
 	public String getHeading() {
@@ -138,8 +138,9 @@ public class TabConfiguration {
 			setHeadingDe(title);
 		} else if(locale != null && locale.getLanguage().equals("fr")) {
 			setHeadingFr(title);
+		} else {
+			setHeading(title);
 		}
-		setHeading(title);
 	}
 
 	public String getHelp() {
