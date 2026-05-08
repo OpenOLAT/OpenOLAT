@@ -29,7 +29,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 
 /**
- * 
+ *
  * Initial date: 24 Mar 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *

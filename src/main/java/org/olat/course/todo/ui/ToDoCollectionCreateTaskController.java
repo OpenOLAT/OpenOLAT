@@ -35,6 +35,7 @@ import org.olat.course.todo.model.ToDoTaskCollectionCreateContext;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
@@ -83,6 +84,7 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberSelection.empty(),
+				ToDoTaskDateConfig.absoluteOnly(),
 				tagInfos, true);
 		if (sourceToDoTask != null) {
 			toDoTaskEditForm.setValues(convert ? new ToDoTaskValues(sourceToDoTask) : new CopyValues(getLocale(), sourceToDoTask));

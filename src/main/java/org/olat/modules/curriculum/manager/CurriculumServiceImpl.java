@@ -147,7 +147,6 @@ import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
-import org.olat.modules.todo.ToDoService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -252,7 +251,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private ToDoService toDoService;
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -286,8 +285,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public Curriculum updateCurriculum(Curriculum curriculum) {
 		Curriculum updated = curriculumDao.update(curriculum);
-		toDoService.updateOriginTitle(CurriculumElementToDoProvider.TYPE,
-				updated.getKey(), null, updated.getDisplayName(), null);
+		curriculumElementToDoProvider.onCurriculumUpdated(updated);
 		return updated;
 	}
 	
@@ -846,12 +844,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						CurriculumRoles.owner.name(), CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name())
 				: List.of();
 		
-		if (reloadedElement.getCurriculum() != null) {
-			toDoService.updateOriginDeleted(CurriculumElementToDoProvider.TYPE,
-					reloadedElement.getCurriculum().getKey(),
-					reloadedElement.getKey().toString(),
-					true, new Date(), doer);
-		}
+		curriculumElementToDoProvider.onCurriculumElementDeletedSoftly(reloadedElement, doer);
 		
 		groupDao.removeMemberships(reloadedElement.getGroup());
 		
@@ -907,13 +900,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if (updated.getResource() != null) {
 			acService.updateRelativeValidDates(List.of(updated.getResource()), updated.getBeginDate(), updated.getEndDate());
 		}
-		if (updated.getCurriculum() != null) {
-			toDoService.updateOriginTitle(CurriculumElementToDoProvider.TYPE,
-					updated.getCurriculum().getKey(),
-					updated.getKey().toString(),
-					updated.getCurriculum().getDisplayName(),
-					updated.getDisplayName());
-		}
+		curriculumElementToDoProvider.onCurriculumElementUpdated(updated);
 		return updated;
 	}
 	

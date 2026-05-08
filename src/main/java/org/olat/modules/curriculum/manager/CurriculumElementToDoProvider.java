@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,15 +31,19 @@ import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -51,7 +56,9 @@ import org.olat.modules.curriculum.ui.CurriculumElementToDoMemberProvider;
 import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoContextFilter;
+import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -59,7 +66,9 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoDateResolver;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
@@ -79,6 +88,13 @@ import org.springframework.stereotype.Service;
 public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	public static final String TYPE = "curriculum.element";
+	public static final String DATE_REF_BEFORE_BEGIN   = "BEFORE_BEGIN";
+	public static final String DATE_REF_AFTER_BEGIN    = "AFTER_BEGIN";
+	public static final String DATE_REF_BEFORE_END     = "BEFORE_END";
+	public static final String DATE_REF_AFTER_END      = "AFTER_END";
+	public static final String DATE_REF_SAME_DAY_BEGIN = "SAME_DAY_BEGIN";
+	public static final String DATE_REF_SAME_DAY_END   = "SAME_DAY_END";
+
 	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.status};
 
 	@Autowired
@@ -180,12 +196,14 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				? ToDoTaskContextConfig.picker(new CurriculumElementContextPicker(effectiveRoot.getKey(), element.getKey()), context)
 				: ToDoTaskContextConfig.off(context);
 		CurriculumElementToDoMemberProvider memberSearchProvider = new CurriculumElementToDoMemberProvider(element);
+		ToDoTaskDateConfig dateConfig = createDateConfig(ureq.getLocale(), element);
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource,
 				contextConfig,
 				ToDoTaskMemberConfig.search(candidates, memberSearchProvider).notMandatory(),
 				ToDoTaskMemberConfig.search(candidates, memberSearchProvider),
 				ToDoTaskMemberSelection.empty(),
-				createTagSearchParams(element), ASSIGNEE_RIGHTS);
+				dateConfig,
+				createTagSearchParams(), ASSIGNEE_RIGHTS);
 	}
 
 	public List<CurriculumMember> getCandidates(CurriculumElement element) {
@@ -201,6 +219,27 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		members.addAll(elementMembers);
 		members.addAll(curriculumMembers);
 		return members;
+	}
+
+	private ToDoTaskDateConfig createDateConfig(Locale locale, CurriculumElement element) {
+		Translator translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale);
+		SelectionValues relativeRefs = new SelectionValues();
+		relativeRefs.add(SelectionValues.entry(DATE_REF_BEFORE_BEGIN, translator.translate("curriculum.element.todo.date.ref.before.begin")));
+		relativeRefs.add(SelectionValues.entry(DATE_REF_AFTER_BEGIN,  translator.translate("curriculum.element.todo.date.ref.after.begin")));
+		relativeRefs.add(SelectionValues.entry(DATE_REF_BEFORE_END,   translator.translate("curriculum.element.todo.date.ref.before.end")));
+		relativeRefs.add(SelectionValues.entry(DATE_REF_AFTER_END,    translator.translate("curriculum.element.todo.date.ref.after.end")));
+		SelectionValues sameDayRefs = new SelectionValues();
+		sameDayRefs.add(SelectionValues.entry(DATE_REF_SAME_DAY_BEGIN, translator.translate("curriculum.element.todo.date.ref.same.day.begin")));
+		sameDayRefs.add(SelectionValues.entry(DATE_REF_SAME_DAY_END,   translator.translate("curriculum.element.todo.date.ref.same.day.end")));
+		ToDoDateResolver resolver = (ref, unit, value) ->
+				computeRelativeDate(ref, unit, value, element.getBeginDate(), element.getEndDate());
+		return ToDoTaskDateConfig.absoluteOrRelative(relativeRefs, sameDayRefs, resolver);
+	}
+
+	private ToDoTaskSearchParams createTagSearchParams() {
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		return params;
 	}
 
 	@Override
@@ -223,14 +262,6 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				translator.translate("task.delete.conformation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask))),
 				translator.translate("task.delete.confirmation.confirm"),
 				translator.translate("delete"), ButtonType.danger);
-	}
-
-	private ToDoTaskSearchParams createTagSearchParams(CurriculumElement element) {
-		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
-		params.setTypes(List.of(TYPE));
-		params.setOriginIds(List.of(element.getCurriculum().getKey()));
-		params.setOriginSubPaths(List.of(element.getKey().toString()));
-		return params;
 	}
 
 	private ToDoTask getToDoTask(ToDoTaskRef toDoTaskRef, boolean active) {
@@ -257,6 +288,117 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		reloadedToDoTask.setStatus(status);
 		reloadedToDoTask.setContentModifiedDate(new Date());
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
+	}
+
+	public void onCurriculumUpdated(Curriculum curriculum) {
+		toDoService.updateOriginTitle(TYPE, curriculum.getKey(), null,
+				curriculum.getDisplayName(), null);
+	}
+
+	public void onCurriculumElementUpdated(CurriculumElement element) {
+		updateRelativeDates(element);
+		if (element.getCurriculum() != null) {
+			toDoService.updateOriginTitle(TYPE,
+					element.getCurriculum().getKey(),
+					element.getKey().toString(),
+					element.getCurriculum().getDisplayName(),
+					element.getDisplayName());
+		}
+	}
+
+	public void updateRelativeDates(CurriculumElement curriculumElement) {
+		if (curriculumElement == null) return;
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(TYPE));
+		searchParams.setOriginSubPaths(List.of(String.valueOf(curriculumElement.getKey())));
+		searchParams.setRelativeDatesNull(Boolean.FALSE);
+		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
+		for (ToDoTask toDoTask : toDoTasks) {
+			materializeDates(toDoTask, curriculumElement.getBeginDate(), curriculumElement.getEndDate());
+		}
+	}
+
+	private void materializeDates(ToDoTask toDoTask, Date beginDate, Date endDate) {
+		ToDoRelativeDates config = toDoTask.getRelativeDates();
+		if (config == null) return;
+
+		boolean changed = false;
+		if (config.getStartRef() != null && config.getStartUnit() != null) {
+			Date startDate = computeRelativeDate(config.getStartRef(), config.getStartUnit(), config.getStartValue(), beginDate, endDate);
+			if (!Objects.equals(startDate, toDoTask.getStartDate())) {
+				toDoTask.setStartDate(startDate);
+				changed = true;
+			}
+		}
+		if (config.getDueRef() != null && config.getDueUnit() != null) {
+			Date dueDate = computeRelativeDate(config.getDueRef(), config.getDueUnit(), config.getDueValue(), beginDate, endDate);
+			if (!Objects.equals(dueDate, toDoTask.getDueDate())) {
+				toDoTask.setDueDate(dueDate);
+				changed = true;
+			}
+		}
+		if (changed) {
+			toDoTask.setContentModifiedDate(new Date());
+			toDoService.update(null, toDoTask, toDoTask.getStatus());
+		}
+	}
+
+	public static Date computeRelativeDate(String ref, ToDoDateUnit unit, Integer value, Date beginDate, Date endDate) {
+		if (ref == null || unit == null) {
+			return null;
+		}
+		Date refDate = switch (ref) {
+			case DATE_REF_BEFORE_BEGIN, DATE_REF_AFTER_BEGIN, DATE_REF_SAME_DAY_BEGIN -> beginDate;
+			case DATE_REF_BEFORE_END,   DATE_REF_AFTER_END,   DATE_REF_SAME_DAY_END   -> endDate;
+			default -> null;
+		};
+		if (refDate == null) {
+			return null;
+		}
+		if (unit == ToDoDateUnit.SAME_DAY) {
+			return refDate;
+		}
+		if (value == null) {
+			return null;
+		}
+		int signed = (ref.equals(DATE_REF_BEFORE_BEGIN) || ref.equals(DATE_REF_BEFORE_END))
+				? -value.intValue()
+				:  value.intValue();
+		return switch (unit) {
+			case DAYS   -> DateUtils.addDays(refDate, signed);
+			case WEEKS  -> DateUtils.addWeeks(refDate, signed);
+			case MONTHS -> DateUtils.addMonth(refDate, signed);
+			case YEARS  -> DateUtils.addYears(refDate, signed);
+			case SAME_DAY -> refDate;
+		};
+	}
+
+	public void onCurriculumElementDeletedSoftly(CurriculumElement element, Identity doer) {
+		if (element.getCurriculum() == null) {
+			return;
+		}
+		toDoService.updateOriginDeleted(TYPE,
+				element.getCurriculum().getKey(),
+				element.getKey().toString(),
+				true, new Date(), doer);
+	}
+
+	public long countActiveToDoTasks(CurriculumElement curriculumElement,
+			List<? extends CurriculumElementRef> elements) {
+		if (curriculumElement.getCurriculum() == null) {
+			return 0;
+		}
+		List<String> originSubPaths = elements.stream()
+				.map(ref -> ref.getKey().toString())
+				.toList();
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		params.setOriginIds(List.of(curriculumElement.getCurriculum().getKey()));
+		params.setOriginSubPaths(originSubPaths);
+		params.setOriginDeleted(Boolean.FALSE);
+		params.setStatus(ToDoStatus.OPEN_TO_DONE);
+		Long count = toDoService.getToDoTaskCount(params);
+		return count != null ? count : 0;
 	}
 
 }

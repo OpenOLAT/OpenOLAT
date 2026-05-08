@@ -73,7 +73,7 @@ public class ToDoTaskMetadataController extends FormBasicController {
 		
 		String modifiedDateBy = translate("date.by",
 				formatter.formatDate(modifiedDate),
-				StringHelper.escapeHtml(userManager.getUserDisplayName(modifier)));
+				modifier != null? StringHelper.escapeHtml(userManager.getUserDisplayName(modifier)): "???");
 		uifactory.addStaticTextElement("task.last.modified", modifiedDateBy, formLayout);
 	}
 

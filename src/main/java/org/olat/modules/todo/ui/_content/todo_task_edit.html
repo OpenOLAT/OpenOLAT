@@ -45,10 +45,21 @@
 		$r.render("task.status", "horizontal", "form")
 		$r.render("task.priority", "horizontal", "form")
 	</div>
-	<div class="o_form_two_cols">
-		$r.render("task.start.date", "horizontal", "form")
-		$r.render("task.due.date", "horizontal", "form")
-	</div>
+	#if($r.available("task.date.mode") && $r.visible("task.date.mode"))
+		$r.render("task.date.mode", "vertical", "form")
+	#end
+	#if($r.available("task.start.date") && $r.visible("task.start.date"))
+		<div class="o_form_two_cols">
+			$r.render("task.start.date", "horizontal", "form")
+			$r.render("task.due.date", "horizontal", "form")
+		</div>
+	#end
+	#if($r.available("startRelRow") && $r.visible("startRelRow"))
+		$r.render("startRelRow", "vertical", "form")
+	#end
+	#if($r.available("dueRelRow") && $r.visible("dueRelRow"))
+		$r.render("dueRelRow", "vertical", "form")
+	#end
 	<div class="form-group clearfix">
 		<label class="control-label" for="$eowId">$r.translate("task.expenditure.of.work")</label>
 		<div class="input-group">

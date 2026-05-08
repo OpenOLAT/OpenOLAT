@@ -47,6 +47,7 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDefaultMemberSearchProvider;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
@@ -147,10 +148,12 @@ public class QualityToDoEditController extends FormBasicController {
 		ToDoTaskContextConfig contextConfig = showContext
 				? ToDoTaskContextConfig.dropdown(availableContexts, currentContext)
 				: ToDoTaskContextConfig.off(currentContext);
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig,
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
+				contextConfig,
 				ToDoTaskMemberConfig.search(memberCandidates, ToDoTaskDefaultMemberSearchProvider.INSTANCE),
 				ToDoTaskMemberConfig.search(memberCandidates, ToDoTaskDefaultMemberSearchProvider.INSTANCE),
 				new ToDoTaskMemberSelection(assignees, delegatees),
+				ToDoTaskDateConfig.absoluteOnly(),
 				tagInfos, true);
 		if (toDoTask != null) {
 			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));

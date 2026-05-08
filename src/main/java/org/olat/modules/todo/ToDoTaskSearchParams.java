@@ -50,6 +50,7 @@ public class ToDoTaskSearchParams {
 	private Collection<Long> assigneeOrDelegateeKeys;
 	private Boolean assigneeRightsNull;
 	private Collection<Long> collectionKeys;
+	private Boolean relativeDatesNull;
 	private ToDoTaskCustomQuery customQuery;
 
 	public Collection<Long> getToDoTaskKeys() {
@@ -178,6 +179,14 @@ public class ToDoTaskSearchParams {
 	
 	public void setCollections(Collection<? extends ToDoTaskRef> collectionRefs) {
 		this.collectionKeys = collectionRefs != null? collectionRefs.stream().map(ToDoTaskRef::getKey).toList(): null;
+	}
+
+	public Boolean getRelativeDatesNull() {
+		return relativeDatesNull;
+	}
+
+	public void setRelativeDatesNull(Boolean relativeDatesNull) {
+		this.relativeDatesNull = relativeDatesNull;
 	}
 
 	public ToDoTaskCustomQuery getCustomQuery() {

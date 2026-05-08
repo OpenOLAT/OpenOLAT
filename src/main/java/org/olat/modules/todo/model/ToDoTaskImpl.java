@@ -42,9 +42,11 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.manager.ToDoRelativeDatesXStream;
 
 /**
  * 
@@ -90,6 +92,8 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	private Date dueDate;
 	@Column(name="t_done_date", nullable=true, insertable=true, updatable=true)
 	private Date doneDate;
+	@Column(name="t_relative_dates", nullable=true, insertable=true, updatable=true)
+	private String relativeDatesXml;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="t_deleted_date", nullable=true, insertable=true, updatable=true)
 	private Date deletedDate;
@@ -245,6 +249,16 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@Override
 	public void setDueDate(Date dueDate) {
 		this.dueDate = dueDate;
+	}
+
+	@Override
+	public ToDoRelativeDates getRelativeDates() {
+		return ToDoRelativeDatesXStream.fromXml(relativeDatesXml);
+	}
+
+	@Override
+	public void setRelativeDates(ToDoRelativeDates relativeDates) {
+		this.relativeDatesXml = ToDoRelativeDatesXStream.toXml(relativeDates);
 	}
 
 	@Override

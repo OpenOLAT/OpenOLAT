@@ -54,6 +54,7 @@ import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDefaultMemberSearchProvider;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
@@ -179,9 +180,9 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		ToDoTaskContextConfig contextConfig = showContext
 				? ToDoTaskContextConfig.dropdown(CONTEXTS, CONTEXTS.get(0))
 				: ToDoTaskContextConfig.off(CONTEXTS.get(0));
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, contextConfig,
-				assigneeMemberConfig, delegateeMemberConfig,
-				new ToDoTaskMemberSelection(List.of(ureq.getIdentity()), List.of()),
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, contextConfig, assigneeMemberConfig,
+				delegateeMemberConfig, new ToDoTaskMemberSelection(List.of(ureq.getIdentity()), List.of()),
+				ToDoTaskDateConfig.absoluteOnly(),
 				tagInfoSearchParams, ASSIGNEE_RIGHTS);
 	}
 	

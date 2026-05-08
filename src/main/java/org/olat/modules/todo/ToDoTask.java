@@ -66,6 +66,10 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 
 	public void setDueDate(Date dueDate);
 
+	public ToDoRelativeDates getRelativeDates();
+
+	public void setRelativeDates(ToDoRelativeDates relativeDates);
+
 	public Date getDoneDate();
 	
 	public Date getDeletedDate();

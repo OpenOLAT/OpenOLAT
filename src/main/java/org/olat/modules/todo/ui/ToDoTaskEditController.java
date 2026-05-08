@@ -39,6 +39,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
@@ -61,13 +62,14 @@ public class ToDoTaskEditController extends FormBasicController {
 	
 	private ToDoTaskEditForm toDoTaskEditForm;
 	private ToDoTaskMetadataController metadataCtrl;
-	
+
 	private ToDoTask toDoTask;
 	private final ToDoTask toDoTaskCopySource;
 	private final ToDoTaskContextConfig contextConfig;
 	private final ToDoTaskMemberConfig assigneeConfig;
 	private final ToDoTaskMemberConfig delegateeConfig;
 	private final ToDoTaskMemberSelection defaultMemberSelection;
+	private final ToDoTaskDateConfig dateConfig;
 	private final ToDoTaskSearchParams tagInfoSearchParams;
 	private final ToDoRight[] defaultAssigneeRights;
 	private Boolean metadataOpen = Boolean.FALSE;
@@ -76,14 +78,15 @@ public class ToDoTaskEditController extends FormBasicController {
 	private ToDoService toDoService;
 
 	public ToDoTaskEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			ToDoTask toDoTaskCopySource, ToDoTaskContextConfig contextConfig,
-			ToDoTaskMemberConfig assigneeConfig, ToDoTaskMemberConfig delegateeConfig,
-			ToDoTaskMemberSelection defaultMemberSelection,
-			ToDoTaskSearchParams tagInfoSearchParams, ToDoRight[] defaultAssigneeRights) {
+			ToDoTask toDoTaskCopySource, ToDoTaskContextConfig contextConfig, ToDoTaskMemberConfig assigneeConfig,
+			ToDoTaskMemberConfig delegateeConfig, ToDoTaskMemberSelection defaultMemberSelection,
+			ToDoTaskDateConfig dateConfig, ToDoTaskSearchParams tagInfoSearchParams,
+			ToDoRight[] defaultAssigneeRights) {
 		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
 		this.toDoTaskCopySource = toDoTaskCopySource;
 		this.contextConfig = contextConfig;
+		this.dateConfig = dateConfig;
 		this.assigneeConfig = assigneeConfig;
 		this.delegateeConfig = delegateeConfig;
 		this.defaultMemberSelection = defaultMemberSelection;
@@ -121,8 +124,8 @@ public class ToDoTaskEditController extends FormBasicController {
 			tagInfos = toDoService.getTagInfos(tagInfoSearchParams, null);
 		}
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig,
-				assigneeConfig, delegateeConfig, new ToDoTaskMemberSelection(assignees, delegatees), tagInfos, true);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig, assigneeConfig,
+				delegateeConfig, new ToDoTaskMemberSelection(assignees, delegatees), dateConfig, tagInfos, true);
 		if (toDoTask != null) {
 			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
 			toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);
@@ -185,12 +188,23 @@ public class ToDoTaskEditController extends FormBasicController {
 			return;
 		}
 
+		ToDoRelativeDates relativeDates = toDoTaskEditForm.getRelativeDates();
+		Date startDate;
+		Date dueDate;
+		if (relativeDates != null && dateConfig != null && dateConfig.getResolver() != null) {
+			startDate = dateConfig.getResolver().resolve(relativeDates.getStartRef(), relativeDates.getStartUnit(), relativeDates.getStartValue());
+			dueDate   = dateConfig.getResolver().resolve(relativeDates.getDueRef(),   relativeDates.getDueUnit(),   relativeDates.getDueValue());
+		} else {
+			startDate = toDoTaskEditForm.getStartDate();
+			dueDate   = toDoTaskEditForm.getDueDate();
+		}
 		updateToDo(getIdentity(), toDoTask,
 				toDoTaskEditForm.getTitle(),
 				toDoTaskEditForm.getStatus(),
 				toDoTaskEditForm.getPriority(),
-				toDoTaskEditForm.getStartDate(),
-				toDoTaskEditForm.getDueDate(),
+				startDate,
+				dueDate,
+				relativeDates,
 				toDoTaskEditForm.getExpenditureOfWork(),
 				toDoTaskEditForm.getDescription());
 		
@@ -202,17 +216,19 @@ public class ToDoTaskEditController extends FormBasicController {
 	}
 	
 	public void updateToDo(Identity doer, ToDoTaskRef toDoTaskRef, String title, ToDoStatus status,
-			ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
+			ToDoPriority priority, Date startDate, Date dueDate, ToDoRelativeDates relativeDates,
+			Long expenditureOfWork, String description) {
 		ToDoTask toDoTask = getToDoTask(toDoTaskRef, true);
 		if (toDoTask == null) {
 			return;
 		}
 		
-		updateReloadedToDo(doer, toDoTask, title, status, priority, startDate, dueDate, expenditureOfWork, description);
+		updateReloadedToDo(doer, toDoTask, title, status, priority, startDate, dueDate, relativeDates, expenditureOfWork, description);
 	}
 
 	private void updateReloadedToDo(Identity doer, ToDoTask toDoTask, String title, ToDoStatus status,
-			ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
+			ToDoPriority priority, Date startDate, Date dueDate, ToDoRelativeDates relativeDates,
+			Long expenditureOfWork, String description) {
 		ToDoStatus previousStatus = toDoTask.getStatus();
 		
 		boolean contentChanged = false;
@@ -235,6 +251,10 @@ public class ToDoTaskEditController extends FormBasicController {
 		}
 		if (!DateUtils.isSameDay(toDoTask.getDueDate(), dueDate)) {
 			toDoTask.setDueDate(dueDate);
+			contentChanged = true;
+		}
+		if (!Objects.equals(toDoTask.getRelativeDates(), relativeDates)) {
+			toDoTask.setRelativeDates(relativeDates);
 			contentChanged = true;
 		}
 		if (!Objects.equals(toDoTask.getExpenditureOfWork(), expenditureOfWork)) {

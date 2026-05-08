@@ -40,6 +40,7 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
@@ -110,8 +111,9 @@ public class ProjToDoContentEditController extends FormBasicController {
 		ToDoTaskMemberConfig delegateeConfig = template
 				? ToDoTaskMemberConfig.disabled()
 				: ToDoTaskMemberConfig.candidates(projectMembers);
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig,
-				assigneeConfig, delegateeConfig, new ToDoTaskMemberSelection(assignees, delegatees), tagInfos, !template);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig, assigneeConfig,
+				delegateeConfig, new ToDoTaskMemberSelection(assignees, delegatees), ToDoTaskDateConfig.absoluteOnly(),
+				tagInfos, !template);
 		if (toDoTask != null) {
 			if (toDoTaskIsCopySource) {
 				toDoTaskEditForm.setValues(new CopyValues(getLocale(), toDoTask));
