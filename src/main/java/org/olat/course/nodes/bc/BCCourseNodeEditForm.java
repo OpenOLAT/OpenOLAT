@@ -251,9 +251,9 @@ public class BCCourseNodeEditForm extends FormBasicController {
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), node);
 
 		Publisher publisher = notifManager.getPublisher(nodefolderSubContext);
-		if (publisher != null) {
+		if(publisher != null) {
 			String businessPath = getWindowControl().getBusinessControl().getAsString();
-			String data = "/"+relPath;
+			String data = "/" + relPath;
 			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(BCCourseNode.class), data, businessPath);
 			notifManager.updatePublisherData(nodefolderSubContext, pdata);
 		}
