@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.certificationprogram.CertificationModule;
 import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
@@ -70,7 +71,7 @@ public class EditCurriculumElementController extends BasicController {
 	private final Link executionLink;
 	private final Link optionsLink;
 	private final Link previewButton;
-	private Link certificationProgramLink; 
+	private final Link assessmentLink; 
 	
 	private EditCurriculumElementMetadataController metadataCtrl;
 	private EditCurriculumElementInfosController infoCtrl;
@@ -87,6 +88,7 @@ public class EditCurriculumElementController extends BasicController {
 	private final boolean administrator;
 	private final MapperKey elementImageMapperKey;
 	private final CurriculumElementImageMapper elementImageMapper;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private MapperService mapperService;
@@ -99,7 +101,7 @@ public class EditCurriculumElementController extends BasicController {
 	
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum,
-			CurriculumSecurityCallback secCallback) {
+			CurriculumSecurityCallback secCallback, CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -110,6 +112,7 @@ public class EditCurriculumElementController extends BasicController {
 		this.parentElement = parentElement;
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		administrator = ureq.getUserSession().getRoles().isAdministrator();
 		
 		elementImageMapper = CurriculumElementImageMapper.mapper210x140();
@@ -132,11 +135,12 @@ public class EditCurriculumElementController extends BasicController {
 			automationLink = LinkFactory.createLink("curriculum.element.automation", getTranslator(), this);
 			segmentButtonsCmp.addButton(automationLink, false);
 		}
+		
+		assessmentLink = LinkFactory.createLink("curriculum.element.assessment", getTranslator(), this);
+		segmentButtonsCmp.addButton(assessmentLink, false);
+		
 		optionsLink = LinkFactory.createLink("curriculum.element.options", getTranslator(), this);
 		segmentButtonsCmp.addButton(optionsLink, false);
-
-		certificationProgramLink = LinkFactory.createLink("curriculum.element.certification.program", getTranslator(), this);
-		segmentButtonsCmp.addButton(certificationProgramLink, false);
 		
 		previewButton = LinkFactory.createButton("preview.info", mainVC, this);
 		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
@@ -153,7 +157,7 @@ public class EditCurriculumElementController extends BasicController {
 	private void updateUI() {
 		boolean isCertificationAvailable = certificationProgramModule.isEnabled() && (element.isSingleCourseImplementation()
 				|| certificationProgramService.isInCertificationProgram(element));
-		certificationProgramLink.setVisible(isCertificationAvailable);
+		assessmentLink.setVisible(isCertificationAvailable);
 	}
 
 	@Override
@@ -199,8 +203,8 @@ public class EditCurriculumElementController extends BasicController {
 			doOpenAutomation(ureq);
 		} else if (source == optionsLink) {
 			doOpenOptions(ureq);
-		} else if (source == certificationProgramLink) {
-			doOpenCertificationProgram(ureq);
+		} else if (source == assessmentLink) {
+			doOpenAssessmentSettings(ureq);
 		} else if (source == previewButton) {
 			doOpenPreview(ureq);
 		}
@@ -286,13 +290,14 @@ public class EditCurriculumElementController extends BasicController {
 		segmentButtonsCmp.setSelectedButton(automationLink);
 	}
 	
-	private void doOpenCertificationProgram(UserRequest ureq) {
+	private void doOpenAssessmentSettings(UserRequest ureq) {
 		removeAsListenerAndDispose(certificationProgramCtrl);
 		
-		certificationProgramCtrl = new EditCurriculumElementCertificationProgramController(ureq, getWindowControl(), curriculum, element, secCallback);
+		certificationProgramCtrl = new EditCurriculumElementCertificationProgramController(ureq, getWindowControl(), curriculum, element,
+				secCallback, certificationSecCallback);
 		listenTo(certificationProgramCtrl);
 		mainVC.put("content", certificationProgramCtrl.getInitialComponent());
-		segmentButtonsCmp.setSelectedButton(automationLink);
+		segmentButtonsCmp.setSelectedButton(assessmentLink);
 	}
 
 	private void doOpenOptions(UserRequest ureq) {

@@ -97,6 +97,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -218,6 +219,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private final CurriculumComposerConfig config;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private ACService acService;
@@ -244,7 +246,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	 */
 	CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumElement rootElement, CurriculumComposerConfig config,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl, "manage_curriculum_structure");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
@@ -255,6 +258,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		if(curriculum != null) {
@@ -1257,7 +1261,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else {
 			WindowControl swControl	= addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel,
-					element.getCurriculum(), element, secCallback, lecturesSecCallback);
+					element.getCurriculum(), element, secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(editCtrl);
 			addIntermediatePath(element);
 			toolbarPanel.pushController(element.getDisplayName(), editCtrl);

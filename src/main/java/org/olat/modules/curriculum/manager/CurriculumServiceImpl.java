@@ -82,6 +82,8 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.lti13.LTI13Service;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAO;
 import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
@@ -567,6 +569,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		copyCurriculumElemenFiles(elementToClone, clone, doer);
+		
+		if(settings.isCopyCertificationProgram()) {
+			CertificationProgram certificationProgram = certificationProgramToCurriculumElementDao.getCertificationProgram(elementToClone);
+			if(certificationProgram != null) {
+				CoreSpringFactory.getImpl(CertificationProgramService.class)
+					.addCurriculumElementToCertificationProgram(certificationProgram, clone, doer);
+			}
+		}
 		
 		if(clone.isShowCreditPointsBenefit()) {
 			CurriculumElementCreditPointConfiguration config = curriculumElementConfigurationDao.loadConfiguration(elementToClone);

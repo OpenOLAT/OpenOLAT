@@ -33,11 +33,15 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.certificationprogram.CertificationModule;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyMemberships;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,6 +60,11 @@ public class CopyElementSettingsController extends StepFormBasicController {
 	
 	private final CopyElementContext context;
 	
+	@Autowired
+	private CertificationModule certificationProgramModule;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
+	
 	public CopyElementSettingsController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			CopyElementContext context) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -67,6 +76,8 @@ public class CopyElementSettingsController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		initCertificationProgramsWarnings();
+		
 		FormLayoutContainer metadataCont = uifactory.addDefaultFormLayout("metadata", null, formLayout);
 		metadataCont.setFormTitle(translate("wizard.metadata"));
 		initMetadataForm(metadataCont);
@@ -78,6 +89,25 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		FormLayoutContainer membersCont = uifactory.addDefaultFormLayout("members", null, formLayout);
 		membersCont.setFormTitle(translate("wizard.members"));
 		initMembersForm(membersCont);
+	}
+	
+	private void initCertificationProgramsWarnings() {
+		CurriculumElement element = context.getCurriculumElement();
+		boolean copyCertification = certificationProgramModule.isEnabled() && (element.isSingleCourseImplementation()
+				|| certificationProgramService.isInCertificationProgram(element));
+		if(copyCertification) {
+			CertificationProgram certificationProgram = certificationProgramService.getCertificationProgram(element);
+			if(certificationProgram == null) {
+				copyCertification = false;
+			} else {
+				boolean canCopy = certificationProgramService.canViewCertificationProgram(certificationProgram, getIdentity());
+				if(!canCopy) {
+					setFormWarning("warning.copy.certification.program");
+				}
+				copyCertification &= canCopy;
+			}
+		}
+		context.getCopySettings().setCopyCertificationProgram(copyCertification);
 	}
 	
 	private void initMetadataForm(FormItemContainer formLayout) {

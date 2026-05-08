@@ -40,6 +40,7 @@ public class CurriculumCopySettings {
 	private boolean copyTaxonomy;
 	private boolean copyOffers;
 	private boolean copyStandaloneEvents;
+	private boolean copyCertificationProgram;
 	
 	private String identifier;
 	private String displayName;
@@ -215,6 +216,14 @@ public class CurriculumCopySettings {
 
 	public void setCopyOfferSettings(List<CopyOfferSetting> copyOfferSettings) {
 		this.copyOfferSettings = copyOfferSettings;
+	}
+
+	public boolean isCopyCertificationProgram() {
+		return copyCertificationProgram;
+	}
+
+	public void setCopyCertificationProgram(boolean copyCertificationProgram) {
+		this.copyCertificationProgram = copyCertificationProgram;
 	}
 
 	public enum CopyResources {

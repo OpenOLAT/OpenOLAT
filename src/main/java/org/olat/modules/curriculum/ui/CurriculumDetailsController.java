@@ -56,6 +56,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -66,8 +67,8 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
-import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumImplementationWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -112,6 +113,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -119,12 +121,14 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CurriculumService curriculumService;
 	
 	public CurriculumDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			Curriculum curriculum, CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			Curriculum curriculum, CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		
 		mainVC = createVelocityContainer("curriculum_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -191,7 +195,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			config.setFlat(true);
 			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_IMPLEMENTATIONS), null);
 			implementationsCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
-					curriculum, null, config, secCallback, lecturesSecCallback);
+					curriculum, null, config, secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(implementationsCtrl);
 			
 			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");

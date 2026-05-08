@@ -19,9 +19,11 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 
 /**
@@ -38,7 +40,7 @@ public class CertificationProgramSecurityCallbackFactory {
 		boolean owner = admin
 				? false
 				: CoreSpringFactory.getImpl(CertificationProgramService.class).isCertificationProgramOwner(identity);
-		return new CertificationProgramSecurityCallbackImpl(admin, principal, owner);
+		return new CertificationProgramSecurityCallbackImpl(identity, admin, principal, owner);
 	}
 
 	private static class CertificationProgramSecurityCallbackImpl implements CertificationProgramSecurityCallback {
@@ -46,16 +48,26 @@ public class CertificationProgramSecurityCallbackFactory {
 		private final boolean admin;
 		private final boolean owner;
 		private final boolean principal;
+		private final IdentityRef identity;
 		
-		public CertificationProgramSecurityCallbackImpl(boolean admin, boolean principal, boolean owner) {
+		public CertificationProgramSecurityCallbackImpl(IdentityRef identity, boolean admin, boolean principal, boolean owner) {
 			this.admin = admin;
 			this.owner = owner;
 			this.principal = principal;
+			this.identity = identity;
 		}
 
 		@Override
 		public boolean canViewCertificationPrograms() {
 			return admin || principal || owner;
+		}
+
+		@Override
+		public boolean canViewCertificationPrograms(CertificationProgram program) {
+			if(program == null) return false;
+			// No short cut for administrator and principal. The call checks if the organisation
+			// of the identity.
+			return CoreSpringFactory.getImpl(CertificationProgramService.class).canViewCertificationProgram(program, identity);
 		}
 
 		@Override

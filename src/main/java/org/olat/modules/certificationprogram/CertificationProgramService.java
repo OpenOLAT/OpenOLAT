@@ -60,6 +60,16 @@ public interface CertificationProgramService {
 	
 	List<CertificationProgram> getCertificationPrograms(List<Organisation> organisations);
 	
+	/**
+	 * Check if the specified identity has manager permissions to see the certification program.
+	 * Manager roles are administrator, learn resource manager, principal and owner.
+	 * 
+	 * @param certificationProgram The certification program
+	 * @param identity The identity
+	 * @return true if the identity can view the certification program as a manager
+	 */
+	boolean canViewCertificationProgram(CertificationProgram certificationProgram, IdentityRef identity);
+	
 	List<CertificationProgramWithStatistics> getCertificationProgramsWithStatistics(IdentityRef identity, Date referenceDate);
 	
 	CertificationProgramActiveMemberStatistics getCertificationProgramActiveMembersStatistics(CertificationProgramRef program, Date referenceDate);

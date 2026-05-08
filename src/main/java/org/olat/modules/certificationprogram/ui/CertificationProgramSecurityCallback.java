@@ -19,6 +19,8 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import org.olat.modules.certificationprogram.CertificationProgram;
+
 /**
  * 
  * Initial date: 3 nov. 2025<br>
@@ -28,6 +30,14 @@ package org.olat.modules.certificationprogram.ui;
 public interface CertificationProgramSecurityCallback {
 
 	boolean canViewCertificationPrograms();
+	
+	/**
+	 * The method can make a database call. Don't use it in loops!
+	 * 
+	 * @param program The certification program to check the access for.
+	 * @return true if a manager can view the certification program
+	 */
+	boolean canViewCertificationPrograms(CertificationProgram program);
 	
 	boolean canNewCertificationProgram();
 	
