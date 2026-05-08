@@ -128,7 +128,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment euce) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		
-		MediaSiteEditController editController = new MediaSiteEditController(ureq, wControl, getModuleConfiguration(), (MediaSiteCourseNode) chosenNode, course);
+		MediaSiteEditController editController = new MediaSiteEditController(ureq, wControl, getModuleConfiguration(), (MediaSiteCourseNode) chosenNode, course, euce);
 		
 		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editController);
 		

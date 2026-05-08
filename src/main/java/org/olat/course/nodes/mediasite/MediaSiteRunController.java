@@ -92,9 +92,10 @@ public class MediaSiteRunController extends BasicController {
 	 * @param config
 	 * @param userCourseEnv
 	 */
-	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		this(ureq, wControl, courseNode, courseNode.getModuleConfiguration(), userCourseEnv.getCourseEnvironment(), false);
-		this.userCourseEnv = userCourseEnv;
+	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, 
+								  UserCourseEnvironment userCourseEnv) {
+		this(ureq, wControl, courseNode, courseNode.getModuleConfiguration(), userCourseEnv.getCourseEnvironment(), 
+				false, userCourseEnv);
 	}
 	
 	/**
@@ -107,13 +108,16 @@ public class MediaSiteRunController extends BasicController {
 	 * @param courseEnv
 	 * @param showAdministration
 	 */
-	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean showAdministration) {
+	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, 
+								  ModuleConfiguration config, CourseEnvironment courseEnv, boolean showAdministration, 
+								  UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		
 		this.courseNode = courseNode;
 		this.config = config;
 		this.showAdministration = showAdministration;
 		this.courseEnv = courseEnv;
+		this.userCourseEnv = userCourseEnv;
 		
 		setTranslator(Util.createPackageTranslator(LTI10DisplayController.class, getLocale(), getTranslator()));
 		
@@ -268,7 +272,7 @@ public class MediaSiteRunController extends BasicController {
 
 		LTI13Context context = lti13Service.getContext(courseEntry, subIdent);
 		if (context == null) {
-			context = lti13Service.createContext(targetUrl, deployment, courseEntry, subIdent, null);
+			context = createLti13Context(targetUrl, deployment, courseEntry, subIdent);
 		} else if (!targetUrl.equals(context.getTargetUrl())) {
 			context.setTargetUrl(targetUrl);
 			context = lti13Service.updateContext(context);
@@ -282,6 +286,17 @@ public class MediaSiteRunController extends BasicController {
 		}
 		listenTo(lti13Ctrl);
 		mainPanel.setContent(lti13Ctrl.getInitialComponent());
+	}
+
+	private LTI13Context createLti13Context(String targetUrl, LTI13ToolDeployment deployment, 
+											RepositoryEntry courseEntry, String subIdent) {
+		LTI13Context context = lti13Service.createContext(targetUrl, deployment, courseEntry, subIdent, null);
+		context.setSendUserAttributesList(List.of("email", "firstName", "lastName"));
+		context.setSendCustomAttributes("custom_id=$userprops_username");
+		context.setParticipantRoles("Learner");
+		context.setCoachRoles("Instructor,Mentor");
+		context.setAuthorRoles("ContentDeveloper,Instructor,Mentor");
+		return lti13Service.updateContext(context);
 	}
 
 	private boolean checkHasDataExchangeAccepted(String hash) {
