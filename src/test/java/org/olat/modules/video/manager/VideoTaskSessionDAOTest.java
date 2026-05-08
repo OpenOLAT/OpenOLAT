@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -218,6 +219,67 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		//Load the sessions
 		long taskSessions = taskSessionDao.countTaskSessions(courseEntry, subIdent);
 		Assert.assertEquals(2, taskSessions);
+	}
+	
+	@Test
+	public void deleteTaskSessions() {
+		// prepare a test and a user
+		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent1	 = UUID.randomUUID().toString();
+		String subIdent2	 = UUID.randomUUID().toString();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-9");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-10");
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent1, null, videoEntry, false);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent1, null, videoEntry, false);
+		AssessmentEntry assessmentEntry1_2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent2, null, videoEntry, false);
+		dbInstance.commit();
+		
+		VideoTaskSession taskSession1_1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent1, assessmentEntry1, assessedIdentity1, null, 1, false);
+		VideoTaskSession taskSession1_2 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent2, assessmentEntry1_2, assessedIdentity1, null, 2, false);
+		VideoTaskSession taskSession2_1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent1, assessmentEntry2, assessedIdentity2, null, 2, false);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taskSession1_1);
+		Assert.assertNotNull(taskSession1_2);
+		Assert.assertNotNull(taskSession2_1);
+
+		//Load the sessions
+		long taskSessions = taskSessionDao.deleteTaskSessions(courseEntry, subIdent1);
+		Assert.assertEquals(2, taskSessions);
+		
+		List<VideoTaskSession> taskSessionsIdent1 = taskSessionDao.getTaskSessions(courseEntry, subIdent1, List.of(assessedIdentity1, assessedIdentity2), null);
+		Assertions.assertThat(taskSessionsIdent1)
+			.isEmpty();
+		
+		List<VideoTaskSession> taskSessionsIdent2 = taskSessionDao.getTaskSessions(courseEntry, subIdent2, List.of(assessedIdentity1), null);
+		Assertions.assertThat(taskSessionsIdent2)
+			.hasSize(1)
+			.containsExactly(taskSession1_2);
+	}
+	
+	@Test
+	public void deleteTaskSessionsByCourse() {
+		// prepare a test and a user
+		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-11");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-12");
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, null, videoEntry, false);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, null, videoEntry, false);
+		dbInstance.commit();
+		
+		VideoTaskSession taskSession1_1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, 1, false);
+		VideoTaskSession taskSession1_2 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, 2, false);
+		VideoTaskSession taskSession2_1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent, assessmentEntry2, assessedIdentity2, null, 2, false);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taskSession1_1);
+		Assert.assertNotNull(taskSession1_2);
+		Assert.assertNotNull(taskSession2_1);
+
+		//Load the sessions
+		long taskSessions = taskSessionDao.deleteAllTaskSessionsByCourse(courseEntry);
+		Assert.assertEquals(3, taskSessions);
 	}
 	
 	@Test
