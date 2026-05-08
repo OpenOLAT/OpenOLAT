@@ -753,7 +753,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	private void reducePublishers(SubscriptionContext subsContext) {
 		List<Publisher> publishers = getInternalPublishers(subsContext, null);
-		for(Publisher publisher:publishers) {
+		for(int i=publishers.size(); i-->0 && publishers.size() > 1; ) {
+			Publisher publisher = publishers.get(i);
 			if(subscriberDao.countSubscribers(publisher) == 0) {
 				publisherDao.deletePublisher(publisher);
 				publishers.remove(publisher);

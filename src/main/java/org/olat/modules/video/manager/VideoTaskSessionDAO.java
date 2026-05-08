@@ -250,6 +250,14 @@ public class VideoTaskSessionDAO {
 				.executeUpdate();
 	}
 	
+	public int deleteAllTaskSessionsByCourse(RepositoryEntryRef entry) {	
+		String query = "delete from videotasksession session where session.repositoryEntry.key=:courseEntryKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("courseEntryKey", entry.getKey())
+				.executeUpdate();
+	}
+	
 	public int deleteTaskSessions(RepositoryEntryRef entry, String subIdent) {	
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from videotasksession session")

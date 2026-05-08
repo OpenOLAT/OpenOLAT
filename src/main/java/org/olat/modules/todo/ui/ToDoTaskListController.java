@@ -1025,7 +1025,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		String title = StringHelper.escapeHtml(row.getDisplayName());
 		if (ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()) {
 			title = "<span class=\"o_todo_title_done_cell\">" + title + "</span>";
-		} else if (getLastVisitDate() != null && getLastVisitDate().before(row.getCreationDate())) {
+		} else if (getLastVisitDate() != null && row.getCreationDate() != null && getLastVisitDate().before(row.getCreationDate())) {
 			title += "<span class=\"o_labeled_light o_todo_new\">" + translate("new.label") +  "</span>";
 		}
 		

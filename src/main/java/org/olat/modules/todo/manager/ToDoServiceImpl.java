@@ -82,7 +82,6 @@ public class ToDoServiceImpl implements ToDoService {
 	private ToDoTaskTagDAO tagDao;
 	@Autowired
 	private DateModule dateModule;
-	
 	@Autowired
 	private List<ToDoProvider> providers;
 	private Map<String, ToDoProvider> typeToProvider;
@@ -151,10 +150,10 @@ public class ToDoServiceImpl implements ToDoService {
 		}
 		
 		updateModifier(doer, toDoTask);
-		
+
 		return toDoTaskDao.save(toDoTask);
 	}
-
+	
 	private void updateModifier(Identity doer, ToDoTask toDoTask) {
 		List<GroupMembership> memberships = groupDao.getMemberships(toDoTask.getBaseGroup(), ToDoRole.modifier.name(), false);
 		

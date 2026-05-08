@@ -291,7 +291,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Search", 0l), null);
 		searchCtrl = new CurriculumSearchManagerController(ureq, subControl, toolbarPanel, searchString,
-				secCallback, lecturesSecCallback);
+				secCallback, lecturesSecCallback, certificationSecCallback);
 		listenTo(searchCtrl);
 		toolbarPanel.pushController(translate("curriculum.search.results"), searchCtrl);
 	}
@@ -302,7 +302,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Curriculums", 0l), null);
 		curriculumListCtrl = new CurriculumListManagerController(ureq, subControl, toolbarPanel,
-				secCallback, lecturesSecCallback);
+				secCallback, lecturesSecCallback, certificationSecCallback);
 		listenTo(curriculumListCtrl);
 		toolbarPanel.pushController(translate("toolbar.curriculums"), curriculumListCtrl);
 		return curriculumListCtrl;
@@ -323,7 +323,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		config.setHelpUrl("manual_user/area_modules/Course_Planner_Implementations/");
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Implementations", 0l), null);
 		implementationsCtrl = new CurriculumComposerController(ureq, subControl, toolbarPanel,
-				null, null, config , secCallback, lecturesSecCallback);
+				null, null, config , secCallback, lecturesSecCallback, certificationSecCallback);
 		listenTo(implementationsCtrl);
 		toolbarPanel.pushController(translate("toolbar.implementations"), implementationsCtrl);
 		return implementationsCtrl;

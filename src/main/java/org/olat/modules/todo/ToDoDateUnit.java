@@ -17,34 +17,18 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.certificationprogram.ui;
-
-import org.olat.modules.certificationprogram.CertificationProgram;
+package org.olat.modules.todo;
 
 /**
- * 
- * Initial date: 3 nov. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
- *
+ * Initial date: 7 May 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface CertificationProgramSecurityCallback {
+public enum ToDoDateUnit {
 
-	boolean canViewCertificationPrograms();
-	
-	/**
-	 * The method can make a database call. Don't use it in loops!
-	 * 
-	 * @param program The certification program to check the access for.
-	 * @return true if a manager can view the certification program
-	 */
-	boolean canViewCertificationPrograms(CertificationProgram program);
-	
-	boolean canNewCertificationProgram();
-	
-	boolean canEditCertificationProgram();
-	
-	boolean canAddMember();
-	
-	boolean canChangeCertificateStatus();
+	SAME_DAY,
+	DAYS,
+	WEEKS,
+	MONTHS,
+	YEARS
 
 }

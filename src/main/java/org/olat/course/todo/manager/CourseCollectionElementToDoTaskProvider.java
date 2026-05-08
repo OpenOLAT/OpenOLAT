@@ -49,6 +49,7 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
@@ -164,9 +165,12 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 		ToDoTaskMemberConfig assigneeConfig = showSingleAssignee
 				? ToDoTaskMemberConfig.readOnly()
 				: ToDoTaskMemberConfig.disabled();
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, contextConfig,
-				assigneeConfig, ToDoTaskMemberConfig.disabled(),
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null,
+				contextConfig,
+				assigneeConfig,
+				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberSelection.empty(),
+				ToDoTaskDateConfig.absoluteOnly(),
 				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS);
 	}
 

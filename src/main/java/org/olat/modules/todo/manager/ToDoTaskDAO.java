@@ -331,6 +331,13 @@ public class ToDoTaskDAO {
 		if (searchParams.getCollectionKeys() != null && !searchParams.getCollectionKeys().isEmpty()) {
 			sb.and().append("toDoTask.collection.key in :collectionKeys");
 		}
+		if (searchParams.getRelativeDatesNull() != null) {
+			if (Boolean.TRUE.equals(searchParams.getRelativeDatesNull())) {
+				sb.and().append("toDoTask.relativeDatesXml is null");
+			} else {
+				sb.and().append("toDoTask.relativeDatesXml is not null");
+			}
+		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().appendQuery(sb);
 		}

@@ -17,34 +17,21 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.certificationprogram.ui;
+package org.olat.modules.todo.ui;
 
-import org.olat.modules.certificationprogram.CertificationProgram;
+import java.util.Date;
+
+import org.olat.modules.todo.ToDoDateUnit;
 
 /**
- * 
- * Initial date: 3 nov. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Resolves a (ref, unit, value) triple to an absolute date.
  *
+ * Initial date: 2026-05-08<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface CertificationProgramSecurityCallback {
+@FunctionalInterface
+public interface ToDoDateResolver {
 
-	boolean canViewCertificationPrograms();
-	
-	/**
-	 * The method can make a database call. Don't use it in loops!
-	 * 
-	 * @param program The certification program to check the access for.
-	 * @return true if a manager can view the certification program
-	 */
-	boolean canViewCertificationPrograms(CertificationProgram program);
-	
-	boolean canNewCertificationProgram();
-	
-	boolean canEditCertificationProgram();
-	
-	boolean canAddMember();
-	
-	boolean canChangeCertificateStatus();
+	Date resolve(String refKey, ToDoDateUnit unit, Integer value);
 
 }

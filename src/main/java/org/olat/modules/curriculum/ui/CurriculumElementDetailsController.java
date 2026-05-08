@@ -70,6 +70,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -156,6 +157,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private final CurriculumElement implementationElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -168,13 +170,15 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	public CurriculumElementDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumElement curriculumElement,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.curriculumElement = curriculumElement;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		canChildren = canChildren(curriculumElement);
 		canRepositoryEntries = canRepositoryEntries(curriculumElement);
 		implementationElement = getRootElement();
@@ -488,7 +492,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_STRUCTURE), null);
 				structureCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
-						curriculum, curriculumElement, config, secCallback, lecturesSecCallback);
+						curriculum, curriculumElement, config, secCallback, lecturesSecCallback,
+						certificationSecCallback);
 				listenTo(structureCtrl);
 				
 				List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
@@ -580,7 +585,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		// Metadata
 		metadataTab = tabPane.addTab(ureq, translate("tab.settings"), uureq -> {
 			editMetadataCtrl = new EditCurriculumElementController(uureq, getWindowControl(), toolbarPanel,
-					curriculumElement, curriculumElement.getParent(), curriculum, secCallback);
+					curriculumElement, curriculumElement.getParent(), curriculum, secCallback, certificationSecCallback);
 			listenTo(editMetadataCtrl);
 			return editMetadataCtrl.getInitialComponent();
 		});

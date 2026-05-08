@@ -31,6 +31,7 @@ import org.olat.core.gui.components.panel.InfoPanelItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.run.RunMainController;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -47,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificationProgramOptionsController extends FormBasicController {
 	
-	private CertificationProgram certificationProgram;
+	private List<CertificationProgram> certificationPrograms;
 	
 	@Autowired
 	private CertificationProgramService certificationProgramService;
@@ -59,7 +60,7 @@ public class CertificationProgramOptionsController extends FormBasicController {
 
 		List<CertificationProgram> certificationsPrograms = certificationProgramService.getCertificationPrograms(entry);
 		if(certificationsPrograms.size() == 1) {
-			certificationProgram = certificationsPrograms.get(0);
+			this.certificationPrograms = certificationsPrograms;
 		}
 
 		initForm(ureq);
@@ -68,31 +69,33 @@ public class CertificationProgramOptionsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("options.certificate.program.title");
-		if(certificationProgram != null) {
+		if(certificationPrograms != null) {
+			List<String> displayNames = certificationPrograms.stream()
+					.map(CertificationProgram::getDisplayName)
+					.map(name -> StringHelper.escapeHtml(name))
+					.toList();
+			
 			InfoPanelItem infosPanel = uifactory.addInfoPanel("infos", null, formLayout);
 			infosPanel.setTitle(translate("info.certification.program.title"));
-			infosPanel.setInformations(translate("info.certification.program.text", certificationProgram.getDisplayName()));
+			infosPanel.setInformations(translate("info.certification.program.text", String.join(",", displayNames)));
 			infosPanel.setPersistedStatusId(ureq, "course-certification-program-options-v1");
 		}
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		
+		//
 	}
-
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		//
 	}
-
 
 	@Override
 	protected void formOK(UserRequest ureq) {

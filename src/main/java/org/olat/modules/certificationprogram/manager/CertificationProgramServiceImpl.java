@@ -211,6 +211,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
+	public boolean canViewCertificationProgram(CertificationProgram certificationProgram, IdentityRef identity) {
+		return certificationProgramDao.canViewCertificationProgram(certificationProgram, identity);
+	}
+
+	@Override
 	public List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program) {
 		return certificationProgramToCurriculumElementDao.getCurriculumElementsFor(program);
 	}

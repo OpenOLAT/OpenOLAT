@@ -37,6 +37,8 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -51,6 +53,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
@@ -69,6 +72,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -160,17 +164,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			// Create a folder peekview controller that shows the latest two entries
-			VFSContainer rootFolder = null;
-			if(getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
-				rootFolder = getNodeFolderContainer(this, userCourseEnv.getCourseEnvironment());
-			} else {
-				String subPath = getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "");
-				VFSItem item = userCourseEnv.getCourseEnvironment().getCourseFolderContainer().resolve(subPath);
-				if(item instanceof VFSContainer) {
-					rootFolder = (VFSContainer)item;
-				}
-			}
-			
+			VFSContainer rootFolder = getRootContainer(userCourseEnv.getCourseEnvironment());
 			if(rootFolder == null) {
 				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 			}
@@ -180,6 +174,20 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 			// use standard peekview
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 		}
+	}
+	
+	private VFSContainer getRootContainer(CourseEnvironment courseEnv) {
+		VFSContainer rootFolder = null;
+		if(getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
+			rootFolder = getNodeFolderContainer(this, courseEnv);
+		} else {
+			String subPath = getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "");
+			VFSItem item = courseEnv.getCourseFolderContainer().resolve(subPath);
+			if(item instanceof VFSContainer itemContainer) {
+				rootFolder = itemContainer;
+			}
+		}
+		return rootFolder;
 	}
 
 	@Override
@@ -381,6 +389,26 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
+	}
+	
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
+		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), this);
+		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+		Publisher notiPublisher = notifManager.getPublisher(nodefolderSubContext);
+		if (notiPublisher != null) {
+			VFSContainer container =  getRootContainer(course.getCourseEnvironment());
+			if(container != null) {
+				File realFile = VFSManager.getRealFile(container);
+				String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
+				String data = "/"+relPath;
+				String businessPath = "[RepositoryEntry:" + course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey() + "][CourseNode:" + getIdent() + "]";
+				PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(BCCourseNode.class), data, businessPath);
+				notifManager.updatePublisherData(nodefolderSubContext, pdata);
+			}
+		}
+
+		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 
 	@Override

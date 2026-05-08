@@ -924,6 +924,7 @@ create table o_todo_task (
    t_start_date timestamp,
    t_due_date timestamp,
    t_done_date timestamp,
+   t_relative_dates varchar(2000),
    t_type varchar(50),
    t_deleted_date timestamp,
    fk_deleted_by int8,

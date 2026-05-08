@@ -58,7 +58,7 @@ public class EmptyStateItem extends FormItemImpl implements ComponentEventListen
 	}
 
 	@Override
-	protected Component getFormItemComponent() {
+	public EmptyState getFormItemComponent() {
 		return component;
 	}
 

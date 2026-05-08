@@ -65,6 +65,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -125,17 +126,20 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumSearchManagerController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbarPanel, String searchString,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl, "curriculum_element_search");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		toolbarPanel.addListener(this);
 		initForm(ureq);
 		if(StringHelper.containsNonWhitespace(searchString)) {
@@ -485,7 +489,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			WindowControl subControl = addToHistory(ureq, OresHelper
 					.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
 			detailsCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum,
-					secCallback, lecturesSecCallback);
+					secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(detailsCurriculumCtrl);
 			
 			String crumb = row.getIdentifier();
@@ -520,7 +524,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			Curriculum curriculum = element.getCurriculum();
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel, curriculum, element,
-					secCallback, lecturesSecCallback);
+					secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(editCtrl);
 			if(addIntermediatePath) {
 				addIntermediatePath(element);

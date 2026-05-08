@@ -55,6 +55,9 @@ alter table o_ac_order_line add cancelling_enabled number default 1 not null;
 alter table o_ac_offer add valid_status varchar(255 char);
 alter table o_ac_offer add valid_date_config varchar(2000 char);
 
+-- To-dos
+alter table o_todo_task add t_relative_dates varchar(2000 char);
+
 -- Room management
 create table o_rm_location (
     id number(20) GENERATED ALWAYS AS IDENTITY,
@@ -146,3 +149,4 @@ alter table o_rm_module_log add constraint rm_log_to_room_idx foreign key (fk_ro
 alter table o_rm_module_log add constraint rm_log_to_book_idx foreign key (fk_booking) references o_rm_room_booking(id);
 alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lecture_block) references o_lecture_block(id);
 create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);
+

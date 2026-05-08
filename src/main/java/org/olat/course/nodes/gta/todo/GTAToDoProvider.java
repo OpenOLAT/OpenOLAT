@@ -41,6 +41,7 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
@@ -132,6 +133,7 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberSelection.empty(),
+				ToDoTaskDateConfig.absoluteOnly(),
 				null, ASSIGNEE_RIGHTS);
 	}
 

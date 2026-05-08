@@ -19,23 +19,44 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
+import org.olat.core.gui.components.emptystate.EmptyStatePrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.IconPanelItem;
+import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
+import org.olat.core.gui.components.panel.IconPanelLabelTextContent.LabelText;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.ui.CertificationHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
+import org.olat.modules.certificationprogram.ui.EditCertificationProgramConfigurationController;
+import org.olat.modules.certificationprogram.ui.component.DurationCellRenderer;
+import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -49,15 +70,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCurriculumElementCertificationProgramController extends FormBasicController {
 	
+	private FormLink openButton;
+	private FormLink removeButton;
 	private FormToggle enableEl;
-	private SingleSelection programsEl;
+	private EmptyStateItem emptyStatePanel;
+	private IconPanelItem certificationProgramPanel;
+	private IconPanelLabelTextContent certificationProgramContent;
 	
 	private final boolean canEdit;
+	private Organisation organisation;
 	private final CurriculumElement element;
-	private final CertificationProgram certificationProgram;
+	private CertificationProgram certificationProgram;
+	private final boolean canViewCertificationPrograms;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
+
+	private CloseableModalController cmc;
+	private ConfirmationController removeConfirmationCtrl;
+	private SelectCertificationProgramController selectProgramCtrl;
 	
-	private final List<CertificationProgram> programsList;
-	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
@@ -66,16 +98,19 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 	private CertificationProgramService certificationProgramService;
 	
 	public EditCurriculumElementCertificationProgramController(UserRequest ureq, WindowControl wControl,
-			Curriculum curriculum, CurriculumElement element, CurriculumSecurityCallback secCallback) {
-		super(ureq, wControl);
+			Curriculum curriculum, CurriculumElement element, CurriculumSecurityCallback secCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
+		super(ureq, wControl, "edit_certification_program",
+				Util.createPackageTranslator(EditCertificationProgramConfigurationController.class, ureq.getLocale()));
 		this.element = element;
+		this.certificationSecCallback = certificationSecCallback;
 		canEdit = secCallback.canEditCurriculumElementSettings(element);
+		canViewCertificationPrograms = certificationSecCallback.canViewCertificationPrograms();
 		
-		Organisation curriculumOrganisation = curriculum.getOrganisation();
-		if(curriculumOrganisation == null || !organisationModule.isEnabled()) {
-			curriculumOrganisation = organisationService.getDefaultOrganisation();
+		organisation = curriculum.getOrganisation();
+		if(organisation == null || !organisationModule.isEnabled()) {
+			organisation = organisationService.getDefaultOrganisation();
 		}
-		programsList = certificationProgramService.getCertificationPrograms(List.of(curriculumOrganisation));
 		certificationProgram = certificationProgramService.getCertificationProgram(element);
 		
 		initForm(ureq);
@@ -88,37 +123,117 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 		enableEl.toggle(certificationProgram != null);
 		enableEl.setEnabled(canEdit);
 		
-		SelectionValues programsPK = new SelectionValues();
-		for(CertificationProgram program:programsList) {
-			programsPK.add(SelectionValues.entry(program.getKey().toString(), program.getDisplayName()));
-		}
-		if(certificationProgram != null && !programsPK.containsKey(certificationProgram.getKey().toString())) {
-			programsPK.add(SelectionValues.entry(certificationProgram.getKey().toString(), certificationProgram.getDisplayName()));
-		}
-		programsPK.sort(SelectionValues.VALUE_ASC);
+		certificationProgramPanel = uifactory.addIconPanel("certification.program", null, formLayout);
+		certificationProgramPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
+		certificationProgramPanel.setIconCssClass("o_icon o_icon-fw o_icon_certificate");
 		
-		programsEl = uifactory.addDropdownSingleselect("certification.program", "certification.program", formLayout,
-				programsPK.keys(), programsPK.values());
-		programsEl.setEnabled(canEdit);
+		certificationProgramContent = new IconPanelLabelTextContent("cpcontent");
+		certificationProgramPanel.setContent(certificationProgramContent);
+		
+		removeButton = uifactory.addFormLink("remove", "remove", "remove", null, formLayout, Link.BUTTON);
+		removeButton.setDomReplacementWrapperRequired(false);
+		removeButton.setGhost(true);
+		removeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
+		certificationProgramPanel.addLink(removeButton);
+		
+		openButton = uifactory.addFormLink("open", "open", "open", null, formLayout, Link.BUTTON);
+		openButton.setGhost(true);
+		openButton.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+		openButton.setNewWindow(true, true, false);
+		certificationProgramPanel.addLink(openButton);
+		
+		emptyStatePanel = uifactory.addEmptyState("no.certification.program", null, formLayout);
+		emptyStatePanel.getFormItemComponent().setIconCss("o_icon o_icon_certificate");
+		emptyStatePanel.getFormItemComponent().setMessageI18nKey("no.certification.program.hint");
 		if(canEdit) {
-			programsEl.addActionListener(FormEvent.ONCHANGE);
+			emptyStatePanel.getFormItemComponent().setPrimaryButton("o_icon o_icon_search", "select", null);
 		}
-		if(certificationProgram != null && programsPK.containsKey(certificationProgram.getKey().toString())) {
-			programsEl.select(certificationProgram.getKey().toString(), true);
-		} else if(!programsPK.isEmpty()) {
-			programsEl.select(programsPK.keys()[0], true);
+	}
+	
+	private void updateUI() {
+		boolean enabled = enableEl.isOn();
+		boolean withCertificationProgram = enabled && certificationProgram != null;
+		certificationProgramPanel.setVisible(withCertificationProgram);
+		if(certificationProgram != null) {
+			certificationProgramPanel.setTitle(certificationProgram.getDisplayName());
+			if(StringHelper.containsNonWhitespace(certificationProgram.getIdentifier())) {
+				certificationProgramPanel.setTagline(certificationProgram.getIdentifier());
+			}
+			
+			List<LabelText> labelTexts = new ArrayList<>(4);
+			if(certificationProgram.getValidityTimelapseDuration() != null) {
+				labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("validity.duration"),
+						DurationCellRenderer.toString(certificationProgram.getValidityTimelapseDuration(), getTranslator())));
+			}
+			if(certificationProgram.isRecertificationEnabled()) {
+				String mode = translate("recertification.mode." + certificationProgram.getRecertificationMode());
+				labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("recertification.mode"), mode));
+			}
+			
+			CreditPointSystem creditPointSystem = certificationProgram.getCreditPointSystem();
+			if(creditPointSystem != null && certificationProgram.getCreditPoints() != null) {
+				String pointsRequirement = CertificationHelper.creditPointsToString(certificationProgram.getCreditPoints(), creditPointSystem);
+				labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("credit.point.need"),
+						pointsRequirement));
+			}
+			
+			certificationProgramContent.setLabelTexts(labelTexts);
 		}
+		removeButton.setVisible(withCertificationProgram && canEdit);
+		
+		boolean canOpenCertificationProgram = withCertificationProgram && canViewCertificationPrograms
+				&& certificationSecCallback.canViewCertificationPrograms(certificationProgram);
+		openButton.setVisible(canOpenCertificationProgram);
+		openButton.setUrl(getCertificationProgramURL());
+		
+		boolean withoutCertificationProgram = enabled && certificationProgram == null;
+		emptyStatePanel.setVisible(withoutCertificationProgram);
+	}
+	
+	private String getCertificationProgramURL() {
+		if(certificationProgram == null) return null;
+		
+		String businessPath = "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Overview:0]";
+		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+		return BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(removeConfirmationCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doRemoveCertificationProgram(ureq);
+				updateUI();
+			} else if(event == Event.CANCELLED_EVENT) {
+				enableEl.toggle(certificationProgram != null);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(selectProgramCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				certificationProgram = certificationProgramService.getCertificationProgram(element);
+				updateUI();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(removeConfirmationCtrl);
+		removeAsListenerAndDispose(selectProgramCtrl);
+		removeAsListenerAndDispose(cmc);
+		removeConfirmationCtrl = null;
+		selectProgramCtrl = null;
+		cmc = null;
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		programsEl.clearError();
-		if(enableEl.isOn() && !programsEl.isOneSelected()) {
-			programsEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
 		
 		return allOk;
 	}
@@ -126,18 +241,21 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
-			updateUI();
-			doUpdateCertificationProgram();
-		} else if(programsEl == source) {
-			updateUI();
-			doUpdateCertificationProgram();
+			if(enableEl.isOn()) {
+				updateUI();
+			} else {
+				doConfirmRemoveCertificationProgram(ureq);
+			}
+		} else if(removeButton == source) {
+			doConfirmRemoveCertificationProgram(ureq);
+		} else if(openButton == source) {
+			doOpenCertificationProgram();
+		} else if(emptyStatePanel == source) {
+			if(event instanceof EmptyStatePrimaryActionEvent) {
+				doSelectCertificationProgram(ureq);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void updateUI() {
-		boolean enabled = enableEl.isOn();
-		programsEl.setVisible(enabled);
 	}
 
 	@Override
@@ -145,24 +263,45 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 		//
 	}
 	
-	private void doUpdateCertificationProgram() {
-		certificationProgramService.removeCurriculumElementToCertificationProgram(element, getIdentity());
-		if(enableEl.isOn()) {
-			CertificationProgram program = getSelectedProgram();
-			if(program != null) {
-				certificationProgramService.addCurriculumElementToCertificationProgram(program, element, getIdentity());
-			}
-		}
+	private void doSelectCertificationProgram(UserRequest ureq) {
+		selectProgramCtrl = new SelectCertificationProgramController(ureq, getWindowControl(), element, organisation);
+		listenTo(selectProgramCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectProgramCtrl.getInitialComponent(),
+				true, translate("select.certification.program"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
-	private CertificationProgram getSelectedProgram() {
-		if(programsEl.isVisible() && programsEl.isOneSelected()) {
-			String selectedKey = programsEl.getSelectedKey();
-			return programsList.stream()
-					.filter(program -> selectedKey.equals(program.getKey().toString()))
-					.findFirst()
-					.orElse(null);
+	private void doConfirmRemoveCertificationProgram(UserRequest ureq) {
+		if(certificationProgram == null) {
+			updateUI();
+			return;
 		}
-		return null;
+		
+		String messageKey =  "confirmation.remove.certification.program";
+		removeConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate(messageKey, StringHelper.escapeHtml(certificationProgram.getDisplayName())), null, translate("remove"),
+				ButtonType.danger);
+		listenTo(removeConfirmationCtrl);
+
+		String titleKey =  "confirmation.remove.certification.program.title";
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), removeConfirmationCtrl.getInitialComponent(),
+				true, translate(titleKey), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRemoveCertificationProgram(UserRequest ureq) {
+		certificationProgram = null;
+		enableEl.toggle(false);
+		certificationProgramService.removeCurriculumElementToCertificationProgram(element, getIdentity());
+		dbInstance.commit();
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void doOpenCertificationProgram() {
+		String url = getCertificationProgramURL();
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 }

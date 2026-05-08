@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -60,13 +61,16 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig.ContextSelection;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig.DateSelection;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig.MemberSelection;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,8 +96,17 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private FormLink delegateeAddLink;
 	private SingleSelection statusEl;
 	private SingleSelection priorityEl;
+	private SingleSelection dateModeEl;
 	private DateChooser startDateEl;
 	private DateChooser dueDateEl;
+	private FormLayoutContainer startRelRow;
+	private TextElement relStartValueEl;
+	private SingleSelection relStartUnitEl;
+	private SingleSelection relStartRefEl;
+	private FormLayoutContainer dueRelRow;
+	private TextElement relDueValueEl;
+	private SingleSelection relDueUnitEl;
+	private SingleSelection relDueRefEl;
 	private TextElement expenditureOfWorkEl;
 	private TextAreaElement descriptionEl;
 	
@@ -108,6 +121,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private final ToDoTaskMemberConfig delegateeConfig;
 	private final Collection<Identity> assignees;
 	private final Collection<Identity> delegatees;
+	private final ToDoTaskDateConfig datesConfig;
 	private final List<? extends TagInfo> allTags;
 	private final boolean datesEditable;
 	private Map<String, ToDoContext> keyToContext;
@@ -122,6 +136,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 			ToDoTaskMemberConfig assigneeConfig,
 			ToDoTaskMemberConfig delegateeConfig,
 			ToDoTaskMemberSelection memberSelection,
+			ToDoTaskDateConfig datesConfig,
 			List<? extends TagInfo> allTags, boolean datesEditable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_task_edit", mainForm);
 		this.contextConfig = contextConfig;
@@ -130,6 +145,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		this.delegateeConfig = delegateeConfig;
 		this.assignees = memberSelection.assignees();
 		this.delegatees = memberSelection.delegatees();
+		this.datesConfig = datesConfig != null ? datesConfig : ToDoTaskDateConfig.absoluteOnly();
 		this.allTags = allTags;
 		this.datesEditable = datesEditable;
 
@@ -196,14 +212,47 @@ public class ToDoTaskEditForm extends FormBasicController {
 		priorityEl = uifactory.addDropdownSingleselect("task.priority", formLayout, prioritySV.keys(), prioritySV.values(), prioritySV.icons());
 		priorityEl.enableNoneSelection();
 		
+		if (datesConfig.getSelection() == DateSelection.absoluteOrRelative) {
+			SelectionValues modeSV = new SelectionValues();
+			modeSV.add(SelectionValues.entry(DateSelection.absoluteOnly.name(), translate("task.date.mode.absolute")));
+			modeSV.add(SelectionValues.entry(DateSelection.absoluteOrRelative.name(), translate("task.date.mode.relative")));
+			dateModeEl = uifactory.addCardSingleSelectHorizontal("task.date.mode", "task.date.mode", formLayout, modeSV);
+			dateModeEl.select(DateSelection.absoluteOnly.name(), true);
+			dateModeEl.addActionListener(FormEvent.ONCHANGE);
+		}
+
 		startDateEl = uifactory.addDateChooser("task.start.date", null, formLayout);
 		startDateEl.setEnabled(datesEditable);
-		
+
 		dueDateEl = uifactory.addDateChooser("task.due.date", null, formLayout);
 		dueDateEl.setDefaultTimeAtEndOfDay(true);
 		dueDateEl.setEnabled(datesEditable);
-		
-		// The input-group does not work very well (Display of errors, round border-radius on the right) 
+
+		if (datesConfig.getSelection() == DateSelection.absoluteOrRelative) {
+			SelectionValues unitSV = createUnitSV();
+
+			startRelRow = uifactory.addInlineFormLayout("startRelRow", "task.dates.relative.start.label", formLayout);
+			startRelRow.setVisible(false);
+			relStartValueEl = uifactory.addTextElement("rel.start.value", null, 6, null, startRelRow);
+			relStartValueEl.setDisplaySize(6);
+			relStartValueEl.setEnabled(datesEditable);
+			relStartUnitEl = uifactory.addDropdownSingleselect("rel.start.unit", null, startRelRow, unitSV.keys(), unitSV.values());
+			relStartUnitEl.select(ToDoDateUnit.DAYS.name(), true);
+			relStartUnitEl.addActionListener(FormEvent.ONCHANGE);
+			relStartRefEl = uifactory.addDropdownSingleselect("rel.start.ref", null, startRelRow, datesConfig.getRelativeRefs().keys(), datesConfig.getRelativeRefs().values());
+
+			dueRelRow = uifactory.addInlineFormLayout("dueRelRow", "task.dates.relative.due.label", formLayout);
+			dueRelRow.setVisible(false);
+			relDueValueEl = uifactory.addTextElement("rel.due.value", null, 6, null, dueRelRow);
+			relDueValueEl.setDisplaySize(6);
+			relDueValueEl.setEnabled(datesEditable);
+			relDueUnitEl = uifactory.addDropdownSingleselect("rel.due.unit", null, dueRelRow, unitSV.keys(), unitSV.values());
+			relDueUnitEl.select(ToDoDateUnit.DAYS.name(), true);
+			relDueUnitEl.addActionListener(FormEvent.ONCHANGE);
+			relDueRefEl = uifactory.addDropdownSingleselect("rel.due.ref", null, dueRelRow, datesConfig.getRelativeRefs().keys(), datesConfig.getRelativeRefs().values());
+		}
+
+		// The input-group does not work very well (Display of errors, round border-radius on the right)
 		expenditureOfWorkEl = uifactory.addTextElement("task.expenditure.of.work", 30, null, formLayout);
 		expenditureOfWorkEl.setDomReplacementWrapperRequired(false);
 		flc.contextPut("eowId", expenditureOfWorkEl.getForId());
@@ -324,12 +373,22 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		return membersEl;
 	}
+
+	private SelectionValues createUnitSV() {
+		SelectionValues sv = new SelectionValues();
+		sv.add(SelectionValues.entry(ToDoDateUnit.SAME_DAY.name(), translate("task.unit.same.day")));
+		sv.add(SelectionValues.entry(ToDoDateUnit.DAYS.name(),     translate("task.unit.days")));
+		sv.add(SelectionValues.entry(ToDoDateUnit.WEEKS.name(),    translate("task.unit.weeks")));
+		sv.add(SelectionValues.entry(ToDoDateUnit.MONTHS.name(),   translate("task.unit.months")));
+		sv.add(SelectionValues.entry(ToDoDateUnit.YEARS.name(),    translate("task.unit.years")));
+		return sv;
+	}
 	
 	public void setValues(ToDoTaskFormValues values) {
 		if (values == null) {
 			return;
 		}
-		
+
 		titleEl.setValue(values.getTitle());
 		descriptionEl.setValue(values.getDescription());
 		if (values.getStatus() != null) {
@@ -344,8 +403,31 @@ public class ToDoTaskEditForm extends FormBasicController {
 			String formattedExpenditureOfWork = ToDoUIFactory.format(eow);
 			expenditureOfWorkEl.setValue(formattedExpenditureOfWork);
 		}
-		startDateEl.setDate(values.getStartDate());
-		dueDateEl.setDate(values.getDueDate());
+
+		ToDoRelativeDates rd = values.getRelativeDates();
+		if (rd != null && dateModeEl != null) {
+			dateModeEl.select(DateSelection.absoluteOrRelative.name(), true);
+			doSwitchDateMode();
+			populateRelRow(relStartValueEl, relStartUnitEl, relStartRefEl, rd.getStartValue(), rd.getStartUnit(), rd.getStartRef());
+			populateRelRow(relDueValueEl,   relDueUnitEl,   relDueRefEl,   rd.getDueValue(),   rd.getDueUnit(),   rd.getDueRef());
+		} else {
+			startDateEl.setDate(values.getStartDate());
+			dueDateEl.setDate(values.getDueDate());
+		}
+	}
+
+	private void populateRelRow(TextElement valueEl, SingleSelection unitEl, SingleSelection refEl,
+			Integer value, ToDoDateUnit unit, String ref) {
+		if (unit != null && unitEl.containsKey(unit.name())) {
+			unitEl.select(unit.name(), true);
+			doUpdateRelRef(unitEl, valueEl, refEl);
+		}
+		if (value != null) {
+			valueEl.setValue(String.valueOf(value));
+		}
+		if (ref != null && refEl.containsKey(ref)) {
+			refEl.select(ref, true);
+		}
 	}
 	
 	public void updateUIByAssigneeRight(ToDoTask toDoTask) {
@@ -389,11 +471,18 @@ public class ToDoTaskEditForm extends FormBasicController {
 		if (priorityEl != null) {
 			priorityEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.priority));
 		}
+		boolean startEnabled = ToDoRight.contains(assigneeRights, ToDoRight.startDate);
 		if (startDateEl != null) {
-			startDateEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.startDate));
+			startDateEl.setEnabled(startEnabled);
+			setRelRowEnabled(startEnabled, startRelRow, relStartValueEl, relStartUnitEl, relStartRefEl);
 		}
+		boolean dueEnabled = ToDoRight.contains(assigneeRights, ToDoRight.dueDate);
 		if (dueDateEl != null) {
-			dueDateEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.dueDate));
+			dueDateEl.setEnabled(dueEnabled);
+			setRelRowEnabled(dueEnabled, dueRelRow, relDueValueEl, relDueUnitEl, relDueRefEl);
+		}
+		if (dateModeEl != null) {
+			dateModeEl.setEnabled(startEnabled || dueEnabled);
 		}
 		if (expenditureOfWorkEl != null) {
 			expenditureOfWorkEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.expenditureOfWork));
@@ -451,6 +540,12 @@ public class ToDoTaskEditForm extends FormBasicController {
 			doOpenContextPicker(ureq);
 		} else if (source == statusEl) {
 			doToogleDo();
+		} else if (source == dateModeEl) {
+			doSwitchDateMode();
+		} else if (source == relStartUnitEl) {
+			doUpdateRelRef(relStartUnitEl, relStartValueEl, relStartRefEl);
+		} else if (source == relDueUnitEl) {
+			doUpdateRelRef(relDueUnitEl, relDueValueEl, relDueRefEl);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -481,17 +576,119 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 		
 		dueDateEl.clearError();
-		if (startDateEl.getDate() != null && dueDateEl.getDate() != null && startDateEl.getDate().after(dueDateEl.getDate())) {
-			dueDateEl.setErrorKey("error.start.after.due");
-			allOk &= false;
+		if (startDateEl.isVisible()) {
+			if (startDateEl.getDate() != null && dueDateEl.getDate() != null && startDateEl.getDate().after(dueDateEl.getDate())) {
+				dueDateEl.setErrorKey("error.start.after.due");
+				allOk &= false;
+			}
 		}
-		
+
+		if (startRelRow != null && startRelRow.isVisible()) {
+			allOk &= validateRelativeDateRow(relStartValueEl, relStartUnitEl, relStartRefEl);
+			allOk &= validateRelativeDateRow(relDueValueEl, relDueUnitEl, relDueRefEl);
+
+			if (allOk && datesConfig.getResolver() != null) {
+				Date resolvedStart = resolveRelDate(relStartValueEl, relStartUnitEl, relStartRefEl);
+				Date resolvedDue   = resolveRelDate(relDueValueEl,   relDueUnitEl,   relDueRefEl);
+				if (resolvedStart != null && resolvedDue != null && resolvedStart.after(resolvedDue)) {
+					relDueRefEl.setErrorKey("error.start.after.due");
+					allOk &= false;
+				}
+			}
+		}
+
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private boolean isRelValueEditable(SingleSelection unitEl) {
+		return !unitEl.isOneSelected() || !ToDoDateUnit.SAME_DAY.name().equals(unitEl.getSelectedKey());
+	}
+
+	private void setRelRowEnabled(boolean enabled, FormLayoutContainer relRow,
+			TextElement valueEl, SingleSelection unitEl, SingleSelection refEl) {
+		if (relRow != null) {
+			valueEl.setEnabled(enabled && isRelValueEditable(unitEl));
+			unitEl.setEnabled(enabled);
+			refEl.setEnabled(enabled);
+		}
+	}
+
+	private boolean validateRelativeDateRow(TextElement valueEl, SingleSelection unitEl, SingleSelection refEl) {
+		boolean ok = true;
+		valueEl.clearError();
+		refEl.clearError();
+		boolean sameDay = unitEl.isOneSelected() && ToDoDateUnit.SAME_DAY.name().equals(unitEl.getSelectedKey());
+		if (!sameDay) {
+			String val = valueEl.getValue();
+			if (!StringHelper.containsNonWhitespace(val)) {
+				valueEl.setErrorKey("form.mandatory.hover");
+				ok = false;
+			} else {
+				try {
+					int parsed = Integer.parseInt(val.trim());
+					if (parsed <= 0) {
+						valueEl.setErrorKey("form.error.positive.integer");
+						ok = false;
+					}
+				} catch (NumberFormatException e) {
+					valueEl.setErrorKey("form.error.positive.integer");
+					ok = false;
+				}
+			}
+		}
+		if (!refEl.isOneSelected()) {
+			refEl.setErrorKey("form.mandatory.hover");
+			ok = false;
+		}
+		return ok;
+	}
+
+	private Date resolveRelDate(TextElement valueEl, SingleSelection unitEl, SingleSelection refEl) {
+		if (!refEl.isOneSelected() || !unitEl.isOneSelected()) {
+			return null;
+		}
+		ToDoDateUnit unit = ToDoDateUnit.valueOf(unitEl.getSelectedKey());
+		Integer value = null;
+		if (unit != ToDoDateUnit.SAME_DAY) {
+			try {
+				value = Integer.parseInt(valueEl.getValue().trim());
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		return datesConfig.getResolver().resolve(refEl.getSelectedKey(), unit, value);
+	}
+
+	private void doSwitchDateMode() {
+		boolean relativeMode = dateModeEl.isOneSelected()
+				&& DateSelection.absoluteOrRelative.name().equals(dateModeEl.getSelectedKey());
+		startDateEl.setVisible(!relativeMode);
+		dueDateEl.setVisible(!relativeMode);
+		if (startRelRow != null) {
+			startRelRow.setVisible(relativeMode);
+			dueRelRow.setVisible(relativeMode);
+		}
+	}
+
+	private void doUpdateRelRef(SingleSelection unitEl, TextElement valueEl, SingleSelection refEl) {
+		boolean sameDay = unitEl.isOneSelected() && ToDoDateUnit.SAME_DAY.name().equals(unitEl.getSelectedKey());
+		valueEl.setEnabled(!sameDay && datesEditable);
+		if (sameDay) {
+			valueEl.setValue(null);
+		}
+		SelectionValues refs = sameDay ? datesConfig.getSameDayRefs() : datesConfig.getRelativeRefs();
+		String previousKey = refEl.isOneSelected() ? refEl.getSelectedKey() : null;
+		refEl.setKeysAndValues(refs.keys(), refs.values(), null);
+		if (previousKey != null && refEl.containsKey(previousKey)) {
+			refEl.select(previousKey, true);
+		} else if (refs.size() > 0) {
+			refEl.select(refs.keys()[0], true);
+		}
 	}
 
 	private void doToggleStatus(boolean done) {
@@ -611,13 +808,41 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 	
 	public Date getStartDate() {
-		return startDateEl.getDate();
+		return startDateEl.isVisible() ? startDateEl.getDate() : null;
 	}
-	
+
 	public Date getDueDate() {
-		return dueDateEl.getDate();
+		return dueDateEl.isVisible() ? dueDateEl.getDate() : null;
 	}
-	
+
+	public ToDoRelativeDates getRelativeDates() {
+		if (startRelRow == null || !startRelRow.isVisible()) {
+			return null;
+		}
+		ToDoRelativeDates rd = new ToDoRelativeDates();
+		if (relStartUnitEl.isOneSelected()) {
+			ToDoDateUnit startUnit = ToDoDateUnit.valueOf(relStartUnitEl.getSelectedKey());
+			rd.setStartUnit(startUnit);
+			if (startUnit != ToDoDateUnit.SAME_DAY && StringHelper.containsNonWhitespace(relStartValueEl.getValue())) {
+				rd.setStartValue(Integer.parseInt(relStartValueEl.getValue().trim()));
+			}
+		}
+		if (relStartRefEl.isOneSelected()) {
+			rd.setStartRef(relStartRefEl.getSelectedKey());
+		}
+		if (relDueUnitEl.isOneSelected()) {
+			ToDoDateUnit dueUnit = ToDoDateUnit.valueOf(relDueUnitEl.getSelectedKey());
+			rd.setDueUnit(dueUnit);
+			if (dueUnit != ToDoDateUnit.SAME_DAY && StringHelper.containsNonWhitespace(relDueValueEl.getValue())) {
+				rd.setDueValue(Integer.parseInt(relDueValueEl.getValue().trim()));
+			}
+		}
+		if (relDueRefEl.isOneSelected()) {
+			rd.setDueRef(relDueRefEl.getSelectedKey());
+		}
+		return rd;
+	}
+
 	public Long getExpenditureOfWork() {
 		ToDoExpenditureOfWork expenditureOfWork = ToDoUIFactory.parseHours(expenditureOfWorkEl.getValue());
 		return toDoService.getHours(expenditureOfWork);
@@ -630,7 +855,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 	
 	public static interface ToDoTaskFormValues {
-		
+
 		public String getTitle();
 
 		public String getDescription();
@@ -644,6 +869,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 		public Date getStartDate();
 
 		public Date getDueDate();
+
+		public ToDoRelativeDates getRelativeDates();
 	}
 	
 	public static final class ToDoTaskValues implements ToDoTaskFormValues {
@@ -688,43 +915,51 @@ public class ToDoTaskEditForm extends FormBasicController {
 		public Date getDueDate() {
 			return toDoTask.getDueDate();
 		}
-		
+
+		@Override
+		public ToDoRelativeDates getRelativeDates() {
+			return toDoTask.getRelativeDates();
+		}
+
 	}
-	
+
 	public static final class CopyValues implements ToDoTaskFormValues {
-		
+
 		private final ToDoTask toDoTask;
 		private final String title;
 		private Date startDate;
 		private Date dueDate;
-		
+
 		public CopyValues(Locale locale, ToDoTask toDoTask) {
 			this.toDoTask = toDoTask;
 			this.title = Util.createPackageTranslator(ToDoUIFactory.class, locale).translate("copy.title", toDoTask.getTitle());
-			this.startDate = toDoTask.getStartDate();
-			this.dueDate = toDoTask.getDueDate();
-			
-			// Move dates at least to now
-			LocalDate now = LocalDate.now();
-			Long diffDays = null;
-			if (toDoTask.getStartDate() != null) {
-				Long startDiffDays = DateUtils.toLocalDate(toDoTask.getStartDate()).until(now, ChronoUnit.DAYS);
-				if (startDiffDays > 0) {
-					diffDays = startDiffDays;
+
+			if (toDoTask.getRelativeDates() == null) {
+				startDate = toDoTask.getStartDate();
+				dueDate = toDoTask.getDueDate();
+
+				// Move dates at least to now
+				LocalDate now = LocalDate.now();
+				Long diffDays = null;
+				if (toDoTask.getStartDate() != null) {
+					Long startDiffDays = DateUtils.toLocalDate(toDoTask.getStartDate()).until(now, ChronoUnit.DAYS);
+					if (startDiffDays > 0) {
+						diffDays = startDiffDays;
+					}
 				}
-			} 
-			if (diffDays == null && toDoTask.getDueDate() != null) {
-				Long dueDiffDays = DateUtils.toLocalDate(toDoTask.getDueDate()).until(now, ChronoUnit.DAYS);
-				if (dueDiffDays > 0) {
-					diffDays = dueDiffDays;
+				if (diffDays == null && toDoTask.getDueDate() != null) {
+					Long dueDiffDays = DateUtils.toLocalDate(toDoTask.getDueDate()).until(now, ChronoUnit.DAYS);
+					if (dueDiffDays > 0) {
+						diffDays = dueDiffDays;
+					}
 				}
-			}
-			if (diffDays != null) {
-				if (startDate != null) {
-					startDate = DateUtils.addDays(startDate, diffDays.intValue());
-				}
-				if (dueDate != null) {
-					dueDate = DateUtils.addDays(dueDate, diffDays.intValue());
+				if (diffDays != null) {
+					if (startDate != null) {
+						startDate = DateUtils.addDays(startDate, diffDays.intValue());
+					}
+					if (dueDate != null) {
+						dueDate = DateUtils.addDays(dueDate, diffDays.intValue());
+					}
 				}
 			}
 		}
@@ -762,6 +997,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 		@Override
 		public Date getDueDate() {
 			return dueDate;
+		}
+
+		@Override
+		public ToDoRelativeDates getRelativeDates() {
+			return toDoTask.getRelativeDates();
 		}
 	}
 

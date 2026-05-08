@@ -72,6 +72,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 	
 	private LockResult lockEntry;
 	private RepositoryEntry entry;
+	private boolean inCertificationProgram;
 	private CertificateReminderProvider certificateReminderProvider;
 	
 	@Autowired
@@ -92,6 +93,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(RunMainController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		this.inCertificationProgram = certificationProgramService.isInCertificationProgram(entry);
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
@@ -131,7 +133,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 			mainVC.put("creditpoints", creditPointsConfigCtrl.getInitialComponent());
 		}
 		
-		if(certificationProgramService.isInCertificationProgram(entry)) {
+		if(inCertificationProgram) {
 			certificatesCtrl = new CertificationProgramOptionsController(ureq, wControl, entry);
 		} else {
 			certificatesCtrl = new CertificatesOptionsController(ureq, wControl, entry, editableAndLocked);
@@ -160,9 +162,9 @@ public class CourseAssessmentSettingsController extends BasicController {
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
 		boolean certificationWithValidityEnabled = (certificateConfig.isAutomaticCertificationEnabled()
 				|| certificateConfig.isManualCertificationEnabled()) && certificateConfig.isValidityEnabled();
-		boolean recertification = certificationWithValidityEnabled && certificateConfig.isRecertificationEnabled();
+		boolean recertification =  certificationWithValidityEnabled && certificateConfig.isRecertificationEnabled();
 	
-		recertificationCtrl.getInitialComponent().setVisible(certificationWithValidityEnabled);
+		recertificationCtrl.getInitialComponent().setVisible(!inCertificationProgram && certificationWithValidityEnabled);
 		remindersCtrl.getInitialComponent().setVisible(recertification);
 		if(recertification) {
 			remindersCtrl.reload(ureq);

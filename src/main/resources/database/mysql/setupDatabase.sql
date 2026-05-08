@@ -1006,6 +1006,7 @@ create table o_todo_task (
    t_start_date datetime,
    t_due_date datetime,
    t_done_date datetime,
+   t_relative_dates varchar(2000),
    t_type varchar(50),
    t_deleted_date datetime,
    fk_deleted_by bigint,
