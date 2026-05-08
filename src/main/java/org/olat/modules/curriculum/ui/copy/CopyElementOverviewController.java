@@ -104,6 +104,7 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		shiftDatesButton = uifactory.addFormLink("shift.dates", formLayout, Link.BUTTON);
 		shiftDatesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_shift");
+		shiftDatesButton.setPrimary(true);
 		
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(TOGGLE_DETAILS_CMD);
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
