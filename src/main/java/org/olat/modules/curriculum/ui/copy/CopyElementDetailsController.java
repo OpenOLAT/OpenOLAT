@@ -79,6 +79,10 @@ public class CopyElementDetailsController extends FormBasicController {
 		formLayout.add("todos", detailsToDosCtrl.getInitialFormItem());
 	}
 
+	public void saveToContext() {
+		detailsToDosCtrl.saveToContext();
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

@@ -715,8 +715,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		CopyToDos copyToDos = settings.getCopyToDos();
 		if(copyToDos == CopyToDos.todos || copyToDos == CopyToDos.todosWithAssignments) {
+			Set<Long> includedTaskKeys = settings.getSelectedToDoTaskKeys(elementToClone.getKey());
 			curriculumElementToDoProvider.copyToDoTasks(elementToClone, clone,
-					copyToDos == CopyToDos.todosWithAssignments, doer);
+					copyToDos == CopyToDos.todosWithAssignments, includedTaskKeys, doer);
 		}
 
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);

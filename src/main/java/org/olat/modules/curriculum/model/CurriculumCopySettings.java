@@ -20,7 +20,10 @@
 package org.olat.modules.curriculum.model;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -60,6 +63,8 @@ public class CurriculumCopySettings {
 	private boolean copyCoachesMemberships;
 	private boolean copyMasterCoachesMemberships;
 	
+	private Map<Long, Set<Long>> selectedToDoTaskKeys;
+
 	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
 	
@@ -119,6 +124,22 @@ public class CurriculumCopySettings {
 
 	public void setCopyToDos(CopyToDos copyToDos) {
 		this.copyToDos = copyToDos;
+	}
+
+	public Set<Long> getSelectedToDoTaskKeys(Long sourceElementKey) {
+		if (selectedToDoTaskKeys == null) return null;
+		return selectedToDoTaskKeys.get(sourceElementKey);
+	}
+
+	public void setSelectedToDoTaskKeys(Long sourceElementKey, Set<Long> selected) {
+		if (selectedToDoTaskKeys == null) {
+			selectedToDoTaskKeys = new HashMap<>();
+		}
+		if (selected == null) {
+			selectedToDoTaskKeys.remove(sourceElementKey);
+		} else {
+			selectedToDoTaskKeys.put(sourceElementKey, selected);
+		}
 	}
 
 	public boolean isCopyStandaloneEvents() {

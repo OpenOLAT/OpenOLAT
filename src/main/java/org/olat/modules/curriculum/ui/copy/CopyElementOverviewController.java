@@ -343,14 +343,20 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	
 	private void commitCurriculumElementsToCopy() {
 		List<CopyElementRow> rows = tableModel.getObjects();
+		for (CopyElementRow row : rows) {
+			CopyElementDetailsController detailsCtrl = row.getDetailsController();
+			if (detailsCtrl != null) {
+				detailsCtrl.saveToContext();
+			}
+		}
 		List<CopyElementSetting> elementsToCopy = rows.stream().map(row -> {
 			Date begin = row.getBeginDateEl().getDate();
 			Date end = row.getEndDateEl().getDate();
 			String displayName = row.getSetting().displayName();
-			String identifier = row.getSetting().identifier();			
+			String identifier = row.getSetting().identifier();
 			return new CopyElementSetting(row.getCurriculumElement(), displayName, identifier, begin, end);
 		}).toList();
-		
+
 		context.setCurriculumElementsToCopy(elementsToCopy);
 	}
 	

@@ -391,7 +391,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	}
 	
 	public void copyToDoTasks(CurriculumElement source, CurriculumElement target,
-			boolean copyAssignments, Identity doer) {
+			boolean copyAssignments, Set<Long> includedTaskKeys, Identity doer) {
 		if (source == null || target == null
 				|| source.getCurriculum() == null || target.getCurriculum() == null) {
 			return;
@@ -401,6 +401,14 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		List<ToDoTask> sourceTasks = toDoService.getToDoTasks(searchParams);
 		if (sourceTasks.isEmpty()) {
 			return;
+		}
+		if (includedTaskKeys != null) {
+			sourceTasks = sourceTasks.stream()
+					.filter(t -> includedTaskKeys.contains(t.getKey()))
+					.toList();
+			if (sourceTasks.isEmpty()) {
+				return;
+			}
 		}
 
 		List<ToDoTaskTag> sourceTags = toDoService.getToDoTaskTags(searchParams);

@@ -31,7 +31,7 @@ import org.olat.modules.todo.ui.ToDoTaskRow;
  */
 public class CopyElementDetailsToDosRow extends ToDoTaskRow {
 
-	private final CopyResources copySetting;
+	private CopyResources copySetting;
 	private final String dateKind;
 
 	public CopyElementDetailsToDosRow(ToDoTask task, CopyResources copySetting, String dateKind) {
@@ -42,6 +42,10 @@ public class CopyElementDetailsToDosRow extends ToDoTaskRow {
 
 	public CopyResources getCopySetting() {
 		return copySetting;
+	}
+
+	public void setCopySetting(CopyResources copySetting) {
+		this.copySetting = copySetting;
 	}
 
 	public String getDateKind() {

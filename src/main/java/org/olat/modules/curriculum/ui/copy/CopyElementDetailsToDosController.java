@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui.copy;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,13 +31,16 @@ import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -82,6 +86,7 @@ public class CopyElementDetailsToDosController extends FormBasicController {
 	private CopyElementDetailsToDosTableModel tableModel;
 
 	private int counter = 0;
+	private final boolean copyEnabled;
 	private final CopyElementContext context;
 	private final CurriculumElement curriculumElement;
 
@@ -99,6 +104,7 @@ public class CopyElementDetailsToDosController extends FormBasicController {
 				Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator())));
 		this.curriculumElement = curriculumElement;
 		this.context = context;
+		this.copyEnabled = context.getToDosCopySetting() != CopyToDos.dont;
 
 		initForm(ureq);
 		loadModel(ureq);
@@ -131,6 +137,9 @@ public class CopyElementDetailsToDosController extends FormBasicController {
 				.withMessageI18nKey("empty.todos")
 				.withIconCss("o_icon_todo_task")
 				.build(), false);
+		if (copyEnabled) {
+			tableEl.setMultiSelect(true);
+		}
 	}
 
 	private void loadModel(UserRequest ureq) {
@@ -209,6 +218,24 @@ public class CopyElementDetailsToDosController extends FormBasicController {
 
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		if (copyEnabled) {
+			Set<Long> storedKeys = context.getSelectedToDoTaskKeys(curriculumElement.getKey());
+			if (storedKeys == null) {
+				tableEl.selectAll();
+				saveToContext();
+			} else {
+				Set<Integer> indices = new HashSet<>();
+				for (int i = 0; i < rows.size(); i++) {
+					CopyElementDetailsToDosRow row = rows.get(i);
+					if (storedKeys.contains(row.getKey())) {
+						indices.add(i);
+					} else {
+						row.setCopySetting(CopyResources.dont);
+					}
+				}
+				tableEl.setMultiSelectedIndex(indices);
+			}
+		}
 	}
 
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members, String ariaI18nKey) {
@@ -222,7 +249,43 @@ public class CopyElementDetailsToDosController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl && event instanceof SelectionEvent se) {
+			String cmd = se.getCommand();
+			if (FlexiTableElement.ROW_CHECKED_EVENT.equals(cmd)
+					|| FlexiTableElement.ROW_UNCHECKED_EVENT.equals(cmd)) {
+				syncRowCopySettings();
+				tableEl.getComponent().setDirty(true);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void syncRowCopySettings() {
+		List<CopyElementDetailsToDosRow> rows = tableModel.getObjects();
+		for (int i = 0; i < rows.size(); i++) {
+			rows.get(i).setCopySetting(tableEl.isMultiSelectedIndex(i)
+					? CopyResources.resource
+					: CopyResources.dont);
+		}
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+
+	public void saveToContext() {
+		if (!copyEnabled) return;
+		Set<Integer> selectedIndices = tableEl.getMultiSelectedIndex();
+		Set<Long> selectedKeys = new HashSet<>();
+		for (Integer idx : selectedIndices) {
+			CopyElementDetailsToDosRow row = tableModel.getObject(idx.intValue());
+			if (row != null) {
+				selectedKeys.add(row.getKey());
+			}
+		}
+		context.setSelectedToDoTaskKeys(curriculumElement.getKey(), selectedKeys);
+	}
+	
 }

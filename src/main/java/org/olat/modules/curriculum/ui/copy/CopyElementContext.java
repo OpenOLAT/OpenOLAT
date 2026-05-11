@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.copy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -159,6 +160,14 @@ public class CopyElementContext {
 
 	public void setToDosCopySetting(CopyToDos copyToDos) {
 		copySettings.setCopyToDos(copyToDos);
+	}
+
+	public Set<Long> getSelectedToDoTaskKeys(Long sourceElementKey) {
+		return copySettings.getSelectedToDoTaskKeys(sourceElementKey);
+	}
+
+	public void setSelectedToDoTaskKeys(Long sourceElementKey, Set<Long> selected) {
+		copySettings.setSelectedToDoTaskKeys(sourceElementKey, selected);
 	}
 	
 	public void setCopyOwnersMemberships(boolean copy) {

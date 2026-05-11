@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 
 /**
@@ -54,12 +55,14 @@ public class CopySettingCellRenderer implements FlexiCellRenderer {
 			renderActivity(target, "reuse", "o_activity_modify", "o_icon_recycle");
 		} else if(copySetting == CopyResources.resource) {
 			renderActivity(target, "copy", "o_activity_add", "o_icon_copy");
+		} else if(copySetting == CopyResources.dont) {
+			renderActivity(target, "copy.todos.none", "o_activity_remove", "o_icon_ban");
 		}
 	}
 	
 	private void renderActivity(StringOutput target, String i18nKey, String cssClass, String iconCssClass) {
 		target.append("<span class='").append(cssClass).append("'><i class='o_icon o_icon-fw ").append(iconCssClass).append("' title='")
-	      .append(translator.translate(i18nKey))
+	      .append(StringHelper.escapeForHtmlAttribute(translator.translate(i18nKey)))
 	      .append("'> </i></span>");
 	}
 }
