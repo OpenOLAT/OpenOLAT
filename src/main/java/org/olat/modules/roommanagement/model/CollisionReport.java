@@ -21,51 +21,33 @@ package org.olat.modules.roommanagement.model;
 
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
-import org.olat.core.id.OrganisationRef;
-import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.RoomBooking;
 
 /**
  * Initial date: 4 May 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class SearchLocationParameters {
+public class CollisionReport {
 
-	private String searchString;
-	private List<RoomStatus> status;
-	private List<? extends OrganisationRef> organisations;
-	/** When set, apply the org-scoped visibility predicate for this identity. */
-	private IdentityRef identity;
+	private final List<RoomBooking> hard;
+	private final List<RoomBooking> buffer;
 
-	public String getSearchString() {
-		return searchString;
+	public CollisionReport(List<RoomBooking> hard, List<RoomBooking> buffer) {
+		this.hard = hard;
+		this.buffer = buffer;
 	}
 
-	public void setSearchString(String searchString) {
-		this.searchString = searchString;
+	/** Bookings whose actual booked intervals overlap with the candidate interval. */
+	public List<RoomBooking> getHard() {
+		return hard;
 	}
 
-	public List<RoomStatus> getStatus() {
-		return status;
+	/** Bookings that only conflict via buffer envelopes; actual intervals do not overlap. */
+	public List<RoomBooking> getBuffer() {
+		return buffer;
 	}
 
-	public void setStatus(List<RoomStatus> status) {
-		this.status = status;
-	}
-
-	public List<? extends OrganisationRef> getOrganisations() {
-		return organisations;
-	}
-
-	public void setOrganisations(List<? extends OrganisationRef> organisations) {
-		this.organisations = organisations;
-	}
-
-	public IdentityRef getIdentity() {
-		return identity;
-	}
-
-	public void setIdentity(IdentityRef identity) {
-		this.identity = identity;
+	public boolean hasCollisions() {
+		return !hard.isEmpty() || !buffer.isEmpty();
 	}
 }

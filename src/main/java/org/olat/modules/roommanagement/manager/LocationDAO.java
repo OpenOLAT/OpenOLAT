@@ -110,6 +110,21 @@ public class LocationDAO {
 		if (params.getOrganisations() != null && !params.getOrganisations().isEmpty()) {
 			sb.and().append("exists (select 1 from rmlocationtoorganisation lto where lto.location=l and lto.organisation.key in (:orgKeys))");
 		}
+		if (params.getIdentity() != null) {
+			// Org-scoped visibility: open-to-all (no org links) OR identity has administrator/user role in a linked org
+			sb.and().append("(")
+			  .append(" not exists (select 1 from rmlocationtoorganisation lto2 where lto2.location=l)")
+			  .append(" or exists (")
+			  .append("   select 1 from rmlocationtoorganisation lto3")
+			  .append("   inner join lto3.organisation o")
+			  .append("   inner join o.group og")
+			  .append("   inner join og.members m")
+			  .append("   where lto3.location=l")
+			  .append("     and m.identity.key=:identityKey")
+			  .append("     and m.role in ('administrator','user')")
+			  .append(" )")
+			  .append(")");
+		}
 	}
 
 	private void applySearchParameters(TypedQuery<?> query, SearchLocationParameters params) {
@@ -125,6 +140,9 @@ public class LocationDAO {
 					.map(OrganisationRef::getKey)
 					.collect(Collectors.toList());
 			query.setParameter("orgKeys", orgKeys);
+		}
+		if (params.getIdentity() != null) {
+			query.setParameter("identityKey", params.getIdentity().getKey());
 		}
 	}
 
