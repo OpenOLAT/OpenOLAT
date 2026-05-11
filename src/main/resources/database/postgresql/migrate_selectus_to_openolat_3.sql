@@ -4669,9 +4669,6 @@ create table o_feed_tag (
     primary key (id)
 );
 
--- selectus
-alter table o_selectus_org_unit add column fk_organisation_id int8;
-
 -- Room management
 create table o_rm_location (
     id bigserial,

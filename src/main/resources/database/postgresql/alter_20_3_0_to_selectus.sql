@@ -766,9 +766,6 @@ create index idx_rubric_to_app_idx on o_selectus_decision_rubric (fk_application
 alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
 create index idx_selectus_ounit_to_org_idx on o_selectus_org_unit (fk_organisation_id);
 
-alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
-create index idx_selectus_ounit_to_org_idx on o_selectus_org_unit (fk_organisation_id);
-
 alter table o_selectus_position add constraint position_org_unit_idx foreign key (fk_org_unit_id) references o_selectus_org_unit (id);
 create index idx_position_org_unit_idx on o_selectus_position (fk_org_unit_id);
 

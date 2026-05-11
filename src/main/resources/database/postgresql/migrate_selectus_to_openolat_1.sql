@@ -74,6 +74,15 @@ alter table o_user add column u_genericcheckboxproperty varchar(255);
 alter table o_user add column u_genericcheckboxproperty2 varchar(255);
 alter table o_user add column u_genericcheckboxproperty3 varchar(255);
 
+alter table o_user add column u_smstelmobile varchar(255);
+alter table o_user add column u_linkedin varchar(255);
+alter table o_user add column u_emailsignature varchar(2048);
+alter table o_user add column u_portrait_path varchar(32) default null;
+alter table o_user add column u_logo_path varchar(32) default null;
+alter table o_user add column u_initials_css_class varchar(32) default null;
+update o_user set u_initials_css_class='o_user_initials_light_blue' where u_initials_css_class is null;
+
+
 create index idx_user_firstname_idx on o_user (u_firstname);
 create index idx_user_lastname_idx on o_user (u_lastname);
 create index idx_user_email_idx on o_user (u_email);
@@ -172,13 +181,15 @@ create view o_bs_identity_short_v as (
    select
       ident.id as id_id,
       ident.name as id_name,
+      ident.external_id as id_external,
       ident.lastlogin as id_lastlogin,
       ident.status as id_status,
       us.user_id as us_id,
       us.u_firstname as first_name,
       us.u_lastname as last_name,
+      us.u_nickname as nick_name,
       us.u_email as email
    from o_bs_identity as ident
-   inner join o_user as us on (ident.fk_user_id = us.user_id)
+   inner join o_user as us on (ident.id = us.fk_identity)
 );
 

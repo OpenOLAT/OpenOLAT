@@ -7,46 +7,6 @@
 	<persistence-unit name="default">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
 		
-		<!-- selectus tables -->
-		<class>org.olat.modules.selectus.model.AttachmentImpl</class>
-		<class>org.olat.modules.selectus.model.AttachmentDataImpl</class>
-		<class>org.olat.modules.selectus.model.NotesImpl</class>
-		<class>org.olat.modules.selectus.model.PositionImpl</class>
-		<class>org.olat.modules.selectus.model.PositionAttributeDefinitionImpl</class>
-		<class>org.olat.modules.selectus.model.PositionLightImpl</class>
-		<class>org.olat.modules.selectus.model.AcceptPolicyImpl</class>
-		<class>org.olat.modules.selectus.model.ApplicationImpl</class>
-		<class>org.olat.modules.selectus.model.ApplicationAttributeImpl</class>
-		<class>org.olat.modules.selectus.model.ApplicationAttributeLightImpl</class>
-		<class>org.olat.modules.selectus.model.ApplicationLightImpl</class>
-		<class>org.olat.modules.selectus.model.ApplicationDecisionImpl</class>
-		<class>org.olat.modules.selectus.model.DecisionRubricImpl</class>
-		<class>org.olat.modules.selectus.model.DecisionRubricDefinitionImpl</class>
-		<class>org.olat.modules.selectus.model.OrganisationUnitImpl</class>
-		<class>org.olat.modules.selectus.model.assignment.ApplicationAssignmentImpl</class>
-		<class>org.olat.modules.selectus.model.committee.ReportCommitteeImpl</class>
-		<class>org.olat.modules.selectus.model.feedback.PublicFeedbackImpl</class>
-		<class>org.olat.modules.selectus.model.feedback.ApplicationFeedbackImpl</class>
-		<class>org.olat.modules.selectus.model.feedback.ApplicationsFeedbackConfigurationImpl</class>
-		<class>org.olat.modules.selectus.model.mail.RejectionEmailLogImpl</class>
-		<class>org.olat.modules.selectus.model.mail.RejectionEmailLogFullImpl</class>
-		<class>org.olat.modules.selectus.model.mail.PositionMailTemplateImpl</class>
-		<class>org.olat.modules.selectus.model.references.ReferenceImpl</class>
-		<class>org.olat.modules.selectus.model.references.ReferenceCommentImpl</class>
-		<class>org.olat.modules.selectus.model.references.ReferenceToApplicationImpl</class>
-		<class>org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl</class>
-		<class>org.olat.modules.selectus.model.review.ReviewElementDefinitionImpl</class>
-		<class>org.olat.modules.selectus.model.review.ReviewResponseImpl</class>
-		<class>org.olat.modules.selectus.model.review.ApplicationCommentImpl</class>
-		<class>org.olat.modules.selectus.model.review.ApplicationCommentVoteImpl</class>
-		<class>org.olat.modules.selectus.model.category.CategoryImpl</class>
-		<class>org.olat.modules.selectus.model.category.ApplicationCategoryImpl</class>
-		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogImpl</class>
-		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogLightImpl</class>
-		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserSettingsImpl</class>
-		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogReadImpl</class>
-		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserNotificationsImpl</class>
-
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.AuthenticationImpl</class>
@@ -403,6 +363,45 @@
 		<class>org.olat.modules.roommanagement.model.RoomImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomBookingImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomModuleLogImpl</class>
+		<class>org.olat.modules.selectus.model.AttachmentImpl</class>
+		<class>org.olat.modules.selectus.model.AttachmentDataImpl</class>
+		<class>org.olat.modules.selectus.model.NotesImpl</class>
+		<class>org.olat.modules.selectus.model.PositionImpl</class>
+		<class>org.olat.modules.selectus.model.PositionAttributeDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.PositionLightImpl</class>
+		<class>org.olat.modules.selectus.model.AcceptPolicyImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationAttributeImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationAttributeLightImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationLightImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationDecisionImpl</class>
+		<class>org.olat.modules.selectus.model.DecisionRubricImpl</class>
+		<class>org.olat.modules.selectus.model.DecisionRubricDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.OrganisationUnitImpl</class>
+		<class>org.olat.modules.selectus.model.assignment.ApplicationAssignmentImpl</class>
+		<class>org.olat.modules.selectus.model.committee.ReportCommitteeImpl</class>
+		<class>org.olat.modules.selectus.model.feedback.PublicFeedbackImpl</class>
+		<class>org.olat.modules.selectus.model.feedback.ApplicationFeedbackImpl</class>
+		<class>org.olat.modules.selectus.model.feedback.ApplicationsFeedbackConfigurationImpl</class>
+		<class>org.olat.modules.selectus.model.mail.RejectionEmailLogImpl</class>
+		<class>org.olat.modules.selectus.model.mail.RejectionEmailLogFullImpl</class>
+		<class>org.olat.modules.selectus.model.mail.PositionMailTemplateImpl</class>
+		<class>org.olat.modules.selectus.model.references.ReferenceImpl</class>
+		<class>org.olat.modules.selectus.model.references.ReferenceCommentImpl</class>
+		<class>org.olat.modules.selectus.model.references.ReferenceToApplicationImpl</class>
+		<class>org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.review.ReviewElementDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.review.ReviewResponseImpl</class>
+		<class>org.olat.modules.selectus.model.review.ApplicationCommentImpl</class>
+		<class>org.olat.modules.selectus.model.review.ApplicationCommentVoteImpl</class>
+		<class>org.olat.modules.selectus.model.category.CategoryImpl</class>
+		<class>org.olat.modules.selectus.model.category.ApplicationCategoryImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogLightImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserSettingsImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogReadImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserNotificationsImpl</class>
+		<class>org.olat.upgrade.model.OrganisationUnitMembershipImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyLevelTypeImpl</class>

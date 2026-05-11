@@ -1,3 +1,5 @@
+insert into o_property (id, "version", lastmodified, creationdate, "identity", grp, resourcetypename, resourcetypeid, category, "name", floatvalue, longvalue, stringvalue, textvalue) values (1, 0, now(), now(), NULL, NULL, NULL, NULL, '_o3_', 'recruitingtool', NULL, NULL, 'true', NULL);
+
 alter table fx_r_position rename to o_selectus_position;
 
 alter table fx_r_pos_attribute_def rename to o_selectus_pos_attribute_def;
@@ -32,3 +34,15 @@ alter table fx_r_audit_log rename to o_selectus_audit_log;
 alter table fx_r_audit_log_read rename to o_selectus_audit_log_read;
 alter table fx_r_audit_log_user_settings rename to o_selectus_audit_log_user_settings;
 alter table fx_r_audit_log_user_notifs rename to o_selectus_audit_log_user_notifs;
+
+
+alter table o_selectus_position add column fk_organisation_id int8 default null;
+alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_pos_to_org_idx on o_selectus_position (fk_organisation_id);
+
+alter table o_selectus_org_unit add column fk_organisation_id int8;
+alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_ounit_to_org_idx on o_selectus_org_unit (fk_organisation_id);
+
+
+
