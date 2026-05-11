@@ -53,6 +53,7 @@ public class CurriculumCopySettings {
 	private long shiftDateByDays = 0;
 	
 	private CopyResources copyResources;
+	private CopyToDos copyToDos = CopyToDos.todosWithAssignments;
 	
 	private boolean addCoachesAsTeacher;
 	private boolean copyOwnersMemberships;
@@ -110,6 +111,14 @@ public class CurriculumCopySettings {
 
 	public void setCopyResources(CopyResources copyResources) {
 		this.copyResources = copyResources;
+	}
+
+	public CopyToDos getCopyToDos() {
+		return copyToDos;
+	}
+
+	public void setCopyToDos(CopyToDos copyToDos) {
+		this.copyToDos = copyToDos;
 	}
 
 	public boolean isCopyStandaloneEvents() {
@@ -248,6 +257,23 @@ public class CurriculumCopySettings {
 		dont,
 		memberships,
 		membershipsAddTeachers,
+	}
+
+	public enum CopyToDos {
+		dont,
+		todos,
+		todosWithAssignments;
+
+		public static CopyToDos valueOf(String val, CopyToDos def) {
+			if(val == null) return def;
+
+			for(CopyToDos value:values()) {
+				if(val.equals(value.name())) {
+					return value;
+				}
+			}
+			return def;
+		}
 	}
 	
 	public record CopyOfferSetting(Offer originalOffer, Date validFrom, Date validTo) {

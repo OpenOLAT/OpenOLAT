@@ -39,6 +39,7 @@ import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyMemberships;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 	private TextElement identifierEl;
 	private SingleSelection courseEventsEl;
 	private SingleSelection standaloneEventsEl;
+	private SingleSelection toDosEl;
 	private SingleSelection membershipCoachEl;
 	private SingleSelection membershipOwnerAndMasterCoachEl;
 	
@@ -148,6 +150,18 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		standaloneEventsEl = uifactory.addCardSingleSelectHorizontal("copy.standalone.events", "copy.standalone.events", formLayout,
 				standalonePK.keys(), standalonePK.values(), standalonePK.descriptions(), standalonePK.icons());
 		standaloneEventsEl.select(CopyResources.resource.name(), true);
+
+		SelectionValues toDosPK = new SelectionValues();
+		toDosPK.add(SelectionValues.entry(CopyToDos.todosWithAssignments.name(),
+				translate("copy.todos.standard"), translate("copy.todos.standard.desc"), "o_icon o_icon_copy", null, true));
+		toDosPK.add(SelectionValues.entry(CopyToDos.todos.name(),
+				translate("copy.todos.only"), translate("copy.todos.only.desc"), "o_icon o_icon_todo_task", null, true));
+		toDosPK.add(SelectionValues.entry(CopyToDos.dont.name(),
+				translate("copy.todos.none"), translate("copy.todos.none.desc"), "o_icon o_icon_ban", null, true));
+		toDosEl = uifactory.addCardSingleSelectHorizontal("copy.todos", "copy.todos", formLayout,
+				toDosPK.keys(), toDosPK.values(), toDosPK.descriptions(), toDosPK.icons());
+		toDosEl.setElementCssClass("o_curriculum_copy_options");
+		toDosEl.select(CopyToDos.todosWithAssignments.name(), true);
 	}
 
 	private void initMembersForm(FormItemContainer formLayout) {	
@@ -182,6 +196,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		
 		allOk &= validateFormLogic(courseEventsEl);
 		allOk &= validateFormLogic(standaloneEventsEl);
+		allOk &= validateFormLogic(toDosEl);
 		allOk &= validateFormLogic(membershipCoachEl);
 		allOk &= validateFormLogic(membershipOwnerAndMasterCoachEl);
 		
@@ -205,6 +220,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		context.setIdentifier(identifierEl.getValue());
 		context.setCoursesEventsCopySetting(CopyResources.valueOf(courseEventsEl.getSelectedKey()));
 		context.setStandaloneEventsCopySetting(CopyResources.resource.name().equals(standaloneEventsEl.getSelectedKey()));
+		context.setToDosCopySetting(CopyToDos.valueOf(toDosEl.getSelectedKey(), CopyToDos.todosWithAssignments));
 		boolean copyCoachesMemberships = CopyMemberships.memberships.name().equals(membershipCoachEl.getSelectedKey())
 				|| CopyMemberships.membershipsAddTeachers.name().equals(membershipCoachEl.getSelectedKey());
 		context.setCopyCoachesMemberships(copyCoachesMemberships);

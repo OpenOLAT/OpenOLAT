@@ -64,6 +64,7 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 			case numOfResources -> elementRow.getNumOfResources();
 			case numOfTemplates -> elementRow.getNumOfTemplates();
 			case numOfLectureBlocks -> elementRow.getNumOfLectureBlocks();
+			case numOfToDos -> elementRow.getNumOfToDos();
 			default -> "ERROR";
 		};
 	}
@@ -77,7 +78,8 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 		type("table.header.type"),
 		numOfResources("table.header.num.of.courses"),
 		numOfTemplates("table.header.num.of.templates"),
-		numOfLectureBlocks("table.header.num.of.lecture.blocks");
+		numOfLectureBlocks("table.header.num.of.lecture.blocks"),
+		numOfToDos("table.header.num.of.todos");
 		
 		private final String i18nKey;
 		
