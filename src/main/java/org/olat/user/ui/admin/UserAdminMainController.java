@@ -94,6 +94,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.quality.QualityModule;
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.user.UserManager;
 import org.olat.user.ui.admin.bulk.tempuser.CreateTemporaryUsers;
 import org.olat.user.ui.admin.bulk.tempuser.CreateTemporaryUsers1Step;
@@ -152,6 +153,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private QualityModule qualityModule;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private RecruitingModule selectusModule;
 	@Autowired
 	private QuestionPoolModule poolModule;
 	@Autowired
@@ -727,6 +730,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			buildTreeNodeRole(accessNode, OrganisationRoles.learnresourcemanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.linemanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.educationmanager);
+			if(selectusModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.selectusmanager);
+			}
 			buildTreeNodeRole(accessNode, OrganisationRoles.principal);
 			buildTreeNodeRole(accessNode, OrganisationRoles.administrator);
 			buildTreeNodeRole(accessNode, OrganisationRoles.sysadmin);

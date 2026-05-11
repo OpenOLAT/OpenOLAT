@@ -249,7 +249,7 @@ class UserBulkChangeStep01 extends BasicStep {
 						OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
 						OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
 						OrganisationRoles.projectmanager, OrganisationRoles.linemanager,
-						OrganisationRoles.educationmanager,
+						OrganisationRoles.educationmanager, OrganisationRoles.selectusmanager,
 						OrganisationRoles.principal
 				};
 

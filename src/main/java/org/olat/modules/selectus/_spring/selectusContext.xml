@@ -70,7 +70,7 @@
 	
 	<!--  Organisations additional configuration -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
-		<property name="order" value="7203" />
+		<property name="order" value="7308" />
 		<property name="navigationKey" value="orgunits" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -90,7 +90,7 @@
 	
 	<!-- Categories -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
-		<property name="order" value="7203" />
+		<property name="order" value="7309" />
 		<property name="navigationKey" value="tags" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
