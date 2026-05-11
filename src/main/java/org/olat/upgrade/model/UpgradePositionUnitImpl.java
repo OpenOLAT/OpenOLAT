@@ -65,7 +65,7 @@ public class UpgradePositionUnitImpl implements Persistable {
 	private Organisation organisation;
 	
 	@ManyToOne(targetEntity=OrganisationUnitImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_org_unit_id", nullable=true, insertable=true, updatable=true)
+	@JoinColumn(name="fk_org_unit_id", nullable=true, insertable=false, updatable=false)
 	private OrganisationUnitImpl organisationUnit;
 	
 	

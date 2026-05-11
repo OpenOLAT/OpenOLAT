@@ -59,7 +59,6 @@ public class SelectusMigration implements InitializingBean {
 	private final OrganisationService organisationService;
 	private final OrganisationUnitDAO organisationUnitDao;
 	
-	
 	@Autowired
 	public SelectusMigration(OrganisationUnitDAO organisationUnitDao, OrganisationService organisationService,
 			PropertyManager propertyManager, DB dbInstance) {
@@ -182,6 +181,7 @@ public class SelectusMigration implements InitializingBean {
 		for(UpgradePositionUnitImpl position:positions) {
 			if(position.getOrganisation() == null && position.getOrganisationUnit() != null) {
 				position.setOrganisation(position.getOrganisationUnit().getOrganisation());
+				dbInstance.getCurrentEntityManager().merge(position);
 				dbInstance.commit();
 			}
 		}

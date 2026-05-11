@@ -4669,6 +4669,10 @@ create table o_feed_tag (
     primary key (id)
 );
 
+-- selectus
+alter table o_selectus_position add column fk_organisation_id int8 default null;
+alter table o_selectus_org_unit add column fk_organisation_id int8;
+
 -- Room management
 create table o_rm_location (
     id bigserial,
@@ -6420,6 +6424,13 @@ create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);
 alter table o_feed_tag add constraint tag_feed_idx foreign key (fk_feed) references o_feed (id);
 create index idx_tag_to_feed_item_idx on o_feed_tag (fk_feed_item);
 alter table o_feed_tag add constraint tag_feed_item_idx foreign key (fk_feed_item) references o_feed_item (id);
+
+-- selectus
+alter table o_selectus_position add constraint selectus_pos_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_pos_to_org_idx on o_selectus_position (fk_organisation_id);
+
+alter table o_selectus_org_unit add constraint selectus_ounit_to_org_idx foreign key (fk_organisation_id) references o_org_organisation (id);
+create index idx_selectus_ounit_to_org_idx on o_selectus_org_unit (fk_organisation_id);
 
 -- Room management
 create unique index idx_rm_loc_ext_id on o_rm_location (r_ext_id);
