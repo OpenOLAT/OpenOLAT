@@ -67,13 +67,13 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.7</org.springframework.version>
-		<org.hibernate.version>7.3.3.Final</org.hibernate.version>
+		<org.hibernate.version>7.3.4.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.8</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.0</apache.cxf>
 		<apache.pdfbox>3.0.7</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
-		<apache.log4j>2.25.4</apache.log4j>
+		<apache.log4j>2.26.0</apache.log4j>
 		<org.slf4j>2.0.17</org.slf4j>
 		<org.bouncycastle>1.84</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
@@ -93,7 +93,7 @@
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.32</qtiworks.version>
 		<org.commonmark>0.28.0</org.commonmark>
-		<dev.langchain4j>1.14.0</dev.langchain4j>
+		<dev.langchain4j>1.14.1</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1782,7 +1782,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.30.2.RELEASE</version>
+			<version>0.30.3.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -1804,7 +1804,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.ibm.icu</groupId>
@@ -2217,7 +2217,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.63.0</version>
+			<version>6.64.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
