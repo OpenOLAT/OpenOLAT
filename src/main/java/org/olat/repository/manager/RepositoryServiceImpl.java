@@ -86,7 +86,6 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.invitation.manager.InvitationDAO;
-import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.portfolio.PortfolioService;
@@ -577,7 +576,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commitAndCloseSession();
 
 		Group defaultGroup = reToGroupDao.getDefaultGroup(re);
-		groupMembershipHistoryDao.saveMembershipsHistoryOfDeletedResourceAndCommit(defaultGroup, memberships, deletedBy);
+		if(defaultGroup != null) {
+			groupMembershipHistoryDao.saveMembershipsHistoryOfDeletedResourceAndCommit(defaultGroup, memberships, deletedBy);
+		}
 		dbInstance.commitAndCloseSession();
 		
 		if(sendNotifications && deletedBy != null) {
@@ -599,11 +600,13 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		List<GroupMembership> removedMemberships = new ArrayList<>();
 		
 		Group group = reToGroupDao.getDefaultGroup(re);
-		for(String role:roles) {
-			if(role != null) {
-				List<GroupMembership> memberships = groupDao.getMemberships(group, role, true);
-				removedMemberships.addAll(memberships);
-				reToGroupDao.removeRole(re, role);
+		if(group != null) {
+			for(String role:roles) {
+				if(role != null) {
+					List<GroupMembership> memberships = groupDao.getMemberships(group, role, true);
+					removedMemberships.addAll(memberships);
+					reToGroupDao.removeRole(re, role);
+				}
 			}
 		}
 		
@@ -1261,23 +1264,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	
 	private boolean hasNonPrivateAccess(RepositoryEntry entry) {
 		return entry.isPublicVisible();
-	}
-	
-	private RuntimeTypeCheckDetails canSwitchStandaloneToTemplate(RepositoryEntry entry) {
-		if(reToGroupDao.hasMembers(entry, GroupRoles.participant.name())) {
-			return RuntimeTypeCheckDetails.participantExists;
-		}
-		if(reToGroupDao.hasMembers(entry, GroupRoles.coach.name())) {
-			return RuntimeTypeCheckDetails.coachExists;
-		}
-		
-		// Don't use autowired here to prevent dependency cycles
-		if(CoreSpringFactory.getImpl(LectureModule.class).isEnabled()
-				&& CoreSpringFactory.getImpl(LectureService.class).getRepositoryEntryLectureConfiguration(entry).isLectureEnabled()
-				&& CoreSpringFactory.getImpl(LectureService.class).hasLectureBlocks(entry)) {
-			return RuntimeTypeCheckDetails.lectureEnabled;
-		}
-		return RuntimeTypeCheckDetails.ok;
 	}
 
 	private RuntimeTypeCheckDetails canSwitchToCurricular(RepositoryEntry entry) {
