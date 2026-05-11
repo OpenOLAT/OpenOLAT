@@ -36,6 +36,7 @@ import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.OrganisationUnitImpl;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.upgrade.model.UpgradePositionUnitImpl;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,6 +79,8 @@ public class SelectusMigration implements InitializingBean {
 			migrateSelectus();
 			// Migrate staff
 			migrateStaff();
+			// Migrate organisations of positions
+			migrateOrganisationPositions();
 			
 			p.setStringValue("done");
 			propertyManager.updateProperty(p);
@@ -172,5 +175,28 @@ public class SelectusMigration implements InitializingBean {
 			.createQuery(query, Identity.class)
 			.setParameter("organisationUnitKey", organisationUnitKey)
 			.getResultList();
+	}
+	
+	private void migrateOrganisationPositions() {
+		List<UpgradePositionUnitImpl> positions = positionWithoutOrganisations();
+		for(UpgradePositionUnitImpl position:positions) {
+			if(position.getOrganisation() == null && position.getOrganisationUnit() != null) {
+				position.setOrganisation(position.getOrganisationUnit().getOrganisation());
+				dbInstance.commit();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	public List<UpgradePositionUnitImpl> positionWithoutOrganisations() {
+		String query = """
+				select upos from upgraderposition as upos
+				inner join fetch organisationUnit as orgUnit
+				inner join fetch orgUnit.organisation as orgOfTheUnit
+				where orgUnit.key is not null and upos.organisation.key is null""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, UpgradePositionUnitImpl.class)
+				.getResultList();
 	}
 }

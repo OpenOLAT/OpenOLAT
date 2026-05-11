@@ -50,7 +50,7 @@ import jakarta.persistence.TemporalType;
  */
 @Entity(name="rorganisationunitmember")
 @Table(name="o_selectus_org_unit_member")
-public class OrganisationUnitMembershipImpl implements ModifiedInfo, Persistable {
+public class UpgradeOrganisationUnitMembershipImpl implements ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 4098141530116618550L;
 
@@ -137,7 +137,7 @@ public class OrganisationUnitMembershipImpl implements ModifiedInfo, Persistable
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof OrganisationUnitMembershipImpl other) {
+		if (obj instanceof UpgradeOrganisationUnitMembershipImpl other) {
 			return getKey().equals(other.getKey());
 		}
 		return false;
