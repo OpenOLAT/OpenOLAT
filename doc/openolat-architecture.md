@@ -1515,7 +1515,7 @@ I18nManager.getInstance().getLocalizedString(bundleName, key, args, locale, true
 
 ### Glossary
 
-See `doc/openolat-glossary.md` for a glossary of product-specific terms and `doc/openolat-glossary-translations.md` for canonical translations across languages.
+The end-user glossary of product-specific terms lives in the docs repo at `OpenOLAT-docs/sites/manual_user/docs/general/glossary.md` (EN) and `glossary.de.md` (DE). Canonical i18n term mappings across languages live in `doc/i18n-translation-reference.md`.
 
 ---
 

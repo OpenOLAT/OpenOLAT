@@ -263,12 +263,12 @@ MyManager mgr = CoreSpringFactory.getImpl(MyManager.class);
 - **Parameter substitution:** `{0}`, `{1}` etc. via `MessageFormat`. Escape single quotes as `''`
 - **Gender strategy:** `Benutzer{in}` → converted per locale config (star `*`, colon `:`, etc.)
 - **Core classes:** `I18nModule` (config), `I18nManager` (resolution/caching), `PackageTranslator` (per-controller)
-- **Glossary:** See `doc/openolat-glossary.md` for product-specific term definitions and `doc/openolat-glossary-translations.md` for canonical translations
+- **Glossary:** Product-specific term definitions live in the docs repo at `OpenOLAT-docs/sites/manual_user/docs/general/glossary.md` (EN) and `glossary.de.md` (DE). Translator-facing canonical term mappings (EN/DE/FR/ES/IT) live in `doc/i18n-translation-reference.md` in this repo.
 - **Alphabetical key order (mandatory):** Keys in `LocalStrings_XX.properties` files **must** be sorted alphabetically. When adding new keys, insert them at the correct alphabetical position. When modifying existing keys, keep them in place. Do **not** reorder existing keys unless explicitly told to do so.
 - **Wording (mandatory):** Always use the same terms as the OpenOlat application UI. The running product is the source of truth. If multiple terms exist for the same concept, ask the user.
-- **Glossary-driven translation (mandatory):** When translating i18n strings between languages, always read `doc/openolat-glossary-translations.md` first. Every glossary term **must** be translated exactly as defined there. If existing translations use different words, flag the inconsistency to the user and offer to fix it.
-- **DE is the base language.** When new terms appear that are not in the glossary, ask the user to add the term and provide the base translations before proceeding.
-- **Glossary sync:** When `doc/openolat-glossary.md` is updated, the glossary in the OpenOLAT-docs project (`sites/manual_user/docs/general`) must also be updated with the same information.
+- **Translation-reference-driven translation (mandatory):** When translating i18n strings between languages, always read `doc/i18n-translation-reference.md` first. Every term listed there **must** be translated exactly as defined. If existing translations use different words, flag the inconsistency to the user and offer to fix it.
+- **DE is the base language.** When new terms appear that are not in the translation reference, ask the user to add the term and provide the base translations before proceeding.
+- **Glossary sync:** When a glossary term changes, update both `OpenOLAT-docs/sites/manual_user/docs/general/glossary.md` and `glossary.de.md`, and (if the term is in scope) the canonical mapping in `doc/i18n-translation-reference.md`.
 
 ## VFS (Virtual File System)
 
