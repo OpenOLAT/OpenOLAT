@@ -28,9 +28,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.LocationRef;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomBookingRef;
 import org.olat.modules.roommanagement.RoomModuleLog;
 import org.olat.modules.roommanagement.RoomModuleLogAction;
 import org.olat.modules.roommanagement.RoomRef;
@@ -104,6 +107,34 @@ public class RoomModuleLogDAO {
 			query.setParameter("to", params.getTo());
 		}
 		return query.getResultList();
+	}
+
+	public void nullLocationRef(LocationRef location) {
+		dbInstance.getCurrentEntityManager()
+				.createQuery("update rmmodulelog l set l.location = null where l.location.key = :key")
+				.setParameter("key", location.getKey())
+				.executeUpdate();
+	}
+
+	public void nullRoomRef(RoomRef room) {
+		dbInstance.getCurrentEntityManager()
+				.createQuery("update rmmodulelog l set l.room = null where l.room.key = :key")
+				.setParameter("key", room.getKey())
+				.executeUpdate();
+	}
+
+	public void nullBookingRef(RoomBookingRef booking) {
+		dbInstance.getCurrentEntityManager()
+				.createQuery("update rmmodulelog l set l.booking = null where l.booking.key = :key")
+				.setParameter("key", booking.getKey())
+				.executeUpdate();
+	}
+
+	public void nullLectureBlockRef(LectureBlockRef lb) {
+		dbInstance.getCurrentEntityManager()
+				.createQuery("update rmmodulelog l set l.lectureBlock = null where l.lectureBlock.key = :key")
+				.setParameter("key", lb.getKey())
+				.executeUpdate();
 	}
 
 	public List<Identity> loadDoers(RoomRef room) {
