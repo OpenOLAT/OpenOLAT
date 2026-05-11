@@ -7,7 +7,6 @@ package org.olat.modules.selectus.ui;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -566,7 +565,7 @@ public class ApplyToApplicationMainController extends BasicController implements
 			if(recruitingModule.isApplicationDuplicateEmailsAllowed(position) || recruitingService.checkUniqueApplication(app)) {
 				boolean referenceApplicantManagement = recruitingModule.isReferenceApplicantManagement() && position.isApplicantRefereeManagementEnabled();
 				if(referenceApplicantManagement) {
-					List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(app.getPerson().getMail()));
+					List<Identity> identities = userManager.findIdentitiesByEmail(List.of(app.getPerson().getMail()));
 					if(identities.size() == 1) {
 						app.setIdentity(identities.get(0));
 					}

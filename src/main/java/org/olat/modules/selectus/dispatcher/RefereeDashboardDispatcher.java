@@ -8,12 +8,11 @@ package org.olat.modules.selectus.dispatcher;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -29,15 +28,17 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.dispatcher.DMZDispatcher;
 import org.olat.login.LoginAuthprovidersController;
+import org.olat.modules.selectus.RecruitingService;
+import org.olat.modules.selectus.SalutationGenerator;
+import org.olat.modules.selectus.model.Application;
+import org.olat.modules.selectus.model.Person;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import org.olat.modules.selectus.RecruitingService;
-import org.olat.modules.selectus.SalutationGenerator;
-import org.olat.modules.selectus.model.Application;
-import org.olat.modules.selectus.model.Person;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 
@@ -63,6 +64,8 @@ public class RefereeDashboardDispatcher implements Dispatcher {
 	private RecruitingService recruitingService;
 	@Autowired @Qualifier("salutationGenerator")
 	private SalutationGenerator salutationGenerator;
+	@Autowired
+	private OrganisationService organisationService;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -140,6 +143,7 @@ public class RefereeDashboardDispatcher implements Dispatcher {
 		User newUser = userManager.createUser(person.getFirstName(), person.getLastName(), person.getMail());
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, person.getMail(), null, newUser, null, null, null, null, null, null, null, null);
 		app.setIdentity(identity);
+		organisationService.addMember(identity, OrganisationRoles.invitee, identity);
 		return recruitingService.saveApplication(app);
 	}
 	

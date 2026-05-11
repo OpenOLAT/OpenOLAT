@@ -101,7 +101,7 @@ public class ApplicationCategoriesController extends FormBasicController {
 		editCategoriesButton = uifactory.addFormLink("edit.categories", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
 		editCategoriesButton.setDomReplacementWrapperRequired(false);
 		editCategoriesButton.setIconLeftCSS("o_icon o_icon_edit");
-		editCategoriesButton.setAriaLabel(translate("aria.edit.categories"));
+		editCategoriesButton.setTitle(translate("aria.edit.categories"));
 		editCategoriesButton.setAriaRole("button");
 		editCategoriesButton.setVisible(canEdit);
 		

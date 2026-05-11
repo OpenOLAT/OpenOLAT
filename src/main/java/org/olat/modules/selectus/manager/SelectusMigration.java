@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.AdminModule;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.OrganisationRoles;
@@ -31,6 +32,7 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.OrganisationUnitImpl;
@@ -55,16 +57,20 @@ public class SelectusMigration implements InitializingBean {
 	public static final String SELECTUS_MIGRATION = "recruitingtool";
 	
 	private final DB dbInstance;
+	private final PositionDAO positionDao;
+	private final BaseSecurity securityManager;
 	private final PropertyManager propertyManager;
 	private final OrganisationService organisationService;
 	private final OrganisationUnitDAO organisationUnitDao;
 	
 	@Autowired
 	public SelectusMigration(OrganisationUnitDAO organisationUnitDao, OrganisationService organisationService,
-			PropertyManager propertyManager, DB dbInstance) {
+			PropertyManager propertyManager, BaseSecurity securityManager, PositionDAO positionDao, DB dbInstance) {
 		this.organisationService = organisationService;
 		this.propertyManager = propertyManager;
 		this.organisationUnitDao = organisationUnitDao;
+		this.securityManager = securityManager;
+		this.positionDao = positionDao;
 		this.dbInstance = dbInstance;
 	}
 
@@ -80,6 +86,8 @@ public class SelectusMigration implements InitializingBean {
 			migrateStaff();
 			// Migrate organisations of positions
 			migrateOrganisationPositions();
+			// Migrate applicant only to invitee
+			migrateApplicantsToInvitee();
 			
 			p.setStringValue("done");
 			propertyManager.updateProperty(p);
@@ -188,7 +196,7 @@ public class SelectusMigration implements InitializingBean {
 		dbInstance.commitAndCloseSession();
 	}
 	
-	public List<UpgradePositionUnitImpl> positionWithoutOrganisations() {
+	private List<UpgradePositionUnitImpl> positionWithoutOrganisations() {
 		String query = """
 				select upos from upgraderposition as upos
 				inner join fetch organisationUnit as orgUnit
@@ -197,6 +205,42 @@ public class SelectusMigration implements InitializingBean {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, UpgradePositionUnitImpl.class)
+				.getResultList();
+	}
+	
+	private void migrateApplicantsToInvitee() {
+		List<Long> identityKeys = getApplicantsIdentityKeys();
+		for(Long identityKey:identityKeys) {
+			migrateApplicantToInvitee(identityKey);
+			dbInstance.commit();
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private void migrateApplicantToInvitee(Long identityKey) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		Roles roles = securityManager.getRoles(identity);
+		if(roles.isMoreThanUser()) {
+			return;
+		}
+		
+		boolean isInCommittee = positionDao.isInCommittee(identity);
+		if(isInCommittee) {
+			return;
+		}
+		
+		organisationService.addMember(identity, OrganisationRoles.invitee, null);
+		organisationService.removeMember(identity, OrganisationRoles.user, null);
+	}
+	
+	private List<Long> getApplicantsIdentityKeys() {
+		String query = """
+				select ident.key from rapplication as app
+				inner join app.identity as ident
+				where ident.key is not null""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
 				.getResultList();
 	}
 }

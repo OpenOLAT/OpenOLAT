@@ -108,9 +108,7 @@ public class PositionMailAndLettersEditController extends BasicController {
 					letterEditCtrl.updateMailTemplate(editTemplateCtrl.getTemplateName(), mailTemplate);
 				}
 			}
-		}
-		
-		else if(event instanceof OpenVariablesEvent) {
+		} else if(event instanceof OpenVariablesEvent) {
 			doOpenVariables(ureq);
 		}
 	}

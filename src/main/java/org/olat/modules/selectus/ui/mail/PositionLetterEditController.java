@@ -18,9 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
@@ -51,8 +48,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -65,6 +60,10 @@ import org.olat.modules.selectus.model.letter.LetterConfigurationXStream;
 import org.olat.modules.selectus.model.letter.LetterLanguageConfiguration;
 import org.olat.modules.selectus.ui.mail.PositionMailTemplateRow.Type;
 import org.olat.modules.selectus.ui.position.PositionEditHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 
