@@ -13,6 +13,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -22,6 +23,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -37,9 +39,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -55,6 +54,8 @@ import org.olat.modules.selectus.ui.mail.PositionMailTemplateRow.Type;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -65,7 +66,7 @@ import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
 public class PositionMailTemplateEditController extends FormBasicController {
 
 	private TextElement nameEl;
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private List<FormLink> previewButtons = new ArrayList<>(2);
 	private List<TextElement> subjectLanguagesEl = new ArrayList<>(2);
 	private List<RichTextElement> bodyLanguagesEl = new ArrayList<>(2);
@@ -133,8 +134,11 @@ public class PositionMailTemplateEditController extends FormBasicController {
 		for(Locale locale:positionLanguages) {
 			initPreviewForm(variablesCont, locale);
 		}
-
-		variablesButton = uifactory.addFormLink("edit.template.variables", variablesCont, Link.LINK);
+		
+		String page = velocity_root + "/variable_link.html";
+		FormLayoutContainer subCont = uifactory.addCustomFormLayout("cusvar", null, page, variablesCont);
+		subCont.setDomReplacementWrapperRequired(false);
+		variablesButton = LinkFactory.createLink("edit.template.variables", subCont.getFormItemComponent(), listener);
 		variablesButton.setDomReplacementWrapperRequired(false);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
@@ -247,6 +251,13 @@ public class PositionMailTemplateEditController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			doOpenVariables(ureq);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(mailPreviewCtrl == source) {
 			cmc.deactivate();
@@ -266,9 +277,7 @@ public class PositionMailTemplateEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(variablesButton == source) {
-			doOpenVariables(ureq);
-		} else if(previewButtons.contains(source) && source.getUserObject() instanceof Locale) {
+		if(previewButtons.contains(source) && source.getUserObject() instanceof Locale) {
 			doOpenPreview(ureq, (Locale)source.getUserObject());
 		}
 		super.formInnerEvent(ureq, source, event);

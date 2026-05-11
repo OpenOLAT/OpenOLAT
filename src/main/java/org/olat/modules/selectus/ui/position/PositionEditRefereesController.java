@@ -12,6 +12,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -23,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -79,7 +81,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
 	private FormLink previewLink;
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private SingleSelection applicantRefereesEl;
 	private DateChooser refereeDeadlineEl;
 	private DateChooser applicantDeadlineEl;
@@ -197,8 +199,8 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		String page = velocity_root + "/links.html";
 		FormLayoutContainer variablesCont = FormLayoutContainer.createCustomFormLayout("links", getTranslator(), page);
 		formLayout.add(variablesCont);
-		
-		variablesButton = uifactory.addFormLink("edit.template.variables", variablesCont, Link.LINK);
+
+		variablesButton = LinkFactory.createLink("edit.template.variables", variablesCont.getFormItemComponent(), listener);
 		variablesButton.setDomReplacementWrapperRequired(false);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
@@ -390,6 +392,14 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			doOpenVariables(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(mailPreviewCtrl == source) {
 			cmc.deactivate();
@@ -471,8 +481,6 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		if(applicantRefereesEl == source) {
 			updateGUI();
 			markDirty();
-		} else if(variablesButton == source) {
-			doOpenVariables(ureq);
 		} else if(previewLink == source) {
 			doOpenPreview(ureq);
 		}

@@ -13,9 +13,9 @@ import java.util.List;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -24,8 +24,10 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
@@ -36,8 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
 import org.olat.modules.selectus.manager.MailerSender;
@@ -49,6 +49,7 @@ import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.FeedbackHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,7 +63,7 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
 	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private TextElement subjectEl;
 	private RichTextElement bodyEl;
 	private MultipleSelectionElement sendEmailEl;
@@ -111,7 +112,10 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		bodyEl.setMandatory(true);
 		bodyEl.setMaxLength(7000);
 		
-		variablesButton = uifactory.addFormLink("edit.template.variables", formLayout, Link.LINK);
+		String page = velocity_root + "/variable_link.html";
+		FormLayoutContainer subCont = uifactory.addCustomFormLayout("cusvar", null, page, formLayout);
+		subCont.setDomReplacementWrapperRequired(false);
+		variablesButton = LinkFactory.createLink("edit.template.variables", subCont.getFormItemComponent(), listener);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
 
@@ -291,13 +295,20 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		}
 		return allOk;
 	}
+	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			doOpenVariables(ureq);
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(sendEmailEl == source) {
 			updateGUI();
-		} else if(variablesButton == source) {
-			doOpenVariables(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

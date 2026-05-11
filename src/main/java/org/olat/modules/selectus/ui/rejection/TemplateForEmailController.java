@@ -14,15 +14,17 @@ import java.util.Set;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -39,8 +41,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailerResult;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.manager.ApplicationMailTemplate;
@@ -50,6 +50,7 @@ import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.model.mail.EmailVariables;
 import org.olat.modules.selectus.ui.PositionController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,7 +60,7 @@ import org.olat.modules.selectus.ui.PositionController;
  */
 public class TemplateForEmailController extends StepFormBasicController {
 
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private SingleSelection templatesEl;
 	private final List<TextElement> subjectEls = new ArrayList<>();
 	private final List<TextElement> bodyEls = new ArrayList<>();
@@ -151,7 +152,10 @@ public class TemplateForEmailController extends StepFormBasicController {
 			}
 		}
 	
-		variablesButton = uifactory.addFormLink("edit.template.variables", formLayout, Link.LINK);
+		String page = velocity_root + "/variable_link.html";
+		FormLayoutContainer subCont = uifactory.addCustomFormLayout("cusvar", null, page, formLayout);
+		subCont.setDomReplacementWrapperRequired(false);
+		variablesButton = LinkFactory.createLink("edit.template.variables", subCont.getFormItemComponent(), listener);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
 	}
@@ -288,13 +292,19 @@ public class TemplateForEmailController extends StepFormBasicController {
 		attachmentWarningCtrl = null;
 		cmc = null;
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			doOpenVariables(ureq);
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templatesEl == source) {
 			doSelectTemplate(templatesEl.getSelectedKey());
-		} else if(variablesButton == source) {
-			doOpenVariables(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

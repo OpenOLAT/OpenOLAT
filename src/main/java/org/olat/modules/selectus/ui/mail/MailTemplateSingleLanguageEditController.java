@@ -9,6 +9,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -17,6 +18,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -31,9 +33,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.MailService;
@@ -57,6 +56,8 @@ import org.olat.modules.selectus.ui.mail.PositionMailTemplateRow.Type;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The is the controller used to edit the mail templates to referees, experts,
@@ -69,7 +70,7 @@ import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
 public class MailTemplateSingleLanguageEditController extends FormBasicController {
 
 	private FormLink previewLink;
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private RichTextElement bodyEl;
 	
 	private Position position;
@@ -125,8 +126,11 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 		previewLink = uifactory.addFormLink("edit.template.preview_", "edit.template.preview", null, variablesCont, Link.LINK);
 		previewLink.setDomReplacementWrapperRequired(false);
 		previewLink.setIconLeftCSS("o_icon o_icon_preview");
-
-		variablesButton = uifactory.addFormLink("edit.template.variables", variablesCont, Link.LINK);
+		
+		String page = velocity_root + "/variable_link.html";
+		FormLayoutContainer subCont = uifactory.addCustomFormLayout("cusvar", null, page, variablesCont);
+		subCont.setDomReplacementWrapperRequired(false);
+		variablesButton = LinkFactory.createLink("edit.template.variables", subCont.getFormItemComponent(), listener);
 		variablesButton.setDomReplacementWrapperRequired(false);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
@@ -192,6 +196,14 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= RecruitingHelper.validateRichTextElement(bodyEl, 32000, true, new OWASPAntiSamyXSSFilter());
 		return allOk;
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			doOpenVariables(ureq);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

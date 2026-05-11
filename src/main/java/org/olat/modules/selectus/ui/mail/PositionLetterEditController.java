@@ -23,10 +23,10 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -74,7 +75,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class PositionLetterEditController extends FormBasicController {
 	
 	private TextElement titleEl;
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private SingleSelection languageEl;
 	private SingleSelection placeholderEl;
 	private MultipleSelectionElement enableEl;
@@ -180,7 +181,10 @@ public class PositionLetterEditController extends FormBasicController {
 		initElement(elementCont);
 		initPreview(previewCont);
 		
-		variablesButton = uifactory.addFormLink("edit.template.variables", formLayout, Link.LINK);
+		String page = velocity_root + "/variable_link.html";
+		FormLayoutContainer subCont = uifactory.addCustomFormLayout("cusvar", null, page, elementCont);
+		subCont.setDomReplacementWrapperRequired(false);
+		variablesButton = LinkFactory.createLink("edit.template.variables", subCont.getFormItemComponent(), listener);
 		variablesButton.setDomReplacementWrapperRequired(false);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
@@ -297,6 +301,15 @@ public class PositionLetterEditController extends FormBasicController {
 
 		formLayout.contextPut("indexUrl", letterMapperUrl + "/letter.html");
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			// Delegate to the email template editor which know which variables to show
+			fireEvent(ureq, new OpenVariablesEvent());
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -313,9 +326,6 @@ public class PositionLetterEditController extends FormBasicController {
 			commitChanges();
 		} else if(enableEl == source) {
 			updateUI();
-		} else if(variablesButton == source) {
-			// Delegate to the email template editor which know which variables to show
-			fireEvent(ureq, new OpenVariablesEvent());
 		} else if(source instanceof FileElement) {
 			commitChanges();
 		}

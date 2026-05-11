@@ -13,6 +13,7 @@ import java.util.List;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -24,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -35,9 +37,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingService;
@@ -57,6 +56,8 @@ import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -71,7 +72,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
 	private FormLink previewLink;
-	private FormLink variablesButton;
+	private Link variablesButton;
 	private MultipleSelectionElement enableFeedbackEl;
 	private TextElement feedbackDeadlineDayElement;
 	private SingleSelection feedbackDeadlineMonthElement;
@@ -189,8 +190,8 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		String page = velocity_root + "/links.html";
 		FormLayoutContainer variablesCont = FormLayoutContainer.createCustomFormLayout("links", getTranslator(), page);
 		formLayout.add(variablesCont);
-		
-		variablesButton = uifactory.addFormLink("edit.template.variables", variablesCont, Link.LINK);
+
+		variablesButton = LinkFactory.createLink("edit.template.variables", variablesCont.getFormItemComponent(), listener);
 		variablesButton.setDomReplacementWrapperRequired(false);
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
@@ -325,6 +326,14 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(variablesButton == source) {
+			doOpenVariables(ureq);
+		} 
+		super.event(ureq, source, event);
+	}
+	
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(mailPreviewCtrl == source) {
 			cmc.deactivate();
@@ -347,8 +356,6 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		if(enableFeedbackEl == source) {
 			updateGUI();
 			markDirty();
-		} else if(variablesButton == source) {
-			doOpenVariables(ureq);
 		} else if(previewLink == source) {
 			doOpenPreview(ureq);
 		}
