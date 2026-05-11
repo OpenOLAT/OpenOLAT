@@ -99,5 +99,17 @@ public class ToDoRelativeDates {
 	public int hashCode() {
 		return Objects.hash(startValue, startUnit, startRef, dueValue, dueUnit, dueRef);
 	}
+	
+	public static ToDoRelativeDates copy(ToDoRelativeDates source) {
+		if (source == null) return null;
+		ToDoRelativeDates copy = new ToDoRelativeDates();
+		copy.setStartValue(source.getStartValue());
+		copy.setStartUnit(source.getStartUnit());
+		copy.setStartRef(source.getStartRef());
+		copy.setDueValue(source.getDueValue());
+		copy.setDueUnit(source.getDueUnit());
+		copy.setDueRef(source.getDueRef());
+		return copy;
+	}
 
 }

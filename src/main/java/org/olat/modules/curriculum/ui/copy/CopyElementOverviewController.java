@@ -56,7 +56,9 @@ import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -87,6 +89,8 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 	
 	public CopyElementOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			CopyElementContext context) {
@@ -104,6 +108,7 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		shiftDatesButton = uifactory.addFormLink("shift.dates", formLayout, Link.BUTTON);
 		shiftDatesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_shift");
+		shiftDatesButton.setPrimary(true);
 		
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(TOGGLE_DETAILS_CMD);
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -118,6 +123,8 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfTemplates,
 				new CopyInfosCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfLectureBlocks,
+				new CopyInfosCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfToDos,
 				new CopyInfosCellRenderer()));
 		
 		tableModel = new CopyElementOverviewTableModel(columnsModel);
@@ -187,8 +194,12 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		CopyInfos numOfResources = new CopyInfos(effectiveResources, resources);
 		CopyInfos numOfTemplates = new CopyInfos(effectiveTemplates, templates);
 		
+		long toDos = curriculumElementToDoProvider.countActiveToDoTasks(element, List.of(element));
+		long effectiveToDos = context.getToDosCopySetting() != CopyToDos.dont ? toDos : 0;
+		CopyInfos numOfToDos = new CopyInfos(effectiveToDos, toDos);
+
 		CopyElementSetting setting = calculateSetting(element);
-		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfTemplates, numOfLectureBlocks);
+		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfTemplates, numOfLectureBlocks, numOfToDos);
 		
 		Date beginDate = context.shiftDate(element.getBeginDate());
 		DateChooser beginDateEl = uifactory.addDateChooser("begin.date." + (++counter), null, beginDate, flc);
@@ -332,14 +343,20 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	
 	private void commitCurriculumElementsToCopy() {
 		List<CopyElementRow> rows = tableModel.getObjects();
+		for (CopyElementRow row : rows) {
+			CopyElementDetailsController detailsCtrl = row.getDetailsController();
+			if (detailsCtrl != null) {
+				detailsCtrl.saveToContext();
+			}
+		}
 		List<CopyElementSetting> elementsToCopy = rows.stream().map(row -> {
 			Date begin = row.getBeginDateEl().getDate();
 			Date end = row.getEndDateEl().getDate();
 			String displayName = row.getSetting().displayName();
-			String identifier = row.getSetting().identifier();			
+			String identifier = row.getSetting().identifier();
 			return new CopyElementSetting(row.getCurriculumElement(), displayName, identifier, begin, end);
 		}).toList();
-		
+
 		context.setCurriculumElementsToCopy(elementsToCopy);
 	}
 	

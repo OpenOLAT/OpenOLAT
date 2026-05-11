@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -60,12 +62,15 @@ import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
+import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoDateResolver;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDateConfig;
@@ -97,6 +102,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.all};
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
@@ -382,6 +389,75 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				element.getKey().toString(),
 				true, new Date(), doer);
 	}
+	
+	public void copyToDoTasks(CurriculumElement source, CurriculumElement target,
+			boolean copyAssignments, Set<Long> includedTaskKeys, Identity doer) {
+		if (source == null || target == null
+				|| source.getCurriculum() == null || target.getCurriculum() == null) {
+			return;
+		}
+
+		ToDoTaskSearchParams searchParams = createActiveSearchParams(List.of(source.getKey().toString()));
+		List<ToDoTask> sourceTasks = toDoService.getToDoTasks(searchParams);
+		if (sourceTasks.isEmpty()) {
+			return;
+		}
+		if (includedTaskKeys != null) {
+			sourceTasks = sourceTasks.stream()
+					.filter(t -> includedTaskKeys.contains(t.getKey()))
+					.toList();
+			if (sourceTasks.isEmpty()) {
+				return;
+			}
+		}
+
+		List<ToDoTaskTag> sourceTags = toDoService.getToDoTaskTags(searchParams);
+		Map<Long, ToDoTaskMembers> sourceMembers = copyAssignments
+				? toDoService.getToDoTaskGroupKeyToMembers(sourceTasks, ToDoRole.ASSIGNEE_DELEGATEE)
+				: Map.of();
+
+		Long targetCurriculumKey = target.getCurriculum().getKey();
+		String targetSubPath = target.getKey().toString();
+		String targetCurriculumTitle = target.getCurriculum().getDisplayName();
+		String targetElementTitle = target.getDisplayName();
+
+		int count = 0;
+		for (ToDoTask sourceTask : sourceTasks) {
+			ToDoTask copy = toDoService.createToDoTask(doer, TYPE, targetCurriculumKey, targetSubPath,
+					targetCurriculumTitle, targetElementTitle, null);
+			copy.setTitle(sourceTask.getTitle());
+			copy.setDescription(sourceTask.getDescription());
+			copy.setPriority(sourceTask.getPriority());
+			copy.setExpenditureOfWork(sourceTask.getExpenditureOfWork());
+			copy.setStartDate(sourceTask.getStartDate());
+			copy.setDueDate(sourceTask.getDueDate());
+			copy.setAssigneeRights(sourceTask.getAssigneeRights());
+			copy.setRelativeDates(ToDoRelativeDates.copy(sourceTask.getRelativeDates()));
+			copy.setContentModifiedDate(new Date());
+			toDoService.update(doer, copy, null);
+
+			List<String> tagNames = sourceTags.stream()
+					.filter(tag -> tag.getToDoTask().getKey().equals(sourceTask.getKey()))
+					.map(tag -> tag.getTag().getDisplayName())
+					.toList();
+			if (!tagNames.isEmpty()) {
+				toDoService.updateTags(copy, tagNames);
+			}
+
+			if (copyAssignments) {
+				ToDoTaskMembers members = sourceMembers.get(sourceTask.getBaseGroup().getKey());
+				if (members != null) {
+					toDoService.updateMember(doer, copy,
+							members.getMembers(ToDoRole.assignee),
+							members.getMembers(ToDoRole.delegatee));
+				}
+			}
+
+			if (++count % 10 == 0) {
+				dbInstance.intermediateCommit();
+			}
+		}
+	}
 
 	public long countActiveToDoTasks(CurriculumElement curriculumElement,
 			List<? extends CurriculumElementRef> elements) {
@@ -391,14 +467,19 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		List<String> originSubPaths = elements.stream()
 				.map(ref -> ref.getKey().toString())
 				.toList();
-		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
-		params.setTypes(List.of(TYPE));
-		params.setOriginIds(List.of(curriculumElement.getCurriculum().getKey()));
-		params.setOriginSubPaths(originSubPaths);
-		params.setOriginDeleted(Boolean.FALSE);
-		params.setStatus(ToDoStatus.OPEN_TO_DONE);
+		ToDoTaskSearchParams params = createActiveSearchParams(originSubPaths);
 		Long count = toDoService.getToDoTaskCount(params);
 		return count != null ? count : 0;
 	}
+
+	public ToDoTaskSearchParams createActiveSearchParams(List<String> originSubPaths) {
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		params.setOriginSubPaths(originSubPaths);
+		params.setOriginDeleted(Boolean.FALSE);
+		params.setStatus(ToDoStatus.OPEN_TO_DONE);
+		return params;
+	}
+
 
 }

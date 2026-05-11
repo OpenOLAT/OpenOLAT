@@ -116,6 +116,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -712,6 +713,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		
 		
+		CopyToDos copyToDos = settings.getCopyToDos();
+		if(copyToDos == CopyToDos.todos || copyToDos == CopyToDos.todosWithAssignments) {
+			Set<Long> includedTaskKeys = settings.getSelectedToDoTaskKeys(elementToClone.getKey());
+			curriculumElementToDoProvider.copyToDoTasks(elementToClone, clone,
+					copyToDos == CopyToDos.todosWithAssignments, includedTaskKeys, doer);
+		}
+
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
 			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth);

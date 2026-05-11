@@ -250,7 +250,7 @@ public class MediaSiteAdminController extends FormBasicController {
 							tool.setPublicKeyUrl(lti13JwksUrlEl.getValue());
 							tool = lti13Service.updateTool(tool);
 							LTI13ToolDeployment deployment = lti13Service.createToolDeployment(
-									null, LTI13ToolDeploymentType.MULTIPLE_CONTEXTS,
+									null, LTI13ToolDeploymentType.SINGLE_CONTEXT,
 									UUID.randomUUID().toString(), tool);
 							mediaSiteModule.setLti13ToolKey(tool.getKey());
 							mediaSiteModule.setLti13DeploymentKey(deployment.getKey());

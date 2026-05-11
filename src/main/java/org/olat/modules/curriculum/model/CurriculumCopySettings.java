@@ -20,7 +20,10 @@
 package org.olat.modules.curriculum.model;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -53,12 +56,15 @@ public class CurriculumCopySettings {
 	private long shiftDateByDays = 0;
 	
 	private CopyResources copyResources;
+	private CopyToDos copyToDos = CopyToDos.todosWithAssignments;
 	
 	private boolean addCoachesAsTeacher;
 	private boolean copyOwnersMemberships;
 	private boolean copyCoachesMemberships;
 	private boolean copyMasterCoachesMemberships;
 	
+	private Map<Long, Set<Long>> selectedToDoTaskKeys;
+
 	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
 	
@@ -110,6 +116,30 @@ public class CurriculumCopySettings {
 
 	public void setCopyResources(CopyResources copyResources) {
 		this.copyResources = copyResources;
+	}
+
+	public CopyToDos getCopyToDos() {
+		return copyToDos;
+	}
+
+	public void setCopyToDos(CopyToDos copyToDos) {
+		this.copyToDos = copyToDos;
+	}
+
+	public Set<Long> getSelectedToDoTaskKeys(Long sourceElementKey) {
+		if (selectedToDoTaskKeys == null) return null;
+		return selectedToDoTaskKeys.get(sourceElementKey);
+	}
+
+	public void setSelectedToDoTaskKeys(Long sourceElementKey, Set<Long> selected) {
+		if (selectedToDoTaskKeys == null) {
+			selectedToDoTaskKeys = new HashMap<>();
+		}
+		if (selected == null) {
+			selectedToDoTaskKeys.remove(sourceElementKey);
+		} else {
+			selectedToDoTaskKeys.put(sourceElementKey, selected);
+		}
 	}
 
 	public boolean isCopyStandaloneEvents() {
@@ -248,6 +278,23 @@ public class CurriculumCopySettings {
 		dont,
 		memberships,
 		membershipsAddTeachers,
+	}
+
+	public enum CopyToDos {
+		dont,
+		todos,
+		todosWithAssignments;
+
+		public static CopyToDos valueOf(String val, CopyToDos def) {
+			if(val == null) return def;
+
+			for(CopyToDos value:values()) {
+				if(val.equals(value.name())) {
+					return value;
+				}
+			}
+			return def;
+		}
 	}
 	
 	public record CopyOfferSetting(Offer originalOffer, Date validFrom, Date validTo) {
