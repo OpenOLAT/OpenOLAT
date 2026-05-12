@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -30,8 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.todo.ToDoStatus;
@@ -50,31 +47,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	
-	private static final String GUIPREF_KEY_LAST_VISIT = "curriculum.manager.todos.last.visit";
-
 	private final Collection<String> subPaths;
-	private Date lastVisitDate;
 
 	@Autowired
 	private CurriculumService curriculumService;
 
 	public CurriculumMangerToDoListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "manager_todos", CurriculumElementToDoProvider.TYPE, null, null);
-		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			Object pref = guiPrefs.get(CurriculumMangerToDoListController.class, GUIPREF_KEY_LAST_VISIT);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-			
-			String lastVisit = Formatter.formatDatetime(new Date());
-			guiPrefs.putAndSave(CurriculumMangerToDoListController.class, GUIPREF_KEY_LAST_VISIT, lastVisit);
-		}
 		
 		subPaths = curriculumService.getAccessibleCurriculumKeys(getIdentity()).curriculumElementKeys().stream()
 				.map(String::valueOf)
@@ -92,8 +71,8 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 
 	@Override

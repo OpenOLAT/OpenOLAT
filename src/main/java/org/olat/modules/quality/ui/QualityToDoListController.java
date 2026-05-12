@@ -19,7 +19,6 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +26,6 @@ import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -36,8 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapper
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.manager.DataCollectionToDoTaskProvider;
 import org.olat.modules.quality.manager.EvaluationFormSessionToDoTaskProvider;
@@ -73,7 +70,6 @@ public class QualityToDoListController extends ToDoTaskListController {
 	private final Set<Long> editDataCollectionKeys;
 	private final Set<Long> viewDataCollectionKeys;
 	private final Set<Long> allDataCollectionKeys;
-	private Date lastVisitDate;
 
 	@Autowired
 	private QualityService qualityService;
@@ -90,21 +86,6 @@ public class QualityToDoListController extends ToDoTaskListController {
 		allDataCollectionKeys = new HashSet<>(editDataCollectionKeys);
 		allDataCollectionKeys.addAll(viewDataCollectionKeys);
 		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			Object pref = guiPrefs.get(QualityToDoListController.class, GUIPREF_KEY_LAST_VISIT);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-			
-			String lastVisit = Formatter.formatDatetime(new Date());
-			guiPrefs.putAndSave(QualityToDoListController.class, GUIPREF_KEY_LAST_VISIT, lastVisit);
-		}
-		
 		initForm(ureq);
 		
 		initBulkLinks();
@@ -117,8 +98,8 @@ public class QualityToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 
 	@Override

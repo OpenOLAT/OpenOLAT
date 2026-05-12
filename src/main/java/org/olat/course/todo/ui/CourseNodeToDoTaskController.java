@@ -19,7 +19,6 @@
  */
 package org.olat.course.todo.ui;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -34,8 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
@@ -60,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseNodeToDoTaskController extends ToDoTaskListController {
 
-	private static final String GUIPREF_KEY_LAST_VISIT = "course.node.todos.last.visit";
 	private static final CourseNodeSecurityCallback SECURITY_CALLBACK = new CourseNodeSecurityCallback();
 	
 	private FormToggle enabledEl;
@@ -70,7 +66,6 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 	private final boolean editor;
 	private final CourseNode courseNode;
 	private final ToDoTaskRowGrouping rowGrouping;
-	private Date lastVisitDate;
 	
 	@Autowired
 	private CourseToDoService courseToDoService;
@@ -87,22 +82,6 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 				? course.getEditorTreeModel().getCourseNode(reminderProvider.getCourseNodeIdent())
 				: course.getRunStructure().getNode(reminderProvider.getCourseNodeIdent());
 		rowGrouping = courseToDoService.getToDoHandler(courseNode).getToDoTaskRowGrouping(getLocale(), courseNode);
-		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			String guiPrefsKey = GUIPREF_KEY_LAST_VISIT + "::" + repositoryEntry.getKey() + "::" + reminderProvider.getCourseNodeIdent();
-			Object pref = guiPrefs.get(CourseNodeToDoTaskController.class, guiPrefsKey);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-			
-			String lastVisit = Formatter.formatDatetime(new Date());
-			guiPrefs.putAndSave(CourseNodeToDoTaskController.class, guiPrefsKey, lastVisit);
-		}
 		
 		initForm(ureq);
 		
@@ -139,8 +118,8 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 	
 	@Override

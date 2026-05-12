@@ -69,6 +69,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -139,7 +140,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	public static final String TAB_ID_ALL = "All";
 	public static final String TAB_ID_OPEN = "Open";
 	public static final String TAB_ID_OVERDUE = "Overdue";
-	public static final String TAB_ID_NEW = "New";
 	private static final String TAB_ID_UNASSIGNED = "Unassigned";
 	private static final String TAB_ID_DONE = "Done";
 	public static final String TAB_ID_DELETED = "Deleted";
@@ -158,7 +158,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabOpen;
 	private FlexiFiltersTab tabOverdue;
-	private FlexiFiltersTab tabNew;
 	private FlexiFiltersTab tabDone;
 	protected FlexiFiltersTab tabDeleted;
 	private FlexiFiltersTab tabUnassigned;
@@ -199,7 +198,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
-	protected abstract Date getLastVisitDate();
+	protected abstract Date getNewSinceDate();
 	
 	protected boolean isFiltersEnabled() {
 		return true;
@@ -404,7 +403,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.future.name(), translate("filter.due.future")));
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.noDueDate.name(), translate("filter.due.anytime")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.due"), ToDoTaskFilter.due.name(), dueValues, true));
-		
+
+		SelectionValues creationDateValues = new SelectionValues();
+		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.today.name(), translate("today")));
+		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.last7Days.name(), translate("filter.created.last.7.days")));
+		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.last4Weeks.name(), translate("filter.created.last.4.weeks")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.created"), ToDoTaskFilter.creationDate.name(), creationDateValues, true));
+
 		SelectionValues statusValues = new SelectionValues();
 		addStatusSVEntry(statusValues, ToDoStatus.open);
 		addStatusSVEntry(statusValues, ToDoStatus.inProgress);
@@ -476,13 +481,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.due, List.of(ToDoDueFilter.overdue.name()))));
 		tabOverdue.addDefaultFilterValue(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive));
 		tabs.add(tabOverdue);
-		
-		tabNew = FlexiFiltersTabFactory.tabWithFilters(
-				TAB_ID_NEW,
-				translate("tab.new"),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
-		tabs.add(tabNew);
 		
 		if (isFilterTabUnassignedEnabled()) {
 			tabUnassigned = FlexiFiltersTabFactory.tabWithImplicitFilters(
@@ -669,12 +667,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private void applyFilters(ToDoTaskSearchParams searchParams) {
-		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabNew) {
-			searchParams.setCreatedAfter(getLastVisitDate());
-		} else {
-			searchParams.setCreatedAfter(null);
-		}
-		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
 		
@@ -736,6 +728,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 				} else {
 					searchParams.setDueDateNull(false);
 					searchParams.setDueDateRanges(null);
+				}
+			}
+			if (ToDoTaskFilter.creationDate.name() == filter.getFilter()) {
+				String value = ((FlexiTableSingleSelectionFilter)filter).getValue();
+				if (value != null) {
+					searchParams.setCreatedAfter(ToDoCreationDateFilter.valueOf(value).getFrom(new Date()));
+				} else {
+					searchParams.setCreatedAfter(null);
 				}
 			}
 		}
@@ -1025,7 +1025,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		String title = StringHelper.escapeHtml(row.getDisplayName());
 		if (ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()) {
 			title = "<span class=\"o_todo_title_done_cell\">" + title + "</span>";
-		} else if (getLastVisitDate() != null && row.getCreationDate() != null && getLastVisitDate().before(row.getCreationDate())) {
+		} else if (getNewSinceDate() != null && row.getCreationDate() != null && getNewSinceDate().before(row.getCreationDate())) {
 			title += "<span class=\"o_labeled_light o_todo_new\">" + translate("new.label") +  "</span>";
 		}
 		

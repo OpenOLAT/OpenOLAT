@@ -19,7 +19,6 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -29,8 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.manager.DataCollectionToDoTaskProvider;
 import org.olat.modules.quality.manager.EvaluationFormSessionToDoTaskProvider;
@@ -57,7 +54,6 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 	
 	private final DataCollectionSecurityCallback secCallback;
 	private final QualityDataCollectionRef dataCollection;
-	private Date lastVisitDate;
 
 	@Autowired
 	private ToDoService toDoService;
@@ -67,18 +63,6 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 		super(ureq, wControl, "todos", DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null);
 		this.secCallback = secCallback;
 		this.dataCollection = dataCollection;
-		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			Object pref = guiPrefs.get(QualityToDoListController.class, QualityToDoListController.GUIPREF_KEY_LAST_VISIT);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-		}
 		
 		initForm(ureq);
 		
@@ -92,8 +76,8 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 	
 	@Override

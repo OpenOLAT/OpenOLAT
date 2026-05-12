@@ -19,7 +19,6 @@
  */
 package org.olat.modules.todo.ui;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -33,9 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
-import org.olat.modules.quality.ui.QualityToDoListController;
 import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
@@ -59,7 +55,6 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	private FormLink createLink;
 	
 	private final boolean canCreateToDoTasks;
-	private Date lastVisitDate;
 
 	@Autowired
 	private ToDoModule toDoModule;
@@ -67,21 +62,6 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	protected ToDoUserToolListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "user_tool", PersonalToDoProvider.TYPE, ureq.getIdentity().getKey(), null);
 		canCreateToDoTasks = toDoModule.canCreatePersonalToDoTasks(ureq.getUserSession().getRoles());
-		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			Object pref = guiPrefs.get(QualityToDoListController.class, GUIPREF_KEY_LAST_VISIT);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-			
-			String lastVisit = Formatter.formatDatetime(new Date());
-			guiPrefs.putAndSave(QualityToDoListController.class, GUIPREF_KEY_LAST_VISIT, lastVisit);
-		}
 		
 		initForm(ureq);
 		
@@ -95,8 +75,8 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 	
 	@Override

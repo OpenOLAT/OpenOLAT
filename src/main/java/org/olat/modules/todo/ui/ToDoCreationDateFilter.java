@@ -14,18 +14,42 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.todo.ui;
 
+import java.util.Date;
+
+import org.olat.core.util.DateUtils;
+
 /**
- * 
- * Initial date: 29 Mar 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ * Initial date: 12 May 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public enum ToDoTaskFilter {
-	my, tag, priority, due, creationDate, status, contextType
+enum ToDoCreationDateFilter {
+
+	today {
+		@Override
+		public Date getFrom(Date now) {
+			return DateUtils.setTime(now, 0, 0, 0);
+		}
+	},
+	last7Days {
+		@Override
+		public Date getFrom(Date now) {
+			return DateUtils.setTime(DateUtils.addDays(now, -7), 0, 0, 0);
+		}
+	},
+	last4Weeks {
+		@Override
+		public Date getFrom(Date now) {
+			return DateUtils.setTime(DateUtils.addWeeks(now, -4), 0, 0, 0);
+		}
+	};
+
+	public abstract Date getFrom(Date now);
 
 }

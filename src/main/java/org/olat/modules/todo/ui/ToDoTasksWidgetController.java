@@ -152,7 +152,6 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		createIndicator(widgetCont, "myToDos", "widget.todo.my", "[ToDos:0][" + ToDoTaskListController.TAB_ID_MY + ":0]");
 		createIndicator(widgetCont, "open", "widget.todo.open", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OPEN + ":0]");
 		createIndicator(widgetCont, "overdue", "widget.todo.overdue", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OVERDUE + ":0]");
-		createIndicator(widgetCont, "new", "widget.todo.new", "[ToDos:0][" + ToDoTaskListController.TAB_ID_NEW + ":0]");
 
 		return indicatorsEl.getComponent().getComponentName();
 	}
@@ -222,35 +221,30 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	}
 	
 	private void reload() {
-		Date newReference = DateUtils.addDays(new Date(), -1);
-		
 		long myCount = toDoService.getToDoTaskCount(createMyToDosParams());
 		long openCount = toDoService.getToDoTaskCount(createOpenParams());
 		long overdueCount = toDoService.getToDoTaskCount(createOverdueParams());
-		long newCount = toDoService.getToDoTaskCount(createNewParams(newReference));
 
 		updateIndicator("myToDos", myCount, "widget.todo.my");
 		updateIndicator("open", openCount, "widget.todo.open");
 		updateIndicator("overdue", overdueCount, "widget.todo.overdue");
-		updateIndicator("new", newCount, "widget.todo.new");
 
 		ToDoTaskSearchParams rowParams = switch (keyFigureKey) {
 			case "open" -> createOpenParams();
 			case "overdue" -> createOverdueParams();
-			case "new" -> createNewParams(newReference);
 			default -> createMyToDosParams();
 		};
 		List<ToDoTask> tasks = toDoService.getToDoTasks(rowParams);
-		updateTableRows(tasks, newReference);
+		updateTableRows(tasks);
 	}
 
-	private void updateTableRows(List<ToDoTask> tasks, Date newReference) {
+	private void updateTableRows(List<ToDoTask> tasks) {
 		LocalDate now = LocalDate.now();
 		
 		List<ToDoTaskRow> rows = tasks.stream()
 				.sorted(Comparator.comparing(ToDoTask::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
 								.thenComparing(ToDoTask::getTitle, Comparator.nullsLast(Comparator.naturalOrder())))
-				.map(task -> toRow(task, now, newReference))
+				.map(task -> toRow(task, now))
 				.limit(tableEl.getPageSize())
 				.toList();
 		
@@ -258,14 +252,10 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		tableEl.reset(true, true, true);
 	}
 
-	private ToDoTaskRow toRow(ToDoTask task, LocalDate now, Date newReference) {
+	private ToDoTaskRow toRow(ToDoTask task, LocalDate now) {
 		ToDoTaskRow row = new ToDoTaskRow(task);
 		String displayName = ToDoUIFactory.getDisplayName(getTranslator(), task);
 		displayName = StringHelper.escapeHtml(displayName);
-		if (newReference != null && task.getCreationDate() != null && newReference.before(task.getCreationDate())) {
-			displayName += "<span class=\"o_labeled_light o_todo_new\">" + translate("new.label") + "</span>";
-		}
-		displayName = "<span>" + displayName + "</span>";
 		row.setDisplayName(displayName);
 
 		if (task.getDueDate() != null) {
@@ -294,13 +284,6 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		params.setStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress));
 		DateRange dateRange = ToDoDueFilter.overdue.getDateRange(new Date());
 		params.setDueDateRanges(List.of(dateRange));
-		return params;
-	}
-
-	private ToDoTaskSearchParams createNewParams(Date reference) {
-		ToDoTaskSearchParams params = createBaseParams();
-		params.setStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress));
-		params.setCreatedAfter(reference);
 		return params;
 	}
 	
