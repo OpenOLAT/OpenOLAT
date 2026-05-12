@@ -55,6 +55,11 @@ public class RoomBookingDAO {
 		return booking;
 	}
 
+	public RoomBooking loadByKey(RoomBookingRef ref) {
+		if (ref == null || ref.getKey() == null) return null;
+		return dbInstance.getCurrentEntityManager().find(RoomBookingImpl.class, ref.getKey());
+	}
+
 	public RoomBooking update(RoomBooking booking) {
 		booking.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(booking);

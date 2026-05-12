@@ -1,4 +1,4 @@
-# OpenOlat Glossary Translations
+# OpenOlat i18n Translation Reference
 
 Translation reference for OpenOlat-specific terms.
 Use these exact translations when translating i18n keys to maintain consistency.
@@ -8,6 +8,11 @@ Use these exact translations when translating i18n keys to maintain consistency.
 When translating OpenOlat i18n keys, look up the English term in this file
 to find the correct translation in the target language. These are the
 canonical translations used throughout the application.
+
+The end-user glossary lives in the docs site
+(`OpenOLAT-docs/sites/manual_user/docs/general/glossary.md`, published at
+https://docs.openolat.org). This file is the translator-facing reference and
+intentionally contains only term mappings, not user-facing definitions.
 
 ## System roles
 
