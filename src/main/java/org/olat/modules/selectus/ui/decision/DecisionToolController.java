@@ -281,6 +281,7 @@ public class DecisionToolController extends FormBasicController implements Flexi
 		dataModel = new DecisionToolDataModel(rows, definitions, appToCategories, editable, getTranslator(), getLocale(), columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 25, false, getTranslator(), flc);
 		tableEl.setMultiSelect(batchDecisionButton != null);
+		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(guiPreferences, COLUMN_PREFS);
 		tableEl.setCssDelegate(this);
 		if(sortKeys != null && sortKeys.length > 0 && sortKeys[0] != null) {
@@ -702,8 +703,7 @@ public class DecisionToolController extends FormBasicController implements Flexi
 			}
 		} else {
 			Object uobject = source.getUserObject();
-			if(uobject instanceof ApplicationRubric) {
-				ApplicationRubric appRubric = (ApplicationRubric)uobject;
+			if(uobject instanceof ApplicationRubric appRubric) {
 				doCommitRow(appRubric);
 				DecisionRubricEvent e = new DecisionRubricEvent(appRubric.getRubric(), getIdentity().getKey());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus()

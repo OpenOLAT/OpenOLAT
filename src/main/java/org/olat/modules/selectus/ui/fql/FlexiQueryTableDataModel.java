@@ -17,17 +17,22 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.selectus.ui.organisation;
+package org.olat.modules.selectus.ui.fql;
 
-import org.olat.core.id.Organisation;
-import org.olat.modules.selectus.model.OrganisationUnit;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
- * Initial date: 27 mars 2026<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Initial date: 12 mai 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
+ * @param <U>
  */
-public record OrganisationSettingsRow(Organisation organisation, OrganisationUnit setting) {
-	//
+public interface FlexiQueryTableDataModel<U> extends SortableFlexiTableDataModel<U> {
+	
+	int getColumn(String identifier);
+	
+	default Object getRawValueAt(U row, int col) {
+		return getValueAt(row, col);
+	}
 }

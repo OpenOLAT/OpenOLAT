@@ -19,10 +19,13 @@
  */
 package org.olat.modules.selectus.ui.fql;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.antlr.v4.runtime.CharStream;
@@ -32,10 +35,8 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
 import com.frentix.flexiql.FlexiQLSyntaxException;
@@ -55,15 +56,18 @@ import com.frentix.flexiql.ql.FlexiQLParser;
 public class FilterableFlexiTableDataModelDelegate<U> {
 	
 	private static final Logger log = Tracing.createLoggerFor(FilterableFlexiTableDataModelDelegate.class);
-
-	private final Formatter formatter;
-	private final Translator translator;
-	private final SortableFlexiTableDataModel<U> tableModel;
 	
-	public FilterableFlexiTableDataModelDelegate(SortableFlexiTableDataModel<U> tableModel, Translator translator) {
+	private static final DateFormat formatTextual = new SimpleDateFormat("dd MMMMM yyyy", Locale.ENGLISH);
+	private static final DateFormat formatTextualDE = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);
+
+	private final Locale locale;
+	private final Translator translator;
+	private final FlexiQueryTableDataModel<U> tableModel;
+	
+	public FilterableFlexiTableDataModelDelegate(FlexiQueryTableDataModel<U> tableModel, Translator translator) {
 		this.translator = translator;
+		locale = translator.getLocale();
 		this.tableModel = tableModel;
-		this.formatter = Formatter.getInstance(translator.getLocale());
 	}
 	
 	public Translator getTranslator() {
@@ -79,7 +83,7 @@ public class FilterableFlexiTableDataModelDelegate<U> {
 		List<U> resultingRows;
 		if(StringHelper.containsNonWhitespace(query)) {
 			List<U> filteredRows = new ArrayList<>(backupRows.size());	
-			FilterableFlexiQueryValueProvider<U> valueProvider = createQueryValueProvider();
+			FilterableFlexiQueryValueProvider<U> valueProvider = new FilterableFlexiQueryValueProvider<>(tableModel);
 			for(U row:backupRows) {
 				try {
 					CharStream stream = CharStreams.fromString(query);
@@ -90,7 +94,7 @@ public class FilterableFlexiTableDataModelDelegate<U> {
 					valueProvider.setRow(row);
 					FlexiQueryVisitor visitor = new FlexiQueryVisitor(valueProvider, translator.getLocale());
 					Object result = visitor.visit(parser.parse());
-					if(result instanceof Boolean && ((Boolean)result).booleanValue()) {
+					if(result instanceof Boolean boolResult && boolResult.booleanValue()) {
 						filteredRows.add(row);
 					}
 					allErrors |= errorListener.hasErrors() || visitor.hasErrors();
@@ -169,7 +173,7 @@ public class FilterableFlexiTableDataModelDelegate<U> {
 	}
 	
 	protected final boolean acceptDate(Date val, String searchString) {
-		String dateString = formatter.formatDate(val);//TODO selectus fql formatter.formatDateTextual(val);
+		String dateString = formatDateTextual(val);
 		return acceptString(dateString, searchString);
 	}
 	
@@ -177,21 +181,49 @@ public class FilterableFlexiTableDataModelDelegate<U> {
 		return val != null && val.toLowerCase().contains(searchString.toLowerCase());
 	}
 	
-	protected FilterableFlexiQueryValueProvider<U> createQueryValueProvider() {
-		return new FilterableFlexiQueryValueProvider<>();
+	/**
+	 * Formats the given date in a the form 11 May 2021.
+	 * 
+	 * @param date The date
+	 * @param locale The locale
+	 * @return The formatted string of the specified date
+	 */
+	public final String formatDateTextual(Date date) {
+		if(date == null) return "";
+		if(Locale.GERMAN.getLanguage().equals(locale.getLanguage())) {
+			synchronized(formatTextualDE) {
+				return formatTextualDE.format(date);
+			}
+		} else {
+			synchronized(formatTextual) {
+				return formatTextual.format(date);
+			}
+		}
 	}
 	
-	public static class FilterableFlexiQueryValueProvider<V> implements FlexiQueryValueProvider {
+	public static final String toIdentifier(String label) {
+		StringBuilder sb = new StringBuilder();
+		for(char ch:label.toCharArray()) {
+			if(Character.isLetter(ch) || Character.isDigit(ch)) {
+				sb.append(ch);
+			}
+		}
+		return sb.toString();
+	}
+	
+	private static final class FilterableFlexiQueryValueProvider<V> implements FlexiQueryValueProvider {
 		
 		private V row;
+		private final FlexiQueryTableDataModel<V> dataModel;
+		
+		public FilterableFlexiQueryValueProvider(FlexiQueryTableDataModel<V> dataModel) {
+			this.dataModel = dataModel;
+		}
 
 		@Override
 		public Object getValue(String identifier) {
-			return null;
-		}
-		
-		public V getRow() {
-			return row;
+			int col = dataModel.getColumn(identifier);
+			return dataModel.getRawValueAt(row, col);
 		}
 
 		public void setRow(V row) {
@@ -200,7 +232,7 @@ public class FilterableFlexiTableDataModelDelegate<U> {
 		}
 	}
 	
-	public static class FilteredResults<T> {
+	public static final class FilteredResults<T> {
 		
 		private final List<T> rows;
 		private final boolean allErrors;

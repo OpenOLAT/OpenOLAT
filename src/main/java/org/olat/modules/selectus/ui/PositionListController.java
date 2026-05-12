@@ -222,7 +222,7 @@ public class PositionListController extends FormBasicController implements Toole
 			columnsModel.addFlexiColumnModel(deleteColumn);
 		}
 		
-		positionsDataModel = new PositionsDataModel(columnsModel, getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "positions", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);

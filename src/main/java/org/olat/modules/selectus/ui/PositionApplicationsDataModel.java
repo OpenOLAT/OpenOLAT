@@ -39,6 +39,7 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.HighestDegreeType;
 import org.olat.modules.selectus.model.Position;
+import org.olat.modules.selectus.model.PositionAttributeDefinition;
 import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.Project;
 import org.olat.modules.selectus.model.application.ParallelApplication;
@@ -48,8 +49,9 @@ import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
 import org.olat.modules.selectus.ui.events.SelectPositionLightEvent;
+import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
 import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.PositionApplicationsFilterDataModelDelegate;
+import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 import org.olat.modules.selectus.ui.model.ApplicationRow;
 import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
@@ -66,7 +68,7 @@ import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
  */
 public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<ApplicationRow>
 	implements SortableFlexiTableDataModel<ApplicationRow>, FilterableFlexiTableModel,
-	 ExportTableDataModel<ApplicationRow>, FlexiBusinessPathModel {
+	FlexiQueryTableDataModel<ApplicationRow>, ExportTableDataModel<ApplicationRow>,  FlexiBusinessPathModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(PositionApplicationsDataModel.class);
 	private static final Fields[] FIELDS = Fields.values();
@@ -81,15 +83,16 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 	private List<ApplicationRow> backupRows;
 	
 	private int[] exportedColumnIndex;
+	private final List<PositionAttributeDefinition> definitions;
 	
 	private final RecruitingModule recruitingModule;
 	private final RecruitingPositionSecurityCallback secCallback;
 
 	public PositionApplicationsDataModel(Identity identity, Position position, RecruitingPositionSecurityCallback secCallback,
-			Translator translator,
-			FlexiTableColumnModel columnsModel) {
+			Translator translator, FlexiTableColumnModel columnsModel) {
 		super(new ArrayList<>(), columnsModel);
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
+		definitions = position.getAttributesDefinitions();;
 		this.position = position;
 		this.identity = identity;
 		this.translator = translator;
@@ -248,7 +251,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 	private boolean flexiSearch(String query) {
 		boolean allErrors = false;
 		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<ApplicationRow> results = new PositionApplicationsFilterDataModelDelegate(position, this, translator)
+			FilteredResults<ApplicationRow> results = new PositionApplicationsFilterDataModelDelegate(this, translator)
 					.flexiSearch("", query, backupRows);
 			allErrors = results.isAllErrors();
 			super.setObjects(results.getRows());
@@ -629,6 +632,62 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		return null;
 	}
 	
+	@Override
+	public int getColumn(String identifier) {
+		identifier = FilterableFlexiTableDataModelDelegate.toIdentifier(identifier);
+		
+		// First some alias
+		if("referees".equalsIgnoreCase(identifier)) {
+			return Fields.recommendations.ordinal();
+		}
+		if("submittedBy".equalsIgnoreCase(identifier)) {
+			return Fields.submittedByStaff.ordinal();
+		}
+		if("tags".equalsIgnoreCase(identifier)) {
+			return Fields.categories.ordinal();
+		}
+		if("email".equalsIgnoreCase(identifier)) {
+			return Fields.mail.ordinal();
+		}
+		if("habilitationYear".equalsIgnoreCase(identifier)) {
+			return Fields.habilitationDate.ordinal();
+		}
+		if("yearsInAcademia".equalsIgnoreCase(identifier)) {
+			return Fields.workedInAcademiaSince.ordinal();
+		}
+		if("yearsOutsideAcademia".equalsIgnoreCase(identifier)) {
+			return Fields.workedOutAcademiaSince.ordinal();
+		}
+		if("yearsCare".equalsIgnoreCase(identifier)) {
+			return Fields.workedOutAcademiaCareSince.ordinal();
+		}
+		if("dissertationYear".equalsIgnoreCase(identifier)) {
+			return Fields.dissertationDate.ordinal();
+		}
+		
+		if(Fields.isValue(identifier)) {
+			Fields col = Fields.valueOf(identifier);
+			return col.ordinal();
+		}
+		
+		for(Fields field:Fields.values()) {
+			String label = translator.translate(field.i18nHeaderKey());
+			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
+				return field.ordinal();
+			}
+		}
+		
+		for(int i=0; i<definitions.size(); i++) {
+			PositionAttributeDefinition definition = definitions.get(i);
+			String label = definition.getLabel(translator.getLocale(), true);
+			if(label != null && label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
+				return ApplicationAttributesDelegate.COLS_OFFSET + i;
+			}
+		}
+		return -1;
+	}
+	
+	@Override
 	public Object getRawValueAt(ApplicationRow appRow, int col) {
 		ApplicationLight app = appRow.getApplication();
 		if(col >= 0 && col < FIELDS.length) {

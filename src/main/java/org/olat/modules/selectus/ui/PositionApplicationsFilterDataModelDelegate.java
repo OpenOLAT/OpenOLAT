@@ -3,7 +3,7 @@
  * Copyright (c) frentix GmbH<br>
  * http://www.frentix.com<br>
  */
-package org.olat.modules.selectus.ui.fql;
+package org.olat.modules.selectus.ui;
 
 import static org.olat.modules.selectus.ui.PositionApplicationsDataModel.toYear;
 
@@ -13,10 +13,9 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.selectus.model.ApplicationLight;
-import org.olat.modules.selectus.model.Position;
-import org.olat.modules.selectus.ui.PositionApplicationsDataModel;
 import org.olat.modules.selectus.ui.PositionApplicationsDataModel.Fields;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
+import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 import org.olat.modules.selectus.ui.model.ApplicationRow;
 
@@ -30,29 +29,11 @@ public class PositionApplicationsFilterDataModelDelegate extends FilterableFlexi
 	
 	private static final Fields[] COLS = Fields.values();
 	
-	private final Position position;
 	private final PositionApplicationsDataModel applicationsTableModel;
 	
-	public PositionApplicationsFilterDataModelDelegate(Position position, PositionApplicationsDataModel tableModel, Translator translator) {
+	public PositionApplicationsFilterDataModelDelegate(PositionApplicationsDataModel tableModel, Translator translator) {
 		super(tableModel, translator);
-		this.position = position;
 		applicationsTableModel = tableModel;
-	}
-
-	@Override
-	protected FilterableFlexiQueryValueProvider<ApplicationRow> createQueryValueProvider() {
-		return new PositionApplicationsFlexiQueryValueProvider();
-	}
-	
-	public class PositionApplicationsFlexiQueryValueProvider extends FilterableFlexiQueryValueProvider<ApplicationRow> {
-		@Override
-		public Object getValue(String identifier) {
-			if(Fields.isValue(identifier)) {
-				Fields col = Fields.valueOf(identifier);
-				return applicationsTableModel.getRawValueAt(getRow(), col.ordinal());
-			}
-			return super.getValue(identifier);
-		}
 	}
 
 	@Override
