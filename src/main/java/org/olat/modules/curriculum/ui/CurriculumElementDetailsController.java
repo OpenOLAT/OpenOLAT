@@ -87,6 +87,7 @@ import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesControll
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumElementToDoTasksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.MembersWidgetController;
 import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
@@ -135,6 +136,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private OffersWidgetController offersWidgetCtrl;
 	private CoursesWidgetController coursesWidgetCtrl;
 	private MembersWidgetController membersWidgetCtrl;
+	private CurriculumElementToDoTasksWidgetController toDoTasksWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
 	private DashboardController overviewCtrl;
 	private CurriculumElementOffersController offersCtrl;
@@ -616,6 +618,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		removeAsListenerAndDispose(offersWidgetCtrl);
 		removeAsListenerAndDispose(coursesWidgetCtrl);
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
+		removeAsListenerAndDispose(toDoTasksWidgetCtrl);
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
@@ -640,13 +643,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewCtrl.addWidget("courses", translate("tab.resources"), coursesWidgetCtrl, BentoBoxSize.box_4_1);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
+		toDoTasksWidgetCtrl = new CurriculumElementToDoTasksWidgetController(ureq, getWindowControl(), curriculumElement);
+		listenTo(toDoTasksWidgetCtrl);
+		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
+
 		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
 				&& secCallback.canViewCatalogSettings(curriculumElement)) {
 			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(offersWidgetCtrl);
 			overviewCtrl.addWidget("offers", translate("curriculum.offers"), offersWidgetCtrl, BentoBoxSize.box_4_1);
 		}
-		
+
 		return overviewCtrl;
 	}
 	
@@ -783,7 +790,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(structureCtrl == source || coursesWidgetCtrl == source || offersWidgetCtrl == source
 				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
-				|| resourcesCtrl == source || membersWidgetCtrl == source) {
+				|| resourcesCtrl == source || membersWidgetCtrl == source
+				|| toDoTasksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {

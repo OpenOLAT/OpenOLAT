@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -178,6 +179,10 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setShowSmallPageSize(false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("widget.todo.empty")
+				.withIconCss("o_icon_todo_task")
+				.build());
 
 		return tableEl.getComponent().getComponentName();
 	}
