@@ -266,6 +266,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups) {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		if (roomManagementModule.isEnabled()) {
+			roomManagementService.updateBookingsForBlock(block);
+		}
 		if(block.getTeamsMeeting() != null) {
 			TeamsMeetingImpl meeting = (TeamsMeetingImpl)block.getTeamsMeeting();
 			teamsMeetingDao.updateDates(meeting, block.getStartDate(), meeting.getLeadTime(), block.getEndDate(), meeting.getFollowupTime());

@@ -1015,6 +1015,33 @@ public class LectureServiceTest extends OlatTestCase {
 	}
 
 	@Test
+	public void saveLectureBlock_realignsRoomBooking() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-realign-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lb = createMinimalLectureBlock(entry);
+
+		Location loc = roomManagementService.createLocation("RealignLoc_" + random(), doer);
+		Room room = roomManagementService.createRoom(loc, "RealignRoom_" + random(), doer);
+		roomManagementService.bookRoom(room, lb, lb.getStartDate(), lb.getEndDate(), 5, 10, doer);
+		dbInstance.commitAndCloseSession();
+
+		Date newStart = DateUtils.addMinutes(lb.getStartDate(), 90);
+		Date newEnd = DateUtils.addMinutes(lb.getEndDate(), 90);
+		lb.setStartDate(newStart);
+		lb.setEndDate(newEnd);
+		lectureService.save(lb, null);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
+		Assert.assertEquals(1, bookings.size());
+		RoomBooking booking = bookings.get(0);
+		Assert.assertEquals(newStart, booking.getStartDate());
+		Assert.assertEquals(newEnd, booking.getEndDate());
+		Assert.assertEquals(5, booking.getBufferBefore());
+		Assert.assertEquals(10, booking.getBufferAfter());
+	}
+
+	@Test
 	public void copyLectureBlock_copiesRoomBooking() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-copy-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();

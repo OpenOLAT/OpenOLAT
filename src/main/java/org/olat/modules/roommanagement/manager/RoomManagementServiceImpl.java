@@ -290,6 +290,21 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	}
 
 	@Override
+	public void updateBookingsForBlock(LectureBlock lb) {
+		List<RoomBooking> bookings = roomBookingDao.getBookingsForLectureBlock(lb);
+		for (RoomBooking booking : bookings) {
+			String beforeXml = RoomManagementXStream.toXml(roomBookingDao.loadByKey(booking));
+			booking.setStartDate(lb.getStartDate());
+			booking.setEndDate(lb.getEndDate());
+			RoomBooking updated = roomBookingDao.update(booking);
+			roomModuleLogDao.createLog(RoomModuleLogAction.booking_update,
+					null, beforeXml,
+					null, RoomManagementXStream.toXml(updated),
+					null, updated.getRoom(), updated, lb, null);
+		}
+	}
+
+	@Override
 	public int copyBookingsForLectureBlock(LectureBlock source, LectureBlock target, Identity doer) {
 		if (LectureBlockManagedFlag.isManaged(source, LectureBlockManagedFlag.room)) {
 			return 0;

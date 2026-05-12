@@ -80,6 +80,8 @@ public interface RoomManagementService {
 
 	int copyBookingsForLectureBlock(LectureBlock source, LectureBlock target, Identity doer);
 
+	void updateBookingsForBlock(LectureBlock lb);
+
 	// --- Access control ---
 
 	boolean canEditLocation(Location l, Roles roles);
