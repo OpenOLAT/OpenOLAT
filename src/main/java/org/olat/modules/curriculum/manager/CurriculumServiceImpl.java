@@ -903,12 +903,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
+	public CurriculumElement updateCurriculumElement(Identity doer, CurriculumElement element) {
 		CurriculumElement updated = curriculumElementDao.update(element);
 		if (updated.getResource() != null) {
 			acService.updateRelativeValidDates(List.of(updated.getResource()), updated.getBeginDate(), updated.getEndDate());
 		}
-		curriculumElementToDoProvider.onCurriculumElementUpdated(updated);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, updated);
 		return updated;
 	}
 	
@@ -923,7 +923,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		CurriculumElementStatus currentStatus = element.getElementStatus();
 		((CurriculumElementImpl)element).setElementStatus(newStatus);
-		element = updateCurriculumElement(element);
+		element = updateCurriculumElement(doer, element);
 		auditLogChangeStatus(currentStatus, newStatus, element, doer);
 		
 		if (updateChildren) {
@@ -938,7 +938,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				.forEach(childElement -> {
 					CurriculumElementStatus currentChildStatus = childElement.getElementStatus();
 					((CurriculumElementImpl)childElement).setElementStatus(newChildStatus);
-					childElement = updateCurriculumElement(childElement);
+					childElement = updateCurriculumElement(doer, childElement);
 					auditLogChangeStatus(currentChildStatus, newChildStatus, childElement, doer);
 				});
 		}

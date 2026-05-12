@@ -261,7 +261,7 @@ public class ACOfferRelativeDatesTest extends OlatTestCase {
 		element = curriculumService.getCurriculumElement(element);
 		element.setBeginDate(newBeginDate);
 		element.setEndDate(newEndDate);
-		curriculumService.updateCurriculumElement(element);
+		curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), element);
 		dbInstance.commitAndCloseSession();
 
 		List<Offer> offers = acOfferDao.loadRelativeDateOffers(List.of(element.getResource()));

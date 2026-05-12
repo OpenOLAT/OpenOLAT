@@ -218,7 +218,7 @@ public class OLATUpgrade_20_3_0 extends OLATUpgrade {
 							Long implementationKey = path.get(0);
 							CurriculumElement implementation = curriculumElementDao.loadReference(implementationKey);
 							((CurriculumElementImpl)element).setImplementation(implementation);
-							curriculumService.updateCurriculumElement(element);
+							curriculumService.updateCurriculumElement(null, element);
 						}
 						
 						if(count++ % 25 == 0) {

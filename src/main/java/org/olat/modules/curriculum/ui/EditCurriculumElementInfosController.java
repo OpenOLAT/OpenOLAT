@@ -377,7 +377,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element.setRequirements(requirementsEl.getValue());
 			element.setCredits(creditsEl.getValue());
 			element.setTaughtBys(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()));
-			element = curriculumService.updateCurriculumElement(element);
+			element = curriculumService.updateCurriculumElement(getIdentity(), element);
 			
 			commitCreditPointConfiguration();
 		}

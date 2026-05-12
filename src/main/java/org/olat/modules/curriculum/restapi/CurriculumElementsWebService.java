@@ -185,9 +185,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putCurriculumElement(CurriculumElementVO curriculumElement)
+	public Response putCurriculumElement(CurriculumElementVO curriculumElement, @Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
-		CurriculumElement savedElement = saveCurriculumElement(curriculumElement);
+		CurriculumElement savedElement = saveCurriculumElement(curriculumElement, httpRequest);
 		return Response.ok(CurriculumElementVO.valueOf(savedElement)).build();
 	}
 	
@@ -209,9 +209,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postCurriculumElement(CurriculumElementVO curriculumElement)
+	public Response postCurriculumElement(CurriculumElementVO curriculumElement, @Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
-		CurriculumElement savedElement = saveCurriculumElement(curriculumElement);
+		CurriculumElement savedElement = saveCurriculumElement(curriculumElement, httpRequest);
 		return Response.ok(CurriculumElementVO.valueOf(savedElement)).build();
 	}
 	
@@ -237,7 +237,8 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO curriculumElement)
+	public Response postCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO curriculumElement,
+			@Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
 		if(curriculumElement.getKey() == null) {
 			curriculumElement.setKey(curriculumElementKey);
@@ -245,12 +246,12 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 
-		CurriculumElement savedElement = saveCurriculumElement(curriculumElement);
+		CurriculumElement savedElement = saveCurriculumElement(curriculumElement, httpRequest);
 		return Response.ok(CurriculumElementVO.valueOf(savedElement)).build();
 	}
 	
 	
-	private CurriculumElement saveCurriculumElement(CurriculumElementVO curriculumElement)
+	private CurriculumElement saveCurriculumElement(CurriculumElementVO curriculumElement, HttpServletRequest httpRequest)
 	throws WebApplicationException {
 		CurriculumElement elementToSave = null;
 		CurriculumElementType type = null;
@@ -306,7 +307,7 @@ public class CurriculumElementsWebService {
 		} else {
 			elementToSave.setCalendars(null);
 		}
-		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);
+		CurriculumElement savedElement = curriculumService.updateCurriculumElement(getIdentity(httpRequest), elementToSave);
 		if(move) {
 			curriculumService.moveCurriculumElement(savedElement, parentElement, null, curriculum);
 			dbInstance.commit();

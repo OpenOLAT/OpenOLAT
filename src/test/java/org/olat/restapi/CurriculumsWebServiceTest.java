@@ -386,7 +386,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		String externalId = UUID.randomUUID().toString();
 		element.setExternalId(externalId);
-		element = curriculumService.updateCurriculumElement(element);
+		element = curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), element);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);

@@ -969,7 +969,7 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		
 		if (fullyBooked) {
 			curriculumElement.setMaxParticipants(Long.valueOf(0));
-			curriculumElement = curriculumService.updateCurriculumElement(curriculumElement);
+			curriculumElement = curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), curriculumElement);
 		}
 		
 		dbInstance.commitAndCloseSession();

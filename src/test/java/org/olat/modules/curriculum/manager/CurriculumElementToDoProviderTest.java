@@ -89,7 +89,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		ToDoTask reloaded = reload(task);
@@ -114,7 +114,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		ToDoTask reloaded = reload(task);
@@ -139,7 +139,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		ToDoTask reloaded = reload(task);
@@ -161,7 +161,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		assertThat(reload(task).getStartDate()).isCloseTo(begin, DELTA_MS);
@@ -182,7 +182,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		assertThat(reload(task).getDueDate()).isCloseTo(end, DELTA_MS);
@@ -198,7 +198,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		assertThat(reload(task).getStartDate()).isCloseTo(begin, DELTA_MS);
@@ -226,7 +226,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, task2, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element1);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element1);
 		dbInstance.commitAndCloseSession();
 
 		assertThat(reload(task1).getStartDate()).isCloseTo(addDays(begin1, 1), DELTA_MS);
@@ -256,7 +256,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		toDoService.update(doer, personalTask, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		assertThat(reload(curriculumTask).getStartDate()).isCloseTo(addDays(begin, 1), DELTA_MS);
@@ -273,7 +273,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 
 		String newDisplayName = random();
 		element.setDisplayName(newDisplayName);
-		curriculumElementToDoProvider.onCurriculumElementUpdated(element);
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, element);
 		dbInstance.commitAndCloseSession();
 
 		ToDoTaskImpl reloaded = (ToDoTaskImpl) reload(task);

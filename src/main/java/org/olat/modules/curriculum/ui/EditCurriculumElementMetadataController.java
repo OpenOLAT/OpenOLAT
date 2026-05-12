@@ -378,7 +378,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 					null, null, null, parentElement, elementType, null, null, null, selectedCurriculum);
 			if (educationalType != null) {
 				element.setEducationalType(educationalType);
-				element = curriculumService.updateCurriculumElement(element);
+				element = curriculumService.updateCurriculumElement(getIdentity(), element);
 			}
 		} else {
 			currentDisplayName = element.getDisplayName();
@@ -389,7 +389,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			element.setDisplayName(displayNameEl.getValue());
 			element.setType(elementType);
 			element.setEducationalType(educationalType);
-			element = curriculumService.updateCurriculumElement(element);
+			element = curriculumService.updateCurriculumElement(getIdentity(), element);
 		}
 		
 		if (taxonomyLevelEl != null) {

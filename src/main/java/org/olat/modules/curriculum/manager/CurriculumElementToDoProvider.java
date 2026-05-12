@@ -302,8 +302,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				curriculum.getDisplayName(), null);
 	}
 
-	public void onCurriculumElementUpdated(CurriculumElement element) {
-		updateRelativeDates(element);
+	public void onCurriculumElementUpdated(Identity doer, CurriculumElement element) {
+		updateRelativeDates(doer, element);
 		if (element.getCurriculum() != null) {
 			toDoService.updateOriginTitle(TYPE,
 					element.getCurriculum().getKey(),
@@ -313,7 +313,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 	}
 
-	public void updateRelativeDates(CurriculumElement curriculumElement) {
+	public void updateRelativeDates(Identity doer, CurriculumElement curriculumElement) {
 		if (curriculumElement == null) return;
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setTypes(List.of(TYPE));
@@ -321,11 +321,11 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		searchParams.setRelativeDatesNull(Boolean.FALSE);
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
 		for (ToDoTask toDoTask : toDoTasks) {
-			materializeDates(toDoTask, curriculumElement.getBeginDate(), curriculumElement.getEndDate());
+			materializeDates(doer, toDoTask, curriculumElement.getBeginDate(), curriculumElement.getEndDate());
 		}
 	}
 
-	private void materializeDates(ToDoTask toDoTask, Date beginDate, Date endDate) {
+	private void materializeDates(Identity doer, ToDoTask toDoTask, Date beginDate, Date endDate) {
 		ToDoRelativeDates config = toDoTask.getRelativeDates();
 		if (config == null) return;
 
@@ -346,7 +346,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 		if (changed) {
 			toDoTask.setContentModifiedDate(new Date());
-			toDoService.update(null, toDoTask, toDoTask.getStatus());
+			toDoService.update(doer, toDoTask, toDoTask.getStatus());
 		}
 	}
 

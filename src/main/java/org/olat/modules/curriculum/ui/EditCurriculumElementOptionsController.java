@@ -201,7 +201,7 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		}
 		element.setLearningProgress(learningProgress);
 		
-		element = curriculumService.updateCurriculumElement(element);
+		element = curriculumService.updateCurriculumElement(getIdentity(), element);
 	}
 
 }
