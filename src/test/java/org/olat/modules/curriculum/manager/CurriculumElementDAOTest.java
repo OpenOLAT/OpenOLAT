@@ -1971,7 +1971,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		curriculumElement.setEducationalType(educationalType);
-		return curriculumService.updateCurriculumElement(curriculumElement);
+		return curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), curriculumElement);
 	}
 	
 }

@@ -129,7 +129,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 									update = true;
 								}
 								if(update) {
-									curriculumService.updateCurriculumElement(element);
+									curriculumService.updateCurriculumElement(null, element);
 								}
 								
 								if(i % 25 == 0) {
@@ -206,7 +206,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		} else {
 			((CurriculumElementImpl)element).setResource(resource);
 		}
-		curriculumService.updateCurriculumElement(element);
+		curriculumService.updateCurriculumElement(null, element);
 		return true;
 	}
 	

@@ -414,7 +414,7 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElement> getCurriculumElementParentLine(CurriculumElement element);
 	
-	public CurriculumElement updateCurriculumElement(CurriculumElement element);
+	public CurriculumElement updateCurriculumElement(Identity doer, CurriculumElement element);
 	
 	public CurriculumElement updateCurriculumElementStatus(Identity doer, CurriculumElementRef element,
 			CurriculumElementStatus newStatus, boolean updateChildren, MailPackage mailing);

@@ -95,7 +95,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		curriculumElement.setBeginDate(startDate);
-		curriculumService.updateCurriculumElement(curriculumElement);
+		curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), curriculumElement);
 		
 		QualityGenerator generator = createGenerator();
 		String durationDays = "10";
@@ -358,7 +358,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		curriculumElement.setBeginDate(startDate);
-		curriculumService.updateCurriculumElement(curriculumElement);
+		curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), curriculumElement);
 		dbInstance.commitAndCloseSession();
 		return curriculumElement;
 	}

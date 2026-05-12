@@ -203,7 +203,7 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 			element.setMaxParticipants(maxParticipants);
 		}
 		
-		element = curriculumService.updateCurriculumElement(element);
+		element = curriculumService.updateCurriculumElement(getIdentity(), element);
 		element = curriculumService.getCurriculumElement(element);
 		
 		syncCurricularCourses(currentLocation, currentBeginDate, currentEndDate);

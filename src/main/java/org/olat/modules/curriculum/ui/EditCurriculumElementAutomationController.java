@@ -339,7 +339,7 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		curriculumElement.setAutoPublished(getAutomationFor(publishedEnabledEl, publishedValueEl, publishedUnitEl));
 		curriculumElement.setAutoClosed(getAutomationFor(finishedEnabledEl, finishedValueEl, finishedUnitEl));
 		
-		curriculumElement = curriculumService.updateCurriculumElement(curriculumElement);
+		curriculumElement = curriculumService.updateCurriculumElement(getIdentity(), curriculumElement);
 		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

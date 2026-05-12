@@ -129,6 +129,8 @@ import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.model.ParticipantLecturesStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -209,6 +211,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private AbsenceNoticeToRepositoryEntryDAO absenceNoticeToRepositoryEntryDao;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 
 
 	@Override
@@ -260,6 +266,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups) {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		if (roomManagementModule.isEnabled()) {
+			roomManagementService.updateBookingsForBlock(block);
+		}
 		if(block.getTeamsMeeting() != null) {
 			TeamsMeetingImpl meeting = (TeamsMeetingImpl)block.getTeamsMeeting();
 			teamsMeetingDao.updateDates(meeting, block.getStartDate(), meeting.getLeadTime(), block.getEndDate(), meeting.getFollowupTime());
@@ -472,6 +481,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		copy.setEndDate(end);
 		if(persist) {
 			copy = lectureBlockDao.update(copy);
+			if (roomManagementModule.isEnabled()) {
+				roomManagementService.copyBookingsForLectureBlock(block, copy, null);
+			}
 		}
 		return copy;
 	}
@@ -501,6 +513,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			internalDeleteAbsenceNotice(absenceNotice, actingIdentity);
 		}
 		int rows = absenceNoticeToLectureBlockDao.deleteRelations(lectureBlock);
+		rows += roomManagementService.deleteBookingsForLectureBlock(lectureBlock, actingIdentity);
 		rows += lectureBlockDao.delete(lectureBlock);
 		dbInstance.commit();// make it quick
 		return rows;

@@ -837,16 +837,17 @@ public class CatalogQueriesTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadCurriculumElements_filterBy_EducationalType() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		TestCatalogItem catalogItem = createCatalogItem(4, false);
 		RepositoryEntryEducationalType educationalType1 = repositoryManager.createEducationalType(random());
 		catalogItem.getCurriculumElement(0).setEducationalType(educationalType1);
-		curriculumService.updateCurriculumElement(catalogItem.getCurriculumElement(0));
+		curriculumService.updateCurriculumElement(actor, catalogItem.getCurriculumElement(0));
 		RepositoryEntryEducationalType educationalType2 = repositoryManager.createEducationalType(random());
 		catalogItem.getCurriculumElement(1).setEducationalType(educationalType2);
-		curriculumService.updateCurriculumElement(catalogItem.getCurriculumElement(1));
+		curriculumService.updateCurriculumElement(actor, catalogItem.getCurriculumElement(1));
 		RepositoryEntryEducationalType educationalTypeOther = repositoryManager.createEducationalType(random());
 		catalogItem.getCurriculumElement(2).setEducationalType(educationalTypeOther);
-		curriculumService.updateCurriculumElement(catalogItem.getCurriculumElement(2));
+		curriculumService.updateCurriculumElement(actor, catalogItem.getCurriculumElement(2));
 		dbInstance.commitAndCloseSession();
 		
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
@@ -906,6 +907,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	}
 	
 	private TestCatalogItem createCatalogItem(int number, boolean repositoryEntryResource) {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
 				null, JunitTestHelper.getDefaultActor());
 		List<Organisation> offerOrganisations = List.of(organisation);
@@ -929,7 +931,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 						CurriculumLectures.enabled, CurriculumLearningProgress.enabled, curriculum);
 				if (curriculumElement instanceof CurriculumElementImpl impl) {
 					impl.setResource(createOlatResource()); // random types to test filter
-					curriculumElement = curriculumService.updateCurriculumElement(impl);
+					curriculumElement = curriculumService.updateCurriculumElement(actor, impl);
 				}
 				
 				olatResource = curriculumElement.getResource();

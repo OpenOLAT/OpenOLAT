@@ -19,7 +19,6 @@
  */
 package org.olat.course.todo.ui;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -43,8 +42,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.course.todo.CourseToDoService;
 import org.olat.course.todo.manager.CourseCollectionElementToDoTaskProvider;
 import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
@@ -78,7 +75,6 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 			CourseCollectionElementToDoTaskProvider.TYPE);
 	public static final Collection<String> GROUP_PROVIDER_TYPES = List.of(
 			CourseCollectionToDoTaskProvider.TYPE);
-	private static final String GUIPREF_KEY_LAST_VISIT = "course.todos.last.visit";
 	private static final String CMD_ADD_ASSIGNEES = "add.assignees";
 	private static final String CMD_TO_COLLECTION = "to.collection";
 	
@@ -95,7 +91,6 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 	private final CourseToDoTaskRowGrouping rowGrouping;
 	private boolean readOnly;
 	private final Set<Long> coachedParticipantKeys;
-	private Date lastVisitDate;
 	
 	@Autowired
 	private ToDoService toDoService;
@@ -127,22 +122,6 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		}
 		rowGrouping = new CourseToDoTaskRowGrouping(coachedParticipantKeys == null);
 		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			String guiPrefsKey = GUIPREF_KEY_LAST_VISIT + "::" + repositoryEntry.getKey();
-			Object pref = guiPrefs.get(CourseToDoTaskController.class, guiPrefsKey);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-			
-			String lastVisit = Formatter.formatDatetime(new Date());
-			guiPrefs.putAndSave(CourseNodeToDoTaskController.class, guiPrefsKey, lastVisit);
-		}
-		
 		initForm(ureq);
 		
 		initFilters();
@@ -154,8 +133,8 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 	
 	@Override

@@ -74,6 +74,8 @@ import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CopyService;
@@ -139,6 +141,10 @@ public class CopyServiceImpl implements CopyService {
 	private LectureBlockToGroupDAO lectureBlockToGroupDAO;
 	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyDAO;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	@Autowired
@@ -717,7 +723,10 @@ public class CopyServiceImpl implements CopyService {
 		copy.setReasonEffectiveEnd(original.getReasonEffectiveEnd());
 		
 		copy = (LectureBlockImpl) lectureService.save(copy, null);
-		
+		if (roomManagementModule.isEnabled()) {
+			roomManagementService.copyBookingsForLectureBlock(original, copy, context.getExecutingIdentity());
+		}
+
 		// Copy taxonomy levels
 		for (TaxonomyLevel level : lectureBlockToTaxonomyDAO.getTaxonomyLevels(original)) {
 			lectureBlockToTaxonomyDAO.createRelation(copy, level);

@@ -64,7 +64,7 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
+	protected Date getNewSinceDate() {
 		return lastVisitDate;
 	}
 

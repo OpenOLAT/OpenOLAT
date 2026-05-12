@@ -69,6 +69,7 @@ import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumImplementationWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumToDoTasksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -109,6 +110,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private ConfirmDeleteCurriculumController deleteCurriculumCtrl;
 	private CurriculumImplementationWidgetController implementationWidgetCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumToDoTasksWidgetController toDoTasksWidgetCtrl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
@@ -269,6 +271,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private DashboardController createDashboard(UserRequest ureq) {
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
 		removeAsListenerAndDispose(implementationWidgetCtrl);
+		removeAsListenerAndDispose(toDoTasksWidgetCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		
 		overviewCtrl = new DashboardController(ureq, getWindowControl(), "dashboard.curriculum");
@@ -286,6 +289,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
+
+		toDoTasksWidgetCtrl = new CurriculumToDoTasksWidgetController(ureq, getWindowControl(), curriculum);
+		listenTo(toDoTasksWidgetCtrl);
+		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
+
 		return overviewCtrl;
 	}
 	
@@ -331,7 +339,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
-				|| implementationWidgetCtrl == source) {
+				|| implementationWidgetCtrl == source || toDoTasksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}

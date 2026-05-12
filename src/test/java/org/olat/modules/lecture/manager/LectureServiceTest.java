@@ -56,6 +56,13 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomModuleLog;
+import org.olat.modules.roommanagement.RoomModuleLogAction;
+import org.olat.modules.roommanagement.model.RoomModuleLogSearchParameters;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
@@ -101,7 +108,9 @@ public class LectureServiceTest extends OlatTestCase {
 	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
 	@Autowired
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
-	
+	@Autowired
+	private RoomManagementService roomManagementService;
+
 	@Test
 	public void addTeacher() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
@@ -977,6 +986,80 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNull(deletedBlock);
 	}
 	
+	@Test
+	public void deleteLectureBlock_removesRoomBookings() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-cascade-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lb = createMinimalLectureBlock(entry);
+
+		Location loc = roomManagementService.createLocation("CascadeLoc_" + random(), doer);
+		Room room = roomManagementService.createRoom(loc, "CascadeRoom_" + random(), doer);
+		roomManagementService.bookRoom(room, lb, lb.getStartDate(), lb.getEndDate(), 0, 0, doer);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookingsBefore = roomManagementService.getBookings(lb);
+		Assert.assertEquals(1, bookingsBefore.size());
+
+		lectureService.deleteLectureBlock(lb, doer);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookingsAfter = roomManagementService.getBookings(lb);
+		Assert.assertTrue(bookingsAfter.isEmpty());
+
+		RoomModuleLogSearchParameters params = new RoomModuleLogSearchParameters();
+		params.setRoom(room);
+		List<RoomModuleLog> logs = roomManagementService.searchLogs(params);
+		boolean hasCascadeLog = logs.stream()
+				.anyMatch(l -> l.getAction() == RoomModuleLogAction.booking_cascade_from_lectureblock);
+		Assert.assertTrue(hasCascadeLog);
+	}
+
+	@Test
+	public void saveLectureBlock_realignsRoomBooking() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-realign-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lb = createMinimalLectureBlock(entry);
+
+		Location loc = roomManagementService.createLocation("RealignLoc_" + random(), doer);
+		Room room = roomManagementService.createRoom(loc, "RealignRoom_" + random(), doer);
+		roomManagementService.bookRoom(room, lb, lb.getStartDate(), lb.getEndDate(), 5, 10, doer);
+		dbInstance.commitAndCloseSession();
+
+		Date newStart = DateUtils.addMinutes(lb.getStartDate(), 90);
+		Date newEnd = DateUtils.addMinutes(lb.getEndDate(), 90);
+		lb.setStartDate(newStart);
+		lb.setEndDate(newEnd);
+		lectureService.save(lb, null);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
+		Assert.assertEquals(1, bookings.size());
+		RoomBooking booking = bookings.get(0);
+		Assert.assertEquals(newStart, booking.getStartDate());
+		Assert.assertEquals(newEnd, booking.getEndDate());
+		Assert.assertEquals(5, booking.getBufferBefore());
+		Assert.assertEquals(10, booking.getBufferAfter());
+	}
+
+	@Test
+	public void copyLectureBlock_copiesRoomBooking() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-copy-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock original = createMinimalLectureBlock(entry);
+
+		Location loc = roomManagementService.createLocation("CopyLoc_" + random(), doer);
+		Room room = roomManagementService.createRoom(loc, "CopyRoom_" + random(), doer);
+		roomManagementService.bookRoom(room, original, original.getStartDate(), original.getEndDate(), 0, 0, doer);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlock copy = lectureService.copyLectureBlock(original.getTitle() + "_copy", original, true);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookings = roomManagementService.getBookings(copy);
+		Assert.assertEquals(1, bookings.size());
+		Assert.assertEquals(room.getKey(), bookings.get(0).getRoom().getKey());
+	}
+
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());

@@ -149,6 +149,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		if (location == null) return;
 		String beforeXml = RoomManagementXStream.toXml(location);
 		String beforeStatus = location.getStatus() != null ? location.getStatus().name() : null;
+		roomModuleLogDao.nullLocationRef(ref);
 		locationDao.delete(ref);
 		location.setStatus(RoomStatus.deleted);
 		roomModuleLogDao.createLog(RoomModuleLogAction.location_delete,
@@ -203,6 +204,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		if (room == null) return;
 		String beforeXml = RoomManagementXStream.toXml(room);
 		String beforeStatus = room.getStatus() != null ? room.getStatus().name() : null;
+		roomModuleLogDao.nullRoomRef(ref);
 		roomDao.delete(ref);
 		room.setStatus(RoomStatus.deleted);
 		roomModuleLogDao.createLog(RoomModuleLogAction.room_delete,
@@ -246,6 +248,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		String beforeXml = booking != null ? RoomManagementXStream.toXml(booking) : null;
 		Room room = booking != null ? booking.getRoom() : null;
 		LectureBlock lb = booking != null ? booking.getLectureBlock() : null;
+		roomModuleLogDao.nullBookingRef(ref);
 		roomBookingDao.delete(ref);
 		roomModuleLogDao.createLog(RoomModuleLogAction.booking_delete,
 				null, beforeXml, null, null,
@@ -276,12 +279,29 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		List<RoomBooking> bookings = roomBookingDao.getBookingsForLectureBlock(lb);
 		if (bookings.isEmpty()) return 0;
 		for (RoomBooking booking : bookings) {
+			roomModuleLogDao.nullBookingRef(booking);
 			String beforeXml = RoomManagementXStream.toXml(booking);
 			roomModuleLogDao.createLog(RoomModuleLogAction.booking_cascade_from_lectureblock,
 					null, beforeXml, null, null,
-					null, booking.getRoom(), booking, lb, doer);
+					null, booking.getRoom(), null, null, doer);
 		}
+		roomModuleLogDao.nullLectureBlockRef(lb);
 		return roomBookingDao.deleteForLectureBlock(lb);
+	}
+
+	@Override
+	public void updateBookingsForBlock(LectureBlock lb) {
+		List<RoomBooking> bookings = roomBookingDao.getBookingsForLectureBlock(lb);
+		for (RoomBooking booking : bookings) {
+			String beforeXml = RoomManagementXStream.toXml(roomBookingDao.loadByKey(booking));
+			booking.setStartDate(lb.getStartDate());
+			booking.setEndDate(lb.getEndDate());
+			RoomBooking updated = roomBookingDao.update(booking);
+			roomModuleLogDao.createLog(RoomModuleLogAction.booking_update,
+					null, beforeXml,
+					null, RoomManagementXStream.toXml(updated),
+					null, updated.getRoom(), updated, lb, null);
+		}
 	}
 
 	@Override

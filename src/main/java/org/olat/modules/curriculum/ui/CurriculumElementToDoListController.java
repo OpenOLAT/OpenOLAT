@@ -116,8 +116,9 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		// Only editors see the "new" label
+		return secCallback.canEditCurriculumElement(element)? lastVisitDate: null;
 	}
 
 	@Override

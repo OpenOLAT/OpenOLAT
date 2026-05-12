@@ -32,6 +32,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -143,16 +144,18 @@ public class CurriculumElementOffersController extends BasicController {
 	
 	private CurriculumElementCatalogSortPriorityProvider getSortOrderProvider(CurriculumElement element) {
 		return catalogV2Module.isEnabled() && catalogV2Module.isPrioritySortingEnabled()
-				? new CurriculumElementCatalogSortPriorityProvider(element)
+				? new CurriculumElementCatalogSortPriorityProvider(getIdentity(), element)
 				: null;
 	}
 	
 	private static final class CurriculumElementCatalogSortPriorityProvider implements SortPriorityProvider {
 		
+		private final Identity doer;
 		private final CurriculumElement element;
 		private Integer priority;
 		
-		public CurriculumElementCatalogSortPriorityProvider(CurriculumElement element) {
+		public CurriculumElementCatalogSortPriorityProvider(Identity doer, CurriculumElement element) {
+			this.doer = doer;
 			this.element = element;
 			this.priority = element.getCatalogSortPriority();
 		}
@@ -168,7 +171,7 @@ public class CurriculumElementOffersController extends BasicController {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
 			if (curriculumElement != null) {
 				curriculumElement.setCatalogSortPriority(priority);
-				curriculumService.updateCurriculumElement(curriculumElement);
+				curriculumService.updateCurriculumElement(doer, curriculumElement);
 				this.priority = priority;
 			}
 		}
