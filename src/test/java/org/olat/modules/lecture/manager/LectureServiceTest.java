@@ -1014,6 +1014,25 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertTrue(hasCascadeLog);
 	}
 
+	@Test
+	public void copyLectureBlock_copiesRoomBooking() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-copy-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock original = createMinimalLectureBlock(entry);
+
+		Location loc = roomManagementService.createLocation("CopyLoc_" + random(), doer);
+		Room room = roomManagementService.createRoom(loc, "CopyRoom_" + random(), doer);
+		roomManagementService.bookRoom(room, original, original.getStartDate(), original.getEndDate(), 0, 0, doer);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlock copy = lectureService.copyLectureBlock(original.getTitle() + "_copy", original, true);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookings = roomManagementService.getBookings(copy);
+		Assert.assertEquals(1, bookings.size());
+		Assert.assertEquals(room.getKey(), bookings.get(0).getRoom().getKey());
+	}
+
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
