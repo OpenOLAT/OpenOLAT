@@ -67,6 +67,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private static final String UPGRADE_KEY = "upgrade";
 
 	private FormToggle enabledEl;
+	private FormToggle enabledOtpEl;
 	private SingleSelection loginButtonEl;
 	private SingleSelection skipPasskeyEl;
 	private MultipleSelectionElement upgradeEl;
@@ -98,6 +99,9 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		enableCont.setFormContextHelp("manual_admin/administration/Login_Password_and_Authentication/");
 		initEnableForm(enableCont);
 		
+		FormLayoutContainer otpCont = uifactory.addDefaultFormLayout("otpCont", null, formLayout);
+		initOneTimeCodeForm(otpCont);
+		
 		String levelPage = velocity_root + "/passkey_admin_levels.html";
 		levelsCont = uifactory.addCustomFormLayout("levelsCont", null, levelPage, formLayout);
 		initLevelsForm(levelsCont);
@@ -119,6 +123,17 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		} else {
 			loginButtonEl.select("input", true);
 		}
+	}
+	
+	private void initOneTimeCodeForm(FormLayoutContainer formLayout) {
+		formLayout.setFormTitle(translate("admin.configuration.otp.title"));
+		formLayout.setFormInfo(translate("admin.configuration.otp.descr"));
+		formLayout.setElementCssClass("o_sel_otp_admin_configuration");
+		
+		enabledOtpEl = uifactory.addToggleButton("enabled.otp", "enabled.otp", translate("on"), translate("off"), formLayout);
+		enabledOtpEl.setElementCssClass("o_sel_otp_enable");
+		enabledOtpEl.toggle(loginModule.isOlatProviderWithOtp());
+		enabledOtpEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
 	private void initLevelsForm(FormLayoutContainer formLayout) {
@@ -263,6 +278,8 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source) {
 			doToggleEnable(ureq);	
+		} else if(enabledOtpEl == source) {
+			doSaveOtp();
 		} else if(upgradeEl == source || skipPasskeyEl == source || loginButtonEl == source) {
 			doSave();
 			updateUI();
@@ -325,6 +342,11 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 				loginModule.setPasskeyMaxSkip(Long.parseLong(skipPasskeyEl.getSelectedKey()));
 			}
 		}
+	}
+	
+	private void doSaveOtp() {
+		boolean otpEnabled = enabledOtpEl.isOn();
+		loginModule.setOlatProviderWithOtp(otpEnabled);
 	}
 
 	private void doSave(SingleSelection levelEl, OrganisationRoles role) {

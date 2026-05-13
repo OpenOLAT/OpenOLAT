@@ -106,6 +106,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private ChangePasswordForm newPasswordCtrl;
 	private NewPasskeyController newPasskeyCtrl;
 	private RecoveryKeysController recoveryKeysCtrl;
+	private OneTimeCodeConfirmationController oneTimeCodeCtrl;
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -233,6 +234,14 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				cleanUp();
 			}
 			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, "RECOVERY"));
+		} else if(oneTimeCodeCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+			} else {
+				doBack(ureq);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -240,9 +249,11 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(oneTimeCodeCtrl);
 		removeAsListenerAndDispose(newPasswordCtrl);
 		removeAsListenerAndDispose(newPasskeyCtrl);
 		removeAsListenerAndDispose(cmc);
+		oneTimeCodeCtrl = null;
 		newPasswordCtrl = null;
 		newPasskeyCtrl = null;
 		cmc = null;
@@ -287,9 +298,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			doProcessUsername();
 			fireEvent(ureq, new LoginEvent());
 		} else if(step == Flow.loginWithPassword) {
-			doAuthenticate(ureq, true);
+			doAuthenticate(ureq, true, false);
 		} else if(step == Flow.loginWithPassword2FA) {
-			doAuthenticate(ureq, false);
+			doAuthenticate(ureq, false, true);
 		} else if(step == Flow.authenticatedWithPassword) {
 			doNewPasskey(ureq, authenticatedIdentity);
 		} else if(step == Flow.passkey && !requestData.matchUsername(loginEl.getValue())) {
@@ -417,10 +428,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		return current;
 	}
 
-	private void doAuthenticate(UserRequest ureq, boolean proposePasskey) {
+	private void doAuthenticate(UserRequest ureq, boolean proposePasskey, boolean from2FA) {
 		String login = loginEl.getValue();
 		String pwd = pass.getValue();
 		pass.setValue("");
+		
+		System.out.println(loginModule.isOlatProviderWithOtp());
 		
 		if (loginModule.isLoginBlocked(login)) {
 			// do not proceed when already blocked
@@ -444,26 +457,44 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				setError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
 				log.error("WebAuthn Login ok but the user is pending: {}", authenticatedIdentity);
 			} else {
-				step = Flow.authenticatedWithPassword;
-				
 				pass.setVisible(false);
 				submitButton.setVisible(false);
 				notNowButton.setVisible(false);
 				
+				step = Flow.authenticatedWithPassword;
+
 				if(proposePasskey && loginModule.isOlatProviderWithPasskey() && "OLAT".equals(status.getProvider())) {
 					// Propose passkey registration but only for OLAT provider
 					Roles roles = securityManager.getRoles(authenticatedIdentity);
 					PasskeyLevels levels = loginModule.getPasskeyLevel(roles);
 					if(levels == PasskeyLevels.level1) {
-						fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, status.getProvider()));
+						if(loginModule.isOlatProviderWithOtp()) {
+							step = Flow.otp;
+							doConfirmSendOneTimeCode(ureq, authenticatedIdentity);
+						} else {
+							fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, status.getProvider()));
+						}
 					} else {
 						doNewPasskey(ureq, authenticatedIdentity);
 					}
+				} else if(!from2FA && loginModule.isOlatProviderWithOtp()) {
+					step = Flow.otp;
+					doConfirmSendOneTimeCode(ureq, authenticatedIdentity);
 				} else {
 					fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, status.getProvider()));
 				}
 			}
 		}
+	}
+	
+	private void doConfirmSendOneTimeCode(UserRequest ureq, Identity identityToConfirm) {
+		oneTimeCodeCtrl = new OneTimeCodeConfirmationController(ureq, getWindowControl(), identityToConfirm.getUser().getEmail());
+		listenTo(oneTimeCodeCtrl);
+		
+		String title = translate("lf.validation");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), oneTimeCodeCtrl.getInitialComponent(), title);
+		listenTo(cmc);
+		cmc.activate();	
 	}
 	
 	private CredentialRequest fillRequest(List<Authentication> authentications) {
@@ -660,6 +691,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
     	recoveryError,
     	authenticatedWithPassword,
     	passkeySuccessfullyCreated,
-    	passkey
+    	passkey,
+    	otp
     }
 }
