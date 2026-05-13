@@ -100,7 +100,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	public static final String DATE_REF_SAME_DAY_BEGIN = "SAME_DAY_BEGIN";
 	public static final String DATE_REF_SAME_DAY_END   = "SAME_DAY_END";
 
-	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.all};
+	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.status};
 
 	@Autowired
 	private DB dbInstance;
@@ -185,13 +185,18 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(toDoTask.getOriginSubPath())));
-		return createEditController(ureq, wControl, toDoTask, null, element, toDoTask);
+		return createEditController(ureq, wControl, toDoTask, null, element, toDoTask, assigneeRightsOverride);
 	}
 
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask toDoTaskCopySource, CurriculumElement element, ToDoContext context) {
+		return createEditController(ureq, wControl, toDoTask, toDoTaskCopySource, element, context, null);
+	}
+
+	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
+			ToDoTask toDoTaskCopySource, CurriculumElement element, ToDoContext context, ToDoRight[] assigneeRightsOverride) {
 		Set<Identity> candidates = getCandidates(element).stream()
 				.map(CurriculumMember::getIdentity)
 				.collect(Collectors.toSet());
@@ -210,7 +215,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				ToDoTaskMemberConfig.search(candidates, memberSearchProvider),
 				ToDoTaskMemberSelection.empty(),
 				dateConfig,
-				createTagSearchParams(), ASSIGNEE_RIGHTS);
+				createTagSearchParams(), ASSIGNEE_RIGHTS, assigneeRightsOverride);
 	}
 
 	public List<CurriculumMember> getCandidates(CurriculumElement element) {

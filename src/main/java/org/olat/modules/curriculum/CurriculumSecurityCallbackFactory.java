@@ -247,7 +247,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewToDos() {
-			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
 		}
 
 		@Override

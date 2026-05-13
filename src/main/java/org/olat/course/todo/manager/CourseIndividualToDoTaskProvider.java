@@ -153,7 +153,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(toDoTask.getOriginId());
 		return createEditController(ureq, wControl, toDoTask, null, showContext, repositoryEntry, toDoTask,
 				showSingleAssignee ? MemberSelection.readOnly : MemberSelection.disabled);
@@ -192,7 +192,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberSelection.empty(),
 				ToDoTaskDateConfig.absoluteOnly(),
-				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS);
+				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS, null);
 	}
 
 	@Override

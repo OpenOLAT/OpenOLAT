@@ -153,7 +153,7 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return createEditController(ureq, wControl, toDoTask, showContext, () -> toDoTask.getOriginId(), toDoTask, showSingleAssignee);
 	}
 	
@@ -171,7 +171,7 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberSelection.empty(),
 				ToDoTaskDateConfig.absoluteOnly(),
-				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS);
+				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS, null);
 	}
 
 	@Override

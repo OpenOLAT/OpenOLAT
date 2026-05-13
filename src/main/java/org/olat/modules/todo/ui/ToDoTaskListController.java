@@ -1258,7 +1258,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (guardModalController(toDoTaskEditCtrl)) return;
 		
 		toDoTaskEditCtrl = provider.createEditController(ureq, getWindowControl(), toDoTask,
-				isShowContextInEditDialog(), isShowSingleAssigneeInEditDialog());
+				isShowContextInEditDialog(), isShowSingleAssigneeInEditDialog(),
+				getSecurityCallback().getAssigneeRightsOverride(toDoTask));
 		if (toDoTaskEditCtrl == null) {
 			return;
 		}

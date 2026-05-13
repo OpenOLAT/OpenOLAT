@@ -437,8 +437,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 	
 	public void updateUIByAssigneeRight(ToDoRight[] assigneeRights) {
-		if (assignees == null || !assignees.contains(getIdentity())) {
-			// No assignee, no application of assignee rights
+		boolean isAssignee = assignees != null && assignees.contains(getIdentity());
+		boolean isDelegatee = delegatees != null && delegatees.contains(getIdentity());
+		if (!isAssignee && !isDelegatee) {
 			return;
 		}
 		if (doEl != null) {
