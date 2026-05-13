@@ -130,16 +130,16 @@ public class QTI21AssessmentTestHandlerTest extends OlatTestCase {
 	}
 	
 	/**
-	 * Unknown test with a lot of errors.
+	 * Unknown test with fatal errors.
 	 * 
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
 	@Test
 	public void nonConformQTI21Resource() throws IOException, URISyntaxException {
-		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform.zip");
+		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform_1.zip");
 		File testFile = new File(fileUrl.toURI());
-		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform.zip");
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform_1.zip");
 		Assert.assertNotNull(evaluation);
         Assert.assertFalse(evaluation.isValid());
 	}
