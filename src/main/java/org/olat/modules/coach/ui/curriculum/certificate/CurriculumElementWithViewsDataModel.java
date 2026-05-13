@@ -144,21 +144,6 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 				}
 				return val;
 			}
-			case progress: {
-				Integer totalNodes = curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getTotalNodes() : null;
-				if(totalNodes == null) {
-					ProgressValue val = new ProgressValue();
-					val.setTotal(100);
-					val.setGreen(0);
-					return val;
-				}
-
-				ProgressValue val = new ProgressValue();
-				val.setTotal(totalNodes.intValue());
-				Integer attemptedNodes = curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getAttemptedNodes() : null;
-				val.setGreen(attemptedNodes == null ? 0 : attemptedNodes.intValue());
-				return val;
-			}
 			case lastModification: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastModified() : null;
 			case lastUserModified: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastUserModified() : null;
 			case lastCoachModified: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastCoachModified() : null;
@@ -197,7 +182,6 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		certificate("table.header.certificate"),
 		recertification("table.header.certificate.validity"),
 		numberAssessments("table.header.number.assessments"),
-		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),
 		lastCoachModified("table.header.lastCoachModificationDate"),

@@ -104,21 +104,6 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 					}
 					return val;
 				}
-				case progress: {
-					Integer totalNodes = entry.getTotalNodes();
-					if(totalNodes == null) {
-						ProgressValue val = new ProgressValue();
-						val.setTotal(100);
-						val.setGreen(0);
-						return val;
-					}
-					
-					ProgressValue val = new ProgressValue();
-					val.setTotal(totalNodes.intValue());
-					Integer attemptedNodes = entry.getAttemptedNodes();
-					val.setGreen(attemptedNodes == null ? 0 : attemptedNodes.intValue());
-					return val;
-				}
 				case lastModification: return entry.getLastModified();
 				case lastUserModified: return entry.getLastUserModified();
 				case lastCoachModified: return entry.getLastCoachModified();
@@ -208,7 +193,6 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		certificate("table.header.certificate"),
 		certificateValidity("table.header.certificate.validity"),
 		numberAssessments("table.header.number.assessments"),
-		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),
 		lastCoachModified("table.header.lastCoachModificationDate"),

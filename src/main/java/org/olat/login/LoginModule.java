@@ -122,6 +122,8 @@ public class LoginModule extends AbstractSpringModule {
 	
 	private static final String PASSKEY_MAX_SKIP = "olatprovider.passkey.max.skip";
 	
+	private static final String OLAT_PROVIDER_OTP = "olatprovider.otp.enable";
+	
 	private static final String LOGIN_FAQ_URL = "login.faq.url";
 	
 	private static final Set<Encoder.Algorithm> CONSIDERED_SECURE_HASH_ALGRITHM = Set.of(Encoder.Algorithm.sha512, Encoder.Algorithm.argon2id, Encoder.Algorithm.pbkdf2);
@@ -270,6 +272,9 @@ public class LoginModule extends AbstractSpringModule {
 	
 	@Value("${olatprovider.passkey.max.skip:5}")
 	private String passkeyMaxSkip;
+	
+	@Value("${olatprovider.otp.enable:false}")
+	private boolean olatProviderWithOtp;
 	
 	@Value("${login.faq.url}")
 	private String loginFaqUrl;
@@ -525,6 +530,11 @@ public class LoginModule extends AbstractSpringModule {
 		passkeyLevelUser = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.user, passkeyLevelUser);
 		
 		passkeyUpgrade = getStringPropertyValue(PASSKEY_UPGRADE , passkeyUpgrade);
+		
+		String olatProviderOtp = getStringPropertyValue(OLAT_PROVIDER_OTP, true);
+		if(StringHelper.containsNonWhitespace(olatProviderOtp)) {
+			olatProviderWithOtp = "true".equals(olatProviderOtp);
+		}
 		
 		loginFaqUrl = this.getStringPropertyValue(LOGIN_FAQ_URL, loginFaqUrl);
 	}
@@ -1171,6 +1181,15 @@ public class LoginModule extends AbstractSpringModule {
 	public void setPasskeyMaxSkip(long count) {
 		passkeyMaxSkip = Long.toString(count);
 		setStringProperty(PASSKEY_MAX_SKIP, passkeyMaxSkip, true);
+	}
+	
+	public boolean isOlatProviderWithOtp() {
+		return olatProviderWithOtp;
+	}
+
+	public void setOlatProviderWithOtp(boolean enable) {
+		this.olatProviderWithOtp = enable;
+		setStringProperty(OLAT_PROVIDER_OTP, enable ? "true" : "false", true);
 	}
 
 	public String getLoginFaqUrl() {

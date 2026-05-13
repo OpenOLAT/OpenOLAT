@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.ui.LightedValue.Light;
 
 /**
@@ -80,11 +81,7 @@ public class GroupsTableDataModel implements TableDataModel<GroupStatEntry> {
 				if(numOfStudents == 0) {
 					return numOfStudents;
 				}
-				
-				ProgressValue val = new ProgressValue();
-				val.setTotal(numOfStudents);
-				val.setGreen(g.getCountPassed());
-				return val;
+				return new SuccessStatus(g.getCountPassed(), g.getCountFailed(), g.getCountNotAttempted(), numOfStudents);
 			}
 			case countPassedLight: {
 				if(numOfStudents == 0) {

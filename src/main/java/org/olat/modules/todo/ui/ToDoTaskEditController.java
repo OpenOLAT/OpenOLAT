@@ -72,6 +72,7 @@ public class ToDoTaskEditController extends FormBasicController {
 	private final ToDoTaskDateConfig dateConfig;
 	private final ToDoTaskSearchParams tagInfoSearchParams;
 	private final ToDoRight[] defaultAssigneeRights;
+	private final ToDoRight[] assigneeRightsOverride;
 	private Boolean metadataOpen = Boolean.FALSE;
 
 	@Autowired
@@ -81,7 +82,7 @@ public class ToDoTaskEditController extends FormBasicController {
 			ToDoTask toDoTaskCopySource, ToDoTaskContextConfig contextConfig, ToDoTaskMemberConfig assigneeConfig,
 			ToDoTaskMemberConfig delegateeConfig, ToDoTaskMemberSelection defaultMemberSelection,
 			ToDoTaskDateConfig dateConfig, ToDoTaskSearchParams tagInfoSearchParams,
-			ToDoRight[] defaultAssigneeRights) {
+			ToDoRight[] defaultAssigneeRights, ToDoRight[] assigneeRightsOverride) {
 		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
 		this.toDoTaskCopySource = toDoTaskCopySource;
@@ -92,6 +93,7 @@ public class ToDoTaskEditController extends FormBasicController {
 		this.defaultMemberSelection = defaultMemberSelection;
 		this.tagInfoSearchParams = tagInfoSearchParams;
 		this.defaultAssigneeRights = defaultAssigneeRights;
+		this.assigneeRightsOverride = assigneeRightsOverride;
 
 		initForm(ureq);
 	}
@@ -128,7 +130,8 @@ public class ToDoTaskEditController extends FormBasicController {
 				delegateeConfig, new ToDoTaskMemberSelection(assignees, delegatees), dateConfig, tagInfos, true);
 		if (toDoTask != null) {
 			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
-			toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);
+			ToDoRight[] effectiveRights = assigneeRightsOverride != null ? assigneeRightsOverride : toDoTask.getAssigneeRights();
+			toDoTaskEditForm.updateUIByAssigneeRight(effectiveRights);
 		} else if (toDoTaskCopySource != null) {
 			toDoTaskEditForm.setValues(new CopyValues(getLocale(), toDoTaskCopySource));
 		}

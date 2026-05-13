@@ -152,7 +152,7 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return createEditController(ureq, wControl, toDoTask, null, showContext);
 	}
 
@@ -183,7 +183,7 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, contextConfig, assigneeMemberConfig,
 				delegateeMemberConfig, new ToDoTaskMemberSelection(List.of(ureq.getIdentity()), List.of()),
 				ToDoTaskDateConfig.absoluteOnly(),
-				tagInfoSearchParams, ASSIGNEE_RIGHTS);
+				tagInfoSearchParams, ASSIGNEE_RIGHTS, null);
 	}
 	
 	private Set<Identity> getMemberCandidates(Identity identity) {

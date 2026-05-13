@@ -191,7 +191,7 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return null;
 	}
 

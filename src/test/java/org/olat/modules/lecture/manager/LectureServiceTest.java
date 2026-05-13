@@ -21,6 +21,7 @@ package org.olat.modules.lecture.manager;
 
 import static org.olat.test.JunitTestHelper.random;
 
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1035,8 +1036,8 @@ public class LectureServiceTest extends OlatTestCase {
 		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
 		Assert.assertEquals(1, bookings.size());
 		RoomBooking booking = bookings.get(0);
-		Assert.assertEquals(newStart, booking.getStartDate());
-		Assert.assertEquals(newEnd, booking.getEndDate());
+		Assert.assertEquals(newStart.toInstant().with(ChronoField.NANO_OF_SECOND, 0), booking.getStartDate().toInstant().with(ChronoField.NANO_OF_SECOND, 0));
+		Assert.assertEquals(newEnd.toInstant().with(ChronoField.NANO_OF_SECOND, 0), booking.getEndDate().toInstant().with(ChronoField.NANO_OF_SECOND, 0));
 		Assert.assertEquals(5, booking.getBufferBefore());
 		Assert.assertEquals(10, booking.getBufferAfter());
 	}
@@ -1062,8 +1063,8 @@ public class LectureServiceTest extends OlatTestCase {
 
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
-		lectureBlock.setStartDate(new Date());
-		lectureBlock.setEndDate(new Date());
+		lectureBlock.setStartDate(DateUtils.truncateMilliSeconds(new Date()));
+		lectureBlock.setEndDate(DateUtils.truncateMilliSeconds(new Date()));
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);
 		return lectureService.save(lectureBlock, null);

@@ -1,0 +1,24 @@
+<fieldset class="o_form form-horizontal">
+	<div class="o_hint">$r.escapeHtml($msg)</div>
+	<div class="form-group  #if($f.hasError("validation.code")) has-feedback has-error #end clearfix">
+		<div><label class="control-label col-sm-3 o_registration_otp_label">$r.translate("lf.otp.label")</label></div>
+		<div class="col-sm-9 o_sel_registration_otp">
+			$r.render("validation.code")
+			#if($f.hasError("validation.code"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		#if($f.hasError("validation.code"))
+		<div class="col-sm-offset-3 col-sm-9">
+			$r.render("validation.code_ERROR")
+		</div>
+		#end
+	</div>
+	<div class="o_block">
+		<p>$r.translate("lf.otp.hint.nocode")<br>$r.render("lf.otp.resend")</p>
+	</div>
+	<div class="o_button_group o_button_group_right">
+		$r.render("cancel")
+		$r.render("lf.otp.login")
+	</div>
+</fieldset>

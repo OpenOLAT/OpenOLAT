@@ -125,7 +125,7 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		ToDoTaskContextConfig contextConfig = showContext
 				? ToDoTaskContextConfig.dropdown(List.of(toDoTask), toDoTask)
 				: ToDoTaskContextConfig.off(toDoTask);
@@ -134,7 +134,7 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 				ToDoTaskMemberConfig.disabled(),
 				ToDoTaskMemberSelection.empty(),
 				ToDoTaskDateConfig.absoluteOnly(),
-				null, ASSIGNEE_RIGHTS);
+				null, ASSIGNEE_RIGHTS, null);
 	}
 
 	@Override

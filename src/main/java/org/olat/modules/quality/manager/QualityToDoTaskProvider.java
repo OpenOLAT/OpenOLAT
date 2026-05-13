@@ -127,7 +127,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return new QualityToDoEditController(ureq, wControl, toDoTask, showContext);
 	}
 

@@ -49,6 +49,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessedCurriculumElement;
@@ -65,6 +66,9 @@ import org.olat.modules.assessment.ui.component.DoneChart;
 import org.olat.modules.assessment.ui.component.PassedChart;
 import org.olat.modules.assessment.ui.component.PassedChart.PassedPercent;
 import org.olat.modules.assessment.ui.component.ScoreChart;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
+import org.olat.modules.coach.ui.CourseListController;
+import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -123,6 +127,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params,
 			PercentStat percentStat, ScoreStat scoreStat, boolean courseInfoLaunch, boolean readOnly, boolean small) {
 		super(ureq, wControl, "stats");
+		setTranslator(Util.createPackageTranslator(CourseListController.class, getLocale(), getTranslator()));
 		this.assessmentCallback = assessmentCallback;
 		this.params = params;
 		this.percentStat = percentStat;
@@ -222,7 +227,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			}
 		}
 		if (PercentStat.passed == percentStat) {
-			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
+			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new SuccessStatusCellRenderer()));
 		} else if (PercentStat.status == percentStat) {
 			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
 		}
@@ -243,7 +248,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.scoreAvg, new ScoreCellRenderer()));
 		}
 		if (PercentStat.passed == percentStat) {
-			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
+			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new SuccessStatusCellRenderer()));
 		} else if (PercentStat.status == percentStat) {
 			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
 		}
@@ -732,7 +737,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 					case members: return groupRow.getNumIdentities();
 					case scoreAvg: return groupRow.getScoreAvg();
 					case weightedScoreAvg: return groupRow.getWeightedScoreAvg();
-					case passed: return groupRow;
+					case passed: return new SuccessStatus(groupRow.getNumPassed(), groupRow.getNumFailed(), groupRow.getNumUndefined(), groupRow.getNumIdentities());
 					case status: return groupRow;
 				}
 			}
@@ -760,40 +765,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			}
 		}
 	}
-	
-	public class PassedStatsRenderer implements FlexiCellRenderer {
-		
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
-				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if(cellValue instanceof GroupRow) {
-				GroupRow groupRow = (GroupRow)cellValue;
-				if (groupRow.getNumIdentities() > 0) {
-					int passedPercent = Math.round(100f * (groupRow.getNumPassed() / (float)groupRow.getNumIdentities()));
-					int failedPercent = Math.round(100f * (groupRow.getNumFailed() / (float)groupRow.getNumIdentities()));
-					int undefinedPercent = Math.round(100f * (groupRow.getNumUndefined() / (float)groupRow.getNumIdentities()));
-					
-					String tooltip = translate("passed.tooltip", Integer.toString(passedPercent), Integer.toString(failedPercent),
-							Integer.toString(undefinedPercent));
-					target.append("<div class='o_assessment_progress'>");
-					target.append("<div class='progress' title='").append(tooltip).append("'>");
-					appendBar(target, passedPercent, "o_passed_progress_bar");
-					appendBar(target, failedPercent, "o_failed_progress_bar");
-					target.append("</div>");
-					target.append(" <div class='o_values'>").append(groupRow.getNumPassed()).append(" / ").append(groupRow.getNumFailed())
-							.append(" / ").append(groupRow.getNumUndefined()).append("</div>");
-					target.append("</div>");
-				}
-			}
-		}
 
-		private void appendBar(StringOutput sb, int percent, String cssClass) {
-			sb.append("<div class='progress-bar ").append(cssClass).append("' style='width:").append(percent).append("%'>");
-			sb.append("<div class='sr-only'>").append(percent).append("%</div>");
-			sb.append("</div>");
-		}
-	}
-	
 	public class StatusStatsRenderer implements FlexiCellRenderer {
 		
 		@Override

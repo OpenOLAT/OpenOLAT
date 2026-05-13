@@ -19,8 +19,11 @@
  */
 package org.olat.modules.coach.ui.component;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -29,16 +32,35 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 
 /**
- * 
+ *
  * Initial date: 13 mai 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SuccessStatusCellRenderer implements FlexiCellRenderer {
+public class SuccessStatusCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+
+	private final Translator customTranslator;
+
+	public SuccessStatusCellRenderer() {
+		this.customTranslator = null;
+	}
+
+	public SuccessStatusCellRenderer(Translator translator) {
+		this.customTranslator = translator;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
+		renderStatus(target, cellValue, translator);
+	}
+
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		renderStatus(sb, val, customTranslator);
+	}
+
+	private void renderStatus(StringOutput target, Object cellValue, Translator translator) {
 		if(cellValue instanceof SuccessStatus status) {
 			String tooltip = translator.translate("table.header.success.status.tooltip",
 					String.valueOf(status.numPassed()), String.valueOf(status.numFailed()), String.valueOf(status.numUndefined()));
@@ -60,12 +82,12 @@ public class SuccessStatusCellRenderer implements FlexiCellRenderer {
 		target.append("<div class='progress'>");
 		
 		//passed
-		target.append("<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='").append(passed)
+		target.append("<div class='progress-bar o_passed_progress_bar' role='progressbar' aria-valuenow='").append(passed)
 		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 		      .append("' style='width: ").append(passedPercent).append("%;'>")
 		      .append("<span class='sr-only'>").append(passedPercent).append("%</span></div>");
 		//failed
-		target.append("<div class='progress-bar progress-bar-danger' role='progressbar' aria-valuenow='").append(failed)
+		target.append("<div class='progress-bar o_failed_progress_bar' role='progressbar' aria-valuenow='").append(failed)
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 	      .append("' style='width: ").append(max100Percent(failedPercent, passedPercent)).append("%;'>")
 	      .append("<span class='sr-only'>").append(failedPercent).append("%</span></div>");

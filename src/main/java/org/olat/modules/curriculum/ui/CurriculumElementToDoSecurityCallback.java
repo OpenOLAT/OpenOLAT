@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui;
 
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
@@ -69,6 +70,13 @@ public class CurriculumElementToDoSecurityCallback implements ToDoTaskSecurityCa
 	@Override
 	public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return ToDoStatus.deleted == toDoTask.getStatus() && secCallback.canEditCurriculumElement(element);
+	}
+
+	@Override
+	public ToDoRight[] getAssigneeRightsOverride(ToDoTask toDoTask) {
+		return secCallback.canEditCurriculumElement(element)
+				? new ToDoRight[] { ToDoRight.all }
+				: null;
 	}
 
 }

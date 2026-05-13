@@ -47,6 +47,7 @@ import org.olat.modules.project.ui.ProjectUIFactory;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
@@ -151,7 +152,7 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return createEditCopyController(ureq, wControl, toDoTask, false, showContext);
 	}
 	

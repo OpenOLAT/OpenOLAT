@@ -47,6 +47,7 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.ui.GroupsTableDataModel.Columns;
+import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,7 +88,7 @@ public class GroupListController extends BasicController implements Activateable
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.login", Columns.initialLaunch.ordinal(), null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new LightIconRenderer()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.passed", Columns.countPassed.ordinal(), null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new ProgressRenderer(false, getTranslator())));
+				ColumnDescriptor.ALIGNMENT_LEFT, new SuccessStatusCellRenderer(getTranslator())));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.averageScore", Columns.averageScore.ordinal(), null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
 
