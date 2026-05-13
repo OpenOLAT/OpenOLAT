@@ -1063,8 +1063,8 @@ public class LectureServiceTest extends OlatTestCase {
 
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
-		lectureBlock.setStartDate(new Date());
-		lectureBlock.setEndDate(new Date());
+		lectureBlock.setStartDate(DateUtils.truncateMilliSeconds(new Date()));
+		lectureBlock.setEndDate(DateUtils.truncateMilliSeconds(new Date()));
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);
 		return lectureService.save(lectureBlock, null);
