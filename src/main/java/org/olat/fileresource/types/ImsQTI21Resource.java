@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -43,7 +44,10 @@ import org.olat.core.util.PathUtils;
 import org.olat.ims.qti21.QTI21ContentPackage;
 import org.xml.sax.SAXParseException;
 
+import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.xmlutils.XmlParseResult;
 import uk.ac.ed.ph.jqtiplus.xmlutils.XmlReadResult;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ChainedResourceLocator;
@@ -90,7 +94,8 @@ public class ImsQTI21Resource extends FileResource {
 				}
 				
 				QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath);
-				if(validateImsManifest(cp, new PathResourceLocator(manifestPath.getParent()))) {
+				if(validateImsManifest(cp, new PathResourceLocator(manifestPath.getParent()))
+						&& loadTest(cp, fPath)) {
 					eval.setValid(true);
 				} else {
 					eval.setValid(false);
@@ -104,9 +109,24 @@ public class ImsQTI21Resource extends FileResource {
 			eval.setValid(false);
 		}
 		return eval;
-	}	
+	}
+	
+	private static boolean loadTest(QTI21ContentPackage	cp, Path fPath) {
+		try {
+			QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager(List.of()));
+			ResourceLocator fileResourceLocator = new PathResourceLocator(fPath);
+			ResourceLocator inputResourceLocator = 
+					ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+			AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+			ResolvedAssessmentTest test = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(cp.getTest().toUri());
+			return test != null;
+		} catch (Exception e) {
+			log.warn("", e);
+			return false;
+		}
+	}
 
-	public static boolean validateImsManifest(QTI21ContentPackage cp, ResourceLocator resourceLocator) {
+	private static boolean validateImsManifest(QTI21ContentPackage cp, ResourceLocator resourceLocator) {
 		try {
 			if(cp.hasTest()) {
 				URI test = cp.getTest().toUri();
