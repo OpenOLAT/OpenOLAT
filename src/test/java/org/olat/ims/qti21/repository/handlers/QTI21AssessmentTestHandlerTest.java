@@ -130,18 +130,50 @@ public class QTI21AssessmentTestHandlerTest extends OlatTestCase {
 	}
 	
 	/**
-	 * Unknown test with a lot of errors.
+	 * Unknown test with fatal errors like missing files.
 	 * 
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
 	@Test
 	public void nonConformQTI21Resource() throws IOException, URISyntaxException {
-		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform.zip");
+		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform_1.zip");
 		File testFile = new File(fileUrl.toURI());
-		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform.zip");
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform_1.zip");
 		Assert.assertNotNull(evaluation);
         Assert.assertFalse(evaluation.isValid());
+	}
+	
+	/**
+	 * Test generate with AI, missing assessment item references identifiers. The package
+	 * is valid per schema but cannot be loaded by QtiWorks.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void nonConformQTI21ResourceCannotLoad() throws IOException, URISyntaxException {
+		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform_missing_identifiers.zip");
+		File testFile = new File(fileUrl.toURI());
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform_missing_identifiers.zip");
+		Assert.assertNotNull(evaluation);
+        Assert.assertFalse(evaluation.isValid());
+	}
+	
+	/**
+	 * The test has a question with style attribute which is not conform but
+	 * we accept them. They will be removed at some point.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void nonConformStyledQTI21ResourceButImportable() throws IOException, URISyntaxException {
+		URL fileUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_non_conform_style.zip");
+		File testFile = new File(fileUrl.toURI());
+		ResourceEvaluation evaluation = testHandler.acceptImport(testFile, "test_non_conform_style.zip");
+		Assert.assertNotNull(evaluation);
+        Assert.assertTrue(evaluation.isValid());
 	}
 	
 	/**
