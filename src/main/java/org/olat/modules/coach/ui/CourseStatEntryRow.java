@@ -51,7 +51,8 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	private long numOfTaxonomyLevels;
 	private final boolean showStatistics;
 	private final RepositoryEntryEducationalType educationalType;
-	
+	private String successStatusHTML;
+
 	private FormLink markLink;
 	private FormLink selectLink;
 	private FormLink openLink;
@@ -205,39 +206,13 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	public long getNumPassed() {
 		return entry.getSuccessStatus().numPassed();
 	}
-	
-	public long getNumPassedPercent() {
-		long total = getNumTotal();
-		long passed = getNumPassed();
-		return (passed == 0l) ? 0l : Math.round(100.0d * ((double)passed / (double)total));
-	}
-	
+
 	public long getNumFailed() {
 		return entry.getSuccessStatus().numFailed();
 	}
-	
-	public long getNumFailedPercent() {
-		long total = getNumTotal();
-		long failed = getNumFailed();
 
-		long failedPercent = (failed == 0l) ? 0l :  Math.round(100.0d * ((double)failed / (double)total));
-		long passededPercent = getNumPassedPercent();
-		long totalPercent = failedPercent + passededPercent;
-		if(totalPercent > 100l) {
-			long diff = 100 - totalPercent;
-			if(diff < 0l) {
-				return failedPercent + diff;
-			}
-		}
-		return failedPercent;
-	}
-	
 	public long getNumUndefined() {
 		return entry.getSuccessStatus().numUndefined();
-	}
-	
-	public long getNumTotal() {
-		return entry.getSuccessStatus().numPassed() + entry.getSuccessStatus().numFailed() + entry.getSuccessStatus().numUndefined();
 	}
 
 	public Date getLastVisit() {
@@ -247,7 +222,15 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	public SuccessStatus getSuccessStatus() {
 		return entry.getSuccessStatus();
 	}
-	
+
+	public String getSuccessStatusHTML() {
+		return successStatusHTML;
+	}
+
+	public void setSuccessStatusHTML(String successStatusHTML) {
+		this.successStatusHTML = successStatusHTML;
+	}
+
 	public Long getStatusPassed() {
 		return entry.getSuccessStatus() == null ? null : entry.getSuccessStatus().numPassed();
 	}

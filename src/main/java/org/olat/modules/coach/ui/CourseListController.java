@@ -82,6 +82,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -172,6 +173,8 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String FINISHED_TAB_ID = "Finished";
 	private static final String BOOKMARK_TAB_ID = "Bookmarks";
 	private static final String ACCESS_FOR_COACH_TAB_ID = "AccessForCoach";
+
+	private final SuccessStatusCellRenderer successStatusCellRenderer = new SuccessStatusCellRenderer();
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab bookmarkTab;
@@ -286,7 +289,7 @@ public class CourseListController extends FormBasicController implements Activat
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion,
 					new CompletionCellRenderer(getTranslator())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.successStatus,
-					new SuccessStatusCellRenderer()));
+					successStatusCellRenderer));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusPassed));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusNotPassed));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusUndefined));
@@ -580,7 +583,13 @@ public class CourseListController extends FormBasicController implements Activat
 		boolean showStatistics = runtimeTypesGroup.loadStatistics();
 		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
 		row.setMarked(marked);
-		
+
+		if(showStatistics && row.isCourse() && entry.getSuccessStatus() != null) {
+			StringOutput target = new StringOutput();
+			successStatusCellRenderer.render(null, target, entry.getSuccessStatus(), 0, null, null, getTranslator());
+			row.setSuccessStatusHTML(target.toString());
+		}
+
 		forgeActionsLinks(row);
 		forgeRatings(entry, row);
 		

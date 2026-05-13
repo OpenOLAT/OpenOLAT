@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.LightedValue.Light;
 
@@ -116,11 +117,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 					if(countRepo == 0) {
 						return null;
 					}
-	
-					ProgressValue val = new ProgressValue();
-					val.setTotal(countRepo);
-					val.setGreen(student.getCountPassed());
-					return val;
+					return new SuccessStatus(student.getCountPassed(), student.getCountFailed(), student.getCountNotAttempted(), countRepo);
 				}
 				case countPassedLight: {
 					if(countRepo == 0) {
