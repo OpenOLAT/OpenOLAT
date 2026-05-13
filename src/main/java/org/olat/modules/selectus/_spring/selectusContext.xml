@@ -15,6 +15,7 @@
 	
 	<!-- The selectus configuration parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
 		<property name="order" value="7300" />
 		<property name="navigationKey" value="selectusconfig" />
 		<property name="nodeIdentifierIfParent" value="selectusParent" />
@@ -30,6 +31,7 @@
 	
 	<!-- Admin -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
 		<property name="order" value="7301" />
 		<property name="navigationKey" value="selectussettings" />
 		<property name="actionController">	
@@ -50,6 +52,7 @@
 	
 	<!-- Reporting -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
 		<property name="order" value="7307" />
 		<property name="navigationKey" value="selectusreporting" />
 		<property name="actionController">	
@@ -70,6 +73,7 @@
 	
 	<!--  Organisations additional configuration -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
 		<property name="order" value="7308" />
 		<property name="navigationKey" value="orgunits" />
 		<property name="actionController">	
@@ -90,6 +94,7 @@
 	
 	<!-- Categories -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
 		<property name="order" value="7309" />
 		<property name="navigationKey" value="tags" />
 		<property name="actionController">	

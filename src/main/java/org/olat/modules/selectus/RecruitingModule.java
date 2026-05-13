@@ -47,10 +47,6 @@ import org.olat.modules.selectus.site.PositionContextEntryControllerCreator;
 import org.olat.modules.selectus.site.PositionsContextEntryControllerCreator;
 import org.olat.modules.selectus.site.PublicFeedbackContextEntryControllerCreator;
 import org.olat.modules.selectus.ui.AcademicalDateFormat;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.olat.user.propertyhandlers.UserPropertyUsageContext;
-import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
-import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -162,8 +158,10 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	private static final Logger log = Tracing.createLoggerFor(RecruitingModule.class);
 
-	@Value("${selectus.enabled:true}")
+	@Value("${selectus.enabled:false}")
 	private boolean enabled;
+	@Value("${selectus.module.available:false}")
+	private boolean moduleAvailable;
 	
 	private int maxRating = 3;
 	@Value("${recruiting.rating.abstention:disabled}")
@@ -1393,10 +1391,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	private NotificationPermission[] notificationsPermissionsForCommittee;
 	private NotificationPermission[] notificationsPermissionsForExOfficio;
 	
-	
-	@Autowired
-	private UsrPropCfgManager userPropertyConfigManager;
-	
 	@Autowired
 	public RecruitingModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -1407,7 +1401,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		updateProperties();
 		initContexts();
 		initOptions();
-		initUserPropertyConfiguration();
 	}
 	
 	private void initContexts() {
@@ -1711,27 +1704,6 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		positionDefaultLocale = new Locale(positionDefaultLanguage);
 	}
 	
-	private void initUserPropertyConfiguration() {
-		UsrPropCfgObject userPropertyConfig = userPropertyConfigManager.getUserPropertiesConfigObject();
-		//TODO selectus initUserPropertyConfiguration("typeOfUser", userPropertyTypeOf, userPropertyConfig);
-		//TODO selectus initUserPropertyConfiguration("gender", userPropertyGender, userPropertyConfig);
-	}
-	
-	private void initUserPropertyConfiguration(String propertyName, String option, UsrPropCfgObject userPropertyConfig) {
-		UserPropertyHandler handler = userPropertyConfig.getPropertyHandler(propertyName);
-		Map<String, UserPropertyUsageContext> contexts = userPropertyConfig.getUsageContexts();
-		
-		for(UserPropertyUsageContext context:contexts.values()) {
-			if("enabled".equals(option)) {
-				context.setAsMandatoryUserProperty(handler, true);
-			} else if("optional".equals(option)) {
-				context.setAsMandatoryUserProperty(handler, false);
-			} else if("disabled".equals(option)) {
-				context.removePropertyHandler(handler);
-			}
-		}
-	}
-	
 	private String[] parseFeedbackOptions(String options) {
 		List<String> optionList = new ArrayList<>();
 		if(StringHelper.containsNonWhitespace(options)) {
@@ -1861,12 +1833,16 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	@Override
 	public boolean isEnabled() {
-		return enabled;
+		return enabled && moduleAvailable;
 	}
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(SELECTUS_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isModuleAvailable() {
+		return moduleAvailable;
 	}
 	
 	public boolean isAttachmenOnFileSystem() {
