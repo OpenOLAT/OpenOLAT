@@ -26,6 +26,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OWNERS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_REPORTS;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_TODOS;
 
 import java.util.List;
 
@@ -93,6 +94,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private int overviewTab;
 	private int metadataTab;
 	private int implementationsTab;
+	private int todosTab;
 	
 	private Link deleteButton;
 	private Link exportButton;
@@ -111,6 +113,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CurriculumImplementationWidgetController implementationWidgetCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumToDoTasksWidgetController toDoTasksWidgetCtrl;
+	private CurriculumToDoListController todosCtrl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
@@ -241,6 +244,16 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			});
 		}
 		
+		// To-dos
+		if(secCallback.canViewToDos()) {
+			todosTab = tabPane.addTab(ureq, translate("tab.todos"), "o_sel_curriculum_todos", uureq -> {
+				WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_TODOS), null);
+				todosCtrl = new CurriculumToDoListController(uureq, subControl, curriculum);
+				listenTo(todosCtrl);
+				return todosCtrl.getInitialComponent();
+			}, true);
+		}
+
 		// User management
 		ownersTab = tabPane.addTab(ureq, translate("tab.owner.management"), uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_OWNERS), null);
@@ -319,6 +332,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			tabPane.setSelectedPane(ureq, lecturesTab);
 			if(lectureBlocksCtrl != null) {
 				lectureBlocksCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if(CONTEXT_TODOS.equalsIgnoreCase(type) && todosTab > 0) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			tabPane.setSelectedPane(ureq, todosTab);
+			if(todosCtrl != null) {
+				todosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);

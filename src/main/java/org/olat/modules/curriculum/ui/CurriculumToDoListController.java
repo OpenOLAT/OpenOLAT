@@ -27,7 +27,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -35,27 +35,21 @@ import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 import org.olat.modules.todo.ui.ToDoTaskListController;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
- * Initial date: 6 May 2026<br>
+ * Initial date: 13 May 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumMangerToDoListController extends ToDoTaskListController {
-	
-	private final Collection<String> subPaths;
+public class CurriculumToDoListController extends ToDoTaskListController {
 
-	@Autowired
-	private CurriculumService curriculumService;
+	private final Long curriculumKey;
 
-	public CurriculumMangerToDoListController(UserRequest ureq, WindowControl wControl) {
+	public CurriculumToDoListController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
 		super(ureq, wControl, "manager_todos", CurriculumElementToDoProvider.TYPE, null, null);
-		
-		subPaths = curriculumService.getAccessibleCurriculumKeys(getIdentity()).curriculumElementKeys().stream()
-				.map(String::valueOf)
-				.toList();
+
+		this.curriculumKey = curriculum.getKey();
 
 		initForm(ureq);
 
@@ -63,7 +57,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);
-		setAndLoadPersistedPreferences(ureq, "curriculum-manager-todos");
+		setAndLoadPersistedPreferences(ureq, "curriculum-todos");
 
 		reload(ureq);
 	}
@@ -85,7 +79,8 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
-		return col != ToDoTaskCols.contextType;
+		return col != ToDoTaskCols.contextType
+				&& col != ToDoTaskCols.contextTitle;
 	}
 
 	@Override
@@ -99,7 +94,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	protected boolean isFilterTabUnassignedEnabled() {
 		return true;
 	}
-	
+
 	@Override
 	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
 		tabs.remove(tabAll);
@@ -115,18 +110,18 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
 		params.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
-		params.setOriginSubPaths(subPaths);
+		params.setOriginIds(List.of(curriculumKey));
 		return params;
 	}
 
 	@Override
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
-		return CurriculumManagerSecurityCallback.INSTANCE;
+		return CurriculumSecurityCallbackImpl.INSTANCE;
 	}
-	
-	private final static class CurriculumManagerSecurityCallback implements ToDoTaskSecurityCallback {
-		
-		private final static CurriculumManagerSecurityCallback INSTANCE = new CurriculumManagerSecurityCallback();
+
+	private final static class CurriculumSecurityCallbackImpl implements ToDoTaskSecurityCallback {
+
+		private final static CurriculumSecurityCallbackImpl INSTANCE = new CurriculumSecurityCallbackImpl();
 
 		@Override
 		public boolean canCreateToDoTasks() {
@@ -140,7 +135,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 
 		@Override
 		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted != toDoTask.getStatus() ;
+			return ToDoStatus.deleted != toDoTask.getStatus();
 		}
 
 		@Override
@@ -157,7 +152,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return ToDoStatus.deleted == toDoTask.getStatus();
 		}
-		
+
 	}
 
 }
