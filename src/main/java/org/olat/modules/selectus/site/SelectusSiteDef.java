@@ -12,7 +12,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.selectus.RecruitingModule;
@@ -27,7 +26,7 @@ import org.olat.modules.selectus.dispatcher.PublicFeedbackDispatcher;
  *
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
-public class SelectusSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class SelectusSiteDef extends AbstractSiteDefinition {
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {

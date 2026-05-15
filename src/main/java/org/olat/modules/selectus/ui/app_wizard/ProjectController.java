@@ -118,7 +118,7 @@ public class ProjectController extends FormBasicController {
 		
 		String explanation = tabConfiguration.getHelp(getLocale());
 		if(StringHelper.containsNonWhitespace(explanation)) {
-			setFormTranslatedDescription(RecruitingHelper.escWithBR(explanation));
+			setFormTranslatedDescription(StringHelper.xssScan(RecruitingHelper.escWithBR(explanation)));
 		} else if(admin) {
 			setFormDescription("wizard.edit_project.explanation.admin");
 		} else {
@@ -126,11 +126,11 @@ public class ProjectController extends FormBasicController {
 		}
 		formLayout.setElementCssClass("o_sel_edit_project");
 		
-		String heading = tabConfiguration.getHeading(getLocale());
+		String heading = StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale()));
 		if(StringHelper.containsNonWhitespace(heading)) {
 			StaticTextElement headingEl = uifactory.addStaticTextElement("project-data", "wizard.edit_project.legend", "", formLayout);
 			headingEl.setElementCssClass("o_static_heading");
-			headingEl.setLabel(heading, null, false);
+			headingEl.setLabel(StringHelper.escapeHtml(heading), null, false);
 		}
 		
 		initProject(formLayout);

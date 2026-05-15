@@ -35,7 +35,7 @@ import org.olat.modules.selectus.ui.RecruitingHelper;
 /**
  * 
  * Initial date: 23 mars 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PositionEditInstructionsTextController extends FormBasicController {

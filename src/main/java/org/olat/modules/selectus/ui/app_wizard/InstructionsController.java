@@ -30,6 +30,7 @@ import org.olat.modules.selectus.model.PositionMLHelper;
 import org.olat.modules.selectus.model.PositionProfessorship;
 import org.olat.modules.selectus.model.ReferenceSendMailType;
 import org.olat.modules.selectus.model.position.TabConfiguration;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,7 +95,7 @@ public class InstructionsController extends FormBasicController {
 	private void initInstructionsForm(FormItemContainer formLayout) {
 		String instructions = configuration.getHelp(getLocale());
 		if(StringHelper.containsNonWhitespace(instructions)) {
-			formLayout.contextPut("instructionsText", instructions);
+			formLayout.contextPut("instructionsText", StringHelper.xssScan(RecruitingHelper.escWithBR(instructions)));
 		} else {
 			if(formLayout instanceof FormLayoutContainer) {
 				((FormLayoutContainer)formLayout).contextRemove("instructionsText");

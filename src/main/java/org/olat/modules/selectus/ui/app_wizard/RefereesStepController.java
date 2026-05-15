@@ -198,7 +198,7 @@ public class RefereesStepController extends StepFormBasicController {
 				explanation = "<p>" + explanation + "</p><p>" + translate("wizard.referees.explain.additional") + "</p>";
 			}
 		}
-		setFormTranslatedDescription(RecruitingHelper.escWithBR(explanation));
+		setFormTranslatedDescription(StringHelper.xssScan(RecruitingHelper.escWithBR(explanation)));
 	}
 
 	@Override

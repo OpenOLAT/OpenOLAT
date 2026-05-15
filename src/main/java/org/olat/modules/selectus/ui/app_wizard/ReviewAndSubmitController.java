@@ -150,7 +150,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 				msg = new TabsConfigurationDelegate(Tab.reviewAndSubmit)
 						.getWarningReviewAndSubmit(position, getLocale());
 			}
-			layoutCont.contextPut("warningMsg", msg);
+			layoutCont.contextPut("warningMsg", StringHelper.xssScan(msg));
 		}
 		initPersonalInformations(person, formLayout);
 		initEmailAndPhone(person, formLayout);
@@ -185,7 +185,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 			
 			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.personalData);
 			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
-				personInfosLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+				personInfosLayout.setFormTitle(StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale())));
 			}
 			
 			String fullname = StringHelper.escapeHtml(RecruitingHelper.formatFullName(application, getTranslator()));
@@ -477,7 +477,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 			
 			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.project);
 			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
-				projectLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+				projectLayout.setFormTitle(StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale())));
 			}
 
 			if(recruitingModule.isApplicationProjectTitleEnabled()
@@ -556,7 +556,7 @@ public class ReviewAndSubmitController extends FormBasicController {
 				
 				TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.academicalBackground);
 				if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
-					backgroundLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+					backgroundLayout.setFormTitle(StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale())));
 				}
 			
 				if(background.getNumberOfOriginalPublications() != null && background.getNumberOfOriginalPublications().intValue() > 0

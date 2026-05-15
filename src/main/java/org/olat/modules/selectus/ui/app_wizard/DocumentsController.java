@@ -102,7 +102,7 @@ public class DocumentsController extends FormBasicController {
 		
 		String explanation = tabConfiguration.getHelp(getLocale());
 		if(StringHelper.containsNonWhitespace(explanation)) {
-			setFormTranslatedDescription(RecruitingHelper.escWithBR(explanation));
+			setFormTranslatedDescription(StringHelper.xssScan(RecruitingHelper.escWithBR(explanation)));
 		} else if(StringHelper.containsNonWhitespace(translate("wizard.documents.explanation"))) {
 			setFormDescription("wizard.documents.explanation");
 		}

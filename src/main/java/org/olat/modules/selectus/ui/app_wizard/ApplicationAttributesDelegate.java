@@ -277,7 +277,7 @@ public class ApplicationAttributesDelegate {
 			Locale locale) {
 		PositionAttributeDefinition definition = valueWithDefinition.getDefinition();
 		StaticTextElement element = uifactory.addStaticTextElement(elementId(definition), "custom.attribute", "", formLayout);
-		String label = definition.getLabel(locale, true);
+		String label = StringHelper.escapeHtml(definition.getLabel(locale, true));
 		element.setElementCssClass("o_static_heading");
 		element.setLabel(label, null, false);
 		valueWithDefinition.setPrimaryItem(element);

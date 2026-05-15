@@ -1,5 +1,4 @@
 /**
-
  * <p>
  * Copyright (c) frentix GmbH<br>
  * http://www.frentix.com<br>

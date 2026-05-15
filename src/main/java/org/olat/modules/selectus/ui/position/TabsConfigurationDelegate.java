@@ -270,7 +270,7 @@ public class TabsConfigurationDelegate {
 	
 	private TextElement initHeading(Locale locale, List<Locale> positionLanguages, TabConfiguration configuration, FormItemContainer headingContainer) {
 		String lang = locale.getLanguage();
-		String text = configuration.getHeading(locale);
+		String text = StringHelper.escapeHtml(configuration.getHeading(locale));
 		String id = "attr_name_heading_" + lang;
 		String i18nLabel = "edit.heading.name";
 		TextElement textEl = uifactory.addTextElement(id, i18nLabel, 255, text, headingContainer);

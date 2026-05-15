@@ -231,11 +231,11 @@ public class EditPersonController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!segmented) {
-			setFormTitle("wizard.edit_person.legend", new String[] { position.getMLTitle(getLocale()) } );
+			setFormTitle("wizard.edit_person.legend", new String[] { StringHelper.escapeHtml(position.getMLTitle(getLocale())) } );
 		}
 		String explanation = tabConfiguration.getHelp(getLocale());
 		if(StringHelper.containsNonWhitespace(explanation)) {
-			setFormTranslatedDescription(RecruitingHelper.escWithBR(explanation));
+			setFormTranslatedDescription(StringHelper.xssScan(RecruitingHelper.escWithBR(explanation)));
 		} else {
 			setFormDescription("wizard.edit_person.explanation");
 		}
@@ -261,11 +261,11 @@ public class EditPersonController extends FormBasicController {
 	private void initPersonForm(FormItemContainer formLayout) {
 		Person person = application.getPerson();
 		
-		String heading = tabConfiguration.getHeading(getLocale());
+		String heading = StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale()));
 		if(StringHelper.containsNonWhitespace(heading)) {
 			StaticTextElement headingEl = uifactory.addStaticTextElement("personal-data", "wizard.edit_person.title", "", formLayout);
 			headingEl.setElementCssClass("o_static_heading");
-			headingEl.setLabel(heading, null, false);
+			headingEl.setLabel(StringHelper.escapeHtml(heading), null, false);
 		}
 
 		titleEl = uifactory.addDropdownSingleselect("title", "edit.application.title", formLayout, titleKeys, titleValues, null);

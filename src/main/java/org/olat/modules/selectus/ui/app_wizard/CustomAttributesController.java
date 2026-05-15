@@ -78,7 +78,7 @@ public class CustomAttributesController extends FormBasicController {
 		
 		String explanation = tabConfiguration.getHelp(getLocale());
 		if(StringHelper.containsNonWhitespace(explanation)) {
-			setFormTranslatedDescription(RecruitingHelper.escWithBR(explanation));
+			setFormTranslatedDescription(StringHelper.xssScan(RecruitingHelper.escWithBR(explanation)));
 		}
 		
 		attributesDelegate.initAdditionalAttributes(formLayout, additionalAttributesEl, application, admin, editable, getLocale());

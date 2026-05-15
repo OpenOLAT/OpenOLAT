@@ -136,7 +136,7 @@ public class ApplicationDetailsController extends FormBasicController {
 		
 		TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.project);
 		if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
-			projectLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+			projectLayout.setFormTitle(StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale())));
 		}
 	
 		if(recruitingModule.isApplicationProjectTitleEnabled() && StringHelper.containsNonWhitespace(project.getTitle())
@@ -231,7 +231,7 @@ public class ApplicationDetailsController extends FormBasicController {
 			
 			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.personalData);
 			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
-				personInfosLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+				personInfosLayout.setFormTitle(StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale())));
 			} else {
 				personInfosLayout.setFormTitle(translate("contact.data"));
 			}
@@ -575,7 +575,7 @@ public class ApplicationDetailsController extends FormBasicController {
 			
 			TabConfiguration tabConfiguration = position.getTabConfiguration(Tab.academicalBackground);
 			if(StringHelper.containsNonWhitespace(tabConfiguration.getHeading(getLocale()))) {
-				backgroundLayout.setFormTitle(tabConfiguration.getHeading(getLocale()));
+				backgroundLayout.setFormTitle(StringHelper.escapeHtml(tabConfiguration.getHeading(getLocale())));
 			}
 			
 			AcademicalBackground background = application.getAcademicalBackground();

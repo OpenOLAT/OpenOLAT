@@ -326,8 +326,7 @@ public class ApplicationEditController extends FormBasicController {
 		} else if(source == statusLink) {
 			setMainContent(Tabs.status);
 			segmentView.select(statusLink.getComponent());
-		} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof Tab) {
-			Tab tab = (Tab)((FormLink)source).getUserObject();
+		} else if(source instanceof FormLink link && link.getUserObject() instanceof Tab tab) {
 			setMainContent(tab);
 			segmentView.select(source.getComponent());
 		} else {
