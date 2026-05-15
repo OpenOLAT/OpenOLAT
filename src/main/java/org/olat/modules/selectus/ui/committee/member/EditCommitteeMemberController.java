@@ -3,13 +3,14 @@
  * Copyright (c) frentix GmbH<br>
  * http://www.frentix.com<br>
  */
-package org.olat.modules.selectus.ui;
+package org.olat.modules.selectus.ui.committee.member;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.admin.user.SendTokenToUserForm;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -23,8 +24,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
@@ -35,10 +35,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.mail.MailBundle;
-import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -47,9 +43,8 @@ import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.committee.wizard.MembersController;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.RegistrationModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,13 +74,12 @@ public class EditCommitteeMemberController extends FormBasicController {
 	private final Identity member;
 	private final PositionRole role;
 	private final Position position;
+
+	private CloseableModalController cmc;
+	private SendTokenToUserForm sendPasswordLinkCtrl;
 	
 	@Autowired
 	private UserManager um;
-	@Autowired
-	private I18nModule i18nModule;
-	@Autowired
-	private MailManager mailManager;
 	@Autowired
 	private AuditService auditService;
 	@Autowired
@@ -94,13 +88,10 @@ public class EditCommitteeMemberController extends FormBasicController {
 	private RecruitingModule recruitingModule;
 	@Autowired
 	private RecruitingService erFrontendManager;
-	@Autowired
-	private RegistrationModule registrationModule;
-	@Autowired
-	private RegistrationManager registrationManager;
 	
 	public EditCommitteeMemberController(UserRequest ureq, WindowControl wControl, Position position, Identity member, PositionRole role) {
-		super(ureq, wControl, null, UserManager.getInstance().getPropertyHandlerTranslator(Util.createPackageTranslator(MembersController.class, ureq.getLocale())));
+		super(ureq, wControl, null, UserManager.getInstance().getPropertyHandlerTranslator(Util
+				.createPackageTranslator(MembersController.class, ureq.getLocale())));
 		this.member = member;
 		this.role = role;
 		this.position = position;
@@ -141,7 +132,7 @@ public class EditCommitteeMemberController extends FormBasicController {
 		}
 
 		final User user = member.getUser();
-		final String username = member.getName();
+		final String username = user.getNickName();
 		
 		uifactory.addStaticTextElement(LOGINNAME, "username", username, formLayout);
 		formContext.put("username", username);
@@ -196,6 +187,26 @@ public class EditCommitteeMemberController extends FormBasicController {
 			return null;
 		}
 		return PositionRole.role(selectedRole);
+	}
+	
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(sendPasswordLinkCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(sendPasswordLinkCtrl);
+		removeAsListenerAndDispose(cmc);
+		sendPasswordLinkCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -276,35 +287,16 @@ public class EditCommitteeMemberController extends FormBasicController {
 	private void doSendMailWithToken(UserRequest ureq) {
 		Preferences prefs = member.getUser().getPreferences();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
-		String emailAdress = member.getUser().getProperty(UserConstants.EMAIL, locale);
-		if (StringHelper.containsNonWhitespace(emailAdress)) {
-			String serverpath = Settings.getServerContextPathURI();
-			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale);
-			String toolName = Util.createPackageTranslator(RecruitingMainController.class, getLocale())
-					.translate("topnav.home");
-			
-			String ip = ureq.getHttpReq().getRemoteAddr();
-			registrationManager.createAndDeleteOldTemporaryKey(member.getKey(), emailAdress, ip,
-					RegistrationManager.PW_CHANGE, registrationModule.getRESTValidityOfTemporaryKey());
+		if (member.getUser().getProperty(UserConstants.EMAIL, locale) != null) {
+			sendPasswordLinkCtrl = new SendTokenToUserForm(ureq, getWindowControl(), member, false, false, true);
+			listenTo(sendPasswordLinkCtrl);
 
-			String subject = userTrans.translate("pwchange.subject", toolName);
-			String body = userTrans.translate("pwchange.intro", member.getName(), toolName, serverpath)
-					+ userTrans.translate("pwchange.body.send", serverpath, emailAdress, i18nModule.getLocaleKey(locale));
-			sendToken(body, subject);
+			String title = translate("edit.committee.password.tmp");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), sendPasswordLinkCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
 		} else {
-			showWarning("");
-		}
-	}
-	
-	private void sendToken(String body, String subject) {
-		MailBundle bundle = new MailBundle();
-		bundle.setToId(member);
-		bundle.setContent(subject, body);
-		MailerResult result = mailManager.sendExternMessage(bundle, new MailerResult(), true);
-		if(result.getReturnCode() == MailerResult.OK) {
-			showInfo("email.sent");
-		} else {
-			showError("email.notsent");
+			showError("send.password.no.mail");
 		}
 	}
 }

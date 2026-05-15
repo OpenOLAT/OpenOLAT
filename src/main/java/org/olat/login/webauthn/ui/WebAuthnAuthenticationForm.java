@@ -433,8 +433,6 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		String pwd = pass.getValue();
 		pass.setValue("");
 		
-		System.out.println(loginModule.isOlatProviderWithOtp());
-		
 		if (loginModule.isLoginBlocked(login)) {
 			// do not proceed when already blocked
 			setError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
