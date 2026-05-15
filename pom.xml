@@ -74,7 +74,7 @@
 		<apache.pdfbox>3.0.7</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
 		<apache.log4j>2.26.0</apache.log4j>
-		<org.slf4j>2.0.17</org.slf4j>
+		<org.slf4j>2.0.18</org.slf4j>
 		<org.bouncycastle>1.84</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.0.Final</io.undertow>
@@ -86,7 +86,7 @@
 		<org.postgresql.version>42.7.11</org.postgresql.version>
 		<org.infinispan.version>16.1.4</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.43.0</version.selenium>
+		<version.selenium>4.44.0</version.selenium>
 		<activemq.artemis.version>2.53.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
@@ -1837,7 +1837,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>2.0.2</version>
+			<version>2.0.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.ibm.icu</groupId>
