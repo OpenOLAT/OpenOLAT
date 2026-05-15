@@ -57,15 +57,15 @@ public class GlossarySettingsController extends RepositoryEntrySettingsControlle
 	
 	@Override
 	protected void initOptions() {
-		super.initOptions();
-		
 		registerLink = LinkFactory.createToolLink("register", translate("tab.glossary.register"), this);
 		registerLink.setElementCssClass("o_sel_glossary_register");
 		buttonsGroup.addButton(registerLink, false);
-		
+
 		permissionLink = LinkFactory.createToolLink("permissions", translate("tab.glossary.edit"), this);
 		permissionLink.setElementCssClass("o_sel_glossary_permission");
 		buttonsGroup.addButton(permissionLink, false);
+
+		super.initOptions();
 	}
 
 	@Override

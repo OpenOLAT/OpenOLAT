@@ -77,6 +77,8 @@ public class CPSettingsController extends RepositoryEntrySettingsController {
 		deliveryOptionsLink = LinkFactory.createLink("tab.layout", getTranslator(), this);
 		deliveryOptionsLink.setElementCssClass("o_sel_repo_layout");
 		buttonsGroup.addButton(deliveryOptionsLink, false);
+
+		super.initOptions();
 	}
 
 	@Override

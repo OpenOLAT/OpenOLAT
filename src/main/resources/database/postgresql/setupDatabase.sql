@@ -585,6 +585,7 @@ create table o_repositoryentry (
    teaser varchar(255),
    initialauthor varchar(128) not null,
    allowtoleave varchar(16),
+   finished_access varchar(32),
    candownload bool not null,
    cancopy bool not null,
    canreference bool not null,

@@ -633,6 +633,7 @@ CREATE TABLE o_repositoryentry (
   teaser varchar2(255),
   initialauthor varchar2(128 char) NOT NULL,
   allowtoleave varchar2(16 char),
+  finished_access varchar(32),
   candownload number NOT NULL,
   cancopy number NOT NULL,
   canreference number NOT NULL,

@@ -66,6 +66,7 @@ import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.ims.cp.ui.CPRuntimeController;
 import org.olat.modules.cp.CPAssessmentProvider;
 import org.olat.modules.cp.CPDisplayController;
+import org.olat.modules.cp.DryRunAssessmentProvider;
 import org.olat.modules.cp.PersistingAssessmentProvider;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
@@ -220,7 +221,9 @@ public class ImsCPHandler extends FileHandler {
 			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 			
-			CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(re, uureq.getIdentity(), false, false);
+			CPAssessmentProvider cpAssessmentProvider = security.isReadOnly()
+					? DryRunAssessmentProvider.create()
+					: PersistingAssessmentProvider.create(re, uureq.getIdentity(), false, false);
 			CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions,
 					initialUri, entry.getOlatResource(), "", false, cpAssessmentProvider);
 			LayoutMain3ColsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());

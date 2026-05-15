@@ -43,6 +43,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.repository.RepositoryEntryFinishedAccessOptions;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	private FormToggle hintEl;
 	private FormLink sitesButton;
 	private SingleSelection accessEl;
+	private SingleSelection finishedAccessEl;
 	private FormLayoutContainer overviewCont;
 	private StaticTextElement myCoursesSiteEl;
 	private StaticTextElement coachingToolSiteEl;
@@ -79,7 +81,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	private RepositoryModule repositoryModule;
 	
 	public RepositoryAdminAccessController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
+		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 				Util.createPackageTranslator(SitesAdminController.class, ureq.getLocale())));
 		Map<String,SiteDefinition> siteDefs = sitesModule.getAllSiteDefinitionsList();
 		myCoursesSiteDef = siteDefs.get(SITE_MY_COURSES);
@@ -91,7 +93,10 @@ public class RepositoryAdminAccessController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.access");
+		FormLayoutContainer accessCont = FormLayoutContainer.createDefaultFormLayout("access", getTranslator());
+		accessCont.setFormTitle(translate("admin.access"));
+		formLayout.add(accessCont);
+		accessCont.setRootForm(mainForm);
 		
 		SelectionValues accessPk = new SelectionValues();
 		accessPk.add(SelectionValues.entry(OWNER_COACH_ACCESS_KEY, translate("admin.access.coaching.with.owner"),
@@ -99,7 +104,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 		accessPk.add(SelectionValues.entry(COACHING_KEY, translate("admin.access.coaching.with.tool"),
 				translate("admin.access.coaching.with.tool.descr"), null, null, true));
 		
-		accessEl = uifactory.addCardSingleSelectHorizontal("admin.access.coaching", formLayout,
+		accessEl = uifactory.addCardSingleSelectHorizontal("admin.access.coaching", accessCont,
 				accessPk.keys(), accessPk.values(), accessPk.descriptions(), accessPk.icons());
 		accessEl.addActionListener(FormEvent.ONCLICK);
 		if(repositoryModule.isMyCoursesParticipantsOnly()) {
@@ -108,12 +113,12 @@ public class RepositoryAdminAccessController extends FormBasicController {
 			accessEl.select(OWNER_COACH_ACCESS_KEY, true);
 		}
 		
-		hintEl = uifactory.addToggleButton("admin.coaching.hint", "admin.coaching.hint", translate("on"), translate("off"), formLayout);
+		hintEl = uifactory.addToggleButton("admin.coaching.hint", "admin.coaching.hint", translate("on"), translate("off"), accessCont);
 		hintEl.setHelpTextKey("admin.coaching.hint.help", null);
 		hintEl.toggle(repositoryModule.isMyCoursesCoachingToolHint());
 		
 		String overviewPage = velocity_root + "/repository_admin_overview.html";
-		overviewCont = uifactory.addCustomFormLayout("overview", null, overviewPage, formLayout);
+		overviewCont = uifactory.addCustomFormLayout("overview", null, overviewPage, accessCont);
 		overviewCont.setFormLayout("0_12");
 		overviewCont.contextPut("warningSite", "");
 		
@@ -122,6 +127,24 @@ public class RepositoryAdminAccessController extends FormBasicController {
 		
 		sitesButton = uifactory.addFormLink("admin.coaching.sites", overviewCont, Link.BUTTON);
 		sitesButton.setGhost(true);
+
+		FormLayoutContainer finishedCont = FormLayoutContainer.createDefaultFormLayout("finished", getTranslator());
+		finishedCont.setFormTitle(translate("admin.access.finished.title"));
+		formLayout.add(finishedCont);
+		finishedCont.setRootForm(mainForm);
+
+		SelectionValues finishedPk = new SelectionValues();
+		finishedPk.add(SelectionValues.entry(RepositoryEntryFinishedAccessOptions.readonly.name(),
+				translate("admin.access.finished.readonly"),
+				translate("admin.access.finished.readonly.descr"), null, null, true));
+		finishedPk.add(SelectionValues.entry(RepositoryEntryFinishedAccessOptions.noaccess.name(),
+				translate("admin.access.finished.noaccess"),
+				translate("admin.access.finished.noaccess.descr"), null, null, true));
+
+		finishedAccessEl = uifactory.addCardSingleSelectHorizontal("admin.access.finished", finishedCont,
+				finishedPk.keys(), finishedPk.values(), finishedPk.descriptions(), finishedPk.icons());
+		finishedAccessEl.addActionListener(FormEvent.ONCLICK);
+		finishedAccessEl.select(repositoryModule.getFinishedAccessDefaultOption().name(), true);
 	}
 	
 	private void updateUI() {
@@ -154,7 +177,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(accessEl == source || hintEl == source) {
+		if(accessEl == source || hintEl == source || finishedAccessEl == source) {
 			doSaveSettings();
 		} else if(sitesButton == source) {
 			doOpenSitesSettings(ureq);
@@ -183,6 +206,16 @@ public class RepositoryAdminAccessController extends FormBasicController {
 				}
 			}
 		}
+
+		RepositoryEntryFinishedAccessOptions finishedOption = RepositoryEntryFinishedAccessOptions.readonly;
+		if(finishedAccessEl.isOneSelected()) {
+			try {
+				finishedOption = RepositoryEntryFinishedAccessOptions.valueOf(finishedAccessEl.getSelectedKey());
+			} catch (IllegalArgumentException e) {
+				finishedOption = RepositoryEntryFinishedAccessOptions.readonly;
+			}
+		}
+		repositoryModule.setFinishedAccessDefaultOption(finishedOption);
 	}
 	
 	private void doOpenSitesSettings(UserRequest ureq) {

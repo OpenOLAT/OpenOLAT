@@ -63,6 +63,7 @@ import org.olat.modules.wiki.WikiAssessmentProvider;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiModule;
+import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
@@ -212,7 +213,9 @@ public class WikiHandler implements RepositoryHandler {
 		BusinessControl bc = wControl.getBusinessControl();
 		final ContextEntry ce = bc.popLauncherContextEntry();
 		SubscriptionContext subsContext = new SubscriptionContext(res, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		final WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
+		final WikiSecurityCallback callback = reSecurity.isReadOnly()
+				? new WikiReadOnlySecurityCallback(isGuestOnly, isOLatAdmin)
+				: new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
 		WikiAssessmentProvider assessmentProvider = PersistingAssessmentProvider.create(re, ureq.getIdentity());
 
 		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,

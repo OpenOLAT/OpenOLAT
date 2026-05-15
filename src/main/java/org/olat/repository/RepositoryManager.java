@@ -922,7 +922,29 @@ public class RepositoryManager {
 		dbInstance.commit();
 		return updatedRe;
 	}
-	
+
+	public RepositoryEntry setFinishedAccess(final RepositoryEntry re,
+			RepositoryEntryFinishedAccessOptions option) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setFinishedAccess(option);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getOlatResource().getResourceableTypeName();
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
+		dbInstance.commit();
+		return updatedRe;
+	}
+
+	public RepositoryEntryFinishedAccessOptions resolveFinishedAccess(RepositoryEntry entry) {
+		RepositoryEntryFinishedAccessOptions option = entry.getFinishedAccess();
+		return option != null ? option : repositoryModule.getFinishedAccessDefaultOption();
+	}
+
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {

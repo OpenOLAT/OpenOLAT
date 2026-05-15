@@ -163,6 +163,9 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			setWarning(translate("access.denied.not.yet.available"), translate("access.denied.not.yet.available.hint"));
 		} else if (config.isAdminConfirmationPendingMessage()) {
 			setWarning(translate("access.denied.reservation.confirmation.pending"), translate("access.denied.reservation.confirmation.pending.hint"));
+		} else if (config.isFinishedNoAccessMessage()) {
+			String typeName = translate(getResource().getResourceableTypeName());
+			setWarning(translate("access.denied.finished", typeName), translate("access.denied.finished.hint"));
 		}
 		if (config.isOwnerCoachMessage()) {
 			setWarning2(translate("access.available.roles"), translate("access.available.roles.hint"));

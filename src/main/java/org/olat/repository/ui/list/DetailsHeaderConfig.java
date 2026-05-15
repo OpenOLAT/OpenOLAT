@@ -71,10 +71,12 @@ public interface DetailsHeaderConfig {
 	
 	boolean isAvailabilityMessage();
 	
+	boolean isFinishedNoAccessMessage();
+
 	boolean isOwnerCoachMessage();
 	
 	boolean isAdministrativOpenAvailable();
-	
-	boolean isAdministrativOpenEnabled();
 
+	boolean isAdministrativOpenEnabled();
+	
 }

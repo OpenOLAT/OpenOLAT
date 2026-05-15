@@ -298,14 +298,14 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new EvaluationFormRuntimeController(ureq, wControl, re, reSecurity,
 			(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
-					File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
-					File formFile = new File(repositoryDir, FORM_XML_FILE);
-					DataStorage storage = evaluationFormManager.loadStorage(re);
+					Form form = evaluationFormManager.loadForm(entry);
+					DataStorage storage = evaluationFormManager.loadStorage(entry);
 					EmptyStateConfig emptyStateConfig = EvaluationFormExecutionController.defaultEmptyState()
 							.withHintI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_HINT)
 							.withPrimaryButton(null, EvaluationFormExecutionController.EMPTY_STATE_EDIT_BUTTON, null)
 							.build();
-					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage, null, emptyStateConfig);
+					return new EvaluationFormExecutionController(uureq, wwControl, form, storage, null, null, null, null,
+							security.isReadOnly(), false, false, false, emptyStateConfig);
 			});
 	}
 

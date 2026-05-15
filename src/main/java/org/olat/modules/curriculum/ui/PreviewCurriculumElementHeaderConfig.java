@@ -188,6 +188,11 @@ public class PreviewCurriculumElementHeaderConfig implements DetailsHeaderConfig
 	}
 
 	@Override
+	public boolean isFinishedNoAccessMessage() {
+		return false;
+	}
+
+	@Override
 	public boolean isOwnerCoachMessage() {
 		return false;
 	}

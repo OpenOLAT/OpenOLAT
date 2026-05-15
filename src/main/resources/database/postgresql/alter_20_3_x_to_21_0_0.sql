@@ -55,6 +55,9 @@ alter table o_ac_order_line add column cancelling_enabled bool default true not 
 alter table o_ac_offer add column valid_status varchar(255);
 alter table o_ac_offer add column valid_date_config varchar(2000);
 
+-- Learning resources
+alter table o_repositoryentry add column finished_access varchar(32);
+
 -- To-dos
 alter table o_todo_task add column t_relative_dates varchar(2000);
 

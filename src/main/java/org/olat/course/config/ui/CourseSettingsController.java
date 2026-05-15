@@ -109,8 +109,6 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		optionsLink = LinkFactory.createLink("details.options", getTranslator(), this);
 		optionsLink.setElementCssClass("o_sel_options");
 		buttonsGroup.addButton(optionsLink, false);
-		
-		super.initOptions();
 	}
 
 	@Override

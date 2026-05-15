@@ -48,6 +48,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedChangedEvent;
+import org.olat.modules.webFeed.FeedReadOnlySecurityCallback;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -210,7 +211,9 @@ public class BlogHandler implements RepositoryHandler {
 			UserRequest ureq, WindowControl wControl) {
 		
 		boolean isAdministrator = reSecurity.isEntryAdmin();
-		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdministrator);
+		final FeedSecurityCallback callback = reSecurity.isReadOnly()
+				? new FeedReadOnlySecurityCallback()
+				: new FeedResourceSecurityCallback(isAdministrator);
 		SubscriptionContext subsContext = new SubscriptionContext(re.getOlatResource(), re.getSoftkey());
 		callback.setSubscriptionContext(subsContext);
 		return new FeedRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry,  security,  assessmentMode) -> {

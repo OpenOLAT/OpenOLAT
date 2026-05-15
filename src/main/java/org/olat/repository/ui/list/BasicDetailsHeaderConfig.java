@@ -49,6 +49,7 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	protected boolean ownerCoachMessage = false;
 	protected boolean administrativOpenAvailable = false;
 	protected boolean participantConfirmationPending = false;
+	protected boolean finishedNoAccessMessage = false;
 	protected boolean leaveAvailable = false;
 	protected boolean leaveEnabled = false;
 	protected boolean leaveWithCancellationFee = false;
@@ -197,6 +198,15 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	}
 
 	@Override
+	public boolean isFinishedNoAccessMessage() {
+		return finishedNoAccessMessage;
+	}
+
+	public void setFinishedNoAccessMessage(boolean finishedNoAccessMessage) {
+		this.finishedNoAccessMessage = finishedNoAccessMessage;
+	}
+
+	@Override
 	public boolean isOwnerCoachMessage() {
 		return ownerCoachMessage;
 	}
@@ -210,7 +220,7 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	public boolean isAdministrativOpenEnabled() {
 		return administrativOpenAvailable;
 	}
-
+	
 	public void hideOpenButtons() {
 		openAvailable = false;
 		bookAvailable = false;

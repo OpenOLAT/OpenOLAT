@@ -59,7 +59,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	
 	private CloseableModalController deleteOptionCmcCtrl;
 	private ConfirmDeleteOptionController deleteOptionCtrl;
-	
+
 	private final Binder binder;
 	private final boolean readOnly;
 	private final BinderDeliveryOptions deliveryOptions;
@@ -109,7 +109,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		if(!deliveryOptions.isOptionalTemplateForEntry()) {
 			mandatoryTemplatesPageEl.select(onKeys[0], true);
 		}
-		
+
 		if(!readOnly) {
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsLayout.setRootForm(mainForm);

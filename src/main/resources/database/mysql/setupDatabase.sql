@@ -601,6 +601,7 @@ create table if not exists o_repositoryentry (
    catalog_sort_priority integer,
    videocollection bool default false,
    allowtoleave varchar(16),
+   finished_access varchar(32),
    candownload bit not null,
    cancopy bit not null,
    canreference bit not null,

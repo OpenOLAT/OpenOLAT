@@ -48,6 +48,7 @@ import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryFinishedAccessOptions;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -123,6 +124,12 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 
 		if (!reSecurity.canLaunch() && !reSecurity.isMember() && tryInvitation(re, usess.getIdentity())) {
 			reSecurity = rm.isAllowed(ureq, re);
+		}
+
+		if (re.getEntryStatus() == RepositoryEntryStatusEnum.closed
+				&& isParticipantOnly(reSecurity)
+				&& rm.resolveFinishedAccess(re) == RepositoryEntryFinishedAccessOptions.noaccess) {
+			return AccessDeniedFactory.createFinishedNoAccess(ureq, wControl, re);
 		}
 
 		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
@@ -213,6 +220,12 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return ctrl;	
 	}
 	
+	private static boolean isParticipantOnly(RepositoryEntrySecurity reSecurity) {
+		return !reSecurity.isEntryAdmin() && !reSecurity.isOwner()
+				&& !reSecurity.isCoach() && !reSecurity.isPrincipal()
+				&& !reSecurity.isCurriculumManager() && !reSecurity.isMasterCoach();
+	}
+
 	private boolean tryInvitation(RepositoryEntry re, Identity identity) {
 		boolean hasInvitation = false;
 		InvitationModule invitationModule = CoreSpringFactory.getImpl(InvitationModule.class);

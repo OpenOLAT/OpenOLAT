@@ -211,7 +211,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
 		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/learningresources/Test_settings/#results");
 		assessmentResultsOnFinishEl.setEnabled(!readOnly);
-		
+
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);

@@ -118,6 +118,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private ACMethodDAO acMethodManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private RepositoryModule repositoryModule;
 
 	/**
 	 * Test creation of a repository entry.
@@ -1167,7 +1169,45 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertEquals(re, updatedRe);
 		Assert.assertEquals(RepositoryEntryAllowToLeaveOptions.never, updatedRe.getAllowToLeaveOption());
 	}
-	
+
+	@Test
+	public void setFinishedAccess() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		Assert.assertNull(re.getFinishedAccess());
+
+		RepositoryEntry updatedRe = repositoryManager.setFinishedAccess(re, RepositoryEntryFinishedAccessOptions.noaccess);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(updatedRe);
+		Assert.assertEquals(re, updatedRe);
+		Assert.assertEquals(RepositoryEntryFinishedAccessOptions.noaccess, updatedRe.getFinishedAccess());
+
+		RepositoryEntry resetRe = repositoryManager.setFinishedAccess(updatedRe, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(resetRe.getFinishedAccess());
+	}
+
+	@Test
+	public void resolveFinishedAccess() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNull(re.getFinishedAccess());
+		RepositoryEntryFinishedAccessOptions resolved = repositoryManager.resolveFinishedAccess(re);
+		Assert.assertEquals(repositoryModule.getFinishedAccessDefaultOption(), resolved);
+
+		RepositoryEntry updated = repositoryManager.setFinishedAccess(re, RepositoryEntryFinishedAccessOptions.noaccess);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(RepositoryEntryFinishedAccessOptions.noaccess,
+				repositoryManager.resolveFinishedAccess(updated));
+
+		RepositoryEntry resetEntry = repositoryManager.setFinishedAccess(updated, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(repositoryModule.getFinishedAccessDefaultOption(),
+				repositoryManager.resolveFinishedAccess(resetEntry));
+	}
+
 	@Test
 	public void isAllowed_coach() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-re-1");

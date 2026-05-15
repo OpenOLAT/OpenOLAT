@@ -140,14 +140,19 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	}
 	
 	@Override
+	protected void initOptions() {
+		super.initOptions();
+	}
+
+	@Override
 	protected void initSegments() {
 		initInfos();
 		initAccessAndBooking();
-		initOptions();
 		initPoster();
 		initSubtitles();
 		initQualities();
 		initDownload();
+		initOptions();
 	}
 	
 	@Override
