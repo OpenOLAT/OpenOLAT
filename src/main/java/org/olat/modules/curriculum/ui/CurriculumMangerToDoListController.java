@@ -85,7 +85,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
-		return true;
+		return col != ToDoTaskCols.contextType;
 	}
 
 	@Override
