@@ -275,6 +275,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	private ToDoTaskSearchParams createMyToDosParams() {
 		ToDoTaskSearchParams params = createBaseParams();
 		params.setStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress));
+		params.setAssigneeOrDelegatee(getIdentity());
 		return params;
 	}
 
