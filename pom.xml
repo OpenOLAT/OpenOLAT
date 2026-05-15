@@ -78,7 +78,7 @@
 		<org.bouncycastle>1.84</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.0.Final</io.undertow>
-		<io.undertow.ee>2.0.0.RC1</io.undertow.ee>
+		<io.undertow.ee>2.0.0.Final</io.undertow.ee>
 		<jackson.version>2.21.3</jackson.version>
 		<jackson.annotations.version>2.21</jackson.annotations.version>
 		<swagger.ui.version>5.32.5</swagger.ui.version>
