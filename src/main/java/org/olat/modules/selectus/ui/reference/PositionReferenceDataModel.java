@@ -38,9 +38,6 @@ import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.comparator.LastnameComparator;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 
 /**
@@ -50,8 +47,7 @@ import org.olat.modules.selectus.ui.model.AppToCategory;
  *
  */
 public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<PositionReferenceRow>
-	implements SortableFlexiTableDataModel<PositionReferenceRow>, FlexiQueryTableDataModel<PositionReferenceRow>,
-	FilterableFlexiTableModel, FlexiBusinessPathModel {
+	implements SortableFlexiTableDataModel<PositionReferenceRow>, FilterableFlexiTableModel, FlexiBusinessPathModel {
 	
 	private static final ReferenceCols[] COLS = ReferenceCols.values();
 
@@ -82,10 +78,7 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
-			String query = searchString.substring(4, searchString.length());
-			flexiSearch(query);
-		} else if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
+		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 			final Set<String> decisions = getFilteredList(filters, PositionReferenceListController.FILTER_DECISION);
@@ -111,19 +104,6 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 		} else {
 			super.setObjects(backups);
 		}
-	}
-	
-	private boolean flexiSearch(String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<PositionReferenceRow> results = new FilterableFlexiTableDataModelDelegate<>(this, translator)
-					.flexiSearch("", query, backups);
-			allErrors = results.isAllErrors();
-			super.setObjects(results.getRows());
-		} else {
-			super.setObjects(backups);
-		}
-		return allErrors;
 	}
 
 	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
@@ -170,13 +150,14 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	private boolean acceptCategories(Set<String> categories, PositionReferenceRow row) {
 		if(categories == null || categories.isEmpty()) return true;
 		
+		if((row.getCategories() == null || row.getCategories().isEmpty())
+				&& categories.contains(PositionReferenceListController.FILTER_NULL_KEY)) {
+			return true;
+		}
+		
 		if(row.getCategories() != null && !row.getCategories().isEmpty()) {
 			for(AppToCategory cat:row.getCategories()) {
-				String name = cat.getCategoryName();
-				if(cat.isAdministrative()) {
-					name = "a:" + name;
-				}
-				if(categories.contains(name)) {
+				if(categories.contains(cat.value())) {
 					return true;
 				}
 			}
@@ -194,27 +175,6 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	
 	private boolean accept(String searchValue, String val) {
 		return val != null && val.toLowerCase().contains(searchValue);
-	}
-	
-	@Override
-	public int getColumn(String identifier) {
-		for(int i=COLS.length; i-->0; ) {
-			ReferenceCols column = COLS[i];
-			if(column.name().equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-			
-			String label = translator.translate(column.i18nHeaderKey());
-			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-		}
-		return -1;
-	}
-
-	@Override
-	public Object getRawValueAt(PositionReferenceRow row, int col) {
-		return getValueAt(row, col);
 	}
 
 	@Override

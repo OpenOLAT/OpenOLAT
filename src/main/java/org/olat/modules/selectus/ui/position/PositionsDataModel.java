@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -39,9 +38,6 @@ import org.olat.modules.selectus.model.PositionStatus;
 import org.olat.modules.selectus.ui.PositionListController;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate.FieldFilter;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 
 /**
  * 
@@ -50,21 +46,18 @@ import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
  *
  */
 public class PositionsDataModel extends DefaultFlexiTableDataModel<PositionLightWithStatistics>
-implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryTableDataModel<PositionLightWithStatistics>,
-	FilterableFlexiTableModel, FlexiBusinessPathModel {
+implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableFlexiTableModel, FlexiBusinessPathModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(PositionsDataModel.class);
 
 	private static final Fields[] COLS = Fields.values();
 	
 	private final Locale locale;
-	private final Translator translator;
 	private List<PositionLightWithStatistics> backupList;
 	
-	public PositionsDataModel(FlexiTableColumnModel columnsModel, Translator translator) {
+	public PositionsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
-		this.locale = translator.getLocale();
-		this.translator = translator;
+		this.locale = locale;
 	}
 
 	@Override
@@ -81,10 +74,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
-			String query = searchString.substring(4, searchString.length());
-			flexiSearch(query);
-		} else if(StringHelper.containsNonWhitespace(searchString) || !filters.isEmpty()) {
+		if(StringHelper.containsNonWhitespace(searchString) || !filters.isEmpty()) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 
@@ -106,19 +96,6 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 		} else {
 			super.setObjects(backupList);
 		}
-	}
-	
-	private boolean flexiSearch(String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<PositionLightWithStatistics> results = new FilterableFlexiTableDataModelDelegate<>(this, translator)
-					.flexiSearch("", query, backupList);
-			allErrors = results.isAllErrors();
-			super.setObjects(results.getRows());
-		} else {
-			super.setObjects(backupList);
-		}
-		return allErrors;
 	}
 	
 	private List<FieldFilter> getFilteredField(List<FlexiTableFilter> filters) {
@@ -189,7 +166,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 	private boolean acceptDateRange(DateRange range, PositionLightWithStatistics row, int column) {
 		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
 		
-		Object val = getRawValueAt(row, column);
+		Object val = getValueAt(row, column);
 		if(val instanceof Date date) {
 			if((range.getStart() != null && range.getStart().compareTo(date) > 0)
 					|| (range.getEnd() != null && range.getEnd().compareTo(date) < 0)) {
@@ -203,7 +180,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 	private boolean acceptText(String text, PositionLightWithStatistics row, int column) {
 		if(!StringHelper.containsNonWhitespace(text)) return true;
 		
-		Object val = getRawValueAt(row, column);
+		Object val = getValueAt(row, column);
 		if(val instanceof String str) {
 			return accept(text, str);
 		}
@@ -213,7 +190,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 	private boolean acceptNumericalRange(NumericalRange range, PositionLightWithStatistics row, int column) {
 		if(range == null || (range.getStart() == null && range.getEnd() == null)) return true;
 		
-		Object val = getRawValueAt(row, column);
+		Object val = getValueAt(row, column);
 		if(val instanceof String str && StringHelper.containsNonWhitespace(str)) {
 			try {
 				val = Double.valueOf(str);
@@ -234,7 +211,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 	private boolean acceptField(Set<String> searchValues, PositionLightWithStatistics row, int column) {
 		if(searchValues == null || searchValues.isEmpty()) return true;
 		
-		Object val = getRawValueAt(row, column);
+		Object val = getValueAt(row, column);
 		if(val == null) {
 			return searchValues.contains(PositionListController.FILTER_NULL_KEY);
 		}
@@ -259,27 +236,6 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FlexiQueryT
 			return ((PositionLightWithStatistics)object).getUrl();
 		}
 		return null;
-	}
-	
-	@Override
-	public int getColumn(String identifier) {
-		for(int i=COLS.length; i-->0; ) {
-			Fields column = COLS[i];
-			if(column.name().equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-			
-			String label = translator.translate(column.i18nHeaderKey());
-			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-		}
-		return -1;
-	}
-
-	@Override
-	public Object getRawValueAt(PositionLightWithStatistics row, int col) {
-		return getValueAt(row, col);
 	}
 
 	@Override

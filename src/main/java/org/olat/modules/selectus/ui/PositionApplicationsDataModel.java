@@ -39,7 +39,6 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.HighestDegreeType;
 import org.olat.modules.selectus.model.Position;
-import org.olat.modules.selectus.model.PositionAttributeDefinition;
 import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.Project;
 import org.olat.modules.selectus.model.application.ParallelApplication;
@@ -49,9 +48,6 @@ import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.ExportTableDataModel;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
 import org.olat.modules.selectus.ui.events.SelectPositionLightEvent;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 import org.olat.modules.selectus.ui.model.ApplicationRow;
 import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
@@ -67,8 +63,8 @@ import org.olat.modules.selectus.ui.rating.RatingsOverviewFormItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<ApplicationRow>
-	implements SortableFlexiTableDataModel<ApplicationRow>, FilterableFlexiTableModel,
-	FlexiQueryTableDataModel<ApplicationRow>, ExportTableDataModel<ApplicationRow>,  FlexiBusinessPathModel {
+	implements FilterableFlexiTableModel, SortableFlexiTableDataModel<ApplicationRow>,
+	ExportTableDataModel<ApplicationRow>,  FlexiBusinessPathModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(PositionApplicationsDataModel.class);
 	private static final Fields[] FIELDS = Fields.values();
@@ -83,7 +79,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 	private List<ApplicationRow> backupRows;
 	
 	private int[] exportedColumnIndex;
-	private final List<PositionAttributeDefinition> definitions;
 	
 	private final RecruitingModule recruitingModule;
 	private final RecruitingPositionSecurityCallback secCallback;
@@ -92,7 +87,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 			Translator translator, FlexiTableColumnModel columnsModel) {
 		super(new ArrayList<>(), columnsModel);
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
-		definitions = position.getAttributesDefinitions();;
 		this.position = position;
 		this.identity = identity;
 		this.translator = translator;
@@ -217,16 +211,14 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 
 	@Override
 	public void filter(String searchString,  List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
-			String query = searchString.substring(4, searchString.length());
-			flexiSearch(query);
-		} else if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
+		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 			final Set<String> assignees = getFilteredList(filters, PositionApplicationsController.FILTER_ASSIGNEE);
 			final Set<String> myRating = getFilteredList(filters, PositionApplicationsController.FILTER_MY_RATING);
 			final Set<String> withSentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITH_SENT_EMAILS);
 			final Set<String> withoutSentEmails = getFilteredList(filters, PositionApplicationsController.FILTER_WITHOUT_SENT_EMAILS);
+			final Set<String> categories = getFilteredList(filters, PositionApplicationsController.FILTER_CATEGORIES);
 			final List<FieldFilter> fieldsFilters = getFilteredField(filters);
 			
 			List<ApplicationRow> filteredRows = new ArrayList<>(backupRows.size());
@@ -236,6 +228,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 						&& acceptAssignee(assignees, row)
 						&& acceptWithSentEmails(withSentEmails, row)
 						&& acceptWithoutSentEmails(withoutSentEmails, row)
+						&& acceptCategories(categories, row)
 						&& acceptFieldFilters(fieldsFilters, row);
 				if(accept) {
 					filteredRows.add(row);
@@ -246,19 +239,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		} else {
 			super.setObjects(backupRows);
 		}
-	}
-	
-	private boolean flexiSearch(String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<ApplicationRow> results = new PositionApplicationsFilterDataModelDelegate(this, translator)
-					.flexiSearch("", query, backupRows);
-			allErrors = results.isAllErrors();
-			super.setObjects(results.getRows());
-		} else {
-			super.setObjects(backupRows);
-		}
-		return allErrors;
 	}
 	
 	private List<FieldFilter> getFilteredField(List<FlexiTableFilter> filters) {
@@ -318,6 +298,24 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 			}
 		}
 		return true;
+	}
+	
+	private boolean acceptCategories(Set<String> categories, ApplicationRow row) {
+		if(categories == null || categories.isEmpty()) return true;
+		
+		if((row.getCategories() == null || row.getCategories().isEmpty())
+				&& categories.contains(PositionApplicationsController.FILTER_NULL_KEY)) {
+			return true;
+		}
+
+		if(row.getCategories() != null && !row.getCategories().isEmpty()) {
+			for(AppToCategory cat:row.getCategories()) {
+				if(categories.contains(cat.value())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private boolean acceptAssignee(Set<String> assignees, ApplicationRow row) {
@@ -591,7 +589,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		if(categories != null) {
 			for(AppToCategory category:categories) {
 				if(tags.length() > 0) tags.append(", ");
-				if(category.isAdministrative()) {
+				if(category.administrative()) {
 					tags.append("a:");
 				}
 				tags.append(category.getCategoryName());
@@ -631,64 +629,8 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		}
 		return null;
 	}
-	
-	@Override
-	public int getColumn(String identifier) {
-		identifier = FilterableFlexiTableDataModelDelegate.toIdentifier(identifier);
-		
-		// First some alias
-		if("referees".equalsIgnoreCase(identifier)) {
-			return Fields.recommendations.ordinal();
-		}
-		if("submittedBy".equalsIgnoreCase(identifier)) {
-			return Fields.submittedByStaff.ordinal();
-		}
-		if("tags".equalsIgnoreCase(identifier)) {
-			return Fields.categories.ordinal();
-		}
-		if("email".equalsIgnoreCase(identifier)) {
-			return Fields.mail.ordinal();
-		}
-		if("habilitationYear".equalsIgnoreCase(identifier)) {
-			return Fields.habilitationDate.ordinal();
-		}
-		if("yearsInAcademia".equalsIgnoreCase(identifier)) {
-			return Fields.workedInAcademiaSince.ordinal();
-		}
-		if("yearsOutsideAcademia".equalsIgnoreCase(identifier)) {
-			return Fields.workedOutAcademiaSince.ordinal();
-		}
-		if("yearsCare".equalsIgnoreCase(identifier)) {
-			return Fields.workedOutAcademiaCareSince.ordinal();
-		}
-		if("dissertationYear".equalsIgnoreCase(identifier)) {
-			return Fields.dissertationDate.ordinal();
-		}
-		
-		if(Fields.isValue(identifier)) {
-			Fields col = Fields.valueOf(identifier);
-			return col.ordinal();
-		}
-		
-		for(Fields field:Fields.values()) {
-			String label = translator.translate(field.i18nHeaderKey());
-			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return field.ordinal();
-			}
-		}
-		
-		for(int i=0; i<definitions.size(); i++) {
-			PositionAttributeDefinition definition = definitions.get(i);
-			String label = definition.getLabel(translator.getLocale(), true);
-			if(label != null && label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return ApplicationAttributesDelegate.COLS_OFFSET + i;
-			}
-		}
-		return -1;
-	}
-	
-	@Override
-	public Object getRawValueAt(ApplicationRow appRow, int col) {
+
+	private Object getRawValueAt(ApplicationRow appRow, int col) {
 		ApplicationLight app = appRow.getApplication();
 		if(col >= 0 && col < FIELDS.length) {
 			return switch(FIELDS[col]) {

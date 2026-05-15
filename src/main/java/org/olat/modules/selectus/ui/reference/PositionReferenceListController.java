@@ -102,8 +102,8 @@ public class PositionReferenceListController extends FormBasicController {
 
 	private static final String PREFS_ID = "recruitingPosRecommendationFlexiList";
 
+	protected static final String FILTER_CATEGORIES = "tags";
 	protected static final String FILTER_DECISION = "decision";
-	protected static final String FILTER_CATEGORIES = "categories";
 	protected static final String FILTER_REFERENCE_TYPE = "referenceType";
 	protected static final String FILTER_REFERENCE_STATUS = "referenceStatus";
 	protected static final String FILTER_APPLICATION_STATUS = "applicationStatus";
@@ -225,6 +225,25 @@ public class PositionReferenceListController extends FormBasicController {
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
+		if(this.recruitingModule.isCategoriesEnabledFor(position)) {
+			// Categories
+			boolean seeAdministrativeCategories = secCallback.canSeeApplicationAdministrativeCategories();
+			List<Category> categories = taggingService.getAvailableCategoriesFor(position);
+			SelectionValues categoriesPK = new SelectionValues();
+			for(Category category:categories) {
+				String label = RecruitingHelper.getLabel(category);
+				categoriesPK.add(SelectionValues.entry(category.getName(), label));
+				if(seeAdministrativeCategories) {
+					String tagName = "a:".concat(category.getName());
+					String adminLabel = RecruitingHelper.getLabel(tagName, category.getColor(), true);
+					categoriesPK.add(SelectionValues.entry(tagName, adminLabel));
+				}
+			}
+			categoriesPK.add(SelectionValues.entry(FILTER_NULL_KEY, translate("filter.no.categories")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.categories"),
+					FILTER_CATEGORIES, categoriesPK, true));
+		}
+		
 		// Reference status
 		SelectionValues referenceStatusPK = new SelectionValues();
 		for(ReferenceStatus status: ReferenceStatus.values()) {
@@ -262,23 +281,6 @@ public class PositionReferenceListController extends FormBasicController {
 		decisionKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.feedback.application.decision"),
 				FILTER_DECISION, decisionKV, true));
-		
-		// Categories
-		boolean seeAdministrativeCategories = secCallback.canSeeApplicationAdministrativeCategories();
-		List<Category> categories = taggingService.getAvailableCategoriesFor(position);
-		SelectionValues categoriesPK = new SelectionValues();
-		for(Category category:categories) {
-			String label = RecruitingHelper.getLabel(category);
-			categoriesPK.add(SelectionValues.entry(category.getName(), label));
-			if(seeAdministrativeCategories) {
-				String tagName = "a:".concat(category.getName());
-				String adminLabel = RecruitingHelper.getLabel(tagName, category.getColor(), true);
-				categoriesPK.add(SelectionValues.entry(tagName, adminLabel));
-			}
-		}
-		categoriesPK.add(SelectionValues.entry("null", translate("filter.no.categories")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.categories"),
-				FILTER_CATEGORIES, categoriesPK, true));
 		
 		tableEl.setFilters(true, filters, true, true);
 	}
@@ -421,7 +423,7 @@ public class PositionReferenceListController extends FormBasicController {
 		for(ApplicationCategoryInfos tag:tags) {
 			List<AppToCategory> categories = appToCategories
 					.computeIfAbsent(tag.getApplicationKey(), key -> new ArrayList<>());
-			categories.add(new AppToCategory(tag.getCategory(), tag.isAdministrative()));
+			categories.add(AppToCategory.valueOf(tag.getCategory(), tag.isAdministrative()));
 		}
 		
 		for(PositionReferenceRow row:positionRefs) {

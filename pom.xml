@@ -2200,11 +2200,6 @@
 			<version>20251224</version>
 		</dependency>
 		<dependency>
-			<groupId>com.frentix.flexiql</groupId>
-			<artifactId>flexiql</artifactId>
-			<version>0.3.2</version>
-		</dependency>
-		<dependency>
 			<groupId>jazzlib</groupId>
 			<artifactId>jazzlib</artifactId>
 			<version>0.0.6</version> <!-- do not replace with 0.0.7 as this version is highly patched. -->

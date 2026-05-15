@@ -41,7 +41,7 @@ public class CategoriesCellRenderer implements FlexiCellRenderer {
 				target.append(RecruitingHelper.getLabel((Category)category));
 			} else if(category instanceof AppToCategory) {
 				AppToCategory cat = (AppToCategory)category;
-				target.append(RecruitingHelper.getLabel(cat.getCategoryName(), cat.getCategoryColor(), cat.isAdministrative()));
+				target.append(RecruitingHelper.getLabel(cat.getCategoryName(), cat.getCategoryColor(), cat.administrative()));
 			} else if(category instanceof ApplicationCategoryInfos) {
 				ApplicationCategoryInfos cat = (ApplicationCategoryInfos)category;
 				target.append(RecruitingHelper.getLabel(cat.getCategory().getName(), cat.getCategory().getColor(), cat.isAdministrative()));

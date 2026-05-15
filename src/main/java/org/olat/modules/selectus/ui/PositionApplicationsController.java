@@ -109,6 +109,7 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.ApplicationRefereeStats;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
+import org.olat.modules.selectus.model.Category;
 import org.olat.modules.selectus.model.EmptyUserRating;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.PersonGender;
@@ -144,6 +145,7 @@ import org.olat.modules.selectus.ui.committee.assignment.AssignmentsData;
 import org.olat.modules.selectus.ui.committee.assignment.RemoveAssignment1CommitteeStep;
 import org.olat.modules.selectus.ui.committee.assignment.RemoveAssignmentStepCallback;
 import org.olat.modules.selectus.ui.comparator.AppToCategoryComparator;
+import org.olat.modules.selectus.ui.comparator.CategoryComparator;
 import org.olat.modules.selectus.ui.comparator.IdentityLastnameComparator;
 import org.olat.modules.selectus.ui.components.AcademicalDateCellRenderer;
 import org.olat.modules.selectus.ui.components.ApplicationURLCellRenderer;
@@ -213,6 +215,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 
 	protected static final String FILTER_ASSIGNEE = "fassignee";
 	protected static final String FILTER_MY_RATING = "myRating";
+	protected static final String FILTER_CATEGORIES = "tags";
 	protected static final String FILTER_WITH_SENT_EMAILS = "fwithSentEmails";
 	protected static final String FILTER_WITHOUT_SENT_EMAILS = "fwithoutSentEmails";
 
@@ -1049,6 +1052,26 @@ public class PositionApplicationsController extends FormBasicController implemen
 	
 	private void initFilters(List<FlexiTableExtendedFilter> filedsFilters) {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		//Tags
+		boolean seeAdministrativeCategories = secCallback.canSeeApplicationAdministrativeCategories();
+		SelectionValues categoriesPK = new SelectionValues();
+		List<Category> categories = taggingService.getAvailableCategoriesFor(position);
+		Collections.sort(categories, new CategoryComparator());
+		for(Category category:categories) {
+			String label = RecruitingHelper.getLabel(category);
+			categoriesPK.add(SelectionValues.entry(category.getName(), label));
+			if(seeAdministrativeCategories) {
+				String tagName = "a:".concat(category.getName());
+				String adminLabel = RecruitingHelper.getLabel(tagName, category.getColor(), true);
+				categoriesPK.add(SelectionValues.entry(tagName, adminLabel));
+			}
+		}
+		categoriesPK.add(SelectionValues.entry(FILTER_NULL_KEY, translate("filter.no.categories")));
+		if(!categoriesPK.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.categories"),
+				FILTER_CATEGORIES, categoriesPK, true));
+		}
 		
 		// Application status
 		SelectionValues applicationStatusPK = new SelectionValues();
@@ -2016,17 +2039,6 @@ public class PositionApplicationsController extends FormBasicController implemen
 		sendApplicationEmailController = null;
 		removeAssignmentWizardController = null;
 	}
-	
-	//TODO selectus
-	/*
-	private void doFilter(FlexiTableAdvancedFilter filter) {
-		String query = filter.getAsQuery();
-		applicationsDataModel.flexiSearch(tableEl.getQuickSearchString(), query);
-		if(filter.equals(myAssignmentsFilter)) {
-			tableEl.sort(Fields.myAssignment.name(), true);
-		}
-	}
-	*/
 	
 	private void doRating(RatingFormEvent e, CustomRatingFormItem source) {
 		ApplicationRow row = (ApplicationRow)source.getUserObject();

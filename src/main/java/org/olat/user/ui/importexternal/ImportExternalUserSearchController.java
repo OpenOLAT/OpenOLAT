@@ -140,6 +140,7 @@ public class ImportExternalUserSearchController extends FormBasicController {
 		Set<String> providersToExclude = new HashSet<>();
 		providersToExclude.addAll(webdavAuthManager.getProviderNames());
 		providersToExclude.add("RSS-OLAT");
+		providersToExclude.add("feed");
 		providersToExclude.add("REST");
 		excludedProviders = Set.copyOf(providersToExclude);
 	}

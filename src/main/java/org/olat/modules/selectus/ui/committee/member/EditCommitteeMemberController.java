@@ -44,6 +44,7 @@ import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.ui.RecruitingHelper;
+import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.olat.modules.selectus.ui.committee.wizard.MembersController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -91,7 +92,8 @@ public class EditCommitteeMemberController extends FormBasicController {
 	
 	public EditCommitteeMemberController(UserRequest ureq, WindowControl wControl, Position position, Identity member, PositionRole role) {
 		super(ureq, wControl, null, UserManager.getInstance().getPropertyHandlerTranslator(Util
-				.createPackageTranslator(MembersController.class, ureq.getLocale())));
+				.createPackageTranslator(MembersController.class, ureq.getLocale(), Util
+						.createPackageTranslator(RecruitingMainController.class, ureq.getLocale()))));
 		this.member = member;
 		this.role = role;
 		this.position = position;
@@ -145,7 +147,7 @@ public class EditCommitteeMemberController extends FormBasicController {
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
-			userPropertyHandler.addFormItem(ureq.getLocale(), user, formIdentifyer, true, formLayout);
+			userPropertyHandler.addFormItem(getLocale(), user, formIdentifyer, true, formLayout);
 		}
 		
 		roleElement = uifactory.addDropdownSingleselect("role", "role", formLayout, roleKeys, roleValues, null);

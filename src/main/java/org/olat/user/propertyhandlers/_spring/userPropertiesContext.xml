@@ -16,6 +16,7 @@
 		<property name="userPropertyHandlers">
 			<list>
 				<ref bean="userPropertyUserNickName" />
+				<ref bean="userPropertyTitle" />
 				<ref bean="userPropertyFirstName" />
 				<ref bean="userPropertyLastName" />
 				<ref bean="userPropertyEmail" />
@@ -2516,6 +2517,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyTitle" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyGender" />
 								<ref bean="userPropertyTypeOfUser" />
@@ -2529,6 +2531,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyTitle" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyGender" />
 								<ref bean="userPropertyTypeOfUser" />

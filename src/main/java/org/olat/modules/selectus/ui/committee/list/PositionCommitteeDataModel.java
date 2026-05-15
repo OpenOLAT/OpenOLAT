@@ -36,6 +36,8 @@ import org.olat.modules.selectus.ui.comparator.IdentityLastnameComparator;
 public class PositionCommitteeDataModel extends DefaultFlexiTableDataModel<CommitteeMemberRow>
 implements SortableFlexiTableDataModel<CommitteeMemberRow>, FilterableFlexiTableModel {
 
+	private static final CommitteeCols[] COLS =  CommitteeCols.values();
+	
 	private List<CommitteeMemberRow> backups;
 	
 	private final Locale locale;
@@ -84,16 +86,16 @@ implements SortableFlexiTableDataModel<CommitteeMemberRow>, FilterableFlexiTable
 	public Object getValueAt(CommitteeMemberRow row, int col) {
 		Identity identity = row.getIdentity();
 		if(col < PositionCommitteeController.USER_PROP_OFFSET) {
-			switch(CommitteeCols.values()[col]) {
-				case title: return getTitle(row);
-				case name: return identity.getUser().getProperty(UserConstants.LASTNAME, locale) + ", " 
+			return switch(COLS[col]) {
+				case title -> getTitle(row);
+				case name -> identity.getUser().getProperty(UserConstants.LASTNAME, locale) + ", " 
 						+ identity.getUser().getProperty(UserConstants.FIRSTNAME, locale);
-				case role: return translator.translate(row.getRole().role());
-				case institution: return identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, locale);
-				case assignments: return row.getNumOfAssignments();
-				case hasAssignments: return row.getNumOfAssignments() > 0;
-				default: return "ERROR";
-			}
+				case role -> translator.translate(row.getRole().role());
+				case institution -> identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, locale);
+				case assignments -> row.getNumOfAssignments();
+				case hasAssignments -> row.getNumOfAssignments() > 0;
+				default -> "ERROR";
+			};
 		} else if(col >= PositionCommitteeController.USER_PROP_OFFSET) {
 			int propIndex = col - PositionCommitteeController.USER_PROP_OFFSET;
 			UserPropertyHandler prop = userPropertyHandlers.get(propIndex);
@@ -103,7 +105,7 @@ implements SortableFlexiTableDataModel<CommitteeMemberRow>, FilterableFlexiTable
 	}
 	
 	private String getTitle(CommitteeMemberRow row) {
-		String title = row.getIdentity().getUser().getProperty("title", locale);
+		String title = row.getIdentity().getUser().getProperty(UserConstants.TITLE, locale);
 		return "-".equals(title) ? "" : title;
 	}
 	

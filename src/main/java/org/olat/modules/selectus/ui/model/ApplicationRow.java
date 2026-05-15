@@ -152,7 +152,7 @@ public class ApplicationRow implements ApplicationLightRow, ApplicationRef {
 		if(tags == null) {
 			tags = new ArrayList<>();
 		}
-		tags.add(new AppToCategory(tag, administrative));
+		tags.add(AppToCategory.valueOf(tag, administrative));
 	}
 
 	public UserRating getCurrentRating() {

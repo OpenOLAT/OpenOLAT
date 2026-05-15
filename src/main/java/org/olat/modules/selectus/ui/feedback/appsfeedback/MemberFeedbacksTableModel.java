@@ -23,9 +23,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.RecruitingHelper;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 
 /**
  * 
@@ -34,8 +31,7 @@ import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
  *
  */
 public class MemberFeedbacksTableModel extends DefaultFlexiTableDataModel<MemberFeedbackRow>
-implements SortableFlexiTableDataModel<MemberFeedbackRow>, FlexiQueryTableDataModel<MemberFeedbackRow>,
-	FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<MemberFeedbackRow>, FilterableFlexiTableModel {
 
 	private static final MemberFeedCols[] COLS = MemberFeedCols.values();
 	
@@ -60,10 +56,7 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FlexiQueryTableDataMo
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
-			String query = searchString.substring(4, searchString.length());
-			flexiSearch(query);
-		} else if(StringHelper.containsNonWhitespace(searchString)) {
+		if(StringHelper.containsNonWhitespace(searchString)) {
 			
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
@@ -83,19 +76,6 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FlexiQueryTableDataMo
 		}
 	}
 	
-	private boolean flexiSearch(String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<MemberFeedbackRow> results = new FilterableFlexiTableDataModelDelegate<>(this, translator)
-					.flexiSearch("", query, backupRows);
-			allErrors = results.isAllErrors();
-			super.setObjects(results.getRows());
-		} else {
-			super.setObjects(backupRows);
-		}
-		return allErrors;
-	}
-	
 	private boolean accept(String searchValue, MemberFeedbackRow row) {
 		if(searchValue == null) return true;
 		return accept(searchValue, row.getPosition().getMLTitle(locale))
@@ -108,27 +88,6 @@ implements SortableFlexiTableDataModel<MemberFeedbackRow>, FlexiQueryTableDataMo
 	
 	private boolean accept(String searchValue, String val) {
 		return val != null && val.toLowerCase().contains(searchValue);
-	}
-	
-	@Override
-	public int getColumn(String identifier) {
-		for(int i=COLS.length; i-->0; ) {
-			MemberFeedCols column = COLS[i];
-			if(column.name().equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-			
-			String label = translator.translate(column.i18nHeaderKey());
-			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-		}
-		return -1;
-	}
-
-	@Override
-	public Object getRawValueAt(MemberFeedbackRow row, int col) {
-		return getValueAt(row, col);
 	}
 	
 	@Override

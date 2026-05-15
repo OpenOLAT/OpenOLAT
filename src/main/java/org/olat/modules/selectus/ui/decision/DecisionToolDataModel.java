@@ -36,9 +36,6 @@ import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
 import org.olat.modules.selectus.ui.components.SelectAdditionalAttributeCellRenderer;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 
 /**
  * 
@@ -47,8 +44,7 @@ import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
  *
  */
 public class DecisionToolDataModel extends DefaultFlexiTableDataModel<ApplicationRubricsRow>
-	implements SortableFlexiTableDataModel<ApplicationRubricsRow>, FlexiQueryTableDataModel<ApplicationRubricsRow>,
-	FilterableFlexiTableModel {
+	implements SortableFlexiTableDataModel<ApplicationRubricsRow>, FilterableFlexiTableModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(DecisionToolDataModel.class);
 	
@@ -132,10 +128,7 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
-			String query = searchString.substring(4, searchString.length());
-			flexiSearch(query);
-		} else if(filters != null && !filters.isEmpty()) {
+		if(filters != null && !filters.isEmpty()) {
 			final Set<String> decisions = getFilteredList(filters, DecisionToolController.FILTER_DECISION);
 			
 			List<ApplicationRubricsRow> filteredRows = new ArrayList<>(backupList.size());
@@ -149,19 +142,6 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 		} else {
 			super.setObjects(backupList);
 		}
-	}
-	
-	private boolean flexiSearch(String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<ApplicationRubricsRow> results = new FilterableFlexiTableDataModelDelegate<>(this, translator)
-					.flexiSearch("", query, backupList);
-			allErrors = results.isAllErrors();
-			super.setObjects(results.getRows());
-		} else {
-			super.setObjects(backupList);
-		}
-		return allErrors;
 	}
 	
 	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
@@ -182,27 +162,6 @@ public class DecisionToolDataModel extends DefaultFlexiTableDataModel<Applicatio
 			return true;
 		}
 		return false;
-	}
-	
-	@Override
-	public int getColumn(String identifier) {
-		for(int i=RUBRICS.length; i-->0; ) {
-			RubricCols column = RUBRICS[i];
-			if(column.name().equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-			
-			String label = translator.translate(column.i18nHeaderKey());
-			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-		}
-		return -1;
-	}
-
-	@Override
-	public Object getRawValueAt(ApplicationRubricsRow row, int col) {
-		return getValueAt(row, col);
 	}
 
 	@Override

@@ -154,7 +154,9 @@ public class PositionCommitteeController extends FormBasicController implements 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CommitteeCols.title, "send_mail"));
+		if(hasUserPropertyHandler(UserConstants.TITLE)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CommitteeCols.title, "send_mail"));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CommitteeCols.name, "send_mail"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CommitteeCols.role, "send_mail"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CommitteeCols.institution, "send_mail"));
@@ -165,7 +167,13 @@ public class PositionCommitteeController extends FormBasicController implements 
 			
 			int colIndex = USER_PROP_OFFSET;
 			for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
-				if (userPropertyHandler == null) continue;
+				if (userPropertyHandler == null
+						|| userPropertyHandler.getName().equals(UserConstants.FIRSTNAME)
+						|| userPropertyHandler.getName().equals(UserConstants.LASTNAME)
+						|| userPropertyHandler.getName().equals(UserConstants.TITLE)
+						|| userPropertyHandler.getName().equals(UserConstants.INSTITUTIONALNAME)) {
+					continue;
+				}
 				
 				boolean colVisible = visible && userManager.isMandatoryUserProperty(formIdentifyer, userPropertyHandler);
 				FlexiColumnModel col = new DefaultFlexiColumnModel(colVisible, userPropertyHandler.i18nColumnDescriptorLabelKey(),
@@ -215,6 +223,15 @@ public class PositionCommitteeController extends FormBasicController implements 
 		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("rating.show.all"), "show.all", true));
 		tableEl.setFilters("", filters, false);
+	}
+	
+	private boolean hasUserPropertyHandler(String name) {
+		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+			if(userPropertyHandler != null && userPropertyHandler.getName().equals(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private List<SpecialRoleIdentity> wrapRoles(List<Identity> identites, PositionRole role, List<CommitteeMemberRow> memberRows) {

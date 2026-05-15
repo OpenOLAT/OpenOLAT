@@ -28,21 +28,17 @@ import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationFeedback;
 import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.ui.RecruitingHelper;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate;
-import org.olat.modules.selectus.ui.fql.FilterableFlexiTableDataModelDelegate.FilteredResults;
-import org.olat.modules.selectus.ui.fql.FlexiQueryTableDataModel;
 import org.olat.modules.selectus.ui.model.AppToCategory;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * Initial date: 29 avr. 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PositionFeedbacksTableModel extends DefaultFlexiTableDataModel<PositionFeedbackRow>
-implements SortableFlexiTableDataModel<PositionFeedbackRow>, FlexiQueryTableDataModel<PositionFeedbackRow>,
-	FilterableFlexiTableModel, FlexiBusinessPathModel{
+implements SortableFlexiTableDataModel<PositionFeedbackRow>, FilterableFlexiTableModel, FlexiBusinessPathModel {
 
 	private static final PositionFeedCols[] COLS = PositionFeedCols.values();
 	
@@ -68,10 +64,7 @@ implements SortableFlexiTableDataModel<PositionFeedbackRow>, FlexiQueryTableData
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString) && searchString.startsWith("fql:")) {
-			String query = searchString.substring(4, searchString.length());
-			flexiSearch(query);
-		} else if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
+		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty())) {
 			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
 					? null : searchString.toLowerCase();
 			final Set<String> decisions = getFilteredList(filters, PositionFeedbacksController.FILTER_DECISION);
@@ -94,19 +87,6 @@ implements SortableFlexiTableDataModel<PositionFeedbackRow>, FlexiQueryTableData
 		} else {
 			super.setObjects(backupRows);
 		}
-	}
-	
-	private boolean flexiSearch(String query) {
-		boolean allErrors = false;
-		if(StringHelper.containsNonWhitespace(query)) {
-			FilteredResults<PositionFeedbackRow> results = new FilterableFlexiTableDataModelDelegate<>(this, translator)
-					.flexiSearch("", query, backupRows);
-			allErrors = results.isAllErrors();
-			super.setObjects(results.getRows());
-		} else {
-			super.setObjects(backupRows);
-		}
-		return allErrors;
 	}
 	
 	private Set<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
@@ -146,13 +126,13 @@ implements SortableFlexiTableDataModel<PositionFeedbackRow>, FlexiQueryTableData
 	private boolean acceptCategories(Set<String> categories, PositionFeedbackRow row) {
 		if(categories == null || categories.isEmpty()) return true;
 		
+		if((row.getCategories() == null || row.getCategories().isEmpty())
+				&& categories.contains(PositionFeedbacksController.FILTER_NULL_KEY)) {
+			return true;
+		}
 		if(row.getCategories() != null && !row.getCategories().isEmpty()) {
 			for(AppToCategory cat:row.getCategories()) {
-				String name = cat.getCategoryName();
-				if(cat.isAdministrative()) {
-					name = "a:" + name;
-				}
-				if(categories.contains(name)) {
+				if(categories.contains(cat.value())) {
 					return true;
 				}
 			}
@@ -179,34 +159,6 @@ implements SortableFlexiTableDataModel<PositionFeedbackRow>, FlexiQueryTableData
 	
 	private boolean accept(String searchValue, String val) {
 		return val != null && val.toLowerCase().contains(searchValue);
-	}
-	
-	@Override
-	public int getColumn(String identifier) {
-		for(int i=COLS.length; i-->0; ) {
-			PositionFeedCols column = COLS[i];
-			if(column.name().equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-			
-			String label = translator.translate(column.i18nHeaderKey());
-			if(label.equalsIgnoreCase(identifier) || FilterableFlexiTableDataModelDelegate.toIdentifier(label).equalsIgnoreCase(identifier)) {
-				return column.ordinal();
-			}
-		}
-		
-		for(int i=0; i<userPropertyHandlers.size(); i++) {
-			UserPropertyHandler handler = userPropertyHandlers.get(i);
-			if(handler.getName().equalsIgnoreCase(identifier)) {
-				return PositionFeedbacksController.USER_PROP_OFFSET + 1; 
-			}
-		}
-		return -1;
-	}
-	
-	@Override
-	public Object getRawValueAt(PositionFeedbackRow row, int col) {
-		return getValueAt(row, col);
 	}
 
 	@Override
