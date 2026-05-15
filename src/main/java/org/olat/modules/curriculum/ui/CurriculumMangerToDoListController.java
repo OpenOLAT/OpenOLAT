@@ -25,9 +25,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
@@ -87,7 +85,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
-		return col != ToDoTaskCols.contextType;
+		return true;
 	}
 
 	@Override
@@ -124,11 +122,6 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	@Override
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
 		return CurriculumManagerSecurityCallback.INSTANCE;
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		super.initForm(formLayout, listener, ureq);
 	}
 	
 	private final static class CurriculumManagerSecurityCallback implements ToDoTaskSecurityCallback {
