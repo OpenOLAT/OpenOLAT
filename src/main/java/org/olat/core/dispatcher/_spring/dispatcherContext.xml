@@ -125,6 +125,15 @@
 				<entry key="/badge/">
 					<ref bean="openBadgesBean" />
 				</entry>
+				<entry key="/apply">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/apply/">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/Apply/">
+					<ref bean="positiondispatcher" />
+				</entry>
 				<entry key="/position/">
 					<ref bean="positiondispatcher" />
 				</entry>

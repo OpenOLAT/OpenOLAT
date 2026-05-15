@@ -32,10 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
+ * Initial date: 26 mars 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ *
  */
 public class SelectusAdminController extends FormBasicController {
 	
 	private FormToggle enabledButton;
+	private FormToggle linkLoginToggle;
 	
 	@Autowired
 	private RecruitingModule selectusModule;
@@ -50,10 +54,14 @@ public class SelectusAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("menu.selectus");
 		
-		
 		enabledButton = uifactory.addToggleButton("selectus.enabled", "selectus.enabled", translate("on"), translate("off"), formLayout);
 		enabledButton.toggle(selectusModule.isEnabled());
 		enabledButton.addActionListener(FormEvent.ONCHANGE);
+		
+		linkLoginToggle = uifactory.addToggleButton("selectus.positions.login", "selectus.positions.login", translate("on"), translate("off"), formLayout);
+		linkLoginToggle.toggle(selectusModule.isPositionsLoginEnabled());
+		linkLoginToggle.addActionListener(FormEvent.ONCHANGE);
+		linkLoginToggle.setVisible(enabledButton.isOn());
 	}
 
 	@Override
@@ -63,7 +71,7 @@ public class SelectusAdminController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == enabledButton) {
+		if(source == enabledButton || source == linkLoginToggle) {
 			updateEnable();
 			getWindowControl().setInfo(translate("saved"));
 		}
@@ -72,6 +80,9 @@ public class SelectusAdminController extends FormBasicController {
 	private void updateEnable() {
 		boolean on = enabledButton.isOn();
 		selectusModule.setEnabled(on);
+		
+		boolean linkOn = linkLoginToggle.isOn() && on;
+		selectusModule.setPositionsLoginEnabled(linkOn);
+		linkLoginToggle.setVisible(on);
 	}
-
 }

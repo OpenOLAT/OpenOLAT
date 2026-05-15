@@ -89,6 +89,7 @@ import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegWizardConstants;
 import org.olat.registration.RegistrationAdditionalPersonalDataController;
@@ -125,6 +126,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
 
 	private Link registerLink;
+	private Link gotoPositionsLink;
 	private final VelocityContainer content;
 	private Component changePasswordLink;
 
@@ -146,6 +148,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private InfoMessageManager infoMessageMgr;
+	@Autowired
+	private RecruitingModule recruitingModule;
 	@Autowired
 	private RegistrationModule registrationModule;
 	@Autowired
@@ -238,6 +242,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		listenTo(registrationWizardCtrl);
 		getWindowControl().pushAsModalDialog(registrationWizardCtrl.getInitialComponent());
 	}
+	
+	private void doOpenPositions(UserRequest ureq) {
+		String url = WebappHelper.getServletContextPath() + "/positions/0";
+		RedirectMediaResource redirect = new RedirectMediaResource(url);
+		ureq.getDispatchResult().setResultingMediaResource(redirect);
+	}
 
 	private VelocityContainer initLoginContent(UserRequest ureq) {
 		// in every case we build the container for pages to fill the panel
@@ -261,6 +271,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.contextPut("startLogin", Boolean.FALSE);
 
 		addCatalogLinkIfApplicable(contentBorn); // Catalog link if enabled
+		addSelectusLinkIfApplicable(contentBorn);
 		addFaqLinkIfAvailable(contentBorn);     // FAQ link if available
 
 		return contentBorn;
@@ -368,6 +379,18 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			contentBorn.put("login.catalog", catalogLink);
 		}
 	}
+	
+	private void addSelectusLinkIfApplicable(VelocityContainer contentBorn) {
+		if(recruitingModule.isEnabled() && recruitingModule.isPositionsLoginEnabled()) {
+			gotoPositionsLink = LinkFactory.createLink("_olat_login_positions", "goto.positions", contentBorn, this);
+			gotoPositionsLink.setElementCssClass("o_login_positions_button btn btn-default o_button_primary_light o_login_btn_icon_right");
+			gotoPositionsLink.setIconRightCSS("o_icon o_icon_arrow_right");
+			
+			String url =  Settings.getServerContextPathURI() + "/positions/0";
+			gotoPositionsLink.setUrl(url);
+			contentBorn.put("goto.positions", gotoPositionsLink);
+		}
+	}
 
 	private void addFaqLinkIfAvailable(VelocityContainer contentBorn) {
 		String loginUrl = loginModule.getLoginFaqUrl();
@@ -382,7 +405,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			contentBorn.put("faq", faqLink);
 		}
 	}
-
 
 	private void swapOLATAuthenticationController(List<String> cmpIdsList, String cmpId) {
 		if(authenticationCtrlList.size() <= 1 || authenticationCtrlList.get(0) instanceof OLATAuthenticationController) {
@@ -426,6 +448,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			doOpenRegistration(ureq);
 		} else if (source == changePasswordLink) {
 			doOpenChangePassword(ureq);
+		} else if(source == gotoPositionsLink) {
+			doOpenPositions(ureq);
 		} else if (ACTION_LOGIN.equals(event.getCommand())
 				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) {
 			doGuestLogin(ureq);

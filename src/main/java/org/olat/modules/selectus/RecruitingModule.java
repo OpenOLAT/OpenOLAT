@@ -65,6 +65,7 @@ import org.springframework.stereotype.Service;
 public class RecruitingModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	public static final String SELECTUS_ENABLED = "selectus.enabled";
+	public static final String POSITIONS_LOGIN_ENABLED = "selectus.positions.login";
 	
 	public static final String NONE = "none";
 	public static final String ALL = "all";
@@ -163,6 +164,9 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	@Value("${selectus.module.available:false}")
 	private boolean moduleAvailable;
 	
+	@Value("${selectus.positions.login:false}")
+	private boolean positionsLoginEnabled;
+
 	private int maxRating = 3;
 	@Value("${recruiting.rating.abstention:disabled}")
 	private String ratingAbstention;
@@ -1829,6 +1833,11 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
+		
+		String epositionsLoginEnabledObj = getStringPropertyValue(POSITIONS_LOGIN_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(epositionsLoginEnabledObj)) {
+			positionsLoginEnabled = "true".equals(epositionsLoginEnabledObj);
+		}
 	}
 	
 	@Override
@@ -1847,6 +1856,15 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public boolean isAttachmenOnFileSystem() {
 		return attachmentOnFileSystem;
+	}
+	
+	public boolean isPositionsLoginEnabled() {
+		return positionsLoginEnabled;
+	}
+	
+	public void setPositionsLoginEnabled(boolean enabled) {
+		this.positionsLoginEnabled = enabled;
+		setStringProperty(POSITIONS_LOGIN_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	/**

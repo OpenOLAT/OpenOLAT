@@ -537,7 +537,7 @@ public class PositionEditProfileController extends FormBasicController implement
 				organisationPK.add(SelectionValues.entry(ORG_UNIT_EMPTY_KEY, "-"));
 			}
 			for(Organisation organisation:organisations) {
-				organisationPK.add(SelectionValues.entry(organisation.getKey().toString(), StringHelper.escapeHtml(organisation.getDisplayName())));
+				organisationPK.add(SelectionValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
 			}
 			organisationEl = uifactory.addDropdownSingleselect("position_org_unit", "edit.position.orgUnit", formLayout,
 					organisationPK.keys(), organisationPK.values(), null);
