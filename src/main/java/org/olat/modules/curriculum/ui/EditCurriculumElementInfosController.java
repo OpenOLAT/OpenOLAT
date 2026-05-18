@@ -133,7 +133,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 
 		canEdit = secCallback.canEditCurriculumElementSettings(element);
 		creditPointConfig = creditPointService.getConfiguration(element);
-		systems = creditPointService.getCreditPointSystems();
+		systems = creditPointService.getCreditPointSystems(ureq.getUserSession().getRoles());
 		
 		mediaContainer = curriculumService.getMediaContainer(element);
 		if (mediaContainer != null && mediaContainer.getName().equals("media")) {
