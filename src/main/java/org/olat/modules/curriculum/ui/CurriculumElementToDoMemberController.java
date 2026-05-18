@@ -20,8 +20,8 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -83,11 +84,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumElementToDoMemberController extends FormBasicController {
 
 	private static final String FILTER_ROLE = "Role";
-	private static final List<CurriculumRoles> ORDERED_ROLES = List.of(
-			CurriculumRoles.curriculummanager,
-			CurriculumRoles.curriculumowner,
-			CurriculumRoles.curriculumelementowner,
-			CurriculumRoles.owner);
+	private static final List<String> ORDERED_ROLES = List.of(
+			OrganisationRoles.administrator.name(),
+			CurriculumRoles.curriculummanager.name(),
+			CurriculumRoles.curriculumowner.name(),
+			CurriculumRoles.curriculumelementowner.name(),
+			CurriculumRoles.owner.name());
 
 	private FlexiTableElement tableEl;
 	private MemberDataModel dataModel;
@@ -161,8 +163,8 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 
 	private void initFilters() {
 		SelectionValues rolesValues = new SelectionValues();
-		for (CurriculumRoles role : ORDERED_ROLES) {
-			rolesValues.add(SelectionValues.entry(role.name(), translate("role." + role.name())));
+		for (String role : ORDERED_ROLES) {
+			rolesValues.add(SelectionValues.entry(role, translate("role." + role)));
 		}
 		FlexiTableMultiSelectionFilter rolesFilter = new FlexiTableMultiSelectionFilter(translate("filter.roles"),
 				FILTER_ROLE, rolesValues, true);
@@ -207,12 +209,12 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 		List<CurriculumMember> members = curriculumElementToDoProvider.getCandidates(element);
 
 		Map<Long, Identity> identityByKey = new HashMap<>();
-		Map<Long, Set<CurriculumRoles>> rolesByKey = new HashMap<>();
+		Map<Long, Set<String>> rolesByKey = new HashMap<>();
 		for (CurriculumMember member : members) {
 			Long key = member.getIdentity().getKey();
 			identityByKey.put(key, member.getIdentity());
-			rolesByKey.computeIfAbsent(key, k -> EnumSet.noneOf(CurriculumRoles.class))
-					.add(CurriculumRoles.valueOf(member.getRole()));
+			rolesByKey.computeIfAbsent(key, k -> new HashSet<>())
+					.add(member.getRole());
 		}
 
 		Map<Long, PortraitUser> portraitUsersByKey = userPortraitService
@@ -221,10 +223,10 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 
 		List<MemberRow> rows = identityByKey.entrySet().stream()
 				.map(e -> {
-					Set<CurriculumRoles> rowRoles = rolesByKey.get(e.getKey());
+					Set<String> rowRoles = rolesByKey.get(e.getKey());
 					String translatedRoles = ORDERED_ROLES.stream()
 							.filter(rowRoles::contains)
-							.map(role -> translate("role." + role.name()))
+							.map(role -> translate("role." + role))
 							.collect(Collectors.joining(", "));
 					MemberRow row = new MemberRow(e.getValue(), userPropertyHandlers, rowRoles, translatedRoles, getLocale());
 					forgePortrait(row, portraitUsersByKey.get(e.getKey()));
@@ -272,11 +274,11 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 	private static final class MemberRow extends UserPropertiesRow {
 
 		private final Identity identity;
-		private final Set<CurriculumRoles> roles;
+		private final Set<String> roles;
 		private final String translatedRoles;
 		private UserPortraitComponent portraitComp;
 
-		public MemberRow(Identity identity, List<UserPropertyHandler> handlers, Set<CurriculumRoles> roles,
+		public MemberRow(Identity identity, List<UserPropertyHandler> handlers, Set<String> roles,
 				String translatedRoles, Locale locale) {
 			super(identity, handlers, locale);
 			this.identity = identity;
@@ -288,7 +290,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 			return identity;
 		}
 
-		public boolean hasRole(CurriculumRoles role) {
+		public boolean hasRole(String role) {
 			return roles.contains(role);
 		}
 
@@ -322,7 +324,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 
 		@Override
 		public void filter(String quickSearch, List<FlexiTableFilter> filters) {
-			List<CurriculumRoles> roles = getRolesFilter(filters);
+			List<String> roles = getRolesFilter(filters);
 			if (roles.isEmpty()) {
 				super.setObjects(backupRows);
 			} else {
@@ -333,12 +335,12 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 			}
 		}
 
-		private List<CurriculumRoles> getRolesFilter(List<FlexiTableFilter> filters) {
+		private List<String> getRolesFilter(List<FlexiTableFilter> filters) {
 			FlexiTableFilter rolesFilter = FlexiTableFilter.getFilter(filters, FILTER_ROLE);
 			if (rolesFilter instanceof FlexiTableExtendedFilter extendedFilter) {
 				List<String> values = extendedFilter.getValues();
 				if (values != null && !values.isEmpty()) {
-					return values.stream().filter(CurriculumRoles::isValueOf).map(CurriculumRoles::valueOf).toList();
+					return values;
 				}
 			}
 			return List.of();

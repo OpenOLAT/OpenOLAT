@@ -28,6 +28,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.UserRequest;
@@ -40,6 +42,7 @@ import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -108,6 +111,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private ToDoService toDoService;
 
@@ -224,12 +229,23 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		List<CurriculumMember> elementMembers = curriculumService.getCurriculumElementsMembers(elementParams);
 
 		SearchMemberParameters curriculumParams = new SearchMemberParameters(element.getCurriculum());
-		curriculumParams.setRoles(List.of(CurriculumRoles.curriculummanager, CurriculumRoles.curriculumowner));
+		curriculumParams.setRoles(List.of(CurriculumRoles.curriculumowner));
 		List<CurriculumMember> curriculumMembers = curriculumService.getCurriculumMembers(curriculumParams);
 
 		List<CurriculumMember> members = new ArrayList<>(elementMembers.size() + curriculumMembers.size());
 		members.addAll(elementMembers);
 		members.addAll(curriculumMembers);
+
+		Organisation organisation = element.getCurriculum().getOrganisation();
+		if (organisation != null) {
+			for (Identity identity : organisationService.getMembersIdentity(organisation, OrganisationRoles.curriculummanager)) {
+				members.add(new CurriculumMember(identity, OrganisationRoles.curriculummanager.name(), null, null));
+			}
+			for (Identity identity : organisationService.getMembersIdentity(organisation, OrganisationRoles.administrator)) {
+				members.add(new CurriculumMember(identity, OrganisationRoles.administrator.name(), null, null));
+			}
+		}
+
 		return members;
 	}
 
