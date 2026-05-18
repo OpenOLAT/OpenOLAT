@@ -32,10 +32,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -105,6 +107,8 @@ import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -325,6 +329,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		final CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		final GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+		final RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final CourseNode courseNode = getCourseNode();
@@ -337,6 +342,8 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		final boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		final boolean hasReturnFiles = (StringHelper.containsNonWhitespace(datas.getReturnFiles())
 				&& (courseNode instanceof TACourseNode || courseNode instanceof GTACourseNode));
+		final RepositoryEntry courseEntry = course.getCourseEnvironment()
+				.getCourseGroupManager().getCourseEntry();
 		
 		if(hasReturnFiles) {
 			try {
@@ -359,14 +366,16 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			max = assessmentConfig.getMaxScore();
 		}
 		if (hasGrade) {
-			GradeScale gradeScale = gradeService.getGradeScale(
-					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					courseNode.getIdent());
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, coachLocale);
 		}
 		if (hasPassed) {
 			cut = assessmentConfig.getCutValue();
 		}
+		
+		List<Long> participantsKeysList = repositoryService
+				.getMemberKeys(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		Set<Long> participantsKeys = Set.copyOf(participantsKeysList);
 		
 		int count = 0;
 		List<BulkAssessmentRow> rows = datas.getRows();
@@ -375,6 +384,11 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			if(identityKey == null) {
 				feedbacks.add(new BulkAssessmentFeedback("bulk.action.no.such.user", row.getAssessedId()));
 				continue;//nothing to do
+			} else if(!participantsKeys.contains(identityKey)) {
+				log.warn("User {} in bulk assessment is not participant of {} ({})", identityKey,
+						courseEntry.getKey(), courseEntry.getDisplayname());
+				feedbacks.add(new BulkAssessmentFeedback("bulk.action.not.participant", row.getAssessedId()));
+				continue;// not a participant
 			}
 
 			Identity identity = securityManager.loadIdentityByKey(identityKey);

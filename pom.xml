@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.7</org.springframework.version>
-		<org.hibernate.version>7.3.4.Final</org.hibernate.version>
+		<org.hibernate.version>7.3.5.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.8</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.0</apache.cxf>
@@ -93,7 +93,7 @@
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.32</qtiworks.version>
 		<org.commonmark>0.28.0</org.commonmark>
-		<dev.langchain4j>1.14.1</dev.langchain4j>
+		<dev.langchain4j>1.15.0</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
