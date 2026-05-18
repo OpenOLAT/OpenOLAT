@@ -446,6 +446,8 @@ public interface CurriculumService {
 	
 	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status);
 	
+	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status);
+	
 	public VFSContainer getMediaContainer(CurriculumElement curriculumElement);
 
 	public void storeCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type, File file, String filename, Identity savedBy);

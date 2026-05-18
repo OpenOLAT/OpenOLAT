@@ -1180,6 +1180,38 @@ public class CurriculumElementDAO {
 		return elements;
 	}
 	
+	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select el.key from curriculumelement as el")
+		  .where().append(" el.curriculum.key=:curriculumKey and el.parent.key is null");
+		
+		List<String> statusList = new ArrayList<>();
+		if(status != null && status.length > 0 && status[0] != null) {
+			for(CurriculumElementStatus s:status) {
+				if(s != null) {
+					statusList.add(s.name());
+				}
+			}	
+		}
+		
+		if(!statusList.isEmpty()) {
+			sb.and().append(" el.status in (:status)");
+		}
+		  
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.setParameter("curriculumKey", curriculum.getKey());
+		if(!statusList.isEmpty()) {
+			query.setParameter("status", statusList);
+		}
+		
+		List<Long> elementKeys = query.getResultList();
+		return elementKeys != null && !elementKeys.isEmpty()
+				&& elementKeys.get(0) != null && elementKeys.get(0).longValue() > 0;
+	}
+	
 	public List<CurriculumElement> getDescendants(CurriculumElement curriculumElement) {
 		String sb = """
 				select el from curriculumelement as el

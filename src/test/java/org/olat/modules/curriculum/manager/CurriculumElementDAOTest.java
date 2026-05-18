@@ -944,6 +944,29 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasNoImplementation() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-impl-9", "Curriculum without implementation", "Curriculum", false, null);
+		dbInstance.commit();
+		
+		boolean noImplementation = curriculumElementDao.hasImplementations(curriculum, CurriculumElementStatus.notDeleted());
+		
+		Assert.assertFalse(noImplementation);
+	}
+	
+	@Test
+	public void hasImplementations() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-impl-10", "Curriculum with implementation", "Curriculum", false, null);
+		CurriculumElement implementation1Element = curriculumElementDao.createCurriculumElement("Element-impl", "1. Element",
+				CurriculumElementStatus.confirmed, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		Assert.assertNotNull(implementation1Element);
+		
+		boolean implementation = curriculumElementDao.hasImplementations(curriculum, CurriculumElementStatus.notDeleted());
+		Assert.assertTrue(implementation);
+	}
+	
+	@Test
 	public void getDescendants() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",

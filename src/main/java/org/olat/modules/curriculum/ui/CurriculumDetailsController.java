@@ -42,6 +42,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -390,6 +391,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent pe) {
 				doProcessPopEvent(ureq, pe);
+			}
+		} else if(tabPane == source) {
+			if(event instanceof TabbedPaneChangedEvent tpce) {
+				if(lectureBlocksCtrl != null && lectureBlocksCtrl.getInitialComponent() == tpce.getNewComponent()) {
+					lectureBlocksCtrl.updateAddLectures();
+				}
 			}
 		}
 	}

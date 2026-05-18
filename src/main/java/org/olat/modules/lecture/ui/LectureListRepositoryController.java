@@ -134,6 +134,7 @@ import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -456,11 +457,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock(curriculumElement, curriculum)) {
-			if(entry != null || curriculum != null || curriculumElement != null) {
-				addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
-				addLectureButton.setIconLeftCSS("o_icon o_icon_add");
-				addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
-			}
+			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
+			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
+			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
+			addLectureButton.setVisible(canAddLecture());			
+			
 			copyLecturesButton = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
@@ -488,6 +489,25 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			String titleSize = config.getTitleSize() <= 0 ? "" : "h" + config.getTitleSize();
 			layoutCont.contextPut("titleSize", titleSize);
 		}
+	}
+	
+	/**
+	 * Update the visibility of the wizard "Add lecture".
+	 */
+	public void updateAddLectures() {
+		if(addLectureButton != null) {
+			addLectureButton.setVisible(!lectureManagementManaged
+					&& secCallback.canNewLectureBlock(curriculumElement, curriculum)
+					&& canAddLecture());
+		}
+	}
+	
+	private boolean canAddLecture() {
+		if(entry != null || curriculumElement != null) {
+			return true;
+		}
+		return curriculum != null
+				&& curriculumService.hasImplementations(curriculum, CurriculumElementStatus.notDeleted());
 	}
 
 	private  void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
