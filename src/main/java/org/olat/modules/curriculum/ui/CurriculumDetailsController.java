@@ -41,6 +41,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -66,8 +67,8 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
-import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumImplementationWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -359,6 +360,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent pe) {
 				doProcessPopEvent(ureq, pe);
+			}
+		} else if(tabPane == source) {
+			if(event instanceof TabbedPaneChangedEvent tpce) {
+				if(lectureBlocksCtrl != null && lectureBlocksCtrl.getInitialComponent() == tpce.getNewComponent()) {
+					lectureBlocksCtrl.updateAddLectures();
+				}
 			}
 		}
 	}
