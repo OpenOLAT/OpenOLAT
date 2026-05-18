@@ -420,8 +420,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	}
 
 	private void updateRelDateWarning(SingleSelection refEl, FormLayoutContainer relCont) {
+		relCont.clearWarning();
 		if (!refEl.isOneSelected()) {
-			relCont.setWarningKey(null);
 			return;
 		}
 		OfferDateRef ref = OfferDateRef.valueOf(refEl.getSelectedKey());
@@ -429,7 +429,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			case BEFORE_BEGIN, AFTER_BEGIN -> !catalogInfo.isStartDateAvailable();
 			case BEFORE_END, AFTER_END -> !catalogInfo.isEndDateAvailable();
 		};
-		relCont.setWarningKey(missing ? "offer.relative.date.missing" : null);
+		if (missing) {
+			relCont.setWarningKey("offer.relative.date.missing");
+		}
 	}
 
 	private void updateCatalogUI() {
