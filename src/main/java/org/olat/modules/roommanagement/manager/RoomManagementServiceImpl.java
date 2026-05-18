@@ -32,8 +32,8 @@ import org.olat.core.util.DateUtils;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockRef;
-import org.olat.modules.roommanagement.Location;
-import org.olat.modules.roommanagement.LocationRef;
+import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.BuildingRef;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomBookingRef;
@@ -44,7 +44,7 @@ import org.olat.modules.roommanagement.RoomRef;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.CollisionReport;
 import org.olat.modules.roommanagement.model.RoomModuleLogSearchParameters;
-import org.olat.modules.roommanagement.model.SearchLocationParameters;
+import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
 public class RoomManagementServiceImpl implements RoomManagementService {
 
 	@Autowired
-	private LocationDAO locationDao;
+	private BuildingDAO buildingDao;
 	@Autowired
 	private RoomDAO roomDao;
 	@Autowired
@@ -65,27 +65,27 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	@Autowired
 	private RoomModuleLogDAO roomModuleLogDao;
 
-	// ========== Locations ==========
+	// ========== Buildings ==========
 
 	@Override
-	public Location createLocation(String name, Identity doer) {
-		Location location = locationDao.create(name);
-		roomModuleLogDao.createLog(RoomModuleLogAction.location_create,
+	public Building createBuilding(String description, Identity doer) {
+		Building building = buildingDao.create(description);
+		roomModuleLogDao.createLog(RoomModuleLogAction.building_create,
 				null, null,
-				location.getStatus().name(), RoomManagementXStream.toXml(location),
-				location, null, null, null, doer);
-		return location;
+				building.getStatus().name(), RoomManagementXStream.toXml(building),
+				building, null, null, null, doer);
+		return building;
 	}
 
 	@Override
-	public Location updateLocation(Location l, List<Organisation> orgs, Identity doer) {
-		Location old = locationDao.loadByKey(l);
+	public Building updateBuilding(Building b, List<Organisation> orgs, Identity doer) {
+		Building old = buildingDao.loadByKey(b);
 		String beforeXml = RoomManagementXStream.toXml(old);
 		String beforeStatus = old.getStatus() != null ? old.getStatus().name() : null;
 
-		Location updated = locationDao.update(l);
+		Building updated = buildingDao.update(b);
 
-		roomModuleLogDao.createLog(RoomModuleLogAction.location_update,
+		roomModuleLogDao.createLog(RoomModuleLogAction.building_update,
 				beforeStatus, beforeXml,
 				updated.getStatus() != null ? updated.getStatus().name() : null, RoomManagementXStream.toXml(updated),
 				updated, null, null, null, doer);
@@ -96,8 +96,8 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		return updated;
 	}
 
-	private void reconcileOrganisations(Location location, List<Organisation> newOrgs, Identity doer) {
-		List<Organisation> currentOrgs = locationDao.getOrganisations(location);
+	private void reconcileOrganisations(Building building, List<Organisation> newOrgs, Identity doer) {
+		List<Organisation> currentOrgs = buildingDao.getOrganisations(building);
 		List<Long> currentKeys = currentOrgs.stream().map(Organisation::getKey).toList();
 		List<Long> newKeys = newOrgs.stream().map(Organisation::getKey).toList();
 		String keysBefore = currentKeys.stream().map(String::valueOf).collect(Collectors.joining(","));
@@ -106,67 +106,67 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		boolean added = false;
 		for (Organisation org : newOrgs) {
 			if (!currentKeys.contains(org.getKey())) {
-				locationDao.addOrganisation(location, org);
+				buildingDao.addOrganisation(building, org);
 				added = true;
 			}
 		}
 		if (added) {
-			roomModuleLogDao.createLog(RoomModuleLogAction.location_add_organisation,
+			roomModuleLogDao.createLog(RoomModuleLogAction.building_add_organisation,
 					null, keysBefore, null, keysAfter,
-					location, null, null, null, doer);
+					building, null, null, null, doer);
 		}
 
 		boolean removed = false;
 		for (Organisation curr : currentOrgs) {
 			if (!newKeys.contains(curr.getKey())) {
-				locationDao.removeOrganisation(location, curr);
+				buildingDao.removeOrganisation(building, curr);
 				removed = true;
 			}
 		}
 		if (removed) {
-			roomModuleLogDao.createLog(RoomModuleLogAction.location_remove_organisation,
+			roomModuleLogDao.createLog(RoomModuleLogAction.building_remove_organisation,
 					null, keysBefore, null, keysAfter,
-					location, null, null, null, doer);
+					building, null, null, null, doer);
 		}
 	}
 
 	@Override
-	public Location getLocation(LocationRef ref) {
-		return locationDao.loadByKey(ref);
+	public Building getBuilding(BuildingRef ref) {
+		return buildingDao.loadByKey(ref);
 	}
 
 	@Override
-	public List<Location> searchLocations(SearchLocationParameters params, Roles roles) {
+	public List<Building> searchBuildings(SearchBuildingParameters params, Roles roles) {
 		if (roles != null && roles.isSystemAdmin()) {
 			params.setIdentity(null); // sysadmin sees everything; bypass visibility predicate
 		}
-		return locationDao.search(params);
+		return buildingDao.search(params);
 	}
 
 	@Override
-	public void deleteLocation(LocationRef ref, Identity doer) {
-		Location location = locationDao.loadByKey(ref);
-		if (location == null) return;
-		String beforeXml = RoomManagementXStream.toXml(location);
-		String beforeStatus = location.getStatus() != null ? location.getStatus().name() : null;
-		roomModuleLogDao.nullLocationRef(ref);
-		locationDao.delete(ref);
-		location.setStatus(RoomStatus.deleted);
-		roomModuleLogDao.createLog(RoomModuleLogAction.location_delete,
+	public void deleteBuilding(BuildingRef ref, Identity doer) {
+		Building building = buildingDao.loadByKey(ref);
+		if (building == null) return;
+		String beforeXml = RoomManagementXStream.toXml(building);
+		String beforeStatus = building.getStatus() != null ? building.getStatus().name() : null;
+		roomModuleLogDao.nullBuildingRef(ref);
+		buildingDao.delete(ref);
+		building.setStatus(RoomStatus.deleted);
+		roomModuleLogDao.createLog(RoomModuleLogAction.building_delete,
 				beforeStatus, beforeXml,
-				RoomStatus.deleted.name(), RoomManagementXStream.toXml(location),
-				location, null, null, null, doer);
+				RoomStatus.deleted.name(), RoomManagementXStream.toXml(building),
+				building, null, null, null, doer);
 	}
 
 	// ========== Rooms ==========
 
 	@Override
-	public Room createRoom(Location loc, String name, Identity doer) {
-		Room room = roomDao.create(loc, name);
+	public Room createRoom(Building building, String description, Identity doer) {
+		Room room = roomDao.create(building, description);
 		roomModuleLogDao.createLog(RoomModuleLogAction.room_create,
 				null, null,
 				room.getStatus().name(), RoomManagementXStream.toXml(room),
-				loc, room, null, null, doer);
+				building, room, null, null, doer);
 		return room;
 	}
 
@@ -181,7 +181,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		roomModuleLogDao.createLog(RoomModuleLogAction.room_update,
 				beforeStatus, beforeXml,
 				updated.getStatus() != null ? updated.getStatus().name() : null, RoomManagementXStream.toXml(updated),
-				updated.getLocation(), updated, null, null, doer);
+				updated.getBuilding(), updated, null, null, doer);
 		return updated;
 	}
 
@@ -210,7 +210,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		roomModuleLogDao.createLog(RoomModuleLogAction.room_delete,
 				beforeStatus, beforeXml,
 				RoomStatus.deleted.name(), RoomManagementXStream.toXml(room),
-				room.getLocation(), room, null, null, doer);
+				room.getBuilding(), room, null, null, doer);
 	}
 
 	// ========== Bookings ==========
@@ -329,28 +329,28 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	// ========== Access control ==========
 
 	@Override
-	public boolean canEditLocation(Location l, Roles roles) {
+	public boolean canEditBuilding(Building b, Roles roles) {
 		if (roles == null) return false;
 		if (roles.isSystemAdmin()) return true;
-		List<Organisation> orgs = locationDao.getOrganisations(l);
+		List<Organisation> orgs = buildingDao.getOrganisations(b);
 		if (orgs.isEmpty()) return true;
 		return roles.hasRole(orgs, OrganisationRoles.administrator);
 	}
 
 	@Override
 	public boolean canEditRoom(Room r, Roles roles) {
-		return canEditLocation(r.getLocation(), roles);
+		return canEditBuilding(r.getBuilding(), roles);
 	}
 
 	@Override
 	public boolean canBookRoomOnLectureBlock(Room r, LectureBlock lb, Identity id, Roles roles) {
-		return isVisibleLocation(r.getLocation(), roles, id);
+		return isVisibleBuilding(r.getBuilding(), roles, id);
 	}
 
 	@Override
-	public boolean isVisibleLocation(Location l, Roles roles, Identity identity) {
+	public boolean isVisibleBuilding(Building b, Roles roles, Identity identity) {
 		if (roles != null && roles.isSystemAdmin()) return true;
-		List<Organisation> orgs = locationDao.getOrganisations(l);
+		List<Organisation> orgs = buildingDao.getOrganisations(b);
 		if (orgs.isEmpty()) return true;
 		if (roles != null && roles.hasRole(orgs, OrganisationRoles.administrator)) return true;
 		return roles != null && roles.hasRole(orgs, OrganisationRoles.user);

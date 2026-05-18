@@ -28,9 +28,9 @@ import org.olat.core.id.ModifiedInfo;
  */
 public interface Room extends RoomRef, CreateInfo, ModifiedInfo {
 
-	String getName();
+	String getDescription();
 
-	void setName(String name);
+	void setDescription(String description);
 
 	String getExternalId();
 
@@ -40,9 +40,9 @@ public interface Room extends RoomRef, CreateInfo, ModifiedInfo {
 
 	void setExternalRef(String externalRef);
 
-	String getDescription();
+	String getRoomInfo();
 
-	void setDescription(String description);
+	void setRoomInfo(String roomInfo);
 
 	Integer getSeats();
 
@@ -52,9 +52,9 @@ public interface Room extends RoomRef, CreateInfo, ModifiedInfo {
 
 	void setAdminInfo(String adminInfo);
 
-	Location getLocation();
+	Building getBuilding();
 
-	void setLocation(Location location);
+	void setBuilding(Building building);
 
 	RoomStatus getStatus();
 

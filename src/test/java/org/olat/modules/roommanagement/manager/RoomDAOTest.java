@@ -30,7 +30,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
@@ -47,22 +47,22 @@ public class RoomDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private LocationDAO locationDAO;
+	private BuildingDAO buildingDAO;
 	@Autowired
 	private RoomDAO roomDAO;
 	@Autowired
 	private OrganisationService organisationService;
 
-	private Location createLocation() {
-		Location loc = locationDAO.create("TestLoc_" + UUID.randomUUID());
+	private Building createBuilding() {
+		Building bld = buildingDAO.create("TestBld_" + UUID.randomUUID());
 		dbInstance.getCurrentEntityManager().flush();
-		return loc;
+		return bld;
 	}
 
 	@Test
 	public void createAndLoad() {
-		Location loc = createLocation();
-		Room room = roomDAO.create(loc, "Room A_" + UUID.randomUUID());
+		Building bld = createBuilding();
+		Room room = roomDAO.create(bld, "Room A_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
 		Room reloaded = roomDAO.loadByKey(room);
@@ -73,25 +73,25 @@ public class RoomDAOTest extends OlatTestCase {
 
 	@Test
 	public void update() {
-		Location loc = createLocation();
-		Room room = roomDAO.create(loc, "UpdateRoom_" + UUID.randomUUID());
+		Building bld = createBuilding();
+		Room room = roomDAO.create(bld, "UpdateRoom_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
 		room.setSeats(30);
-		room.setDescription("Nice room");
+		room.setRoomInfo("Nice room");
 		Room updated = roomDAO.update(room);
 		dbInstance.commitAndCloseSession();
 
 		Room reloaded = roomDAO.loadByKey(updated);
 		Assert.assertEquals(Integer.valueOf(30), reloaded.getSeats());
-		Assert.assertEquals("Nice room", reloaded.getDescription());
+		Assert.assertEquals("Nice room", reloaded.getRoomInfo());
 	}
 
 	@Test
 	public void loadByExternalId() {
 		String extId = "room-ext-" + UUID.randomUUID();
-		Location loc = createLocation();
-		Room room = roomDAO.create(loc, "ExtRoom");
+		Building bld = createBuilding();
+		Room room = roomDAO.create(bld, "ExtRoom");
 		room.setExternalId(extId);
 		roomDAO.update(room);
 		dbInstance.commitAndCloseSession();
@@ -104,8 +104,8 @@ public class RoomDAOTest extends OlatTestCase {
 	@Test
 	public void loadByExternalRefIfUnique() {
 		String extRef = "ref-" + UUID.randomUUID();
-		Location loc = createLocation();
-		Room room = roomDAO.create(loc, "RefRoom");
+		Building bld = createBuilding();
+		Room room = roomDAO.create(bld, "RefRoom");
 		room.setExternalRef(extRef);
 		roomDAO.update(room);
 		dbInstance.commitAndCloseSession();
@@ -117,8 +117,8 @@ public class RoomDAOTest extends OlatTestCase {
 
 	@Test
 	public void softDelete() {
-		Location loc = createLocation();
-		Room room = roomDAO.create(loc, "DeleteRoom_" + UUID.randomUUID());
+		Building bld = createBuilding();
+		Room room = roomDAO.create(bld, "DeleteRoom_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
 		int rows = roomDAO.delete(room);
@@ -130,13 +130,13 @@ public class RoomDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void getRoomsForLocation() {
-		Location loc = createLocation();
-		Room r1 = roomDAO.create(loc, "RoomForLoc_A_" + UUID.randomUUID());
-		Room r2 = roomDAO.create(loc, "RoomForLoc_B_" + UUID.randomUUID());
+	public void getRoomsForBuilding() {
+		Building bld = createBuilding();
+		Room r1 = roomDAO.create(bld, "RoomForBld_A_" + UUID.randomUUID());
+		Room r2 = roomDAO.create(bld, "RoomForBld_B_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
-		List<Room> rooms = roomDAO.getRoomsForLocation(loc);
+		List<Room> rooms = roomDAO.getRoomsForBuilding(bld);
 		Assertions.assertThat(rooms)
 				.extracting(Room::getKey)
 				.contains(r1.getKey(), r2.getKey());
@@ -144,23 +144,23 @@ public class RoomDAOTest extends OlatTestCase {
 
 	@Test
 	public void search_openToAll_visibleForAnyIdentity() {
-		// A location with no org links is visible to any identity
-		Location loc = createLocation();
-		String uniqueName = "OpenRoom_" + UUID.randomUUID();
-		roomDAO.create(loc, uniqueName);
+		// A building with no org links is visible to any identity
+		Building bld = createBuilding();
+		String uniqueDesc = "OpenRoom_" + UUID.randomUUID();
+		roomDAO.create(bld, uniqueDesc);
 		dbInstance.commitAndCloseSession();
 
 		Identity anyUser = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-open-user");
 		dbInstance.commitAndCloseSession();
 
 		SearchRoomParameters params = new SearchRoomParameters();
-		params.setSearchString(uniqueName);
+		params.setSearchString(uniqueDesc);
 		params.setIdentity(anyUser);
 		List<Room> rooms = roomDAO.search(params);
 
 		Assertions.assertThat(rooms)
-				.extracting(Room::getName)
-				.contains(uniqueName);
+				.extracting(Room::getDescription)
+				.contains(uniqueDesc);
 	}
 
 	@Test
@@ -168,10 +168,10 @@ public class RoomDAOTest extends OlatTestCase {
 		Organisation org = organisationService.createOrganisation(
 				"RmTestOrg_" + UUID.randomUUID(), UUID.randomUUID().toString(), null,
 				organisationService.getDefaultOrganisation(), null, null);
-		Location loc = createLocation();
-		locationDAO.addOrganisation(loc, org);
-		String uniqueName = "OrgRoom_" + UUID.randomUUID();
-		roomDAO.create(loc, uniqueName);
+		Building bld = createBuilding();
+		buildingDAO.addOrganisation(bld, org);
+		String uniqueDesc = "OrgRoom_" + UUID.randomUUID();
+		roomDAO.create(bld, uniqueDesc);
 		dbInstance.commitAndCloseSession();
 
 		// Member with "user" role
@@ -184,42 +184,42 @@ public class RoomDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		SearchRoomParameters paramsNonMember = new SearchRoomParameters();
-		paramsNonMember.setSearchString(uniqueName);
+		paramsNonMember.setSearchString(uniqueDesc);
 		paramsNonMember.setIdentity(nonMember);
 		List<Room> nonMemberRooms = roomDAO.search(paramsNonMember);
 		Assertions.assertThat(nonMemberRooms)
-				.extracting(Room::getName)
-				.doesNotContain(uniqueName);
+				.extracting(Room::getDescription)
+				.doesNotContain(uniqueDesc);
 	}
 
 	@Test
-	public void search_byLocation() {
-		Location loc1 = createLocation();
-		Location loc2 = createLocation();
-		String name1 = "SearchByLoc_A_" + UUID.randomUUID();
-		String name2 = "SearchByLoc_B_" + UUID.randomUUID();
-		roomDAO.create(loc1, name1);
-		roomDAO.create(loc2, name2);
+	public void search_byBuilding() {
+		Building bld1 = createBuilding();
+		Building bld2 = createBuilding();
+		String desc1 = "SearchByBld_A_" + UUID.randomUUID();
+		String desc2 = "SearchByBld_B_" + UUID.randomUUID();
+		roomDAO.create(bld1, desc1);
+		roomDAO.create(bld2, desc2);
 		dbInstance.commitAndCloseSession();
 
 		SearchRoomParameters params = new SearchRoomParameters();
-		params.setLocation(loc1);
+		params.setBuilding(bld1);
 		List<Room> rooms = roomDAO.search(params);
-		Assertions.assertThat(rooms).extracting(Room::getName).contains(name1).doesNotContain(name2);
+		Assertions.assertThat(rooms).extracting(Room::getDescription).contains(desc1).doesNotContain(desc2);
 	}
 
 	@Test
 	public void search_deletedRooms_excluded() {
-		Location loc = createLocation();
-		String name = "DeletedRoom_" + UUID.randomUUID();
-		Room room = roomDAO.create(loc, name);
+		Building bld = createBuilding();
+		String desc = "DeletedRoom_" + UUID.randomUUID();
+		Room room = roomDAO.create(bld, desc);
 		dbInstance.commitAndCloseSession();
 		roomDAO.delete(room);
 		dbInstance.commitAndCloseSession();
 
 		SearchRoomParameters params = new SearchRoomParameters();
-		params.setSearchString(name);
+		params.setSearchString(desc);
 		List<Room> rooms = roomDAO.search(params);
-		Assertions.assertThat(rooms).extracting(Room::getName).doesNotContain(name);
+		Assertions.assertThat(rooms).extracting(Room::getDescription).doesNotContain(desc);
 	}
 }

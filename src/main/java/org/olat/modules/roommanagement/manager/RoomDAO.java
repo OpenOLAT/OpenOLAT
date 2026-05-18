@@ -28,8 +28,8 @@ import jakarta.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.roommanagement.Location;
-import org.olat.modules.roommanagement.LocationRef;
+import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.BuildingRef;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomRef;
 import org.olat.modules.roommanagement.RoomStatus;
@@ -48,13 +48,13 @@ public class RoomDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public Room create(Location location, String name) {
+	public Room create(Building building, String description) {
 		RoomImpl room = new RoomImpl();
 		room.setCreationDate(new Date());
 		room.setLastModified(room.getCreationDate());
-		room.setName(name);
+		room.setDescription(description);
 		room.setStatus(RoomStatus.active);
-		room.setLocation(location);
+		room.setBuilding(building);
 		dbInstance.getCurrentEntityManager().persist(room);
 		return room;
 	}
@@ -90,9 +90,9 @@ public class RoomDAO {
 	public List<Room> search(SearchRoomParameters params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct r from rmroom r")
-		  .append(" inner join r.location loc");
+		  .append(" inner join r.building bld");
 		appendSearchWhere(sb, params);
-		sb.append(" order by r.name asc");
+		sb.append(" order by r.description asc");
 
 		TypedQuery<Room> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Room.class);
 		applySearchParameters(query, params);
@@ -102,7 +102,7 @@ public class RoomDAO {
 	public long count(SearchRoomParameters params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(distinct r) from rmroom r")
-		  .append(" inner join r.location loc");
+		  .append(" inner join r.building bld");
 		appendSearchWhere(sb, params);
 
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
@@ -112,21 +112,21 @@ public class RoomDAO {
 	}
 
 	private void appendSearchWhere(QueryBuilder sb, SearchRoomParameters params) {
-		// Always filter out deleted rooms and their deleted locations
+		// Always filter out deleted rooms and their deleted buildings
 		sb.and().append("r.status <> :deletedStatus")
-		  .and().append("loc.status <> :deletedStatus");
+		  .and().append("bld.status <> :deletedStatus");
 
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			sb.and().append("r.status in (:statusList)");
 		}
-		if (params.getLocation() != null) {
-			sb.and().append("r.location.key=:locationKey");
+		if (params.getBuilding() != null) {
+			sb.and().append("r.building.key=:buildingKey");
 		}
 		if (params.getMinSeats() != null) {
 			sb.and().append("r.seats >= :minSeats");
 		}
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
-			sb.and().append("(lower(r.name) like :searchString or lower(r.externalId) like :searchString or lower(r.externalRef) like :searchString)");
+			sb.and().append("(lower(r.description) like :searchString or lower(r.externalId) like :searchString or lower(r.externalRef) like :searchString)");
 		}
 		if (params.getAvailableFrom() != null && params.getAvailableTo() != null) {
 			sb.and().append("not exists (select 1 from rmroombooking b where b.room=r and b.startDate < :availTo and b.endDate > :availFrom)");
@@ -134,13 +134,13 @@ public class RoomDAO {
 		if (params.getIdentity() != null) {
 			// Org-scoped visibility: open-to-all (no org links) OR identity has administrator/user role in a linked org
 			sb.and().append("(")
-			  .append(" not exists (select 1 from rmlocationtoorganisation lto where lto.location=loc)")
+			  .append(" not exists (select 1 from rmbuildingtoorganisation bto where bto.building=bld)")
 			  .append(" or exists (")
-			  .append("   select 1 from rmlocationtoorganisation lto2")
-			  .append("   inner join lto2.organisation o")
+			  .append("   select 1 from rmbuildingtoorganisation bto2")
+			  .append("   inner join bto2.organisation o")
 			  .append("   inner join o.group og")
 			  .append("   inner join og.members m")
-			  .append("   where lto2.location=loc")
+			  .append("   where bto2.building=bld")
 			  .append("     and m.identity.key=:identityKey")
 			  .append("     and m.role in ('administrator','user')")
 			  .append(" )")
@@ -154,8 +154,8 @@ public class RoomDAO {
 			List<String> statusNames = params.getStatus().stream().map(RoomStatus::name).collect(Collectors.toList());
 			query.setParameter("statusList", statusNames);
 		}
-		if (params.getLocation() != null) {
-			query.setParameter("locationKey", params.getLocation().getKey());
+		if (params.getBuilding() != null) {
+			query.setParameter("buildingKey", params.getBuilding().getKey());
 		}
 		if (params.getMinSeats() != null) {
 			query.setParameter("minSeats", params.getMinSeats());
@@ -181,10 +181,10 @@ public class RoomDAO {
 				.executeUpdate();
 	}
 
-	public List<Room> getRoomsForLocation(LocationRef location) {
+	public List<Room> getRoomsForBuilding(BuildingRef building) {
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("select r from rmroom r where r.location.key=:locationKey and r.status <> :deleted order by r.name asc", Room.class)
-				.setParameter("locationKey", location.getKey())
+				.createQuery("select r from rmroom r where r.building.key=:buildingKey and r.status <> :deleted order by r.description asc", Room.class)
+				.setParameter("buildingKey", building.getKey())
 				.setParameter("deleted", RoomStatus.deleted.name())
 				.getResultList();
 	}

@@ -29,8 +29,8 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
-import org.olat.modules.roommanagement.Location;
-import org.olat.modules.roommanagement.LocationRef;
+import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.BuildingRef;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomBookingRef;
@@ -55,7 +55,7 @@ public class RoomModuleLogDAO {
 	public RoomModuleLog createLog(RoomModuleLogAction action,
 			String beforeStatus, String beforeValue,
 			String afterStatus, String afterValue,
-			Location ctxLocation, Room ctxRoom,
+			Building ctxBuilding, Room ctxRoom,
 			RoomBooking ctxBooking, LectureBlock ctxLectureBlock,
 			Identity doer) {
 		RoomModuleLogImpl log = new RoomModuleLogImpl();
@@ -65,7 +65,7 @@ public class RoomModuleLogDAO {
 		log.setBefore(beforeValue);
 		log.setAfterStatus(afterStatus);
 		log.setAfter(afterValue);
-		log.setLocation(ctxLocation);
+		log.setBuilding(ctxBuilding);
 		log.setRoom(ctxRoom);
 		log.setBooking(ctxBooking);
 		log.setLectureBlock(ctxLectureBlock);
@@ -78,8 +78,8 @@ public class RoomModuleLogDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select log from rmmodulelog log");
 
-		if (params.getLocation() != null) {
-			sb.and().append("log.location.key=:locationKey");
+		if (params.getBuilding() != null) {
+			sb.and().append("log.building.key=:buildingKey");
 		}
 		if (params.getRoom() != null) {
 			sb.and().append("log.room.key=:roomKey");
@@ -94,8 +94,8 @@ public class RoomModuleLogDAO {
 
 		TypedQuery<RoomModuleLog> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RoomModuleLog.class);
-		if (params.getLocation() != null) {
-			query.setParameter("locationKey", params.getLocation().getKey());
+		if (params.getBuilding() != null) {
+			query.setParameter("buildingKey", params.getBuilding().getKey());
 		}
 		if (params.getRoom() != null) {
 			query.setParameter("roomKey", params.getRoom().getKey());
@@ -109,10 +109,10 @@ public class RoomModuleLogDAO {
 		return query.getResultList();
 	}
 
-	public void nullLocationRef(LocationRef location) {
+	public void nullBuildingRef(BuildingRef building) {
 		dbInstance.getCurrentEntityManager()
-				.createQuery("update rmmodulelog l set l.location = null where l.location.key = :key")
-				.setParameter("key", location.getKey())
+				.createQuery("update rmmodulelog l set l.building = null where l.building.key = :key")
+				.setParameter("key", building.getKey())
 				.executeUpdate();
 	}
 

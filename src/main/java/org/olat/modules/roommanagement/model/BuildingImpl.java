@@ -32,16 +32,16 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.RoomStatus;
 
 /**
  * Initial date: 22 Apr 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com
  */
-@Entity(name = "rmlocation")
-@Table(name = "o_rm_location")
-public class LocationImpl implements Persistable, Location {
+@Entity(name = "rmbuilding")
+@Table(name = "o_rm_building")
+public class BuildingImpl implements Persistable, Building {
 
 	private static final long serialVersionUID = 8372647183921047231L;
 
@@ -60,8 +60,8 @@ public class LocationImpl implements Persistable, Location {
 	@Column(name = "r_status", nullable = false, insertable = true, updatable = true)
 	private String status;
 
-	@Column(name = "r_name", nullable = false, insertable = true, updatable = true)
-	private String name;
+	@Column(name = "r_description", nullable = false, insertable = true, updatable = true)
+	private String description;
 
 	@Column(name = "r_ext_id", nullable = true, insertable = true, updatable = true)
 	private String externalId;
@@ -69,8 +69,11 @@ public class LocationImpl implements Persistable, Location {
 	@Column(name = "r_ext_ref", nullable = true, insertable = true, updatable = true)
 	private String externalRef;
 
-	@Column(name = "r_description", nullable = true, insertable = true, updatable = true)
-	private String description;
+	@Column(name = "r_info", nullable = true, insertable = true, updatable = true)
+	private String info;
+
+	@Column(name = "r_color_css", nullable = true, insertable = true, updatable = true)
+	private String colorCss;
 
 	@Column(name = "r_address", nullable = true, insertable = true, updatable = true)
 	private String address;
@@ -109,13 +112,13 @@ public class LocationImpl implements Persistable, Location {
 	}
 
 	@Override
-	public String getName() {
-		return name;
+	public String getDescription() {
+		return description;
 	}
 
 	@Override
-	public void setName(String name) {
-		this.name = name;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
@@ -139,13 +142,23 @@ public class LocationImpl implements Persistable, Location {
 	}
 
 	@Override
-	public String getDescription() {
-		return description;
+	public String getInfo() {
+		return info;
 	}
 
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setInfo(String info) {
+		this.info = info;
+	}
+
+	@Override
+	public String getColorCss() {
+		return colorCss;
+	}
+
+	@Override
+	public void setColorCss(String colorCss) {
+		this.colorCss = colorCss;
 	}
 
 	@Override
@@ -211,8 +224,8 @@ public class LocationImpl implements Persistable, Location {
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
-		if (obj instanceof LocationImpl location) {
-			return key != null && key.equals(location.key);
+		if (obj instanceof BuildingImpl building) {
+			return key != null && key.equals(building.key);
 		}
 		return false;
 	}

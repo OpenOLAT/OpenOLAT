@@ -358,8 +358,8 @@
 		<class>org.olat.modules.quality.model.QualityReportAccessImpl</class>
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>
-		<class>org.olat.modules.roommanagement.model.LocationImpl</class>
-		<class>org.olat.modules.roommanagement.model.LocationToOrganisationImpl</class>
+		<class>org.olat.modules.roommanagement.model.BuildingImpl</class>
+		<class>org.olat.modules.roommanagement.model.BuildingToOrganisationImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomBookingImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomModuleLogImpl</class>

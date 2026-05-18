@@ -29,7 +29,7 @@ import org.olat.modules.roommanagement.RoomStatus;
  * Initial date: 4 May 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class SearchLocationParameters {
+public class SearchBuildingParameters {
 
 	private String searchString;
 	private List<RoomStatus> status;

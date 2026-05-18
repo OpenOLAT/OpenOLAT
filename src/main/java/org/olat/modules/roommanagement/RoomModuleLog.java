@@ -43,7 +43,7 @@ public interface RoomModuleLog extends CreateInfo {
 
 	IdentityRef getDoer();
 
-	Location getLocation();
+	Building getBuilding();
 
 	Room getRoom();
 

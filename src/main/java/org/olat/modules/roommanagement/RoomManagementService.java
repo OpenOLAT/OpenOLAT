@@ -29,7 +29,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.roommanagement.model.CollisionReport;
 import org.olat.modules.roommanagement.model.RoomModuleLogSearchParameters;
-import org.olat.modules.roommanagement.model.SearchLocationParameters;
+import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
 
 /**
@@ -38,21 +38,21 @@ import org.olat.modules.roommanagement.model.SearchRoomParameters;
  */
 public interface RoomManagementService {
 
-	// --- Locations ---
+	// --- Buildings ---
 
-	Location createLocation(String name, Identity doer);
+	Building createBuilding(String description, Identity doer);
 
-	Location updateLocation(Location l, List<Organisation> orgs, Identity doer);
+	Building updateBuilding(Building b, List<Organisation> orgs, Identity doer);
 
-	Location getLocation(LocationRef ref);
+	Building getBuilding(BuildingRef ref);
 
-	List<Location> searchLocations(SearchLocationParameters params, Roles roles);
+	List<Building> searchBuildings(SearchBuildingParameters params, Roles roles);
 
-	void deleteLocation(LocationRef ref, Identity doer);
+	void deleteBuilding(BuildingRef ref, Identity doer);
 
 	// --- Rooms ---
 
-	Room createRoom(Location loc, String name, Identity doer);
+	Room createRoom(Building building, String description, Identity doer);
 
 	Room updateRoom(Room r, Identity doer);
 
@@ -84,13 +84,13 @@ public interface RoomManagementService {
 
 	// --- Access control ---
 
-	boolean canEditLocation(Location l, Roles roles);
+	boolean canEditBuilding(Building b, Roles roles);
 
 	boolean canEditRoom(Room r, Roles roles);
 
 	boolean canBookRoomOnLectureBlock(Room r, LectureBlock lb, Identity id, Roles roles);
 
-	boolean isVisibleLocation(Location l, Roles roles, Identity identity);
+	boolean isVisibleBuilding(Building b, Roles roles, Identity identity);
 
 	// --- Audit ---
 

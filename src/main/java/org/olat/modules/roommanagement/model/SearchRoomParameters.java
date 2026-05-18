@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.modules.roommanagement.LocationRef;
+import org.olat.modules.roommanagement.BuildingRef;
 import org.olat.modules.roommanagement.RoomStatus;
 
 /**
@@ -34,7 +34,7 @@ public class SearchRoomParameters {
 
 	private String searchString;
 	private List<RoomStatus> status;
-	private LocationRef location;
+	private BuildingRef building;
 	private Integer minSeats;
 	private Date availableFrom;
 	private Date availableTo;
@@ -57,12 +57,12 @@ public class SearchRoomParameters {
 		this.status = status;
 	}
 
-	public LocationRef getLocation() {
-		return location;
+	public BuildingRef getBuilding() {
+		return building;
 	}
 
-	public void setLocation(LocationRef location) {
-		this.location = location;
+	public void setBuilding(BuildingRef building) {
+		this.building = building;
 	}
 
 	public Integer getMinSeats() {

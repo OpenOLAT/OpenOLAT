@@ -17,13 +17,24 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.roommanagement;
+package org.olat.modules.roommanagement.model;
+
+import org.olat.modules.roommanagement.BuildingRef;
 
 /**
  * Initial date: 22 Apr 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com
  */
-public interface LocationRef {
+public class BuildingRefImpl implements BuildingRef {
 
-	Long getKey();
+	private final Long key;
+
+	public BuildingRefImpl(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
 }

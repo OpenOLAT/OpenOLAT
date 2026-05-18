@@ -41,7 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.model.LectureBlockImpl;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomModuleLog;
@@ -86,9 +86,9 @@ public class RoomModuleLogImpl implements Persistable, RoomModuleLog {
 	@JoinColumn(name = "fk_doer", nullable = true, insertable = true, updatable = false)
 	private Identity doer;
 
-	@ManyToOne(targetEntity = LocationImpl.class, fetch = FetchType.LAZY, optional = true)
-	@JoinColumn(name = "fk_location", nullable = true, insertable = true, updatable = false)
-	private Location location;
+	@ManyToOne(targetEntity = BuildingImpl.class, fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "fk_building", nullable = true, insertable = true, updatable = false)
+	private Building building;
 
 	@ManyToOne(targetEntity = RoomImpl.class, fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "fk_room", nullable = true, insertable = true, updatable = false)
@@ -171,12 +171,12 @@ public class RoomModuleLogImpl implements Persistable, RoomModuleLog {
 	}
 
 	@Override
-	public Location getLocation() {
-		return location;
+	public Building getBuilding() {
+		return building;
 	}
 
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setBuilding(Building building) {
+		this.building = building;
 	}
 
 	@Override

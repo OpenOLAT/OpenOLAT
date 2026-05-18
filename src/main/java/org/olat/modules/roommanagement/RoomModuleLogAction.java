@@ -24,11 +24,11 @@ package org.olat.modules.roommanagement;
  * @author cpfranger, christoph.pfranger@frentix.com
  */
 public enum RoomModuleLogAction {
-	location_create,
-	location_update,
-	location_delete,
-	location_add_organisation,
-	location_remove_organisation,
+	building_create,
+	building_update,
+	building_delete,
+	building_add_organisation,
+	building_remove_organisation,
 	room_create,
 	room_update,
 	room_delete,

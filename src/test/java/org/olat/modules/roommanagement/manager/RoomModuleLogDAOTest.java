@@ -29,7 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomModuleLog;
 import org.olat.modules.roommanagement.RoomModuleLogAction;
@@ -47,24 +47,24 @@ public class RoomModuleLogDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private LocationDAO locationDAO;
+	private BuildingDAO buildingDAO;
 	@Autowired
 	private RoomDAO roomDAO;
 	@Autowired
 	private RoomModuleLogDAO roomModuleLogDAO;
 
-	private Location createLocation() {
-		return locationDAO.create("LogLoc_" + UUID.randomUUID());
+	private Building createBuilding() {
+		return buildingDAO.create("LogBld_" + UUID.randomUUID());
 	}
 
-	private Room createRoom(Location loc) {
-		return roomDAO.create(loc, "LogRoom_" + UUID.randomUUID());
+	private Room createRoom(Building bld) {
+		return roomDAO.create(bld, "LogRoom_" + UUID.randomUUID());
 	}
 
 	@Test
 	public void createLog() {
-		Location loc = createLocation();
-		Room room = createRoom(loc);
+		Building bld = createBuilding();
+		Room room = createRoom(bld);
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-log-doer");
 		dbInstance.commitAndCloseSession();
 
@@ -72,7 +72,7 @@ public class RoomModuleLogDAOTest extends OlatTestCase {
 				RoomModuleLogAction.room_create,
 				null, null,
 				"active", "<room/>",
-				loc, room, null, null,
+				bld, room, null, null,
 				doer);
 		dbInstance.commitAndCloseSession();
 
@@ -82,14 +82,14 @@ public class RoomModuleLogDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadLogs_byRoom() {
-		Location loc = createLocation();
-		Room room = createRoom(loc);
+		Building bld = createBuilding();
+		Room room = createRoom(bld);
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-log-room");
 		dbInstance.commitAndCloseSession();
 
 		roomModuleLogDAO.createLog(RoomModuleLogAction.room_update,
 				"active", "<before/>", "active", "<after/>",
-				loc, room, null, null, doer);
+				bld, room, null, null, doer);
 		dbInstance.commitAndCloseSession();
 
 		RoomModuleLogSearchParameters params = new RoomModuleLogSearchParameters();
@@ -102,14 +102,14 @@ public class RoomModuleLogDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadLogs_byDateRange() {
-		Location loc = createLocation();
-		Room room = createRoom(loc);
+		Building bld = createBuilding();
+		Room room = createRoom(bld);
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-log-date");
 		dbInstance.commitAndCloseSession();
 
-		roomModuleLogDAO.createLog(RoomModuleLogAction.location_create,
-				null, null, "active", "<loc/>",
-				loc, null, null, null, doer);
+		roomModuleLogDAO.createLog(RoomModuleLogAction.building_create,
+				null, null, "active", "<bld/>",
+				bld, null, null, null, doer);
 		dbInstance.commitAndCloseSession();
 
 		Calendar cal = Calendar.getInstance();
@@ -119,7 +119,7 @@ public class RoomModuleLogDAOTest extends OlatTestCase {
 		Date to = cal.getTime();
 
 		RoomModuleLogSearchParameters params = new RoomModuleLogSearchParameters();
-		params.setLocation(loc);
+		params.setBuilding(bld);
 		params.setFrom(from);
 		params.setTo(to);
 		List<RoomModuleLog> logs = roomModuleLogDAO.loadLogs(params);
@@ -128,14 +128,14 @@ public class RoomModuleLogDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadDoers() {
-		Location loc = createLocation();
-		Room room = createRoom(loc);
+		Building bld = createBuilding();
+		Room room = createRoom(bld);
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-log-doer2");
 		dbInstance.commitAndCloseSession();
 
 		roomModuleLogDAO.createLog(RoomModuleLogAction.room_create,
 				null, null, "active", "<room/>",
-				loc, room, null, null, doer);
+				bld, room, null, null, doer);
 		dbInstance.commitAndCloseSession();
 
 		List<Identity> doers = roomModuleLogDAO.loadDoers(room);

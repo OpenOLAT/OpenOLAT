@@ -52,7 +52,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockImpl;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
@@ -548,8 +548,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 		original.setRollCallStatus(LectureRollCallStatus.open);
 		original = (LectureBlockImpl) lectureService.save(original, null);
 
-		Location loc = roomManagementService.createLocation("CopyRmLoc", doer);
-		Room room = roomManagementService.createRoom(loc, "CopyRmRoom", doer);
+		Building bld = roomManagementService.createBuilding("CopyRmBld", doer);
+		Room room = roomManagementService.createRoom(bld, "CopyRmRoom", doer);
 		roomManagementService.bookRoom(room, original, original.getStartDate(), original.getEndDate(), 0, 0, doer);
 		dbInstance.commitAndCloseSession();
 

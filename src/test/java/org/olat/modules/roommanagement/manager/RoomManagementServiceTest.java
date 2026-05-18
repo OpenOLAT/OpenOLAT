@@ -46,7 +46,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomRef;
 import org.olat.modules.roommanagement.model.CollisionReport;
@@ -58,99 +58,99 @@ import org.olat.modules.roommanagement.model.CollisionReport;
 @RunWith(MockitoJUnitRunner.class)
 public class RoomManagementServiceTest {
 
-	@Mock private LocationDAO locationDao;
+	@Mock private BuildingDAO buildingDao;
 	@Mock private RoomBookingDAO roomBookingDao;
 
 	@InjectMocks private RoomManagementServiceImpl sut;
 
-	@Mock private Location location;
+	@Mock private Building building;
 	@Mock private Roles roles;
 	@Mock private Organisation org;
 
-	// ========== canEditLocation ==========
+	// ========== canEditBuilding ==========
 
 	@Test
-	public void canEditLocation_nullRoles_returnsFalse() {
-		assertThat(sut.canEditLocation(location, null)).isFalse();
+	public void canEditBuilding_nullRoles_returnsFalse() {
+		assertThat(sut.canEditBuilding(building, null)).isFalse();
 	}
 
 	@Test
-	public void canEditLocation_sysadmin_returnsTrue() {
+	public void canEditBuilding_sysadmin_returnsTrue() {
 		when(roles.isSystemAdmin()).thenReturn(true);
 
-		assertThat(sut.canEditLocation(location, roles)).isTrue();
+		assertThat(sut.canEditBuilding(building, roles)).isTrue();
 	}
 
 	@Test
-	public void canEditLocation_noOrgs_returnsTrue() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of());
+	public void canEditBuilding_noOrgs_returnsTrue() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of());
 
-		assertThat(sut.canEditLocation(location, roles)).isTrue();
+		assertThat(sut.canEditBuilding(building, roles)).isTrue();
 	}
 
 	@Test
-	public void canEditLocation_hasAdminRole_returnsTrue() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of(org));
+	public void canEditBuilding_hasAdminRole_returnsTrue() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of(org));
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.administrator))).thenReturn(true);
 
-		assertThat(sut.canEditLocation(location, roles)).isTrue();
+		assertThat(sut.canEditBuilding(building, roles)).isTrue();
 	}
 
 	@Test
-	public void canEditLocation_noAdminRole_returnsFalse() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of(org));
+	public void canEditBuilding_noAdminRole_returnsFalse() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of(org));
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.administrator))).thenReturn(false);
 
-		assertThat(sut.canEditLocation(location, roles)).isFalse();
+		assertThat(sut.canEditBuilding(building, roles)).isFalse();
 	}
 
-	// ========== isVisibleLocation ==========
+	// ========== isVisibleBuilding ==========
 
 	@Test
-	public void isVisibleLocation_nullRoles_noOrgs_returnsTrue() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of());
+	public void isVisibleBuilding_nullRoles_noOrgs_returnsTrue() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of());
 
-		assertThat(sut.isVisibleLocation(location, null, null)).isTrue();
+		assertThat(sut.isVisibleBuilding(building, null, null)).isTrue();
 	}
 
 	@Test
-	public void isVisibleLocation_sysadmin_returnsTrue() {
+	public void isVisibleBuilding_sysadmin_returnsTrue() {
 		when(roles.isSystemAdmin()).thenReturn(true);
 
-		assertThat(sut.isVisibleLocation(location, roles, null)).isTrue();
+		assertThat(sut.isVisibleBuilding(building, roles, null)).isTrue();
 	}
 
 	@Test
-	public void isVisibleLocation_noOrgs_returnsTrue() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of());
+	public void isVisibleBuilding_noOrgs_returnsTrue() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of());
 
-		assertThat(sut.isVisibleLocation(location, roles, null)).isTrue();
+		assertThat(sut.isVisibleBuilding(building, roles, null)).isTrue();
 	}
 
 	@Test
-	public void isVisibleLocation_hasAdminRole_returnsTrue() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of(org));
+	public void isVisibleBuilding_hasAdminRole_returnsTrue() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of(org));
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.administrator))).thenReturn(true);
 
-		assertThat(sut.isVisibleLocation(location, roles, null)).isTrue();
+		assertThat(sut.isVisibleBuilding(building, roles, null)).isTrue();
 	}
 
 	@Test
-	public void isVisibleLocation_hasUserRole_returnsTrue() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of(org));
+	public void isVisibleBuilding_hasUserRole_returnsTrue() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of(org));
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.administrator))).thenReturn(false);
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.user))).thenReturn(true);
 
-		assertThat(sut.isVisibleLocation(location, roles, null)).isTrue();
+		assertThat(sut.isVisibleBuilding(building, roles, null)).isTrue();
 	}
 
 	@Test
-	public void isVisibleLocation_noMatchingRole_returnsFalse() {
-		when(locationDao.getOrganisations(location)).thenReturn(List.of(org));
+	public void isVisibleBuilding_noMatchingRole_returnsFalse() {
+		when(buildingDao.getOrganisations(building)).thenReturn(List.of(org));
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.administrator))).thenReturn(false);
 		when(roles.hasRole(anyList(), eq(OrganisationRoles.user))).thenReturn(false);
 
-		assertThat(sut.isVisibleLocation(location, roles, null)).isFalse();
+		assertThat(sut.isVisibleBuilding(building, roles, null)).isFalse();
 	}
 
 	// ========== findCollisions ==========

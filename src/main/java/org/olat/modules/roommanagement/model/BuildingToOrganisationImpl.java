@@ -36,16 +36,16 @@ import jakarta.persistence.TemporalType;
 import org.olat.core.id.Persistable;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.core.id.Organisation;
-import org.olat.modules.roommanagement.Location;
-import org.olat.modules.roommanagement.LocationToOrganisation;
+import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.BuildingToOrganisation;
 
 /**
  * Initial date: 22 Apr 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com
  */
-@Entity(name = "rmlocationtoorganisation")
-@Table(name = "o_rm_location_to_org")
-public class LocationToOrganisationImpl implements Persistable, LocationToOrganisation {
+@Entity(name = "rmbuildingtoorganisation")
+@Table(name = "o_rm_building_to_org")
+public class BuildingToOrganisationImpl implements Persistable, BuildingToOrganisation {
 
 	private static final long serialVersionUID = -2914758134609235812L;
 
@@ -58,9 +58,9 @@ public class LocationToOrganisationImpl implements Persistable, LocationToOrgani
 	@Column(name = "creationdate", nullable = false, insertable = true, updatable = false)
 	private Date creationDate;
 
-	@ManyToOne(targetEntity = LocationImpl.class, fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "fk_location", nullable = false, insertable = true, updatable = false)
-	private Location location;
+	@ManyToOne(targetEntity = BuildingImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_building", nullable = false, insertable = true, updatable = false)
+	private Building building;
 
 	@ManyToOne(targetEntity = OrganisationImpl.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_organisation", nullable = false, insertable = true, updatable = false)
@@ -81,12 +81,12 @@ public class LocationToOrganisationImpl implements Persistable, LocationToOrgani
 	}
 
 	@Override
-	public Location getLocation() {
-		return location;
+	public Building getBuilding() {
+		return building;
 	}
 
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setBuilding(Building building) {
+		this.building = building;
 	}
 
 	@Override
@@ -111,8 +111,8 @@ public class LocationToOrganisationImpl implements Persistable, LocationToOrgani
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
-		if (obj instanceof LocationToOrganisationImpl lto) {
-			return key != null && key.equals(lto.key);
+		if (obj instanceof BuildingToOrganisationImpl bto) {
+			return key != null && key.equals(bto.key);
 		}
 		return false;
 	}

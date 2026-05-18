@@ -30,12 +30,12 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.roommanagement.Location;
-import org.olat.modules.roommanagement.LocationRef;
+import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.BuildingRef;
 import org.olat.modules.roommanagement.RoomStatus;
-import org.olat.modules.roommanagement.model.LocationImpl;
-import org.olat.modules.roommanagement.model.LocationToOrganisationImpl;
-import org.olat.modules.roommanagement.model.SearchLocationParameters;
+import org.olat.modules.roommanagement.model.BuildingImpl;
+import org.olat.modules.roommanagement.model.BuildingToOrganisationImpl;
+import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,54 +44,54 @@ import org.springframework.stereotype.Service;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 @Service
-public class LocationDAO {
+public class BuildingDAO {
 
 	@Autowired
 	private DB dbInstance;
 
-	public Location create(String name) {
-		LocationImpl location = new LocationImpl();
-		location.setCreationDate(new Date());
-		location.setLastModified(location.getCreationDate());
-		location.setName(name);
-		location.setStatus(RoomStatus.active);
-		dbInstance.getCurrentEntityManager().persist(location);
-		return location;
+	public Building create(String description) {
+		BuildingImpl building = new BuildingImpl();
+		building.setCreationDate(new Date());
+		building.setLastModified(building.getCreationDate());
+		building.setDescription(description);
+		building.setStatus(RoomStatus.active);
+		dbInstance.getCurrentEntityManager().persist(building);
+		return building;
 	}
 
-	public Location update(Location location) {
-		location.setLastModified(new Date());
-		return dbInstance.getCurrentEntityManager().merge(location);
+	public Building update(Building building) {
+		building.setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(building);
 	}
 
-	public Location loadByKey(LocationRef ref) {
+	public Building loadByKey(BuildingRef ref) {
 		if (ref == null || ref.getKey() == null) return null;
-		return dbInstance.getCurrentEntityManager().find(LocationImpl.class, ref.getKey());
+		return dbInstance.getCurrentEntityManager().find(BuildingImpl.class, ref.getKey());
 	}
 
-	public Location loadByExternalId(String externalId) {
+	public Building loadByExternalId(String externalId) {
 		if (!StringHelper.containsNonWhitespace(externalId)) return null;
-		List<Location> locations = dbInstance.getCurrentEntityManager()
-				.createQuery("select l from rmlocation l where l.externalId=:externalId", Location.class)
+		List<Building> buildings = dbInstance.getCurrentEntityManager()
+				.createQuery("select b from rmbuilding b where b.externalId=:externalId", Building.class)
 				.setParameter("externalId", externalId)
 				.getResultList();
-		return locations == null || locations.isEmpty() ? null : locations.get(0);
+		return buildings == null || buildings.isEmpty() ? null : buildings.get(0);
 	}
 
-	public List<Location> search(SearchLocationParameters params) {
+	public List<Building> search(SearchBuildingParameters params) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select l from rmlocation l");
+		sb.append("select b from rmbuilding b");
 		appendSearchWhere(sb, params);
-		sb.append(" order by l.name asc");
+		sb.append(" order by b.description asc");
 
-		TypedQuery<Location> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Location.class);
+		TypedQuery<Building> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Building.class);
 		applySearchParameters(query, params);
 		return query.getResultList();
 	}
 
-	public long count(SearchLocationParameters params) {
+	public long count(SearchBuildingParameters params) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(l) from rmlocation l");
+		sb.append("select count(b) from rmbuilding b");
 		appendSearchWhere(sb, params);
 
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
@@ -100,26 +100,26 @@ public class LocationDAO {
 		return count == null ? 0L : count;
 	}
 
-	private void appendSearchWhere(QueryBuilder sb, SearchLocationParameters params) {
+	private void appendSearchWhere(QueryBuilder sb, SearchBuildingParameters params) {
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
-			sb.and().append("(lower(l.name) like :searchString or lower(l.externalId) like :searchString or lower(l.externalRef) like :searchString)");
+			sb.and().append("(lower(b.description) like :searchString or lower(b.externalId) like :searchString or lower(b.externalRef) like :searchString)");
 		}
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
-			sb.and().append("l.status in (:statusList)");
+			sb.and().append("b.status in (:statusList)");
 		}
 		if (params.getOrganisations() != null && !params.getOrganisations().isEmpty()) {
-			sb.and().append("exists (select 1 from rmlocationtoorganisation lto where lto.location=l and lto.organisation.key in (:orgKeys))");
+			sb.and().append("exists (select 1 from rmbuildingtoorganisation bto where bto.building=b and bto.organisation.key in (:orgKeys))");
 		}
 		if (params.getIdentity() != null) {
 			// Org-scoped visibility: open-to-all (no org links) OR identity has administrator/user role in a linked org
 			sb.and().append("(")
-			  .append(" not exists (select 1 from rmlocationtoorganisation lto2 where lto2.location=l)")
+			  .append(" not exists (select 1 from rmbuildingtoorganisation bto2 where bto2.building=b)")
 			  .append(" or exists (")
-			  .append("   select 1 from rmlocationtoorganisation lto3")
-			  .append("   inner join lto3.organisation o")
+			  .append("   select 1 from rmbuildingtoorganisation bto3")
+			  .append("   inner join bto3.organisation o")
 			  .append("   inner join o.group og")
 			  .append("   inner join og.members m")
-			  .append("   where lto3.location=l")
+			  .append("   where bto3.building=b")
 			  .append("     and m.identity.key=:identityKey")
 			  .append("     and m.role in ('administrator','user')")
 			  .append(" )")
@@ -127,7 +127,7 @@ public class LocationDAO {
 		}
 	}
 
-	private void applySearchParameters(TypedQuery<?> query, SearchLocationParameters params) {
+	private void applySearchParameters(TypedQuery<?> query, SearchBuildingParameters params) {
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
 			query.setParameter("searchString", "%" + params.getSearchString().toLowerCase() + "%");
 		}
@@ -146,35 +146,35 @@ public class LocationDAO {
 		}
 	}
 
-	public int delete(LocationRef ref) {
+	public int delete(BuildingRef ref) {
 		if (ref == null || ref.getKey() == null) return 0;
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("update rmlocation l set l.status=:deleted where l.key=:key")
+				.createQuery("update rmbuilding b set b.status=:deleted where b.key=:key")
 				.setParameter("deleted", RoomStatus.deleted.name())
 				.setParameter("key", ref.getKey())
 				.executeUpdate();
 	}
 
-	public void addOrganisation(Location location, Organisation organisation) {
-		LocationToOrganisationImpl lto = new LocationToOrganisationImpl();
-		lto.setCreationDate(new Date());
-		lto.setLocation(location);
-		lto.setOrganisation(organisation);
-		dbInstance.getCurrentEntityManager().persist(lto);
+	public void addOrganisation(Building building, Organisation organisation) {
+		BuildingToOrganisationImpl bto = new BuildingToOrganisationImpl();
+		bto.setCreationDate(new Date());
+		bto.setBuilding(building);
+		bto.setOrganisation(organisation);
+		dbInstance.getCurrentEntityManager().persist(bto);
 	}
 
-	public void removeOrganisation(Location location, Organisation organisation) {
+	public void removeOrganisation(Building building, Organisation organisation) {
 		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from rmlocationtoorganisation lto where lto.location.key=:locationKey and lto.organisation.key=:orgKey")
-				.setParameter("locationKey", location.getKey())
+				.createQuery("delete from rmbuildingtoorganisation bto where bto.building.key=:buildingKey and bto.organisation.key=:orgKey")
+				.setParameter("buildingKey", building.getKey())
 				.setParameter("orgKey", organisation.getKey())
 				.executeUpdate();
 	}
 
-	public List<Organisation> getOrganisations(LocationRef ref) {
+	public List<Organisation> getOrganisations(BuildingRef ref) {
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("select lto.organisation from rmlocationtoorganisation lto where lto.location.key=:locationKey", Organisation.class)
-				.setParameter("locationKey", ref.getKey())
+				.createQuery("select bto.organisation from rmbuildingtoorganisation bto where bto.building.key=:buildingKey", Organisation.class)
+				.setParameter("buildingKey", ref.getKey())
 				.getResultList();
 	}
 }

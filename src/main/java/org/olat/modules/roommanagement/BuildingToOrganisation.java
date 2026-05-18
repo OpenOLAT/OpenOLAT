@@ -19,50 +19,18 @@
  */
 package org.olat.modules.roommanagement;
 
-import java.math.BigDecimal;
-
 import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Organisation;
 
 /**
  * Initial date: 22 Apr 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com
  */
-public interface Location extends LocationRef, CreateInfo, ModifiedInfo {
+public interface BuildingToOrganisation extends CreateInfo {
 
-	String getName();
+	Long getKey();
 
-	void setName(String name);
+	Building getBuilding();
 
-	String getExternalId();
-
-	void setExternalId(String externalId);
-
-	String getExternalRef();
-
-	void setExternalRef(String externalRef);
-
-	String getDescription();
-
-	void setDescription(String description);
-
-	String getAddress();
-
-	void setAddress(String address);
-
-	String getInfoUrl();
-
-	void setInfoUrl(String infoUrl);
-
-	BigDecimal getGeoLatitude();
-
-	void setGeoLatitude(BigDecimal geoLatitude);
-
-	BigDecimal getGeoLongitude();
-
-	void setGeoLongitude(BigDecimal geoLongitude);
-
-	RoomStatus getStatus();
-
-	void setStatus(RoomStatus status);
+	Organisation getOrganisation();
 }

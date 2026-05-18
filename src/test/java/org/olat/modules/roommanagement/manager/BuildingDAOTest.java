@@ -28,9 +28,9 @@ import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.RoomStatus;
-import org.olat.modules.roommanagement.model.SearchLocationParameters;
+import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,135 +38,135 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 4 May 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class LocationDAOTest extends OlatTestCase {
+public class BuildingDAOTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private LocationDAO locationDAO;
+	private BuildingDAO buildingDAO;
 	@Autowired
 	private OrganisationService organisationService;
 
 	@Test
 	public void createAndLoad() {
-		Location location = locationDAO.create("Test Location " + UUID.randomUUID());
+		Building building = buildingDAO.create("Test Building " + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
-		Location reloaded = locationDAO.loadByKey(location);
+		Building reloaded = buildingDAO.loadByKey(building);
 		Assert.assertNotNull(reloaded);
-		Assert.assertEquals(location.getKey(), reloaded.getKey());
+		Assert.assertEquals(building.getKey(), reloaded.getKey());
 		Assert.assertEquals(RoomStatus.active, reloaded.getStatus());
 	}
 
 	@Test
 	public void update() {
-		Location location = locationDAO.create("Update Test " + UUID.randomUUID());
+		Building building = buildingDAO.create("Update Test " + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
-		location.setName("Updated Name");
-		location.setAddress("Updated Address");
-		Location updated = locationDAO.update(location);
+		building.setDescription("Updated Description");
+		building.setAddress("Updated Address");
+		Building updated = buildingDAO.update(building);
 		dbInstance.commitAndCloseSession();
 
-		Location reloaded = locationDAO.loadByKey(updated);
-		Assert.assertEquals("Updated Name", reloaded.getName());
+		Building reloaded = buildingDAO.loadByKey(updated);
+		Assert.assertEquals("Updated Description", reloaded.getDescription());
 		Assert.assertEquals("Updated Address", reloaded.getAddress());
 	}
 
 	@Test
 	public void loadByExternalId() {
 		String extId = "ext-" + UUID.randomUUID();
-		Location location = locationDAO.create("Ext ID Test");
-		location.setExternalId(extId);
-		locationDAO.update(location);
+		Building building = buildingDAO.create("Ext ID Test");
+		building.setExternalId(extId);
+		buildingDAO.update(building);
 		dbInstance.commitAndCloseSession();
 
-		Location found = locationDAO.loadByExternalId(extId);
+		Building found = buildingDAO.loadByExternalId(extId);
 		Assert.assertNotNull(found);
 		Assert.assertEquals(extId, found.getExternalId());
 	}
 
 	@Test
-	public void searchByName() {
-		String uniqueName = "UniqueLocName_" + UUID.randomUUID();
-		locationDAO.create(uniqueName);
+	public void searchByDescription() {
+		String uniqueDescription = "UniqueBldDesc_" + UUID.randomUUID();
+		buildingDAO.create(uniqueDescription);
 		dbInstance.commitAndCloseSession();
 
-		SearchLocationParameters params = new SearchLocationParameters();
-		params.setSearchString(uniqueName.substring(0, 14));
-		List<Location> results = locationDAO.search(params);
+		SearchBuildingParameters params = new SearchBuildingParameters();
+		params.setSearchString(uniqueDescription.substring(0, 14));
+		List<Building> results = buildingDAO.search(params);
 
 		Assertions.assertThat(results)
-				.extracting(Location::getName)
-				.contains(uniqueName);
+				.extracting(Building::getDescription)
+				.contains(uniqueDescription);
 	}
 
 	@Test
 	public void searchByStatus() {
-		String name = "StatusTest_" + UUID.randomUUID();
-		Location location = locationDAO.create(name);
-		location.setStatus(RoomStatus.inactive);
-		locationDAO.update(location);
+		String description = "StatusTest_" + UUID.randomUUID();
+		Building building = buildingDAO.create(description);
+		building.setStatus(RoomStatus.inactive);
+		buildingDAO.update(building);
 		dbInstance.commitAndCloseSession();
 
-		SearchLocationParameters activeOnly = new SearchLocationParameters();
+		SearchBuildingParameters activeOnly = new SearchBuildingParameters();
 		activeOnly.setStatus(List.of(RoomStatus.active));
-		List<Location> activeResults = locationDAO.search(activeOnly);
+		List<Building> activeResults = buildingDAO.search(activeOnly);
 		Assertions.assertThat(activeResults)
-				.extracting(Location::getName)
-				.doesNotContain(name);
+				.extracting(Building::getDescription)
+				.doesNotContain(description);
 
-		SearchLocationParameters inactiveOnly = new SearchLocationParameters();
+		SearchBuildingParameters inactiveOnly = new SearchBuildingParameters();
 		inactiveOnly.setStatus(List.of(RoomStatus.inactive));
-		List<Location> inactiveResults = locationDAO.search(inactiveOnly);
+		List<Building> inactiveResults = buildingDAO.search(inactiveOnly);
 		Assertions.assertThat(inactiveResults)
-				.extracting(Location::getName)
-				.contains(name);
+				.extracting(Building::getDescription)
+				.contains(description);
 	}
 
 	@Test
 	public void softDelete() {
-		Location location = locationDAO.create("ToDelete_" + UUID.randomUUID());
+		Building building = buildingDAO.create("ToDelete_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
-		int rows = locationDAO.delete(location);
+		int rows = buildingDAO.delete(building);
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertEquals(1, rows);
-		Location reloaded = locationDAO.loadByKey(location);
+		Building reloaded = buildingDAO.loadByKey(building);
 		Assert.assertNotNull(reloaded);
 		Assert.assertEquals(RoomStatus.deleted, reloaded.getStatus());
 	}
 
 	@Test
 	public void count() {
-		String uniqueName = "CountTest_" + UUID.randomUUID();
-		locationDAO.create(uniqueName);
+		String uniqueDescription = "CountTest_" + UUID.randomUUID();
+		buildingDAO.create(uniqueDescription);
 		dbInstance.commitAndCloseSession();
 
-		SearchLocationParameters params = new SearchLocationParameters();
-		params.setSearchString(uniqueName);
-		long count = locationDAO.count(params);
+		SearchBuildingParameters params = new SearchBuildingParameters();
+		params.setSearchString(uniqueDescription);
+		long count = buildingDAO.count(params);
 		Assert.assertEquals(1L, count);
 	}
 
 	@Test
 	public void addAndRemoveOrganisation() {
-		Location location = locationDAO.create("OrgTest_" + UUID.randomUUID());
+		Building building = buildingDAO.create("OrgTest_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
 		Organisation org = organisationService.getDefaultOrganisation();
-		locationDAO.addOrganisation(location, org);
+		buildingDAO.addOrganisation(building, org);
 		dbInstance.commitAndCloseSession();
 
-		List<Organisation> orgs = locationDAO.getOrganisations(location);
+		List<Organisation> orgs = buildingDAO.getOrganisations(building);
 		Assertions.assertThat(orgs).isNotEmpty();
 		Assertions.assertThat(orgs).extracting(Organisation::getKey).contains(org.getKey());
 
-		locationDAO.removeOrganisation(location, org);
+		buildingDAO.removeOrganisation(building, org);
 		dbInstance.commitAndCloseSession();
 
-		List<Organisation> orgsAfterRemove = locationDAO.getOrganisations(location);
+		List<Organisation> orgsAfterRemove = buildingDAO.getOrganisations(building);
 		Assertions.assertThat(orgsAfterRemove).extracting(Organisation::getKey).doesNotContain(org.getKey());
 	}
 }

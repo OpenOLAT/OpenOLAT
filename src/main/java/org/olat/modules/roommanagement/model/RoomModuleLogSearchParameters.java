@@ -21,7 +21,7 @@ package org.olat.modules.roommanagement.model;
 
 import java.util.Date;
 
-import org.olat.modules.roommanagement.LocationRef;
+import org.olat.modules.roommanagement.BuildingRef;
 import org.olat.modules.roommanagement.RoomRef;
 
 /**
@@ -30,17 +30,17 @@ import org.olat.modules.roommanagement.RoomRef;
  */
 public class RoomModuleLogSearchParameters {
 
-	private LocationRef location;
+	private BuildingRef building;
 	private RoomRef room;
 	private Date from;
 	private Date to;
 
-	public LocationRef getLocation() {
-		return location;
+	public BuildingRef getBuilding() {
+		return building;
 	}
 
-	public void setLocation(LocationRef location) {
-		this.location = location;
+	public void setBuilding(BuildingRef building) {
+		this.building = building;
 	}
 
 	public RoomRef getRoom() {

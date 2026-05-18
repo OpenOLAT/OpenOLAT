@@ -57,7 +57,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
@@ -993,8 +993,8 @@ public class LectureServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lb = createMinimalLectureBlock(entry);
 
-		Location loc = roomManagementService.createLocation("CascadeLoc_" + random(), doer);
-		Room room = roomManagementService.createRoom(loc, "CascadeRoom_" + random(), doer);
+		Building bld = roomManagementService.createBuilding("CascadeBld_" + random(), doer);
+		Room room = roomManagementService.createRoom(bld, "CascadeRoom_" + random(), doer);
 		roomManagementService.bookRoom(room, lb, lb.getStartDate(), lb.getEndDate(), 0, 0, doer);
 		dbInstance.commitAndCloseSession();
 
@@ -1021,8 +1021,8 @@ public class LectureServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lb = createMinimalLectureBlock(entry);
 
-		Location loc = roomManagementService.createLocation("RealignLoc_" + random(), doer);
-		Room room = roomManagementService.createRoom(loc, "RealignRoom_" + random(), doer);
+		Building bld = roomManagementService.createBuilding("RealignBld_" + random(), doer);
+		Room room = roomManagementService.createRoom(bld, "RealignRoom_" + random(), doer);
 		roomManagementService.bookRoom(room, lb, lb.getStartDate(), lb.getEndDate(), 5, 10, doer);
 		dbInstance.commitAndCloseSession();
 
@@ -1048,8 +1048,8 @@ public class LectureServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock original = createMinimalLectureBlock(entry);
 
-		Location loc = roomManagementService.createLocation("CopyLoc_" + random(), doer);
-		Room room = roomManagementService.createRoom(loc, "CopyRoom_" + random(), doer);
+		Building bld = roomManagementService.createBuilding("CopyBld_" + random(), doer);
+		Room room = roomManagementService.createRoom(bld, "CopyRoom_" + random(), doer);
 		roomManagementService.bookRoom(room, original, original.getStartDate(), original.getEndDate(), 0, 0, doer);
 		dbInstance.commitAndCloseSession();
 

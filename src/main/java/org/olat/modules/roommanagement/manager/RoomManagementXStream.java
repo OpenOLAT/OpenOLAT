@@ -20,10 +20,10 @@
 package org.olat.modules.roommanagement.manager;
 
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
-import org.olat.modules.roommanagement.model.LocationImpl;
+import org.olat.modules.roommanagement.model.BuildingImpl;
 import org.olat.modules.roommanagement.model.RoomBookingImpl;
 import org.olat.modules.roommanagement.model.RoomImpl;
 
@@ -40,18 +40,18 @@ public class RoomManagementXStream {
 
 	static {
 		Class<?>[] types = new Class[] {
-				Location.class, LocationImpl.class,
+				Building.class, BuildingImpl.class,
 				Room.class, RoomImpl.class,
 				RoomBooking.class, RoomBookingImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
-		xstream.alias("Location", LocationImpl.class);
+		xstream.alias("Building", BuildingImpl.class);
 		xstream.alias("Room", RoomImpl.class);
 		xstream.alias("RoomBooking", RoomBookingImpl.class);
 
 		// Omit FK association fields to avoid lazy-load issues during serialization
-		xstream.omitField(RoomImpl.class, "location");
+		xstream.omitField(RoomImpl.class, "building");
 		xstream.omitField(RoomBookingImpl.class, "room");
 		xstream.omitField(RoomBookingImpl.class, "lectureBlock");
 	}
