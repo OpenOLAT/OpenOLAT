@@ -86,6 +86,12 @@ public class BuildingDAO {
 
 		TypedQuery<Building> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Building.class);
 		applySearchParameters(query, params);
+		if (params.getFirstResult() > 0) {
+			query.setFirstResult(params.getFirstResult());
+		}
+		if (params.getMaxResults() > 0) {
+			query.setMaxResults(params.getMaxResults());
+		}
 		return query.getResultList();
 	}
 
@@ -103,6 +109,12 @@ public class BuildingDAO {
 	private void appendSearchWhere(QueryBuilder sb, SearchBuildingParameters params) {
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
 			sb.and().append("(lower(b.description) like :searchString or lower(b.externalId) like :searchString or lower(b.externalRef) like :searchString)");
+		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalId())) {
+			sb.and().append("b.externalId=:exactExternalId");
+		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalRef())) {
+			sb.and().append("b.externalRef=:exactExternalRef");
 		}
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			sb.and().append("b.status in (:statusList)");
@@ -130,6 +142,12 @@ public class BuildingDAO {
 	private void applySearchParameters(TypedQuery<?> query, SearchBuildingParameters params) {
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
 			query.setParameter("searchString", "%" + params.getSearchString().toLowerCase() + "%");
+		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalId())) {
+			query.setParameter("exactExternalId", params.getExactExternalId());
+		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalRef())) {
+			query.setParameter("exactExternalRef", params.getExactExternalRef());
 		}
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			List<String> statusNames = params.getStatus().stream().map(RoomStatus::name).collect(Collectors.toList());

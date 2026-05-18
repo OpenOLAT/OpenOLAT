@@ -48,6 +48,10 @@ public interface RoomManagementService {
 
 	List<Building> searchBuildings(SearchBuildingParameters params, Roles roles);
 
+	long countBuildings(SearchBuildingParameters params);
+
+	List<Organisation> getOrganisations(BuildingRef ref);
+
 	void deleteBuilding(BuildingRef ref, Identity doer);
 
 	// --- Rooms ---

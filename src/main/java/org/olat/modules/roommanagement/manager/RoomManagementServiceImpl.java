@@ -144,6 +144,16 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	}
 
 	@Override
+	public long countBuildings(SearchBuildingParameters params) {
+		return buildingDao.count(params);
+	}
+
+	@Override
+	public List<Organisation> getOrganisations(BuildingRef ref) {
+		return buildingDao.getOrganisations(ref);
+	}
+
+	@Override
 	public void deleteBuilding(BuildingRef ref, Identity doer) {
 		Building building = buildingDao.loadByKey(ref);
 		if (building == null) return;
