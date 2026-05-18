@@ -182,7 +182,9 @@ public class RoomManagementServiceTest {
 	}
 
 	@Test
-	public void findCollisions_withBuffer_expandsInterval() {
+	public void findCollisions_withBuffer_expandsPreFetchWindow() {
+		// Pre-fetch window must be [start - 2*bBefore, end + 2*bAfter] so that existing
+		// bookings whose own buffer zones extend into the candidate's buffer envelope are fetched.
 		RoomRef room = mock(RoomRef.class);
 		Date start = new Date();
 		Date end = DateUtils.addMinutes(start, 60);
@@ -191,14 +193,14 @@ public class RoomManagementServiceTest {
 
 		sut.findCollisions(room, start, end, 15, 10, null);
 
-		ArgumentCaptor<Date> sPrimeCaptor = ArgumentCaptor.forClass(Date.class);
-		ArgumentCaptor<Date> ePrimeCaptor = ArgumentCaptor.forClass(Date.class);
+		ArgumentCaptor<Date> preFetchStartCaptor = ArgumentCaptor.forClass(Date.class);
+		ArgumentCaptor<Date> preFetchEndCaptor = ArgumentCaptor.forClass(Date.class);
 		verify(roomBookingDao).findBufferOverlapping(
 				eq(room), eq(start), eq(end),
-				sPrimeCaptor.capture(), ePrimeCaptor.capture(),
+				preFetchStartCaptor.capture(), preFetchEndCaptor.capture(),
 				isNull());
-		assertThat(sPrimeCaptor.getValue()).isEqualTo(DateUtils.addMinutes(start, -15));
-		assertThat(ePrimeCaptor.getValue()).isEqualTo(DateUtils.addMinutes(end, 10));
+		assertThat(preFetchStartCaptor.getValue()).isEqualTo(DateUtils.addMinutes(start, -30));
+		assertThat(preFetchEndCaptor.getValue()).isEqualTo(DateUtils.addMinutes(end, 20));
 	}
 
 	@Test
@@ -207,6 +209,9 @@ public class RoomManagementServiceTest {
 		RoomBooking booking = mock(RoomBooking.class);
 		Date start = new Date();
 		Date end = DateUtils.addMinutes(start, 60);
+		// booking hard interval sits inside [sPrime, ePrime]; buffers=0 so bEnv == hard interval
+		when(booking.getStartDate()).thenReturn(DateUtils.addMinutes(start, -10));
+		when(booking.getEndDate()).thenReturn(start);
 		when(roomBookingDao.findHardOverlapping(any(), any(), any(), any())).thenReturn(List.of());
 		when(roomBookingDao.findBufferOverlapping(any(), any(), any(), any(), any(), any())).thenReturn(List.of(booking));
 
@@ -215,6 +220,49 @@ public class RoomManagementServiceTest {
 		assertThat(report.getHard()).isEmpty();
 		assertThat(report.getBuffer()).containsExactly(booking);
 		assertThat(report.hasCollisions()).isTrue();
+	}
+
+	@Test
+	public void findCollisions_existingBookingBufferExtendsIn_reportedAsBuffer() {
+		// Existing booking ends just before sPrime in hard terms, but its bufferAfter
+		// extends past sPrime — spec says this is a buffer collision.
+		RoomRef room = mock(RoomRef.class);
+		RoomBooking booking = mock(RoomBooking.class);
+		Date start = new Date();
+		Date end = DateUtils.addMinutes(start, 60);
+		// bBefore=15 → sPrime = start - 15min
+		// booking ends at start - 16min (hard interval misses sPrime by 1 min)
+		// but booking.bufferAfter=5 → bEnvEnd = start - 11min > sPrime → collision
+		Date bookingEnd = DateUtils.addMinutes(start, -16);
+		when(booking.getStartDate()).thenReturn(DateUtils.addMinutes(start, -60));
+		when(booking.getEndDate()).thenReturn(bookingEnd);
+		when(booking.getBufferAfter()).thenReturn(5);
+		when(roomBookingDao.findHardOverlapping(any(), any(), any(), any())).thenReturn(List.of());
+		when(roomBookingDao.findBufferOverlapping(any(), any(), any(), any(), any(), any())).thenReturn(List.of(booking));
+
+		CollisionReport report = sut.findCollisions(room, start, end, 15, 0, null);
+
+		assertThat(report.getBuffer()).containsExactly(booking);
+	}
+
+	@Test
+	public void findCollisions_existingBookingBufferNotReaching_notReportedAsBuffer() {
+		// Existing booking ends before sPrime and its buffer does not reach sPrime — no collision.
+		RoomRef room = mock(RoomRef.class);
+		RoomBooking booking = mock(RoomBooking.class);
+		Date start = new Date();
+		Date end = DateUtils.addMinutes(start, 60);
+		// bBefore=15 → sPrime = start - 15min
+		// booking ends at start - 20min, bufferAfter=3 → bEnvEnd = start - 17min < sPrime → no collision
+		when(booking.getStartDate()).thenReturn(DateUtils.addMinutes(start, -60));
+		when(booking.getEndDate()).thenReturn(DateUtils.addMinutes(start, -20));
+		when(booking.getBufferAfter()).thenReturn(3);
+		when(roomBookingDao.findHardOverlapping(any(), any(), any(), any())).thenReturn(List.of());
+		when(roomBookingDao.findBufferOverlapping(any(), any(), any(), any(), any(), any())).thenReturn(List.of(booking));
+
+		CollisionReport report = sut.findCollisions(room, start, end, 15, 0, null);
+
+		assertThat(report.getBuffer()).isEmpty();
 	}
 
 	// ========== copyBookingsForLectureBlock ==========

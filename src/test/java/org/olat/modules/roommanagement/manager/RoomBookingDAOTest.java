@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.lecture.LectureBlock;
@@ -150,7 +149,6 @@ public class RoomBookingDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	@Ignore
 	public void bufferOverlap_detected() {
 		Building bld = createBuilding();
 		Room room = createRoom(bld);
@@ -158,15 +156,13 @@ public class RoomBookingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// Existing booking: 10:00 - 11:00
-		RoomBooking existing = roomBookingDAO.create(room, lb1, date(10, 0), date(11, 0));
-		existing.setBufferAfter(30); // 30 min buffer after → envelope extends to 11:30
-		roomBookingDAO.update(existing);
+		roomBookingDAO.create(room, lb1, date(10, 0), date(11, 0));
 		dbInstance.commitAndCloseSession();
 
 		// Candidate: 11:10 - 12:00 — no hard overlap, but inside buffer
-		// sPrime = 11:10 - 0 = 11:10, ePrime = 12:00 + 0 = 12:00
+		// sPrime = 11:10 - 0:30 = 10:40, ePrime = 12:00 + 0:00 = 12:00
 		List<RoomBooking> bufferOverlaps = roomBookingDAO.findBufferOverlapping(
-				room, date(11, 10), date(12, 0), date(11, 10), date(12, 0), null);
+				room, date(11, 10), date(12, 0), date(10, 40), date(12, 0), null);
 		Assert.assertFalse("Should detect buffer overlap", bufferOverlaps.isEmpty());
 	}
 

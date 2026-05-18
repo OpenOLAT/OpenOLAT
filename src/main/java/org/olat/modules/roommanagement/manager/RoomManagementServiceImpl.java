@@ -267,9 +267,23 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		List<RoomBooking> hard = roomBookingDao.findHardOverlapping(room, start, end, excludeKey);
 		List<RoomBooking> buffer = new ArrayList<>();
 		if (bufferBeforeMin > 0 || bufferAfterMin > 0) {
+			// Candidate's buffer envelope
 			Date sPrime = DateUtils.addMinutes(start, -bufferBeforeMin);
 			Date ePrime = DateUtils.addMinutes(end, bufferAfterMin);
-			buffer = roomBookingDao.findBufferOverlapping(room, start, end, sPrime, ePrime, excludeKey);
+			// Expand the pre-fetch window by the same buffer again so that existing bookings
+			// whose own buffer zones extend into [sPrime, ePrime] are also fetched from the DB.
+			Date preFetchStart = DateUtils.addMinutes(sPrime, -bufferBeforeMin);
+			Date preFetchEnd = DateUtils.addMinutes(ePrime, bufferAfterMin);
+			List<RoomBooking> candidates = roomBookingDao.findBufferOverlapping(room, start, end, preFetchStart, preFetchEnd, excludeKey);
+			// Precise spec check in Java: the existing booking's buffer envelope must intersect
+			// the candidate's buffer envelope [sPrime, ePrime].
+			for (RoomBooking b : candidates) {
+				Date bEnvStart = DateUtils.addMinutes(b.getStartDate(), -b.getBufferBefore());
+				Date bEnvEnd   = DateUtils.addMinutes(b.getEndDate(),    b.getBufferAfter());
+				if (bEnvEnd.after(sPrime) && bEnvStart.before(ePrime)) {
+					buffer.add(b);
+				}
+			}
 		}
 		return new CollisionReport(hard, buffer);
 	}
