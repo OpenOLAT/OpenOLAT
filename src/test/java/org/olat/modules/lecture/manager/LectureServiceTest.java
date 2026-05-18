@@ -1011,7 +1011,7 @@ public class LectureServiceTest extends OlatTestCase {
 		params.setRoom(room);
 		List<RoomModuleLog> logs = roomManagementService.searchLogs(params);
 		boolean hasCascadeLog = logs.stream()
-				.anyMatch(l -> l.getAction() == RoomModuleLogAction.booking_cascade_from_lectureblock);
+				.anyMatch(l -> l.getAction() == RoomModuleLogAction.booking_cascade_from_lecture_block);
 		Assert.assertTrue(hasCascadeLog);
 	}
 

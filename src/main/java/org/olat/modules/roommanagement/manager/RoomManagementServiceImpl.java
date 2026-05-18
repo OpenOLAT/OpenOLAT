@@ -281,7 +281,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		for (RoomBooking booking : bookings) {
 			roomModuleLogDao.nullBookingRef(booking);
 			String beforeXml = RoomManagementXStream.toXml(booking);
-			roomModuleLogDao.createLog(RoomModuleLogAction.booking_cascade_from_lectureblock,
+			roomModuleLogDao.createLog(RoomModuleLogAction.booking_cascade_from_lecture_block,
 					null, beforeXml, null, null,
 					null, booking.getRoom(), null, null, doer);
 		}

@@ -35,5 +35,5 @@ public enum RoomModuleLogAction {
 	booking_create,
 	booking_update,
 	booking_delete,
-	booking_cascade_from_lectureblock
+	booking_cascade_from_lecture_block
 }
