@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
@@ -120,6 +121,9 @@ public class SelectCertificationProgramController extends FormBasicController {
 			if(event instanceof SelectionEvent se && CMD_SELECT.equals(se.getCommand())) {
 				CertificationProgram cp = tableModel.getObject(se.getIndex());
 				doSelectCertificationProgram(ureq, cp);
+			} else if(event instanceof FlexiTableSearchEvent) {
+				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+				tableEl.reset(true, true, true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
