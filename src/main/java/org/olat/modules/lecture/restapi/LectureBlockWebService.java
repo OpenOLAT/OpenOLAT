@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.Date;
 import java.util.List;
@@ -566,6 +567,9 @@ public class LectureBlockWebService {
 		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		if (!administrator) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		List<RoomBooking> bookings = roomManagementService.getBookings(lectureBlock);
 		if (bookings == null || bookings.isEmpty()) {
 			return Response.noContent().status(Status.NO_CONTENT).build();
@@ -608,7 +612,8 @@ public class LectureBlockWebService {
 			SearchRoomParameters idParams = new SearchRoomParameters();
 			idParams.setExactExternalId(vo.getExternalId());
 			idParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
-			List<Room> byId = roomManagementService.searchRooms(idParams, null);
+			idParams.setIdentity(getIdentity(httpRequest));
+			List<Room> byId = roomManagementService.searchRooms(idParams, getRoles(httpRequest));
 			if (byId.isEmpty()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -617,7 +622,8 @@ public class LectureBlockWebService {
 			SearchRoomParameters refParams = new SearchRoomParameters();
 			refParams.setExactExternalRef(vo.getExternalRef());
 			refParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
-			List<Room> byRef = roomManagementService.searchRooms(refParams, null);
+			refParams.setIdentity(getIdentity(httpRequest));
+			List<Room> byRef = roomManagementService.searchRooms(refParams, getRoles(httpRequest));
 			if (byRef.isEmpty()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
