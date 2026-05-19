@@ -565,10 +565,10 @@ public class LectureBlockWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRoomBooking() {
 		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		if (!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
+			return Response.status(Status.FORBIDDEN).build();
 		}
 		List<RoomBooking> bookings = roomManagementService.getBookings(lectureBlock);
 		if (bookings == null || bookings.isEmpty()) {
@@ -593,20 +593,20 @@ public class LectureBlockWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putRoomBooking(RoomBookingVO vo, @Context HttpServletRequest httpRequest) {
 		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		if (!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
+			return Response.status(Status.FORBIDDEN).build();
 		}
 		if (vo == null) {
-			return Response.serverError().status(Status.BAD_REQUEST).build();
+			return Response.status(Status.BAD_REQUEST).build();
 		}
 
 		Room room;
 		if (vo.getRoomKey() != null) {
 			room = roomManagementService.getRoom(() -> vo.getRoomKey());
 			if (room == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
+				return Response.status(Status.NOT_FOUND).build();
 			}
 		} else if (vo.getExternalId() != null && !vo.getExternalId().isBlank()) {
 			SearchRoomParameters idParams = new SearchRoomParameters();
@@ -615,7 +615,7 @@ public class LectureBlockWebService {
 			idParams.setIdentity(getIdentity(httpRequest));
 			List<Room> byId = roomManagementService.searchRooms(idParams, getRoles(httpRequest));
 			if (byId.isEmpty()) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
+				return Response.status(Status.NOT_FOUND).build();
 			}
 			room = byId.get(0);
 		} else if (vo.getExternalRef() != null && !vo.getExternalRef().isBlank()) {
@@ -625,7 +625,7 @@ public class LectureBlockWebService {
 			refParams.setIdentity(getIdentity(httpRequest));
 			List<Room> byRef = roomManagementService.searchRooms(refParams, getRoles(httpRequest));
 			if (byRef.isEmpty()) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
+				return Response.status(Status.NOT_FOUND).build();
 			}
 			if (byRef.size() > 1) {
 				String body = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":" + byRef.size() + "}";
@@ -633,7 +633,7 @@ public class LectureBlockWebService {
 			}
 			room = byRef.get(0);
 		} else {
-			return Response.serverError().status(Status.BAD_REQUEST).build();
+			return Response.status(Status.BAD_REQUEST).build();
 		}
 
 		Date startDate = vo.getStartDate() != null ? vo.getStartDate() : lectureBlock.getStartDate();
@@ -666,10 +666,10 @@ public class LectureBlockWebService {
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response deleteRoomBooking(@Context HttpServletRequest httpRequest) {
 		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		if (!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
+			return Response.status(Status.FORBIDDEN).build();
 		}
 		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
 		if (existing != null && !existing.isEmpty()) {

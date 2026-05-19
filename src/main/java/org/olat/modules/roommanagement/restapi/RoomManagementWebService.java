@@ -106,7 +106,7 @@ public class RoomManagementWebService {
 			@Context HttpServletRequest httpRequest) {
 
 		if (!roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		Roles roles = getRoles(httpRequest);
 		if (!isAuthorised(roles)) {
@@ -165,7 +165,7 @@ public class RoomManagementWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getBuilding(@PathParam("buildingKey") Long buildingKey, @Context HttpServletRequest httpRequest) {
 		if (!roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		Roles roles = getRoles(httpRequest);
 		if (!isAuthorised(roles)) {
@@ -175,10 +175,10 @@ public class RoomManagementWebService {
 
 		Building building = roomManagementService.getBuilding(() -> buildingKey);
 		if (building == null || building.getStatus() == RoomStatus.deleted) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		if (!roomManagementService.isVisibleBuilding(building, roles, identity)) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 
 		List<Organisation> organisations = roomManagementService.getOrganisations(building);
@@ -212,7 +212,7 @@ public class RoomManagementWebService {
 			@Context HttpServletRequest httpRequest) {
 
 		if (!roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		Roles roles = getRoles(httpRequest);
 		if (!isAuthorised(roles)) {
@@ -287,7 +287,7 @@ public class RoomManagementWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRoom(@PathParam("roomKey") Long roomKey, @Context HttpServletRequest httpRequest) {
 		if (!roomManagementModule.isEnabled()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		Roles roles = getRoles(httpRequest);
 		if (!isAuthorised(roles)) {
@@ -297,10 +297,10 @@ public class RoomManagementWebService {
 
 		Room room = roomManagementService.getRoom(() -> roomKey);
 		if (room == null || room.getStatus() == RoomStatus.deleted) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		if (!roomManagementService.isVisibleBuilding(room.getBuilding(), roles, identity)) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 
 		RoomVO vo = RoomVO.valueOf(room, roles);
