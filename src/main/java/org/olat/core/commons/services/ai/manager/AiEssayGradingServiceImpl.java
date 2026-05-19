@@ -28,9 +28,12 @@ import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.AiSPI;
 import org.olat.core.commons.services.ai.essay.AiEssayGradingException;
+import org.olat.core.commons.services.ai.essay.AiEssayResponseTruncatedException;
 import org.olat.core.commons.services.ai.essay.AiGradingTier;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.commons.services.ai.essay.GradingSuggestion;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.service.EssayGradingAiService;
 import org.olat.core.logging.Tracing;
@@ -152,6 +155,12 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.EssayGrading.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
 			}
+			if (isJsonParseFailure(cause)) {
+				throw new AiEssayResponseTruncatedException(
+						"AI response could not be parsed (likely truncated): "
+								+ (cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName()),
+						cause);
+			}
 			throw new AiEssayGradingException(
 					cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName(), cause);
 		}
@@ -159,5 +168,24 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 
 	private static String nullToEmpty(String s) {
 		return s == null ? "" : s;
+	}
+
+	/**
+	 * Walk the exception cause chain looking for a Jackson parse error.
+	 * LangChain4j wraps Jackson failures in its own runtime exceptions when
+	 * the LLM reply does not validate against the structured-output schema,
+	 * so the indicator we care about always sits somewhere in the cause
+	 * chain rather than at the top level.
+	 */
+	private static boolean isJsonParseFailure(Throwable t) {
+		for (Throwable c = t; c != null; c = c.getCause()) {
+			if (c instanceof JsonProcessingException) {
+				return true;
+			}
+			if (c == c.getCause()) {
+				break;
+			}
+		}
+		return false;
 	}
 }

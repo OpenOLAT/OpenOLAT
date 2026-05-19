@@ -155,8 +155,19 @@ public class EssayFormativeFeedbackService {
 		AiUsageContext usageContext = usageContextBuilder.build();
 
 		// 6. Service call with 30 s hard timeout.
-		AiEssayGradingService.GradingRun run = invokeWithTimeout(() -> aiEssayGradingService.gradeWithLog(
-				usageContext, grading, studentAnswer, effectiveLocale, tier));
+		AiEssayGradingService.GradingRun run;
+		try {
+			run = invokeWithTimeout(() -> aiEssayGradingService.gradeWithLog(
+					usageContext, grading, studentAnswer, effectiveLocale, tier));
+		} catch (AiEssayResponseTruncatedException e) {
+			// The LLM reply was cut off (typically max_tokens) and Jackson failed
+			// to parse it. Surface this as a graceful rejection card instead of
+			// letting the raw Jackson stack trace bubble up to the job error.
+			log.info("Essay grading response truncated for tier {}: {}", tier, e.getMessage());
+			return FormativeFeedback.rejected(new RejectionReason(
+					"ai.essay.error.response.truncated",
+					"AI response truncated (tier=" + tier + ")"));
+		}
 
 		// 7. Sanitise free-form student feedback strings.
 		GradingSuggestion sanitised = sanitiseForStudent(run.suggestion());

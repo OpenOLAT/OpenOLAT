@@ -31,7 +31,7 @@ public enum AiGradingTier {
 
 	SHORT  ( 150, 2048,  8_000L),
 	MEDIUM ( 400, 2048, 15_000L),
-	LONG   (Integer.MAX_VALUE, 4096, 0L);
+	LONG   (Integer.MAX_VALUE, 8192, 0L);
 
 	private final int wordThreshold;
 	private final int maxTokens;
