@@ -123,6 +123,10 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 			throw new AiEssayGradingException("AI provider is not configured or not available.");
 		}
 		long startTime = System.currentTimeMillis();
+		// Declared outside the try so the catch block can read getLogKey() to
+		// detect "LLM already returned, post-processing failed" and avoid
+		// writing a second usage log row.
+		AiLoggingChatModel loggingModel = null;
 		try {
 			int maxTokens = tier == null ? DEFAULT_MAX_TOKENS : tier.maxTokens();
 			ChatModel chatModel = spi.buildChatModel(modelName, maxTokens, GRADING_HTTP_TIMEOUT);
@@ -130,7 +134,7 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 			AiUsageContext ctx = usageContext != null
 					? usageContext
 					: new AiUsageContext(null, null, null, null, null, null, language);
-			AiLoggingChatModel loggingModel = new AiLoggingChatModel(chatModel, aiUsageLogDAO,
+			loggingModel = new AiLoggingChatModel(chatModel, aiUsageLogDAO,
 					spiId, AiFeature.EssayGrading.getType(), ctx);
 			AiServices<EssayGradingAiService> builder = AiServices.builder(EssayGradingAiService.class)
 					.chatModel(loggingModel);
@@ -151,7 +155,15 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 		} catch (Exception e) {
 			log.warn("Essay grading call failed: {}", e.getMessage());
 			Exception cause = e instanceof AiUsageLoggedException ? (Exception) e.getCause() : e;
-			if (!(e instanceof AiUsageLoggedException)) {
+			Long existingLogKey = loggingModel == null ? null : loggingModel.getLogKey();
+			if (e instanceof AiUsageLoggedException) {
+				// AiLoggingChatModel already wrote a FAILED row — nothing to do.
+			} else if (existingLogKey != null) {
+				// SUCCESS row already exists from AiLoggingChatModel; the failure
+				// occurred in post-call structured-output parsing. Flip the row
+				// to FAILED instead of writing a second one.
+				aiUsageLogDAO.updateAsFailed(existingLogKey, cause);
+			} else {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.EssayGrading.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
 			}
@@ -159,7 +171,7 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 				throw new AiEssayResponseTruncatedException(
 						"AI response could not be parsed (likely truncated): "
 								+ (cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName()),
-						cause);
+						existingLogKey, cause);
 			}
 			throw new AiEssayGradingException(
 					cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName(), cause);

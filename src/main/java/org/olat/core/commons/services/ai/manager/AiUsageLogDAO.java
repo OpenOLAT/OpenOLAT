@@ -82,6 +82,67 @@ public class AiUsageLogDAO {
 		create(log);
 	}
 
+	/**
+	 * Record a non-LLM rejection or refusal (pre-filter rejection, rate-limit
+	 * refusal, integrity check failure, missing artefact, etc.) so that
+	 * cost-accounting, abuse detection and the per-user rate limiter — which
+	 * counts {@code o_ai_usage_log} rows — see every attempt to use an AI
+	 * feature even when no provider call was made.
+	 * <p>
+	 * The row is persisted with status {@link AiUsageLogStatus#FAILED}, no
+	 * token counts and no model identifiers; only the feature, context and
+	 * an explicit error code/message describing the refusal.
+	 *
+	 * @param aiFeature    {@link AiFeature#getType()} value (required)
+	 * @param context      caller context (identity, resource, locale); may be
+	 *                     {@code null} but identity is preferred so the rate
+	 *                     limiter can see the row
+	 * @param errorCode    short stable code ({@code "PreFilterRejection"},
+	 *                     {@code "RateLimited"}, {@code "IntegrityFailure"},
+	 *                     {@code "GradingArtefactMissing"})
+	 * @param errorMessage human-readable detail (may be {@code null})
+	 */
+	public void createGuardLog(String aiFeature, AiUsageContext context, String errorCode, String errorMessage) {
+		AiUsageLogImpl log = new AiUsageLogImpl();
+		log.setAiFeature(aiFeature);
+		log.setStatus(AiUsageLogStatus.FAILED);
+		log.setErrorCode(errorCode);
+		log.setErrorMessage(errorMessage);
+		if (context != null) {
+			log.setUsageContextType(context.usageContextType());
+			log.setUsageContextId(context.usageContextId());
+			log.setIdentity(context.identity());
+			log.setResourceType(context.resourceType());
+			log.setResourceId(context.resourceId());
+			log.setResourceSubId(context.resourceSubId());
+			if (context.locale() != null) {
+				log.setLocale(context.locale().toString());
+			}
+		}
+		create(log);
+	}
+
+	/**
+	 * Flip an existing usage log row from SUCCESS to FAILED, tagging the
+	 * post-call failure (typically a Jackson parse error on the structured
+	 * LLM response, i.e. a truncated reply). Preserves token counts and
+	 * response metadata already populated by {@link AiLoggingChatModel}.
+	 * <p>
+	 * No-op when {@code key} is {@code null} or the row no longer exists.
+	 */
+	public void updateAsFailed(Long key, Throwable cause) {
+		if (key == null) {
+			return;
+		}
+		AiUsageLogImpl log = dbInstance.getCurrentEntityManager().find(AiUsageLogImpl.class, key);
+		if (log == null) return;
+		log.setStatus(AiUsageLogStatus.FAILED);
+		if (cause != null) {
+			log.setErrorCode(cause.getClass().getSimpleName());
+			log.setErrorMessage(cause.getMessage());
+		}
+	}
+
 	public void updateInvocationFields(Long key, String invocationId, String serviceInterface, String serviceMethod) {
 		if (key == null) {
 			return;

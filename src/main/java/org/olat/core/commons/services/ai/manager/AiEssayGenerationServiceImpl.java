@@ -113,13 +113,14 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 			throw new AiEssayGenerationException("AI provider is not configured or not available.");
 		}
 		long startTime = System.currentTimeMillis();
+		AiLoggingChatModel loggingModel = null;
 		try {
 			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName,
 					MAX_TOKENS, GENERATION_HTTP_TIMEOUT);
 			ChatModel chatModel = cachedAiService.chatModel();
 
 			AiServices<EssayGenerationAiService> builder = AiServices.builder(EssayGenerationAiService.class);
-			AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId,
+			loggingModel = AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId,
 					AiFeature.EssayGeneration.getType(), usageContext);
 			EssayGenerationAiService service = builder.build();
 
@@ -145,7 +146,14 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 		} catch (Exception e) {
 			log.warn("Essay generation call failed: {}", e.getMessage());
 			Exception cause = e instanceof AiUsageLoggedException ? (Exception) e.getCause() : e;
-			if (!(e instanceof AiUsageLoggedException)) {
+			Long existingLogKey = loggingModel == null ? null : loggingModel.getLogKey();
+			if (e instanceof AiUsageLoggedException) {
+				// AiLoggingChatModel already wrote a FAILED row.
+			} else if (existingLogKey != null) {
+				// Post-LLM parse / structured-output failure — flip existing
+				// SUCCESS row to FAILED rather than writing a second one.
+				aiUsageLogDAO.updateAsFailed(existingLogKey, cause);
+			} else {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.EssayGeneration.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
 			}

@@ -89,6 +89,13 @@ public class EssayGenerationService {
 	 */
 	public static final int DEFAULT_MC_QUESTION_COUNT = 2;
 
+	/**
+	 * Generic usage-context type for guard log rows written before the
+	 * destination-specific per-leg context is known (e.g. rate-limit
+	 * refusals at submit time).
+	 */
+	private static final String USAGE_CONTEXT_TYPE = "essay-generation-submit";
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -581,9 +588,17 @@ public class EssayGenerationService {
 		int count = aiUsageLogDao.countByIdentityFeatureSince(caller.getKey(),
 				AiFeature.EssayGeneration.getType(), since);
 		if (count >= limit) {
-			throw new AiRateLimitExceededException(
-					"essay generation rate limit exceeded for identity " + caller.getKey()
-							+ " (" + count + " >= " + limit + " per minute)");
+			String message = "essay generation rate limit exceeded for identity " + caller.getKey()
+					+ " (" + count + " >= " + limit + " per minute)";
+			// Record the refusal so it counts toward the limiter on subsequent
+			// submits and shows up in cost / abuse reports.
+			AiUsageContext usageContext = AiUsageContext.builder()
+					.usageContextType(USAGE_CONTEXT_TYPE)
+					.identity(caller)
+					.build();
+			aiUsageLogDao.createGuardLog(AiFeature.EssayGeneration.getType(), usageContext,
+					"RateLimited", message);
+			throw new AiRateLimitExceededException(message);
 		}
 	}
 

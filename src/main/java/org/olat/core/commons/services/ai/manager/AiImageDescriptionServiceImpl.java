@@ -75,13 +75,14 @@ public class AiImageDescriptionServiceImpl implements AiImageDescriptionService 
 			return response;
 		}
 		long startTime = System.currentTimeMillis();
+		AiLoggingChatModel loggingModel = null;
 		try {
 			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName, MAX_TOKENS);
 			ChatModel chatModel = cachedAiService.chatModel();
 
 			List<Content> contents = ImageDescriptionAiService.buildContents(locale, imageBase64, mimeType);
 			AiServices<ImageDescriptionAiService> builder = AiServices.builder(ImageDescriptionAiService.class);
-			AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId, AiFeature.ImageDescriptionGenerator.getType(), usageContext);
+			loggingModel = AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId, AiFeature.ImageDescriptionGenerator.getType(), usageContext);
 			ImageDescriptionAiService service = builder.build();
 
 			response.setDescription(service.describeImage(contents));
@@ -89,7 +90,14 @@ public class AiImageDescriptionServiceImpl implements AiImageDescriptionService 
 		} catch (Exception e) {
 			Exception cause = e instanceof AiUsageLoggedException ? (Exception) e.getCause() : e;
 			response.setError(cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName());
-			if (!(e instanceof AiUsageLoggedException)) {
+			Long existingLogKey = loggingModel == null ? null : loggingModel.getLogKey();
+			if (e instanceof AiUsageLoggedException) {
+				// AiLoggingChatModel already wrote a FAILED row.
+			} else if (existingLogKey != null) {
+				// Post-LLM parse / structured-output failure — flip existing
+				// SUCCESS row to FAILED rather than writing a second one.
+				aiUsageLogDAO.updateAsFailed(existingLogKey, cause);
+			} else {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.ImageDescriptionGenerator.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
 			}

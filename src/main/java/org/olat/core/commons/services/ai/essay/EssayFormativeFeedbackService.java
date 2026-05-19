@@ -32,7 +32,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.manager.AiEssayGradingServiceImpl;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
@@ -77,12 +79,14 @@ public class EssayFormativeFeedbackService {
 	public static final int GRADING_TIMEOUT_SECONDS = 30;
 
 	/** Usage-context type stamped on the {@code AiUsageLog} row. */
-	private static final String USAGE_CONTEXT_TYPE = "essay-grading";
+	static final String USAGE_CONTEXT_TYPE = "essay-grading";
 
 	@Autowired
 	private AiEssayGradingService aiEssayGradingService;
 	@Autowired
 	private AiUsageLogDAO aiUsageLogDAO;
+	@Autowired
+	private DB dbInstance;
 
 	/**
 	 * Grade a student essay answer synchronously against a pre-loaded
@@ -101,47 +105,15 @@ public class EssayFormativeFeedbackService {
 
 		Locale effectiveLocale = locale != null ? locale : Locale.ENGLISH;
 
-		// 1. Length pre-filter. Long tier refused with inline error (no LLM call).
-		Optional<RejectionReason> lengthReject = LengthPreFilter.check(studentAnswer);
-		if (lengthReject.isPresent()) {
-			RejectionReason reason = lengthReject.get();
-			if (LengthPreFilter.REASON_TOO_LONG.equals(reason.messageKey())) {
-				return FormativeFeedback.refusedLong(reason);
-			}
-			return FormativeFeedback.rejected(reason);
-		}
-
-		// 2. Gibberish pre-filter.
-		Optional<RejectionReason> gibberishReject = GibberishPreFilter.check(studentAnswer);
-		if (gibberishReject.isPresent()) {
-			return FormativeFeedback.rejected(gibberishReject.get());
-		}
-
-		// 3. Language warning (non-fatal).
-		List<RejectionReason> warnings = new ArrayList<>();
-		LanguagePreFilter.check(studentAnswer, grading.getLanguage()).ifPresent(warnings::add);
-
-		// 4. Tier.
-		AiGradingTier tier = AiGradingTier.classify(studentAnswer);
-		if (tier == AiGradingTier.LONG) {
-			// Defensive — LengthPreFilter should already have caught this.
-			return FormativeFeedback.refusedLong(new RejectionReason(
-					LengthPreFilter.REASON_TOO_LONG, "tier classified as LONG"));
-		}
-
-		// 5. Precondition: grading must be configured.
-		if (!aiEssayGradingService.isEnabled()) {
-			throw new AiEssayGradingException("Essay grading is not configured or not enabled.");
-		}
-
+		// Build the usage context up-front so pre-filter rejections can be
+		// attributed to the right identity and resource in o_ai_usage_log.
+		// (G3) Pre-filter refusals must be visible to the rate limiter, which
+		// counts log rows for this identity + feature.
 		AiUsageContext.Builder usageContextBuilder = AiUsageContext.builder()
 				.usageContextType(USAGE_CONTEXT_TYPE)
 				.usageContextId(grading.getAssessmentItemIdentifier())
 				.identity(student)
 				.locale(effectiveLocale);
-		// Resource: the course / test the answer is being given in. Only
-		// available when called from a real assessment run; absent in preview
-		// and unit-test paths.
 		if (session != null) {
 			AssessmentTestSession testSession = session.getAssessmentTestSession();
 			RepositoryEntry resourceEntry = testSession == null ? null
@@ -154,6 +126,46 @@ public class EssayFormativeFeedbackService {
 		}
 		AiUsageContext usageContext = usageContextBuilder.build();
 
+		// 1. Length pre-filter. Long tier refused with inline error (no LLM call).
+		Optional<RejectionReason> lengthReject = LengthPreFilter.check(studentAnswer);
+		if (lengthReject.isPresent()) {
+			RejectionReason reason = lengthReject.get();
+			logPreFilterRejection(usageContext, reason);
+			if (LengthPreFilter.REASON_TOO_LONG.equals(reason.messageKey())) {
+				return FormativeFeedback.refusedLong(reason);
+			}
+			return FormativeFeedback.rejected(reason);
+		}
+
+		// 2. Gibberish pre-filter.
+		Optional<RejectionReason> gibberishReject = GibberishPreFilter.check(studentAnswer);
+		if (gibberishReject.isPresent()) {
+			RejectionReason reason = gibberishReject.get();
+			logPreFilterRejection(usageContext, reason);
+			return FormativeFeedback.rejected(reason);
+		}
+
+		// 3. Language warning (non-fatal).
+		List<RejectionReason> warnings = new ArrayList<>();
+		LanguagePreFilter.check(studentAnswer, grading.getLanguage()).ifPresent(warnings::add);
+
+		// 4. Tier.
+		AiGradingTier tier = AiGradingTier.classify(studentAnswer);
+		if (tier == AiGradingTier.LONG) {
+			// Defensive — LengthPreFilter should already have caught this.
+			RejectionReason reason = new RejectionReason(
+					LengthPreFilter.REASON_TOO_LONG, "tier classified as LONG");
+			logPreFilterRejection(usageContext, reason);
+			return FormativeFeedback.refusedLong(reason);
+		}
+
+		// 5. Precondition: grading must be configured.
+		if (!aiEssayGradingService.isEnabled()) {
+			aiUsageLogDAO.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
+					"GradingNotConfigured", "Essay grading is not configured or not enabled.");
+			throw new AiEssayGradingException("Essay grading is not configured or not enabled.");
+		}
+
 		// 6. Service call with 30 s hard timeout.
 		AiEssayGradingService.GradingRun run;
 		try {
@@ -164,6 +176,21 @@ public class EssayFormativeFeedbackService {
 			// to parse it. Surface this as a graceful rejection card instead of
 			// letting the raw Jackson stack trace bubble up to the job error.
 			log.info("Essay grading response truncated for tier {}: {}", tier, e.getMessage());
+			// Attach essay provenance to the (now FAILED) usage log row so the
+			// truncated-response case is just as analysable as a successful one.
+			if (e.getUsageLogKey() != null) {
+				try {
+					aiUsageLogDAO.updateEssayFields(e.getUsageLogKey(),
+							grading.getAssessmentItemIdentifier(),
+							grading.getContentHash(),
+							aiEssayGradingService.getPromptTemplateVersion(),
+							tier,
+							session == null ? null : session.getKey());
+				} catch (Exception ex) {
+					log.warn("Failed to attach essay provenance to truncated usage log {}: {}",
+							e.getUsageLogKey(), ex.getMessage());
+				}
+			}
 			return FormativeFeedback.rejected(new RejectionReason(
 					"ai.essay.error.response.truncated",
 					"AI response truncated (tier=" + tier + ")"));
@@ -248,9 +275,29 @@ public class EssayFormativeFeedbackService {
 	}
 
 	/**
+	 * Write a guard log row for a pre-filter rejection so the rate limiter,
+	 * cost reporting and abuse-detection queries see every refused submission
+	 * — even those that never reached the LLM.
+	 */
+	private void logPreFilterRejection(AiUsageContext usageContext, RejectionReason reason) {
+		String messageKey = reason == null ? null : reason.messageKey();
+		String detail = reason == null ? null : reason.detail();
+		aiUsageLogDAO.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
+				"PreFilterRejection",
+				messageKey == null ? detail : (detail == null ? messageKey : messageKey + ": " + detail));
+	}
+
+	/**
 	 * Invoke the grading service under a hard timeout.
 	 * {@link EssayGradingTimeoutException} on expiry; any other failure is
 	 * rewrapped as an {@link AiEssayGradingException}.
+	 * <p>
+	 * The body runs on the common ForkJoinPool, which has no Spring or
+	 * OpenOlat transaction context bound. {@link DB} uses a ThreadLocal
+	 * EntityManager + manual commit, so anything persisted on this thread
+	 * (notably the {@code AiLoggingChatModel} row and any
+	 * {@code aiUsageLogDAO.updateAsFailed} from the inner catch) would be
+	 * silently lost unless we commit and close the session here.
 	 */
 	private AiEssayGradingService.GradingRun invokeWithTimeout(
 			java.util.concurrent.Callable<AiEssayGradingService.GradingRun> call) {
@@ -261,6 +308,13 @@ public class EssayFormativeFeedbackService {
 				throw re;
 			} catch (Exception e) {
 				throw new AiEssayGradingException("Grading service call failed", e);
+			} finally {
+				try {
+					dbInstance.commitAndCloseSession();
+				} catch (Exception flushError) {
+					log.warn("Failed to commit/close DB session on async grading thread: {}",
+							flushError.getMessage());
+				}
 			}
 		});
 		try {

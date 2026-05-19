@@ -65,7 +65,16 @@ public class AiLoggingChatModel implements ChatModel {
 
 	private final AiUsageLogDAO usageLogDao;
 
-	public static <T> void configureBuilder(AiServices<T> builder, ChatModel chatModel,
+	/**
+	 * Wire the AI logging model in front of {@code chatModel} and register
+	 * the invocation-fields listener. Returns the {@link AiLoggingChatModel}
+	 * instance so callers can read {@link #getLogKey()} from their
+	 * {@code catch} block — needed to distinguish a post-LLM parse failure
+	 * (SUCCESS row already written by this wrapper) from a pre-call failure
+	 * (no row yet) and avoid double-logging. Returns {@code null} when
+	 * {@code usageContext} is {@code null}; in that case no logging happens.
+	 */
+	public static <T> AiLoggingChatModel configureBuilder(AiServices<T> builder, ChatModel chatModel,
 			AiUsageLogDAO usageLogDao, String spiId, String aiFeature, AiUsageContext usageContext) {
 		if (usageContext != null) {
 			AiLoggingChatModel loggingModel = new AiLoggingChatModel(chatModel, usageLogDao, spiId, aiFeature, usageContext);
@@ -77,9 +86,10 @@ public class AiLoggingChatModel implements ChatModel {
 					usageLogDao.updateInvocationFields(loggingModel.getLogKey(), invocationId, ctx.interfaceName(), ctx.methodName());
 				}
 			});
-		} else {
-			builder.chatModel(chatModel);
+			return loggingModel;
 		}
+		builder.chatModel(chatModel);
+		return null;
 	}
 
 	public Long getLogKey() {

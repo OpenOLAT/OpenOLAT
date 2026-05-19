@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
+import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -175,12 +176,16 @@ public class EssayFeedbackJobService {
 			String storagePath = job.getStoragePath();
 			String questionId = job.getQuestionId();
 			if (storagePath == null || questionId == null) {
-				markFailed(jobKey, "no (storagePath, questionId) linked to job");
+				String message = "no (storagePath, questionId) linked to job";
+				logJobGuard(identity, questionId, "GradingArtefactMissing", message);
+				markFailed(jobKey, message);
 				return;
 			}
 			EssayAiGrading grading = loadGradingFromDisk(storagePath, questionId);
 			if (grading == null) {
-				markFailed(jobKey, "ai-grading.json not found for question " + questionId);
+				String message = "ai-grading.json not found for question " + questionId;
+				logJobGuard(identity, questionId, "GradingArtefactMissing", message);
+				markFailed(jobKey, message);
 				return;
 			}
 			String studentAnswer = job.getStudentAnswer();
@@ -201,11 +206,29 @@ public class EssayFeedbackJobService {
 			markTimeout(jobKey, timeout.getMessage());
 		} catch (EssayGradingIntegrityException integrity) {
 			log.warn("Essay feedback job {} refused — integrity hash mismatch: {}", jobKey, integrity.getMessage());
+			Identity owner = job.getIdentityKey() == null ? null
+					: baseSecurity.loadIdentityByKey(job.getIdentityKey());
+			logJobGuard(owner, job.getQuestionId(), "IntegrityFailure", integrity.getMessage());
 			markFailed(jobKey, "integrity check failed: " + integrity.getMessage());
 		} catch (RuntimeException e) {
 			log.error("Essay feedback job {} failed", jobKey, e);
 			markFailed(jobKey, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
 		}
+	}
+
+	/**
+	 * Write a guard log row for a job-level refusal (missing artefact,
+	 * integrity check failure) so the rate limiter and cost reports see the
+	 * attempt even when no LLM call ever happened.
+	 */
+	private void logJobGuard(Identity owner, String questionId, String errorCode, String message) {
+		AiUsageContext usageContext = AiUsageContext.builder()
+				.usageContextType(EssayFormativeFeedbackService.USAGE_CONTEXT_TYPE)
+				.usageContextId(questionId)
+				.identity(owner)
+				.build();
+		aiUsageLogDao.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
+				errorCode, message);
 	}
 
 	/**
@@ -268,6 +291,17 @@ public class EssayFeedbackJobService {
 				throw re;
 			} catch (Exception e) {
 				throw new AiEssayGradingException("grade() failed", e);
+			} finally {
+				// The async thread has its own ThreadLocal EntityManager (DBImpl).
+				// Commit and close so pre-filter guard logs, updateEssayFields,
+				// and any updateAsFailed writes persist; otherwise the row is
+				// silently dropped when the future returns.
+				try {
+					dbInstance.commitAndCloseSession();
+				} catch (Exception flushError) {
+					log.warn("Failed to commit/close DB session on async grading job thread: {}",
+							flushError.getMessage());
+				}
 			}
 		});
 		try {
@@ -382,9 +416,17 @@ public class EssayFeedbackJobService {
 		int count = aiUsageLogDao.countByIdentityFeatureSince(caller.getKey(),
 				AiFeature.EssayGrading.getType(), since);
 		if (count >= limit) {
-			throw new AiRateLimitExceededException(
-					"essay grading rate limit exceeded for identity " + caller.getKey()
-							+ " (" + count + " >= " + limit + " per minute)");
+			String message = "essay grading rate limit exceeded for identity " + caller.getKey()
+					+ " (" + count + " >= " + limit + " per minute)";
+			// Record the refusal so it counts toward the limiter on subsequent
+			// submits and shows up in cost / abuse reports.
+			AiUsageContext usageContext = AiUsageContext.builder()
+					.usageContextType(EssayFormativeFeedbackService.USAGE_CONTEXT_TYPE)
+					.identity(caller)
+					.build();
+			aiUsageLogDao.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
+					"RateLimited", message);
+			throw new AiRateLimitExceededException(message);
 		}
 	}
 

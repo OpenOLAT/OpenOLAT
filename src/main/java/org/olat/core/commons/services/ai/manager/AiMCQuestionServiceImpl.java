@@ -88,6 +88,7 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 			return response;
 		}
 		long startTime = System.currentTimeMillis();
+		AiLoggingChatModel loggingModel = null;
 		try {
 			Locale locale = textService.detectLocale(input);
 			if (locale == null) {
@@ -111,7 +112,7 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 					: "- " + String.join("\n- ", learningObjectives);
 
 			AiServices<MCQuestionAiService> builder = AiServices.builder(MCQuestionAiService.class);
-			AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId, AiFeature.MCQuestionGenerator.getType(), usageContext);
+			loggingModel = AiLoggingChatModel.configureBuilder(builder, chatModel, aiUsageLogDAO, spiId, AiFeature.MCQuestionGenerator.getType(), usageContext);
 			MCQuestionAiService service = builder.build();
 
 			service.generateQuestions(number, 2, 3, language, bloomLevelsStr, targetDifficultyStr, objectives, input)
@@ -120,7 +121,14 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 		} catch (Exception e) {
 			Exception cause = e instanceof AiUsageLoggedException ? (Exception) e.getCause() : e;
 			response.setError(cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName());
-			if (!(e instanceof AiUsageLoggedException)) {
+			Long existingLogKey = loggingModel == null ? null : loggingModel.getLogKey();
+			if (e instanceof AiUsageLoggedException) {
+				// AiLoggingChatModel already wrote a FAILED row.
+			} else if (existingLogKey != null) {
+				// Post-LLM parse / structured-output failure — flip existing
+				// SUCCESS row to FAILED rather than writing a second one.
+				aiUsageLogDAO.updateAsFailed(existingLogKey, cause);
+			} else {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.MCQuestionGenerator.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
 			}
