@@ -82,7 +82,23 @@ public class GradingAssignmentDAO {
 		return assignment;
 	}
 	
-	public List<GradingAssignment> getGradingAssignments(RepositoryEntryRef referenceEntry) {
+	public List<GradingAssignment> getGradingAssignmentsOfEntry(RepositoryEntryRef entry) {
+		String query = """
+				select assignment from gradingassignment as assignment
+				inner join assignment.assessmentEntry as aEntry
+				where aEntry.repositoryEntry.key=:entryKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, GradingAssignment.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+	}
+	
+	/**
+	 * @param referenceEntry Typically the test
+	 * @return A list of assignments hold by a test
+	 */
+	public List<GradingAssignment> getGradingAssignmentsOfReferenceEntry(RepositoryEntryRef referenceEntry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select assignment from gradingassignment as assignment")
 		  .append(" left join fetch assignment.grader as grader")
@@ -116,7 +132,7 @@ public class GradingAssignmentDAO {
 				.getResultList();
 	}
 	
-	public List<GradingAssignment> getGradingAssignments(IdentityRef grader) {
+	public List<GradingAssignment> getGraderAssignments(IdentityRef grader) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select assignment from gradingassignment as assignment")
 		  .append(" left join fetch assignment.grader as grader")
@@ -127,6 +143,19 @@ public class GradingAssignmentDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), GradingAssignment.class)
 				.setParameter("graderKey", grader.getKey())
+				.getResultList();
+	}
+	
+	public List<GradingAssignment> getAssigneeAssignments(IdentityRef assignee) {
+		String query = """
+				select assignment from gradingassignment as assignment
+				inner join fetch assignment.assessmentEntry as aEntry
+				inner join fetch aEntry.identity as assessedIdent
+				where assessedIdent.key=:assigneeKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, GradingAssignment.class)
+				.setParameter("assigneeKey", assignee.getKey())
 				.getResultList();
 	}
 	
@@ -508,5 +537,10 @@ public class GradingAssignmentDAO {
 		((GradingAssignmentImpl)assignment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(assignment);
 	}
-
+	
+	public void deleteAssignment(GradingAssignment assignment) {
+		GradingAssignmentImpl reloadAssignment = dbInstance.getCurrentEntityManager()
+				.getReference(GradingAssignmentImpl.class, assignment.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadAssignment);
+	}
 }

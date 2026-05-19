@@ -33,6 +33,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.grading.model.GraderWithStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
+import org.olat.modules.grading.model.GradingAssignmentLogSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.model.GradingSecurity;
@@ -175,6 +176,10 @@ public interface GradingService {
 
 	public void updateDeadline(RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration);
 	
+
+	public List<GradingAssignmentLog> getGradingAssignmentsLogs(GradingAssignmentLogSearchParameters searchParams);
+	
+	
 	/**
 	 * Return a list of repository entries with grading enabled and
 	 * that the specified user can access as owner, learning resource
@@ -263,4 +268,13 @@ public interface GradingService {
 	 * absence leave.
 	 */
 	public void graderAbsenceLeavesCheckWorkingDays();
+	
+	/**
+	 * Will delete and log all assignments which are hold by a course element
+	 * of a course, or by a test.
+	 * 
+	 * @param re The repository entry which will be deleted
+	 * @return false
+	 */
+	public boolean deleteRepositoryEntryAssignments(RepositoryEntry re);
 }

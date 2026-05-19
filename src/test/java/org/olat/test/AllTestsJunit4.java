@@ -428,6 +428,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.grade.manager.PerformanceClassDAOTest.class,
 	org.olat.modules.grading.manager.GraderToIdentityDAOTest.class,
 	org.olat.modules.grading.manager.GradingAssignmentDAOTest.class,
+	org.olat.modules.grading.manager.GradingAssignmentLogDAOTest.class,
 	org.olat.modules.grading.manager.GradingConfigurationDAOTest.class,
 	org.olat.modules.grading.manager.GradingTimeRecordDAOTest.class,
 	org.olat.modules.grading.manager.GradingServiceTest.class,

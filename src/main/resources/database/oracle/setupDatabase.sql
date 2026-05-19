@@ -4483,6 +4483,27 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+create table o_grad_assignment_log (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   g_closed date,
+   g_status varchar(16),
+   g_deleted number default 0 not null,
+   g_reference_entry_id number(20) not null,
+   g_reference_entry_displayname varchar(110),
+   g_reference_entry_external_ref varchar(255),
+   g_entry_id number(20) not null,
+   g_entry_displayname varchar(110),
+   g_entry_external_ref varchar(255),
+   g_time number(20) default 0 not null,
+   g_metadata_time number(20) default 0 not null,
+   g_assignment_id number(20) not null,
+   fk_grader number(20) not null,
+   fk_assignee number(20) not null,
+   primary key (id)
+);
+
 -- Course
 create table o_course_element (
    id number(20) generated always as identity,
@@ -7429,6 +7450,15 @@ create index idx_grad_time_to_grader_idx on o_grad_time_record (fk_grader);
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
+
+create index idx_grad_assign_log_ent_idx on o_grad_assignment_log (g_entry_id);
+create index idx_grad_assign_log_idx on o_grad_assignment_log (g_assignment_id);
+create index idx_grad_assign_log_ref_idx on o_grad_assignment_log (g_reference_entry_id);
+
+alter table o_grad_assignment_log add constraint grad_assign_log_grad_idx foreign key (fk_grader) references o_bs_identity (id);
+create index idx_grad_assign_log_grad_idx on o_grad_assignment_log (fk_grader);
+alter table o_grad_assignment_log add constraint grad_assign_log_assign_idx foreign key (fk_assignee) references o_bs_identity (id);
+create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assignee);
 
 -- Course
 alter table o_course_element add constraint courseele_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

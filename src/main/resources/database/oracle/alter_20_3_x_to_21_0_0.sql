@@ -979,4 +979,35 @@ alter table o_selectus_audit_log_u_notifs add constraint user_notifs_id_idx fore
 create index idx_user_notifs_id_idx on o_selectus_audit_log_u_notifs (fk_identity_id);
 
 
+-- Grading
+create table o_grad_assignment_log (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   g_closed date,
+   g_status varchar(16),
+   g_deleted number default 0 not null,
+   g_reference_entry_id number(20) not null,
+   g_reference_entry_displayname varchar(110),
+   g_reference_entry_external_ref varchar(255),
+   g_entry_id number(20) not null,
+   g_entry_displayname varchar(110),
+   g_entry_external_ref varchar(255),
+   g_time number(20) default 0 not null,
+   g_metadata_time number(20) default 0 not null,
+   g_assignment_id number(20) not null,
+   fk_grader number(20) not null,
+   fk_assignee number(20) not null,
+   primary key (id)
+);
+
+create index idx_grad_assign_log_ent_idx on o_grad_assignment_log (g_entry_id);
+create index idx_grad_assign_log_idx on o_grad_assignment_log (g_assignment_id);
+create index idx_grad_assign_log_ref_idx on o_grad_assignment_log (g_reference_entry_id);
+
+alter table o_grad_assignment_log add constraint grad_assign_log_grad_idx foreign key (fk_grader) references o_bs_identity (id);
+create index idx_grad_assign_log_grad_idx on o_grad_assignment_log (fk_grader);
+alter table o_grad_assignment_log add constraint grad_assign_log_assign_idx foreign key (fk_assignee) references o_bs_identity (id);
+create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assignee);
+
 

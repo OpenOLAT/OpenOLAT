@@ -85,6 +85,7 @@ import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.grading.GradingService;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -731,6 +732,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		//delete task video sessions and segments
 		CoreSpringFactory.getImpl(VideoAssessmentService.class).deleteRepositoryEntryData(entry);
 		dbInstance.commit();
+		
+		//delete assignment before assessment entries
+		CoreSpringFactory.getImpl(GradingService.class).deleteRepositoryEntryAssignments(entry);
 		
 		//delete all test sessions
 		assessmentTestSessionDao.deleteAllUserTestSessionsByCourse(entry);

@@ -67,6 +67,7 @@ import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssessedIdentityVisibility;
 import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentLog;
 import org.olat.modules.grading.GradingAssignmentRef;
 import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingModule;
@@ -80,6 +81,8 @@ import org.olat.modules.grading.model.GraderStatistics;
 import org.olat.modules.grading.model.GraderWithStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentImpl;
+import org.olat.modules.grading.model.GradingAssignmentLogImpl;
+import org.olat.modules.grading.model.GradingAssignmentLogSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.model.GradingSecurity;
@@ -95,7 +98,6 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
@@ -114,7 +116,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class GradingServiceImpl implements GradingService, UserDataDeletable, RepositoryEntryDataDeletable, InitializingBean {
+public class GradingServiceImpl implements GradingService, UserDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(GradingServiceImpl.class);
 	
@@ -141,6 +143,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	@Autowired
 	private GradingTimeRecordDAO gradingTimeRecordDao;
 	@Autowired
+	private GradingAssignmentLogDAO gradingAssignmentLogDao;
+	@Autowired
 	private GradingConfigurationDAO gradingConfigurationDao;
 
 	@Autowired
@@ -152,32 +156,94 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	public void afterPropertiesSet() throws Exception {
 		courseElementTitleCache = coordinatorManager.getCoordinator().getCacher().getCache(GradingService.class.getSimpleName(), "courseElementsTitle");
 	}
+
+	@Override
+	public boolean deleteRepositoryEntryAssignments(RepositoryEntry re) {
+		// Delete assignments as courses
+		List<GradingAssignment> assignmentsOfEntry = gradingAssignmentDao.getGradingAssignmentsOfEntry(re);
+		for(GradingAssignment assignment:assignmentsOfEntry) {
+			logAssignment(assignment);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		for(GradingAssignment assignment:assignmentsOfEntry) {
+			gradingTimeRecordDao.deleteTimeRecords(assignment);
+			gradingAssignmentDao.deleteAssignment(assignment);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		// Delete assignments as tests
+		List<GradingAssignment> assignmentsAsReference = gradingAssignmentDao.getGradingAssignmentsOfReferenceEntry(re);
+		for(GradingAssignment assignment:assignmentsAsReference) {
+			logAssignment(assignment);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		for(GradingAssignment assignment:assignmentsAsReference) {
+			gradingTimeRecordDao.deleteTimeRecords(assignment);
+			gradingAssignmentDao.deleteAssignment(assignment);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		// Delete graders attached to the entry
+		gradedToIdentityDao.deleteGradersRelations(re);
+		dbInstance.commitAndCloseSession();
+		return false;
+	}
 	
 	@Override
-	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
-		boolean hasAssignment = gradingAssignmentDao.hasGradingAssignment(re); // or grader to identity
-		if(!hasAssignment) {
-			RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(re);
-			if(config != null) {
-				gradedToIdentityDao.deleteGradersRelations(re);
-				gradingConfigurationDao.deleteConfiguration(config);
-			}
-		}
-		return !hasAssignment;
+	public int deleteUserDataPriority() {
+		// Before assessment entries
+		return 760;
 	}
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(identity);
-		for(GradingAssignment assignment:assignments) {
-			unassignGrader(assignment);
+		// --- Grader
+		List<GradingAssignment> assignmentsAsGrader = gradingAssignmentDao.getGraderAssignments(identity);
+		for(GradingAssignment assignment:assignmentsAsGrader) {
+			logAssignment(assignment);
 		}
 		dbInstance.commitAndCloseSession();
 		
+		// Unassigned only assignment which are not treated yet
+		for(GradingAssignment assignment:assignmentsAsGrader) {
+			if(assignment.getAssignmentStatus() == GradingAssignmentStatus.assigned) {
+				unassignGrader(assignment);
+			}
+		}
+		dbInstance.commitAndCloseSession();
+		
+		// Delete all assignments which are already executed by the grader and not set as unassigned
+		if(!assignmentsAsGrader.isEmpty()) {
+			List<GradingAssignment> doneAssignmentsAsGrader = gradingAssignmentDao.getGraderAssignments(identity);
+			for(GradingAssignment assignment:doneAssignmentsAsGrader) {
+				gradingTimeRecordDao.deleteTimeRecords(assignment);
+				gradingAssignmentDao.deleteAssignment(assignment);
+			}
+			dbInstance.commitAndCloseSession();
+		}
+		
+		// Make sure to clean up the rest
 		List<GraderToIdentity> relations = gradedToIdentityDao.getGraderRelations(identity);
 		for(GraderToIdentity relation:relations) {
 			gradingTimeRecordDao.deleteTimeRecords(relation);
 			gradedToIdentityDao.deleteGraderRelation(relation);
+		}
+		dbInstance.commitAndCloseSession();
+
+		// Assignee ---
+		// Save the log for the assignee
+		List<GradingAssignment> assignmentsAsAssignee = gradingAssignmentDao.getAssigneeAssignments(identity);
+		for(GradingAssignment assignment:assignmentsAsAssignee) {
+			logAssignment(assignment);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		// Delete the assignments for the assignee
+		for(GradingAssignment assignment:assignmentsAsAssignee) {
+			gradingTimeRecordDao.deleteTimeRecords(assignment);
+			gradingAssignmentDao.deleteAssignment(assignment);
 		}
 		dbInstance.commitAndCloseSession();
 	}
@@ -985,6 +1051,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	@Override
 	public GradingAssignment deactivateAssignment(GradingAssignment assignment) {
 		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
+		if(assignment.getAssignmentStatus() == GradingAssignmentStatus.assigned
+				|| assignment.getAssignmentStatus() == GradingAssignmentStatus.inProcess
+				|| assignment.getAssignmentStatus() == GradingAssignmentStatus.done) {
+			logAssignment(assignment);
+		}
 		
 		assignment.setAssignmentStatus(GradingAssignmentStatus.deactivated);
 		assignment.setExtendedDeadline(null);
@@ -1013,10 +1084,39 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		log.info(Tracing.M_AUDIT, "Assignment done {}", assignment.getKey());
 		dbInstance.commit();
 		
+		logAssignment(assignment);
+		
 		if(resultsVisibleToUser != null && resultsVisibleToUser.booleanValue()) {
 			sendParticipantNotification(assignment);
 		}
 		return assignment;
+	}
+	
+	private void logAssignment(GradingAssignment assignment) {
+		GraderToIdentity graderToIdent = assignment.getGrader();
+		RepositoryEntry referenceEntry = assignment.getReferenceEntry();
+		if(graderToIdent != null && referenceEntry != null) {
+			GradingAssignmentLog assignmentLog = gradingAssignmentLogDao.loadLastGradingAssignment(assignment);
+			if(assignmentLog != null) {
+				((GradingAssignmentLogImpl)assignmentLog).setDeleted(true);
+				gradingAssignmentLogDao.update(assignmentLog);
+			} 
+			
+			long time = 0l;
+			long metadataTime = 0l;
+			List<GradingTimeRecord> records = gradingTimeRecordDao.getRecordedTime(assignment);
+			for(GradingTimeRecord record:records) {
+				time += record.getTime();
+				metadataTime += record.getMetadataTime();
+			}
+
+			Identity grader = graderToIdent.getIdentity();
+			Identity assignee = assignment.getAssessmentEntry().getIdentity();
+			RepositoryEntry entry = assignment.getAssessmentEntry().getRepositoryEntry();
+			gradingAssignmentLogDao.createLog(assignment, grader, assignee, time, metadataTime, referenceEntry, entry);
+
+			dbInstance.commit();
+		}
 	}
 	
 	private void sendParticipantNotification(GradingAssignment assignment) {
@@ -1055,6 +1155,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		assignment.setClosingDate(null);
 		assignment = gradingAssignmentDao.updateAssignment(assignment);
 		log.info(Tracing.M_AUDIT, "Assignment reopened {}", assignment.getKey());
+		dbInstance.commit();
+		
+		gradingAssignmentLogDao.markAsDeleted(assignment);
+		dbInstance.commit();
 		return assignment;
 	}
 
@@ -1073,7 +1177,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			gradingAssignmentDao.removeDeadline(referenceEntry);
 		} else {
 			int count = 0;
-			List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(referenceEntry);
+			List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignmentsOfReferenceEntry(referenceEntry);
 			for(GradingAssignment assignment:assignments) {
 				Date assignmentDate = assignment.getAssignmentDate();
 				if(assignmentDate == null) {
@@ -1253,5 +1357,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			}
 			dbInstance.commit();
 		}
+	}
+
+	@Override
+	public List<GradingAssignmentLog> getGradingAssignmentsLogs(GradingAssignmentLogSearchParameters searchParams) {
+		return gradingAssignmentLogDao.getGradingAssignmentsLogs(searchParams);
 	}
 }
