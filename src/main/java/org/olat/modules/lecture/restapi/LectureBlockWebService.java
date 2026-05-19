@@ -582,7 +582,9 @@ public class LectureBlockWebService {
 	@ApiResponse(responseCode = "400", description = "No room identifier supplied")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The room was not found")
-	@ApiResponse(responseCode = "422", description = "The externalRef is ambiguous (multiple rooms match)")
+	@ApiResponse(responseCode = "422", description = "The externalRef is ambiguous (multiple rooms match)",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(type = "object", example = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":2}")))
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putRoomBooking(RoomBookingVO vo, @Context HttpServletRequest httpRequest) {
