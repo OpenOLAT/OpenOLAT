@@ -135,13 +135,7 @@ public class RoomManagementWebService {
 
 		List<Building> buildings = roomManagementService.searchBuildings(params, roles);
 
-		SearchBuildingParameters countParams = new SearchBuildingParameters();
-		countParams.setSearchString(params.getSearchString());
-		countParams.setExactExternalId(params.getExactExternalId());
-		countParams.setExactExternalRef(params.getExactExternalRef());
-		countParams.setStatus(params.getStatus());
-		countParams.setOrganisations(params.getOrganisations());
-		countParams.setIdentity(params.getIdentity());
+		SearchBuildingParameters countParams = params.withoutPagination();
 
 		BuildingVO[] vos = buildings.stream()
 				.map(b -> BuildingVO.valueOf(b, roomManagementService.getOrganisations(b), roles))
@@ -252,18 +246,7 @@ public class RoomManagementWebService {
 
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
 
-		SearchRoomParameters countParams = new SearchRoomParameters();
-		countParams.setSearchString(params.getSearchString());
-		countParams.setExactExternalId(params.getExactExternalId());
-		countParams.setExactExternalRef(params.getExactExternalRef());
-		countParams.setStatus(params.getStatus());
-		countParams.setBuilding(params.getBuilding());
-		countParams.setOrganisationKey(params.getOrganisationKey());
-		countParams.setMinSeats(params.getMinSeats());
-		countParams.setMaxSeats(params.getMaxSeats());
-		countParams.setAvailableFrom(params.getAvailableFrom());
-		countParams.setAvailableTo(params.getAvailableTo());
-		countParams.setIdentity(params.getIdentity());
+		SearchRoomParameters countParams = params.withoutPagination();
 
 		RoomVO[] vos = rooms.stream()
 				.map(r -> RoomVO.valueOf(r, roles))

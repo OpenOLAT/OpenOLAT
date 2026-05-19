@@ -104,4 +104,15 @@ public class SearchBuildingParameters {
 	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
 	}
+
+	public SearchBuildingParameters withoutPagination() {
+		SearchBuildingParameters copy = new SearchBuildingParameters();
+		copy.searchString = this.searchString;
+		copy.exactExternalId = this.exactExternalId;
+		copy.exactExternalRef = this.exactExternalRef;
+		copy.status = this.status;
+		copy.organisations = this.organisations;
+		copy.identity = this.identity;
+		return copy;
+	}
 }

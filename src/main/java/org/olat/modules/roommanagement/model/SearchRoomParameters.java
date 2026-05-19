@@ -150,4 +150,20 @@ public class SearchRoomParameters {
 	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
 	}
+
+	public SearchRoomParameters withoutPagination() {
+		SearchRoomParameters copy = new SearchRoomParameters();
+		copy.searchString = this.searchString;
+		copy.exactExternalId = this.exactExternalId;
+		copy.exactExternalRef = this.exactExternalRef;
+		copy.status = this.status;
+		copy.building = this.building;
+		copy.minSeats = this.minSeats;
+		copy.maxSeats = this.maxSeats;
+		copy.organisationKey = this.organisationKey;
+		copy.availableFrom = this.availableFrom;
+		copy.availableTo = this.availableTo;
+		copy.identity = this.identity;
+		return copy;
+	}
 }
