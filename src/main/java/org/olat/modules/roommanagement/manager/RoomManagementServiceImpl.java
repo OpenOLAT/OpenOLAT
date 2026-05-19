@@ -209,6 +209,11 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	}
 
 	@Override
+	public long countRooms(SearchRoomParameters params) {
+		return roomDao.count(params);
+	}
+
+	@Override
 	public void deleteRoom(RoomRef ref, Identity doer) {
 		Room room = roomDao.loadByKey(ref);
 		if (room == null) return;

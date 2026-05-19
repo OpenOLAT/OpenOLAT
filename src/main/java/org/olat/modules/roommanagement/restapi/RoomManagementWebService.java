@@ -22,7 +22,9 @@ package org.olat.modules.roommanagement.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,10 +44,12 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
+import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,7 +66,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "Room Management")
 @Component
-@Path("rm/buildings")
+@Path("rm")
 public class RoomManagementWebService {
 
 	private static final String VERSION = "1.0";
@@ -89,7 +93,7 @@ public class RoomManagementWebService {
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = BuildingVO.class)))
 		})
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@Path("")
+	@Path("buildings")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getBuildings(
 			@QueryParam("search") String search,
@@ -157,7 +161,7 @@ public class RoomManagementWebService {
 		})
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The building was not found or is not visible to the caller")
-	@Path("{buildingKey}")
+	@Path("buildings/{buildingKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getBuilding(@PathParam("buildingKey") Long buildingKey, @Context HttpServletRequest httpRequest) {
 		if (!roomManagementModule.isEnabled()) {
@@ -179,6 +183,127 @@ public class RoomManagementWebService {
 
 		List<Organisation> organisations = roomManagementService.getOrganisations(building);
 		BuildingVO vo = BuildingVO.valueOf(building, organisations, roles);
+		return Response.ok(vo).build();
+	}
+
+	@GET
+	@Operation(summary = "Search rooms", description = "Search room management rooms")
+	@ApiResponse(responseCode = "200", description = "An array of rooms",
+		content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RoomVO.class)))
+		})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@Path("rooms")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getRooms(
+			@QueryParam("search") String search,
+			@QueryParam("externalId") String externalId,
+			@QueryParam("externalRef") String externalRef,
+			@QueryParam("status") @DefaultValue("active") String statusParam,
+			@QueryParam("buildingKey") Long buildingKey,
+			@QueryParam("organisationKey") Long organisationKey,
+			@QueryParam("seatsMin") Integer seatsMin,
+			@QueryParam("seatsMax") Integer seatsMax,
+			@QueryParam("availableFrom") String availableFromStr,
+			@QueryParam("availableTo") String availableToStr,
+			@QueryParam("pageNumber") @DefaultValue("0") int pageNumber,
+			@QueryParam("pageSize") @DefaultValue("25") int pageSize,
+			@Context HttpServletRequest httpRequest) {
+
+		if (!roomManagementModule.isEnabled()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Roles roles = getRoles(httpRequest);
+		if (!isAuthorised(roles)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		Identity identity = getIdentity(httpRequest);
+
+		SearchRoomParameters params = new SearchRoomParameters();
+		if (StringHelper.containsNonWhitespace(search)) {
+			params.setSearchString(search);
+		}
+		if (StringHelper.containsNonWhitespace(externalId)) {
+			params.setExactExternalId(externalId);
+		}
+		if (StringHelper.containsNonWhitespace(externalRef)) {
+			params.setExactExternalRef(externalRef);
+		}
+		params.setStatus(parseStatus(statusParam));
+		if (buildingKey != null) {
+			params.setBuilding(() -> buildingKey);
+		}
+		if (organisationKey != null) {
+			params.setOrganisationKey(organisationKey);
+		}
+		if (seatsMin != null) {
+			params.setMinSeats(seatsMin);
+		}
+		if (seatsMax != null) {
+			params.setMaxSeats(seatsMax);
+		}
+		params.setAvailableFrom(parseDate(availableFromStr));
+		params.setAvailableTo(parseDate(availableToStr));
+		params.setIdentity(identity);
+		int effectivePageSize = Math.min(pageSize, 200);
+		params.setFirstResult(pageNumber * effectivePageSize);
+		params.setMaxResults(effectivePageSize);
+
+		List<Room> rooms = roomManagementService.searchRooms(params, roles);
+
+		SearchRoomParameters countParams = new SearchRoomParameters();
+		countParams.setSearchString(params.getSearchString());
+		countParams.setExactExternalId(params.getExactExternalId());
+		countParams.setExactExternalRef(params.getExactExternalRef());
+		countParams.setStatus(params.getStatus());
+		countParams.setBuilding(params.getBuilding());
+		countParams.setOrganisationKey(params.getOrganisationKey());
+		countParams.setMinSeats(params.getMinSeats());
+		countParams.setMaxSeats(params.getMaxSeats());
+		countParams.setAvailableFrom(params.getAvailableFrom());
+		countParams.setAvailableTo(params.getAvailableTo());
+		countParams.setIdentity(params.getIdentity());
+
+		RoomVO[] vos = rooms.stream()
+				.map(r -> RoomVO.valueOf(r, roles))
+				.toArray(RoomVO[]::new);
+
+		return Response.ok(vos)
+				.header("X-Total-Count", roomManagementService.countRooms(countParams))
+				.build();
+	}
+
+	@GET
+	@Operation(summary = "Get a room", description = "Get a single room management room by key")
+	@ApiResponse(responseCode = "200", description = "The room",
+		content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RoomVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RoomVO.class))
+		})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The room was not found or is not visible to the caller")
+	@Path("rooms/{roomKey}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getRoom(@PathParam("roomKey") Long roomKey, @Context HttpServletRequest httpRequest) {
+		if (!roomManagementModule.isEnabled()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Roles roles = getRoles(httpRequest);
+		if (!isAuthorised(roles)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		Identity identity = getIdentity(httpRequest);
+
+		Room room = roomManagementService.getRoom(() -> roomKey);
+		if (room == null || room.getStatus() == RoomStatus.deleted) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if (!roomManagementService.isVisibleBuilding(room.getBuilding(), roles, identity)) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		RoomVO vo = RoomVO.valueOf(room, roles);
 		return Response.ok(vo).build();
 	}
 
@@ -204,5 +329,14 @@ public class RoomManagementWebService {
 			}
 		}
 		return statuses.isEmpty() ? List.of(RoomStatus.active) : statuses;
+	}
+
+	private Date parseDate(String str) {
+		if (!StringHelper.containsNonWhitespace(str)) return null;
+		try {
+			return Date.from(Instant.parse(str));
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

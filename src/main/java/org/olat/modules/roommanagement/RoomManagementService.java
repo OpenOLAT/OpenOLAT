@@ -64,6 +64,8 @@ public interface RoomManagementService {
 
 	List<Room> searchRooms(SearchRoomParameters params, Roles roles);
 
+	long countRooms(SearchRoomParameters params);
+
 	void deleteRoom(RoomRef ref, Identity doer);
 
 	// --- Bookings ---

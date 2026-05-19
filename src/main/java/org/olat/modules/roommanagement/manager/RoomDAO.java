@@ -96,6 +96,12 @@ public class RoomDAO {
 
 		TypedQuery<Room> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Room.class);
 		applySearchParameters(query, params);
+		if (params.getFirstResult() > 0) {
+			query.setFirstResult(params.getFirstResult());
+		}
+		if (params.getMaxResults() > 0) {
+			query.setMaxResults(params.getMaxResults());
+		}
 		return query.getResultList();
 	}
 
@@ -122,8 +128,20 @@ public class RoomDAO {
 		if (params.getBuilding() != null) {
 			sb.and().append("r.building.key=:buildingKey");
 		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalId())) {
+			sb.and().append("r.externalId=:exactExternalId");
+		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalRef())) {
+			sb.and().append("r.externalRef=:exactExternalRef");
+		}
 		if (params.getMinSeats() != null) {
 			sb.and().append("r.seats >= :minSeats");
+		}
+		if (params.getMaxSeats() != null) {
+			sb.and().append("r.seats <= :maxSeats");
+		}
+		if (params.getOrganisationKey() != null) {
+			sb.and().append("exists (select 1 from rmbuildingtoorganisation bto3 where bto3.building=bld and bto3.organisation.key=:organisationKey)");
 		}
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
 			sb.and().append("(lower(r.description) like :searchString or lower(r.externalId) like :searchString or lower(r.externalRef) like :searchString)");
@@ -157,8 +175,20 @@ public class RoomDAO {
 		if (params.getBuilding() != null) {
 			query.setParameter("buildingKey", params.getBuilding().getKey());
 		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalId())) {
+			query.setParameter("exactExternalId", params.getExactExternalId());
+		}
+		if (StringHelper.containsNonWhitespace(params.getExactExternalRef())) {
+			query.setParameter("exactExternalRef", params.getExactExternalRef());
+		}
 		if (params.getMinSeats() != null) {
 			query.setParameter("minSeats", params.getMinSeats());
+		}
+		if (params.getMaxSeats() != null) {
+			query.setParameter("maxSeats", params.getMaxSeats());
+		}
+		if (params.getOrganisationKey() != null) {
+			query.setParameter("organisationKey", params.getOrganisationKey());
 		}
 		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
 			query.setParameter("searchString", "%" + params.getSearchString().toLowerCase() + "%");

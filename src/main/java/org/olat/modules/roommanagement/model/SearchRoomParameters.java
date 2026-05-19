@@ -33,13 +33,19 @@ import org.olat.modules.roommanagement.RoomStatus;
 public class SearchRoomParameters {
 
 	private String searchString;
+	private String exactExternalId;
+	private String exactExternalRef;
 	private List<RoomStatus> status;
 	private BuildingRef building;
 	private Integer minSeats;
+	private Integer maxSeats;
+	private Long organisationKey;
 	private Date availableFrom;
 	private Date availableTo;
 	/** When set, apply the org-scoped visibility predicate for this identity. */
 	private IdentityRef identity;
+	private int firstResult = 0;
+	private int maxResults = 0;
 
 	public String getSearchString() {
 		return searchString;
@@ -47,6 +53,22 @@ public class SearchRoomParameters {
 
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
+	}
+
+	public String getExactExternalId() {
+		return exactExternalId;
+	}
+
+	public void setExactExternalId(String exactExternalId) {
+		this.exactExternalId = exactExternalId;
+	}
+
+	public String getExactExternalRef() {
+		return exactExternalRef;
+	}
+
+	public void setExactExternalRef(String exactExternalRef) {
+		this.exactExternalRef = exactExternalRef;
 	}
 
 	public List<RoomStatus> getStatus() {
@@ -73,6 +95,22 @@ public class SearchRoomParameters {
 		this.minSeats = minSeats;
 	}
 
+	public Integer getMaxSeats() {
+		return maxSeats;
+	}
+
+	public void setMaxSeats(Integer maxSeats) {
+		this.maxSeats = maxSeats;
+	}
+
+	public Long getOrganisationKey() {
+		return organisationKey;
+	}
+
+	public void setOrganisationKey(Long organisationKey) {
+		this.organisationKey = organisationKey;
+	}
+
 	public Date getAvailableFrom() {
 		return availableFrom;
 	}
@@ -95,5 +133,21 @@ public class SearchRoomParameters {
 
 	public void setIdentity(IdentityRef identity) {
 		this.identity = identity;
+	}
+
+	public int getFirstResult() {
+		return firstResult;
+	}
+
+	public void setFirstResult(int firstResult) {
+		this.firstResult = firstResult;
+	}
+
+	public int getMaxResults() {
+		return maxResults;
+	}
+
+	public void setMaxResults(int maxResults) {
+		this.maxResults = maxResults;
 	}
 }

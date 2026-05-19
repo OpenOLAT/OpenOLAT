@@ -557,6 +557,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.roommanagement.manager.RoomManagementServiceTest.class,
 	org.olat.modules.roommanagement.manager.RoomModuleLogDAOTest.class,
 	org.olat.modules.roommanagement.restapi.RoomManagementWebServiceTest.class,
+	org.olat.modules.lecture.restapi.LectureBlockWebServiceRoomBookingTest.class,
 	org.olat.modules.scorm.server.sequence.PrerequisiteManagerTest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyDAOTest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyLevelDAOTest.class,
