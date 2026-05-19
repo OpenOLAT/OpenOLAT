@@ -130,7 +130,7 @@ public class RoomManagementWebService {
 		}
 		params.setIdentity(identity);
 		int effectivePageSize = Math.min(pageSize, 200);
-		params.setFirstResult(pageNumber * effectivePageSize);
+		params.setFirstResult(firstResult(pageNumber, effectivePageSize));
 		params.setMaxResults(effectivePageSize);
 
 		List<Building> buildings = roomManagementService.searchBuildings(params, roles);
@@ -247,7 +247,7 @@ public class RoomManagementWebService {
 		params.setAvailableTo(parseDate(availableToStr));
 		params.setIdentity(identity);
 		int effectivePageSize = Math.min(pageSize, 200);
-		params.setFirstResult(pageNumber * effectivePageSize);
+		params.setFirstResult(firstResult(pageNumber, effectivePageSize));
 		params.setMaxResults(effectivePageSize);
 
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
@@ -305,6 +305,11 @@ public class RoomManagementWebService {
 
 		RoomVO vo = RoomVO.valueOf(room, roles);
 		return Response.ok(vo).build();
+	}
+
+	private int firstResult(int pageNumber, int pageSize) {
+		long first = (long) Math.max(0, pageNumber) * pageSize;
+		return first > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) first;
 	}
 
 	private boolean isAuthorised(Roles roles) {

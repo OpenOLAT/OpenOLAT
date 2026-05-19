@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
@@ -249,7 +250,9 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 
 		Assert.assertEquals(422, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Map<?, ?> body = conn.parse(response, Map.class);
+		Assert.assertEquals("room.ambiguousExternalRef", body.get("code"));
+		Assert.assertEquals(2, ((Number) body.get("matches")).intValue());
 	}
 
 	@Test
@@ -269,6 +272,26 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 
 		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+	}
+
+	@Test
+	public void putRoom_unknownExternalId_returns404()
+	throws IOException, URISyntaxException, UnsupportedEncodingException {
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		RoomBookingVO bookingVO = new RoomBookingVO();
+		bookingVO.setExternalId("nonexistent-ext-id-" + UUID.randomUUID());
+
+		RestConnection conn = new RestConnection(admin);
+		URI uri = buildRoomUri(entry, block);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, bookingVO);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 	}
 

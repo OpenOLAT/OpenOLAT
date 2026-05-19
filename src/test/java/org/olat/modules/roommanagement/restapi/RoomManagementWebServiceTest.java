@@ -22,7 +22,9 @@ package org.olat.modules.roommanagement.restapi;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,10 +39,13 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.RestConnection;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -55,6 +60,8 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -207,6 +214,48 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 	}
 
 	@Test
+	public void getBuildings_lectureManager_scopedToOwnOrg()
+	throws IOException, URISyntaxException {
+		Organisation orgE = organisationService.createOrganisation(
+				"OrgE-" + UUID.randomUUID(), "OrgE-" + UUID.randomUUID(), "",
+				null, null, admin.getIdentity());
+		Organisation orgF = organisationService.createOrganisation(
+				"OrgF-" + UUID.randomUUID(), "OrgF-" + UUID.randomUUID(), "",
+				null, null, admin.getIdentity());
+
+		IdentityWithLogin lectureManager = JunitTestHelper.createAndPersistRndUser("rm-rest-lm-" + UUID.randomUUID());
+		organisationService.addMember(organisationService.getDefaultOrganisation(),
+				lectureManager.getIdentity(), OrganisationRoles.lecturemanager, admin.getIdentity());
+		organisationService.addMember(orgE, lectureManager.getIdentity(), OrganisationRoles.user, admin.getIdentity());
+
+		String prefix = "LmScopedBld_" + UUID.randomUUID() + "_";
+		Building buildingInOrgE = roomManagementService.createBuilding(prefix + "OrgE", admin.getIdentity());
+		roomManagementService.updateBuilding(buildingInOrgE, List.of(orgE), admin.getIdentity());
+
+		Building buildingInDefaultOrg = roomManagementService.createBuilding(prefix + "Default", admin.getIdentity());
+
+		Building buildingInOnlyOrgF = roomManagementService.createBuilding(prefix + "OrgF", admin.getIdentity());
+		roomManagementService.updateBuilding(buildingInOnlyOrgF, List.of(orgF), admin.getIdentity());
+
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection(lectureManager);
+		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
+				.queryParam("search", prefix).queryParam("pageSize", 200).build();
+		HttpGet method = conn.createGet(request, "application/json", true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
+		Assert.assertNotNull(vos);
+
+		List<Long> keys = Arrays.stream(vos).map(BuildingVO::getKey).toList();
+		Assert.assertTrue("buildingInOrgE should be visible to lecture manager in orgE", keys.contains(buildingInOrgE.getKey()));
+		Assert.assertTrue("buildingInDefaultOrg should be visible", keys.contains(buildingInDefaultOrg.getKey()));
+		Assert.assertFalse("buildingInOnlyOrgF should not be visible", keys.contains(buildingInOnlyOrgF.getKey()));
+	}
+
+	@Test
 	public void getBuildings_paged()
 	throws IOException, URISyntaxException {
 		String prefix = "PagedBld_" + UUID.randomUUID() + "_";
@@ -262,6 +311,95 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 
 		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+	}
+
+	@Test
+	public void getRooms_scopedByParentBuilding()
+	throws IOException, URISyntaxException {
+		Organisation orgRoomA = organisationService.createOrganisation(
+				"OrgRoomA-" + UUID.randomUUID(), "OrgRoomA-" + UUID.randomUUID(), "",
+				null, null, admin.getIdentity());
+		Organisation orgRoomB = organisationService.createOrganisation(
+				"OrgRoomB-" + UUID.randomUUID(), "OrgRoomB-" + UUID.randomUUID(), "",
+				null, null, admin.getIdentity());
+
+		IdentityWithLogin authorRooms = JunitTestHelper.createAndPersistRndAuthor("rm-rest-author-rooms-" + UUID.randomUUID());
+		organisationService.addMember(orgRoomA, authorRooms.getIdentity(), OrganisationRoles.user, admin.getIdentity());
+
+		Building buildingInOrgA = roomManagementService.createBuilding("BldScopeRoomA_" + UUID.randomUUID(), admin.getIdentity());
+		roomManagementService.updateBuilding(buildingInOrgA, List.of(orgRoomA), admin.getIdentity());
+		Room roomInOrgA = roomManagementService.createRoom(buildingInOrgA, "RoomScopeA_" + UUID.randomUUID(), admin.getIdentity());
+
+		Building buildingInOrgB = roomManagementService.createBuilding("BldScopeRoomB_" + UUID.randomUUID(), admin.getIdentity());
+		roomManagementService.updateBuilding(buildingInOrgB, List.of(orgRoomB), admin.getIdentity());
+		Room roomInOrgB = roomManagementService.createRoom(buildingInOrgB, "RoomScopeB_" + UUID.randomUUID(), admin.getIdentity());
+
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection(authorRooms);
+
+		// Filter by orgA building — author is in orgA, so the room should be returned
+		URI requestA = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
+				.queryParam("buildingKey", buildingInOrgA.getKey()).build();
+		HttpGet methodA = conn.createGet(requestA, "application/json", true);
+		HttpResponse responseA = conn.execute(methodA);
+		Assert.assertEquals(200, responseA.getStatusLine().getStatusCode());
+		RoomVO[] vosA = conn.parse(responseA, RoomVO[].class);
+		List<Long> keysA = Arrays.stream(vosA).map(RoomVO::getKey).toList();
+		Assert.assertTrue("Room in orgA building should be visible", keysA.contains(roomInOrgA.getKey()));
+
+		// Filter by orgB building — author is NOT in orgB, so org-scoping applies even with explicit buildingKey
+		URI requestB = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
+				.queryParam("buildingKey", buildingInOrgB.getKey()).build();
+		HttpGet methodB = conn.createGet(requestB, "application/json", true);
+		HttpResponse responseB = conn.execute(methodB);
+		Assert.assertEquals(200, responseB.getStatusLine().getStatusCode());
+		RoomVO[] vosB = conn.parse(responseB, RoomVO[].class);
+		List<Long> keysB = Arrays.stream(vosB).map(RoomVO::getKey).toList();
+		Assert.assertFalse("Room in orgB building should not be visible to author outside orgB", keysB.contains(roomInOrgB.getKey()));
+	}
+
+	@Test
+	public void getRooms_availableFromTo_excludesHardOverlaps()
+	throws IOException, URISyntaxException {
+		Building building = roomManagementService.createBuilding("BldAvail_" + UUID.randomUUID(), admin.getIdentity());
+		Room bookedRoom = roomManagementService.createRoom(building, "RoomAvailBooked_" + UUID.randomUUID(), admin.getIdentity());
+		Room freeRoom = roomManagementService.createRoom(building, "RoomAvailFree_" + UUID.randomUUID(), admin.getIdentity());
+
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
+		Instant bookingStart = Instant.parse("2030-01-15T10:00:00Z");
+		Instant bookingEnd = Instant.parse("2030-01-15T12:00:00Z");
+
+		LectureBlock block = lectureService.createLectureBlock(entry);
+		block.setStartDate(Date.from(bookingStart));
+		block.setEndDate(Date.from(bookingEnd));
+		block.setTitle("Avail test block " + UUID.randomUUID());
+		block.setPlannedLecturesNumber(4);
+		block = lectureService.save(block, null);
+
+		roomManagementService.bookRoom(bookedRoom, block, Date.from(bookingStart), Date.from(bookingEnd), 0, 0, admin.getIdentity());
+		dbInstance.commitAndCloseSession();
+
+		// Query window hard-overlaps with the booking
+		Instant queryFrom = Instant.parse("2030-01-15T10:30:00Z");
+		Instant queryTo = Instant.parse("2030-01-15T11:30:00Z");
+
+		RestConnection conn = new RestConnection(admin);
+		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
+				.queryParam("buildingKey", building.getKey())
+				.queryParam("availableFrom", queryFrom.toString())
+				.queryParam("availableTo", queryTo.toString())
+				.build();
+		HttpGet method = conn.createGet(request, "application/json", true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RoomVO[] vos = conn.parse(response, RoomVO[].class);
+		Assert.assertNotNull(vos);
+
+		List<Long> keys = Arrays.stream(vos).map(RoomVO::getKey).toList();
+		Assert.assertFalse("Booked room should be excluded from availability window", keys.contains(bookedRoom.getKey()));
+		Assert.assertTrue("Free room should be included in availability window", keys.contains(freeRoom.getKey()));
 	}
 
 	@Test
