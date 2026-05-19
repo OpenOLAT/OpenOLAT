@@ -460,7 +460,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
-			addLectureButton.setVisible(canAddLecture());			
+			addLectureButton.setEnabled(canAddLecture());			
 			
 			copyLecturesButton = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 			
@@ -496,7 +496,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	 */
 	public void updateAddLectures() {
 		if(addLectureButton != null) {
-			addLectureButton.setVisible(!lectureManagementManaged
+			addLectureButton.setEnabled(!lectureManagementManaged
 					&& secCallback.canNewLectureBlock(curriculumElement, curriculum)
 					&& canAddLecture());
 		}
@@ -626,7 +626,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("empty.table.lectures.blocks.admin")
-				.build());
+				.withIconCss("o_icon_events").build());
 		tableEl.setSearchEnabled(true);
 		tableEl.setCssDelegate(this);
 		
