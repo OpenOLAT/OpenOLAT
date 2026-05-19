@@ -123,7 +123,7 @@ public class BuildingDAO {
 			sb.and().append("exists (select 1 from rmbuildingtoorganisation bto where bto.building=b and bto.organisation.key in (:orgKeys))");
 		}
 		if (params.getIdentity() != null) {
-			// Org-scoped visibility: open-to-all (no org links) OR identity has administrator/user role in a linked org
+			// Org-scoped visibility: open-to-all (no org links) OR identity is a member of a linked org (any role)
 			sb.and().append("(")
 			  .append(" not exists (select 1 from rmbuildingtoorganisation bto2 where bto2.building=b)")
 			  .append(" or exists (")
@@ -133,7 +133,6 @@ public class BuildingDAO {
 			  .append("   inner join og.members m")
 			  .append("   where bto3.building=b")
 			  .append("     and m.identity.key=:identityKey")
-			  .append("     and m.role in ('administrator','user')")
 			  .append(" )")
 			  .append(")");
 		}

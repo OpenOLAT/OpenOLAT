@@ -150,7 +150,7 @@ public class RoomDAO {
 			sb.and().append("not exists (select 1 from rmroombooking b where b.room=r and b.startDate < :availTo and b.endDate > :availFrom)");
 		}
 		if (params.getIdentity() != null) {
-			// Org-scoped visibility: open-to-all (no org links) OR identity has administrator/user role in a linked org
+			// Org-scoped visibility: open-to-all (no org links) OR identity is a member of a linked org (any role)
 			sb.and().append("(")
 			  .append(" not exists (select 1 from rmbuildingtoorganisation bto where bto.building=bld)")
 			  .append(" or exists (")
@@ -160,7 +160,6 @@ public class RoomDAO {
 			  .append("   inner join og.members m")
 			  .append("   where bto2.building=bld")
 			  .append("     and m.identity.key=:identityKey")
-			  .append("     and m.role in ('administrator','user')")
 			  .append(" )")
 			  .append(")");
 		}

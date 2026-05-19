@@ -214,6 +214,46 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 	}
 
 	@Test
+	public void getBuildings_author_scopedToOwnOrg_authorRole()
+	throws IOException, URISyntaxException {
+		Organisation orgC2 = organisationService.createOrganisation(
+				"OrgC2-" + UUID.randomUUID(), "OrgC2-" + UUID.randomUUID(), "",
+				null, null, admin.getIdentity());
+		Organisation orgD2 = organisationService.createOrganisation(
+				"OrgD2-" + UUID.randomUUID(), "OrgD2-" + UUID.randomUUID(), "",
+				null, null, admin.getIdentity());
+
+		IdentityWithLogin author4 = JunitTestHelper.createAndPersistRndAuthor("rm-rest-author4-" + UUID.randomUUID());
+		organisationService.addMember(orgC2, author4.getIdentity(), OrganisationRoles.author, admin.getIdentity());
+
+		String prefix = "AuthorRoleBld_" + UUID.randomUUID() + "_";
+		Building buildingInOrgC2 = roomManagementService.createBuilding(prefix + "OrgC2", admin.getIdentity());
+		roomManagementService.updateBuilding(buildingInOrgC2, List.of(orgC2), admin.getIdentity());
+
+		Building buildingInDefaultOrg2 = roomManagementService.createBuilding(prefix + "Default", admin.getIdentity());
+
+		Building buildingInOnlyOrgD2 = roomManagementService.createBuilding(prefix + "OrgD2", admin.getIdentity());
+		roomManagementService.updateBuilding(buildingInOnlyOrgD2, List.of(orgD2), admin.getIdentity());
+
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection(author4);
+		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
+				.queryParam("search", prefix).queryParam("pageSize", 200).build();
+		HttpGet method = conn.createGet(request, "application/json", true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
+		Assert.assertNotNull(vos);
+
+		List<Long> keys = Arrays.stream(vos).map(BuildingVO::getKey).toList();
+		Assert.assertTrue("buildingInDefaultOrg2 should be visible", keys.contains(buildingInDefaultOrg2.getKey()));
+		Assert.assertTrue("buildingInOrgC2 should be visible to author with author role in orgC2", keys.contains(buildingInOrgC2.getKey()));
+		Assert.assertFalse("buildingInOnlyOrgD2 should not be visible", keys.contains(buildingInOnlyOrgD2.getKey()));
+	}
+
+	@Test
 	public void getBuildings_lectureManager_scopedToOwnOrg()
 	throws IOException, URISyntaxException {
 		Organisation orgE = organisationService.createOrganisation(
