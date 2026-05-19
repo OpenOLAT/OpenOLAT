@@ -413,6 +413,124 @@ public class AiEssayFeedbackViewFlattenerTest {
 		assertEquals("The student wrote this entire paragraph.", spans.get(0).get("text"));
 	}
 
+	// ---------------------------------------------------------------- renderSpanText / isParagraphHtml
+
+	@Test
+	public void renderSpanText_nullReturnsEmpty() {
+		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText(null, false));
+		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText(null, true));
+	}
+
+	@Test
+	public void renderSpanText_emptyReturnsEmpty() {
+		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText("", false));
+	}
+
+	@Test
+	public void renderSpanText_plainTextConvertsNewlinesToBr() {
+		assertEquals("Line 1<br>Line 2", AiEssayFeedbackViewFlattener.renderSpanText("Line 1\nLine 2", false));
+	}
+
+	@Test
+	public void renderSpanText_plainTextConvertsTabsToFourNbsp() {
+		assertEquals("Col1&nbsp;&nbsp;&nbsp;&nbsp;Col2",
+				AiEssayFeedbackViewFlattener.renderSpanText("Col1\tCol2", false));
+	}
+
+	@Test
+	public void renderSpanText_plainTextNormalizesCrlfAndCr() {
+		assertEquals("a<br>b<br>c", AiEssayFeedbackViewFlattener.renderSpanText("a\r\nb\rc", false));
+	}
+
+	@Test
+	public void renderSpanText_plainTextEscapesHtmlChars() {
+		// HTML chars in plain text input must be escaped so they render as text,
+		// not be interpreted as markup by the browser.
+		assertEquals("&lt;b&gt;not bold&lt;/b&gt;",
+				AiEssayFeedbackViewFlattener.renderSpanText("<b>not bold</b>", false));
+	}
+
+	@Test
+	public void renderSpanText_htmlIsPassedThroughVerbatim() {
+		assertEquals("<b>bold</b> text",
+				AiEssayFeedbackViewFlattener.renderSpanText("<b>bold</b> text", true));
+	}
+
+	@Test
+	public void renderSpanText_htmlNewlinesAreNotConverted() {
+		// HTML input is trusted as-is — author already controls line breaks via <br> / <p>.
+		assertEquals("a\nb", AiEssayFeedbackViewFlattener.renderSpanText("a\nb", true));
+	}
+
+	@Test
+	public void isParagraphHtml_nullParagraph() {
+		assertFalse(AiEssayFeedbackViewFlattener.isParagraphHtml(null));
+	}
+
+	@Test
+	public void isParagraphHtml_plainTextSpans() {
+		AnnotatedParagraph ap = new AnnotatedParagraph(
+				List.of(new AnnotatedSpan("Hello\nworld", MarkKind.NEUTRAL, null)),
+				"");
+		assertFalse(AiEssayFeedbackViewFlattener.isParagraphHtml(ap));
+	}
+
+	@Test
+	public void isParagraphHtml_htmlSpans() {
+		AnnotatedParagraph ap = new AnnotatedParagraph(
+				List.of(new AnnotatedSpan("<p>Hello world</p>", MarkKind.NEUTRAL, null)),
+				"");
+		assertTrue(AiEssayFeedbackViewFlattener.isParagraphHtml(ap));
+	}
+
+	@Test
+	public void isParagraphHtml_tagAcrossSpanBoundary() {
+		// A tag straddling the boundary between two spans must still be detected
+		// as HTML — that is the reason detection runs on the concatenated paragraph.
+		AnnotatedParagraph ap = new AnnotatedParagraph(
+				List.of(
+						new AnnotatedSpan("Hello <stro", MarkKind.NEUTRAL, null),
+						new AnnotatedSpan("ng>world</strong>", MarkKind.NEUTRAL, null)),
+				"");
+		assertTrue(AiEssayFeedbackViewFlattener.isParagraphHtml(ap));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void flatten_plainTextSpansHaveLineBreaksAsBr() {
+		AnnotatedParagraph ap = new AnnotatedParagraph(
+				List.of(new AnnotatedSpan("Line 1\nLine 2\tindented", MarkKind.NEUTRAL, null)),
+				"");
+		GradingSuggestion suggestion = new GradingSuggestion(null, null,
+				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.MEDIUM,
+				new GradingSuggestion.StudentFeedback("", "", ""),
+				"", "", 60, List.of(ap));
+		FormativeFeedback fb = FormativeFeedback.ok(AiGradingTier.SHORT, suggestion, List.of(), 1L);
+
+		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
+		List<Map<String, Object>> paras = (List<Map<String, Object>>) v.get("annotatedParagraphs");
+		List<Map<String, String>> spans = (List<Map<String, String>>) paras.get(0).get("spans");
+		assertEquals("Line 1<br>Line 2&nbsp;&nbsp;&nbsp;&nbsp;indented", spans.get(0).get("text"));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void flatten_htmlSpansAreNotEscapedAndNotConverted() {
+		AnnotatedParagraph ap = new AnnotatedParagraph(
+				List.of(new AnnotatedSpan("<p>Hello <b>world</b></p>", MarkKind.NEUTRAL, null)),
+				"");
+		GradingSuggestion suggestion = new GradingSuggestion(null, null,
+				GradingSuggestion.OffTopicFlag.NONE, GradingSuggestion.Confidence.MEDIUM,
+				new GradingSuggestion.StudentFeedback("", "", ""),
+				"", "", 60, List.of(ap));
+		FormativeFeedback fb = FormativeFeedback.ok(AiGradingTier.SHORT, suggestion, List.of(), 1L);
+
+		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
+		List<Map<String, Object>> paras = (List<Map<String, Object>>) v.get("annotatedParagraphs");
+		List<Map<String, String>> spans = (List<Map<String, String>>) paras.get(0).get("spans");
+		assertEquals("<p>Hello <b>world</b></p>", spans.get(0).get("text"));
+	}
+
 	// ---------------------------------------------------------------- helpers
 
 	private GradingSuggestion buildSuggestion(int percent) {

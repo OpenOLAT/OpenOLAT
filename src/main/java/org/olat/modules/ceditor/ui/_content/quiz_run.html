@@ -121,9 +121,9 @@
 									<p class="o_ai_para">
 										#foreach($span in $para.spans)
 											#if($span.cssClass == "")
-												$r.escapeHtml($span.text)
+												$span.text
 											#else
-												<span class="$span.cssClass"#if($span.comment != "") title="$r.escapeHtml($span.comment)"#end>$r.escapeHtml($span.text)</span>
+												<span class="$span.cssClass"#if($span.comment != "") title="$r.escapeHtml($span.comment)"#end>$span.text</span>
 											#end
 										#end
 									</p>
