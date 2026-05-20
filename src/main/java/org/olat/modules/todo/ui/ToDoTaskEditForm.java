@@ -261,7 +261,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 			startRelDisplayEl = uifactory.addTextElement("task.start.date.rel", null, 256, null, startDateRelCont);
 			startRelDisplayEl.setDomReplacementWrapperRequired(false);
 			startRelDisplayEl.setEnabled(false);
-			startRelLink = uifactory.addFormLink("startRelLink", "", null, startDateRelCont, Link.NONTRANSLATED | Link.BUTTON);
+			startRelLink = uifactory.addFormLink("startRelLink", "task.set.rule", null, startDateRelCont, Link.BUTTON);
 			startRelLink.setIconLeftCSS("o_icon o_icon_calendar");
 
 			dueDateRelCont = FormLayoutContainer.createCustomFormLayout("dueDateRelCont", getTranslator(), relContPage);
@@ -271,7 +271,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 			dueRelDisplayEl = uifactory.addTextElement("task.due.date.rel", null, 256, null, dueDateRelCont);
 			dueRelDisplayEl.setDomReplacementWrapperRequired(false);
 			dueRelDisplayEl.setEnabled(false);
-			dueRelLink = uifactory.addFormLink("dueRelLink", "", null, dueDateRelCont, Link.NONTRANSLATED | Link.BUTTON);
+			dueRelLink = uifactory.addFormLink("dueRelLink", "task.set.rule", null, dueDateRelCont, Link.BUTTON);
 			dueRelLink.setIconLeftCSS("o_icon o_icon_calendar");
 		}
 

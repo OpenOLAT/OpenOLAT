@@ -33,8 +33,12 @@
 }
 .form-inline.o_todo_date_row {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
 	gap: 8px;
+	
+	@media (min-width: $screen-sm-min) {
+		flex-direction: row;
+	}
 
 	> span {
 		display: contents;
@@ -64,7 +68,6 @@
 
 		> span:not(.input-group-addon) > .form-control {
 			width: 100%;
-			border-right: 0;
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
 		}
@@ -73,6 +76,7 @@
 			display: flex;
 			align-items: center;
 			padding: 0;
+			width: auto;
 
 			> .btn {
 				height: 100%;
