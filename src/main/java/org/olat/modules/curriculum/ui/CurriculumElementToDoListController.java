@@ -133,8 +133,27 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
-		return col != ToDoTaskCols.contextType
-				&& col != ToDoTaskCols.contextTitle;
+		return col != ToDoTaskCols.contextType;
+	}
+
+	@Override
+	protected boolean isDefaultVisible(ToDoTaskCols col) {
+		if (col == ToDoTaskCols.contextTitle) {
+			return false;
+		}
+		if (col == ToDoTaskCols.contextSubTitle) {
+			return true;
+		}
+		return super.isDefaultVisible(col);
+	}
+
+	@Override
+	protected String getColumnLabel(ToDoTaskCols col) {
+		return switch (col) {
+			case contextTitle -> translate("curriculum.title");
+			case contextSubTitle -> translate("curriculum.element.todo.element");
+			default -> null;
+		};
 	}
 
 	@Override

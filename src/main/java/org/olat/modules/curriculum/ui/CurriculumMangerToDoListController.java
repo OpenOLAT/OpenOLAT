@@ -89,6 +89,23 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
+	protected boolean isDefaultVisible(ToDoTaskCols col) {
+		if (col == ToDoTaskCols.contextSubTitle) {
+			return true;
+		}
+		return super.isDefaultVisible(col);
+	}
+
+	@Override
+	protected String getColumnLabel(ToDoTaskCols col) {
+		return switch (col) {
+			case contextTitle -> translate("curriculum.title");
+			case contextSubTitle -> translate("curriculum.element.todo.element");
+			default -> null;
+		};
+	}
+
+	@Override
 	protected List<TagInfo> getFilterTags() {
 		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
 		tagSearchParams.setTypes(List.of(CurriculumElementToDoProvider.TYPE));

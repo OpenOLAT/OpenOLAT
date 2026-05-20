@@ -168,7 +168,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			String originSubPath) {
 		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(originSubPath)));
 		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
-				element.getKey().toString(), element.getCurriculum().getDisplayName(), element.getDisplayName());
+				element.getKey().toString(), element.getCurriculum().getIdentifier(), element.getDisplayName());
 		return createEditController(ureq, wControl, null, null, element, context);
 	}
 
@@ -187,7 +187,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			ToDoTask sourceToDoTask, boolean showContext) {
 		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(sourceToDoTask.getOriginSubPath())));
 		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
-				element.getKey().toString(), element.getCurriculum().getDisplayName(), element.getDisplayName());
+				element.getKey().toString(), element.getCurriculum().getIdentifier(), element.getDisplayName());
 		return createEditController(ureq, wControl, null, sourceToDoTask, element, context);
 	}
 
@@ -214,7 +214,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		boolean isStructuredProduct = implementationType == null || !implementationType.isSingleElement();
 		ToDoTaskContextConfig contextConfig = isStructuredProduct
 				? ToDoTaskContextConfig.picker(new CurriculumElementContextPicker(effectiveRoot.getKey(), element.getKey()), context)
-				: ToDoTaskContextConfig.off(context);
+				: ToDoTaskContextConfig.dropdown(List.of(context), context);
 		CurriculumElementToDoMemberProvider memberSearchProvider = new CurriculumElementToDoMemberProvider(element);
 		ToDoTaskDateConfig dateConfig = createDateConfig(ureq.getLocale(), element);
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource,
@@ -386,7 +386,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 	public void onCurriculumUpdated(Curriculum curriculum) {
 		toDoService.updateOriginTitle(TYPE, curriculum.getKey(), null,
-				curriculum.getDisplayName(), null);
+				curriculum.getIdentifier(), null);
 	}
 
 	public void onCurriculumElementUpdated(Identity doer, CurriculumElement element) {
@@ -395,7 +395,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			toDoService.updateOriginTitle(TYPE,
 					element.getCurriculum().getKey(),
 					element.getKey().toString(),
-					element.getCurriculum().getDisplayName(),
+					element.getCurriculum().getIdentifier(),
 					element.getDisplayName());
 		}
 	}
@@ -505,7 +505,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 		Long targetCurriculumKey = target.getCurriculum().getKey();
 		String targetSubPath = target.getKey().toString();
-		String targetCurriculumTitle = target.getCurriculum().getDisplayName();
+		String targetCurriculumTitle = target.getCurriculum().getIdentifier();
 		String targetElementTitle = target.getDisplayName();
 
 		int count = 0;

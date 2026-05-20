@@ -282,62 +282,27 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(ToDoTaskCols.title, renderer);
 			columnModel.setAlwaysVisible(true);
+			applyLabel(columnModel, ToDoTaskCols.title);
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
-		if (isVisible(ToDoTaskCols.priority)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.priority, new ToDoPriorityCellRenderer(getTranslator())));
-		}
-		if (isVisible(ToDoTaskCols.expenditureOfWork)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.expenditureOfWork));
-		}
-		if (isVisible(ToDoTaskCols.startDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.startDate));
-		}
-		if (isVisible(ToDoTaskCols.dueDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.dueDate, new ToDoDueDateCellRenderer()));
-		}
-		if (isVisible(ToDoTaskCols.due)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.due, new ToDoDueCellRenderer()));
-		}
-		if (isVisible(ToDoTaskCols.doneDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.doneDate));
-		}
-		if (isVisible(ToDoTaskCols.status)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator())));
-		}
-		if (isVisible(ToDoTaskCols.contextType)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextType));
-		}
-		if (isVisible(ToDoTaskCols.contextTitle)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextTitle));
-		}
-		if (isVisible(ToDoTaskCols.contextSubTitle)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.contextSubTitle));
-		}
-		if (isVisible(ToDoTaskCols.assigned)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.assigned));
-		}
-		if (isVisible(ToDoTaskCols.delegated)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.delegated));
-		}
-		if (isVisible(ToDoTaskCols.tags)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
-		}
-		if (isVisible(ToDoTaskCols.creationDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.creationDate));
-		}
-		if (isVisible(ToDoTaskCols.creationBy)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.creationBy));
-		}
-		if (isVisible(ToDoTaskCols.contentLastModifiedDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.contentLastModifiedDate));
-		}
-		if (isVisible(ToDoTaskCols.deletedDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedDate));
-		}
-		if (isVisible(ToDoTaskCols.deletedBy)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedBy));
-		}
+		addColumn(columnsModel, ToDoTaskCols.priority, new ToDoPriorityCellRenderer(getTranslator()));
+		addColumn(columnsModel, ToDoTaskCols.expenditureOfWork);
+		addColumn(columnsModel, ToDoTaskCols.startDate);
+		addColumn(columnsModel, ToDoTaskCols.dueDate, new ToDoDueDateCellRenderer());
+		addColumn(columnsModel, ToDoTaskCols.due, new ToDoDueCellRenderer());
+		addColumn(columnsModel, ToDoTaskCols.doneDate);
+		addColumn(columnsModel, ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator()));
+		addColumn(columnsModel, ToDoTaskCols.contextType);
+		addColumn(columnsModel, ToDoTaskCols.contextTitle);
+		addColumn(columnsModel, ToDoTaskCols.contextSubTitle);
+		addColumn(columnsModel, ToDoTaskCols.assigned);
+		addColumn(columnsModel, ToDoTaskCols.delegated);
+		addColumn(columnsModel, ToDoTaskCols.tags, new TextFlexiCellRenderer(EscapeMode.none));
+		addColumn(columnsModel, ToDoTaskCols.creationDate);
+		addColumn(columnsModel, ToDoTaskCols.creationBy);
+		addColumn(columnsModel, ToDoTaskCols.contentLastModifiedDate);
+		addColumn(columnsModel, ToDoTaskCols.deletedDate);
+		addColumn(columnsModel, ToDoTaskCols.deletedBy);
 		if (isVisible(ToDoTaskCols.tools)) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ToDoTaskCols.tools));
 		}
@@ -358,11 +323,45 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 	}
 
-	@SuppressWarnings("unused") 
+	@SuppressWarnings("unused")
 	protected boolean isVisible(ToDoTaskCols col) {
 		return true;
 	}
-	
+
+	protected boolean isDefaultVisible(ToDoTaskCols col) {
+		return switch (col) {
+			case expenditureOfWork, startDate, doneDate, contextSubTitle,
+				 creationDate, creationBy, contentLastModifiedDate,
+				 deletedDate, deletedBy -> false;
+			default -> true;
+		};
+	}
+
+	@SuppressWarnings("unused")
+	protected String getColumnLabel(ToDoTaskCols col) {
+		return null;
+	}
+
+	private void addColumn(FlexiTableColumnModel columnsModel, ToDoTaskCols col) {
+		addColumn(columnsModel, col, null);
+	}
+
+	private void addColumn(FlexiTableColumnModel columnsModel, ToDoTaskCols col, FlexiCellRenderer renderer) {
+		if (!isVisible(col)) return;
+		DefaultFlexiColumnModel cm = renderer != null
+				? new DefaultFlexiColumnModel(isDefaultVisible(col), col, renderer)
+				: new DefaultFlexiColumnModel(isDefaultVisible(col), col);
+		applyLabel(cm, col);
+		columnsModel.addFlexiColumnModel(cm);
+	}
+
+	private void applyLabel(DefaultFlexiColumnModel cm, ToDoTaskCols col) {
+		String label = getColumnLabel(col);
+		if (label != null) {
+			cm.setHeaderLabel(label);
+		}
+	}
+
 	protected void initBulkLinks() {
 		if (getSecurityCallback().canBulkDeleteToDoTasks()) {
 			tableEl.setMultiSelect(true);

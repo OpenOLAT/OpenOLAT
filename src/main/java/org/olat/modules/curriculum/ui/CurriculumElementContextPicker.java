@@ -42,11 +42,6 @@ public class CurriculumElementContextPicker implements ToDoTaskContextPicker {
 	}
 
 	@Override
-	public String getDisplayValue(ToDoContext context) {
-		return context.getOriginSubTitle();
-	}
-
-	@Override
 	public Controller createPickerController(UserRequest ureq, WindowControl wcControl, ToDoContext current) {
 		Long currentKey = current != null ? Long.valueOf(current.getOriginSubPath()): elementKey;
 		return new CurriculumElementContextPickerController(ureq, wcControl, implementationKey, currentKey);

@@ -313,15 +313,16 @@ public class ToDoTaskEditForm extends FormBasicController {
 		String displayName = toDoService.getProvider(context.getType()).getDisplayName(getLocale());
 		if (StringHelper.containsNonWhitespace(context.getOriginTitle())) {
 			displayName += " - " + context.getOriginTitle();
+			if (StringHelper.containsNonWhitespace(context.getOriginSubTitle())) {
+				displayName += " - " + context.getOriginSubTitle();
+			}
 		}
 		return displayName;
 	}
 
 	private void initContextPickerUI(FormItemContainer formLayout) {
 		ToDoTaskContextPicker contextPicker = contextConfig.getPicker();
-		String displayValue = contextPicker != null && selectedContext != null
-				? contextPicker.getDisplayValue(selectedContext)
-				: "";
+		String displayValue = selectedContext != null ? getContextValue(selectedContext) : "";
 		contextStaticEl = uifactory.addTextElement("task.context", "task.context", 256, displayValue, formLayout);
 		contextStaticEl.setDomReplacementWrapperRequired(false);
 		contextStaticEl.setEnabled(false);
@@ -522,9 +523,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 		} else if (contextPickerCtrl == source) {
 			if (event instanceof ToDoContextSelectedEvent tcse) {
 				selectedContext = tcse.getContext();
-				ToDoTaskContextPicker contextPicker = contextConfig.getPicker();
-				if (contextStaticEl != null && contextPicker != null) {
-					contextStaticEl.setValue(contextPicker.getDisplayValue(selectedContext));
+				if (contextStaticEl != null) {
+					contextStaticEl.setValue(getContextValue(selectedContext));
 				}
 			}
 			cmc.deactivate();

@@ -32,7 +32,5 @@ import org.olat.modules.todo.ToDoContext;
  */
 public interface ToDoTaskContextPicker {
 
-	String getDisplayValue(ToDoContext context);
-
 	Controller createPickerController(UserRequest ureq, WindowControl wc, ToDoContext current);
 }
