@@ -227,6 +227,28 @@ public class CertificationProgramDAO {
 				.getResultList();
 	}
 	
+	public List<CertificationProgram> loadCertificationPrograms(IdentityRef identity) {
+		String query = """
+				select program from certificationprogram as program
+				inner join fetch program.group as bGroup
+				left join fetch program.creditPointSystem as system
+				where exists (select ownerMember.key from bgroupmember as ownerMember
+				  where ownerMember.identity.key=:identityKey and ownerMember.group.key=bGroup.key and ownerMember.role=:ownerRole
+				) or exists (select rel.key from certificationprogramtoorganisation as rel
+				  inner join rel.organisation as org
+				  inner join org.group as oGroup
+				  inner join oGroup.members as manager
+				  where manager.identity.key=:identityKey and rel.certificationProgram.key=program.key and manager.role in (:managerRoles)
+				)
+				""";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("ownerRole", CertificationRoles.programowner.name())
+				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
+				.getResultList();
+	}
+	
 	/**
 	 * The method use the same permissions check as the query above.
 	 * 

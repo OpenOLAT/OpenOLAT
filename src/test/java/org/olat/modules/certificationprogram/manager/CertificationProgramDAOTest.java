@@ -475,6 +475,27 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 			.doesNotContain(outOfProgramParticipant);
 	}
 	
+	@Test
+	public void loadCertificationProgramsWithIdentity() {
+		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-owner-20");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-notowner-21");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-6", "Program to curriculum");
+		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
+		organisationService.addMember(defaultUnitTestOrganisation, curriculumManager,
+				OrganisationRoles.curriculummanager, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+		
+		// Manager
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(curriculumManager);
+		Assertions.assertThat(programs)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(program);
+		
+		// Not manager
+		List<CertificationProgram> noPrograms = certificationProgramDao.loadCertificationPrograms(notManager);
+		Assert.assertTrue(noPrograms.isEmpty());
+	}
+	
 	private Certificate generateCertificate(Identity participant, CertificationProgram program, Date now, int nextRecertification, int window) {
 		CertificateConfig config = CertificateConfig.builder().build();
 		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);

@@ -1029,19 +1029,36 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public Certificate uploadCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource,
-			Date nextRecertificationDate, File certificateFile) {
+			String externalId, CertificateManagedFlag[] managedFlags,
+			CertificationProgram program, OLATResource resource,
+			Date nextRecertificationDate, File certificateFile, Identity doer) {
 		CertificateImpl certificate = new CertificateImpl();
-		certificate.setOlatResource(resource);
-		certificate.setArchivedResourceKey(resource.getKey());
 		if(creationDate != null) {
 			certificate.setCreationDate(creationDate);
+			certificate.setLastModified(new Date());
+		} else {
+			certificate.setCreationDate(new Date());
+			certificate.setLastModified(certificate.getCreationDate());
 		}
-		RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
-		if(entry != null) {
-			certificate.setCourseTitle(entry.getDisplayname());
+		certificate.setOlatResource(resource);
+		certificate.setArchivedResourceKey(resource.getKey());
+
+		if(program != null) {
+			certificate.setCertificationProgram(program);
+			if(nextRecertificationDate == null) {
+				nextRecertificationDate = getDateNextRecertification(certificate, program);
+			}
+			Date windowDate = getDateWindowRecertification(nextRecertificationDate, program);
+			certificate.setRecertificationWindowDate(windowDate);
+			long counter = certificatesDao.certificationCount(identity, program);
+			certificate.setRecertificationCount(Long.valueOf(counter + 1L));
+		} else {
+			RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
+			if(entry != null) {
+				certificate.setCourseTitle(entry.getDisplayname());
+			}
 		}
-		certificate.setLastModified(certificate.getCreationDate());
+		
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setExternalId(externalId);
@@ -1050,6 +1067,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setStatus(CertificateStatus.ok);
 		certificate.setNextRecertificationDate(nextRecertificationDate);
 		certificate.setRecertificationPaused(false);
+		certificate.setUploadedBy(doer);
 
 		String dir = usersStorage.generateDir();
 		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
@@ -1064,12 +1082,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setPath(dir + storedCertificateFile.getName());
 
 			Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
-			if (dateFirstCertification != null) {
+			if(dateFirstCertification != null) {
 				certificatesDao.removeLastFlag(identity, resource.getKey());
 			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
-			log.info(Tracing.M_AUDIT, "Certificate uploaded for {} in {}", identity, resource);
+			if(program != null) {
+				log.info(Tracing.M_AUDIT, "Certificate uploaded for {} in program {}", identity, program.getKey());
+			} else {
+				log.info(Tracing.M_AUDIT, "Certificate uploaded for {} in {}", identity, resource);
+			}
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -1253,7 +1275,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setRecertificationWindowDate(windowDate);
 			certificate.setCertificationProgram(certificationProgram);
 			long counter = certificatesDao.certificationCount(identity, certificationProgram);
-			certificate.setRecertificationCount(Long.valueOf(counter + 1l));
+			certificate.setRecertificationCount(Long.valueOf(counter + 1L));
 		} else {
 			certificate.setCourseTitle(entry.getDisplayname());
 			RepositoryEntryCertificateConfiguration certificateConfig = getConfiguration(entry);

@@ -707,6 +707,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.BigBlueButtonTemplatesWebServiceTest.class,
 	org.olat.restapi.CatalogTest.class,
 	org.olat.restapi.CalendarTest.class,
+	org.olat.restapi.CertificationProgramsWebServiceTest.class,
 	org.olat.restapi.CourseCertificationTest.class,
 	org.olat.restapi.UserCertificationWebServiceTest.class,
 	org.olat.restapi.CourseGroupMgmtTest.class,

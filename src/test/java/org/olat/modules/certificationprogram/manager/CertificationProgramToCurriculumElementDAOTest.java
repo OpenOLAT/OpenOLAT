@@ -27,10 +27,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
+import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -59,6 +64,8 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 	private CurriculumDAO curriculumDao;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CertificatesManager certificateManager;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
@@ -225,4 +232,47 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 			.hasSize(1)
 			.containsExactly(participant);
 	}
+	
+	@Test
+	public void countCertificates() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-10");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-5", "Program to curriculum");
+		
+		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificateManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		waitMessageAreConsumed();
+		
+		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(program);
+		searchParams.setIdentityKey(participant.getKey());
+		searchParams.setType(Type.CERTIFIED);
+		long numOfCertificates = certificationProgramToCurriculumElementDao.countCertificates(searchParams, new Date());
+		Assert.assertEquals(1L, numOfCertificates);
+	}
+	
+	@Test
+	public void getCertificates() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-11");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-6", "Program to curriculum");
+		
+		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificateManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		waitMessageAreConsumed();
+		
+		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(program);
+		searchParams.setIdentityKey(participant.getKey());
+		searchParams.setType(Type.CERTIFIED);
+		List<Certificate> certificates = certificationProgramToCurriculumElementDao.getCertificates(searchParams, new Date(), -1);
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(certificates)
+			.hasSize(1)
+			.containsExactly(certificate);
+	}
+	
+	
 }

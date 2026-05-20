@@ -198,6 +198,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
+	public List<CertificationProgram> getCertificationPrograms(IdentityRef identity) {
+		return certificationProgramDao.loadCertificationPrograms(identity);
+	}
+
+	@Override
 	public List<CertificationProgramWithStatistics> getCertificationProgramsWithStatistics(IdentityRef identity, Date referenceDate) {
 		return certificationProgramDao.loadCertificationProgramsWithStatistics(identity, referenceDate);
 	}

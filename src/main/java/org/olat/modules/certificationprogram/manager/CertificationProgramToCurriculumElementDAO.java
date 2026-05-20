@@ -223,10 +223,9 @@ public class CertificationProgramToCurriculumElementDAO {
 		     .append(" inner join cert.identity as ident");
 		
 		appendQueryCertificates(query, searchParams);
-		List<Long> count = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Long.class)
-				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
-				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
-				.getResultList();
+		TypedQuery<Long> certificatesQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Long.class);
+		appendQueryCertificatesParameters(certificatesQuery, referenceDate, searchParams);
+		List<Long> count = certificatesQuery.getResultList();
 		return count == null || count.isEmpty() || count.get(0) == null
 				? 0l
 				: count.get(0).longValue();
@@ -247,15 +246,32 @@ public class CertificationProgramToCurriculumElementDAO {
 			}
 		}
 		
-		TypedQuery<Certificate> certificatesQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Certificate.class)
-				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
-				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP);
+		TypedQuery<Certificate> certificatesQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Certificate.class);
+		appendQueryCertificatesParameters(certificatesQuery, referenceDate, searchParams);
 		if(maxResults > 0) {
 			certificatesQuery
 				.setFirstResult(0)
 				.setMaxResults(maxResults);
 		}
 		return certificatesQuery.getResultList();
+	}
+	
+	private void appendQueryCertificatesParameters(TypedQuery<?> certificatesQuery,
+			Date referenceDate, CertificationProgramMemberSearchParameters searchParams) {
+		certificatesQuery
+			.setParameter("programKey", searchParams.getCertificationProgram().getKey())
+			.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP);
+		
+		if(searchParams.getExpirationBefore() != null) {
+			certificatesQuery.setParameter("expirationBefore", searchParams.getExpirationBefore(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getExpirationAfter() != null) {
+			certificatesQuery.setParameter("expirationAfter", searchParams.getExpirationAfter(), TemporalType.TIMESTAMP);
+		}
+		
+		if(searchParams.getIdentityKey() != null) {
+			certificatesQuery.setParameter("identityKey", searchParams.getIdentityKey());
+		}
 	}
 	
 	private void appendQueryCertificates(QueryBuilder query, CertificationProgramMemberSearchParameters searchParams) {
@@ -288,6 +304,19 @@ public class CertificationProgramToCurriculumElementDAO {
 					 	where lastOne.last=true and lastOne.identity.key=ident.key and lastOne.certificationProgram.key=:programKey
 					 )
 					)""");
+		}
+		
+		if(searchParams.getIdentityKey() != null) {
+			query.and().append(" cert.identity.key=:identityKey");
+		}
+		
+		if(searchParams.getExpirationBefore() != null && searchParams.getExpirationAfter() != null) {
+			query.and().append(" (cert.nextRecertificationDate<:expirationBefore")
+			     .append(" and cert.nextRecertificationDate>:expirationAfter)");
+		} else if(searchParams.getExpirationBefore() != null) {
+			query.and().append(" cert.nextRecertificationDate<:expirationBefore");
+		} else if(searchParams.getExpirationAfter() != null) {
+			query.and().append(" cert.nextRecertificationDate>:expirationAfter");
 		}
 	}
 

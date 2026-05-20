@@ -70,6 +70,8 @@ public interface CertificationProgramService {
 	 */
 	boolean canViewCertificationProgram(CertificationProgram certificationProgram, IdentityRef identity);
 	
+	List<CertificationProgram> getCertificationPrograms(IdentityRef identity);
+	
 	List<CertificationProgramWithStatistics> getCertificationProgramsWithStatistics(IdentityRef identity, Date referenceDate);
 	
 	CertificationProgramActiveMemberStatistics getCertificationProgramActiveMembersStatistics(CertificationProgramRef program, Date referenceDate);

@@ -392,8 +392,8 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI()); 
-		Certificate certificate = certificatesManager
-				.uploadCertificate(identity, new Date(), null, null, entry.getOlatResource(), null, certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, new Date(), null, null,
+				null, entry.getOlatResource(), null, certificateFile, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		

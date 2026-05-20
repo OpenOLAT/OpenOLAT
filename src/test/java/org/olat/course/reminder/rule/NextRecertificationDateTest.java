@@ -105,8 +105,8 @@ public class NextRecertificationDateTest extends OlatTestCase {
 		Assert.assertNotNull(templateUrl);
 		File certificateFile = new File(templateUrl.toURI());
 		
-		Certificate certificate = certificatesManager
-				.uploadCertificate(identity, new Date(), null, null, entry.getOlatResource(), nextRecertificationDate, certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, new Date(), null, null,
+						null, entry.getOlatResource(), nextRecertificationDate, certificateFile, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		Assert.assertNotNull(certificate);
 
