@@ -1,10 +1,10 @@
 <dialog id="callout_$r.getCId()" class="popover in bottom #if($r.isTrue($wider))o_wide_popover #end style="z-index:$zindexarea;">
-	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
+	#if($arrow && ($orientation == "bottom" || $orientation == "bottomOrTop"))<div class="arrow"></div>#end
 	#if($r.isNotEmpty($title))
 		<div class="popover-title">$r.escapeHtml($title)</div>
 	#end
 	<div class="popover-content">$r.render("cont")</div>
-	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
+	#if($arrow && ($orientation == "bottom" || $orientation == "bottomOrTop"))<div class="arrow"></div>#end
 </dialog>
 <script>
 "use strict";
@@ -35,9 +35,11 @@ function positionBottomOrTopCallout(target, callout) {
 	if (bottomDist > topDist) {
 		bottomOffset.top += documentScrollTop;
 		callout.offset(bottomOffset);
+		callout.removeClass('top').addClass('bottom');
 	} else {
 		topOffset.top += documentScrollTop;
 		callout.offset(topOffset);
+		callout.removeClass('bottom').addClass('top');
 	}
 }
 
@@ -86,10 +88,19 @@ jQuery(function() {
 					});
 				}
 			} else if (orientation === 'bottomOrTop') {
-				targetEl.on('resize', function() {
+				positionBottomOrTopCallout(targetEl, callout);
+				if (window.ResizeObserver) {
+					new ResizeObserver(function() {
+						positionBottomOrTopCallout(targetEl, callout);
+					}).observe(callout[0]);
+				}
+				var calloutResizeNS = 'resize.' + callout.attr('id');
+				jQuery(window).on(calloutResizeNS, function() {
 					positionBottomOrTopCallout(targetEl, callout);
 				});
-				positionBottomOrTopCallout(targetEl, callout);
+				callout.on('close', function() {
+					jQuery(window).off(calloutResizeNS);
+				});
 			} else {
 				if(targetOffset.left >= 0 && callout.outerWidth() > 50 && targetOffset.left <= ((callout.outerWidth() - targetEl.outerWidth()) / 2)) {
 					## left edge case: show at left border

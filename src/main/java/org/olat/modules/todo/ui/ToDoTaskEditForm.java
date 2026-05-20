@@ -55,6 +55,8 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
@@ -781,7 +783,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 		datePickerCtrl = datesConfig.getPicker().createPickerController(ureq, getWindowControl(), current, forStart);
 		listenTo(datePickerCtrl);
 		datePickerCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				datePickerCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				datePickerCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "",
+				new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, null));
 		listenTo(datePickerCalloutCtrl);
 		datePickerCalloutCtrl.activate();
 	}
