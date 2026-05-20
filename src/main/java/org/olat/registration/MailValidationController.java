@@ -26,7 +26,6 @@
 package org.olat.registration;
 
 import java.text.DateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -217,8 +216,10 @@ public class MailValidationController extends FormBasicController {
 	}
 
 	private boolean isEmailEligibleForRegistration(String email) {
-		return userManager.isEmailAllowed(email) &&
-				(!userModule.isEmailUnique() || userManager.findUniqueIdentityByEmail(email) == null);
+		Identity id = getIdentity();
+		return id == null
+			? userManager.isEmailAllowed(email)
+			: userManager.isEmailAllowed(email, id.getUser());
 	}
 
 	private void loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
@@ -264,7 +265,7 @@ public class MailValidationController extends FormBasicController {
 	}
 
 	private void informExistingUser(String email, String[] whereFromAttrs) {
-		List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
+		List<Identity> identities = userManager.findIdentitiesByEmail(List.of(email));
 		for (Identity identity : identities) {
 			String subject = translate("login.subject");
 			String username = resolveUsername(identity);
