@@ -164,7 +164,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		boolean buttonGroupStyle = source.getFormItem().isRenderAsButtonGroup();
 		boolean cardStyle = source.getFormItem().isRenderAsCard();
 		boolean hasCustomCss = StringHelper.containsNonWhitespace(ssec.getCustomCssClass());
-		boolean disabled = !ssec.isEnabled();
+		boolean disabled = !ssec.isEnabled() || !source.isEnabled();
 		boolean selected = ssec.isSelected();
 		
 		// read write view
@@ -184,8 +184,8 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		  					.append("btn btn-default ", inline && buttonGroupStyle)
 		  					.append(ssec.getCustomCssClass(), inline && (buttonGroupStyle || cardStyle) && hasCustomCss)
 		  					.append(" active", inline && buttonGroupStyle && selected)
-		  					.append("' ", inline || source.getFormItem().isRenderAsButtonGroup())
-		  					.append("disabled ", inline && disabled);
+		  					.append(" disabled", inline && buttonGroupStyle && disabled)
+		  					.append("' ", inline || source.getFormItem().isRenderAsButtonGroup());
 		
 		if(inline && source.getWidthInPercent() > 0) {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
