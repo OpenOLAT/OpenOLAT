@@ -39,6 +39,8 @@ public class BulkAssessmentRow implements Serializable {
 	private String comment;
 	private List<String> returnFiles;
 	
+	private boolean valid;
+	
 	public String getAssessedId() {
 		return assessedId;
 	}
@@ -85,5 +87,13 @@ public class BulkAssessmentRow implements Serializable {
 
 	public void setReturnFiles(List<String> returnFiles) {
 		this.returnFiles = returnFiles;
+	}
+
+	public boolean isValid() {
+		return valid;
+	}
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
 	}
 }

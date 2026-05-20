@@ -36,13 +36,20 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
@@ -91,32 +98,48 @@ public class ValidationStepForm extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		CourseNode courseNode = (CourseNode)getFromRunContext("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode, courseEntry);
+		
+		initValidTableForm(formLayout, settings);
+		initInvalidTableForm(formLayout, settings);
+		
+		flc.contextPut("settings", settings);
+	}
+
+	private void initValidTableForm(FormItemContainer formLayout, BulkAssessmentSettings settings) {
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.identifier", Cols.identifier.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.lastName", Cols.lastName.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.firstName", Cols.firstName.ordinal()));
-		if(settings.isHasScore()) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", Cols.score.ordinal(), new ScoreCellRenderer(settings)));
-		}
-		if(settings.isHasPassed() && settings.getCut() == null) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", Cols.passed.ordinal(), new PassedCellRenderer(getLocale())));
-		}
-		if(settings.isHasUserComment()) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.comment", Cols.comment.ordinal()));
-		}
-		if(settings.isHasReturnFiles()) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfReturnFiles", Cols.numOfReturnFiles.ordinal()));
-		}
+		initTableColumnModel(tableColumnModel, settings);
 		
 		validModel = new ValidDataModel(tableColumnModel);
 		validTableEl = uifactory.addTableElement(getWindowControl(), "validList", validModel, getTranslator(), formLayout);
 		validTableEl.setCustomizeColumns(false);
-		
+	}
+	
+	private void initInvalidTableForm(FormItemContainer formLayout, BulkAssessmentSettings settings) {
+		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.error, new ErrorCellRenderer()));
+		initTableColumnModel(tableColumnModel, settings);
+
 		invalidModel = new ValidDataModel(tableColumnModel);
 		invalidTableEl = uifactory.addTableElement(getWindowControl(), "notFoundList", invalidModel, getTranslator(), formLayout);
 		invalidTableEl.setCustomizeColumns(false);
-		
-		flc.contextPut("settings", settings);
+	}
+
+	private void initTableColumnModel(FlexiTableColumnModel tableColumnModel, BulkAssessmentSettings settings) {
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.identifier));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastName));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstName));
+		if(settings.isHasScore()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score, new ScoreCellRenderer(settings)));
+		}
+		if(settings.isHasPassed() && settings.getCut() == null) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer(getLocale())));
+		}
+		if(settings.isHasUserComment()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comment));
+		}
+		if(settings.isHasReturnFiles()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numOfReturnFiles));
+		}
 	}
 	
 	private void doValidate() {
@@ -141,16 +164,21 @@ public class ValidationStepForm extends StepFormBasicController {
 
 		List<UserData> validDatas = new ArrayList<>(idToIdentityMap.size());
 		List<UserData> invalidDatas = new ArrayList<>(rows.size() - idToIdentityMap.size());
+		Set<Identity> deduplication = new HashSet<>();
 		for(BulkAssessmentRow row : datas.getRows()) {
 			Identity foundIdentity = idToIdentityMap.get(row.getAssessedId());
 			if(foundIdentity == null) {
-				invalidDatas.add(new UserData(row, null));
-			} else if(!participantsSet.contains(foundIdentity)) {
-				invalidDatas.add(new UserData(row, foundIdentity));
-				
+				invalidDatas.add(UserData.valueOfWithError(row, foundIdentity, ErrorType.NOT_FOUND));
 			} else {
-				row.setIdentityKey(foundIdentity.getKey());
-				validDatas.add(new UserData(row, foundIdentity));
+				if(deduplication.contains(foundIdentity)) {
+					invalidDatas.add(UserData.valueOfWithError(row, foundIdentity, ErrorType.DUPLICATE));
+				} else if(!participantsSet.contains(foundIdentity)) {
+					invalidDatas.add(UserData.valueOfWithError(row, foundIdentity, ErrorType.NOT_PARTICIPANT));
+				} else {
+					row.setIdentityKey(foundIdentity.getKey());
+					validDatas.add(UserData.valueOf(row, foundIdentity));
+				}
+				deduplication.add(foundIdentity);
 			}
 		}
 		validModel.setObjects(validDatas);
@@ -205,13 +233,46 @@ public class ValidationStepForm extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
+	private class ErrorCellRenderer implements FlexiCellRenderer {
+
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if(cellValue instanceof ErrorType error) {
+				switch(error) {
+					case NOT_FOUND: renderError(target, "error.user.notfound"); break;
+					case DUPLICATE: renderError(target, "error.user.duplicate"); break;
+					case NOT_PARTICIPANT: renderError(target, "error.user.notparticipant"); break;
+				}
+			}
+		}
+		
+		private void renderError(StringOutput target, String i18nKey) {
+			target.append("<span><i class='o_icon o_icon_warning'> </i> ")
+			      .append(translate(i18nKey))
+			      .append("</span>");
+		}
+	}
+	
 	private static class UserData {
+		private final ErrorType error;
 		private final Identity identity;
 		private final BulkAssessmentRow row;
 		
-		public UserData(BulkAssessmentRow row, Identity identity) {
+		private UserData(BulkAssessmentRow row, Identity identity, ErrorType type) {
 			this.row = row;
+			this.error = type;
 			this.identity = identity;
+		}
+		
+		public static final UserData valueOfWithError(BulkAssessmentRow row, Identity identity, ErrorType type) {
+			row.setValid(false);
+			return new UserData(row, identity, type);
+		}
+		
+		public static final UserData valueOf(BulkAssessmentRow row, Identity identity) {
+			row.setValid(true);
+			return new UserData(row, identity, null);
 		}
 		
 		public String getAssessedIdentifier() {
@@ -242,6 +303,10 @@ public class ValidationStepForm extends StepFormBasicController {
 			return row.getReturnFiles() == null ? 0 : row.getReturnFiles().size();
 		}
 		
+		public ErrorType getError() {
+			return error;
+		}
+		
 		public BulkAssessmentRow getRow() {
 			if(identity != null) {
 				row.setIdentityKey(identity.getKey());
@@ -250,18 +315,47 @@ public class ValidationStepForm extends StepFormBasicController {
 		}
 	}
 	
-	private enum Cols {
-		identifier,
-		lastName,
-		firstName,
-		score,
-		passed,
-		status,
-		comment,
-		numOfReturnFiles
+	private enum ErrorType {
+		NOT_FOUND,
+		DUPLICATE,
+		NOT_PARTICIPANT
 	}
 	
-	private static class ValidDataModel  extends DefaultFlexiTableDataModel<UserData> {
+	private enum Cols implements FlexiSortableColumnDef {
+		identifier("table.header.identifier"),
+		lastName("table.header.lastName"),
+		firstName("table.header.firstName"),
+		score("table.header.score"),
+		passed("table.header.passed"),
+		comment("table.header.comment"),
+		numOfReturnFiles("table.header.numOfReturnFiles"),
+		error("table.header.error");
+		
+		private final String i18nKey;
+		
+		private Cols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
+	}
+	
+	private static class ValidDataModel extends DefaultFlexiTableDataModel<UserData> {
+		
+		private static final Cols[] COLS = Cols.values();
 		
 		public ValidDataModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
@@ -270,17 +364,17 @@ public class ValidationStepForm extends StepFormBasicController {
 		@Override
 		public Object getValueAt(int row, int col) {
 			UserData data = getObject(row);
-			switch(Cols.values()[col]) {
-				case identifier: return data.getAssessedIdentifier();
-				case firstName: return data.getFirstName();
-				case lastName: return data.getLastName();
-				case score: return data.getScore();
-				case passed: return data.getPassed();
-				case status: return data.getPassed();
-				case comment: return data.getComment();
-				case numOfReturnFiles: return data.getNumOfReturnFiles();
-				default: return null;
-			}
+			return switch(COLS[col]) {
+				case identifier -> data.getAssessedIdentifier();
+				case firstName -> data.getFirstName();
+				case lastName -> data.getLastName();
+				case score -> data.getScore();
+				case passed -> data.getPassed();
+				case comment -> data.getComment();
+				case numOfReturnFiles -> data.getNumOfReturnFiles();
+				case error -> data.getError();
+				default -> null;
+			};
 		}
 	}
 }
