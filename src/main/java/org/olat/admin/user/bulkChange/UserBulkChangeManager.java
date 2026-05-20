@@ -155,7 +155,7 @@ public class UserBulkChangeManager implements InitializingBean {
 						password = null;
 					}
 					
-					olatAuthManager.changePasswordAsAdmin(identity, password);
+					olatAuthManager.changePassword(actingIdentity, identity, password);
 				}
 	
 				// set language
@@ -255,7 +255,7 @@ public class UserBulkChangeManager implements InitializingBean {
 		if (!ownGroups.isEmpty() || !partGroups.isEmpty()) {
 			List<BusinessGroupMembershipChange> changes = new ArrayList<>();
 			for(Identity selIdentity:selIdentities) {
-				if(ownGroups != null && !ownGroups.isEmpty()) {
+				if(!ownGroups.isEmpty()) {
 					for(Long tutorGroupKey:ownGroups) {
 						BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(selIdentity, tutorGroupKey);
 						change.setTutor(Boolean.TRUE);
