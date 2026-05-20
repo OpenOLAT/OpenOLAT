@@ -30,7 +30,7 @@ public class EditStepStatusRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
+			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof EditStepRow) {
 			EditStepRow stepRow = (EditStepRow)cellValue;
 			if(stepRow.isStaffOnly()) {

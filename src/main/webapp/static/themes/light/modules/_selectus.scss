@@ -117,24 +117,8 @@ div.o_sel_applications_to_reference .o_warning {
 	margin: -30px 0 0 0;
 }
 
-.o_inline_under {
-	margin-top: 15px;
-}
-
 .form-inline.o_form_fullname input, .form-inline.o_form_fullname select {
 	margin-left: -3px;
-}
-
-.o_form_search_inline {
-	margin-top: 15px;
-}
-
-.o_form_search_inline > div:first-of-type {
-	padding-right: 34px;
-}
-
-.o_form_search_inline > div, .o_form_search_inline > div > div {
-	display: inline-block;
 }
 
 .o_position_status {
@@ -575,7 +559,7 @@ fieldset.o_letter_preview legend {
 	margin-bottom: 20em;
 }
 
-.o_labeled {
+.o_applications_steps .o_labeled {
 	color: white;
 	padding: 2px 12px;
 	border-radius: 3px;

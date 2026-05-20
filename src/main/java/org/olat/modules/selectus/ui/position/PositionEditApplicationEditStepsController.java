@@ -108,8 +108,7 @@ public class PositionEditApplicationEditStepsController extends FormBasicControl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("customSteps", Boolean.valueOf(customStepsEnabled));
 		}
 
@@ -146,7 +145,7 @@ public class PositionEditApplicationEditStepsController extends FormBasicControl
 		tableEl = uifactory.addTableElement(getWindowControl(), "steps", tableModel, 25, true, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setElementCssClass("o_edit_ml_table");
+		tableEl.setElementCssClass("o_edit_ml_table o_applications_steps");
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
