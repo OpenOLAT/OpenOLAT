@@ -389,6 +389,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 						courseEntry.getKey(), courseEntry.getDisplayname());
 				feedbacks.add(new BulkAssessmentFeedback("bulk.action.not.participant", row.getAssessedId()));
 				continue;// not a participant
+			} else if(!row.isValid()) {
+				// Currently only duplicate
+				continue;
 			}
 
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
