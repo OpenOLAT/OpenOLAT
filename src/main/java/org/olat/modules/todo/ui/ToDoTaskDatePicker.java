@@ -19,28 +19,23 @@
  */
 package org.olat.modules.todo.ui;
 
+import java.util.Date;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.todo.ToDoRelativeDates;
+
 /**
- * Initial date: 2026-05-08<br>
+ * Initial date: 2026-05-18<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public final class ToDoTaskDateConfig {
+public interface ToDoTaskDatePicker {
 
-	private final ToDoTaskDatePicker picker;
+	String getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
 
-	private ToDoTaskDateConfig(ToDoTaskDatePicker picker) {
-		this.picker = picker;
-	}
+	Date resolve(ToDoRelativeDates relativeDates, boolean start);
 
-	public static ToDoTaskDateConfig absoluteOnly() {
-		return new ToDoTaskDateConfig(null);
-	}
-
-	public static ToDoTaskDateConfig absoluteOrRelative(ToDoTaskDatePicker picker) {
-		return new ToDoTaskDateConfig(picker);
-	}
-
-	public ToDoTaskDatePicker getPicker() {
-		return picker;
-	}
+	Controller createPickerController(UserRequest ureq, WindowControl wc, ToDoRelativeDates current, boolean start);
 
 }

@@ -50,6 +50,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	private boolean allowNoSelection = false;
 	private boolean noSelectionElement = false;
 	private String translatedNoSelectionValue;
+	private String ariaLabel;
 
 	private final SelectboxComponent component;
 	private final Locale locale;
@@ -94,6 +95,16 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
 		component.setDomReplacementWrapperRequired(required);
+	}
+
+	@Override
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	@Override
+	public void setAriaLabel(String ariaLabel) {
+		this.ariaLabel = ariaLabel;
 	}
 
 	@Override

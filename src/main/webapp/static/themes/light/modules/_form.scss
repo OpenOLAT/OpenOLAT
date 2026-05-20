@@ -614,7 +614,11 @@ form .o_form, form.o_form {
 	.radio label {
 		padding-left: 0;
 	}
-	
+
+	&.btn-group label.radio-inline {
+		margin-right: 0;
+	}
+
 	.btn.active {
 		&.o_primary {
 			color: $btn-primary-color;

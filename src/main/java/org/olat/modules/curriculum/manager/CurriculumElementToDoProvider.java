@@ -44,6 +44,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
@@ -75,8 +76,10 @@ import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoDateResolver;
+import org.olat.modules.todo.ui.ToDoRelativeDatePickerController;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDateConfig;
+import org.olat.modules.todo.ui.ToDoTaskDatePicker;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
@@ -250,18 +253,81 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	}
 
 	private ToDoTaskDateConfig createDateConfig(Locale locale, CurriculumElement element) {
-		Translator translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale);
-		SelectionValues relativeRefs = new SelectionValues();
-		relativeRefs.add(SelectionValues.entry(DATE_REF_BEFORE_BEGIN, translator.translate("curriculum.element.todo.date.ref.before.begin")));
-		relativeRefs.add(SelectionValues.entry(DATE_REF_AFTER_BEGIN,  translator.translate("curriculum.element.todo.date.ref.after.begin")));
-		relativeRefs.add(SelectionValues.entry(DATE_REF_BEFORE_END,   translator.translate("curriculum.element.todo.date.ref.before.end")));
-		relativeRefs.add(SelectionValues.entry(DATE_REF_AFTER_END,    translator.translate("curriculum.element.todo.date.ref.after.end")));
-		SelectionValues sameDayRefs = new SelectionValues();
-		sameDayRefs.add(SelectionValues.entry(DATE_REF_SAME_DAY_BEGIN, translator.translate("curriculum.element.todo.date.ref.same.day.begin")));
-		sameDayRefs.add(SelectionValues.entry(DATE_REF_SAME_DAY_END,   translator.translate("curriculum.element.todo.date.ref.same.day.end")));
-		ToDoDateResolver resolver = (ref, unit, value) ->
-				computeRelativeDate(ref, unit, value, element.getBeginDate(), element.getEndDate());
-		return ToDoTaskDateConfig.absoluteOrRelative(relativeRefs, sameDayRefs, resolver);
+		return ToDoTaskDateConfig.absoluteOrRelative(
+				new CurriculumElementDatePicker(locale, element.getBeginDate(), element.getEndDate()));
+	}
+
+	private static final class CurriculumElementDatePicker implements ToDoTaskDatePicker {
+
+		private final Locale locale;
+		private final Translator translator;
+		private final Date beginDate;
+		private final Date endDate;
+
+		CurriculumElementDatePicker(Locale locale, Date beginDate, Date endDate) {
+			this.locale = locale;
+			this.translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
+					Util.createPackageTranslator(ToDoUIFactory.class, locale));
+			this.beginDate = beginDate;
+			this.endDate = endDate;
+		}
+
+		@Override
+		public String getDisplayValue(ToDoRelativeDates rd, boolean start) {
+			String ref = start ? rd.getStartRef() : rd.getDueRef();
+			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
+			Integer value = start ? rd.getStartValue() : rd.getDueValue();
+			if (ref == null) return "";
+
+			Date resolvedDate = computeRelativeDate(ref, unit, value, beginDate, endDate);
+			String formatted = resolvedDate != null ? Formatter.getInstance(locale).formatDate(resolvedDate) : "";
+
+			String tplKey = switch (ref) {
+				case DATE_REF_BEFORE_BEGIN   -> "task.date.relative.display.before.begin";
+				case DATE_REF_AFTER_BEGIN    -> "task.date.relative.display.after.begin";
+				case DATE_REF_BEFORE_END     -> "task.date.relative.display.before.end";
+				case DATE_REF_AFTER_END      -> "task.date.relative.display.after.end";
+				case DATE_REF_SAME_DAY_BEGIN -> "task.date.relative.display.same.day.begin";
+				case DATE_REF_SAME_DAY_END   -> "task.date.relative.display.same.day.end";
+				default -> null;
+			};
+			if (tplKey == null) return "";
+
+			String valueStr = value != null ? String.valueOf(value) : "";
+			String unitLabel = "";
+			if (unit != null && unit != ToDoDateUnit.SAME_DAY) {
+				String unitKey = (value != null && value == 1)
+						? "unit." + unit.name().toLowerCase().replaceAll("s$", "")
+						: "unit." + unit.name().toLowerCase();
+				unitLabel = translator.translate(unitKey);
+			}
+			return translator.translate(tplKey, formatted, valueStr, unitLabel);
+		}
+
+		@Override
+		public Date resolve(ToDoRelativeDates rd, boolean start) {
+			String ref = start ? rd.getStartRef() : rd.getDueRef();
+			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
+			Integer value = start ? rd.getStartValue() : rd.getDueValue();
+			return computeRelativeDate(ref, unit, value, beginDate, endDate);
+		}
+
+		@Override
+		public Controller createPickerController(UserRequest ureq, WindowControl wc,
+				ToDoRelativeDates current, boolean start) {
+			Formatter fmt = Formatter.getInstance(locale);
+			SelectionValues refs = new SelectionValues();
+			refs.add(SelectionValues.entry("BEGIN",
+					beginDate != null
+							? translator.translate("task.date.relative.callout.ref.begin.with.date", fmt.formatDate(beginDate))
+							: translator.translate("task.date.relative.callout.ref.begin.no.date")));
+			refs.add(SelectionValues.entry("END",
+					endDate != null
+							? translator.translate("task.date.relative.callout.ref.end.with.date", fmt.formatDate(endDate))
+							: translator.translate("task.date.relative.callout.ref.end.no.date")));
+			ToDoDateResolver resolver = (ref, unit, value) -> computeRelativeDate(ref, unit, value, beginDate, endDate);
+			return new ToDoRelativeDatePickerController(ureq, wc, refs, resolver, current, start);
+		}
 	}
 
 	private ToDoTaskSearchParams createTagSearchParams() {

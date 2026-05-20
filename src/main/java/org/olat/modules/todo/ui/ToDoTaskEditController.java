@@ -194,9 +194,9 @@ public class ToDoTaskEditController extends FormBasicController {
 		ToDoRelativeDates relativeDates = toDoTaskEditForm.getRelativeDates();
 		Date startDate;
 		Date dueDate;
-		if (relativeDates != null && dateConfig != null && dateConfig.getResolver() != null) {
-			startDate = dateConfig.getResolver().resolve(relativeDates.getStartRef(), relativeDates.getStartUnit(), relativeDates.getStartValue());
-			dueDate   = dateConfig.getResolver().resolve(relativeDates.getDueRef(),   relativeDates.getDueUnit(),   relativeDates.getDueValue());
+		if (relativeDates != null && dateConfig != null && dateConfig.getPicker() != null) {
+			startDate = dateConfig.getPicker().resolve(relativeDates, true);
+			dueDate   = dateConfig.getPicker().resolve(relativeDates, false);
 		} else {
 			startDate = toDoTaskEditForm.getStartDate();
 			dueDate   = toDoTaskEditForm.getDueDate();

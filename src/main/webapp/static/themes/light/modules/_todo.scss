@@ -15,6 +15,89 @@
 	}
 }
 
+// Relative dates picker
+.form-inline.o_todo_relative_offset_row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	> span:first-of-type {
+		flex: 1;
+		> input {
+			width: 100%;
+		}
+	}
+	~.form-control-feedback {
+		display: none;
+	}
+}
+.form-inline.o_todo_date_row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+	> span {
+		display: contents;
+	}
+
+	> span > .o_radio_buttons {
+		display: flex;
+		align-items: center;
+	}
+
+	~.form-control-feedback {
+		display: none;
+	}
+
+	> span > .o_date {
+		flex: 1;
+	}
+
+	> span > .input-group {
+		display: flex !important;
+		align-items: stretch;
+		flex: 1;
+
+		> span:not(.input-group-addon) {
+			flex: 1;
+		}
+
+		> span:not(.input-group-addon) > .form-control {
+			width: 100%;
+			border-right: 0;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+
+		> .input-group-addon {
+			display: flex;
+			align-items: center;
+			padding: 0;
+
+			> .btn {
+				height: 100%;
+				padding: 6px 12px;
+				background: transparent;
+				border: none;
+				border-radius: 0;
+				box-shadow: none;
+			}
+		}
+	}
+}
+.o_todo_unit_row {
+	.btn-group {
+		display: flex;
+		width: 100%;
+
+		> label {
+			flex: 1;
+			text-align: center;
+		}
+	}
+}
+
+// List of to-dos
 .o_todo_task_list {
 	// Used in details
 	container-type: inline-size;

@@ -19,28 +19,34 @@
  */
 package org.olat.modules.todo.ui;
 
+import org.olat.core.gui.control.Event;
+import org.olat.modules.todo.ToDoRelativeDates;
+
 /**
- * Initial date: 2026-05-08<br>
+ * Initial date: 2026-05-18<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public final class ToDoTaskDateConfig {
+public class ToDoRelativeDateSelectedEvent extends Event {
 
-	private final ToDoTaskDatePicker picker;
+	private static final long serialVersionUID = 1L;
 
-	private ToDoTaskDateConfig(ToDoTaskDatePicker picker) {
-		this.picker = picker;
+	public static final String COMMAND = "todo-rel-date-selected";
+
+	private final ToDoRelativeDates relativeDates;
+	private final boolean start;
+
+	public ToDoRelativeDateSelectedEvent(ToDoRelativeDates relativeDates, boolean start) {
+		super(COMMAND);
+		this.relativeDates = relativeDates;
+		this.start = start;
 	}
 
-	public static ToDoTaskDateConfig absoluteOnly() {
-		return new ToDoTaskDateConfig(null);
+	public ToDoRelativeDates getRelativeDates() {
+		return relativeDates;
 	}
 
-	public static ToDoTaskDateConfig absoluteOrRelative(ToDoTaskDatePicker picker) {
-		return new ToDoTaskDateConfig(picker);
-	}
-
-	public ToDoTaskDatePicker getPicker() {
-		return picker;
+	public boolean isStart() {
+		return start;
 	}
 
 }

@@ -62,6 +62,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private String showMoreCardsI18nKey;
 	private boolean renderAsButtonGroup = false;
 	private String translatedNoSelectionValue;
+	private String ariaLabel;
 
 	private final Layout layout;
 	protected final SingleSelectionComponent component;
@@ -110,6 +111,16 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	
 	public Layout getLayout() {
 		return layout;
+	}
+
+	@Override
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	@Override
+	public void setAriaLabel(String ariaLabel) {
+		this.ariaLabel = ariaLabel;
 	}
 
 	@Override

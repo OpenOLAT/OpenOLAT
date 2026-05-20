@@ -108,7 +108,11 @@ public interface SingleSelection extends SelectionElement {
 	 *            each key-value pair or NULL not not use special styling
 	 */
 	public void setKeysAndValues(String[] keys, String[] values,String[] cssClasses);
-	
+
+	public String getAriaLabel();
+
+	public void setAriaLabel(String ariaLabel);
+
 	public enum Layout {
 		vertical,
 		horizontal
