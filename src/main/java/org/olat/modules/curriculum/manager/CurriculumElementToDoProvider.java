@@ -254,22 +254,40 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 	private ToDoTaskDateConfig createDateConfig(Locale locale, CurriculumElement element) {
 		return ToDoTaskDateConfig.absoluteOrRelative(
-				new CurriculumElementDatePicker(locale, element.getBeginDate(), element.getEndDate()));
+				new CurriculumElementDatePicker(locale, curriculumService, element));
 	}
 
 	private static final class CurriculumElementDatePicker implements ToDoTaskDatePicker {
 
 		private final Locale locale;
 		private final Translator translator;
-		private final Date beginDate;
-		private final Date endDate;
+		private final CurriculumService curriculumService;
+		private CurriculumElement element;
 
-		CurriculumElementDatePicker(Locale locale, Date beginDate, Date endDate) {
+		CurriculumElementDatePicker(Locale locale, CurriculumService curriculumService, CurriculumElement element) {
 			this.locale = locale;
 			this.translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
 					Util.createPackageTranslator(ToDoUIFactory.class, locale));
-			this.beginDate = beginDate;
-			this.endDate = endDate;
+			this.curriculumService = curriculumService;
+			this.element = element;
+		}
+
+		@Override
+		public void contextChanged(ToDoContext context) {
+			if (context == null || !TYPE.equals(context.getType())
+					|| !StringHelper.containsNonWhitespace(context.getOriginSubPath())) {
+				return;
+			}
+			Long elementKey;
+			try {
+				elementKey = Long.valueOf(context.getOriginSubPath());
+			} catch (NumberFormatException e) {
+				return;
+			}
+			if (element != null && elementKey.equals(element.getKey())) {
+				return;
+			}
+			element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(elementKey));
 		}
 
 		@Override
@@ -279,6 +297,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			Integer value = start ? rd.getStartValue() : rd.getDueValue();
 			if (ref == null) return "";
 
+			Date beginDate = element != null ? element.getBeginDate() : null;
+			Date endDate = element != null ? element.getEndDate() : null;
 			Date resolvedDate = computeRelativeDate(ref, unit, value, beginDate, endDate);
 			String formatted = resolvedDate != null ? Formatter.getInstance(locale).formatDate(resolvedDate) : "";
 
@@ -309,6 +329,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			String ref = start ? rd.getStartRef() : rd.getDueRef();
 			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
 			Integer value = start ? rd.getStartValue() : rd.getDueValue();
+			Date beginDate = element != null ? element.getBeginDate() : null;
+			Date endDate = element != null ? element.getEndDate() : null;
 			return computeRelativeDate(ref, unit, value, beginDate, endDate);
 		}
 
@@ -316,6 +338,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		public Controller createPickerController(UserRequest ureq, WindowControl wc,
 				ToDoRelativeDates current, boolean start) {
 			Formatter fmt = Formatter.getInstance(locale);
+			Date beginDate = element != null ? element.getBeginDate() : null;
+			Date endDate = element != null ? element.getEndDate() : null;
 			SelectionValues refs = new SelectionValues();
 			refs.add(SelectionValues.entry("BEGIN",
 					beginDate != null

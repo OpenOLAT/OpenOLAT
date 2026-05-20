@@ -526,6 +526,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 				if (contextStaticEl != null) {
 					contextStaticEl.setValue(getContextValue(selectedContext));
 				}
+				doRefreshRelativeDates();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -697,6 +698,20 @@ public class ToDoTaskEditForm extends FormBasicController {
 			if (dueDateRelCont != null) {
 				dueDateRelCont.setVisible(relativeMode);
 			}
+		}
+	}
+
+	private void doRefreshRelativeDates() {
+		ToDoTaskDatePicker picker = datesConfig.getPicker();
+		if (picker == null) {
+			return;
+		}
+		picker.contextChanged(selectedContext);
+		if (isRelativeMode(startDateModeEl) && currentRelStart != null && startRelDisplayEl != null) {
+			startRelDisplayEl.setValue(picker.getDisplayValue(currentRelStart, true));
+		}
+		if (isRelativeMode(dueDateModeEl) && currentRelDue != null && dueRelDisplayEl != null) {
+			dueRelDisplayEl.setValue(picker.getDisplayValue(currentRelDue, false));
 		}
 	}
 

@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoRelativeDates;
 
 /**
@@ -31,6 +32,8 @@ import org.olat.modules.todo.ToDoRelativeDates;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
 public interface ToDoTaskDatePicker {
+
+	void contextChanged(ToDoContext context);
 
 	String getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
 
