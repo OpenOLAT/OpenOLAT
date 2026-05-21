@@ -168,7 +168,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			String originSubPath) {
 		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(originSubPath)));
 		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
-				element.getKey().toString(), element.getCurriculum().getIdentifier(), element.getDisplayName());
+				element.getKey().toString(), element.getCurriculum().getIdentifier(), getContextSubTitle(element));
 		return createEditController(ureq, wControl, null, null, element, context);
 	}
 
@@ -187,7 +187,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			ToDoTask sourceToDoTask, boolean showContext) {
 		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(sourceToDoTask.getOriginSubPath())));
 		ToDoContext context = ToDoContext.of(CurriculumElementToDoProvider.TYPE, element.getCurriculum().getKey(),
-				element.getKey().toString(), element.getCurriculum().getIdentifier(), element.getDisplayName());
+				element.getKey().toString(), element.getCurriculum().getIdentifier(), getContextSubTitle(element));
 		return createEditController(ureq, wControl, null, sourceToDoTask, element, context);
 	}
 
@@ -415,6 +415,10 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		reloadedToDoTask.setContentModifiedDate(new Date());
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
 	}
+	
+	private String getContextSubTitle(CurriculumElement element) {
+		return element.getDisplayName() + " - " + element.getIdentifier();
+	}
 
 	public void onCurriculumUpdated(Curriculum curriculum) {
 		toDoService.updateOriginTitle(TYPE, curriculum.getKey(), null,
@@ -428,7 +432,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 					element.getCurriculum().getKey(),
 					element.getKey().toString(),
 					element.getCurriculum().getIdentifier(),
-					element.getDisplayName());
+					getContextSubTitle(element));
 		}
 	}
 
@@ -538,7 +542,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		Long targetCurriculumKey = target.getCurriculum().getKey();
 		String targetSubPath = target.getKey().toString();
 		String targetCurriculumTitle = target.getCurriculum().getIdentifier();
-		String targetElementTitle = target.getDisplayName();
+		String targetElementTitle = getContextSubTitle(target);
 
 		int count = 0;
 		for (ToDoTask sourceTask : sourceTasks) {
