@@ -97,6 +97,7 @@ public class OAIDispatcher implements Dispatcher {
 
 			ServletUtil.serveResource(request, response, mr);
 		} catch (Exception e) {
+			log.error("", e);
 			DispatcherModule.sendServerError(response);
 		}
 	}
