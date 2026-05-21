@@ -277,7 +277,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		ToDoTaskImpl reloaded = (ToDoTaskImpl) reload(task);
-		assertThat(reloaded.getOriginSubTitle()).isEqualTo(newDisplayName);
+		assertThat(reloaded.getOriginSubTitle()).isEqualTo(curriculumElementToDoProvider.getContextSubTitle(element));
 	}
 
 	@Test

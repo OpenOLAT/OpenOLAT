@@ -416,7 +416,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
 	}
 	
-	private String getContextSubTitle(CurriculumElement element) {
+	String getContextSubTitle(CurriculumElement element) {
 		return element.getDisplayName() + " - " + element.getIdentifier();
 	}
 
