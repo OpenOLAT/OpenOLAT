@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskRow;
@@ -46,7 +47,10 @@ public class CurriculumManagerToDoTasksWidgetController extends ToDoTasksWidgetC
 
 	public CurriculumManagerToDoTasksWidgetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		originSubPaths = curriculumService.getAccessibleCurriculumKeys(getIdentity()).curriculumElementKeys().stream()
+		
+		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
+		searchParams.setIncludeImplementationOwnership(false);
+		originSubPaths = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys().stream()
 				.map(String::valueOf).toList();
 		initForm(ureq);
 	}

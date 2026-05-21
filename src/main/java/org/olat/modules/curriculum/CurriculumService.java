@@ -37,6 +37,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -333,7 +334,7 @@ public interface CurriculumService {
 	 * @param identity the identity for which accessible curriculum keys are to be retrieved
 	 * @return an instance of AccessibleCurriculumObjectKeys containing the keys accessible to the specified identity
 	 */
-	public AccessibleCurriculumObjectKeys getAccessibleCurriculumKeys(Identity identity);
+	public AccessibleCurriculumObjectKeys getAccessibleCurriculumKeys(AccessibleCurriculumSearchParams searchParams);
 	
 	/**
 	 * Retrieve the children elements of the specified curriculum element. The method

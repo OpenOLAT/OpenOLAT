@@ -212,7 +212,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		CurriculumElement effectiveRoot = implementation != null ? implementation : element;
 		CurriculumElementType implementationType = effectiveRoot.getType();
 		boolean isStructuredProduct = implementationType == null || !implementationType.isSingleElement();
-		ToDoTaskContextConfig contextConfig = isStructuredProduct
+		ToDoTaskContextConfig contextConfig = isStructuredProduct && canManageContext(ureq.getIdentity(), element)
 				? ToDoTaskContextConfig.picker(new CurriculumElementContextPicker(effectiveRoot.getKey(), element.getKey()), context)
 				: ToDoTaskContextConfig.dropdown(List.of(context), context);
 		CurriculumElementToDoMemberProvider memberSearchProvider = new CurriculumElementToDoMemberProvider(element);
@@ -224,6 +224,14 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				ToDoTaskMemberSelection.empty(),
 				dateConfig,
 				createTagSearchParams(), ASSIGNEE_RIGHTS, assigneeRightsOverride);
+	}
+
+	private boolean canManageContext(Identity identity, CurriculumElement element) {
+		// Curriculum element owners are not allowed to change the context.
+		return curriculumService.hasRoleExpanded(element.getCurriculum(), identity,
+				OrganisationRoles.administrator.name(),
+				OrganisationRoles.curriculummanager.name(),
+				CurriculumRoles.curriculumowner.name());
 	}
 
 	public List<CurriculumMember> getCandidates(CurriculumElement element) {

@@ -23,7 +23,6 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +44,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
@@ -70,6 +70,8 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 
 	private final CurriculumElement element;
 	private final CurriculumSecurityCallback secCallback;
+	private List<String> allLevelsSubPaths;
+
 	private Date lastVisitDate;
 
 	@Autowired
@@ -81,6 +83,17 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 				element.getCurriculum().getKey(), element.getKey().toString());
 		this.element = element;
 		this.secCallback = secCallback;
+		
+		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
+		searchParams.setIncludeImplementationOwnership(false);
+		searchParams.setCurriculums(List.of(element.getCurriculum()));
+		allLevelsSubPaths = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys().stream()
+				.map(String::valueOf)
+				.toList();
+		if (allLevelsSubPaths.isEmpty()) {
+			// Not existing key to prevent loading all to-dos.
+			allLevelsSubPaths = List.of("-1");
+		}
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
@@ -183,17 +196,15 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
 		params.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
+		params.setOriginIds(List.of(element.getCurriculum().getKey()));
 		boolean oneLevelOnly = thisLevelButton.getComponent().isPrimary();
 		if (oneLevelOnly) {
-			params.setOriginIds(List.of(element.getCurriculum().getKey()));
-			params.setOriginSubPaths(List.of(element.getKey().toString()));
+			List<String> thisLevelSubPaths = allLevelsSubPaths.contains(element.getKey().toString())
+					? List.of(element.getKey().toString())
+					: List.of("-1");
+			params.setOriginSubPaths(thisLevelSubPaths);
 		} else {
-			params.setOriginIds(List.of(element.getCurriculum().getKey()));
-			List<String> originSubPaths = curriculumService.getCurriculumElementsDescendants(element).stream()
-					.map(element -> element.getKey().toString())
-					.collect(Collectors.toList());
-			originSubPaths.add(element.getKey().toString());
-			params.setOriginSubPaths(originSubPaths);
+			params.setOriginSubPaths(allLevelsSubPaths);
 		}
 		return params;
 	}

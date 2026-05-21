@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
@@ -45,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	
-	private final Collection<String> subPaths;
+	private Collection<String> subPaths;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -53,9 +54,15 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	public CurriculumMangerToDoListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "manager_todos", CurriculumElementToDoProvider.TYPE, null, null);
 		
-		subPaths = curriculumService.getAccessibleCurriculumKeys(getIdentity()).curriculumElementKeys().stream()
+		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
+		searchParams.setIncludeImplementationOwnership(false);
+		subPaths = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys().stream()
 				.map(String::valueOf)
 				.toList();
+		if (subPaths.isEmpty()) {
+			// Not existing key to prevent loading all to-dos.
+			subPaths = List.of("-1");
+		}
 
 		initForm(ureq);
 

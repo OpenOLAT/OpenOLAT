@@ -43,8 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.UserCourseInformations;
@@ -56,6 +54,9 @@ import org.olat.course.member.model.OriginGroupRow;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.MemberListSecurityCallback;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserInfoProfileConfig;
@@ -215,7 +216,9 @@ public class CourseMemberDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		OriginRoleCellRenderer originRoleCellRenderer = new OriginRoleCellRenderer(getLocale(), true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.role, originRoleCellRenderer));
-		AccessibleCurriculumObjectKeys accessibleCurriculumObjectKeys = curriculumService.getAccessibleCurriculumKeys(getIdentity());
+		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
+		searchParams.setIncludeImplementationOwnership(true);
+		AccessibleCurriculumObjectKeys accessibleCurriculumObjectKeys = curriculumService.getAccessibleCurriculumKeys(searchParams);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OriginCoursePlannerTableModel.Cols.element.i18nHeaderKey(),
 				OriginCoursePlannerTableModel.Cols.element.ordinal(), LAUNCH_CURRICULUM_ELEMENT,
 				new DynamicCurriculumElementCellRenderer(LAUNCH_CURRICULUM_ELEMENT, new CurriculumElementCellRenderer(), accessibleCurriculumObjectKeys.curriculumElementKeys())));
