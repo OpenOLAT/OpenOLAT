@@ -912,4 +912,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 			setStringProperty(prefix + i + "." + map.getExternalAttribute(), map.getOpenolatAttribute(), true);
 		}
 	}
+	
+	public void migrateProperty(String key, String value) {
+		setSecretStringProperty(key, value, true);
+	}
 }

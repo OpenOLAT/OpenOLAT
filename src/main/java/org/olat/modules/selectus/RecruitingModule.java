@@ -2088,6 +2088,14 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		}
 		return false;
 	}
+	
+	public String getUserPropertyGenderOption() {
+		return userPropertyGender;
+	}
+	
+	public String getUserPropertyTypeOfOption() {
+		return userPropertyTypeOf;
+	}
 
 	public boolean isRoleExOfficioEnabled() {
 		return "enabled".equals(roleExOfficio);

@@ -402,6 +402,7 @@
 		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserSettingsImpl</class>
 		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogReadImpl</class>
 		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserNotificationsImpl</class>
+		<class>org.olat.modules.selectus.model.migration.SettingImpl</class>
 		<class>org.olat.upgrade.model.UpgradeOrganisationUnitMembershipImpl</class>
 		<class>org.olat.upgrade.model.UpgradePositionUnitImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>

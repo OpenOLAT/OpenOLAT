@@ -20,12 +20,14 @@
 package org.olat.modules.selectus.manager;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.AdminModule;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.NamedGroupImpl;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -34,11 +36,19 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.login.oauth.OAuthLoginModule;
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.OrganisationUnitImpl;
+import org.olat.modules.selectus.model.migration.SettingImpl;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.upgrade.model.UpgradePositionUnitImpl;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,16 +70,26 @@ public class SelectusMigration implements InitializingBean {
 	private final PositionDAO positionDao;
 	private final BaseSecurity securityManager;
 	private final PropertyManager propertyManager;
+	private final RecruitingModule selectusModule;
+	private final OAuthLoginModule oauthLoginModule;
+	private final OrganisationModule organisationModule;
 	private final OrganisationService organisationService;
 	private final OrganisationUnitDAO organisationUnitDao;
+	private final UsrPropCfgManager userPropertyConfigManager;
 	
 	@Autowired
 	public SelectusMigration(OrganisationUnitDAO organisationUnitDao, OrganisationService organisationService,
-			PropertyManager propertyManager, BaseSecurity securityManager, PositionDAO positionDao, DB dbInstance) {
+			PropertyManager propertyManager, BaseSecurity securityManager, RecruitingModule selectusModule,
+			UsrPropCfgManager userPropertyConfigManager, OAuthLoginModule oauthLoginModule,
+			OrganisationModule organisationModule, PositionDAO positionDao, DB dbInstance) {
 		this.organisationService = organisationService;
 		this.propertyManager = propertyManager;
 		this.organisationUnitDao = organisationUnitDao;
+		this.userPropertyConfigManager = userPropertyConfigManager;
 		this.securityManager = securityManager;
+		this.selectusModule = selectusModule;
+		this.oauthLoginModule = oauthLoginModule;
+		this.organisationModule = organisationModule;
 		this.positionDao = positionDao;
 		this.dbInstance = dbInstance;
 	}
@@ -88,6 +108,10 @@ public class SelectusMigration implements InitializingBean {
 			migrateOrganisationPositions();
 			// Migrate applicant only to invitee
 			migrateApplicantsToInvitee();
+			// Migrate settings
+			migrateSettings();
+			// Migrate user properties gender and typeOf
+			migrateUserPropertyConfiguration();
 			
 			p.setStringValue("done");
 			propertyManager.updateProperty(p);
@@ -96,6 +120,7 @@ public class SelectusMigration implements InitializingBean {
 	}
 	
 	private void migrateOrganisationUnit() {
+		log.info("Start migration of selectus organisation units");
 		List<OrganisationUnit> organisationsUnits = organisationUnitDao.findAllOrganisationUnits();
 		for(OrganisationUnit organisationUnit:organisationsUnits) {
 			if(organisationUnit.getOrganisation() == null) {
@@ -107,9 +132,11 @@ public class SelectusMigration implements InitializingBean {
 			}
 		}
 		dbInstance.commitAndCloseSession();
+		log.info("End migration of selectus organisation units: {}", organisationsUnits.size());
 	}
 	
 	private void migrateSelectus() {
+		log.info("Start migration of selectus users roles");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		migrate(defOrganisation, "fxadmins", OrganisationRoles.sysadmin);
 		migrate(defOrganisation, "fxadmins", OrganisationRoles.administrator);
@@ -122,6 +149,7 @@ public class SelectusMigration implements InitializingBean {
 		migrate(defOrganisation, "usermanagers", OrganisationRoles.rolesmanager);
 		migrate(defOrganisation, "authors", OrganisationRoles.selectusmanager);// Authors was used as selectus manager in selectus
 		migrate(defOrganisation, "anonymous", OrganisationRoles.guest);
+		log.info("End migration of selectus users roles");
 	}
 	
 	private void migrate(Organisation organisation, String secGroupName, OrganisationRoles role) {
@@ -155,12 +183,14 @@ public class SelectusMigration implements InitializingBean {
 	}
 	
 	private void migrateStaff() {
+		log.info("Start migration of selectus staff");
 		List<OrganisationUnit> units = organisationUnitDao.findAllOrganisationUnits();
 		for(OrganisationUnit unit:units) {
 			migrateStaff(unit);
 			dbInstance.commit();
 		}
 		dbInstance.commitAndCloseSession();
+		log.info("End migration of selectus staff");
 	}
 	
 	private void migrateStaff(OrganisationUnit unit) {
@@ -185,6 +215,7 @@ public class SelectusMigration implements InitializingBean {
 	}
 	
 	private void migrateOrganisationPositions() {
+		log.info("Start migration of positions organisations");
 		List<UpgradePositionUnitImpl> positions = positionWithoutOrganisations();
 		for(UpgradePositionUnitImpl position:positions) {
 			if(position.getOrganisation() == null && position.getOrganisationUnit() != null) {
@@ -194,6 +225,7 @@ public class SelectusMigration implements InitializingBean {
 			}
 		}
 		dbInstance.commitAndCloseSession();
+		log.info("End migration of positions organisations");
 	}
 	
 	private List<UpgradePositionUnitImpl> positionWithoutOrganisations() {
@@ -209,12 +241,14 @@ public class SelectusMigration implements InitializingBean {
 	}
 	
 	private void migrateApplicantsToInvitee() {
+		log.info("Start migration of applicants to invitee");
 		List<Long> identityKeys = getApplicantsIdentityKeys();
 		for(Long identityKey:identityKeys) {
 			migrateApplicantToInvitee(identityKey);
 			dbInstance.commit();
 		}
 		dbInstance.commitAndCloseSession();
+		log.info("End migration of applicants to invitee");
 	}
 	
 	private void migrateApplicantToInvitee(Long identityKey) {
@@ -242,5 +276,59 @@ public class SelectusMigration implements InitializingBean {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)
 				.getResultList();
+	}
+	
+	private void migrateUserPropertyConfiguration() {
+		log.info("Start migration of user properties gender and typeOf");
+		String userPropertyGender = selectusModule.getUserPropertyGenderOption();
+		String userPropertyTypeOf = selectusModule.getUserPropertyTypeOfOption();
+		
+		UsrPropCfgObject userPropertyConfig = userPropertyConfigManager.getUserPropertiesConfigObject();
+		initUserPropertyConfiguration("typeOfUser", userPropertyTypeOf, userPropertyConfig);
+		initUserPropertyConfiguration("gender", userPropertyGender, userPropertyConfig);
+		log.info("Ebd migration of user properties gender and typeOf");
+	}
+	
+	private void initUserPropertyConfiguration(String propertyName, String option, UsrPropCfgObject userPropertyConfig) {
+		UserPropertyHandler handler = userPropertyConfig.getPropertyHandler(propertyName);
+		Map<String, UserPropertyUsageContext> contexts = userPropertyConfig.getUsageContexts();
+		
+		for(UserPropertyUsageContext context:contexts.values()) {
+			if("enabled".equals(option)) {
+				context.setAsMandatoryUserProperty(handler, true);
+			} else if("optional".equals(option)) {
+				context.setAsMandatoryUserProperty(handler, false);
+			} else if("disabled".equals(option)) {
+				context.removePropertyHandler(handler);
+			}
+		}
+	}
+	
+	public void migrateSettings() {
+		log.info("Start migration of selectus settings in database");
+		
+		List<SettingImpl> settings = findSettings();
+		for(SettingImpl setting:settings) {
+			if(!StringHelper.containsNonWhitespace(setting.getValue())) {
+				continue;
+			}
+			
+			if("org.olat.login.oauth.OAuthLoginModule.properties".equals(setting.getGroup())) {
+				oauthLoginModule.migrateProperty(setting.getName(), setting.getValue());
+			} else if("com.frentix.recruiting.RecruitingModule.properties".equals(setting.getGroup())
+					&& "recruiting.organisation.unit".equals(setting.getName())
+					&& "enabled".equals(setting.getValue())) {
+				organisationModule.setEnabled(true);
+			}
+		}
+		
+		log.info("End migration of selectus settings in database");
+	}
+	
+	private List<SettingImpl> findSettings() {
+		String query = "select setting from csetting setting order by setting.group asc";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, SettingImpl.class)
+			.getResultList();
 	}
 }
