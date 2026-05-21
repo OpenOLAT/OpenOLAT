@@ -19,6 +19,9 @@
  */
 package org.olat.core.util.mail.manager;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 25 mai 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MailUserDataManagerTest extends OlatTestCase {
@@ -52,7 +55,7 @@ public class MailUserDataManagerTest extends OlatTestCase {
 	
 
 	@Test
-	public void testDeleteUserData_groupedMail() {
+	public void testDeleteUserDataGroupedMail() {
 		//send a mail to three ids
 		String metaId = UUID.randomUUID().toString();
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-7");
@@ -104,7 +107,7 @@ public class MailUserDataManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testDeleteUserData_separatedMail() {
+	public void testDeleteUserDataSeparatedMail() {
 		//send a mail as separated e-mails to three ids
 		String metaId = UUID.randomUUID().toString();
 		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-7");
@@ -155,5 +158,75 @@ public class MailUserDataManagerTest extends OlatTestCase {
 		Assert.assertNotNull(deletedMails);
 		Assert.assertTrue(deletedMails.isEmpty());
 	}
+	
+	@Test
+	public void testDeleteUserDataSeveralMails() {
+		//send a mail to three ids
+		String metaId = UUID.randomUUID().toString();
+		Identity toId_2 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-11");
+		Identity toId_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-12");
+		Identity toId_3 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-13");
+		Identity toId_4 = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-14");
+		
+		for(int i=0; i<10; i++) {
+			ContactList ccs = new ContactList("unit-test-cc");
+			
+			Identity from;
+			if(i % 2 == 0) {
+				ccs.add(toId_1);
+				from = toId_2;
+			} else {
+				ccs.add(toId_2);
+				from = toId_1;
+			}
+			ccs.add(toId_3);
+			ccs.add(toId_4);
+			
+			MailBundle bundle = new MailBundle();
+			bundle.setFromId(from);
+			bundle.setContactList(ccs);
+			bundle.setMetaId(metaId);
+			bundle.setContent("Hello delList", "Content of delList");
+			
+			MailerResult result = mailManager.sendMessage(bundle);
+			Assert.assertNotNull(result);
+			Assert.assertEquals(MailerResult.OK, result.getReturnCode());
+			dbInstance.commitAndCloseSession();
+		}
 
+		//delete the 4 users datas
+		mailBoxExtension.deleteUserData(toId_4, "lalala-14");
+		dbInstance.commitAndCloseSession();
+		mailBoxExtension.deleteUserData(toId_3, "lalala-13");
+		dbInstance.commitAndCloseSession();
+		mailBoxExtension.deleteUserData(toId_2, "lalala-12");
+		dbInstance.commitAndCloseSession();
+		mailBoxExtension.deleteUserData(toId_1, "lalala-11");
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void testDeleteUserDataSimpleMail() throws URISyntaxException {
+		//send a mail to three ids
+		String metaId = UUID.randomUUID().toString();
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-15");
+		
+		URL documentUrl = JunitTestHelper.class.getResource("file_resources/Dissertation.pdf");
+		File documentFile = new File(documentUrl.toURI());
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setTo("noreply@frentix.com");
+		bundle.setMetaId(metaId);
+		bundle.setContent("Hello noreply", "Content of without answer", documentFile);
+		
+		MailerResult result = mailManager.sendMessage(bundle);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
+		dbInstance.commitAndCloseSession();
+
+		//delete the 4 users datas
+		mailBoxExtension.deleteUserData(fromId, "lalala-15");
+		dbInstance.commitAndCloseSession();
+	}
 }

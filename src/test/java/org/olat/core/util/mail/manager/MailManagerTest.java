@@ -27,6 +27,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -181,6 +182,30 @@ public class MailManagerTest extends OlatTestCase {
 		Assert.assertEquals("Hello meta ID", mail.getSubject());	
 	}
 	
+	@Test
+	public void getMailKeysByMetaId() {
+		//send a mail
+		String metaId = UUID.randomUUID().toString();
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-11");
+		Identity toId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-12");
+		dbInstance.commitAndCloseSession();
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setFromId(fromId);
+		bundle.setToId(toId);
+		bundle.setMetaId(metaId);
+		bundle.setContent("Hello meta ID", "Meta ID");
+		
+		MailerResult result = mailManager.sendMessage(bundle);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(MailerResult.OK, result.getReturnCode());
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve the inbox of toId
+		List<Long> mailsKeys = ((MailManagerImpl)mailManager).getMailKeysByMetaId(metaId);
+		Assertions.assertThat(mailsKeys)
+			.hasSize(1);
+	}
 	
 	@Test
 	public void testSend_BCC() {

@@ -29,17 +29,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailRef;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailRecipient;
+import org.olat.core.util.mail.model.MailRefImpl;
 import org.olat.core.util.mail.ui.MailContextResolver;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -77,16 +81,24 @@ public class MailUserDataManager implements UserDataDeletable, UserDataExportabl
 		//set as deleted all recipients
 		log.info("Delete intern messages for identity::{}", identity.getKey());
 		
-		Collection<DBMailLight> inbox = new HashSet<>(mailManager.getInbox(identity, false, false, false, null, 0, 0));
-		for(DBMailLight inMail:inbox) {
+		List<DBMailLight> inbox = mailManager.getInbox(identity, false, false, false, null, 0, 0);
+		Set<MailRef> inboxSet = inbox.stream()
+				.map(MailRefImpl::valueOf)
+				.collect(Collectors.toSet());
+		dbInstance.commitAndCloseSession();
+		for(MailRef inMail:inboxSet) {
 			mailManager.delete(inMail, identity, true);
 		}
 
 		Collection<DBMailLight> outbox = new HashSet<>(mailManager.getOutbox(identity, 0, 0, false));
-		for(DBMailLight outMail:outbox) {
+		Set<MailRef> outboxSet = outbox.stream()
+				.map(MailRefImpl::valueOf)
+				.collect(Collectors.toSet());
+		dbInstance.commitAndCloseSession();
+		for(MailRef outMail:outboxSet) {
 			mailManager.delete(outMail, identity, true);
 		}
-		
+		dbInstance.commitAndCloseSession();
 		log.info("Delete {} messages in INBOX and {} in OUTBOX for identity::{}", inbox.size(), outbox.size(), identity.getKey());
 	}
 

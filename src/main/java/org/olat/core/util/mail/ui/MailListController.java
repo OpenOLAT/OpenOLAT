@@ -67,6 +67,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailRecipient;
+import org.olat.core.util.mail.model.MailRefImpl;
 import org.olat.core.util.mail.ui.MailDataModel.Columns;
 import org.olat.core.util.mail.ui.MailDataModel.ContextPair;
 import org.olat.core.util.resource.OresHelper;
@@ -404,10 +405,9 @@ public class MailListController extends BasicController implements Activateable2
 				BitSet deleteMails = (BitSet)deleteConfirmationBox.getUserObject();
 				for (int i=deleteMails.nextSetBit(0); i >= 0; i=deleteMails.nextSetBit(i+1)) {
 					DBMailLight mail = (DBMailLight)tableCtr.getTableDataModel().getObject(i);
-					//reload the message
-					mail = mailManager.getMessageByKey(mail.getKey());
+					
 					boolean deleteMetaMail = outbox && !StringHelper.containsNonWhitespace(metaId);
-					mailManager.delete(mail, getIdentity(), deleteMetaMail);
+					mailManager.delete(MailRefImpl.valueOf(mail), getIdentity(), deleteMetaMail);
 					// Do not remove from model to prevent concurrent modification
 					// exception, instead just reload model afterwards
 				}				
