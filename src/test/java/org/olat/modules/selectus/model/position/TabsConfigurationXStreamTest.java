@@ -23,9 +23,9 @@ import java.io.File;
 import java.net.URL;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.util.FileUtils;
+import org.olat.modules.selectus.model.position.TabsConfiguration.Tab;
 
 /**
  * 
@@ -36,7 +36,6 @@ import org.olat.core.util.FileUtils;
 public class TabsConfigurationXStreamTest {
 	
 	@Test
-	@Ignore
 	public void configurationOpenOlat() throws Exception {
 		URL input = TabsConfigurationXStreamTest.class.getResource("configuration_openolat.xml");
 		File inputFile = new File(input.getFile());
@@ -44,6 +43,9 @@ public class TabsConfigurationXStreamTest {
 		
 		TabsConfiguration config = TabsConfigurationXStream.fromXml(xml);
 		Assert.assertNotNull(config);
+		Assert.assertFalse(config.getConfiguration(Tab.personalData).isDisabled());
+		Assert.assertEquals("Please enter the requested personal data. Fields marked with an asterisk are mandatory.",
+				config.getConfiguration(Tab.personalData).getHelp());
 	}
 	
 	@Test

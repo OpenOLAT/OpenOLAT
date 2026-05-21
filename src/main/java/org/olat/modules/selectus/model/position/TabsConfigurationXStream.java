@@ -48,6 +48,10 @@ public class TabsConfigurationXStream {
 	
 	public static TabsConfiguration fromXml(String xml) {
 		try {
+			if(xml.indexOf("\"enum-map\"") >= 0) {
+				// EnumMap are not supported anymore, backwards compatibility with selectus
+				xml = xml.replace("\"enum-map\"", "\"map\"");
+			}
 			return (TabsConfiguration)xstream.fromXML(xml);
 		} catch (Exception e) {
 			log.error("", e);
