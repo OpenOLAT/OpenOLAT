@@ -102,6 +102,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfElement));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfApplication));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -150,6 +151,19 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			typeOfElementKey = null;
 		}
 		row.setTypeOfElementLabel(typeOfElementKey != null ? translate(typeOfElementKey) : null);
+		if(!type.isSingleElement()) {
+			String typeOfApplicationKey;
+			if(type.getMaxRepositoryEntryRelations() == 0) {
+				typeOfApplicationKey = "table.type.type.of.application.structure.only";
+			} else if(type.getMaxRepositoryEntryRelations() == 1) {
+				typeOfApplicationKey = "table.type.type.of.application.structure.single.course";
+			} else if(type.getMaxRepositoryEntryRelations() == -1) {
+				typeOfApplicationKey = "table.type.type.of.application.structure.course.bundle";
+			} else {
+				typeOfApplicationKey = null;
+			}
+			row.setTypeOfApplicationLabel(typeOfApplicationKey != null ? translate(typeOfApplicationKey) : null);
+		}
 		if(isToolsEnable(type)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
