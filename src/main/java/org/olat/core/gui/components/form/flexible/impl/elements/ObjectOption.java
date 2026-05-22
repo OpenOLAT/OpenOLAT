@@ -35,6 +35,8 @@ public interface ObjectOption {
 	
 	String getKey();
 	
+	public String getOptionCss();
+	
 	String getTitle();
 	
 	String getSubTitle();
@@ -42,34 +44,47 @@ public interface ObjectOption {
 	String getSubTitleFull();
 	
 	String getImageSrc();
-	
+
 	String getImageAlt();
-	
+
+	String getImageHtml();
+
 	public class ObjectOptionValues implements ObjectOption {
-		
+
+		public static final String CSS_TITLE_ONLY = "o_object_selection_title_only";
+
 		private final String key;
+		private final String optionCss;
 		private final String title;
 		private final String subTitle;
 		private final String subTitleFull;
 		private final String imageSrc;
 		private final String imageAlt;
-		
+		private final String imageHtml;
+
 		public ObjectOptionValues(String key, String title, String subTitle, String subTitleFull) {
-			this(key, title, subTitle, subTitleFull, null, null);
+			this(key, null, title, subTitle, subTitleFull, null, null, null);
 		}
-		
-		public ObjectOptionValues(String key, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt) {
+
+		public ObjectOptionValues(String key, String optionCss, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt, String imageHtml) {
 			this.key = key;
+			this.optionCss = optionCss;
 			this.title = title;
 			this.subTitle = subTitle;
 			this.subTitleFull = subTitleFull;
 			this.imageSrc = imageSrc;
 			this.imageAlt = imageAlt;
+			this.imageHtml = imageHtml;
 		}
 
 		@Override
 		public String getKey() {
 			return key;
+		}
+
+		@Override
+		public String getOptionCss() {
+			return optionCss;
 		}
 
 		@Override
@@ -86,17 +101,22 @@ public interface ObjectOption {
 		public String getSubTitleFull() {
 			return subTitleFull;
 		}
-		
+
 		@Override
 		public String getImageSrc() {
 			return imageSrc;
 		}
-		
+
 		@Override
 		public String getImageAlt() {
 			return imageAlt;
 		}
-		
+
+		@Override
+		public String getImageHtml() {
+			return imageHtml;
+		}
+
 	}
 	
 	public static <T> String createShortPath(List<T> path, Function<T, String> valueExtractor) {

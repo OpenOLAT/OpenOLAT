@@ -23,19 +23,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectListSource;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
+import org.olat.user.IdentitySelectionSource;
+import org.olat.user.UserManager;
 
 /**
  * Initial date: 2025-04-03<br>
@@ -94,23 +97,25 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 			));
 	}
 	
-	private ObjectListSource createNamesSource(boolean initDefaultSelection) {
-		ObjectDisplayValues defaultDisplayValue = null;
-		if (initDefaultSelection) {
-			String title = "";
-			title += NameSource.ALL.get(2) + ", ";
-			title += NameSource.ALL.get(20) + ", ";
-			title += NameSource.ALL.get(200);
-			defaultDisplayValue = new ObjectDisplayValues(title, title);
+	private IdentitySelectionSource createNamesSource(boolean initDefaultSelection) {
+		int cssCount = UserManager.USER_INITIALS_CSS.size();
+		List<Identity> identities = new ArrayList<>(NameSource.ALL.size() + 1);
+		for (int i = 0; i < NameSource.ALL.size(); i++) {
+			String[] tokens = NameSource.ALL.get(i).split(" ", 2);
+			TransientIdentity identity = new TransientIdentity();
+			identity.setKey(-(long) (i + 1));
+			identity.setProperty(UserConstants.FIRSTNAME, tokens[0]);
+			identity.setProperty(UserConstants.LASTNAME, tokens[1]);
+			identity.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(i % cssCount));
+			identities.add(identity);
 		}
-		
-		List<ObjectOption> options = NameSource.ALL.stream()
-				.map(name -> (ObjectOption)new ObjectOptionValues(name, name, null, null))
-				.toList();
-		return new ObjectListSource(
-				defaultDisplayValue,
-				options,
-				translate("selection.objects.load.more.options"));
+		identities.add(getIdentity());
+
+		List<Identity> selected = initDefaultSelection
+				? List.of(identities.get(2), identities.get(20), identities.get(200))
+				: List.of();
+
+		return new IdentitySelectionSource(getLocale(), selected, () -> identities);
 	}
 
 	private void initTagSection(FormItemContainer formLayout) {

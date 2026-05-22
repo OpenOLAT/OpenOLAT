@@ -432,6 +432,18 @@
 	align-items: center;
 }
 
+.o_object_selection {
+	.o_object_selection_option {
+		.o_object_selection_image {
+			&:has(.o_user_portrait_small) {
+				width: 32px;
+				max-width: 32px;
+				height: 32px;
+				max-height: 32px;
+			}
+		}
+	}
+}
 .o_useradmin {
 	.o_user_infos .o_user_infos_inner {
 		margin-right: 45px;

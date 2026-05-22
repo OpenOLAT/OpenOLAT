@@ -1368,6 +1368,12 @@ dialog {
 				line-hight: 1em;
 			}
 		}
+		&.o_object_selection_title_only {
+			.o_object_selection_text {
+				flex-direction: row;
+				align-items: center;
+			}
+		}
 	}
 }
 

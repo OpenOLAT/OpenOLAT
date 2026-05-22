@@ -271,8 +271,14 @@ public class ObjectSelectionController extends FormBasicController {
 	
 	private String toSelectionValue(ObjectOption option) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<div class=\"o_object_selection_option\">");
-		if (StringHelper.containsNonWhitespace(option.getImageSrc())) {
+		sb.append("<div class=\"o_object_selection_option ");
+		sb.append(StringHelper.blankIfNull(option.getOptionCss()));
+		sb.append("\">");
+		if (StringHelper.containsNonWhitespace(option.getImageHtml())) {
+			sb.append("<div class=\"o_object_selection_image\">");
+			sb.append(option.getImageHtml());
+			sb.append("</div>");
+		} else if (StringHelper.containsNonWhitespace(option.getImageSrc())) {
 			sb.append("<div class=\"o_object_selection_image\">");
 			sb.append("<img src=\"").append(option.getImageSrc()).append("\" ");
 			sb.append("alt =\"").append(StringHelper.blankIfNull(StringHelper.escapeForHtmlAttribute(option.getImageAlt()))).append("\"");

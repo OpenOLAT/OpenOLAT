@@ -140,7 +140,7 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 		private final String displayTitle;
 		
 		public BadgeClassOption(String key, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt, String displayTitle) {
-			super(key, title, subTitle, subTitleFull, imageSrc, imageAlt);
+			super(key, null, title, subTitle, subTitleFull, imageSrc, imageAlt, null);
 			this.displayTitle = displayTitle;
 		}
 		
