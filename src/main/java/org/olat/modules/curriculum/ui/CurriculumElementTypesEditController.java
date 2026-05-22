@@ -100,6 +100,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(displayNameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -128,6 +129,15 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	
 	private CurriculumElementTypeRow forgeRow(CurriculumElementType type) {
 		CurriculumElementTypeRow row = new CurriculumElementTypeRow(type);
+		String forUseAsKey;
+		if(type.isImplOnly()) {
+			forUseAsKey = "table.type.for.use.as.implementation";
+		} else if(!type.isAllowedAsRootElement()) {
+			forUseAsKey = "table.type.for.use.as.element";
+		} else {
+			forUseAsKey = "table.type.for.use.as.implementation.or.element";
+		}
+		row.setForUseAsLabel(translate(forUseAsKey));
 		if(isToolsEnable(type)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);

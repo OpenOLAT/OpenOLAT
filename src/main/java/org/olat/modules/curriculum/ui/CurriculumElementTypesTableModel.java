@@ -61,16 +61,18 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
 			case externalId: return row.getExternalId();
+			case forUseAs: return row.getForUseAsLabel();
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
 	}
-	
+
 	public enum TypesCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.type.header.type.displayName"),
 		identifier("table.type.header.type.identifier"),
 		externalId("table.type.header.type.externalId"),
+		forUseAs("table.type.header.type.forUseAs"),
 		tools("action.more");
 		
 		private final String i18nHeaderKey;

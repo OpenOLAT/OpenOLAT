@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumElementTypeRef;
 public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	
 	private FormLink toolsLink;
+	private String forUseAsLabel;
 	private final CurriculumElementType type;
 	
 	public CurriculumElementTypeRow(CurriculumElementType type) {
@@ -53,6 +54,14 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	
 	public String getExternalId() {
 		return type.getExternalId();
+	}
+
+	public String getForUseAsLabel() {
+		return forUseAsLabel;
+	}
+
+	public void setForUseAsLabel(String forUseAsLabel) {
+		this.forUseAsLabel = forUseAsLabel;
 	}
 	
 	public CurriculumElementType getType() {
