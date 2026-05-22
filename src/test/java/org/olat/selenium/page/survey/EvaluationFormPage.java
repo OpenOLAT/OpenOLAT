@@ -103,7 +103,7 @@ public class EvaluationFormPage {
 	}
 	
 	public EvaluationFormPage assertAnsweredRubric(String choice, int rating, boolean disabled) {
-		String input = "/label/input[@type='radio']" + (disabled ? "[@disabled='disabled']" : "");
+		String input = "/label/input[@type='radio']" + (disabled ? "[@disabled='']" : "");
 		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_discrete_radio')]//div[contains(@class,'o_slider')][div[contains(@class,'o_evaluation_left_label')]/p[text()[contains(.,'" + choice + "')]]]/div[contains(@class,'o_slider_elements')]/div[contains(@class,'o_evaluation_steps')]/div[contains(@class,'radio')][" + rating +"]" + input);
 		OOGraphene.waitElement(choiceBy, browser).click();
 		OOGraphene.waitBusy(browser);
@@ -112,7 +112,7 @@ public class EvaluationFormPage {
 	
 	public EvaluationFormPage saveAndClose() {
 		By saveBy = By.xpath("//div[contains(@class,'o_evaluation_form')]//button[contains(@class,'btn-primary')]");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		
 		OOGraphene.waitModalDialog(browser);
 		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
@@ -128,7 +128,7 @@ public class EvaluationFormPage {
 	}
 	
 	public EvaluationFormPage assertOnFormClosed() {
-		By infoPanelBy = By.xpath("//div[contains(@class,'o_evaluation_block')]//input[@type='radio'][@disabled='disabled']");
+		By infoPanelBy = By.xpath("//div[contains(@class,'o_evaluation_block')]//input[@type='radio'][@disabled='']");
 		OOGraphene.waitElement(infoPanelBy, browser);
 		return this;
 	}
