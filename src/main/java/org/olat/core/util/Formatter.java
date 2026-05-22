@@ -913,9 +913,14 @@ public class Formatter {
 		  .append("      }, '']\n")
 		  .append("    }\n")
 		  .append("  },\n")
+		  .append("  loader: {\n")
+		  .append("    paths: {\n")
+		  .append("     fonts: '").append(WebappHelper.getMathJaxCdn()).append("'")
+		  .append("    }\n")
+		  .append("  },\n")
 		  .append("  output: {\n")
-		  .append("    font: 'mathjax-newcm',")
-		  .append("    fontPath: '").append(WebappHelper.getMathJaxCdn()).append("mathjax-newcm-font'")
+		  .append("    font: 'mathjax-newcm',\n")
+		  .append("    fontPath: '").append(WebappHelper.getMathJaxCdn()).append("/%%FONT%%-font'")
 		  .append("  }\n")
 		  .append("};\n");
 		return sb.toString();

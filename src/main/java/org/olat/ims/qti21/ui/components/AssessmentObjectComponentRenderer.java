@@ -1429,7 +1429,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("  selector: '#").append(domID).append("',\n")
 		  .append("  script_url: '").append(baseUrl).append("',\n")
 		  .append("  icons_url: '").append(iconsUrl).append("',\n")
-		  .append("  icons: 'openolat',\n");
+		  .append("  icons: 'openolat',\n")
+		  .append("  contextPath: \"").append(Settings.getServerContextPath()).append("\",\n");
 		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
 			sb.append("mathJaxUrl: \"").append(WebappHelper.getMathJaxCdn()).append("\",\n");
 		}
