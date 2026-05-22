@@ -54,6 +54,7 @@ public class CurriculumElementTypeDAO {
 		type.setSingleElement(false);
 		type.setMaxRepositoryEntryRelations(-1);
 		type.setAllowedAsRootElement(true);
+		type.setImplOnly(false);
 		dbInstance.getCurrentEntityManager().persist(type);
 		return type;
 	}
@@ -71,6 +72,7 @@ public class CurriculumElementTypeDAO {
 		clone.setSingleElement(reloadedType.isSingleElement());
 		clone.setMaxRepositoryEntryRelations(reloadedType.getMaxRepositoryEntryRelations());
 		clone.setAllowedAsRootElement(reloadedType.isAllowedAsRootElement());
+		clone.setImplOnly(reloadedType.isImplOnly());
 		dbInstance.getCurrentEntityManager().persist(clone);
 		return clone;
 	}

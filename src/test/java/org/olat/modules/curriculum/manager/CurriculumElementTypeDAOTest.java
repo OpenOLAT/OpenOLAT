@@ -63,6 +63,7 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 		Assert.assertEquals("1. Element", type.getDisplayName());
 		Assert.assertEquals("First element", type.getDescription());
 		Assert.assertEquals("AC-234", type.getExternalId());
+		Assert.assertFalse(type.isImplOnly());
 	}
 	
 	@Test
@@ -119,6 +120,21 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 		Assert.assertTrue(allTypes.contains(type));
 	}
 	
+	@Test
+	public void createCurriculumElementType_implOnly() {
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("cur-el-impl", "Impl type", "An implementation type", null);
+		type.setImplOnly(true);
+		type = curriculumElementTypeDao.update(type);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElementType reloadedType = curriculumElementTypeDao.loadByKey(type.getKey());
+		Assert.assertNotNull(reloadedType);
+		Assert.assertTrue(reloadedType.isAllowedAsRootElement());
+		Assert.assertFalse(reloadedType.isSingleElement());
+		Assert.assertEquals(-1, reloadedType.getMaxRepositoryEntryRelations());
+		Assert.assertTrue(reloadedType.isImplOnly());
+	}
+
 	@Test
 	public void allowSubTypes() {
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("Type-parent", "A type", null, null);

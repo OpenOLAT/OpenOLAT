@@ -45,6 +45,7 @@ public enum CurriculumElementTypeManagedFlag {
 	 learningProgress(all),
 	 composite(all),
 	 allowAsRoot(all),
+	 implOnly(all),
 	 maxEntryRelations(all),
 	 subTypes(all),
 	 copy(all),

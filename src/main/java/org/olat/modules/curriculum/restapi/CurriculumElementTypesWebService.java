@@ -248,7 +248,10 @@ public class CurriculumElementTypesWebService {
 		if(elementTypeVo.getAllowedAsRootElement() != null) {
 			elementType.setAllowedAsRootElement(elementTypeVo.getAllowedAsRootElement().booleanValue());
 		}
-		
+		if(elementTypeVo.getImplOnly() != null) {
+			elementType.setImplOnly(elementTypeVo.getImplOnly().booleanValue());
+		}
+
 		elementType.setManagedFlags(CurriculumElementTypeManagedFlag.toEnum(elementTypeVo.getManagedFlagsString()));
 		return curriculumService.updateCurriculumElementType(elementType);
 	}

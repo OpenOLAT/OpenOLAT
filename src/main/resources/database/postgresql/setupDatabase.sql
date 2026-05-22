@@ -4228,6 +4228,7 @@ create table o_cur_element_type (
   c_single_element bool default false not null,
   c_max_repo_entries int8 default -1 not null,
   c_allow_as_root bool default true not null,
+  c_impl_only bool default false not null,
   c_css_class varchar(64),
   primary key (id)
 );

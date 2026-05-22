@@ -264,10 +264,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			defaultType.setAllowedAsRootElement(true);
 			defaultType.setMaxRepositoryEntryRelations(-1);
 			defaultType.setSingleElement(false);
+			defaultType.setImplOnly(false);
 			defaultType.setManagedFlags(new CurriculumElementTypeManagedFlag[] {
 					CurriculumElementTypeManagedFlag.identifier, CurriculumElementTypeManagedFlag.externalId,
 					CurriculumElementTypeManagedFlag.allowAsRoot, CurriculumElementTypeManagedFlag.composite,
-					CurriculumElementTypeManagedFlag.maxEntryRelations });
+					CurriculumElementTypeManagedFlag.implOnly, CurriculumElementTypeManagedFlag.maxEntryRelations });
 			updateCurriculumElementType(defaultType);
 			log.info("Default curriculum element type created.");
 		}

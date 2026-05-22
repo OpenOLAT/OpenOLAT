@@ -162,6 +162,34 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void createCurriculumElementType_implOnlyDefaultsFalse()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		CurriculumElementTypeVO vo = new CurriculumElementTypeVO();
+		vo.setDescription("REST created element type without implOnly");
+		vo.setDisplayName("REST Curriculum element type no implOnly");
+		vo.setIdentifier("REST-ID-NOIMPL");
+		// implOnly intentionally not set — must default to false
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+
+		HttpResponse response = conn.execute(method);
+		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+
+		CurriculumElementTypeVO savedVo = conn.parse(response, CurriculumElementTypeVO.class);
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedVo.getKey());
+		Assert.assertFalse(savedVo.getImplOnly());
+
+		CurriculumElementType savedType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(savedVo.getKey()));
+		Assert.assertNotNull(savedType);
+		Assert.assertFalse(savedType.isImplOnly());
+	}
+
+	@Test
 	public void updateCurriculumElementType()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");

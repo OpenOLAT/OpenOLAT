@@ -995,5 +995,9 @@ alter table o_grad_assignment_log add constraint grad_assign_log_assign_idx fore
 create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assignee);
 
 
+-- Curriculum element type
+alter table o_cur_element_type add column c_impl_only bool default false not null;
+
+
 
 
