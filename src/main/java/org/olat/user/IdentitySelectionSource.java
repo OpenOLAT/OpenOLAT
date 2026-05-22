@@ -22,6 +22,7 @@ package org.olat.user;
 import static org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues.CSS_TITLE_ONLY;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -127,6 +128,17 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	private Collection<Identity> getIdentities() {
 		if (identities == null) {
 			identities = identitiesSupplier.get();
+			if (selectedIdentities != null && !selectedIdentities.isEmpty()) {
+				Set<Long> loadedKeys = identities.stream().map(Identity::getKey).collect(Collectors.toSet());
+				List<? extends Identity> missing = selectedIdentities.stream()
+						.filter(i -> !loadedKeys.contains(i.getKey()))
+						.toList();
+				if (!missing.isEmpty()) {
+					List<Identity> result = new ArrayList<>(identities);
+					result.addAll(missing);
+					identities = result;
+				}
+			}
 		}
 		return identities;
 	}

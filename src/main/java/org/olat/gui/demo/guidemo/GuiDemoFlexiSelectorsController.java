@@ -109,11 +109,10 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 			identity.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(i % cssCount));
 			identities.add(identity);
 		}
-		identities.add(getIdentity());
 
 		List<Identity> selected = initDefaultSelection
 				? List.of(identities.get(2), identities.get(20), identities.get(200))
-				: List.of();
+				: List.of(getIdentity());
 
 		return new IdentitySelectionSource(getLocale(), selected, () -> identities);
 	}
