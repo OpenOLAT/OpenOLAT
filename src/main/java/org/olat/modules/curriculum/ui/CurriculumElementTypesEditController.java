@@ -68,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementTypesEditController extends FormBasicController implements Activateable2 {
 	
-	private FormLink addRootTypeButton;
+	private FormLink addNewElementTypeButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementTypesTableModel model;
 	
@@ -90,8 +90,8 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addRootTypeButton = uifactory.addFormLink("add.root.type", formLayout, Link.BUTTON);
-		addRootTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addNewElementTypeButton = uifactory.addFormLink("add.new.element.type", formLayout, Link.BUTTON);
+		addNewElementTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.key));
@@ -175,8 +175,8 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addRootTypeButton == source) {
-			doAddRootType(ureq);
+		if(addNewElementTypeButton == source) {
+			doAddNewElementType(ureq);
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
@@ -218,11 +218,12 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
-	private void doAddRootType(UserRequest ureq) {
+	private void doAddNewElementType(UserRequest ureq) {
 		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), null);
 		listenTo(rootElementTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), rootElementTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				rootElementTypeCtrl.getInitialComponent(), true, translate("add.new.element.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}
