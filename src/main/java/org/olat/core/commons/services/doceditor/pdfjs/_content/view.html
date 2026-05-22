@@ -6,8 +6,12 @@
 		const pdfFrame = document.querySelector('#$iframeId');
 		pdfFrame.contentDocument.body.querySelector('#secondaryOpenFile').remove();
 		#if($hideDownload)
-			pdfFrame.contentDocument.body.querySelector('#downloadButton').remove();
-			pdfFrame.contentDocument.body.querySelector('#secondaryDownload').remove();
+			## download and print button
+			pdfFrame.contentDocument.body.querySelector('#downloadButton').parentElement.nextElementSibling.remove();
+			pdfFrame.contentDocument.body.querySelector('#downloadButton').parentElement.remove();
+			## download and print menu entry
+			pdfFrame.contentDocument.body.querySelector('#secondaryDownload').parentElement.nextElementSibling.remove();
+			pdfFrame.contentDocument.body.querySelector('#secondaryDownload').parentElement.remove();
 		#end
 		#if($pdfBase64)
 			pdfFrame.contentWindow.PDFViewerApplication.open({data: atob("$pdfBase64")});
