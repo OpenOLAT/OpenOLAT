@@ -101,6 +101,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfElement));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -138,6 +139,17 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			forUseAsKey = "table.type.for.use.as.implementation.or.element";
 		}
 		row.setForUseAsLabel(translate(forUseAsKey));
+		String typeOfElementKey;
+		if(!type.isSingleElement()) {
+			typeOfElementKey = "table.type.type.of.element.structural.element";
+		} else if(type.getMaxRepositoryEntryRelations() == 1) {
+			typeOfElementKey = "table.type.type.of.element.single.course";
+		} else if(type.getMaxRepositoryEntryRelations() == -1) {
+			typeOfElementKey = "table.type.type.of.element.course.bundle";
+		} else {
+			typeOfElementKey = null;
+		}
+		row.setTypeOfElementLabel(typeOfElementKey != null ? translate(typeOfElementKey) : null);
 		if(isToolsEnable(type)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
