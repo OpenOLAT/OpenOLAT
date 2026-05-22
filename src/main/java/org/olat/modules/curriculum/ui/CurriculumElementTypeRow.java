@@ -26,38 +26,40 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 
 /**
- * 
+ *
  * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
-	
+
 	private FormLink toolsLink;
 	private FormLink parentsLink;
-	private List<String> parentTypeNames;
+	private List<CurriculumElementType> parentTypes;
+	private FormLink childrenLink;
+	private List<CurriculumElementType> childTypes;
 	private String forUseAsLabel;
 	private String typeOfElementLabel;
 	private String typeOfApplicationLabel;
 	private final CurriculumElementType type;
-	
+
 	public CurriculumElementTypeRow(CurriculumElementType type) {
 		this.type = type;
 	}
-	
+
 	@Override
 	public Long getKey() {
 		return type.getKey();
 	}
-	
+
 	public String getIdentifier() {
 		return type.getIdentifier();
 	}
-	
+
 	public String getDisplayName() {
 		return type.getDisplayName();
 	}
-	
+
 	public String getExternalId() {
 		return type.getExternalId();
 	}
@@ -85,7 +87,7 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	public void setTypeOfApplicationLabel(String typeOfApplicationLabel) {
 		this.typeOfApplicationLabel = typeOfApplicationLabel;
 	}
-	
+
 	public CurriculumElementType getType() {
 		return type;
 	}
@@ -93,7 +95,7 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	public FormLink getToolsLink() {
 		return toolsLink;
 	}
-	
+
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
 	}
@@ -106,11 +108,27 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 		this.parentsLink = parentsLink;
 	}
 
-	public List<String> getParentTypeNames() {
-		return parentTypeNames;
+	public List<CurriculumElementType> getParentTypes() {
+		return parentTypes;
 	}
 
-	public void setParentTypeNames(List<String> parentTypeNames) {
-		this.parentTypeNames = parentTypeNames;
+	public void setParentTypes(List<CurriculumElementType> parentTypes) {
+		this.parentTypes = parentTypes;
+	}
+
+	public FormLink getChildrenLink() {
+		return childrenLink;
+	}
+
+	public void setChildrenLink(FormLink childrenLink) {
+		this.childrenLink = childrenLink;
+	}
+
+	public List<CurriculumElementType> getChildTypes() {
+		return childTypes;
+	}
+
+	public void setChildTypes(List<CurriculumElementType> childTypes) {
+		this.childTypes = childTypes;
 	}
 }

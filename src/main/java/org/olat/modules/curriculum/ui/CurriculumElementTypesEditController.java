@@ -76,13 +76,13 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	private CurriculumElementTypesTableModel model;
 	
 	private ToolsController toolsCtrl;
-	private ParentsCalloutController parentsCalloutCtrl;
+	private TypeNamesCalloutController typeNamesCalloutCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDialog;
 	private EditCurriculumElementTypeController rootElementTypeCtrl;
 	private EditCurriculumElementTypeController editElementTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
-	protected CloseableCalloutWindowController parentsCalloutWindowCtrl;
+	protected CloseableCalloutWindowController typeNamesCalloutWindowCtrl;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -109,6 +109,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfElement));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfApplication));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -129,21 +130,28 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	private void loadModel() {
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		List<CurriculumElementTypeToType> relations = curriculumService.getAllCurriculumElementTypeRelations();
-		Map<Long, List<String>> parentNamesBySubTypeKey = new HashMap<>();
+		Map<Long, List<CurriculumElementType>> parentTypesBySubTypeKey = new HashMap<>();
+		Map<Long, List<CurriculumElementType>> childTypesByParentTypeKey = new HashMap<>();
 		for(CurriculumElementTypeToType relation : relations) {
 			Long subTypeKey = relation.getAllowedSubType().getKey();
-			parentNamesBySubTypeKey
+			parentTypesBySubTypeKey
 				.computeIfAbsent(subTypeKey, k -> new ArrayList<>())
-				.add(relation.getType().getDisplayName());
+				.add(relation.getType());
+			Long parentTypeKey = relation.getType().getKey();
+			childTypesByParentTypeKey
+				.computeIfAbsent(parentTypeKey, k -> new ArrayList<>())
+				.add(relation.getAllowedSubType());
 		}
 		List<CurriculumElementTypeRow> rows = types.stream()
-				.map(t -> forgeRow(t, parentNamesBySubTypeKey.getOrDefault(t.getKey(), List.of())))
+				.map(t -> forgeRow(t,
+						parentTypesBySubTypeKey.getOrDefault(t.getKey(), List.of()),
+						childTypesByParentTypeKey.getOrDefault(t.getKey(), List.of())))
 				.collect(Collectors.toList());
 		model.setObjects(rows);
 		tableEl.reset(false, true, true);
 	}
-	
-	private CurriculumElementTypeRow forgeRow(CurriculumElementType type, List<String> parentNames) {
+
+	private CurriculumElementTypeRow forgeRow(CurriculumElementType type, List<CurriculumElementType> parents, List<CurriculumElementType> children) {
 		CurriculumElementTypeRow row = new CurriculumElementTypeRow(type);
 		String forUseAsKey;
 		if(type.isImplOnly()) {
@@ -178,11 +186,20 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			}
 			row.setTypeOfApplicationLabel(typeOfApplicationKey != null ? translate(typeOfApplicationKey) : null);
 		}
-		row.setParentTypeNames(parentNames);
-		FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
-				String.valueOf(parentNames.size()), null, null, Link.NONTRANSLATED);
-		parentsLink.setUserObject(row);
-		row.setParentsLink(parentsLink);
+		row.setParentTypes(parents);
+		if(!parents.isEmpty()) {
+			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
+					String.valueOf(parents.size()), null, null, Link.NONTRANSLATED);
+			parentsLink.setUserObject(row);
+			row.setParentsLink(parentsLink);
+		}
+		row.setChildTypes(children);
+		if(!children.isEmpty()) {
+			FormLink childrenLink = uifactory.addFormLink("children_" + type.getKey(), "children",
+					String.valueOf(children.size()), null, null, Link.NONTRANSLATED);
+			childrenLink.setUserObject(row);
+			row.setChildrenLink(childrenLink);
+		}
 		if(isToolsEnable(type)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
@@ -238,6 +255,8 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 				doOpenTools(ureq, row, link);
 			} else if("parents".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenParents(ureq, row, link);
+			} else if("children".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+				doOpenChildren(ureq, row, link);
 			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
@@ -276,15 +295,23 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	}
 
 	private void doOpenParents(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
-		removeAsListenerAndDispose(parentsCalloutCtrl);
-		removeAsListenerAndDispose(parentsCalloutWindowCtrl);
+		doOpenTypeNamesCallout(ureq, link, translate("table.type.callout.child.of"), row.getParentTypes());
+	}
 
-		parentsCalloutCtrl = new ParentsCalloutController(ureq, getWindowControl(), row.getParentTypeNames());
-		listenTo(parentsCalloutCtrl);
-		parentsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				parentsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(parentsCalloutWindowCtrl);
-		parentsCalloutWindowCtrl.activate();
+	private void doOpenChildren(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
+		doOpenTypeNamesCallout(ureq, link, translate("table.type.callout.parent.of"), row.getChildTypes());
+	}
+
+	private void doOpenTypeNamesCallout(UserRequest ureq, FormLink link, String title, List<CurriculumElementType> types) {
+		removeAsListenerAndDispose(typeNamesCalloutCtrl);
+		removeAsListenerAndDispose(typeNamesCalloutWindowCtrl);
+
+		typeNamesCalloutCtrl = new TypeNamesCalloutController(ureq, getWindowControl(), title, types);
+		listenTo(typeNamesCalloutCtrl);
+		typeNamesCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				typeNamesCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(typeNamesCalloutWindowCtrl);
+		typeNamesCalloutWindowCtrl.activate();
 	}
 
 	private void doAddNewElementType(UserRequest ureq) {
@@ -390,15 +417,16 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
-	private class ParentsCalloutController extends BasicController {
+	private class TypeNamesCalloutController extends BasicController {
 
 		private final VelocityContainer mainVC;
 
-		public ParentsCalloutController(UserRequest ureq, WindowControl wControl, List<String> parentNames) {
+		public TypeNamesCalloutController(UserRequest ureq, WindowControl wControl, String title, List<CurriculumElementType> types) {
 			super(ureq, wControl);
 			setTranslator(CurriculumElementTypesEditController.this.getTranslator());
-			mainVC = createVelocityContainer("element_type_parents");
-			mainVC.contextPut("parents", parentNames);
+			mainVC = createVelocityContainer("element_type_names_callout");
+			mainVC.contextPut("title", title);
+			mainVC.contextPut("items", types);
 			putInitialPanel(mainVC);
 		}
 
