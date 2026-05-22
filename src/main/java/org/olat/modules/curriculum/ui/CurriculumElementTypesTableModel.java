@@ -64,6 +64,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 			case forUseAs: return row.getForUseAsLabel();
 			case typeOfElement: return row.getTypeOfElementLabel();
 			case typeOfApplication: return row.getTypeOfApplicationLabel();
+			case parents: return row.getParentsLink();
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -77,6 +78,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 		forUseAs("table.type.header.type.forUseAs"),
 		typeOfElement("table.type.header.type.typeOfElement"),
 		typeOfApplication("table.type.header.type.typeOfApplication"),
+		parents("table.type.header.type.parents"),
 		tools("action.more");
 		
 		private final String i18nHeaderKey;
@@ -87,7 +89,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 
 		@Override
 		public boolean sortable() {
-			return this != tools;
+			return this != tools && this != parents;
 		}
 
 		@Override

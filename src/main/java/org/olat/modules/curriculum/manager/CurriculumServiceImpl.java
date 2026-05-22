@@ -430,6 +430,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public List<CurriculumElementTypeToType> getAllCurriculumElementTypeRelations() {
+		return curriculumElementTypeToTypeDao.getAllRelations();
+	}
+
+	@Override
 	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType) {
 		return curriculumElementTypeDao.update(elementType);
 	}

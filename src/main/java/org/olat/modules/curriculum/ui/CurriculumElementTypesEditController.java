@@ -20,7 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -56,6 +58,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementTypesTableModel.TypesCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,11 +76,13 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	private CurriculumElementTypesTableModel model;
 	
 	private ToolsController toolsCtrl;
+	private ParentsCalloutController parentsCalloutCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDialog;
 	private EditCurriculumElementTypeController rootElementTypeCtrl;
 	private EditCurriculumElementTypeController editElementTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
+	protected CloseableCalloutWindowController parentsCalloutWindowCtrl;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -103,6 +108,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfElement));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfApplication));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -122,14 +128,22 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	
 	private void loadModel() {
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
-		List<CurriculumElementTypeRow> rows = types
-				.stream().map(this::forgeRow)
+		List<CurriculumElementTypeToType> relations = curriculumService.getAllCurriculumElementTypeRelations();
+		Map<Long, List<String>> parentNamesBySubTypeKey = new HashMap<>();
+		for(CurriculumElementTypeToType relation : relations) {
+			Long subTypeKey = relation.getAllowedSubType().getKey();
+			parentNamesBySubTypeKey
+				.computeIfAbsent(subTypeKey, k -> new ArrayList<>())
+				.add(relation.getType().getDisplayName());
+		}
+		List<CurriculumElementTypeRow> rows = types.stream()
+				.map(t -> forgeRow(t, parentNamesBySubTypeKey.getOrDefault(t.getKey(), List.of())))
 				.collect(Collectors.toList());
 		model.setObjects(rows);
 		tableEl.reset(false, true, true);
 	}
 	
-	private CurriculumElementTypeRow forgeRow(CurriculumElementType type) {
+	private CurriculumElementTypeRow forgeRow(CurriculumElementType type, List<String> parentNames) {
 		CurriculumElementTypeRow row = new CurriculumElementTypeRow(type);
 		String forUseAsKey;
 		if(type.isImplOnly()) {
@@ -164,6 +178,11 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			}
 			row.setTypeOfApplicationLabel(typeOfApplicationKey != null ? translate(typeOfApplicationKey) : null);
 		}
+		row.setParentTypeNames(parentNames);
+		FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
+				String.valueOf(parentNames.size()), null, null, Link.NONTRANSLATED);
+		parentsLink.setUserObject(row);
+		row.setParentsLink(parentsLink);
 		if(isToolsEnable(type)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
@@ -217,7 +236,9 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			String cmd = link.getCmd();
 			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenTools(ureq, row, link);
-			} 
+			} else if("parents".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+				doOpenParents(ureq, row, link);
+			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -252,6 +273,18 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
+	}
+
+	private void doOpenParents(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
+		removeAsListenerAndDispose(parentsCalloutCtrl);
+		removeAsListenerAndDispose(parentsCalloutWindowCtrl);
+
+		parentsCalloutCtrl = new ParentsCalloutController(ureq, getWindowControl(), row.getParentTypeNames());
+		listenTo(parentsCalloutCtrl);
+		parentsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				parentsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(parentsCalloutWindowCtrl);
+		parentsCalloutWindowCtrl.activate();
 	}
 
 	private void doAddNewElementType(UserRequest ureq) {
@@ -354,6 +387,24 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
+		}
+	}
+
+	private class ParentsCalloutController extends BasicController {
+
+		private final VelocityContainer mainVC;
+
+		public ParentsCalloutController(UserRequest ureq, WindowControl wControl, List<String> parentNames) {
+			super(ureq, wControl);
+			setTranslator(CurriculumElementTypesEditController.this.getTranslator());
+			mainVC = createVelocityContainer("element_type_parents");
+			mainVC.contextPut("parents", parentNames);
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
 		}
 	}
 }

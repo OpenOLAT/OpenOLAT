@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
@@ -32,6 +34,8 @@ import org.olat.modules.curriculum.CurriculumElementTypeRef;
 public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	
 	private FormLink toolsLink;
+	private FormLink parentsLink;
+	private List<String> parentTypeNames;
 	private String forUseAsLabel;
 	private String typeOfElementLabel;
 	private String typeOfApplicationLabel;
@@ -92,5 +96,21 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+
+	public FormLink getParentsLink() {
+		return parentsLink;
+	}
+
+	public void setParentsLink(FormLink parentsLink) {
+		this.parentsLink = parentsLink;
+	}
+
+	public List<String> getParentTypeNames() {
+		return parentTypeNames;
+	}
+
+	public void setParentTypeNames(List<String> parentTypeNames) {
+		this.parentTypeNames = parentTypeNames;
 	}
 }

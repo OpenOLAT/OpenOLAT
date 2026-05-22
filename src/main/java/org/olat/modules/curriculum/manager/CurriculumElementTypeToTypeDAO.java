@@ -125,4 +125,11 @@ public class CurriculumElementTypeToTypeDAO {
 		dbInstance.getCurrentEntityManager().persist(reloadedParentType);
 	}
 
+	public List<CurriculumElementTypeToType> getAllRelations() {
+		String q = "select type2type from curriculumelementtypetotype type2type inner join fetch type2type.type parentType inner join fetch type2type.allowedSubType subType";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, CurriculumElementTypeToType.class)
+				.getResultList();
+	}
+
 }

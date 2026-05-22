@@ -227,6 +227,8 @@ public interface CurriculumService {
 	
 	public CurriculumElementType createCurriculumElementType(String identifier, String displayName, String description, String externalId);
 
+	public List<CurriculumElementTypeToType> getAllCurriculumElementTypeRelations();
+
 	/**
 	 * Update only the curriculum element type with the allowed sub-types.
 	 * 
