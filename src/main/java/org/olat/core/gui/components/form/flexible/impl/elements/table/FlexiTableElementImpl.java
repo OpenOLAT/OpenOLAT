@@ -258,7 +258,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setExternalRenderer(AbstractFlexiTableRenderer externalRenderer, String iconCssSelector) {
 		component.setExternalRenderer(externalRenderer);
-		externalTypeButton.setIconLeftCSS("o_icon " + iconCssSelector);
+		if (externalTypeButton != null) {
+			externalTypeButton.setIconLeftCSS("o_icon " + iconCssSelector);
+		}
 	}
 
 	@Override

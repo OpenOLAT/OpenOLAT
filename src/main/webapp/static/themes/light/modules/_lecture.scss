@@ -579,22 +579,6 @@
 		padding: 5px 10px;
 	}
 	
-	.o_row_day {
-		width: 54px;
-		flex-shrink: 0;
-		
-		align-items: center;
-		
-		.o_row_day_abbr {
-			@extend %o_muted;
-			font-size: 12px;
-		}
-		.o_row_day_num {
-			font-size: 20px;
-			line-height: 1;
-		}
-	}
-	
 	.o_row_status {
 		padding: 0;
 		width: 3px;
@@ -646,5 +630,46 @@
 		.o_row_time {
 			display: none;
 		}
+	}
+}
+
+.o_lecture_widget_day_group {
+	display: flex;
+	align-items: flex-start;
+
+	margin-left: ($grid-gutter-width * -0.5);
+	margin-right: ($grid-gutter-width * -0.5);
+
+	.o_lecture_widget_day_header {
+		position: sticky;
+		top: -1px;
+		z-index: 2;
+
+		flex: 0 0 54px;
+		padding: 2px 10px;
+		border-top: 1px solid $table-border-color;
+
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+
+		.o_row_day_abbr {
+			@extend %o_muted;
+			font-size: 12px;
+		}
+		.o_row_day_num {
+			font-size: 20px;
+			line-height: 1;
+		}
+	}
+
+	.o_lecture_widget_day_rows {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&:not(:last-child) .o_lecture_widget_day_rows .o_table_row:last-child {
+		border-bottom: 0;
 	}
 }

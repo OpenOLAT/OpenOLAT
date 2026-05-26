@@ -36,7 +36,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-abstract class AbstractFlexiCustomRenderer extends AbstractFlexiTableRenderer {
+public abstract class AbstractFlexiCustomRenderer extends AbstractFlexiTableRenderer {
 
 	@Override
 	protected void renderHeaders(StringOutput sb, FlexiTableComponent ftC, Translator translator) {

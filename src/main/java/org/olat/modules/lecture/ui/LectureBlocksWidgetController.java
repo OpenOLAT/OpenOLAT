@@ -54,6 +54,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
+import org.olat.modules.lecture.ui.component.LectureBlocksWidgetRenderer;
 
 /**
  * 
@@ -94,11 +95,13 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		dataModel = new LectureBlocksWidgetTableModel(tableColumnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 1000, true, getTranslator(), widgetCont);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 5000, true, getTranslator(), widgetCont);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		
-		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external);
+		tableEl.setRendererType(FlexiTableRendererType.external);
+		tableEl.setExternalRenderer(new LectureBlocksWidgetRenderer(), "");
 		setVelocityRoot(Util.getPackageVelocityRoot(LectureBlocksWidgetController.class));
 		VelocityContainer rowVC = createVelocityContainer("lecture_block_widget_row");
 		rowVC.setDomReplacementWrapperRequired(false);
@@ -294,7 +297,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return "o_table_row row o_dashboard_table_widget_noborder";
+			return "o_table_row o_dashboard_table_widget_noborder";
 		}
 		
 	}

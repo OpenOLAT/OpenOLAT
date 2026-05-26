@@ -39,7 +39,7 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
+public class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
