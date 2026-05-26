@@ -84,7 +84,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private CurriculumService curriculumService;
 	
 	public EditCurriculumElementTypeController(UserRequest ureq, WindowControl wControl, CurriculumElementType curriculumElementType) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.curriculumElementType = curriculumElementType;
 		initForm(ureq);
 		updateUI();
@@ -92,8 +92,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer commonContainer = FormLayoutContainer.createDefaultFormLayout("common", getTranslator());
+		formLayout.add(commonContainer);
+
 		String displayName = curriculumElementType == null ? "" : curriculumElementType.getDisplayName();
-		displayNameEl = uifactory.addTextElement("type.displayname", "type.displayname", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("type.displayname", "type.displayname", 255, displayName, commonContainer);
 		displayNameEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
@@ -101,17 +104,17 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		}
 		
 		String identifier = curriculumElementType == null ? "" : curriculumElementType.getIdentifier();
-		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, commonContainer);
 		identifierEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.identifier));
 		identifierEl.setMandatory(true);
 
 		String cssClass = curriculumElementType == null ? "" : curriculumElementType.getCssClass();
-		cssClassEl = uifactory.addTextElement("type.cssClass", "type.cssClass", 255, cssClass, formLayout);
+		cssClassEl = uifactory.addTextElement("type.cssClass", "type.cssClass", 255, cssClass, commonContainer);
 		cssClassEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.cssClass));
 		
 		String description = curriculumElementType == null ? "" : curriculumElementType.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("type.description", "type.description", description, 10, 60,
-				formLayout,  getWindowControl());
+				commonContainer,  getWindowControl());
 		descriptionEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.description));
 
 		SelectionValues featuresPK = new SelectionValues();
@@ -122,7 +125,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		featuresPK.add(SelectionValues.entry(LEARNING_PROGRESS, translate("type.learning.progress.enabled"), null, null, null,
 				!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.learningProgress)));
 
-		featuresEnabledEl = uifactory.addCheckboxesVertical("type.features.enabled", formLayout, featuresPK.keys(), featuresPK.values(), 1);
+		featuresEnabledEl = uifactory.addCheckboxesVertical("type.features.enabled", commonContainer, featuresPK.keys(), featuresPK.values(), 1);
 		featuresEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.calendars));
 		CurriculumLectures lecturesEnabled =  curriculumElementType == null ? null : curriculumElementType.getLectures();
 		featuresEnabledEl.select(LECTURES, lecturesEnabled == CurriculumLectures.enabled);
@@ -131,9 +134,13 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		CurriculumLearningProgress learningProgressEnabled =  curriculumElementType == null ? null : curriculumElementType.getLearningProgress();
 		featuresEnabledEl.select(LEARNING_PROGRESS, learningProgressEnabled == CurriculumLearningProgress.enabled);
 		
+		FormLayoutContainer configurationContainer = FormLayoutContainer.createDefaultFormLayout("configuration", getTranslator());
+		formLayout.add(configurationContainer);
+		configurationContainer.setFormTitle(translate("configuration"));
+		
 		SelectionValues rootPK = new SelectionValues();
 		rootPK.add(SelectionValues.entry(ROOT, translate("type.allow.as.root.value")));
-		allowedAsRootEl = uifactory.addCheckboxesHorizontal("type.allow.as.root", formLayout, rootPK.keys(), rootPK.values());
+		allowedAsRootEl = uifactory.addCheckboxesHorizontal("type.allow.as.root", configurationContainer, rootPK.keys(), rootPK.values());
 		allowedAsRootEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
 		boolean allowAsRoot = curriculumElementType == null ? true : curriculumElementType.isAllowedAsRootElement();
 		allowedAsRootEl.select(ROOT, allowAsRoot);
@@ -141,14 +148,14 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		int maxRelations = curriculumElementType == null ? 1 : curriculumElementType.getMaxRepositoryEntryRelations();
 		
 		// Max course references
-		withContentEl = uifactory.addToggleButton("type.with.content", "type.with.content", translate("on"), translate("off"), formLayout);
+		withContentEl = uifactory.addToggleButton("type.with.content", "type.with.content", translate("on"), translate("off"), configurationContainer);
 		withContentEl.toggle(maxRelations != 0);
 		withContentEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValues maxRelationsPK = new SelectionValues();
 		maxRelationsPK.add(SelectionValues.entry("1", translate("type.max.repository.entry.relations.1")));
 		maxRelationsPK.add(SelectionValues.entry(UNLIMITED, translate("type.max.repository.entry.relations.unlimited")));
-		maxRepositoryEntryRelationsEl = uifactory.addRadiosHorizontal("type.max.repository.entry.relations", null, formLayout,
+		maxRepositoryEntryRelationsEl = uifactory.addRadiosHorizontal("type.max.repository.entry.relations", null, configurationContainer,
 				maxRelationsPK.keys(), maxRelationsPK.values());
 		maxRepositoryEntryRelationsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
 		if(maxRelations == 0) {
@@ -162,7 +169,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		// Composite type : can contain multiple sub-elements
 		SelectionValues compositePK = new SelectionValues();
 		compositePK.add(SelectionValues.entry(COMPOSITE, translate("type.composite.multiple")));
-		compositeTypeEl = uifactory.addToggleButton("type.composite", "type.composite", translate("on"), translate("off"), formLayout);
+		compositeTypeEl = uifactory.addToggleButton("type.composite", "type.composite", translate("on"), translate("off"), configurationContainer);
 		compositeTypeEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
 		boolean singleElement = curriculumElementType == null || curriculumElementType.isSingleElement();
 		compositeTypeEl.toggle(!singleElement);
@@ -178,7 +185,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		for(CurriculumElementType type:types) {
 			subTypePK.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
 		}
-		allowedSubTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", formLayout, subTypePK.keys(), subTypePK.values(), 2);
+		allowedSubTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer, subTypePK.keys(), subTypePK.values(), 2);
 		allowedSubTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
 		if(curriculumElementType != null) {
 			Set<CurriculumElementTypeToType> typeToTypes = curriculumElementType.getAllowedSubTypes();
@@ -189,7 +196,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		configurationContainer.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
