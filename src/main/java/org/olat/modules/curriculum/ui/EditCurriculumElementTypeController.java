@@ -65,8 +65,10 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String CALENDAR = "calendar";
 	private static final String LEARNING_PROGRESS = "learningprogress";
 	private static final String COMPOSITE = "composite";
-	private static final String ROOT = "root";
 	private static final String UNLIMITED = "-1";
+	private static final String FOR_USE_AS_IMPL = "implementation";
+	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
+	private static final String FOR_USE_AS_ELEM = "element";
 	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
@@ -74,9 +76,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private FormToggle withContentEl;
 	private FormToggle compositeTypeEl;
 	private RichTextElement descriptionEl;
+	private SingleSelection forUseAsEl;
 	private MultipleSelectionElement allowedSubTypesEl;
 	private MultipleSelectionElement featuresEnabledEl;
-	private MultipleSelectionElement allowedAsRootEl;
 	private SingleSelection maxRepositoryEntryRelationsEl;
 	
 	private CurriculumElementType curriculumElementType;
@@ -141,13 +143,22 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		formLayout.add(configurationContainer);
 		configurationContainer.setFormTitle(translate("configuration"));
 		
-		SelectionValues rootPK = new SelectionValues();
-		rootPK.add(SelectionValues.entry(ROOT, translate("type.allow.as.root.value")));
-		allowedAsRootEl = uifactory.addCheckboxesHorizontal("type.allow.as.root", configurationContainer, rootPK.keys(), rootPK.values());
-		allowedAsRootEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
-		boolean allowAsRoot = curriculumElementType == null ? true : curriculumElementType.isAllowedAsRootElement();
-		allowedAsRootEl.select(ROOT, allowAsRoot);
-		
+		SelectionValues forUseAsPK = new SelectionValues();
+		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL, translate("table.type.for.use.as.implementation")));
+		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL_OR_ELEM, translate("table.type.for.use.as.implementation.or.element")));
+		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_ELEM, translate("table.type.for.use.as.element")));
+		forUseAsEl = uifactory.addRadiosHorizontal("type.for.use.as", "type.for.use.as", configurationContainer,
+				forUseAsPK.keys(), forUseAsPK.values());
+		forUseAsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.implOnly)
+				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
+		if(curriculumElementType != null && curriculumElementType.isImplOnly()) {
+			forUseAsEl.select(FOR_USE_AS_IMPL, true);
+		} else if(curriculumElementType != null && !curriculumElementType.isAllowedAsRootElement()) {
+			forUseAsEl.select(FOR_USE_AS_ELEM, true);
+		} else {
+			forUseAsEl.select(FOR_USE_AS_IMPL_OR_ELEM, true);
+		}
+
 		int maxRelations = curriculumElementType == null ? 1 : curriculumElementType.getMaxRepositoryEntryRelations();
 		
 		// Max course references
@@ -272,7 +283,19 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		}
 		
 		curriculumElementType.setSingleElement(!compositeTypeEl.isOn());
-		curriculumElementType.setAllowedAsRootElement(allowedAsRootEl.isAtLeastSelected(1));
+		if(forUseAsEl.isOneSelected()) {
+			String selected = forUseAsEl.getSelectedKey();
+			if(FOR_USE_AS_IMPL.equals(selected)) {
+				curriculumElementType.setImplOnly(true);
+				curriculumElementType.setAllowedAsRootElement(true);
+			} else if(FOR_USE_AS_ELEM.equals(selected)) {
+				curriculumElementType.setImplOnly(false);
+				curriculumElementType.setAllowedAsRootElement(false);
+			} else {
+				curriculumElementType.setImplOnly(false);
+				curriculumElementType.setAllowedAsRootElement(true);
+			}
+		}
 		
 		int maxRepositoryEntryRelations;
 		if(withContentEl.isOn()) {
