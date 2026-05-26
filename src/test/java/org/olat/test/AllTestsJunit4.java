@@ -184,6 +184,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,
 	org.olat.basesecurity.IdentityPowerSearchQueriesTest.class,
 	org.olat.basesecurity.BaseSecurityManagerTest.class,
+	org.olat.basesecurity.MediaServerModuleTest.class,
 	org.olat.user.UserDAOTest.class,
 	org.olat.user.UserManagerTest.class,
 	org.olat.user.UserPortraitServiceTest.class,

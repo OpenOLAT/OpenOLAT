@@ -289,19 +289,46 @@ public class MediaServerModule extends AbstractSpringModule {
 		}
 		try {
 			URL url = new URL(urlString);
+
+			// Reject non-http/https schemes
+			String scheme = url.getProtocol();
+			if (!"http".equals(scheme) && !"https".equals(scheme)) {
+				return true;
+			}
+
+			// Reject URLs with a userinfo segment
+			if (url.getUserInfo() != null) {
+				return true;
+			}
+
+			// Reject URLs with an empty or blank host
+			String host = url.getHost();
+			if (host == null || host.isBlank()) {
+				return true;
+			}
+
+			// Check against built-in and custom whitelist entries using parsed host
 			for (String mediaSrcUrl : getMediaSrcUrls()) {
-				if (urlString.startsWith(mediaSrcUrl)) {
-					return false;
+				try {
+					URL whitelistUrl = new URL(mediaSrcUrl);
+					if (scheme.equals(whitelistUrl.getProtocol()) && host.equalsIgnoreCase(whitelistUrl.getHost())) {
+						return false;
+					}
+				} catch (MalformedURLException ignored) {
+					// ignore malformed whitelist entry
 				}
 			}
-			String domainToTest = url.getHost();
+
+			// Check custom media servers — exact host match or proper subdomain
 			for (MediaServer mediaServer : getCustomMediaServers()) {
-				if (domainToTest.endsWith(mediaServer.getDomain())) {
+				String domain = mediaServer.getDomain();
+				if (host.equalsIgnoreCase(domain)
+						|| host.toLowerCase().endsWith("." + domain.toLowerCase())) {
 					return false;
 				}
 			}
 		} catch (MalformedURLException e) {
-			return false;
+			return true;  // treat unparseable as restricted
 		}
 
 		return true;
