@@ -67,10 +67,10 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.7</org.springframework.version>
-		<org.hibernate.version>7.3.5.Final</org.hibernate.version>
+		<org.hibernate.version>7.3.6.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.8</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.2.0</apache.cxf>
+		<apache.cxf>4.2.1</apache.cxf>
 		<apache.pdfbox>3.0.7</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
 		<apache.log4j>2.26.0</apache.log4j>
@@ -2197,7 +2197,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20251224</version>
+			<version>20260522</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2250,7 +2250,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.64.0</version>
+			<version>6.65.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2544,7 +2544,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.10.1.Final</version>
+				<version>1.10.2.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
