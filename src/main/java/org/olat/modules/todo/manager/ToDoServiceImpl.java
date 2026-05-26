@@ -303,6 +303,15 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 
 	@Override
+	public ToDoTaskMembers getToDoTaskMembers(ToDoTask toDoTask, Collection<ToDoRole> roles) {
+		if (toDoTask == null) {
+			return new ToDoTaskMembersImpl();
+		}
+		return getToDoTaskGroupKeyToMembers(List.of(toDoTask), roles)
+				.get(toDoTask.getBaseGroup().getKey());
+	}
+
+	@Override
 	public void updateTags(ToDoTaskRef toDoTask, List<String> displayNames) {
 		ToDoTask reloadedToDoTask = getToDoTask(toDoTask);
 		if (reloadedToDoTask == null) return;

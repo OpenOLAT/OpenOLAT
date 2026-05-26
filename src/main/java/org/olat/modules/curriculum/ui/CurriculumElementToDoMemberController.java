@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionBrowserEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -150,7 +151,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 
 		initFilters();
-		initFiltersPresets();
+		initFiltersPresets(ureq);
 
 		loadModel();
 
@@ -171,7 +172,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 		tableEl.setFilters(true, List.of(rolesFilter), false, false);
 	}
 
-	private void initFiltersPresets() {
+	private void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
 		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("all", translate("filter.all"),
@@ -203,6 +204,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 		tabs.add(courseOwnersTab);
 
 		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 
 	private void loadModel() {
@@ -268,7 +270,10 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
+		List<String> keys = getSelectedIdentities().stream()
+				.map(id -> id.getKey().toString())
+				.toList();
+		fireEvent(ureq, new ObjectSelectionBrowserEvent(keys));
 	}
 
 	private static final class MemberRow extends UserPropertiesRow {

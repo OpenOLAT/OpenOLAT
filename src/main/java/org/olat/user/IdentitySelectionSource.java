@@ -56,6 +56,7 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	private final Collator collator;
 	private final Collection<? extends Identity> selectedIdentities;
 	private final Supplier<Collection<Identity>> identitiesSupplier;
+	private final Function<Boolean, ControllerCreator> browserCreatorProvider;
 	private Collection<Identity> identities;
 
 	@Autowired
@@ -65,11 +66,18 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 
 	public IdentitySelectionSource(Locale locale, Collection<? extends Identity> selectedIdentities,
 			Supplier<Collection<Identity>> identitiesSupplier) {
+		this(locale, selectedIdentities, identitiesSupplier, null);
+	}
+
+	public IdentitySelectionSource(Locale locale, Collection<? extends Identity> selectedIdentities,
+			Supplier<Collection<Identity>> identitiesSupplier,
+			Function<Boolean, ControllerCreator> browserCreatorProvider) {
 		CoreSpringFactory.autowireObject(this);
 		this.locale = locale;
 		this.collator = Collator.getInstance(locale);
 		this.selectedIdentities = selectedIdentities;
 		this.identitiesSupplier = identitiesSupplier;
+		this.browserCreatorProvider = browserCreatorProvider;
 	}
 
 	@Override
@@ -159,12 +167,12 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 
 	@Override
 	public boolean isBrowserAvailable() {
-		return false;
+		return browserCreatorProvider != null;
 	}
 
 	@Override
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
-		return null;
+		return browserCreatorProvider != null ? browserCreatorProvider.apply(multiSelection) : null;
 	}
 
 	public static List<IdentityRef> toRefs(Collection<String> keys) {

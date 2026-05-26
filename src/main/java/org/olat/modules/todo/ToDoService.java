@@ -70,6 +70,8 @@ public interface ToDoService {
 	
 	public Map<Long, ToDoTaskMembers> getToDoTaskGroupKeyToMembers(Collection<ToDoTask> toDoTasks, Collection<ToDoRole> roles);
 
+	public ToDoTaskMembers getToDoTaskMembers(ToDoTask toDoTask, Collection<ToDoRole> roles);
+
 	public void updateTags(ToDoTaskRef toDoTask, List<String> displayNames);
 	
 	public List<ToDoTaskTag> getToDoTaskTags(ToDoTaskSearchParams searchParams);

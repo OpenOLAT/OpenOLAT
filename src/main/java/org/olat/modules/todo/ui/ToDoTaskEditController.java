@@ -19,7 +19,6 @@
  */
 package org.olat.modules.todo.ui;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -68,7 +67,7 @@ public class ToDoTaskEditController extends FormBasicController {
 	private final ToDoTaskContextConfig contextConfig;
 	private final ToDoTaskMemberConfig assigneeConfig;
 	private final ToDoTaskMemberConfig delegateeConfig;
-	private final ToDoTaskMemberSelection defaultMemberSelection;
+	private final ToDoTaskMembers preloadedMembers;
 	private final ToDoTaskDateConfig dateConfig;
 	private final ToDoTaskSearchParams tagInfoSearchParams;
 	private final ToDoRight[] defaultAssigneeRights;
@@ -80,9 +79,9 @@ public class ToDoTaskEditController extends FormBasicController {
 
 	public ToDoTaskEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask toDoTaskCopySource, ToDoTaskContextConfig contextConfig, ToDoTaskMemberConfig assigneeConfig,
-			ToDoTaskMemberConfig delegateeConfig, ToDoTaskMemberSelection defaultMemberSelection,
-			ToDoTaskDateConfig dateConfig, ToDoTaskSearchParams tagInfoSearchParams,
-			ToDoRight[] defaultAssigneeRights, ToDoRight[] assigneeRightsOverride) {
+			ToDoTaskMemberConfig delegateeConfig, ToDoTaskMembers preloadedMembers, ToDoTaskDateConfig dateConfig,
+			ToDoTaskSearchParams tagInfoSearchParams, ToDoRight[] defaultAssigneeRights,
+			ToDoRight[] assigneeRightsOverride) {
 		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
 		this.toDoTaskCopySource = toDoTaskCopySource;
@@ -90,7 +89,7 @@ public class ToDoTaskEditController extends FormBasicController {
 		this.dateConfig = dateConfig;
 		this.assigneeConfig = assigneeConfig;
 		this.delegateeConfig = delegateeConfig;
-		this.defaultMemberSelection = defaultMemberSelection;
+		this.preloadedMembers = preloadedMembers;
 		this.tagInfoSearchParams = tagInfoSearchParams;
 		this.defaultAssigneeRights = defaultAssigneeRights;
 		this.assigneeRightsOverride = assigneeRightsOverride;
@@ -102,32 +101,23 @@ public class ToDoTaskEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Identity creator = null;
 		Identity modifier = null;
-		Collection<Identity> assignees = defaultMemberSelection.assignees();
-		Collection<Identity> delegatees = defaultMemberSelection.delegatees();
 		List<TagInfo> tagInfos;
-		
+
 		if (toDoTask != null) {
-			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ALL)
-					.get(toDoTask.getBaseGroup().getKey());
-			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
-			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
-			creator = toDoTaskMembers.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
-			modifier = toDoTaskMembers.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
+			ToDoTaskMembers members = preloadedMembers != null
+					? preloadedMembers
+					: toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
+			creator = members.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
+			modifier = members.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
 			tagInfos = toDoService.getTagInfos(tagInfoSearchParams, toDoTask);
 		} else if (toDoTaskCopySource != null) {
-			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDoTaskCopySource), ToDoRole.ALL)
-					.get(toDoTaskCopySource.getBaseGroup().getKey());
-			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
-			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
 			tagInfos = toDoService.getTagInfos(tagInfoSearchParams, toDoTaskCopySource);
 		} else {
 			tagInfos = toDoService.getTagInfos(tagInfoSearchParams, null);
 		}
-		
+
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig, assigneeConfig,
-				delegateeConfig, new ToDoTaskMemberSelection(assignees, delegatees), dateConfig, tagInfos, true);
+				delegateeConfig, dateConfig, tagInfos, true);
 		if (toDoTask != null) {
 			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
 			ToDoRight[] effectiveRights = assigneeRightsOverride != null ? assigneeRightsOverride : toDoTask.getAssigneeRights();

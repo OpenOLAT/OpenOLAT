@@ -20,12 +20,14 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
@@ -58,7 +60,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumElementContextPicker;
-import org.olat.modules.curriculum.ui.CurriculumElementToDoMemberProvider;
+import org.olat.modules.curriculum.ui.CurriculumElementToDoMemberController;
 import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoContextFilter;
@@ -84,8 +86,8 @@ import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
-import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
 import org.olat.modules.todo.ui.ToDoUIFactory;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -205,9 +207,26 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask toDoTaskCopySource, CurriculumElement element, ToDoContext context, ToDoRight[] assigneeRightsOverride) {
-		Set<Identity> candidates = getCandidates(element).stream()
-				.map(CurriculumMember::getIdentity)
-				.collect(Collectors.toSet());
+		ToDoTask sourceOrCurrent = toDoTask != null ? toDoTask : toDoTaskCopySource;
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(sourceOrCurrent, ToDoRole.ALL);
+		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
+		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
+		Supplier<Collection<Identity>> candidatesSupplier = new Supplier<>() {
+			private Collection<Identity> cached;
+			@Override
+			public Collection<Identity> get() {
+				if (cached == null) {
+					cached = getCandidates(element).stream().map(CurriculumMember::getIdentity).collect(Collectors.toSet());
+				}
+				return cached;
+			}
+		};
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
+				ureq.getLocale(), assignees, candidatesSupplier,
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element));
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(
+				ureq.getLocale(), delegatees, candidatesSupplier,
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element));
 		CurriculumElement implementation = curriculumService.getImplementationOf(element);
 		CurriculumElement effectiveRoot = implementation != null ? implementation : element;
 		CurriculumElementType implementationType = effectiveRoot.getType();
@@ -215,14 +234,12 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		ToDoTaskContextConfig contextConfig = isStructuredProduct && canManageContext(ureq.getIdentity(), element)
 				? ToDoTaskContextConfig.picker(new CurriculumElementContextPicker(effectiveRoot.getKey(), element.getKey()), context)
 				: ToDoTaskContextConfig.dropdown(List.of(context), context);
-		CurriculumElementToDoMemberProvider memberSearchProvider = new CurriculumElementToDoMemberProvider(element);
 		ToDoTaskDateConfig dateConfig = createDateConfig(ureq.getLocale(), element);
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource,
 				contextConfig,
-				ToDoTaskMemberConfig.search(candidates, memberSearchProvider).notMandatory(),
-				ToDoTaskMemberConfig.search(candidates, memberSearchProvider),
-				ToDoTaskMemberSelection.empty(),
-				dateConfig,
+				ToDoTaskMemberConfig.editable(assigneeSource, false),
+				ToDoTaskMemberConfig.editable(delegateeSource, false),
+				toDoTask != null ? members : null, dateConfig,
 				createTagSearchParams(), ASSIGNEE_RIGHTS, assigneeRightsOverride);
 	}
 

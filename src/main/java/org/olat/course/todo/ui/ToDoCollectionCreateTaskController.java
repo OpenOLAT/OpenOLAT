@@ -40,7 +40,7 @@ import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
-import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,11 +79,11 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 		
 		List<TagInfo> tagInfos = toDoService.getTagInfos(courseToDoService.createCourseTagSearchParams(context.getRepositoryEntry()), sourceToDoTask);
 		
+		IdentitySelectionSource emptySource = new IdentitySelectionSource(getLocale(), List.of(), List::of);
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
 				ToDoTaskContextConfig.off(null),
-				ToDoTaskMemberConfig.disabled(),
-				ToDoTaskMemberConfig.disabled(),
-				ToDoTaskMemberSelection.empty(),
+				ToDoTaskMemberConfig.disabled(emptySource, true),
+				ToDoTaskMemberConfig.disabled(emptySource, false),
 				ToDoTaskDateConfig.absoluteOnly(),
 				tagInfos, true);
 		if (sourceToDoTask != null) {

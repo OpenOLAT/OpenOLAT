@@ -19,10 +19,7 @@
  */
 package org.olat.modules.todo.ui;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.olat.core.id.Identity;
+import org.olat.user.IdentitySelectionSource;
 
 /**
  *
@@ -32,66 +29,53 @@ import org.olat.core.id.Identity;
  */
 public final class ToDoTaskMemberConfig {
 
-	// read-only: not editable, always displayed
-	// disabled: not editable, displayed if at least one but not me selected
-	public enum MemberSelection { search, candidatesSingle, candidates, readOnly, disabled }
+	// readOnly: not editable, always displayed
+	// disabled: not editable, displayed only if more than "me" is selected
+	public enum MemberSelection { editable, readOnly, disabled }
 
 	private final MemberSelection selection;
-	private final Collection<Identity> candidates;
-	private final ToDoTaskMemberSearchProvider searchProvider;
+	private final boolean multiSelection;
 	private final boolean mandatory;
+	private final IdentitySelectionSource source;
 
-	private ToDoTaskMemberConfig(MemberSelection selection, Collection<Identity> candidates,
-			ToDoTaskMemberSearchProvider searchProvider, boolean mandatory) {
+	private ToDoTaskMemberConfig(MemberSelection selection, boolean multiSelection,
+			boolean mandatory, IdentitySelectionSource source) {
 		this.selection = selection;
-		this.candidates = candidates;
-		this.searchProvider = searchProvider;
+		this.multiSelection = multiSelection;
 		this.mandatory = mandatory;
+		this.source = source;
 	}
 
-	public static ToDoTaskMemberConfig disabled() {
-		return new ToDoTaskMemberConfig(MemberSelection.disabled, List.of(), null, true);
+	public static ToDoTaskMemberConfig disabled(IdentitySelectionSource source, boolean mandatory) {
+		return new ToDoTaskMemberConfig(MemberSelection.disabled, true, mandatory, source);
 	}
 
-	public static ToDoTaskMemberConfig readOnly() {
-		return new ToDoTaskMemberConfig(MemberSelection.readOnly, List.of(), null, true);
+	public static ToDoTaskMemberConfig readOnly(IdentitySelectionSource source, boolean mandatory) {
+		return new ToDoTaskMemberConfig(MemberSelection.readOnly, true, mandatory, source);
 	}
 
-	public static ToDoTaskMemberConfig search(ToDoTaskMemberSearchProvider searchProvider) {
-		return new ToDoTaskMemberConfig(MemberSelection.search, List.of(), searchProvider, true);
+	public static ToDoTaskMemberConfig editable(IdentitySelectionSource source, boolean mandatory) {
+		return new ToDoTaskMemberConfig(MemberSelection.editable, true, mandatory, source);
 	}
 
-	public static ToDoTaskMemberConfig search(Collection<Identity> candidates,
-			ToDoTaskMemberSearchProvider searchProvider) {
-		return new ToDoTaskMemberConfig(MemberSelection.search, candidates, searchProvider, true);
-	}
-
-	public static ToDoTaskMemberConfig candidates(Collection<Identity> candidates) {
-		return new ToDoTaskMemberConfig(MemberSelection.candidates, candidates, null, true);
-	}
-
-	public static ToDoTaskMemberConfig candidatesSingle(Collection<Identity> candidates) {
-		return new ToDoTaskMemberConfig(MemberSelection.candidatesSingle, candidates, null, true);
-	}
-
-	public ToDoTaskMemberConfig notMandatory() {
-		return new ToDoTaskMemberConfig(selection, candidates, searchProvider, false);
+	public static ToDoTaskMemberConfig editableSingle(IdentitySelectionSource source, boolean mandatory) {
+		return new ToDoTaskMemberConfig(MemberSelection.editable, false, mandatory, source);
 	}
 
 	public MemberSelection getSelection() {
 		return selection;
 	}
 
-	public Collection<Identity> getCandidates() {
-		return candidates;
-	}
-
-	public ToDoTaskMemberSearchProvider getSearchProvider() {
-		return searchProvider;
+	public boolean isMultiSelection() {
+		return multiSelection;
 	}
 
 	public boolean isMandatory() {
 		return mandatory;
+	}
+
+	public IdentitySelectionSource getSource() {
+		return source;
 	}
 
 }

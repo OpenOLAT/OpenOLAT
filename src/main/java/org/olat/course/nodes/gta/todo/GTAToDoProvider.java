@@ -36,8 +36,11 @@ import org.olat.course.todo.ui.CourseToDoUIFactory;
 import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
+import org.olat.modules.todo.ToDoRole;
+import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
@@ -45,7 +48,7 @@ import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
-import org.olat.modules.todo.ui.ToDoTaskMemberSelection;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,6 +63,8 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 	
 	@Autowired
 	private CourseToDoContextFilter contextFilter;
+	@Autowired
+	private ToDoService toDoService;
 	
 	@Override
 	public boolean isEnabled() {
@@ -129,11 +134,15 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 		ToDoTaskContextConfig contextConfig = showContext
 				? ToDoTaskContextConfig.dropdown(List.of(toDoTask), toDoTask)
 				: ToDoTaskContextConfig.off(toDoTask);
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
+		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
+		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees);
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees);
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, contextConfig,
-				ToDoTaskMemberConfig.disabled(),
-				ToDoTaskMemberConfig.disabled(),
-				ToDoTaskMemberSelection.empty(),
-				ToDoTaskDateConfig.absoluteOnly(),
+				ToDoTaskMemberConfig.disabled(assigneeSource, true),
+				ToDoTaskMemberConfig.disabled(delegateeSource, false),
+				members, ToDoTaskDateConfig.absoluteOnly(),
 				null, ASSIGNEE_RIGHTS, null);
 	}
 

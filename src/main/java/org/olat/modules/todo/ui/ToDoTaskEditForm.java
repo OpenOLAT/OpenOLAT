@@ -24,14 +24,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
@@ -41,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -49,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -59,7 +57,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -73,7 +70,7 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig.ContextSelection;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig.MemberSelection;
-import org.olat.user.UserManager;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,11 +90,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private TextElement contextStaticEl;
 	private FormLink contextChangeLink;
 	private TagSelection tagsEl;
-	private MultipleSelectionElement assignedEl;
-	private SingleSelection assignedSingleEl;
-	private FormLink assigneeAddLink;
-	private MultipleSelectionElement delegatedEl;
-	private FormLink delegateeAddLink;
+	private ObjectSelectionElement assignedEl;
+	private ObjectSelectionElement delegatedEl;
 	private SingleSelection statusEl;
 	private SingleSelection priorityEl;
 	private FormLayoutContainer startDateRowCont;
@@ -120,16 +114,12 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private TextAreaElement descriptionEl;
 
 	private CloseableModalController cmc;
-	private Controller memberSearchCtrl;
-	private Boolean memberSearchAssignee;
 	private Controller contextPickerCtrl;
 
 	private final ToDoTaskContextConfig contextConfig;
 	private ToDoContext selectedContext;
 	private final ToDoTaskMemberConfig assigneeConfig;
 	private final ToDoTaskMemberConfig delegateeConfig;
-	private final Collection<Identity> assignees;
-	private final Collection<Identity> delegatees;
 	private final ToDoTaskDateConfig datesConfig;
 	private final List<? extends TagInfo> allTags;
 	private final boolean datesEditable;
@@ -137,14 +127,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private UserManager userManager;
 
 	public ToDoTaskEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
 			ToDoTaskContextConfig contextConfig,
 			ToDoTaskMemberConfig assigneeConfig,
 			ToDoTaskMemberConfig delegateeConfig,
-			ToDoTaskMemberSelection memberSelection,
 			ToDoTaskDateConfig datesConfig,
 			List<? extends TagInfo> allTags, boolean datesEditable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_task_edit", mainForm);
@@ -152,8 +139,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 		this.selectedContext = contextConfig.getCurrentContext();
 		this.assigneeConfig = assigneeConfig;
 		this.delegateeConfig = delegateeConfig;
-		this.assignees = memberSelection.assignees();
-		this.delegatees = memberSelection.delegatees();
 		this.datesConfig = datesConfig != null ? datesConfig : ToDoTaskDateConfig.absoluteOnly();
 		this.allTags = allTags;
 		this.datesEditable = datesEditable;
@@ -185,25 +170,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);
 
-		if (MemberSelection.candidatesSingle == assigneeConfig.getSelection()) {
-			assignedSingleEl = createMembersSingleElement(formLayout, "task.assigned", assigneeConfig.getCandidates(), assignees);
-		} else {
-			assignedEl = createMembersElement(formLayout, "task.assigned", assigneeConfig.getSelection(), assigneeConfig.getCandidates(), assignees);
-		}
-		if (MemberSelection.search == assigneeConfig.getSelection()) {
-			assignedEl.setDomReplacementWrapperRequired(false);
-			assigneeAddLink = uifactory.addFormLink("assigneeAddLink", "task.assignee.add", null, formLayout, Link.BUTTON);
-			assigneeAddLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			assigneeAddLink.setElementCssClass("input-group-addon");
-		}
-
-		delegatedEl = createMembersElement(formLayout, "task.delegated", delegateeConfig.getSelection(), delegateeConfig.getCandidates(), delegatees);
-		if (MemberSelection.search == delegateeConfig.getSelection()) {
-			delegatedEl.setDomReplacementWrapperRequired(false);
-			delegateeAddLink = uifactory.addFormLink("delegateeAddLink", "task.delegatee.add", null, formLayout, Link.BUTTON);
-			delegateeAddLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			delegateeAddLink.setElementCssClass("input-group-addon");
-		}
+		assignedEl = createMembersElement(formLayout, "task.assigned", assigneeConfig);
+		delegatedEl = createMembersElement(formLayout, "task.delegated", delegateeConfig);
 
 		SelectionValues statusSV = new SelectionValues();
 		statusSV.add(getSVEntry(ToDoStatus.open));
@@ -345,57 +313,23 @@ public class ToDoTaskEditForm extends FormBasicController {
 				ToDoUIFactory.getIconCss(prioriry), null, true);
 	}
 
-	public MultipleSelectionElement createMembersElement(FormItemContainer formLayout, String name,
-			MemberSelection selection, Collection<Identity> candidateIdentities, Collection<Identity> currentIdentities) {
-		boolean membersEditable = MemberSelection.readOnly != selection && MemberSelection.disabled != selection;
-
-		SelectionValues membersSV = createMembersSV(candidateIdentities, currentIdentities, membersEditable);
-
-		MultipleSelectionElement membersEl = uifactory.addCheckboxesDropdown(name, name, formLayout, membersSV.keys(),
-				membersSV.values());
-		currentIdentities.forEach(member -> membersEl.select(member.getKey().toString(), true));
-		membersEl.setEnabled(membersEditable);
-		membersEl.setVisible(MemberSelection.disabled != selection || membersEl.isAtLeastSelected(1));
-		if (MemberSelection.disabled == selection && isMyOrNoneSelected(membersEl)) {
-			membersEl.setVisible(false);
+	private ObjectSelectionElement createMembersElement(FormItemContainer formLayout, String name,
+			ToDoTaskMemberConfig config) {
+		ObjectSelectionElement el = uifactory.addObjectSelectionElement(name, name, formLayout,
+				getWindowControl(), config.isMultiSelection(), config.getSource());
+		el.setEnabled(config.getSelection() == MemberSelection.editable);
+		el.setMandatory(config.isMandatory());
+		if (config.getSelection() == MemberSelection.disabled && isMyOrNoneSelected(config.getSource())) {
+			el.setVisible(false);
 		}
-
-		return membersEl;
+		return el;
 	}
 
-	private SelectionValues createMembersSV(Collection<Identity> candidateIdentities,
-			Collection<Identity> currentIdentities, boolean membersEditable) {
-		Set<Identity> allIdentities = new HashSet<>(currentIdentities);
-		if (membersEditable) {
-			allIdentities.addAll(candidateIdentities);
-		}
-
-		SelectionValues membersSV = new SelectionValues();
-		allIdentities.forEach(member -> membersSV.add(
-				SelectionValues.entry(
-						member.getKey().toString(),
-						userManager.getUserDisplayName(member.getKey()))));
-		membersSV.sort(SelectionValues.VALUE_ASC);
-		return membersSV;
-	}
-
-	private boolean isMyOrNoneSelected(MultipleSelectionElement membersEl) {
-		return !membersEl.isAtLeastSelected(1)
-				|| (membersEl.getSelectedKeys().size() == 1 && membersEl.getSelectedKeys().contains(getIdentity().getKey().toString()));
-	}
-
-	public SingleSelection createMembersSingleElement(FormItemContainer formLayout, String name,
-			Collection<Identity> candidateIdentities, Collection<Identity> currentIdentities) {
-
-		SelectionValues membersSV = createMembersSV(candidateIdentities, currentIdentities, true);
-		SingleSelection membersEl = uifactory.addDropdownSingleselect(name, formLayout, membersSV.keys(), membersSV.values());
-		if (!currentIdentities.isEmpty()) {
-			membersEl.select(currentIdentities.stream().findFirst().get().getKey().toString(), true);
-		} else if (!membersSV.isEmpty()) {
-			membersEl.select(membersEl.getKey(0), true);
-		}
-
-		return membersEl;
+	private boolean isMyOrNoneSelected(IdentitySelectionSource source) {
+		if (source == null) return true;
+		Collection<String> keys = source.getDefaultSelectedKeys();
+		if (keys.isEmpty()) return true;
+		return keys.size() == 1 && keys.iterator().next().equals(getIdentity().getKey().toString());
 	}
 
 	public void setValues(ToDoTaskFormValues values) {
@@ -449,8 +383,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 
 	public void updateUIByAssigneeRight(ToDoRight[] assigneeRights) {
-		boolean isAssignee = assignees != null && assignees.contains(getIdentity());
-		boolean isDelegatee = delegatees != null && delegatees.contains(getIdentity());
+		String myKey = getIdentity().getKey().toString();
+		boolean isAssignee = assigneeConfig.getSource().getDefaultSelectedKeys().contains(myKey);
+		boolean isDelegatee = delegateeConfig.getSource().getDefaultSelectedKeys().contains(myKey);
 		if (!isAssignee && !isDelegatee) {
 			return;
 		}
@@ -514,15 +449,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (memberSearchCtrl == source) {
-			ToDoTaskMemberSearchProvider provider = memberSearchAssignee
-					? assigneeConfig.getSearchProvider()
-					: delegateeConfig.getSearchProvider();
-			provider.getSelectedIdentities(memberSearchCtrl, event)
-					.forEach(id -> doAddUser(id, memberSearchAssignee));
-			cmc.deactivate();
-			cleanUp();
-		} else if (contextPickerCtrl == source) {
+		if (contextPickerCtrl == source) {
 			if (event instanceof ToDoContextSelectedEvent tcse) {
 				selectedContext = tcse.getContext();
 				if (contextStaticEl != null) {
@@ -569,14 +496,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(memberSearchCtrl);
 		removeAsListenerAndDispose(contextPickerCtrl);
 		removeAsListenerAndDispose(datePickerCtrl);
 		removeAsListenerAndDispose(datePickerCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
-		memberSearchCtrl = null;
 		contextPickerCtrl = null;
-		memberSearchAssignee = null;
 		datePickerCtrl = null;
 		datePickerCalloutCtrl = null;
 		cmc = null;
@@ -586,10 +510,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == doEl) {
 			doToggleStatus(doEl.isOn());
-		} else if (source == assigneeAddLink) {
-			doSelectAssignee(ureq);
-		} else if (source == delegateeAddLink) {
-			doSelectDelegatee(ureq);
 		} else if (source == contextChangeLink) {
 			doOpenContextPicker(ureq);
 		} else if (source == statusEl) {
@@ -616,19 +536,19 @@ public class ToDoTaskEditForm extends FormBasicController {
 			allOk &= false;
 		}
 
-		if (assignedEl != null) {
-			assignedEl.clearError();
-			if (assigneeConfig.isMandatory() && assignedEl.isVisible() && assignedEl.getSelectedKeys().isEmpty()) {
-				assignedEl.setErrorKey("form.mandatory.hover");
-				allOk &= false;
-			}
+		assignedEl.clearError();
+		if (assigneeConfig.isMandatory() && assignedEl.isVisible() && assignedEl.getSelectedKeys().isEmpty()) {
+			assignedEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		}
 
-			delegatedEl.clearError();
-			if (delegatedEl.isVisible() && !delegatedEl.getSelectedKeys().isEmpty()
-					&& delegatedEl.getSelectedKeys().stream().allMatch(key -> assignedEl.getSelectedKeys().contains(key))) {
-				delegatedEl.setErrorKey("error.delegatee.is.assignee");
-				allOk &= false;
-			}
+		delegatedEl.clearError();
+		Set<String> assignedKeys = assignedEl.getSelectedKeys();
+		Set<String> delegatedKeys = delegatedEl.getSelectedKeys();
+		if (delegatedEl.isVisible() && !delegatedKeys.isEmpty()
+				&& delegatedKeys.stream().allMatch(assignedKeys::contains)) {
+			delegatedEl.setErrorKey("error.delegatee.is.assignee");
+			allOk &= false;
 		}
 
 		boolean startRelative = isRelativeMode(startDateModeEl);
@@ -734,36 +654,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 	}
 
-	private void doSelectAssignee(UserRequest ureq) {
-		if (guardModalController(memberSearchCtrl)) return;
-
-		removeAsListenerAndDispose(memberSearchCtrl);
-		removeAsListenerAndDispose(cmc);
-		memberSearchAssignee = Boolean.TRUE;
-		memberSearchCtrl = assigneeConfig.getSearchProvider().createSearchController(ureq, getWindowControl());
-		if (memberSearchCtrl == null) return;
-		listenTo(memberSearchCtrl);
-		String title = translate("task.assignee.add.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), memberSearchCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doSelectDelegatee(UserRequest ureq) {
-		if (guardModalController(memberSearchCtrl)) return;
-
-		removeAsListenerAndDispose(memberSearchCtrl);
-		removeAsListenerAndDispose(cmc);
-		memberSearchAssignee = Boolean.FALSE;
-		memberSearchCtrl = delegateeConfig.getSearchProvider().createSearchController(ureq, getWindowControl());
-		if (memberSearchCtrl == null) return;
-		listenTo(memberSearchCtrl);
-		String title = translate("task.delegatee.add.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), memberSearchCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
 	private void doOpenContextPicker(UserRequest ureq) {
 		removeAsListenerAndDispose(contextPickerCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -789,25 +679,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 		datePickerCalloutCtrl.activate();
 	}
 
-	private void doAddUser(Identity identity, Boolean assignee) {
-		MultipleSelectionElement mse = assignee.booleanValue()? assignedEl: delegatedEl;
-
-		Set<String> selectedKeys = new HashSet<>(mse.getSelectedKeys());
-		selectedKeys.add(identity.getKey().toString());
-
-		SelectionValues identitySV = new SelectionValues();
-		for (String key : mse.getKeys()) {
-			identitySV.add(new SelectionValue(key, mse.getValue(key)));
-		}
-		identitySV.add(new SelectionValue(identity.getKey().toString(), userManager.getUserDisplayName(identity.getKey())));
-		identitySV.sort(SelectionValues.VALUE_ASC);
-
-		mse.setKeysAndValues(identitySV.keys(), identitySV.values());
-		for (String key : selectedKeys) {
-			mse.select(key, true);
-		}
-	}
-
 	public ToDoContext getContext() {
 		if (contextEl != null && contextEl.isOneSelected()) {
 			return keyToContext.get(contextEl.getSelectedKey());
@@ -827,15 +698,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 
 	public Collection<? extends IdentityRef> getAssignees() {
-		return assignedEl != null
-				? assignedEl.getSelectedKeys().stream().map(Long::valueOf).map(IdentityRefImpl::new).toList()
-				: assignedSingleEl.isOneSelected()
-						? List.of(new IdentityRefImpl(Long.valueOf(assignedSingleEl.getSelectedKey())))
-						: List.of();
+		return IdentitySelectionSource.toRefs(assignedEl.getSelectedKeys());
 	}
 
 	public Collection<? extends IdentityRef> getDelegatees() {
-		return delegatedEl.getSelectedKeys().stream().map(Long::valueOf).map(IdentityRefImpl::new).toList();
+		return IdentitySelectionSource.toRefs(delegatedEl.getSelectedKeys());
 	}
 
 	public ToDoStatus getStatus() {
