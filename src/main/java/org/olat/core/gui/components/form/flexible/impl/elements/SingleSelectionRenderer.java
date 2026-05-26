@@ -86,9 +86,8 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("<div class=\"")
 				.append(css, css != null)
 				.append(" o_radio_cards_wrapper", ssF.isRenderAsCard())
-				.append(" o_radio_buttons btn-group-vertical", ssF.isRenderAsButtonGroup())
+				.append(" o_checkbox_button_group o_button_group_vertical", ssF.isRenderAsButtonGroup())
 				.append("\"")
-				.append("data-toggle=\"buttons\"", ssF.isRenderAsButtonGroup())
 				.append(" role='radiogroup'")
 				.append(" aria-required='true'", ssF.isMandatory())
 				.append(">");
@@ -101,11 +100,15 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 				.append(" aria-required='true'", ssF.isMandatory())
 				.append(">");
 		}
-		
+
 		for(RadioElementComponent radio:radios) {
-			renderRadio(sb, source, radio, false);
+			if (ssF.isRenderAsButtonGroup()) {
+				renderButtonGroupRadio(sb, source, radio);
+			} else {
+				renderRadio(sb, source, radio, false);
+			}
 		}
-		
+
 		if (source.getFormItem().isRenderAsCard()) {
 			sb.append("</div>");
 		}
@@ -114,7 +117,28 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 	
 	private void renderHorizontal(StringOutput sb, SingleSelectionComponent source, Translator translator) {
 		String css = source.getElementCssClass();
-		
+
+		if (source.getFormItem().isRenderAsButtonGroup()) {
+			String groupId = source.getFormDispatchId() + "_wr";
+			String ariaLabel = source.getFormItem().getAriaLabel();
+			sb.append("<div id=\"").append(groupId).append("\"")
+			  .append(" class=\"o_checkbox_button_group");
+			if (StringHelper.containsNonWhitespace(css)) {
+				sb.append(" ").append(css);
+			}
+			sb.append("\"");
+			if (StringHelper.containsNonWhitespace(ariaLabel)) {
+				sb.append(" aria-label=\"").appendHtmlAttributeEscaped(ariaLabel).append("\"");
+			}
+			sb.append(">");
+			for (RadioElementComponent radio : source.getRadioComponents()) {
+				renderButtonGroupRadio(sb, source, radio);
+			}
+			sb.append("</div>");
+			appendButtonGroupOverflowScript(sb, groupId);
+			return;
+		}
+
 		String wrapperId = source.getFormDispatchId() + "_wr";
 		String ariaLabel = source.getFormItem().getAriaLabel();
 		sb.append("<div id=\"").append(wrapperId).append("\" ")
@@ -122,10 +146,8 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			.append("o_radio_cards_wrapper ", source.getFormItem().isRenderAsCard())
 			.append("o_radio_cards_unwrapped ", source.getFormItem().isShowMoreCards() && source.getFormItem().getShowMoreCardsI18nKey() != null)
 			.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
-			.append("o_radio_buttons btn-group ", source.getFormItem().isRenderAsButtonGroup())
 			.append(css, css != null)
-			.append("\"")
-			.append("data-toggle=\"buttons\"", source.getFormItem().isRenderAsButtonGroup());
+			.append("\"");
 		if (StringHelper.containsNonWhitespace(ariaLabel)) {
 			sb.append(" aria-label=\"").appendHtmlAttributeEscaped(ariaLabel).append("\"");
 		}
@@ -137,13 +159,13 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 				.append("\"")
 				.append(">");
 		}
-		
+
 		RadioElementComponent[] radios = source.getRadioComponents();
-		
+
 		for(RadioElementComponent radio:radios) {
 			renderRadio(sb, source, radio, true);
 		}
-		
+
 		if (source.getFormItem().isRenderAsCard()) {
 			sb.append("</div>");
 			if (source.getFormItem().isShowMoreCards() && source.getFormItem().getShowMoreCardsI18nKey() != null) {
@@ -153,6 +175,77 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			}
 		}
 		sb.append("</div>");
+	}
+
+	private void renderButtonGroupRadio(StringOutput sb, SingleSelectionComponent source, RadioElementComponent ssec) {
+		String subStrName = "name='" + ssec.getGroupingName() + "'";
+		String key = ssec.getKey();
+		String value = ssec.getValue();
+		String formDispatchId = ssec.getFormDispatchId();
+		boolean disabled = !ssec.isEnabled() || !source.isEnabled();
+		boolean selected = ssec.isSelected();
+
+		sb.append("<div>");
+		sb.append("<label")
+		  .append(" for=\"").append(formDispatchId).append("\"")
+		  .append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"")
+		  .append(">");
+		sb.append("<input id='").append(formDispatchId).append("' ")
+		  .append("type='radio' ").append(subStrName)
+		  .append(" value='").append(key).append("' ")
+		  .append(" checked='checked' ", selected)
+		  .append(" disabled ", disabled);
+
+		if (source.isEnabled()) {
+			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
+			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"");
+		} else {
+			sb.append(" disabled='disabled' ");
+		}
+		sb.append(">");
+
+		if (StringHelper.containsNonWhitespace(value)) {
+			if (source.isEscapeHtml()) {
+				sb.append(StringHelper.escapeHtml(value));
+			} else {
+				sb.append(value);
+			}
+		}
+
+		if (source.isEnabled()) {
+			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, ssec.getRootForm(), formDispatchId);
+			if (ssec.getRootForm().isInlineValidationOn() || source.getFormItem().isInlineValidationOn()) {
+				FormJSHelper.appendValidationListeners(sb, ssec.getRootForm(), formDispatchId, source.getFormItem().getFormDispatchId());
+			}
+		}
+
+		sb.append("</label>");
+		sb.append("</div>");
+	}
+
+	private void appendButtonGroupOverflowScript(StringOutput sb, String groupId) {
+		sb.append("<script>\n")
+		  .append("\"use strict\";\n")
+		  .append("(function() {\n")
+		  .append("  var el = document.getElementById('").append(groupId).append("');\n")
+		  .append("  if (!el) return;\n")
+		  .append("  function checkOverflow() {\n")
+		  .append("    if (!el.parentElement) return;\n")
+		  .append("    el.classList.remove('o_button_group_vertical');\n")
+		  .append("    var childrenWidth = 0;\n")
+		  .append("    for (var i = 0; i < el.children.length; i++) {\n")
+		  .append("      childrenWidth += el.children[i].scrollWidth;\n")
+		  .append("    }\n")
+		  .append("    if (childrenWidth > el.parentElement.clientWidth) {\n")
+		  .append("      el.classList.add('o_button_group_vertical');\n")
+		  .append("    }\n")
+		  .append("  }\n")
+		  .append("  window.requestAnimationFrame(checkOverflow);\n")
+		  .append("  if (window.ResizeObserver && el.parentElement) {\n")
+		  .append("    new ResizeObserver(checkOverflow).observe(el.parentElement);\n")
+		  .append("  }\n")
+		  .append("})();\n")
+		  .append("</script>");
 	}
 	
 	private void renderRadio(StringOutput sb, SingleSelectionComponent source, RadioElementComponent ssec, boolean inline) {
