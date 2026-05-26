@@ -146,7 +146,7 @@ public class DocumentRunController extends BasicController {
 				DeliveryOptions options = new DeliveryOptions();
 				String optionsHeight = DocumentCourseNode.CONFIG_HEIGHT_AUTO.equals(height)? "40": height;
 				options.setHeight(optionsHeight);
-				IFrameDisplayController idc = new IFrameDisplayController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), null, options, null);
+				IFrameDisplayController idc = new IFrameDisplayController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), null, options);
 				listenTo(idc);	
 				idc.setCurrentURI(filename);
 				mainVC.put("audio", idc.getInitialComponent());

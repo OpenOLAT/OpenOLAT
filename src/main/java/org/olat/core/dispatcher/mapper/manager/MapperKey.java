@@ -36,6 +36,7 @@ public class MapperKey implements Serializable {
 	private String mapperId;
 	private String sessionId;
 	private String url;
+	private String token;
 	
 	public MapperKey() {
 		//
@@ -76,6 +77,14 @@ public class MapperKey implements Serializable {
 		this.url = url;
 	}
 
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
 	@Override
 	public int hashCode() {
 		return sessionId.hashCode() + mapperId.hashCode();
@@ -86,8 +95,7 @@ public class MapperKey implements Serializable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof MapperKey) {
-			MapperKey mkey = (MapperKey)obj;
+		if(obj instanceof MapperKey mkey) {
 			return sessionId.equals(mkey.sessionId) && mapperId.equals(mkey.mapperId);
 		}
 		return super.equals(obj);

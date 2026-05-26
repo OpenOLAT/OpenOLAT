@@ -3,11 +3,11 @@
 		$r.render("command.download")
 	#end
 	
-	## NOTE:  allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" is necessary for the mediaelement video player to play videos in fullscreen
+	## NOTE:  allowfullscreen="true" is necessary for the mediaelement video player to play videos in fullscreen
 	#if ($isAbsoluteURI)
-		<iframe name="$frameId" id="$frameId" src="${currentURI}" frameborder="0" title="$r.translateInAttribute("iframe.content")" height="$iframeHeight" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+		<iframe name="$frameId" id="$frameId" src="${currentURI}" frameborder="0" title="$r.translateInAttribute("iframe.content")" height="$iframeHeight" allowfullscreen="true" ></iframe>
 	#else
-		<iframe name="$frameId" class="o_iframe_rel" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+		<iframe name="$frameId" class="o_iframe_rel" id="$frameId" src="${baseURI}/${currentURI}${token}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true"></iframe>
 	#end
 	
 	#if($r.isTrue($adjustAutoHeight))

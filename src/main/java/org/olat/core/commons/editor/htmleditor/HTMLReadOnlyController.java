@@ -47,8 +47,7 @@ public class HTMLReadOnlyController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("readonly");
 		
-		SecurityOptions securityOptions = new SecurityOptions();
-		securityOptions.setStrictSanitize(true);
+		SecurityOptions securityOptions = SecurityOptions.sanitize();
 		singlePageCtrl = new SinglePageController(ureq, wControl, rootContainer, fileName, securityOptions);
 		listenTo(singlePageCtrl);
 		mainVC.put("content", singlePageCtrl.getInitialComponent());

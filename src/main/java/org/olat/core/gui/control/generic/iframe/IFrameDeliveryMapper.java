@@ -37,6 +37,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -386,8 +387,8 @@ public class IFrameDeliveryMapper implements Mapper {
 				}
 				if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
 						&& customCssDelegate.getCustomCSS().getCSSURLIFrame() != null) {
-					String  customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
-					sb.appendCss(customCssURL, "customcss");	
+					String  customCssUrl = customCssDelegate.getCustomCSS().getCSSURLIFrame();
+					sb.appendCss(customCssUrl, "customcss");	
 				} else if (customCssURL != null) {
 					// add the custom  CSS, e.g. the course css that overrides the standard content css
 					sb.appendCss(customCssURL, "customcss");				
@@ -410,7 +411,10 @@ public class IFrameDeliveryMapper implements Mapper {
 			sb.append("\n<script>\n");
 			// Set the iframe id. Important to set before iframe.js is loaded.
 			sb.append("b_iframeid=\"").append(frameId).append("\";");
-			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";");
+			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";\n");
+			sb.append("window.iFrameResizer = {\n")
+			  .append(" targetOrigin: '").append(Settings.createServerURI()).append("',\n")
+			  .append("}");
 			sb.append("\n</script>");
 			sb.appendStaticJs("js/openolat/iframe.js");
 			sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");

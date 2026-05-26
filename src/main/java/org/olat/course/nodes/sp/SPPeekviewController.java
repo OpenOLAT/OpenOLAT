@@ -34,10 +34,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
@@ -74,10 +76,13 @@ public class SPPeekviewController extends BasicController {
 				// Render normal view but scaled down to 75%
 				boolean allowRelativeLinks = config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 				// in preview, randomize the mapper of the html page
+				CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+				Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
+				
 				SinglePageController spController =  new SinglePageController(ureq, wControl,
-						userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), 
-						file, allowRelativeLinks, null, ores, deliveryOptions,
-						userCourseEnv.getCourseEnvironment().isPreview());		
+						courseEnv.getCourseFolderContainer(),  file, allowRelativeLinks,
+						null, ores, deliveryOptions, SecurityOptions.secure(),
+						courseEnv.isPreview(), courseRepoKey);		
 				// but add scaling to fit preview into minimized space
 				spController.setScaleFactorAndHeight(0.75f, 400, true);
 				listenTo(spController);

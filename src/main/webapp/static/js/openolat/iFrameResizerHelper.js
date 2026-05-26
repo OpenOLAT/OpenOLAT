@@ -9,8 +9,12 @@ function registerIFrame(iFrameId) {
 		scrolling: true,
 		initCallback: function(iframe) {
 			if (debugIFRH) console.log("iFrame %s registered.", iFrameId);
-			iframe.contentDocument.body.style["overflow-y"] = "hidden";
-			iframe.contentDocument.body.style["overflow-x"] = "auto";
+			if(iframe.contentDocument) {
+				iframe.contentDocument.body.style["overflow-y"] = "hidden";
+				iframe.contentDocument.body.style["overflow-x"] = "auto";
+			} else {
+				console.log('IFrame: contentDocument');
+			}
 		},
 		resizedCallback: function(iframe) {
 			// nothing to do

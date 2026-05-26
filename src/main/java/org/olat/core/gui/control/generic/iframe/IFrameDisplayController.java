@@ -32,6 +32,7 @@ import java.net.URLDecoder;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -47,6 +48,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.textmarker.TextMarkerManager;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -90,7 +92,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	/**
 	 * Base URI of contentMapper
 	 */
-	private final String baseURI;
+	private String baseURI;
 	/**
 	 * Relative uri of currently loaded page in iframe
 	 */
@@ -112,18 +114,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param fileRoot File that points to the root directory of the resource 
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null, null);
-	}
-
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param fileRoot
-	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
-	 */
-	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot, OLATResourceable ores) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, null, false, false);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null);
 	}
 	
 	/**
@@ -133,7 +124,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null, null, null, false, false);
+		this(ureq, wControl, rootDir, null, null, null, SecurityOptions.secure(), false, false);
 	}
 	/**
 	 * 
@@ -142,8 +133,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
-	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions, SecurityOptions securityOptions) {
-		this(ureq, wControl, rootDir, null, ores, deliveryOptions, securityOptions, false, false);
+	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions, SecurityOptions.secure(), false, false);
 	}
 	/**
 	 * 
@@ -191,18 +182,24 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		myContent.put("js", js);
 
 		String mapperID = VFSManager.getRealPath(rootDir);
-		if (mapperID == null) {
-			// can't cache mapper, no cacheable context available
-			baseURI = registerMapper(ureq, contentMapper);
-		} else {
+		if (mapperID != null) {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
 			if(randomizeMapper) {
 				mapperID += CodeHelper.getRAMUniqueID();
 			}
+		}
+		
+		String token = "";
+		if(securityOptions != null && securityOptions.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
+			MapperKey mKey = registerSandboxedMapper(ureq, mapperID, contentMapper);
+			baseURI = Settings.createContentServerURI() + mKey.getUrl();
+			token = "?token=" + mKey.getToken();
+		} else {
 			baseURI = registerCacheableMapper(ureq, mapperID, contentMapper);
 		}
+		myContent.contextPut("token", token);
 		myContent.contextPut("baseURI", baseURI);
 		newUriEventPanel = new Panel("newUriEvent");
 		newUriEventPanel.setContent(eventVC);

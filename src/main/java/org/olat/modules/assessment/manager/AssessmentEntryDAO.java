@@ -91,7 +91,8 @@ public class AssessmentEntryDAO {
 		return nodeAssessment.isEmpty() ? null : nodeAssessment.get(0);
 	}
 
-	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, String anonymousIdentifier, RepositoryEntryRef entry, String subIdent) {
+	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, String anonymousIdentifier,
+			RepositoryEntryRef entry, String subIdent) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data")
 		  .append(" left join fetch data.identity ident")

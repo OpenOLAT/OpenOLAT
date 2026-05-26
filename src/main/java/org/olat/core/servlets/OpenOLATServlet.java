@@ -22,6 +22,7 @@ package org.olat.core.servlets;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletConfig;
@@ -325,7 +326,11 @@ public class OpenOLATServlet extends HttpServlet {
 					//cut and redirect
 					int index = uri.indexOf("/raw/_noversion_/");
 					if(index > 0) {
-						String redirectUri = Settings.getServerContextPathURI() + uri.substring(index, uri.length());
+						String serverUri = Objects.equals(Settings.getContentDomainName(), request.getServerName())
+								? Settings.getContentServerContextPathURI()
+								: Settings.getServerContextPathURI();
+						
+						String redirectUri = serverUri + uri.substring(index, uri.length());
 						if(DispatcherModule.redirectSecureTo(response, redirectUri)) {
 							ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 						}

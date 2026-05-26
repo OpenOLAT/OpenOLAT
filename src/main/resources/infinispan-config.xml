@@ -14,6 +14,14 @@
 			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
+		
+		<local-cache name="MapperService-sandboxedmapper" simple-cache="true" statistics="true">
+			<encoding media-type="application/x-java-object"/>
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="10000" when-full="REMOVE" />
+			<expiration max-idle="300000" interval="5000" />
+		</local-cache>
 
 		<local-cache name="OpenMeetingsManager-session" simple-cache="true" statistics="true">
 			<encoding media-type="application/x-java-object"/>

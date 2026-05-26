@@ -59,6 +59,7 @@
 	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper">
 		<!-- OLAT Tomcat server configuration parameters. This is used e.g. to assemble absolute URIS where needed. -->
 		<property name="serverDomainName" value="${server.domainname}" />
+		<property name="contentDomainName" value="${server.content.domainname}" />
 		<property name="serverSecurePort" value="${server.port.ssl}" />
 		<property name="serverInsecurePort" value="${server.port}" />
 		<property name="loginPath" value="${server.login.path}" />

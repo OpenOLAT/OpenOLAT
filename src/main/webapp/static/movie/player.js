@@ -89,10 +89,10 @@ var BPlayer = {
 	 * callback when the player is available. Normally you should call the insertPlayer() method instead.
 	 */
 	loadMediaelementJsPlayer : function(afterloadCallback) {
-		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
+		const mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
 		// Use minified for production, plain when in debug mode for development
-		var mediaElementcss = mediaElementBaseUrl + (BPlayer.debugEnabled ? 'mediaelementplayer.css' : 'mediaelementplayer.min.css');
-		var mediaElementJs = mediaElementBaseUrl + (BPlayer.debugEnabled ? 'mediaelement-and-player.js' : 'mediaelement-and-player.min.js');
+		const mediaElementcss = mediaElementBaseUrl + (BPlayer.debugEnabled ? 'mediaelementplayer.css' : 'mediaelementplayer.min.css');
+		const mediaElementJs = mediaElementBaseUrl + (BPlayer.debugEnabled ? 'mediaelement-and-player.js' : 'mediaelement-and-player.min.js');
 		
 		if(jQuery('#mediaelementplayercss').length == 0) {
 			jQuery('<link>')
@@ -260,7 +260,7 @@ var BPlayer = {
 				}).trigger('resize');
 			}
 		} catch(e) {
-			if(window.console) console.log(e);
+			if(console) console.log(e);
 		}
 	},
 
@@ -295,7 +295,7 @@ var BPlayer = {
 								setTimeout(function() { player.pause(); }, 100)
 							}
 						} catch(e) {
-							if(window.console) console.log(e);
+							if(console) console.log(e);
 						}
 	                });
 				} else if(config.autostart) {
@@ -303,7 +303,7 @@ var BPlayer = {
 						player.load();
 						player.play();
 					} catch(e) {
-						if(window.console) console.log(e);
+						if(console) console.log(e);
 					}
 				}
 			}
@@ -507,10 +507,14 @@ var BPlayer = {
 	},
 	
 	_findBaseUrl: function(win) {
+		try {
 			if (win.o_info) return win.o_info.o_baseURI;
 			else if (win.opener) return BPlayer._findBaseUrl(win.opener);
 			else if (win.parent) return BPlayer._findBaseUrl(win.parent);
-			else return null;
+		} catch(e) {
+			if(console) console.log(e);
+		}
+		return null;
 	},
 	
 	_convertInSeconds: function (time) {
@@ -542,21 +546,29 @@ var BPlayer = {
 	},
 	
 	_isOODebug: function(win) {
-		if (win.o_info) return win.o_info.debug;
-		else if (win.opener) return BPlayer._isOODebug(win.opener);
-		else if (win.parent) return BPlayer._isOODebug(win.parent);
-		else return false;		
+		try {
+			if (win.o_info) return win.o_info.debug;
+			else if (win.opener) return BPlayer._isOODebug(win.opener);
+			else if (win.parent) return BPlayer._isOODebug(win.parent);
+		} catch(e) {
+			if(console) console.log(e);
+		}
+		return false;
 	},
 
 	_oInfo: function(win) {
-		if (win.o_info) {
-			return win.o_info;
-		}
-		if (win.opener) {
-			return BPlayer._oInfo(win.opener);
-		}
-		if (win.parent) {
-			return BPlayer._oInfo(win.parent);
+		try {
+			if (win.o_info) {
+				return win.o_info;
+			}
+			if (win.opener) {
+				return BPlayer._oInfo(win.opener);
+			}
+			if (win.parent) {
+				return BPlayer._oInfo(win.parent);
+			}
+		} catch(e) {
+			if(console) console.log(e);
 		}
 		return null;
 	},

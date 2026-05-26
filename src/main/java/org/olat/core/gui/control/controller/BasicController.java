@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -56,6 +55,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -78,6 +78,9 @@ public abstract class BasicController extends DefaultController {
 
 	private List<MapperKey> mapperKeys;
 	private List<Controller> childControllers;
+	
+	@Autowired
+	private MapperService mapperService;
 
 	/**
 	 * easy to use controller template. Extending the BasicController allows to
@@ -120,7 +123,7 @@ public abstract class BasicController extends DefaultController {
 	protected void doPreDispose() {
 		// deregister all mappers if needed
 		if (mapperKeys != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mapperKeys);
+			mapperService.cleanUp(mapperKeys);
 			mapperKeys.clear();
 			mapperKeys = null;
 		}
@@ -247,13 +250,18 @@ public abstract class BasicController extends DefaultController {
 		UserSession usess = ureq == null ? null : ureq.getUserSession();
 		if (cacheableMapperID == null) {
 			// use non cacheable as fallback
-			mapperBaseKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, m);			
+			mapperBaseKey = mapperService.register(usess, m);			
 		} else {
-			mapperBaseKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, cacheableMapperID, m, expirationTime);
+			mapperBaseKey = mapperService.register(usess, cacheableMapperID, m, expirationTime);
 		}
 		// registration was successful, add to our mapper list
 		registerMapperKey(mapperBaseKey);
 		return mapperBaseKey.getUrl();
+	}
+
+	protected MapperKey registerSandboxedMapper(UserRequest ureq, String cacheableMapperID, Mapper m) {
+		UserSession usess = ureq == null ? null : ureq.getUserSession();
+		return mapperService.sandbox(usess, cacheableMapperID, m);
 	}
 	
 	protected final synchronized void registerMapperKey(MapperKey mapperBaseKey) {

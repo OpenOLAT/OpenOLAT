@@ -87,11 +87,18 @@ public class MapperDispatcher implements Dispatcher {
 		
 		//legacy???
 		DBFactory.getInstance().commitAndCloseSession();
-
+		MapperService mapperService = CoreSpringFactory.getImpl(MapperService.class);
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		
 		// e.g. non-cacheable: 	23423
 		// e.g. cacheable: 		my.mapper.path
+		if(mapperService.isSandbox(smappath)) {
+			String secret = hreq.getParameter("token");
+			UserSession usess = sessionManager.getUserSession(hreq);
+			mapperService.reclaimMapperById(usess, smappath, secret);
+		}
+
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
-		MapperService mapperService = CoreSpringFactory.getImpl(MapperService.class);
 		Mapper m = mapperService.getMapperById(usess, smappath);
 		if (m == null) {
 			//an anonymous mapper?

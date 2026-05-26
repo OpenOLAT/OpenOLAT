@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -378,7 +379,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	}
 	
 	private void doShowPreview(UserRequest ureq) {
-		SinglePageController previewController = new SinglePageController(ureq, getWindowControl(), file.getParentContainer(), file.getName(), false);
+		SinglePageController previewController = new SinglePageController(ureq, getWindowControl(), file.getParentContainer(), file.getName(), SecurityOptions.secure());
 		previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, previewController.getInitialComponent(), null);
 		previewLayoutCtr.addDisposableChildController(previewController);
 		previewLayoutCtr.activate();

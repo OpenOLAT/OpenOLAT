@@ -90,9 +90,14 @@ public interface MapperService {
 	 */
 	public MapperKey register(UserSession session, String mapperId, Mapper mapper, int expiration);
 	
+
+	public MapperKey sandbox(UserSession session, String mapperId, Mapper mapper);
 	
+	public boolean isSandbox(String mapperId);
 	
 	public Mapper getMapperById(UserSession session, String id);
+	
+	public Mapper reclaimMapperById(UserSession newSession, String id, String token);
 	
 	public void cleanUp(String sessionId);
 

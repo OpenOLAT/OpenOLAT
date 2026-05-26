@@ -29,10 +29,26 @@ public class SecurityOptions {
 
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
+	private boolean useContentDomain = false;
+	
+	public SecurityOptions() {
+		//
+	}
 	
 	public static SecurityOptions sanitize() {
 		SecurityOptions securityOptions = new SecurityOptions();
 		securityOptions.setStrictSanitize(true);
+		return securityOptions;
+	}
+	
+	/**
+	 * 
+	 * @return The options
+	 */
+	public static SecurityOptions secure() {
+		SecurityOptions securityOptions = new SecurityOptions();
+		securityOptions.setStrictSanitize(false);
+		securityOptions.setUseContentDomain(true);
 		return securityOptions;
 	}
 	
@@ -50,5 +66,13 @@ public class SecurityOptions {
 
 	public void setStrictSanitize(boolean strictSanitize) {
 		this.strictSanitize = strictSanitize;
+	}
+
+	public boolean isUseContentDomain() {
+		return useContentDomain;
+	}
+
+	public void setUseContentDomain(boolean useContentDomain) {
+		this.useContentDomain = useContentDomain;
 	}
 }

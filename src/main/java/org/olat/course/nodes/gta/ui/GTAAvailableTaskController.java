@@ -53,6 +53,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
@@ -297,7 +298,9 @@ public class GTAAvailableTaskController extends FormBasicController {
 	private void doPreview(UserRequest ureq, String filename) {
 		if(filename != null && filename.endsWith(".html")) {
 			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
-			previewCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, filename, false);
+
+			SecurityOptions securityOptions = SecurityOptions.secure();
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, filename, securityOptions);
 			listenTo(previewCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, filename);
