@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -113,8 +114,10 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		cssClassEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.cssClass));
 		
 		String description = curriculumElementType == null ? "" : curriculumElementType.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("type.description", "type.description", description, 10, 60,
-				commonContainer,  getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringData("type.description", "type.description", 
+				description, 10, -1, false, null, null,
+				commonContainer, ureq.getUserSession(), getWindowControl());
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		descriptionEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.description));
 
 		SelectionValues featuresPK = new SelectionValues();
