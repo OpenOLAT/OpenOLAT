@@ -69,6 +69,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String FOR_USE_AS_IMPL = "implementation";
 	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
 	private static final String FOR_USE_AS_ELEM = "element";
+	private static final String TYPE_OF_ELEM_SINGLE_COURSE = "singleCourse";
+	private static final String TYPE_OF_ELEM_COURSE_BUNDLE = "courseBundle";
+	private static final String TYPE_OF_ELEM_STRUCTURAL = "structuralElement";
 	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
@@ -77,6 +80,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private FormToggle compositeTypeEl;
 	private RichTextElement descriptionEl;
 	private SingleSelection forUseAsEl;
+	private SingleSelection typeOfElementEl;
 	private MultipleSelectionElement allowedSubTypesEl;
 	private MultipleSelectionElement featuresEnabledEl;
 	private SingleSelection maxRepositoryEntryRelationsEl;
@@ -147,7 +151,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL, translate("table.type.for.use.as.implementation")));
 		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL_OR_ELEM, translate("table.type.for.use.as.implementation.or.element")));
 		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_ELEM, translate("table.type.for.use.as.element")));
-		forUseAsEl = uifactory.addRadiosHorizontal("type.for.use.as", "type.for.use.as", configurationContainer,
+		forUseAsEl = uifactory.addRadiosVertical("type.for.use.as", "type.for.use.as", configurationContainer,
 				forUseAsPK.keys(), forUseAsPK.values());
 		forUseAsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.implOnly)
 				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
@@ -157,6 +161,31 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			forUseAsEl.select(FOR_USE_AS_ELEM, true);
 		} else {
 			forUseAsEl.select(FOR_USE_AS_IMPL_OR_ELEM, true);
+		}
+
+		SelectionValues typeOfElementKV = new SelectionValues();
+		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_SINGLE_COURSE,
+				translate("table.type.type.of.element.single.course"),
+				translate("table.type.type.of.element.single.course.desc"),
+				"o_icon o_icon_courserun", null, true));
+		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_COURSE_BUNDLE,
+				translate("table.type.type.of.element.course.bundle"),
+				translate("table.type.type.of.element.course.bundle.desc"),
+				"o_icon o_icon_course_bundle", null, true));
+		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_STRUCTURAL,
+				translate("table.type.type.of.element.structural.element"),
+				translate("table.type.type.of.element.structural.element.desc"),
+				"o_icon o_icon_structure", null, true));
+		typeOfElementEl = uifactory.addCardSingleSelectHorizontal("type.type.of.element", "table.type.header.type.typeOfElement",
+				configurationContainer, typeOfElementKV);
+		typeOfElementEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite)
+				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
+		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
+			typeOfElementEl.select(TYPE_OF_ELEM_STRUCTURAL, true);
+		} else if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == -1) {
+			typeOfElementEl.select(TYPE_OF_ELEM_COURSE_BUNDLE, true);
+		} else {
+			typeOfElementEl.select(TYPE_OF_ELEM_SINGLE_COURSE, true);
 		}
 
 		int maxRelations = curriculumElementType == null ? 1 : curriculumElementType.getMaxRepositoryEntryRelations();
@@ -282,7 +311,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			curriculumElementType.setLearningProgress(CurriculumLearningProgress.disabled);
 		}
 		
-		curriculumElementType.setSingleElement(!compositeTypeEl.isOn());
 		if(forUseAsEl.isOneSelected()) {
 			String selected = forUseAsEl.getSelectedKey();
 			if(FOR_USE_AS_IMPL.equals(selected)) {
@@ -296,18 +324,19 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				curriculumElementType.setAllowedAsRootElement(true);
 			}
 		}
-		
-		int maxRepositoryEntryRelations;
-		if(withContentEl.isOn()) {
-			if(maxRepositoryEntryRelationsEl.isOneSelected() && UNLIMITED.equals(maxRepositoryEntryRelationsEl.getSelectedKey())) {
-				maxRepositoryEntryRelations = -1;
+
+		if(typeOfElementEl.isOneSelected()) {
+			String selected = typeOfElementEl.getSelectedKey();
+			if(TYPE_OF_ELEM_COURSE_BUNDLE.equals(selected)) {
+				curriculumElementType.setSingleElement(true);
+				curriculumElementType.setMaxRepositoryEntryRelations(-1);
+			} else if(TYPE_OF_ELEM_STRUCTURAL.equals(selected)) {
+				curriculumElementType.setSingleElement(false);
 			} else {
-				maxRepositoryEntryRelations = 1;
+				curriculumElementType.setSingleElement(true);
+				curriculumElementType.setMaxRepositoryEntryRelations(1);
 			}
-		} else {
-			maxRepositoryEntryRelations = 0;
 		}
-		curriculumElementType.setMaxRepositoryEntryRelations(maxRepositoryEntryRelations);
 
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.isVisible()
 				? allowedSubTypesEl.getSelectedKeys()
