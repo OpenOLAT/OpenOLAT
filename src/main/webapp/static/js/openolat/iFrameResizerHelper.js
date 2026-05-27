@@ -34,7 +34,12 @@ function observeIFrameForDeregistration(iFrameId) {
 				jQuery( removedNodes ).each(function() {
 					var oldIFrame = jQuery( this ).find("#" + iFrameId);
 					if (oldIFrame.length === 1) {
-						oldIFrame[0].iFrameResizer.close();
+						try {
+							// Close callback can be out of reach
+							oldIFrame[0].iFrameResizer.close();
+						} catch(e) {
+							if(debugIFRH && console) console.log(e);
+						}
 						if (debugIFRH) console.log("iFrame %s deregistered.", iFrameId);
 						observer.disconnect();
 						if (debugIFRH) console.log("Observer for iFrame %s disconnected.", iFrameId);
