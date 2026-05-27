@@ -255,10 +255,10 @@ public class BookingPage {
 	 */
 	public BookingPage configureFreeBooking(String description, boolean externalCatalog, boolean adminConfirmation) {
 		if(externalCatalog) {
-			By catalogBy = By.cssSelector(".o_sel_accesscontrol_free_form .o_sel_accesscontrol_publish input[name='offer.publish.in'][value='web']");
+			By catalogBy = By.xpath("//fieldset[contains(@class,'o_sel_accesscontrol_free_form')]//div[contains(@class,'o_sel_accesscontrol_publish')]/div/label[input[@name='offer.publish.in' and @value='web']]");
 			WebElement catalogEl = OOGraphene.waitElement(catalogBy, browser);
 			OOGraphene.check(catalogEl, Boolean.TRUE);
-			By catalogCheckedBy = By.xpath("//fieldset[contains(@class,'o_sel_accesscontrol_free_form')]//fieldset[contains(@class,'o_sel_accesscontrol_publish')]//input[@checked='checked'][@name='offer.publish.in'][@value='web']");
+			By catalogCheckedBy = By.xpath("//fieldset[contains(@class,'o_sel_accesscontrol_free_form')]//fieldset[contains(@class,'o_sel_accesscontrol_publish')]//label[input[@checked='checked'][@name='offer.publish.in'][@value='web']]");
 			OOGraphene.waitElement(catalogCheckedBy, browser);
 		}
 		
@@ -282,9 +282,10 @@ public class BookingPage {
 		OOGraphene.waitElement(descriptionBy, browser).sendKeys(description);
 		
 		if(externalCatalog) {
-			By catalogBy = By.cssSelector(".o_sel_accesscontrol_catalog .o_sel_accesscontrol_catalog input[name='offer.publish.in'][value='web']");
-			WebElement catalogEl = OOGraphene.waitElement(catalogBy, browser);
-			OOGraphene.check(catalogEl, Boolean.TRUE);
+			By catalogBy = By.xpath("//fieldset[contains(@class,'o_sel_accesscontrol_catalog')]//div[contains(@class,'o_sel_accesscontrol_catalog')]/div/label[input[@name='offer.publish.in' and @value='web']]");
+			OOGraphene.waitElement(catalogBy, browser).click();
+			By catalogCheckedBy = By.cssSelector("fieldset.o_sel_accesscontrol_catalog .o_sel_accesscontrol_catalog label:has(input[value='web']:checked)");
+			OOGraphene.waitElementPresence(catalogCheckedBy, 5, browser);
 		}
 
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_buttons .buttons button.btn.btn-primary");
