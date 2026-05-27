@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -85,6 +87,8 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private SingleSelection forUseAsEl;
 	private SingleSelection typeOfElementEl;
 	private SingleSelection scopeOfUseEl;
+	private SpacerElement parentTypesDividerEl;
+	private MultipleSelectionElement parentTypesEl;
 	private MultipleSelectionElement allowedSubTypesEl;
 	private MultipleSelectionElement featuresEnabledEl;
 	private SingleSelection maxRepositoryEntryRelationsEl;
@@ -159,6 +163,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				forUseAsPK.keys(), forUseAsPK.values());
 		forUseAsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.implOnly)
 				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
+		forUseAsEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumElementType != null && curriculumElementType.isImplOnly()) {
 			forUseAsEl.select(FOR_USE_AS_IMPL, true);
 		} else if(curriculumElementType != null && !curriculumElementType.isAllowedAsRootElement()) {
@@ -265,6 +270,29 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			}
 		}
 		
+		parentTypesDividerEl = uifactory.addSpacerElement("parentTypesDivider", configurationContainer, false);
+
+		List<CurriculumElementTypeToType> allRelations = curriculumElementType != null
+				? curriculumService.getAllCurriculumElementTypeRelations()
+				: List.of();
+		Set<Long> currentParentTypeKeys = allRelations.stream()
+				.filter(r -> curriculumElementType != null && r.getAllowedSubType().getKey().equals(curriculumElementType.getKey()))
+				.map(r -> r.getType().getKey())
+				.collect(Collectors.toSet());
+		List<CurriculumElementType> parentCandidates = new ArrayList<>(curriculumService.getCurriculumElementTypes());
+		parentCandidates.remove(curriculumElementType);
+		Collections.sort(parentCandidates, new CurriculumElementTypeComparator(getLocale()));
+		SelectionValues parentTypePK = new SelectionValues();
+		for(CurriculumElementType type : parentCandidates) {
+			parentTypePK.add(SelectionValues.entry(type.getKey().toString(),
+					type.getDisplayName() + " · " + type.getIdentifier()));
+		}
+		parentTypesEl = uifactory.addCheckboxesVertical("type.parent.types", configurationContainer,
+				parentTypePK.keys(), parentTypePK.values(), 2);
+		for(Long parentKey : currentParentTypeKeys) {
+			parentTypesEl.select(parentKey.toString(), true);
+		}
+
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		configurationContainer.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
@@ -275,6 +303,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		boolean structural = typeOfElementEl.isOneSelected()
 				&& TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
 		scopeOfUseEl.setVisible(structural);
+
+		boolean showParentTypes = forUseAsEl.isOneSelected()
+				&& !FOR_USE_AS_IMPL.equals(forUseAsEl.getSelectedKey());
+		parentTypesDividerEl.setVisible(showParentTypes);
+		parentTypesEl.setVisible(showParentTypes);
 
 		boolean multipleElements = compositeTypeEl.isOn();
 		allowedSubTypesEl.setVisible(multipleElements);
@@ -307,7 +340,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(compositeTypeEl == source || withContentEl == source || typeOfElementEl == source) {
+		if(forUseAsEl == source || compositeTypeEl == source || withContentEl == source || typeOfElementEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -388,6 +421,19 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		}
 		curriculumElementType = curriculumService.updateCurriculumElementType(curriculumElementType, allowedSubTypes);
 		
+		if(parentTypesEl.isVisible()) {
+			Collection<String> selectedParentKeys = parentTypesEl.getSelectedKeys();
+			List<CurriculumElementType> allTypes = curriculumService.getCurriculumElementTypes();
+			allTypes.remove(curriculumElementType);
+			for(CurriculumElementType parentCandidate : allTypes) {
+				if(selectedParentKeys.contains(parentCandidate.getKey().toString())) {
+					curriculumService.allowCurriculumElementSubType(parentCandidate, curriculumElementType);
+				} else {
+					curriculumService.disallowCurriculumElementSubType(parentCandidate, curriculumElementType);
+				}
+			}
+		}
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
