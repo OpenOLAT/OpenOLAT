@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -81,17 +79,15 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
-	private FormToggle withContentEl;
-	private FormToggle compositeTypeEl;
 	private RichTextElement descriptionEl;
+	private MultipleSelectionElement featuresEnabledEl;
+
 	private SingleSelection forUseAsEl;
 	private SingleSelection typeOfElementEl;
 	private SingleSelection scopeOfUseEl;
-	private SpacerElement parentTypesDividerEl;
+	private SpacerElement dividerEl;
 	private MultipleSelectionElement parentTypesEl;
-	private MultipleSelectionElement allowedSubTypesEl;
-	private MultipleSelectionElement featuresEnabledEl;
-	private SingleSelection maxRepositoryEntryRelationsEl;
+	private MultipleSelectionElement childTypesEl;
 	
 	private CurriculumElementType curriculumElementType;
 	
@@ -220,57 +216,32 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			scopeOfUseEl.select(SCOPE_STRUCT_ONLY, true);
 		}
 
-		int maxRelations = curriculumElementType == null ? 1 : curriculumElementType.getMaxRepositoryEntryRelations();
-		
-		// Max course references
-		withContentEl = uifactory.addToggleButton("type.with.content", "type.with.content", translate("on"), translate("off"), configurationContainer);
-		withContentEl.toggle(maxRelations != 0);
-		withContentEl.addActionListener(FormEvent.ONCHANGE);
-		
-		SelectionValues maxRelationsPK = new SelectionValues();
-		maxRelationsPK.add(SelectionValues.entry("1", translate("type.max.repository.entry.relations.1")));
-		maxRelationsPK.add(SelectionValues.entry(UNLIMITED, translate("type.max.repository.entry.relations.unlimited")));
-		maxRepositoryEntryRelationsEl = uifactory.addRadiosHorizontal("type.max.repository.entry.relations", null, configurationContainer,
-				maxRelationsPK.keys(), maxRelationsPK.values());
-		maxRepositoryEntryRelationsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
-		if(maxRelations == 0) {
-			maxRepositoryEntryRelationsEl.setVisible(false);
-		} else if(maxRelations == -1) {
-			maxRepositoryEntryRelationsEl.select("-1", true);
-		} else {
-			maxRepositoryEntryRelationsEl.select("1", true);
+		dividerEl = uifactory.addSpacerElement("divider", configurationContainer, false);
+
+		List<CurriculumElementType> elementTypes = curriculumService.getCurriculumElementTypes();
+		elementTypes.sort(new CurriculumElementTypeComparator(getLocale()));
+		elementTypes.remove(curriculumElementType);
+
+		SelectionValues elementTypesKV = new SelectionValues();
+		for(CurriculumElementType type:elementTypes) {
+			elementTypesKV.add(SelectionValues.entry(type.getKey().toString(),
+					type.getDisplayName() + " · " + type.getIdentifier()));
 		}
+
+		childTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer, 
+				elementTypesKV.keys(), elementTypesKV.values(), 2);
+		childTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
 		
-		// Composite type : can contain multiple sub-elements
-		SelectionValues compositePK = new SelectionValues();
-		compositePK.add(SelectionValues.entry(COMPOSITE, translate("type.composite.multiple")));
-		compositeTypeEl = uifactory.addToggleButton("type.composite", "type.composite", translate("on"), translate("off"), configurationContainer);
-		compositeTypeEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
-		boolean singleElement = curriculumElementType == null || curriculumElementType.isSingleElement();
-		compositeTypeEl.toggle(!singleElement);
-		compositeTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
-		if(types.size() > 1) {
-			Collections.sort(types, new CurriculumElementTypeComparator(getLocale()));
-		}
-		
-		types.remove(curriculumElementType);
-		SelectionValues subTypePK = new SelectionValues();
-		for(CurriculumElementType type:types) {
-			subTypePK.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
-		}
-		allowedSubTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer, subTypePK.keys(), subTypePK.values(), 2);
-		allowedSubTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
 		if(curriculumElementType != null) {
 			Set<CurriculumElementTypeToType> typeToTypes = curriculumElementType.getAllowedSubTypes();
 			for(CurriculumElementTypeToType typeToType:typeToTypes) {
 				String subTypeKey = typeToType.getAllowedSubType().getKey().toString();
-				allowedSubTypesEl.select(subTypeKey, true);
+				childTypesEl.select(subTypeKey, true);
 			}
 		}
-		
-		parentTypesDividerEl = uifactory.addSpacerElement("parentTypesDivider", configurationContainer, false);
+
+		parentTypesEl = uifactory.addCheckboxesVertical("type.parent.types", configurationContainer,
+				elementTypesKV.keys(), elementTypesKV.values(), 2);
 
 		List<CurriculumElementTypeToType> allRelations = curriculumElementType != null
 				? curriculumService.getAllCurriculumElementTypeRelations()
@@ -279,16 +250,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				.filter(r -> curriculumElementType != null && r.getAllowedSubType().getKey().equals(curriculumElementType.getKey()))
 				.map(r -> r.getType().getKey())
 				.collect(Collectors.toSet());
-		List<CurriculumElementType> parentCandidates = new ArrayList<>(curriculumService.getCurriculumElementTypes());
-		parentCandidates.remove(curriculumElementType);
-		Collections.sort(parentCandidates, new CurriculumElementTypeComparator(getLocale()));
-		SelectionValues parentTypePK = new SelectionValues();
-		for(CurriculumElementType type : parentCandidates) {
-			parentTypePK.add(SelectionValues.entry(type.getKey().toString(),
-					type.getDisplayName() + " · " + type.getIdentifier()));
-		}
-		parentTypesEl = uifactory.addCheckboxesVertical("type.parent.types", configurationContainer,
-				parentTypePK.keys(), parentTypePK.values(), 2);
 		for(Long parentKey : currentParentTypeKeys) {
 			parentTypesEl.select(parentKey.toString(), true);
 		}
@@ -304,19 +265,13 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				&& TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
 		scopeOfUseEl.setVisible(structural);
 
-		boolean showParentTypes = forUseAsEl.isOneSelected()
-				&& !FOR_USE_AS_IMPL.equals(forUseAsEl.getSelectedKey());
-		parentTypesDividerEl.setVisible(showParentTypes);
-		parentTypesEl.setVisible(showParentTypes);
-
-		boolean multipleElements = compositeTypeEl.isOn();
-		allowedSubTypesEl.setVisible(multipleElements);
+		boolean showParentElements = forUseAsEl.isOneSelected() && !FOR_USE_AS_IMPL.equals(forUseAsEl.getSelectedKey());
+		parentTypesEl.setVisible(showParentElements);
 		
-		boolean withContent = withContentEl.isOn();
-		maxRepositoryEntryRelationsEl.setVisible(withContent);
-		if(withContent && !maxRepositoryEntryRelationsEl.isOneSelected()) {
-			maxRepositoryEntryRelationsEl.select("1", true);
-		}
+		boolean showChildElements = typeOfElementEl.isOneSelected() && TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
+		childTypesEl.setVisible(showChildElements);
+
+		dividerEl.setVisible(showParentElements || showChildElements);
 	}
 
 	@Override
@@ -340,7 +295,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(forUseAsEl == source || compositeTypeEl == source || withContentEl == source || typeOfElementEl == source) {
+		if(forUseAsEl == source || typeOfElementEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -412,15 +367,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			}
 		}
 
-		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.isVisible()
-				? allowedSubTypesEl.getSelectedKeys()
-				: List.of();
-		List<CurriculumElementType> allowedSubTypes = new ArrayList<>();
-		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
-			allowedSubTypes.add(curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
-		}
-		curriculumElementType = curriculumService.updateCurriculumElementType(curriculumElementType, allowedSubTypes);
-		
 		if(parentTypesEl.isVisible()) {
 			Collection<String> selectedParentKeys = parentTypesEl.getSelectedKeys();
 			List<CurriculumElementType> allTypes = curriculumService.getCurriculumElementTypes();
@@ -434,6 +380,13 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			}
 		}
 
+		Collection<String> selectedAllowedSubTypeKeys = childTypesEl.getSelectedKeys();
+		List<CurriculumElementType> allowedSubTypes = new ArrayList<>();
+		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
+			allowedSubTypes.add(curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
+		}
+		curriculumElementType = curriculumService.updateCurriculumElementType(curriculumElementType, allowedSubTypes);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
