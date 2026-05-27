@@ -72,6 +72,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String TYPE_OF_ELEM_SINGLE_COURSE = "singleCourse";
 	private static final String TYPE_OF_ELEM_COURSE_BUNDLE = "courseBundle";
 	private static final String TYPE_OF_ELEM_STRUCTURAL = "structuralElement";
+	private static final String SCOPE_STRUCT_ONLY = "structureOnly";
+	private static final String SCOPE_STRUCT_SINGLE = "structureSingleCourse";
+	private static final String SCOPE_STRUCT_BUNDLE = "structureCourseBundle";
 	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
@@ -81,6 +84,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private SingleSelection forUseAsEl;
 	private SingleSelection typeOfElementEl;
+	private SingleSelection scopeOfUseEl;
 	private MultipleSelectionElement allowedSubTypesEl;
 	private MultipleSelectionElement featuresEnabledEl;
 	private SingleSelection maxRepositoryEntryRelationsEl;
@@ -180,12 +184,35 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				configurationContainer, typeOfElementKV);
 		typeOfElementEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite)
 				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
+		typeOfElementEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
 			typeOfElementEl.select(TYPE_OF_ELEM_STRUCTURAL, true);
 		} else if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == -1) {
 			typeOfElementEl.select(TYPE_OF_ELEM_COURSE_BUNDLE, true);
 		} else {
 			typeOfElementEl.select(TYPE_OF_ELEM_SINGLE_COURSE, true);
+		}
+
+		String[] scopeKeys = { SCOPE_STRUCT_ONLY, SCOPE_STRUCT_SINGLE, SCOPE_STRUCT_BUNDLE };
+		String[] scopeValues = {
+				translate("table.type.type.of.application.structure.only"),
+				translate("table.type.type.of.application.structure.single.course"),
+				translate("table.type.type.of.application.structure.course.bundle")
+		};
+		scopeOfUseEl = uifactory.addDropdownSingleselect("type.scope.of.use", "type.scope.of.use",
+				configurationContainer, scopeKeys, scopeValues, null);
+		scopeOfUseEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
+		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
+			int maxRelationsForScope = curriculumElementType.getMaxRepositoryEntryRelations();
+			if(maxRelationsForScope == 1) {
+				scopeOfUseEl.select(SCOPE_STRUCT_SINGLE, true);
+			} else if(maxRelationsForScope == -1) {
+				scopeOfUseEl.select(SCOPE_STRUCT_BUNDLE, true);
+			} else {
+				scopeOfUseEl.select(SCOPE_STRUCT_ONLY, true);
+			}
+		} else {
+			scopeOfUseEl.select(SCOPE_STRUCT_ONLY, true);
 		}
 
 		int maxRelations = curriculumElementType == null ? 1 : curriculumElementType.getMaxRepositoryEntryRelations();
@@ -245,6 +272,10 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	}
 	
 	private void updateUI() {
+		boolean structural = typeOfElementEl.isOneSelected()
+				&& TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
+		scopeOfUseEl.setVisible(structural);
+
 		boolean multipleElements = compositeTypeEl.isOn();
 		allowedSubTypesEl.setVisible(multipleElements);
 		
@@ -276,7 +307,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(compositeTypeEl == source || withContentEl == source) {
+		if(compositeTypeEl == source || withContentEl == source || typeOfElementEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -332,6 +363,16 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				curriculumElementType.setMaxRepositoryEntryRelations(-1);
 			} else if(TYPE_OF_ELEM_STRUCTURAL.equals(selected)) {
 				curriculumElementType.setSingleElement(false);
+				if(scopeOfUseEl.isOneSelected()) {
+					String scope = scopeOfUseEl.getSelectedKey();
+					if(SCOPE_STRUCT_SINGLE.equals(scope)) {
+						curriculumElementType.setMaxRepositoryEntryRelations(1);
+					} else if(SCOPE_STRUCT_BUNDLE.equals(scope)) {
+						curriculumElementType.setMaxRepositoryEntryRelations(-1);
+					} else {
+						curriculumElementType.setMaxRepositoryEntryRelations(0);
+					}
+				}
 			} else {
 				curriculumElementType.setSingleElement(true);
 				curriculumElementType.setMaxRepositoryEntryRelations(1);
