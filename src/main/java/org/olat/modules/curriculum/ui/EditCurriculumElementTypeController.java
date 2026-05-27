@@ -222,16 +222,21 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		elementTypes.sort(new CurriculumElementTypeComparator(getLocale()));
 		elementTypes.remove(curriculumElementType);
 
-		SelectionValues elementTypesKV = new SelectionValues();
+		SelectionValues childTypesKV = new SelectionValues();
 		for(CurriculumElementType type:elementTypes) {
-			elementTypesKV.add(SelectionValues.entry(type.getKey().toString(),
-					type.getDisplayName() + " · " + type.getIdentifier()));
+			if(!type.isImplOnly()) {
+				String label = StringHelper.escapeHtml(type.getDisplayName())
+						+ "<span class=\"text-muted o_small\"> · " + StringHelper.escapeHtml(type.getIdentifier())
+						+ "</span>";
+				childTypesKV.add(SelectionValues.entry(type.getKey().toString(), label));
+			}
 		}
 
-		childTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer, 
-				elementTypesKV.keys(), elementTypesKV.values(), 2);
+		childTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer,
+				childTypesKV.keys(), childTypesKV.values(), 2);
+		childTypesEl.setEscapeHtml(false);
 		childTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
-		
+
 		if(curriculumElementType != null) {
 			Set<CurriculumElementTypeToType> typeToTypes = curriculumElementType.getAllowedSubTypes();
 			for(CurriculumElementTypeToType typeToType:typeToTypes) {
@@ -240,8 +245,19 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			}
 		}
 
+		SelectionValues parentTypesKV = new SelectionValues();
+		for(CurriculumElementType type:elementTypes) {
+			if(!type.isSingleElement()) {
+				String label = StringHelper.escapeHtml(type.getDisplayName())
+						+ "<span class=\"text-muted o_small\"> · " + StringHelper.escapeHtml(type.getIdentifier())
+						+ "</span>";
+				parentTypesKV.add(SelectionValues.entry(type.getKey().toString(), label));
+			}
+		}
+
 		parentTypesEl = uifactory.addCheckboxesVertical("type.parent.types", configurationContainer,
-				elementTypesKV.keys(), elementTypesKV.values(), 2);
+				parentTypesKV.keys(), parentTypesKV.values(), 2);
+		parentTypesEl.setEscapeHtml(false);
 
 		List<CurriculumElementTypeToType> allRelations = curriculumElementType != null
 				? curriculumService.getAllCurriculumElementTypeRelations()
