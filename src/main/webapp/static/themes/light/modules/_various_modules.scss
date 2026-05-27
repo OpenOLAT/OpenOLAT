@@ -2205,11 +2205,21 @@ ul.o_list_narrow {
 				font-size: $o-day-nav-abbr-font-size;
 			}
 			.o_day_button {
-				height: 36px;
-				aspect-ratio: 1;
+				height: 40px;
+				aspect-ratio: 0.95;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: start;
 				
 				font-size: $o-day-nav-num-font-size;
 				
+				.o_day_dot {
+					width: 4px;
+					height: 4px;
+					border-radius: 50%;
+					background-color: currentColor;
+				}
 				&.o_day_selected {
 					background-color: hsl(217, 71%, 53%);
 					color: #fff;

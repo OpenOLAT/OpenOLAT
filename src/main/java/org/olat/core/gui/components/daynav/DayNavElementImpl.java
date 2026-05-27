@@ -93,4 +93,9 @@ public class DayNavElementImpl extends FormItemImpl implements DayNavElement {
 		component.setSelectedDate(selectedDate);
 	}
 
+	@Override
+	public void setMarkedDays(boolean[] markedDays) {
+		component.setMarkedDays(markedDays);
+	}
+
 }

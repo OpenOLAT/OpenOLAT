@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 public class DayNavComponent extends FormBaseComponentImpl {
 	
 	private static final ComponentRenderer RENDERER = new DayNavRenderer();
+	private static final int DAYS_PER_WEEK = 7;
 
 	static final String CMD_TODAY = "today";
 	static final String CMD_PREV_WEEK = "prev.week";
@@ -48,6 +49,7 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	private final DayNavElementImpl element;
 	private Date startDate;
 	private int selectedDateIndex;
+	private boolean[] markedDays = new boolean[DAYS_PER_WEEK];
 	
 	DayNavComponent(String name) {
 		super(name);
@@ -164,6 +166,20 @@ public class DayNavComponent extends FormBaseComponentImpl {
 			return DateUtils.addDays(startDate, selectedDateIndex);
 		}
 		return null;
+	}
+
+	public void setMarkedDays(boolean[] markedDays) {
+		if (markedDays != null && markedDays.length == DAYS_PER_WEEK) {
+			this.markedDays = markedDays;
+			setDirty(true);
+		}
+	}
+
+	boolean isMarked(int dayIndex) {
+		if (dayIndex < 0 || dayIndex >= DAYS_PER_WEEK) {
+			return false;
+		}
+		return markedDays[dayIndex];
 	}
 
 	public void setSelectedDate(Date selectedDate) {

@@ -41,4 +41,6 @@ public interface DayNavElement extends FormItem {
 	
 	public void setSelectedDate(Date selectedDate);
 
+	public void setMarkedDays(boolean[] markedDays);
+
 }

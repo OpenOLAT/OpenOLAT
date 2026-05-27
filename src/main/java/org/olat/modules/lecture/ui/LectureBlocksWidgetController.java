@@ -168,11 +168,26 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 
 	protected void loadModel() {
-		Date fromDate = DateUtils.getStartOfDay(dayNavEl.getSelectedDate());
-		Date toDate= DateUtils.getEndOfDay(dayNavEl.getEndDate());
-		List<LectureBlock> lectureBlocks = loadLectureBlocks(fromDate, toDate);
+		Date weekStart = DateUtils.getStartOfDay(dayNavEl.getStartDate());
+		Date toDate = DateUtils.getEndOfDay(dayNavEl.getEndDate());
+		Date selStart = DateUtils.getStartOfDay(dayNavEl.getSelectedDate());
+		List<LectureBlock> allWeekBlocks = loadLectureBlocks(weekStart, toDate);
 		LectureBlockRef nextScheduledBlock = loadNextScheduledBlock();
-		updateTable(lectureBlocks, nextScheduledBlock);
+
+		boolean[] markedDays = new boolean[7];
+		List<LectureBlock> visible = new ArrayList<>(allWeekBlocks.size());
+		for (LectureBlock b : allWeekBlocks) {
+			int idx = (int) DateUtils.countDays(weekStart, DateUtils.getStartOfDay(b.getStartDate()));
+			if (idx >= 0 && idx < 7) {
+				markedDays[idx] = true;
+			}
+			if (!b.getStartDate().before(selStart)) {
+				visible.add(b);
+			}
+		}
+		dayNavEl.setMarkedDays(markedDays);
+
+		updateTable(visible, nextScheduledBlock);
 	}
 	
 	protected abstract List<LectureBlock> loadLectureBlocks(Date fromDate, Date toDate);
