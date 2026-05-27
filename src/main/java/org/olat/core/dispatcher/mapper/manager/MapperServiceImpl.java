@@ -32,6 +32,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.model.PersistedMapper;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -175,9 +176,11 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 				return null;
 			}
 			if(newSession.getIdentity() == null) {
-				newSession.setAuthenticated(parentSession.isAuthenticated());
-				newSession.setIdentity(parentSession.getIdentity());
+				Identity identity = parentSession.getIdentity();
+				Tracing.setIdentity(identity);
+				newSession.setIdentity(identity);
 				newSession.setRoles(parentSession.getRoles());
+				newSession.setLocale(parentSession.getLocale());
 			} 
 			mapperKeyToMapper.computeIfAbsent(mapperKey, key -> mapper);
 			sessionIdToMapperKeys

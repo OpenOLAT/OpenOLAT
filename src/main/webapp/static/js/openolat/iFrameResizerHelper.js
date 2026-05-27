@@ -12,8 +12,6 @@ function registerIFrame(iFrameId) {
 			if(iframe.contentDocument) {
 				iframe.contentDocument.body.style["overflow-y"] = "hidden";
 				iframe.contentDocument.body.style["overflow-x"] = "auto";
-			} else {
-				console.log('IFrame: contentDocument');
 			}
 		},
 		resizedCallback: function(iframe) {

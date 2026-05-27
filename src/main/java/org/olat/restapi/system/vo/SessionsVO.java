@@ -51,6 +51,10 @@ public class SessionsVO {
 	private int restCount;
 	@XmlAttribute(name="secureRestCount", required=true)
 	private int secureRestCount;
+	@XmlAttribute(name="contentCount", required=true)
+	private int contentCount;
+	@XmlAttribute(name="secureContentCount", required=true)
+	private int secureContentCount;
 	@XmlAttribute(name="instantMessagingCount", required=true)
 	private int instantMessagingCount;
 	@XmlAttribute(name="authenticatedClickCountLastMinute", required=true)
@@ -134,6 +138,22 @@ public class SessionsVO {
 
 	public void setSecureRestCount(int secureRestCount) {
 		this.secureRestCount = secureRestCount;
+	}
+
+	public int getContentCount() {
+		return contentCount;
+	}
+
+	public void setContentCount(int contentCount) {
+		this.contentCount = contentCount;
+	}
+
+	public int getSecureContentCount() {
+		return secureContentCount;
+	}
+
+	public void setSecureContentCount(int secureContentCount) {
+		this.secureContentCount = secureContentCount;
 	}
 
 	public int getInstantMessagingCount() {

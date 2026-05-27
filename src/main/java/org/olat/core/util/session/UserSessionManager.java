@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -91,10 +90,6 @@ public class UserSessionManager implements GenericEventListener {
 	private static final Set<UserSession> authUserSessions = ConcurrentHashMap.newKeySet();
 	private static final Set<Long> userNameToIdentity = ConcurrentHashMap.newKeySet();
 	private static final Set<Long> authUsersNamesOtherNodes = ConcurrentHashMap.newKeySet();
-
-	private static final AtomicInteger sessionCountWeb = new AtomicInteger();
-	private static final AtomicInteger sessionCountRest = new AtomicInteger();
-	private static final AtomicInteger sessionCountDav = new AtomicInteger();
 	
 	@Autowired
 	private DB dbInstance;
@@ -247,30 +242,6 @@ public class UserSessionManager implements GenericEventListener {
 	public boolean isOnline(Long identityKey) {
 		return userSessionCache.containsKey(identityKey);
 	}
-	
-	/**
-	 * @return The number of users currently logged in using a WebDAV client.
-	 *         Note that currently this only returns the users from this VM as
-	 *         the synchronization of user between cluster node is not
-	 *         correctly. In the long run we return all users here.
-	 */
-	public int getUserSessionDavCounter() {
-		// clusterNOK ?? return only number of locale sessions ?
-		return sessionCountDav.get();
-	}
-	
-	/**
-	 * @return The number of users currently logged in using the REST API. Note
-	 *         that currently this only returns the users from this VM as the
-	 *         synchronization of user between cluster node is not correctly. In
-	 *         the long run we return all users here.
-	 */
-	public int getUserSessionRestCounter() {
-		// clusterNOK ?? return only number of locale sessions ?
-		return sessionCountRest.get();
-	}
-
-
 
 	/**
 	 * prior to calling this method, all instance vars must be set.
@@ -296,14 +267,13 @@ public class UserSessionManager implements GenericEventListener {
 			}
 			usess.setAuthenticated(true);
 	
-			if (sessionInfo.isWebDAV() || sessionInfo.isREST()) {
+			if (sessionInfo.isWebDAV() || sessionInfo.isREST() || sessionInfo.isContentDelivery()) {
 				// load user prefs
 				usess.reloadPreferences();
 				// we're only adding this webdav session to the authUserSessions - not to the userNameToIdentity.
 				// userNameToIdentity is only needed for IM which can't do anything with a webdav session
 				authUserSessions.add(usess);
-				String type = sessionInfo.isWebDAV() ? "webdav" : "rest";
-				log.debug(Tracing.M_AUDIT, "Logged on [via {}]: {}", type, sessionInfo);
+				log.debug(Tracing.M_AUDIT, "Logged on [via {}]: {}", getType(sessionInfo), sessionInfo);
 			} else {	
 				UserSession invalidatedSession = null;
 
@@ -354,16 +324,21 @@ public class UserSessionManager implements GenericEventListener {
 	
 				if(isDebug) log.debug("signOn() END");
 			}
-			
-			// update logged in users counters
-			if (sessionInfo.isREST()) {
-				sessionCountRest.incrementAndGet();
-			} else if (sessionInfo.isWebDAV()) {
-				sessionCountDav.incrementAndGet();
-			} else {
-				sessionCountWeb.incrementAndGet();
-			}
 		}
+	}
+	
+	private String getType(SessionInfo sessionInfo) {
+		String type = "";
+		if(sessionInfo.isWebDAV()) {
+			type = "webdav";
+		} else if(sessionInfo.isREST()) {
+			type = "rest";
+		} else if(sessionInfo.isContentDelivery()) {
+			type = "content";
+		} else {
+			type = "web";
+		}
+		return type;
 	}
 	
 	/**
@@ -403,14 +378,14 @@ public class UserSessionManager implements GenericEventListener {
 				SessionInfo sessionInfo = usess.getSessionInfo();
 				IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
 				Identity identity = identityEnvironment.getIdentity();
-				if(sessionInfo.isREST() || sessionInfo.isWebDAV()) {
+				if(sessionInfo.isREST() || sessionInfo.isWebDAV() || sessionInfo.isContentDelivery()) {
 					log.debug(Tracing.M_AUDIT, "Logged off: {}", sessionInfo);
 				} else {
 					log.info(Tracing.M_AUDIT, "Logged off: {}", sessionInfo);
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, false), ORES_USERSESSION);
 				}
 				log.debug("signOffAndClear() deregistering usersession from eventbus, id={}", sessionInfo);
-				//fxdiff FXOLAT-231: event on GUI Preferences extern changes
+				// Event on GUI Preferences external changes
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(usess, ores);
 			}
@@ -501,17 +476,6 @@ public class UserSessionManager implements GenericEventListener {
 			}
 		} else if (isDebug) {
 			log.info("UserSession already removed! for [{}]", ident);			
-		}
-			
-		// update logged in users counters
-		if (sessionInfo != null) {
-			if (sessionInfo.isREST()) {
-				sessionCountRest.decrementAndGet();
-			} else if (sessionInfo.isWebDAV()) {
-				sessionCountDav.decrementAndGet();
-			} else {
-				sessionCountWeb.decrementAndGet();
-			}
 		}
 		
 		if (isDebug) log.debug("signOffAndClearWithout() END");

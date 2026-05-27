@@ -26,8 +26,8 @@
 package org.olat.admin.sysinfo;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.admin.sysinfo.model.UserSessionView;
 import org.olat.core.CoreSpringFactory;
@@ -99,7 +99,7 @@ public class UserSessionController extends BasicController implements Breadcrumb
 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("sess.chat", 8, "sess.chat", translate("sess.chat"), null));
 
 		listenTo(tableCtr);
-		reset();
+		loadModel();
 		myContent.put("sessiontable", tableCtr.getInitialComponent());
 		putInitialPanel(myContent);
 	}
@@ -112,11 +112,11 @@ public class UserSessionController extends BasicController implements Breadcrumb
 	/**
 	 * Re-initialize this controller. Fetches sessions again.
 	 */
-	public void reset() {
-		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
+	private void loadModel() {
+		Set<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
 		List<UserSessionView> authUserSessionViews = new ArrayList<>(authUserSessions.size());
 		for(UserSession authUserSession:authUserSessions) {
-			if(authUserSession != null) {
+			if(authUserSession != null && !authUserSession.isContentDelivery()) {
 				authUserSessionViews.add(new UserSessionView(authUserSession));
 			}
 		}

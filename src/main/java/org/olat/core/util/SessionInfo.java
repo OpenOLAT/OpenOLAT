@@ -55,6 +55,7 @@ public class SessionInfo implements Serializable {
 	private String webMode;
 	private boolean isWebDAV;
 	private boolean isREST;
+	private boolean isContentDelivery;
 	private boolean secure;
 	private long timestmp=-1;
 	private long creationTime=-1;
@@ -205,6 +206,14 @@ public class SessionInfo implements Serializable {
 	 */
 	public void setREST(boolean isREST) {
 		this.isREST = isREST;
+	}
+
+	public boolean isContentDelivery() {
+		return isContentDelivery;
+	}
+
+	public void setContentDelivery(boolean isContentDelivery) {
+		this.isContentDelivery = isContentDelivery;
 	}
 
 	/**

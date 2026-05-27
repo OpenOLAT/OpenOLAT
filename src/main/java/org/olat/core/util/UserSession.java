@@ -156,6 +156,10 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		this.savedSession = savedSession;
 	}
 	
+	public boolean isContentDelivery() {
+		return sessionInfo != null && sessionInfo.isContentDelivery();
+	}
+	
 	public String getCsrfToken() {
 		return csrfToken;
 	}
