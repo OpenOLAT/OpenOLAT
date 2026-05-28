@@ -205,10 +205,12 @@ public class ToDoTaskEditForm extends FormBasicController {
 			modeSV.add(SelectionValues.entry(MODE_RELATIVE, translate("task.date.mode.relative")));
 			startDateModeEl = uifactory.addButtonGroupSingleSelectHorizontal("task.start.date.mode", startDateRowCont, modeSV);
 			startDateModeEl.setLabel(null, null);
+			startDateModeEl.setElementCssClass("o_button_group_always_horizontal");
 			startDateModeEl.select(MODE_ABSOLUTE, true);
 			startDateModeEl.addActionListener(FormEvent.ONCHANGE);
 			dueDateModeEl = uifactory.addButtonGroupSingleSelectHorizontal("task.due.date.mode", dueDateRowCont, modeSV);
 			dueDateModeEl.setLabel(null, null);
+			dueDateModeEl.setElementCssClass("o_button_group_always_horizontal");
 			dueDateModeEl.select(MODE_ABSOLUTE, true);
 			dueDateModeEl.addActionListener(FormEvent.ONCHANGE);
 		}

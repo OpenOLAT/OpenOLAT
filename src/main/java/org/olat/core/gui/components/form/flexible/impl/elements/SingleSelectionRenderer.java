@@ -135,7 +135,9 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 				renderButtonGroupRadio(sb, source, radio);
 			}
 			sb.append("</div>");
-			appendButtonGroupOverflowScript(sb, groupId);
+			if (!StringHelper.containsNonWhitespace(css) || !css.contains("o_button_group_always_horizontal")) {
+				appendButtonGroupOverflowScript(sb, groupId);
+			}
 			return;
 		}
 
