@@ -19,27 +19,124 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * Initial date: 28 May 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RoomsAdminController extends BasicController {
+public class RoomsAdminController extends BasicController implements Activateable2 {
+
+	private static final String ORES_TYPE_SETTINGS = "Settings";
+	private static final String ORES_TYPE_ROOM_SCHEDULING = "RoomScheduling";
+	private static final String ORES_TYPE_ROOMS = "Rooms";
+	private static final String ORES_TYPE_BUILDINGS = "Buildings";
+
+	private final VelocityContainer mainVC;
+	private final SegmentViewComponent segmentView;
+	private final Link settingsLink;
+	private final Link roomSchedulingLink;
+	private final Link roomsLink;
+	private final Link buildingsLink;
+
+	private RoomsAdminSettingsController settingsCtrl;
 
 	public RoomsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		VelocityContainer mainVC = createVelocityContainer("admin");
+		mainVC = createVelocityContainer("admin");
 		putInitialPanel(mainVC);
+
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+
+		settingsLink = LinkFactory.createLink("admin.settings", mainVC, this);
+		segmentView.addSegment(settingsLink, true);
+
+		roomSchedulingLink = LinkFactory.createLink("admin.room.scheduling", mainVC, this);
+		segmentView.addSegment(roomSchedulingLink, false);
+
+		roomsLink = LinkFactory.createLink("admin.rooms", mainVC, this);
+		segmentView.addSegment(roomsLink, false);
+
+		buildingsLink = LinkFactory.createLink("admin.buildings", mainVC, this);
+		segmentView.addSegment(buildingsLink, false);
+
+		doOpenSettings(ureq);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if (ORES_TYPE_SETTINGS.equalsIgnoreCase(type) && settingsLink.isVisible()) {
+			doOpenSettings(ureq);
+			segmentView.select(settingsLink);
+		} else if (ORES_TYPE_ROOM_SCHEDULING.equalsIgnoreCase(type) && roomSchedulingLink.isVisible()) {
+			segmentView.select(roomSchedulingLink);
+		} else if (ORES_TYPE_ROOMS.equalsIgnoreCase(type) && roomsLink.isVisible()) {
+			segmentView.select(roomsLink);
+		} else if (ORES_TYPE_BUILDINGS.equalsIgnoreCase(type) && buildingsLink.isVisible()) {
+			segmentView.select(buildingsLink);
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == segmentView && event instanceof SegmentViewEvent sve) {
+			String segmentCName = sve.getComponentName();
+			Component clickedLink = mainVC.getComponent(segmentCName);
+			if (clickedLink == settingsLink) {
+				doOpenSettings(ureq);
+			} else if (clickedLink == roomSchedulingLink) {
+				doOpenRoomScheduling(ureq);
+			} else if (clickedLink == roomsLink) {
+				doOpenRooms(ureq);
+			} else if (clickedLink == buildingsLink) {
+				doOpenBuildings(ureq);
+			}
+		}
+	}
+
+	private void doOpenSettings(UserRequest ureq) {
+		if (settingsCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_SETTINGS), null);
+			settingsCtrl = new RoomsAdminSettingsController(ureq, swControl);
+			listenTo(settingsCtrl);
+		} else {
+			addToHistory(ureq, settingsCtrl);
+		}
+		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+
+	private void doOpenRoomScheduling(UserRequest ureq) {
+		addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOM_SCHEDULING), null);
+		mainVC.remove("segmentCmp");
+	}
+
+	private void doOpenRooms(UserRequest ureq) {
+		addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOMS), null);
+		mainVC.remove("segmentCmp");
+	}
+
+	private void doOpenBuildings(UserRequest ureq) {
+		addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BUILDINGS), null);
+		mainVC.remove("segmentCmp");
 	}
 }
