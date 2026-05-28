@@ -69,7 +69,7 @@
 		<org.springframework.version>7.0.7</org.springframework.version>
 		<org.hibernate.version>7.4.0.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.0.Final</org.hibernate.validator.version>
-		<org.glassfish.jaxb.runtime>4.0.8</org.glassfish.jaxb.runtime>
+		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.1</apache.cxf>
 		<apache.pdfbox>3.0.7</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
@@ -81,7 +81,7 @@
 		<io.undertow.ee>2.0.0.Final</io.undertow.ee>
 		<jackson.version>2.21.3</jackson.version>
 		<jackson.annotations.version>2.21</jackson.annotations.version>
-		<swagger.ui.version>5.32.5</swagger.ui.version>
+		<swagger.ui.version>5.32.6</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
 		<org.postgresql.version>42.7.11</org.postgresql.version>
 		<org.infinispan.version>16.1.4</org.infinispan.version>
@@ -1837,7 +1837,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>2.0.3</version>
+			<version>2.0.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.ibm.icu</groupId>
@@ -2261,7 +2261,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.24.1</version>
+			<version>1.25.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>

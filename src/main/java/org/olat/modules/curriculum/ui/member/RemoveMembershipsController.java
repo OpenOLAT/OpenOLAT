@@ -143,6 +143,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CURRENT.name(), translate("apply.membership.to.current")));
 		applyToEl = uifactory.addRadiosVertical("apply.membership.to.delete", "remove.membership.from", formLayout, applyToPK.keys(), applyToPK.values());
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
+		applyToEl.addActionListener(FormEvent.ONCLICK);
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note.delete", "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		initButtonsForm(formLayout, ureq);
@@ -229,6 +230,16 @@ public class RemoveMembershipsController extends FormBasicController implements 
 		tableEl.reset(true, true, true);
 	}
 	
+	private void removeDetails() {
+		List<RemoveMembershipRow> rows = tableModel.getObjects();
+		for(RemoveMembershipRow row:rows) {
+			if(row.getDetailsController() != null) {
+				doCloseMemberDetails(row);
+			}
+		}
+		tableEl.collapseAllDetails();
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(customizeNotificationsCtrl == source) {
@@ -254,7 +265,9 @@ public class RemoveMembershipsController extends FormBasicController implements 
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(removeWithoutNotificationButton == source) {
+		if(applyToEl == source) {
+			removeDetails();
+		} else if(removeWithoutNotificationButton == source) {
 			doRemove(ureq, new MailPackage(false));
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(removeButton == source) {
@@ -328,6 +341,9 @@ public class RemoveMembershipsController extends FormBasicController implements 
 				.collect(Collectors.toMap(CurriculumElement::getResource, ce -> ce, (u, v) -> u));
 		Map<Long, CurriculumElement> keyToCurriculumElements = curriculumElements.stream()
 				.collect(Collectors.toMap(CurriculumElement::getKey, ce -> ce, (u, v) -> u));
+
+		boolean all = applyToEl.isOneSelected()
+				&& ChangeApplyToEnum.CONTAINED.name().equals(applyToEl.getSelectedKey());
 		
 		List<RemoveMembershipRow> rows = tableModel.getObjects();
 		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
@@ -336,15 +352,17 @@ public class RemoveMembershipsController extends FormBasicController implements 
 			for(ResourceReservation reservation:row.getReservations()) {
 				CurriculumRoles role = ResourceToRoleKey.reservationToRole(reservation.getType());
 				CurriculumElement curriculumElement = resourceToCurriculumElements.get(reservation.getResource());
-				CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
-				change.setNextStatus(role, nextStatus);
-				change.setAdminNote(role, adminNote);
-				changes.add(change);
+				if(curriculumElement != null && (all || selectedCurriculumElement.equals(curriculumElement))) {
+					CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
+					change.setNextStatus(role, nextStatus);
+					change.setAdminNote(role, adminNote);
+					changes.add(change);
+				}
 			}
 			
 			for(CurriculumElementMembership membership:row.getMemberships()) {
 				CurriculumElement curriculumElement = keyToCurriculumElements.get(membership.getCurriculumElementKey());
-				if(curriculumElement != null) {
+				if(curriculumElement != null && (all || selectedCurriculumElement.equals(curriculumElement))) {
 					List<CurriculumRoles> roles = membership.getRoles();
 					for(CurriculumRoles role:roles) {
 						CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
@@ -364,7 +382,10 @@ public class RemoveMembershipsController extends FormBasicController implements 
 			removeAsListenerAndDispose(row.getDetailsController());
 			flc.remove(row.getDetailsController().getInitialFormItem());
 		}
-
+		
+		boolean all = applyToEl.isOneSelected()
+				&& ChangeApplyToEnum.CONTAINED.name().equals(applyToEl.getSelectedKey());
+		
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, false, false, true, false, true, false,
 				true, false, false, false, true);
@@ -381,14 +402,16 @@ public class RemoveMembershipsController extends FormBasicController implements 
 		for(ResourceReservation reservation:row.getReservations()) {
 			CurriculumRoles role = ResourceToRoleKey.reservationToRole(reservation.getType());
 			CurriculumElement curriculumElement = resourceToCurriculumElements.get(reservation.getResource());
-			MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
-					null, null, null, false, null);
-			modifications.add(modification);
+			if(curriculumElement != null && (all || selectedCurriculumElement.equals(curriculumElement))) {
+				MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
+						null, null, null, false, null);
+				modifications.add(modification);
+			}
 		}
 		
 		for(CurriculumElementMembership membership:row.getMemberships()) {
 			CurriculumElement curriculumElement = keyToCurriculumElements.get(membership.getCurriculumElementKey());
-			if(curriculumElement != null) {
+			if(curriculumElement != null && (all || selectedCurriculumElement.equals(curriculumElement))) {
 				List<CurriculumRoles> roles = membership.getRoles();
 				for(CurriculumRoles role:roles) {
 					MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
