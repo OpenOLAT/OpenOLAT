@@ -64,8 +64,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String LECTURES = "lectures";
 	private static final String CALENDAR = "calendar";
 	private static final String LEARNING_PROGRESS = "learningprogress";
-	private static final String COMPOSITE = "composite";
-	private static final String UNLIMITED = "-1";
 	private static final String FOR_USE_AS_IMPL = "implementation";
 	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
 	private static final String FOR_USE_AS_ELEM = "element";
@@ -263,7 +261,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				? curriculumService.getAllCurriculumElementTypeRelations()
 				: List.of();
 		Set<Long> currentParentTypeKeys = allRelations.stream()
-				.filter(r -> curriculumElementType != null && r.getAllowedSubType().getKey().equals(curriculumElementType.getKey()))
+				.filter(r -> r.getAllowedSubType().getKey().equals(curriculumElementType.getKey()))
 				.map(r -> r.getType().getKey())
 				.collect(Collectors.toSet());
 		for(Long parentKey : currentParentTypeKeys) {
@@ -383,20 +381,22 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			}
 		}
 
-		if(parentTypesEl.isVisible()) {
-			Collection<String> selectedParentKeys = parentTypesEl.getSelectedKeys();
-			List<CurriculumElementType> allTypes = curriculumService.getCurriculumElementTypes();
-			allTypes.remove(curriculumElementType);
-			for(CurriculumElementType parentCandidate : allTypes) {
-				if(selectedParentKeys.contains(parentCandidate.getKey().toString())) {
-					curriculumService.allowCurriculumElementSubType(parentCandidate, curriculumElementType);
-				} else {
-					curriculumService.disallowCurriculumElementSubType(parentCandidate, curriculumElementType);
-				}
+		Collection<String> selectedParentKeys = parentTypesEl.isVisible()
+				? parentTypesEl.getSelectedKeys()
+				: Set.of();
+		List<CurriculumElementType> allTypes = curriculumService.getCurriculumElementTypes();
+		allTypes.remove(curriculumElementType);
+		for(CurriculumElementType parentCandidate : allTypes) {
+			if(selectedParentKeys.contains(parentCandidate.getKey().toString())) {
+				curriculumService.allowCurriculumElementSubType(parentCandidate, curriculumElementType);
+			} else {
+				curriculumService.disallowCurriculumElementSubType(parentCandidate, curriculumElementType);
 			}
 		}
 
-		Collection<String> selectedAllowedSubTypeKeys = childTypesEl.getSelectedKeys();
+		Collection<String> selectedAllowedSubTypeKeys = childTypesEl.isVisible()
+				? childTypesEl.getSelectedKeys()
+				: List.of();
 		List<CurriculumElementType> allowedSubTypes = new ArrayList<>();
 		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
 			allowedSubTypes.add(curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
