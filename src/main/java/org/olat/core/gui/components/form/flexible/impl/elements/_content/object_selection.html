@@ -7,9 +7,6 @@
 					$r.render("search.term", "barebone", "form")
 					$r.render("search.reset", "barebone")
 				</div>
-				#if($r.available("browser.open") && $r.visible("browser.open"))
-					<span class="input-group-btn">$r.render("browser.open", "barebone")</span>
-				#end
 			</div>
 			#if($r.available("select.all") && $r.visible("select.all"))
 				<div class="o_object_selection_actions o_block">

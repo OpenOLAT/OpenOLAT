@@ -33,8 +33,9 @@ import org.olat.core.gui.control.Event;
  *
  */
 public class FormExpandButtonImpl extends FormItemImpl implements FormExpandButton {
-	
+
 	private final ExpandButton component;
+	private boolean fireEvent = true;
 
 	public FormExpandButtonImpl(String name) {
 		super(name, false);
@@ -46,7 +47,15 @@ public class FormExpandButtonImpl extends FormItemImpl implements FormExpandButt
 	public void evalFormRequest(UserRequest ureq) {
 		// No data to remember
 	}
-	
+
+	@Override
+	public void doDispatchFormRequest(UserRequest ureq) {
+		if (!fireEvent) {
+			return;
+		}
+		super.doDispatchFormRequest(ureq);
+	}
+
 	@Override
 	public void dispatchFormRequest(UserRequest ureq) {
 		component.setExpanded(!component.isExpanded());
@@ -66,6 +75,14 @@ public class FormExpandButtonImpl extends FormItemImpl implements FormExpandButt
 	@Override
 	protected void rootFormAvailable() {
 		//
+	}
+	
+	void setDisabledAsText(boolean disabledAsText) {
+		component.setDisabledAsText(disabledAsText);
+	}
+	
+	void setFireEvent(boolean fireEvent) {
+		this.fireEvent = fireEvent;
 	}
 
 	@Override

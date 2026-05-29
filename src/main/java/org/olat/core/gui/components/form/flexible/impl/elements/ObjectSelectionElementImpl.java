@@ -30,6 +30,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.expand.ExpandButton;
 import org.olat.core.gui.components.expand.ExpandButtonFactory;
+import org.olat.core.gui.components.expand.FormExpandButton;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -53,10 +56,13 @@ import org.olat.core.util.Util;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSelectionElement, ControllerEventListener {
+public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSelectionElement, FormItemCollection, ControllerEventListener {
+	
+	static final String EXPAND_COMP_NAME = "expand";
 	
 	private Translator elementTranslator;
-	private final ExpandButton component;
+	private final ObjectSelectionComponent component;
+	private final FormExpandButton expandFormItem;
 	private final WindowControl wControl;
 	
 	private CloseableCalloutWindowController calloutCtrl;
@@ -74,8 +80,9 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		this.wControl = wControl;
 		this.multiSelection = multiSelection;
 		this.source = source;
-		component = ExpandButtonFactory.createSelectionDisplay(this);
-		component.setAriaHasPopup(ExpandButton.ARIA_HASPOPUP_DIALOG);
+		expandFormItem = ExpandButtonFactory.createFormSelectionDisplay(EXPAND_COMP_NAME);
+		expandFormItem.setAriaHasPopup(ExpandButton.ARIA_HASPOPUP_DIALOG);
+		component = new ObjectSelectionComponent(this);
 	}
 
 	@Override
@@ -89,9 +96,26 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	}
 
 	@Override
+	public Iterable<FormItem> getFormItems() {
+		return List.of(expandFormItem);
+	}
+
+	@Override
+	public FormItem getFormComponent(String name) {
+		for (FormItem item : getFormItems()) {
+			if (item.getName().equals(name)) {
+				return item;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	protected void rootFormAvailable() {
+		if (expandFormItem.getRootForm() != getRootForm()) {
+			expandFormItem.setRootForm(getRootForm());
+		}
 		elementTranslator = Util.createPackageTranslator(ObjectSelectionElementImpl.class, getTranslator().getLocale());
-		
 		initDefaults();
 	}
 	
@@ -100,26 +124,28 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		if (getRootForm().hasAlreadyFired()) {
 			return;
 		}
-		
+
 		Form form = getRootForm();
 		String dispatchuri = form.getRequestParameter("dispatchuri");
 		if (getFormDispatchId().equals(dispatchuri)) {
-			doOpenSelection(ureq);
+			if (ObjectSelectionComponent.CMD_BROWSE.equals(form.getRequestParameter("os_cmd"))) {
+				doOpenBrowser(ureq);
+			}
 		}
 	}
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		//
+		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
+		if (expandFormItem.getFormDispatchId().equals(dispatchuri)) {
+			doOpenSelection(ureq);
+		}
 	}
 	
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if (selectionCtrl == source) {
-			if(event == ObjectSelectionController.OPEN_BROWSER_EVENT) {
-				calloutCtrl.deactivate();
-				doOpenBrowser(ureq);
-			} else if (event instanceof ObjectSelectionController.SelectionEvent selectionEvent) {
+			if (event instanceof ObjectSelectionController.SelectionEvent selectionEvent) {
 				if (!selectedKeys.equals(selectionEvent.getSelectedKeys())) {
 					selectedKeys = new HashSet<>(selectionEvent.getSelectedKeys());
 					updateDisplayUI();
@@ -138,14 +164,18 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 			cleanUpSelection();
 		} else if (source == browseCtrl) {
 			if (event instanceof ObjectSelectionBrowserEvent browserEvent) {
-				doSelectedInBrowser(browserEvent.getKeys());
+				doSelectedInBrowser(ureq, browserEvent.getKeys());
 			}
 			cmc.deactivate();
 			cleanUpBrowse();
-			calloutCtrl.activate();
+			if (calloutCtrl != null) {
+				calloutCtrl.activate();
+			}
 		} else if (cmc == source) {
 			cleanUpBrowse();
-			calloutCtrl.activate();
+			if (calloutCtrl != null) {
+				calloutCtrl.activate();
+			}
 		}
 	}
 
@@ -154,8 +184,8 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		calloutCtrl = cleanUp(calloutCtrl);
 		cleanUpBrowse();
 		
-		component.setExpanded(false);
-		component.setAriaControls(null);
+		expandFormItem.setExpanded(false);
+		expandFormItem.setAriaControls(null);
 		
 		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
 		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
@@ -219,7 +249,15 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		if (source == null) {
 			return;
 		}
-		
+
+		component.setBrowserButtonVisible(source.isBrowserAvailable());
+		if (source.isBrowserAvailable() && elementTranslator != null) {
+			String label = elementTranslator.translate("browse");
+			component.setBrowserButtonIconCss("o_icon o_icon-fw o_icon_browse");
+			component.setBrowserButtonTitle(label);
+			component.setBrowserButtonAriaLabel(label);
+		}
+
 		// Performance optimization: Options loading may be heavy weight.
 		// Therefore, they are initially loaded only when the dialog is opened.
 		// The initial selection is displayed on the button.
@@ -232,38 +270,38 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	}
 	
 	private void updateDisplayUI(ObjectDisplayValues displayValue) {
-		component.setEscapeMode(displayValue.titleEscapeMode());
-		
+		expandFormItem.setEscapeMode(displayValue.titleEscapeMode());
+
 		if (!isEnabled()) {
 			if (StringHelper.containsNonWhitespace(displayValue.title())) {
-				component.setText(displayValue.title());
+				expandFormItem.setText(displayValue.title());
 			} else {
-				component.setText(null);
+				expandFormItem.setText(null);
 			}
 			return;
 		}
-		
+
 		String labelText = displayValue.ariaTitleLabel();
 		if (!StringHelper.containsNonWhitespace(labelText)) {
 			labelText = getLabelText();
 		}
-		
+
 		if (StringHelper.containsNonWhitespace(displayValue.title())) {
-			component.setText(displayValue.title());
-			
+			expandFormItem.setText(displayValue.title());
+
 			if (StringHelper.containsNonWhitespace(displayValue.ariaTitle())) {
-				component.setAriaLabel(elementTranslator.translate("select.aria.value", labelText, displayValue.ariaTitle()));
+				expandFormItem.setAriaLabel(elementTranslator.translate("select.aria.value", labelText, displayValue.ariaTitle()));
 			}
 		} else {
 			String text = StringHelper.containsNonWhitespace(noSelectionText)
 					? StringHelper.escapeHtml(noSelectionText)
 					: elementTranslator.translate("select.please");
-			component.setText(text);
-			
+			expandFormItem.setText(text);
+
 			if (StringHelper.containsNonWhitespace(labelText)) {
-				component.setAriaLabel(elementTranslator.translate("select.please.aria", labelText));
+				expandFormItem.setAriaLabel(elementTranslator.translate("select.please.aria", labelText));
 			} else {
-				component.setAriaLabel(elementTranslator.translate("select.please"));
+				expandFormItem.setAriaLabel(elementTranslator.translate("select.please"));
 			}
 		}
 	}
@@ -273,31 +311,50 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		selectionCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectionCtrl.getInitialComponent(),
-				getFormDispatchId(), "", true, "",
+				expandFormItem.getFormDispatchId(), "", true, "",
 				new CalloutSettings(false, CalloutSettings.CalloutOrientation.bottomOrTop, false, null));
 		calloutCtrl.addControllerListener(this);
 		calloutCtrl.activate();
 		
-		component.setExpanded(true);
 		// Dialog-Element of calloutCtrl would be better, but how to get the id?
-		component.setAriaControls(Renderer.getComponentPrefix(selectionCtrl.getInitialComponent()));
+		expandFormItem.setExpanded(true);
+		expandFormItem.setAriaControls(Renderer.getComponentPrefix(selectionCtrl.getInitialComponent()));
 	}
-	
-
 	
 	private void doOpenBrowser(UserRequest ureq) {
 		browseCtrl = source.getBrowserCreator(multiSelection).createController(ureq, wControl);
 		browseCtrl.addControllerListener(this);
-		
+
 		String optionsLabel = source.getOptionsLabel(getTranslator().getLocale());
 		optionsLabel = StringHelper.containsNonWhitespace(optionsLabel)? optionsLabel: getTranslator().translate("options");
-		cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, optionsLabel);
+		cmc = new CloseableModalController(wControl, getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, optionsLabel);
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}
-	
-	private void doSelectedInBrowser(Collection<String> keys) {
-		selectionCtrl.addSelection(keys);
+
+	private void doSelectedInBrowser(UserRequest ureq, Collection<String> keys) {
+		if (multiSelection) {
+			Set<String> validKeys = new HashSet<>();
+			for (ObjectOption option : source.getOptions()) {
+				validKeys.add(option.getKey());
+			}
+			for (String key : keys) {
+				if (validKeys.contains(key)) {
+					selectedKeys.add(key);
+				}
+			}
+		} else if (keys != null && keys.size() == 1) {
+			selectedKeys.clear();
+			selectedKeys.addAll(keys);
+		}
+		updateDisplayUI();
+
+		Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+		wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+
+		if (getAction() == FormEvent.ONCHANGE) {
+			getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
+		}
 	}
 
 }

@@ -72,7 +72,10 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 		
 		uifactory.addObjectSelectionElement("objects.multi.load.more", "selection.objects.load.more", sectionContainer,
 				getWindowControl(), true, createNamesSource(false));
-		
+
+		uifactory.addObjectSelectionElement("objects.browser", "selection.objects.browser", sectionContainer,
+				getWindowControl(), true, createBrowserNamesSource());
+
 		ObjectSelectionElement objectSelectionDisabledEl = uifactory.addObjectSelectionElement("objects.disabled",
 				"selection.objects.disabled", sectionContainer, getWindowControl(), true, createNamesSource(true));
 		objectSelectionDisabledEl.setEnabled(false);
@@ -98,6 +101,21 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 	}
 	
 	private IdentitySelectionSource createNamesSource(boolean initDefaultSelection) {
+		List<Identity> identities = createDemoIdentities();
+		List<Identity> selected = initDefaultSelection
+				? List.of(identities.get(2), identities.get(20), identities.get(200))
+				: List.of(getIdentity());
+		return new IdentitySelectionSource(getLocale(), selected, () -> identities);
+	}
+
+	private IdentitySelectionSource createBrowserNamesSource() {
+		List<Identity> identities = createDemoIdentities();
+		List<Identity> selected = List.of(identities.get(0), identities.get(1));
+		return new IdentitySelectionSource(getLocale(), selected, () -> identities,
+				multi -> (u, w) -> new GuiDemoObjectSelectionBrowserController(u, w, identities));
+	}
+
+	private List<Identity> createDemoIdentities() {
 		int cssCount = UserManager.USER_INITIALS_CSS.size();
 		List<Identity> identities = new ArrayList<>(NameSource.ALL.size() + 1);
 		for (int i = 0; i < NameSource.ALL.size(); i++) {
@@ -109,12 +127,7 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 			identity.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(i % cssCount));
 			identities.add(identity);
 		}
-
-		List<Identity> selected = initDefaultSelection
-				? List.of(identities.get(2), identities.get(20), identities.get(200))
-				: List.of(getIdentity());
-
-		return new IdentitySelectionSource(getLocale(), selected, () -> identities);
+		return identities;
 	}
 
 	private void initTagSection(FormItemContainer formLayout) {

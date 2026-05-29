@@ -1363,6 +1363,35 @@ dialog {
 	}
 }
 
+.o_object_selection_display {
+	display: flex;
+
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	> .o_expand_button.o_selection_display {
+		flex: 1 1 auto;
+		min-width: 0;
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+
+		&:is(.form-group *) {
+			width: auto;
+			max-width: none;
+		}
+	}
+
+	> .o_selection_browse_button {
+		flex: 0 0 auto;
+		min-height: $input-height-base;
+		margin-left: -1px;
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+}
+
 /* Restore border-radius on .form-control elements inside a non-addon span
    within an .input-group (e.g. disabled TextElement renders as
    <span id="X_wp"><input class="form-control"></span>) */

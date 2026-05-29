@@ -61,12 +61,10 @@ import org.olat.core.util.StringHelper;
  */
 public class ObjectSelectionController extends FormBasicController {
 	
-	static final Event OPEN_BROWSER_EVENT = new Event("open-browser");
 	private static final int MORE_SIZE = 50;
-	
+
 	private TextElement searchTermEl;
 	private FormLink searchResetLink;
-	private FormLink openBrowserLink;
 	private FormLink selectAllLink;
 	private FormLink selectionResetLink;
 	private FormExpandButton selectionsExpandButton;
@@ -110,11 +108,6 @@ public class ObjectSelectionController extends FormBasicController {
 		searchResetLink.setElementCssClass("o_reset_search");
 		searchResetLink.setTitle(translate("search.reset"));
 		searchResetLink.setIconLeftCSS("o_icon o_icon_remove_filters");
-		
-		openBrowserLink = uifactory.addFormLink("browser.open", "browser.open", null, formLayout, Link.BUTTON);
-		openBrowserLink.setElementCssClass("o_open_browser");
-		openBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_browse");
-		openBrowserLink.setVisible(source.isBrowserAvailable());
 		
 		if (multiSelection) {
 			selectAllLink = uifactory.addFormLink("select.all", formLayout);
@@ -179,8 +172,6 @@ public class ObjectSelectionController extends FormBasicController {
 			doSelectSingle();
 		} else if (loadMoreLink == source) {
 			doSearch(true);
-		} else if (openBrowserLink == source) {
-			fireEvent(ureq, OPEN_BROWSER_EVENT);
 		} else if (source == applyButton) {
 			doApplySelection(ureq);
 		}
