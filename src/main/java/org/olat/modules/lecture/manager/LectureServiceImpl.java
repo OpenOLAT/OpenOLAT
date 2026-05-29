@@ -514,6 +514,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 		int rows = absenceNoticeToLectureBlockDao.deleteRelations(lectureBlock);
 		rows += roomManagementService.deleteBookingsForLectureBlock(lectureBlock, actingIdentity);
+		// Remove new floating instance of the lecture block we want to delete
+		dbInstance.getCurrentEntityManager().clear();
 		rows += lectureBlockDao.delete(lectureBlock);
 		dbInstance.commit();// make it quick
 		return rows;

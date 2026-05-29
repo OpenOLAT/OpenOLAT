@@ -163,7 +163,7 @@ public class LectureBlockDAO {
 	 * @param lectureBlock The block to delete
 	 * @return The number of rows deleted
 	 */
-	public int delete(LectureBlock lectureBlock) {
+	public int delete(LectureBlockRef lectureBlock) {
 
 		AssessmentMode assessmentMode = assessmentModeDao.getAssessmentModeByLecture(lectureBlock);
 		if(assessmentMode != null) {
@@ -198,8 +198,10 @@ public class LectureBlockDAO {
 			.setParameter("lectureBlockKey", lectureBlock.getKey())
 			.executeUpdate();
 
+		LectureBlock lectureBlockReference = dbInstance.getCurrentEntityManager()
+				.getReference(LectureBlockImpl.class, lectureBlock.getKey());
 		dbInstance.getCurrentEntityManager()
-			.remove(lectureBlock);
+			.remove(lectureBlockReference);
 		rows++;
 
 		return rows;
