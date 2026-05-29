@@ -157,8 +157,6 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 						getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
 					}
 				}
-				calloutCtrl.deactivate();
-				cleanUpSelection();
 			}
 		} else if (calloutCtrl == source) {
 			cleanUpSelection();

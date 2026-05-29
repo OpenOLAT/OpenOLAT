@@ -73,7 +73,6 @@ public class ObjectSelectionController extends FormBasicController {
 	private SingleSelection singleSelectionEl;
 	private FormLink loadMoreLink;
 	private StaticTextElement nothingFoundEl;
-	private FormLink applyButton;
 	
 	private final boolean multiSelection;
 	private final ObjectSelectionSource source;
@@ -147,9 +146,6 @@ public class ObjectSelectionController extends FormBasicController {
 		loadMoreLink.setDomReplacementWrapperRequired(true);
 		
 		nothingFoundEl = uifactory.addStaticTextElement("options.nothing.found", null, "", formLayout);
-		
-		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON);
-		applyButton.setElementCssClass("o_selection_apply o_button_primary_light");
 	}
 	
 	@Override
@@ -160,22 +156,30 @@ public class ObjectSelectionController extends FormBasicController {
 			doResetSearch();
 		} else if (selectAllLink == source) {
 			doSelectAll();
+			fireEvent(ureq, new SelectionEvent(selectedKeys));
 		} else if (selectionResetLink == source) {
 			doResetSelection();
+			fireEvent(ureq, new SelectionEvent(selectedKeys));
 		} else if (selectionsExpandButton == source) {
 			doExpandSelection();
 		} else if (selectionEl == source) {
 			doUnselect();
+			fireEvent(ureq, new SelectionEvent(selectedKeys));
 		} else if (optionsEl == source) {
 			doToggleOption();
+			fireEvent(ureq, new SelectionEvent(selectedKeys));
 		} else if (singleSelectionEl == source) {
 			doSelectSingle();
+			fireEvent(ureq, new SelectionEvent(selectedKeys));
 		} else if (loadMoreLink == source) {
 			doSearch(true);
-		} else if (source == applyButton) {
-			doApplySelection(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	@Override
@@ -183,15 +187,6 @@ public class ObjectSelectionController extends FormBasicController {
 		if (source != searchTermEl) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		doApplySelection(ureq);
-	}
-
-	private void doApplySelection(UserRequest ureq) {
-		fireEvent(ureq, new SelectionEvent(selectedKeys));
 	}
 
 	private void doSearch(boolean more) {
