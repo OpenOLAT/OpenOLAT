@@ -88,4 +88,9 @@ public class ObjectListSource implements ObjectSelectionSource {
 		return null;
 	}
 
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 }

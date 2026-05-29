@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
@@ -58,7 +59,10 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	private final Supplier<Collection<Identity>> identitiesSupplier;
 	private final Function<Boolean, ControllerCreator> browserCreatorProvider;
 	private Collection<Identity> identities;
+	private List<? extends ObjectOption> options;
 
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -120,17 +124,20 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 
 	@Override
 	public List<? extends ObjectOption> getOptions() {
-		Collection<Identity> identities = getIdentities();
-		if (identities == null || identities.isEmpty()) {
-			return List.of();
-		}
-		Map<Long, PortraitUser> portraitUsersByKey = userPortraitService.createPortraitUsers(locale, identities).stream()
-				.collect(Collectors.toMap(PortraitUser::getIdentityKey, Function.identity()));
+		if (options == null) {
+			Collection<Identity> identities = getIdentities();
+			if (identities == null || identities.isEmpty()) {
+				return List.of();
+			}
+			Map<Long, PortraitUser> portraitUsersByKey = userPortraitService.createPortraitUsers(locale, identities).stream()
+					.collect(Collectors.toMap(PortraitUser::getIdentityKey, Function.identity()));
 
-		return identities.stream()
-				.map(identity -> toOption(identity, portraitUsersByKey.get(identity.getKey())))
-				.sorted((o1, o2) -> collator.compare(o1.getTitle(), o2.getTitle()))
-				.toList();
+			options = identities.stream()
+					.map(identity -> toOption(identity, portraitUsersByKey.get(identity.getKey())))
+					.sorted((o1, o2) -> collator.compare(o1.getTitle(), o2.getTitle()))
+					.toList();
+		}
+		return options;
 	}
 
 	private Collection<Identity> getIdentities() {
@@ -163,6 +170,30 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 		comp.getHTMLRendererSingleton().render(null, sb, comp, null, null, null, null);
 
 		return new ObjectOption.ObjectOptionValues(key, CSS_TITLE_ONLY, displayName, null, null, null, null, sb.toString());
+	}
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		if (keys == null || keys.isEmpty()) {
+			return;
+		}
+		Collection<Identity> current = getIdentities();
+		Set<Long> cachedKeys = current.stream().map(Identity::getKey).collect(Collectors.toSet());
+		List<Long> missingKeys = keys.stream()
+				.map(Long::valueOf)
+				.filter(k -> !cachedKeys.contains(k))
+				.toList();
+		if (missingKeys.isEmpty()) {
+			return;
+		}
+		List<Identity> loaded = securityManager.loadIdentityByKeys(missingKeys);
+		if (loaded.isEmpty()) {
+			return;
+		}
+		List<Identity> updated = new ArrayList<>(current);
+		updated.addAll(loaded);
+		identities = updated;
+		options = null;
 	}
 
 	@Override

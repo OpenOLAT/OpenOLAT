@@ -47,4 +47,6 @@ public interface ObjectSelectionSource {
 	
 	public ControllerCreator getBrowserCreator(boolean multiSelection);
 
+	public void addMissingOptions(Collection<String> keys);
+
 }

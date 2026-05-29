@@ -160,4 +160,9 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 		return null;
 	}
 
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 }

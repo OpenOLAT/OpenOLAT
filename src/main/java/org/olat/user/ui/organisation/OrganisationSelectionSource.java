@@ -221,7 +221,12 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return null;
 	}
-	
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 	public static final OrganisationRef toRef(String key) {
 		return new OrganisationRefImpl(Long.valueOf(key));
 	}

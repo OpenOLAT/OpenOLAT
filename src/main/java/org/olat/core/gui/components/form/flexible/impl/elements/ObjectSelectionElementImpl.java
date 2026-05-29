@@ -331,6 +331,8 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	}
 
 	private void doSelectedInBrowser(UserRequest ureq, Collection<String> keys) {
+		source.addMissingOptions(keys);
+
 		if (multiSelection) {
 			Set<String> validKeys = new HashSet<>();
 			for (ObjectOption option : source.getOptions()) {

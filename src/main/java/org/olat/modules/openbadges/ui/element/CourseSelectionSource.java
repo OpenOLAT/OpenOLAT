@@ -145,10 +145,14 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	
 	@Override
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
-		return (UserRequest lureq, WindowControl lwControl) -> 
-				new CourseSelectionController(lureq, lwControl);
+		return (UserRequest lureq, WindowControl lwControl) -> new CourseSelectionController(lureq, lwControl);
 	}
-	
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 	public static final Set<Long> toKeys(Collection<String> keys) {
 		return keys.stream()
 				.map(Long::valueOf)

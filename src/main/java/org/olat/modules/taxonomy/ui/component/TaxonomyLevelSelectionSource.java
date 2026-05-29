@@ -234,10 +234,14 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 
 	@Override
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
-		return (UserRequest lureq, WindowControl lwControl) -> 
-				new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader);
+		return (UserRequest lureq, WindowControl lwControl) -> new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader);
 	}
-	
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 	public static final TaxonomyLevelRef toRef(String key) {
 		return new TaxonomyLevelRefImpl(Long.valueOf(key));
 	}
