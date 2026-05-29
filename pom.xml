@@ -79,7 +79,7 @@
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.1.Final</io.undertow>
 		<io.undertow.ee>2.0.0.Final</io.undertow.ee>
-		<jackson.version>2.21.3</jackson.version>
+		<jackson.version>2.21.4</jackson.version>
 		<jackson.annotations.version>2.21</jackson.annotations.version>
 		<swagger.ui.version>5.32.6</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
@@ -93,7 +93,7 @@
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.32</qtiworks.version>
 		<org.commonmark>0.28.0</org.commonmark>
-		<dev.langchain4j>1.15.0</dev.langchain4j>
+		<dev.langchain4j>1.15.1</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
