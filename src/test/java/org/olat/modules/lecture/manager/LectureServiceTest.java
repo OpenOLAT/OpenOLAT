@@ -900,7 +900,7 @@ public class LectureServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteNoticeLectureblocks() {
+	public void deleteNoticeLectureBlocks() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
@@ -974,6 +974,47 @@ public class LectureServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlock deletedBlock = lectureService.getLectureBlock(block);
+		Assert.assertNull(deletedBlock);
+	}
+	
+	@Test
+	public void deleteNoticeByLectureBlock() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("present-1");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("present-2");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		
+		// add roles
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		LectureBlock block2 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block1, teacher);
+
+		dbInstance.commit();
+		
+		List<LectureBlock> lectureBlocks = List.of(block1, block2);
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				start, end, null, null, null, null, lectureBlocks, teacher);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(notice);
+
+		// first roll call
+		LectureBlockRollCall rollCall = lectureService.getOrCreateRollCall(participant, block1, null, null, null);
+		LectureBlockRollCall rollCall2 = lectureService.getOrCreateRollCall(participant2, block1, null, null, null);
+		LectureBlockRollCall rollCall3 = lectureService.getOrCreateRollCall(participant3, block1, null, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rollCall);
+		Assert.assertNotNull(rollCall2);
+		Assert.assertNotNull(rollCall3);
+		
+		lectureService.deleteLectureBlock(block1, null);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock deletedBlock = lectureService.getLectureBlock(block1);
 		Assert.assertNull(deletedBlock);
 	}
 	

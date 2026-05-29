@@ -44,7 +44,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
-import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,7 +70,7 @@ public class AssessmentModeDAO {
 		return modes == null || modes.isEmpty() ? null : modes.get(0);
 	}
 	
-	public AssessmentMode getAssessmentModeByLecture(LectureBlock lectureBlock) {
+	public AssessmentMode getAssessmentModeByLecture(LectureBlockRef lectureBlock) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select mode from courseassessmentmode mode")
 		  .append(" inner join fetch mode.repositoryEntry v")
