@@ -111,8 +111,11 @@ public class GenericAiSpiAdminController extends FormBasicController {
 		checkLink = uifactory.addFormLink("ai.generic.check", buttonsCont, Link.BUTTON);
 		checkLink.setGhost(true);
 		checkLink.getComponent().setSuppressDirtyFormWarning(true);
-		deleteLink = uifactory.addFormLink("ai.delete.config", buttonsCont, Link.BUTTON);
-		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		// The preset instance is defined via olat.properties and cannot be deleted
+		if (!instance.isPreset()) {
+			deleteLink = uifactory.addFormLink("ai.delete.config", buttonsCont, Link.BUTTON);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		}
 	}
 
 	@Override

@@ -71,6 +71,10 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 	private String models;
 	private boolean enabled;
 
+	// True for the preset instance (id 0) defined via olat.properties. Its
+	// values can still be overridden in the admin UI, but it cannot be deleted.
+	private boolean preset;
+
 	private String mcGeneratorModel;
 	private ChatModel chatModel;
 
@@ -274,6 +278,18 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI, AiMCQuestionGen
 
 	public int getInstanceId() {
 		return instanceId;
+	}
+
+	/**
+	 * @return true if this is the preset instance (id 0) defined via
+	 *         olat.properties. Preset instances cannot be deleted in the UI.
+	 */
+	public boolean isPreset() {
+		return preset;
+	}
+
+	void setPreset(boolean preset) {
+		this.preset = preset;
 	}
 
 	public String getBaseUrl() {

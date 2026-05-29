@@ -28,6 +28,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,10 +57,17 @@ public class AiModule extends AbstractSpringModule {
 	@Autowired
 	private GenericAiSPI genericAiSPI;
 
-	// Per-feature configuration
+	// Per-feature configuration. The @Value defaults are read from
+	// olat.properties / olat.local.properties and act as presets: they are used
+	// as long as no value has been saved in the admin UI. Presets are applied
+	// regardless of whether the feature or the referenced provider is enabled.
+	@Value("${ai.feature.mc-question-generator.spi:}")
 	private String mcGeneratorSpiId;
+	@Value("${ai.feature.mc-question-generator.model:}")
 	private String mcGeneratorModel;
+	@Value("${ai.feature.image-description-generator.spi:}")
 	private String imgDescSpiId;
+	@Value("${ai.feature.image-description-generator.model:}")
 	private String imgDescModel;
 
 	/**
