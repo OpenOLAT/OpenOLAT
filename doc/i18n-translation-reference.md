@@ -153,7 +153,7 @@ intentionally contains only term mappings, not user-facing definitions.
 | Delivery format | Durchführungsformat |  |  |  |
 | Drop box | Abgabeordner |  |  |  |
 | Educational product | Bildungsprodukt |  |  |  |
-| External reference | Kennzeichen |  |  |  |
+| Reference | Kennzeichen |  |  |  |
 | Grading assignment | Korrekturauftrag |  |  |  |
 | Implementation | Durchf\u00FChrung | Impl\u00E9mentation |  | Implementazione |
 | Launcher | Launcher |  |  |  |
