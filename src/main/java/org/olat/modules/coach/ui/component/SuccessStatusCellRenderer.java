@@ -62,36 +62,38 @@ public class SuccessStatusCellRenderer implements FlexiCellRenderer, CustomCellR
 
 	private void renderStatus(StringOutput target, Object cellValue, Translator translator) {
 		if(cellValue instanceof SuccessStatus status) {
-			String tooltip = translator.translate("table.header.success.status.tooltip",
-					String.valueOf(status.numPassed()), String.valueOf(status.numFailed()), String.valueOf(status.numUndefined()));
+			long passed = status.numPassed();
+			long failed = status.numFailed();
+			long undefined = status.numUndefined();
+			long total = passed + failed + undefined;
+			long passedPercent = (total == 0L) ? 0L : Math.round(100.0d * ((double)passed / (double)total));
+			long failedPercent = (total == 0L) ? 0L : max100Percent(Math.round(100.0d * ((double)failed / (double)total)), passedPercent);
+			long undefinedPercent = (total == 0L) ? 0L : max100Percent(Math.round(100.0d * ((double)undefined / (double)total)), passedPercent, failedPercent);
+			String tooltip = translator.translate("success.status.tooltip",
+					String.valueOf(passed), String.valueOf(passedPercent),
+					String.valueOf(failed), String.valueOf(failedPercent),
+					String.valueOf(undefined), String.valueOf(undefinedPercent));
 			target.append("<div class='o_coaching_status' title='").append(StringHelper.escapeForHtmlAttribute(tooltip)).append("'>");
-			renderBars(target, status);
+			renderBars(target, status, total, passedPercent, failedPercent);
 			renderNumber(target, status);
 			target.append("</div>");
 		}
 	}
 	
-	private void renderBars(StringOutput target, SuccessStatus status) {
-		long passed = status.numPassed();
-		long failed = status.numFailed();
-		long total = passed + failed + status.numUndefined();
-		
-		long passedPercent = (passed == 0l) ? 0l : Math.round(100.0d * ((double)passed / (double)total));
-		long failedPercent = (failed == 0l) ? 0l :  Math.round(100.0d * ((double)failed / (double)total));
-
+	private void renderBars(StringOutput target, SuccessStatus status, long total, long passedPercent, long failedPercent) {
 		target.append("<div class='progress'>");
-		
+
 		//passed
-		target.append("<div class='progress-bar o_passed_progress_bar' role='progressbar' aria-valuenow='").append(passed)
+		target.append("<div class='progress-bar o_passed_progress_bar' role='progressbar' aria-valuenow='").append(status.numPassed())
 		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 		      .append("' style='width: ").append(passedPercent).append("%;'>")
 		      .append("<span class='sr-only'>").append(passedPercent).append("%</span></div>");
 		//failed
-		target.append("<div class='progress-bar o_failed_progress_bar' role='progressbar' aria-valuenow='").append(failed)
+		target.append("<div class='progress-bar o_failed_progress_bar' role='progressbar' aria-valuenow='").append(status.numFailed())
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 	      .append("' style='width: ").append(max100Percent(failedPercent, passedPercent)).append("%;'>")
 	      .append("<span class='sr-only'>").append(failedPercent).append("%</span></div>");
-		
+
 		target.append("</div>");
 	}
 	
