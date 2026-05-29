@@ -83,20 +83,20 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 	
 	private ObjectListSource createOrganisationSource() {
 		return new ObjectListSource(List.of(
-				new ObjectOptionValues("", "Head", "/", null),
-				new ObjectOptionValues("1", "Processes", "/1/", null),
-				new ObjectOptionValues("2", "HR", "/1/2/", null),
-				new ObjectOptionValues("4", "Salaries", "/1/2/4/", null),
-				new ObjectOptionValues("3", "Procurement", "/1/3/", null),
-				new ObjectOptionValues("5", "Manufacturing", "/5/", null),
-				new ObjectOptionValues("6", "Assembly", "/5/6/", null),
-				new ObjectOptionValues("6a", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore", "/Lorem/.../sed/", "/Lorem/ipsum/dolor/sit/amet,/consetetur/sadipscing/elitr,/sed/diam/nonumy/eirmod/tempor/invidunt/ut/labore/et/dolore/magna/aliquyam/erat,/sed/diam/voluptua/"),
-				new ObjectOptionValues("7", "Marketing", "/7/", null),
-				new ObjectOptionValues("8", "Online marketing", "/7/8", null),
-				new ObjectOptionValues("9", "Offline marketing", "/7/9", null),
-				new ObjectOptionValues("10", "Word of mouth", "/7/10", null),
-				new ObjectOptionValues("11", "Guerilla marketing", "/7/11", null),
-				new ObjectOptionValues("12", "Loyalty programmes", "/7/12", null)
+				new ObjectOptionValues("", "Lakeside International School", "International Schools Association / European Region / Switzerland Chapter /"),
+				new ObjectOptionValues("1", "Academics", "Lakeside International School / Academic Affairs and Curriculum Office /"),
+				new ObjectOptionValues("2", "Sciences", "Lakeside International School / Academic Affairs and Curriculum Office / Faculty of Natural Sciences and Laboratory Studies /"),
+				new ObjectOptionValues("4", "Chemistry", "Lakeside International School / Academic Affairs and Curriculum Office / Faculty of Natural Sciences and Laboratory Studies / Department of Chemistry and Materials Science /"),
+				new ObjectOptionValues("3", "Languages", "Lakeside International School / Academic Affairs and Curriculum Office / Faculty of Modern Languages and Cultural Studies /"),
+				new ObjectOptionValues("5", "Sports", "Sports /"),
+				new ObjectOptionValues("6", "Football", "Sports / Physical Education and Extracurricular Athletics Programme / Team Sports and Competitive Leagues /"),
+				new ObjectOptionValues("6a", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore", "Lorem / ipsum / dolor / sit / amet, / consetetur / sadipscing / elitr, / sed / diam / nonumy / eirmod / tempor / invidunt / ut / labore / et / dolore / magna / aliquyam / erat, / sed / diam / voluptua /"),
+				new ObjectOptionValues("7", "Administration", "School Administration and Operations Office /"),
+				new ObjectOptionValues("8", "Admissions", "School Administration and Operations Office / Student Admissions and Enrolment Services / Applications, Interviews and Onboarding /"),
+				new ObjectOptionValues("9", "Library", "School Administration and Operations Office / Library, Archives and Learning Resources Centre /"),
+				new ObjectOptionValues("10", "Cafeteria", "Cafeteria /"),
+				new ObjectOptionValues("11", "Counselling", "School Administration and Operations Office / Student Wellbeing, Counselling and Mental Health Services /"),
+				new ObjectOptionValues("12", "Alumni", "School Administration and Operations Office / Alumni Relations and Lifelong Learning Network /")
 			));
 	}
 	

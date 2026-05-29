@@ -169,7 +169,7 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 		StringOutput sb = new StringOutput();
 		comp.getHTMLRendererSingleton().render(null, sb, comp, null, null, null, null);
 
-		return new ObjectOption.ObjectOptionValues(key, CSS_TITLE_ONLY, displayName, null, null, null, null, sb.toString());
+		return new ObjectOption.ObjectOptionValues(key, CSS_TITLE_ONLY, displayName, null, null, null, sb.toString());
 	}
 
 	@Override

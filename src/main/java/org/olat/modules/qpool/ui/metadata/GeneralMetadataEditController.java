@@ -230,8 +230,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 		TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
 		String taxonomicPath = "";
 		if (taxonomyLevel != null) {
-			List<String> displayNamePath = taxonomyLevelSelectionSource.getDisplayNamePath(taxonomyLevel);
-			taxonomicPath = ObjectOption.createFullPath(displayNamePath, Function.identity());
+			List<String> displayNamePath = taxonomyLevelSelectionSource.getIdentifierPath(taxonomyLevel);
+			taxonomicPath = ObjectOption.createFullPath(displayNamePath, Function.identity(), false);
 			taxonomicPath = StringHelper.escapeHtml(taxonomicPath);
 		}
 		taxonomyLevelEl.setExampleKey("general.taxonomy.path", new String[] {taxonomicPath});

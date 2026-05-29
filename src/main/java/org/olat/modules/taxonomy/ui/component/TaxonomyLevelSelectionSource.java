@@ -169,11 +169,10 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 			if (optionsFilter.test(level)) {
 				String title = getDisplayName(level);
 				
-				List<String> displayNamePath = getDisplayNamePath(level);
-				String subTitle = ObjectOption.createShortPath(displayNamePath, Function.identity());
-				String subTitleFull = ObjectOption.createFullPath(displayNamePath, Function.identity());
-				
-				ObjectOptionValues option = new ObjectOptionValues(level.getKey().toString(), title, subTitle, subTitleFull);
+				List<String> displayNamePath = getIdentifierPath(level);
+				String subTitle = ObjectOption.createFullPath(displayNamePath, Function.identity(), false);
+
+				ObjectOptionValues option = new ObjectOptionValues(level.getKey().toString(), title, subTitle);
 				
 				options.add(option);
 			}
@@ -184,18 +183,23 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		return options;
 	}
 	
-	public List<String> getDisplayNamePath(TaxonomyLevel taxonomyLevel) {
+	public List<String> getIdentifierPath(TaxonomyLevel taxonomyLevel) {
 		List<String> displayNamePath = new ArrayList<>();
-		addParent(displayNamePath, taxonomyLevel);
+		addIdentifierAndParents(displayNamePath, taxonomyLevel);
 		Collections.reverse(displayNamePath);
 		return displayNamePath;
 	}
 	
-	private void addParent(List<String> displayNamePath, TaxonomyLevel taxonomyLevel) {
+	private void addIdentifierAndParents(List<String> displayNamePath, TaxonomyLevel taxonomyLevel) {
+		String identifier = taxonomyLevel.getIdentifier();
+		if (!StringHelper.containsNonWhitespace(identifier)) {
+			identifier = getDisplayName(taxonomyLevel);
+		}
+		displayNamePath.add(identifier);
+		
 		TaxonomyLevel parent = taxonomyLevel.getParent();
 		if (parent != null) {
-			displayNamePath.add(getDisplayName(parent));
-			addParent(displayNamePath, parent);
+			addIdentifierAndParents(displayNamePath, parent);
 		}
 	}
 	
@@ -215,10 +219,10 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		public int compare(ObjectOptionValues o1, ObjectOptionValues o2) {
 			
 			// Use title fallback, otherwise all root options will be at the top of the list.
-			String subTitleFull1 = StringHelper.containsNonWhitespace(o1.getSubTitleFull())? o1.getSubTitleFull(): o1.getTitle();
-			String subTitleFull2 = StringHelper.containsNonWhitespace(o2.getSubTitleFull())? o2.getSubTitleFull(): o2.getTitle();
-			
-			int c = subTitleFull1.compareToIgnoreCase(subTitleFull2);
+			String subTitle1 = StringHelper.containsNonWhitespace(o1.getSubTitle())? o1.getSubTitle(): o1.getTitle();
+			String subTitle2 = StringHelper.containsNonWhitespace(o2.getSubTitle())? o2.getSubTitle(): o2.getTitle();
+
+			int c = subTitle1.compareToIgnoreCase(subTitle2);
 			if (c == 0) {
 				c = o1.getTitle().compareToIgnoreCase(o2.getTitle());
 			}
@@ -234,7 +238,10 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 
 	@Override
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
-		return (UserRequest lureq, WindowControl lwControl) -> new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader);
+		return (UserRequest lureq, WindowControl lwControl) -> {
+			initOptions();
+			return new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader);
+		};
 	}
 
 	@Override

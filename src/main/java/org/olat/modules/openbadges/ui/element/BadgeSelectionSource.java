@@ -132,15 +132,15 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 		String subTitle = translator.translate("class.status." + badgeClass.getStatus().name());
 		String imageSrc = mediaUrl + "/" + badgeClass.getImage();
 		String imageAlt = translator.translate("badge.image");
-		return new BadgeClassOption(badgeClass.getRootId().toString(), title, subTitle, null, imageSrc, imageAlt, badgeClass.getName());
+		return new BadgeClassOption(badgeClass.getRootId().toString(), title, subTitle, imageSrc, imageAlt, badgeClass.getName());
 	}
 	
 	static final class BadgeClassOption extends ObjectOptionValues {
 		
 		private final String displayTitle;
 		
-		public BadgeClassOption(String key, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt, String displayTitle) {
-			super(key, null, title, subTitle, subTitleFull, imageSrc, imageAlt, null);
+		public BadgeClassOption(String key, String title, String subTitle, String imageSrc, String imageAlt, String displayTitle) {
+			super(key, null, title, subTitle, imageSrc, imageAlt, null);
 			this.displayTitle = displayTitle;
 		}
 		

@@ -3356,6 +3356,70 @@ function o_animateRadialProgress(radialProgessDomSelector, percent) {
 function b_hideExtMessageBox() {
 	//for compatibility
 }
+
+
+/*
+ * Fit a "/"-separated path into the available width by progressively
+ * collapsing middle segments to "...", then dropping the first segment,
+ * and finally letting CSS ellipsis crop the tail. Example for N=5:
+ *
+ *   A / B / C / D / E /     (full)
+ *   A / ... / C / D / E /
+ *   A / ... / D / E /
+ *   A / ... / E /
+ *   ... / E /
+ *   ... / E...               (CSS ellipsis falls back)
+ */
+function o_fitPathText(element) {
+	const small = element.querySelector(':scope > small');
+	if (!small) { return; }
+	let full = element.dataset.fitPath;
+	if (!full) {
+		full = small.textContent;
+		element.dataset.fitPath = full;
+	}
+	const endDivider = full.endsWith(' /');
+	const base = endDivider ? full.slice(0, -2) : full;
+	const suffix = endDivider ? ' /' : '';
+	const segments = base.split(' / ').filter(s => s.length > 0);
+	const variants = [];
+	variants.push(full);
+	if (segments.length >= 3) {
+		for (let keep = segments.length - 2; keep >= 1; keep--) {
+			const tail = segments.slice(-keep).join(' / ');
+			variants.push(segments[0] + ' / ... / ' + tail + suffix);
+		}
+	}
+	if (segments.length >= 2) {
+		variants.push('... / ' + segments[segments.length - 1] + suffix);
+	}
+	for (const variant of variants) {
+		small.textContent = variant;
+		if (element.scrollWidth <= element.clientWidth) {
+			if (variant === full) {
+				element.removeAttribute('title');
+			} else {
+				element.setAttribute('title', full);
+			}
+			return;
+		}
+	}
+	element.setAttribute('title', full);
+}
+
+const o_fitPathObserver = new ResizeObserver(entries => {
+	entries.forEach(entry => o_fitPathText(entry.target));
+});
+
+function o_initFitPath(scope) {
+	const root = scope || document;
+	const nodes = root.querySelectorAll('.o_fit_path:not([data-fit-observed])');
+	nodes.forEach(el => {
+		el.setAttribute('data-fit-observed', '1');
+		o_fitPathText(el);
+		o_fitPathObserver.observe(el);
+	});
+}
  
  
 /**

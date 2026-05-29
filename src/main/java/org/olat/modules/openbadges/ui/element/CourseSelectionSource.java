@@ -135,7 +135,7 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	
 	private ObjectOption toOption(RepositoryEntry courseEntry) {
 		String title = courseEntry.getDisplayname() + " · " + courseEntry.getKey();
-		return new ObjectOption.ObjectOptionValues(courseEntry.getKey().toString(), title, null, null);
+		return new ObjectOption.ObjectOptionValues(courseEntry.getKey().toString(), title, null);
 	}
 	
 	@Override

@@ -159,9 +159,10 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 		treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
 		
 		String title = createOptionTitle(organisation, totalNodeCount);
-		String subTitle = ObjectOption.createShortPath(treePath, TreeNode::getTitle);
-		String subTitleFull = ObjectOption.createFullPath(treePath, TreeNode::getTitle);
-		return new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, subTitleFull, organisation.getDisplayName());
+		String subTitle = organisation.getParent() == null
+				? createTitle(organisation)
+				: ObjectOption.createFullPath(treePath, TreeNode::getTitle, true);
+		return new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, organisation.getDisplayName());
 	}
 
 	private static String createOptionTitle(Organisation organisation, int totalNodeCount) {
@@ -201,8 +202,8 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 		
 		private final String displayTitle;
 
-		public OrganisationOption(String key, String title, String subTitle, String subTitleFull, String displayTitle) {
-			super(key, title, subTitle, subTitleFull);
+		public OrganisationOption(String key, String title, String subTitle, String displayTitle) {
+			super(key, title, subTitle);
 			this.displayTitle = displayTitle;
 		}
 

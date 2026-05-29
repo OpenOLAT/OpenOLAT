@@ -40,9 +40,7 @@ public interface ObjectOption {
 	String getTitle();
 	
 	String getSubTitle();
-	
-	String getSubTitleFull();
-	
+
 	String getImageSrc();
 
 	String getImageAlt();
@@ -57,21 +55,19 @@ public interface ObjectOption {
 		private final String optionCss;
 		private final String title;
 		private final String subTitle;
-		private final String subTitleFull;
 		private final String imageSrc;
 		private final String imageAlt;
 		private final String imageHtml;
 
-		public ObjectOptionValues(String key, String title, String subTitle, String subTitleFull) {
-			this(key, null, title, subTitle, subTitleFull, null, null, null);
+		public ObjectOptionValues(String key, String title, String subTitle) {
+			this(key, null, title, subTitle, null, null, null);
 		}
 
-		public ObjectOptionValues(String key, String optionCss, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt, String imageHtml) {
+		public ObjectOptionValues(String key, String optionCss, String title, String subTitle, String imageSrc, String imageAlt, String imageHtml) {
 			this.key = key;
 			this.optionCss = optionCss;
 			this.title = title;
 			this.subTitle = subTitle;
-			this.subTitleFull = subTitleFull;
 			this.imageSrc = imageSrc;
 			this.imageAlt = imageAlt;
 			this.imageHtml = imageHtml;
@@ -98,11 +94,6 @@ public interface ObjectOption {
 		}
 
 		@Override
-		public String getSubTitleFull() {
-			return subTitleFull;
-		}
-
-		@Override
 		public String getImageSrc() {
 			return imageSrc;
 		}
@@ -119,28 +110,9 @@ public interface ObjectOption {
 
 	}
 	
-	public static <T> String createShortPath(List<T> path, Function<T, String> valueExtractor) {
-		StringBuilder sb = new StringBuilder();
-		if (path.size() == 1) {
-			sb.append(valueExtractor.apply(path.get(0)));
-			sb.append(" /");
-		} else if (path.size() == 2) {
-			sb.append(valueExtractor.apply(path.get(0)));
-			sb.append(" / ");
-			sb.append(valueExtractor.apply(path.get(1)));
-			sb.append(" /");
-		} else if (path.size() > 2) {
-			sb.append(valueExtractor.apply(path.get(0)));
-			sb.append(" / ... / ");
-			sb.append(valueExtractor.apply(path.get(path.size() - 1)));
-			sb.append(" /");
-		}
-		return sb.toString();
-	}
-	
-	public static <T> String createFullPath(List<T> path, Function<T, String> valueExtractor) {
+	public static <T> String createFullPath(List<T> path, Function<T, String> valueExtractor, boolean endDivider) {
 		String fillPath = path.stream().map(t -> valueExtractor.apply(t)).collect(Collectors.joining(" / "));
-		if (StringHelper.containsNonWhitespace(fillPath)) {
+		if (endDivider && StringHelper.containsNonWhitespace(fillPath)) {
 			fillPath += " /";
 		}
 		return fillPath;

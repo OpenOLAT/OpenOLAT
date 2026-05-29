@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -118,13 +117,11 @@ public class ObjectSelectionController extends FormBasicController {
 			selectionsExpandButton = uifactory.addExpandLink("selections.expand", formLayout);
 			
 			selectionEl = uifactory.addCheckboxesVertical("selection", null, formLayout, emptyStrings(), emptyStrings(), 1);
-			selectionEl.setHorizontallyAlignedCheckboxes(true);
 			selectionEl.setEscapeHtml(false);
 			selectionEl.addActionListener(FormEvent.ONCHANGE);
 			selectionsExpandButton.setAriaControls(Renderer.getComponentPrefix(selectionEl.getComponent()));
 			
 			optionsEl = uifactory.addCheckboxesVertical("options", null, formLayout, emptyStrings(), emptyStrings(), 1);
-			optionsEl.setHorizontallyAlignedCheckboxes(true);
 			optionsEl.setEscapeHtml(false);
 			optionsEl.addActionListener(FormEvent.ONCHANGE);
 			searchTermEl.setAriaControls(optionsEl.getFormDispatchId());
@@ -240,7 +237,7 @@ public class ObjectSelectionController extends FormBasicController {
 	private Predicate<? super ObjectOption> createSearchFilter(Set<String> searchTerms) {
 		return option -> {
 			for (String searchTerm : searchTerms) {
-				if (!isMatch(searchTerm, option.getTitle()) && !isMatch(searchTerm, option.getSubTitleFull()) && !isMatch(searchTerm, option.getSubTitle())) {
+				if (!isMatch(searchTerm, option.getTitle()) && !isMatch(searchTerm, option.getSubTitle())) {
 					return false;
 				}
 			}
@@ -271,22 +268,14 @@ public class ObjectSelectionController extends FormBasicController {
 			sb.append(">");
 			sb.append("</div>");
 		}
-		sb.append("<div class=\"o_object_selection_text\">");
-		sb.append("<div class=\"o_nowrap\">");
+		sb.append("<div class=\"o_nowrap o_object_selection_title\">");
 		sb.append(StringHelper.escapeHtml(option.getTitle()));
 		sb.append("</div>");
-		sb.append("<div class=\"o_nowrap o_muted\"");
-		if (StringHelper.containsNonWhitespace(option.getSubTitleFull()) && !Objects.equals(option.getSubTitle(), option.getSubTitleFull())) {
-			sb.append("title=\"");
-			sb.append(StringHelper.escapeForHtmlAttribute(option.getSubTitleFull()));
-			sb.append("\"");
-		}
-		sb.append("><small>");
 		if (StringHelper.containsNonWhitespace(option.getSubTitle())) {
+			sb.append("<div class=\"o_nowrap o_muted o_object_selection_subtitle o_fit_path\"><small>");
 			sb.append(StringHelper.escapeHtml(option.getSubTitle()));
+			sb.append("</small></div>");
 		}
-		sb.append("</small></div>");
-		sb.append("</div>");
 		sb.append("</div>");
 		return sb.toString();
 	}
