@@ -70,12 +70,12 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormDisplayEnum;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
+import org.olat.modules.scorm.ScormWrapperController;
 import org.olat.modules.scorm.events.FinishEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -96,7 +96,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private Panel main;
 	private VelocityContainer startPage;
 
-	private ScormAPIandDisplayController scormDispC;
+	private ScormWrapperController scormDispC;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	private ScormCourseNode scormNode;
 

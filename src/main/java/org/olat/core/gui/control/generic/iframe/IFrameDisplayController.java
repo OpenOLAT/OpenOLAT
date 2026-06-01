@@ -124,7 +124,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null, null, SecurityOptions.secure(), false, false);
+		this(ureq, wControl, rootDir, null, null, null, IFrameSettings.secure());
 	}
 	/**
 	 * 
@@ -134,7 +134,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
-		this(ureq, wControl, rootDir, null, ores, deliveryOptions, SecurityOptions.secure(), false, false);
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions, IFrameSettings.secure());
 	}
 	/**
 	 * 
@@ -145,9 +145,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param enableTextmarking to enable textmakring of the content in the iframe enable it here
 	 */
 	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
-			OLATResourceable contextResourceable, DeliveryOptions options, SecurityOptions securityOptions,
-			boolean persistMapper, boolean randomizeMapper) {
+			OLATResourceable contextResourceable, DeliveryOptions deliveryOptions, IFrameSettings iframeSettings) {
 		super(ureq, wControl);
+		this.deliveryOptions = deliveryOptions;
 
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
 		
@@ -155,7 +155,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		if (contextResourceable != null) {
 			ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), contextResourceable);
 		}
-		this.deliveryOptions = options;
 		
 		boolean  enableTextmarking = textMarkerManager.isTextmarkingEnabled(ureq, contextResourceable);
 		// Set correct user content theme
@@ -166,33 +165,37 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			iFrameId = frameId;
 		}
 		
-		String contentSecurityPolicy = (securityOptions != null && securityOptions.getContentSecurityPolicy() != null)
-				? securityOptions.getContentSecurityPolicy() : null;
+		String contentSecurityPolicy = (iframeSettings != null && iframeSettings.getContentSecurityPolicy() != null)
+				? iframeSettings.getContentSecurityPolicy() : null;
 
 		//Delivers content files via local mapper to enable session based browser caching for at least this instance
-		if(persistMapper) {
-			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId, themeBaseUri, contentSecurityPolicy);
+		if(iframeSettings.isPersistMapper()) {
+			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, iframeSettings.isIframeResizer(),
+					iFrameId, themeBaseUri, contentSecurityPolicy);
 		} else {
-			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId, themeBaseUri, contentSecurityPolicy);
+			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iframeSettings.isIframeResizer(),
+					iFrameId, themeBaseUri, contentSecurityPolicy);
 		}
-		contentMapper.setStrictSanitize(securityOptions != null && securityOptions.isStrictSanitize());
-		contentMapper.setDeliveryOptions(options);
+		contentMapper.setStrictSanitize(iframeSettings != null && iframeSettings.isStrictSanitize());
+		contentMapper.setDeliveryOptions(deliveryOptions);
 
-		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
-		myContent.put("js", js);
+		if(iframeSettings.isIframeResizer()) {
+			JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
+			myContent.put("js", js);
+		}
 
 		String mapperID = VFSManager.getRealPath(rootDir);
 		if (mapperID != null) {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			if(randomizeMapper) {
+			if(iframeSettings.isRandomizeMapper()) {
 				mapperID += CodeHelper.getRAMUniqueID();
 			}
 		}
 		
 		String token = "";
-		if(securityOptions != null && securityOptions.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
+		if(iframeSettings != null && iframeSettings.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
 			MapperKey mKey = registerSandboxedMapper(ureq, mapperID, contentMapper);
 			baseURI = Settings.createContentServerURI() + mKey.getUrl();
 			token = "?token=" + mKey.getToken();
@@ -210,17 +213,18 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		myContent.contextPut("frameId", iFrameId);
 		myContent.put("newUriEvent", newUriEventPanel);
 		// add default iframe height
-		if(options == null || DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(options.getHeight())
-				|| options.getHeight() == null) {
+		if(deliveryOptions == null || DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(deliveryOptions.getHeight())
+				|| deliveryOptions.getHeight() == null) {
 			myContent.contextPut("iframeHeight", 600); // used as fallback
 			myContent.contextPut("adjustAutoHeight", Boolean.TRUE);
-		} else if(DeliveryOptions.CONFIG_HEIGHT_IGNORE.equals(options.getHeight())) {
+		} else if(DeliveryOptions.CONFIG_HEIGHT_IGNORE.equals(deliveryOptions.getHeight())) {
 			myContent.contextPut("iframeHeight", 600);
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);	
 		} else {
-			myContent.contextPut("iframeHeight", options.getHeight());
+			myContent.contextPut("iframeHeight", deliveryOptions.getHeight());
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);
 		}
+		myContent.contextPut("iframeResize", Boolean.FALSE);
 		
 		myContent.contextPut("debug", Boolean.valueOf(log.isDebugEnabled()));
 

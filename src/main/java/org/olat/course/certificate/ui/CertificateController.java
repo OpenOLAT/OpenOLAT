@@ -28,7 +28,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -66,7 +66,7 @@ public class CertificateController extends BasicController {
 		if(certificateLeaf != null) {
 			VFSContainer container = certificateLeaf.getParentContainer();
 			String filename = certificateLeaf.getName();
-			SecurityOptions securityOptions = SecurityOptions.secure();
+			IFrameSettings securityOptions = IFrameSettings.secure();
 			pageCtrl = new SinglePageController(ureq, getWindowControl(), container, filename, securityOptions);
 			listenTo(pageCtrl);
 			mainVC.put("certificate", pageCtrl.getInitialComponent());

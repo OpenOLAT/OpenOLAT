@@ -25,19 +25,24 @@ package org.olat.core.gui.control.generic.iframe;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SecurityOptions {
+public class IFrameSettings {
 
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
 	private boolean useContentDomain = false;
+	private boolean persistMapper = false;
+	private boolean randomizeMapper = false;
+	private boolean iframeResizer = true;
 	
-	public SecurityOptions() {
+	
+	public IFrameSettings() {
 		//
 	}
 	
-	public static SecurityOptions sanitize() {
-		SecurityOptions securityOptions = new SecurityOptions();
+	public static IFrameSettings sanitize() {
+		IFrameSettings securityOptions = new IFrameSettings();
 		securityOptions.setStrictSanitize(true);
+		securityOptions.setIframeResizer(true);
 		return securityOptions;
 	}
 	
@@ -45,10 +50,22 @@ public class SecurityOptions {
 	 * 
 	 * @return The options
 	 */
-	public static SecurityOptions secure() {
-		SecurityOptions securityOptions = new SecurityOptions();
+	public static IFrameSettings secure() {
+		IFrameSettings securityOptions = new IFrameSettings();
 		securityOptions.setStrictSanitize(false);
 		securityOptions.setUseContentDomain(true);
+		securityOptions.setIframeResizer(true);
+		return securityOptions;
+	}
+	
+	public IFrameSettings copy() {
+		IFrameSettings securityOptions = new IFrameSettings();
+		securityOptions.setContentSecurityPolicy(contentSecurityPolicy);
+		securityOptions.setUseContentDomain(useContentDomain);
+		securityOptions.setStrictSanitize(strictSanitize);
+		securityOptions.setIframeResizer(iframeResizer);
+		securityOptions.setPersistMapper(persistMapper);
+		securityOptions.setRandomizeMapper(randomizeMapper);
 		return securityOptions;
 	}
 	
@@ -74,5 +91,29 @@ public class SecurityOptions {
 
 	public void setUseContentDomain(boolean useContentDomain) {
 		this.useContentDomain = useContentDomain;
+	}
+
+	public boolean isPersistMapper() {
+		return persistMapper;
+	}
+
+	public void setPersistMapper(boolean persistMapper) {
+		this.persistMapper = persistMapper;
+	}
+
+	public boolean isRandomizeMapper() {
+		return randomizeMapper;
+	}
+
+	public void setRandomizeMapper(boolean randomizeMapper) {
+		this.randomizeMapper = randomizeMapper;
+	}
+
+	public boolean isIframeResizer() {
+		return iframeResizer;
+	}
+
+	public void setIframeResizer(boolean iframeResizer) {
+		this.iframeResizer = iframeResizer;
 	}
 }

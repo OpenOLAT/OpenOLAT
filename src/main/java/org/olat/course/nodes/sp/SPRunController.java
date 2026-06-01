@@ -40,7 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -184,10 +184,11 @@ public class SPRunController extends BasicController implements Activateable2 {
 		// create the possibility to float
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, courseEnv.getCourseResourceableId());
-
+		IFrameSettings iframeSettings = IFrameSettings.secure();
+		iframeSettings.setRandomizeMapper(courseEnv.isPreview());
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
-				allowRelativeLinks, null, ores, deliveryOptions, SecurityOptions.secure(), courseEnv.isPreview(), repoKey);
+				allowRelativeLinks, null, ores, deliveryOptions, iframeSettings, repoKey);
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,

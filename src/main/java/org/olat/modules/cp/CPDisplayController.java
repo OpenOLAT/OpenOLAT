@@ -53,7 +53,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -147,9 +147,9 @@ public class CPDisplayController extends BasicController implements Activateable
 			myContent.put("search_input", searchCtrl.getInitialComponent());
 			listenTo(searchCtrl);
 		}
-		
-		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(), rootContainer, null, ores,
-				deliveryOptions, SecurityOptions.secure(), false, randomizeMapper);
+		IFrameSettings iframeSettings = IFrameSettings.secure();
+		iframeSettings.setRandomizeMapper(randomizeMapper);
+		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(), rootContainer, null, ores, deliveryOptions, iframeSettings);
 		cpContentCtr.setAllowDownload(true);
 		listenTo(cpContentCtr);
 		myContent.put("cpContent", cpContentCtr.getInitialComponent());

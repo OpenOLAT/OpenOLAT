@@ -31,7 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,7 +114,7 @@ public class InfoPageController extends BasicController {
 		cleanUp();
 		
 		VFSContainer container = qpoolModule.getInfoPageContainer();
-		indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", SecurityOptions.secure());
+		indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", IFrameSettings.secure());
 		listenTo(indexCtrl);
 		mainVC.put("index", indexCtrl.getInitialComponent());
 	}

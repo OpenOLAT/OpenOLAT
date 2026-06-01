@@ -94,17 +94,19 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
+	private boolean iframeResizer = true;
 	
 	public IFrameDeliveryMapper() {
 		//for XStream
 	}
 	
-	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, String frameId,
-			String themeBaseUri, String contentSecurityPolicy) {
+	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking,
+			boolean iframeResizer, String frameId, String themeBaseUri, String contentSecurityPolicy) {
 		
 		this.rootDir = rootDir;
 		
 		this.rawContent = rawContent;
+		this.iframeResizer = iframeResizer;
 		this.enableTextmarking = enableTextmarking;
 		
 		this.frameId = frameId;
@@ -133,6 +135,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 			if(config.getJavascriptEncoding() != null) {
 				jsEncoding = config.getJavascriptEncoding();
+			}
+			if(config.rawContent()) {
+				this.rawContent = config.rawContent();
 			}
 		}
 	}
@@ -410,14 +415,18 @@ public class IFrameDeliveryMapper implements Mapper {
 			// Load some iframe.js helper code
 			sb.append("\n<script>\n");
 			// Set the iframe id. Important to set before iframe.js is loaded.
-			sb.append("b_iframeid=\"").append(frameId).append("\";");
+			sb.append("b_iframeid=\"").append(frameId).append("\";\n");
 			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";\n");
-			sb.append("window.iFrameResizer = {\n")
-			  .append(" targetOrigin: '").append(Settings.createServerURI()).append("',\n")
-			  .append("}");
+			if(iframeResizer) {
+				sb.append("window.iFrameResizer = {\n")
+				  .append(" targetOrigin: '").append(Settings.createServerURI()).append("',\n")
+				  .append("}");
+			}
 			sb.append("\n</script>");
 			sb.appendStaticJs("js/openolat/iframe.js");
-			sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
+			if(iframeResizer) {
+				sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
+			}
 	
 			if (parser.getHtmlContent().length() > 0) {
 				EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);

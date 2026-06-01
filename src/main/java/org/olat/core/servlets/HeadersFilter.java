@@ -23,6 +23,8 @@ import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,6 +40,8 @@ public class HeadersFilter implements Filter {
 	private CSPModule securityModule;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private UserSessionManager userSessionManager;
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -62,7 +66,7 @@ public class HeadersFilter implements Filter {
 				httpResponse.setHeader("X-FRAME-OPTIONS", "SAMEORIGIN");
 			}
 			
-			if(securityModule.isContentSecurityPolicyEnabled() && !content) {
+			if(securityModule.isContentSecurityPolicyEnabled()) {
 				String header = securityModule.isContentSecurityPolicyReportOnlyEnabled()
 						? "Content-Security-Policy-Report-Only"
 						: "Content-Security-Policy";
@@ -79,6 +83,11 @@ public class HeadersFilter implements Filter {
 	private final boolean isContent(ServletRequest request) {
 		if(request instanceof HttpServletRequest hreq) {
 			try {
+				UserSession usess = userSessionManager.getUserSessionIfAlreadySet(hreq);
+				if(usess != null && usess.isContentDelivery()) {
+					return true;
+				}
+				
 				String pathInfo = DispatcherModule.subtractContextPath(hreq);
 				if(pathInfo.contains(DispatcherModule.PATH_MAPPED)) {
 					String subInfo = pathInfo.substring(DispatcherModule.PATH_MAPPED.length());

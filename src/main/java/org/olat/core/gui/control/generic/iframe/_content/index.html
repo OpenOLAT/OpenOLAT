@@ -14,8 +14,9 @@
 		<script>
 		## Init the iFrame to the max height possible.
 		jQuery(function() {b_resizeIframeToMainMaxHeight("$frameId");});
-	
+		#if($r.isTrue($iframeResizer))
 		registerIFrameAndObserve("$frameId", $debug);
+		#end
 		</script>
 	#end
 	$r.render("newUriEvent")

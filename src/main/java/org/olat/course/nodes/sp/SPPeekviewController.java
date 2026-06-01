@@ -34,7 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -78,11 +78,11 @@ public class SPPeekviewController extends BasicController {
 				// in preview, randomize the mapper of the html page
 				CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 				Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
-				
+				IFrameSettings iframeSettings = IFrameSettings.secure();
+				iframeSettings.setRandomizeMapper(courseEnv.isPreview());
 				SinglePageController spController =  new SinglePageController(ureq, wControl,
 						courseEnv.getCourseFolderContainer(),  file, allowRelativeLinks,
-						null, ores, deliveryOptions, SecurityOptions.secure(),
-						courseEnv.isPreview(), courseRepoKey);		
+						null, ores, deliveryOptions, IFrameSettings.secure(), courseRepoKey);		
 				// but add scaling to fit preview into minimized space
 				spController.setScaleFactorAndHeight(0.75f, 400, true);
 				listenTo(spController);

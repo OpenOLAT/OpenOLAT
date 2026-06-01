@@ -26,7 +26,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class PresentationController extends BasicController {
 		
 		VFSContainer container = qpoolModule.getInfoPageContainer();
 		if(container.resolve("index.html") != null) {
-			SecurityOptions securityOptions = SecurityOptions.secure();
+			IFrameSettings securityOptions = IFrameSettings.secure();
 			SinglePageController indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", securityOptions);
 			mainVC.put("index", indexCtrl.getInitialComponent());
 		}

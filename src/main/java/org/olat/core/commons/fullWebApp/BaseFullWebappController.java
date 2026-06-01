@@ -277,7 +277,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
     		Boolean alreadySeen = ((Boolean)usess.getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-    		if (usess.isAuthenticated() && alreadySeen == null && usess.getEntry(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH) == null) {
+    		if (usess.isAuthenticated() && !usess.isContentDelivery() && alreadySeen == null
+    				&& usess.getEntry(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH) == null) {
     			resumeSessionCtrl = new ResumeSessionController(ureq, getWindowControl());
     			listenTo(resumeSessionCtrl);
     			resumeSessionCtrl.getInitialComponent();
@@ -337,17 +338,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	/**
 	 * Remove all possible redirect commands in session.
 	 * 
-	 * @param usess
+	 * @param sess
 	 */
-	private void removeRedirects(UserSession usess) {
-    	usess.removeEntry("AuthDispatcher:businessPath");
-    	usess.removeEntry("redirect-bc");
-    	usess.removeEntryFromNonClearedStore("AuthDispatcher:businessPath");
-    	usess.removeEntryFromNonClearedStore("redirect-bc");
+	private void removeRedirects(UserSession sess) {
+    	sess.removeEntry("AuthDispatcher:businessPath");
+    	sess.removeEntry("redirect-bc");
+    	sess.removeEntryFromNonClearedStore("AuthDispatcher:businessPath");
+    	sess.removeEntryFromNonClearedStore("redirect-bc");
 	}
 	
 	private void initializeBase(UserRequest ureq, ComponentCollection mainPanel) {
-		mainVc.contextPut("enforceTopFrame", cspModule.isForceTopFrame());
+		mainVc.contextPut("enforceTopFrame", cspModule.isForceTopFrame() && !usess.isContentDelivery());
 
 		// add optional css classes
 		mainVc.contextPut("bodyCssClasses", bodyCssClasses);
@@ -370,9 +371,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 		// init with no bookmark (=empty bc)
 		mainVc.contextPut("o_bc", "");
-		mainVc.contextPut("o_serverUri", Settings.createServerURI());
+		String serverUri = usess.isContentDelivery()
+				? Settings.createContentServerURI()
+				: Settings.createServerURI();
+		mainVc.contextPut("o_serverUri", serverUri);
 		mainVc.contextPut("o_serverContext", WebappHelper.getServletContextPath());
-		
 		
 		// the current language; used e.g. by screenreaders
 		mainVc.contextPut("lang", ureq.getLocale().toString());
@@ -411,8 +414,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			}
 		}
 		
-		// Enable edu-sharing html snippet replacement
-		if (edusharingModule.isEnabled()) {
+		// Enable edu-sharing html snippet replacement (not available in second domain)
+		if (edusharingModule.isEnabled() && !usess.isContentDelivery()) {
 			mainVc.contextPut("edusharingEnabled", Boolean.TRUE);
 		}
 		
