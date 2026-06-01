@@ -1561,7 +1561,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		return addTaskConfiguration(courseId, nodeId, enableAssignment, taskAssignmentType, taskAssignmentText,
 				enableTaskPreview, enableTaskDeselect, onyOneUserPerTask, enableDropbox, enableDropboxConfirmationMail,
 				dropboxConfirmationText, enableReturnbox, enableScoring, grantScoring, scoreMin, scoreMax, grantPassing,
-				scorePassingThreshold, enableCommentField, commentForUser, commentForCoaches, enableSolution, accessExpertRuleTask,
+				scorePassingThreshold, enableCommentField, enableSolution, accessExpertRuleTask,
 				accessExpertRuleDropbox, accessExpertRuleReturnbox, accessExpertRuleScoring, accessExpertRuleSolution, request);
 	}
 	
@@ -1628,8 +1628,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("grantPassing") Boolean grantPassing,
 			@QueryParam("scorePassingThreshold") Float scorePassingThreshold,
 			@QueryParam("enableCommentField") Boolean enableCommentField,
-			@QueryParam("commentForUser") String commentForUser,
-			@QueryParam("commentForCoaches") String commentForCoaches,
 			@QueryParam("enableSolution") Boolean enableSolution,
 			@QueryParam("accessExpertRuleTask") String accessExpertRuleTask,
 			@QueryParam("accessExpertRuleDropbox") String accessExpertRuleDropbox,
@@ -1640,8 +1638,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		
 		TaskFullConfig config = new TaskFullConfig(enableAssignment, taskAssignmentType, taskAssignmentText, enableTaskPreview,
 				enableTaskDeselect, onlyOneUserPerTask, enableDropbox, enableDropboxConfirmationMail, dropboxConfirmationText, enableReturnbox,
-				enableScoring, grantScoring, scoreMin, scoreMax, grantPassing, scorePassingThreshold, enableCommentField, commentForUser,
-				commentForCoaches, enableSolution, accessExpertRuleTask, accessExpertRuleDropbox, accessExpertRuleReturnbox,
+				enableScoring, grantScoring, scoreMin, scoreMax, grantPassing, scorePassingThreshold, enableCommentField,
+				enableSolution, accessExpertRuleTask, accessExpertRuleDropbox, accessExpertRuleReturnbox,
 				accessExpertRuleScoring, accessExpertRuleSolution);
 		
 		return attachNodeConfig(courseId, nodeId, config, request);
@@ -1711,10 +1709,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setPassingScoreThreshold(passingScoreThreshold);
 		Boolean hasCommentField = (Boolean)moduleConfig.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		config.setHasCommentField(hasCommentField == null ? Boolean.FALSE : hasCommentField);
-		String commentForUser = moduleConfig.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		config.setCommentForUser(commentForUser == null ? "" : commentForUser);
-		String commentForCoaches = moduleConfig.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		config.setCommentForCoaches(commentForCoaches == null ? "" : commentForCoaches);
 		Boolean isSolutionEnabled = (Boolean)moduleConfig.get(TACourseNode.CONF_SOLUTION_ENABLED);
 		config.setIsSolutionEnabled(isSolutionEnabled == null ? Boolean.TRUE : isSolutionEnabled);
 		//get the conditions
@@ -2243,8 +2237,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		private final Float scoreMax;
 		private final Boolean enableCommentField;
 		private final Float scorePassingThreshold;
-		private final String commentForUser;
-		private final String commentForCoaches;
 		private final String accessExpertRuleTask;
 		private final Boolean enableSolution;
 		private final String accessExpertRuleSolution;
@@ -2261,7 +2253,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 				Boolean grantScoring, Float scoreMin,
 				Float scoreMax, Boolean grantPassing,
 				Float scorePassingThreshold, Boolean enableCommentField,
-				String commentForUser, String commentForCoaches,
 				Boolean enableSolution, String accessExpertRuleTask,
 				String accessExpertRuleDropbox, String accessExpertRuleReturnbox,
 				String accessExpertRuleScoring, String accessExpertRuleSolution) {
@@ -2282,8 +2273,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			this.grantPassing = grantPassing;
 			this.scorePassingThreshold = scorePassingThreshold;
 			this.enableCommentField = enableCommentField;
-			this.commentForUser = commentForUser;
-			this.commentForCoaches = commentForCoaches;
 			this.enableSolution = enableSolution;
 			this.accessExpertRuleTask = accessExpertRuleTask;
 			this.accessExpertRuleDropbox = accessExpertRuleDropbox;
@@ -2322,8 +2311,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			if(grantPassing != null) moduleConfig.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, grantPassing);
 			if(scorePassingThreshold != null) moduleConfig.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, scorePassingThreshold);
 			if(enableCommentField != null) moduleConfig.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, enableCommentField);
-			if(commentForUser != null) moduleConfig.setStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, commentForUser);
-			if(commentForCoaches != null) moduleConfig.setStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, commentForCoaches);
 			if(enableSolution != null) moduleConfig.set(TACourseNode.CONF_SOLUTION_ENABLED, enableSolution);
 			//conditions
 			TACourseNode courseNode = (TACourseNode)newNode;
@@ -2674,10 +2661,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 
 			// comment
 			moduleConfig.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
-			// info coach
-			moduleConfig.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, "Info coach");
-			// info user
-			moduleConfig.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, "Info user");
 		}
 	}
 	

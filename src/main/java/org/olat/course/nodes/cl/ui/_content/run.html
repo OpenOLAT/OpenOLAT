@@ -3,30 +3,6 @@
 	$r.render("assessment")
 #end
 
-#if($infoTextUser)
-	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-	  		<h4 class="panel-title">
-				<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($indisclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>	  		
-	  			$r.translate("info.title")
-	  		</h4>	
-	  	</div>
-		<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($indisclaimer)) in #end"><div class="panel-body">
-			$r.formatLatexFormulas($infoTextUser)
-  		</div></div>
-	</div>
-	<script>
-	jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
-		jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.backgroundCommand("hide","panel","disclaimer")
-	})
-	jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
-		jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.backgroundCommand("show","panel","disclaimer")
-	})
-	</script>
-#end
-
 #if($dueDate)
 	<div class="panel panel-default o_duedate #if($afterDueDate) o_duedate_passed #end">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDuedate">

@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -121,9 +120,6 @@ public class MSConfigController extends FormBasicController {
 	private SpacerElement incorporateInCourseAssessmentSpacer;
 	private MultipleSelectionElement commentFlagEl;
 	private MultipleSelectionElement individualAssessmentDocsFlagEl;
-	private RichTextElement infotextUserEl;
-	private RichTextElement infotextCoachEl;
-	private FormLink showInfoTextsLink;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
@@ -133,7 +129,6 @@ public class MSConfigController extends FormBasicController {
 	private final ModuleConfiguration config;
 	private final RepositoryEntry courseEntry;
 	private final String nodeIdent;
-	private boolean showInfoTexts;
 	private final boolean showInitialStatus;
 	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
@@ -338,19 +333,6 @@ public class MSConfigController extends FormBasicController {
 		Boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 		individualAssessmentDocsFlagEl.select(ENABLED_KEYS[0], docsCf);
 
-		
-		String infoUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		showInfoTextsLink = uifactory.addFormLink("show.infotexts", "show.infotexts", null, formLayout, Link.LINK);
-		showInfoTextsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-
-		infotextUserEl = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user",
-				infoUser, 10, -1, formLayout, getWindowControl());
-
-		String infoCoach = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		infotextCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach",
-				infoCoach, 10, -1, formLayout, getWindowControl());
-		showInfoTexts = StringHelper.containsNonWhitespace(infoUser) || StringHelper.containsNonWhitespace(infoCoach);
-
 		uifactory.addFormSubmitButton("save", formLayout);
 		
 		updateUI();
@@ -434,11 +416,6 @@ public class MSConfigController extends FormBasicController {
 		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
 				&& incorporateInCourseAssessmentEl.isOn() && scoreEnabled && scoreScalingEnabled);
-		
-		//info texts
-		showInfoTextsLink.setVisible(!showInfoTexts);
-		infotextUserEl.setVisible(showInfoTexts);
-		infotextCoachEl.setVisible(showInfoTexts);
 	}
 	
 	private String getScoreKey() {
@@ -479,9 +456,6 @@ public class MSConfigController extends FormBasicController {
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
 		} else if (source == gradeEnabledEl || source == passedEl || source == passedTypeEl) {
-			updateUI();
-		} else if (source == showInfoTextsLink) {
-			showInfoTexts = true;
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -591,18 +565,6 @@ public class MSConfigController extends FormBasicController {
 		
 		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
 		
-		infotextCoachEl.clearError();
-		if (infotextCoachEl.getValue().length() > 4000) {
-			infotextCoachEl.setErrorKey("input.toolong", "4000");
-			allOk = false;
-		}
-		
-		infotextUserEl.clearError();
-		if (infotextUserEl.getValue().length() > 4000) {
-			infotextUserEl.setErrorKey("input.toolong", "4000");
-			allOk = false;
-		}
-		
 		return allOk;
 	}
 
@@ -711,20 +673,6 @@ public class MSConfigController extends FormBasicController {
 		
 		Boolean individualAssessmentEnabled = Boolean.valueOf(individualAssessmentDocsFlagEl.isSelected(0));
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, individualAssessmentEnabled);
-
-		String infoTextUser = infotextUserEl.getValue();
-		if (StringHelper.containsNonWhitespace(infoTextUser)) {
-			config.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-		} else {
-			config.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		}
-
-		String infoTextCoach = infotextCoachEl.getValue();
-		if (StringHelper.containsNonWhitespace(infoTextCoach)) {
-			config.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, infoTextCoach);
-		} else {
-			config.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		}
 	}
 
 	private void doChooseEvaluationForm(UserRequest ureq) {

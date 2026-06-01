@@ -32,9 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioResultDetailsController;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -134,13 +132,6 @@ public class PortfolioAssessmentDetailsController extends BasicController {
 					secCallback, loadedBinder, config);
 			listenTo(assessmentCtrl);
 			mainVC.put("assessment", assessmentCtrl.getInitialComponent());
-
-			if (courseNode != null) {
-				ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
-				String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-				infoCoach = Formatter.formatLatexFormulas(infoCoach);
-				mainVC.contextPut("infoCoach", infoCoach);
-			}
 
 			if (portfolioService.getPosterImageLeaf(binder) != null) {
 				// put image information into context

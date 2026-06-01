@@ -3,12 +3,6 @@
 #else
 	<fieldset class="o_block_top o_start_info_box">
 		<div class="o_note">
-			#if ($r.isNotEmpty($infoCoach))
-			<div class="o_course_run_disclaimer">
-				<h4>$r.translate("title.infocoach")</h4>
-				$r.xssScan($infoCoach)
-			</div>
-			#end
 			<h4>$r.translate("map.template")</h4>
 			<div class="o_portfolio_cn_preview o_rendertype_custom">
 				<div class="panel panel-default o_portfolio_assignments panel-imagebg o_portfolio_entry" style="background-image:url('$image/$imageName');">
