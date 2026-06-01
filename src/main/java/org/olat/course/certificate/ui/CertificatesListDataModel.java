@@ -164,6 +164,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 			case dateRevocation -> row.getRevocationDate();
 			case recertificationCount -> row.getRecertificationCount();
 			case status -> row.getStatus();
+			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};
 	}
@@ -183,8 +184,8 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 		dateRecertification("table.header.recertification.date"),
 		dateRevocation("table.header.revocation.date"),
 		recertificationCount("table.header.recertification.count"),
-		status("table.header.status")
-		;
+		status("table.header.status"),
+		tools("table.header.tools");
 
 		private final String i18n;
 
