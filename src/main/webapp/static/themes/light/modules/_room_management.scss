@@ -1,0 +1,15 @@
+.o_building_square_container {
+	display: flex;
+	height: 20px;
+
+	align-items: center;
+	justify-content: center;
+
+	.o_building_square {
+		width: 18px;
+		height: 18px;
+		border-radius: 5px;
+		border-width: 1px;
+		border-style: solid;
+	}
+}
