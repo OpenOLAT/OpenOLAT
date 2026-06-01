@@ -22,9 +22,10 @@
 .o_building_address_map_line {
 	display: flex;
 	flex-direction: row;
+	gap: 0;
 }
 
-.o_building_address {
+.o_building_address_input {
 	flex-grow: 1;
 
 	input {
@@ -33,10 +34,29 @@
 	}
 }
 
-.o_building_map {
-	a {
+.o_building_find_on_map {
+	a, button {
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;
 		border-left-width: 0;
 	}
+}
+
+.o_building_map_container {
+	width: 100%;
+	height: 200px;
+	margin-top: 8px;
+	border-radius: 4px;
+	overflow: hidden;
+	border: 1px solid $input-border;
+}
+
+.o_building_map_pin {
+	width: 20px;
+	height: 20px;
+	border-radius: 50% 50% 50% 0;
+	border: 2px solid rgba(255, 255, 255, 0.85);
+	transform: rotate(-45deg);
+	margin-left: -10px;
+	margin-top: -20px;
 }
