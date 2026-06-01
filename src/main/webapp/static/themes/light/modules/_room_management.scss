@@ -13,3 +13,30 @@
 		border-style: solid;
 	}
 }
+
+.o_building_address_map_combo {
+	display: flex;
+	flex-direction: column;
+}
+
+.o_building_address_map_line {
+	display: flex;
+	flex-direction: row;
+}
+
+.o_building_address {
+	flex-grow: 1;
+
+	input {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+}
+
+.o_building_map {
+	a {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+		border-left-width: 0;
+	}
+}

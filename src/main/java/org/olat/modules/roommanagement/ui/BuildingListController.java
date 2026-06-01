@@ -48,6 +48,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -81,6 +82,9 @@ public class BuildingListController extends FormBasicController {
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRelevant;
 	private FlexiFiltersTab tabDeleted;
+
+	private CloseableModalController cmc;
+	private EditBuildingController editBuildingCtrl;
 
 	private final Roles roles;
 
@@ -229,7 +233,23 @@ public class BuildingListController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == editBuildingCtrl) {
+			if (event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
+		}
 		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(editBuildingCtrl);
+		removeAsListenerAndDispose(cmc);
+		editBuildingCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -243,7 +263,8 @@ public class BuildingListController extends FormBasicController {
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if ("select".equals(cmd)) {
-				// detail view — to be implemented
+				BuildingRow row = (BuildingRow) link.getUserObject();
+				doEditBuilding(ureq, row);
 			} else if ("address".equals(cmd)) {
 				// maps callout — to be implemented
 			} else if ("rooms".equals(cmd)) {
@@ -254,7 +275,26 @@ public class BuildingListController extends FormBasicController {
 	}
 
 	private void doCreateBuilding(UserRequest ureq) {
-		//
+		removeAsListenerAndDispose(editBuildingCtrl);
+		editBuildingCtrl = new EditBuildingController(ureq, getWindowControl());
+		listenTo(editBuildingCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				editBuildingCtrl.getInitialComponent(), true, translate("building.create"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doEditBuilding(UserRequest ureq, BuildingRow row) {
+		removeAsListenerAndDispose(editBuildingCtrl);
+		editBuildingCtrl = new EditBuildingController(ureq, getWindowControl(),
+				row.getBuilding(), row.getOrganisations());
+		listenTo(editBuildingCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				editBuildingCtrl.getInitialComponent(), true, translate("building.edit"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override
