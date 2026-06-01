@@ -56,6 +56,7 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private final Link buildingsLink;
 
 	private RoomsAdminSettingsController settingsCtrl;
+	private BuildingListController buildingListCtrl;
 
 	public RoomManagementAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -136,7 +137,13 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	}
 
 	private void doOpenBuildings(UserRequest ureq) {
-		addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BUILDINGS), null);
-		mainVC.remove("segmentCmp");
+		if (buildingListCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BUILDINGS), null);
+			buildingListCtrl = new BuildingListController(ureq, swControl);
+			listenTo(buildingListCtrl);
+		} else {
+			addToHistory(ureq, buildingListCtrl);
+		}
+		mainVC.put("segmentCmp", buildingListCtrl.getInitialComponent());
 	}
 }
