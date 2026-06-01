@@ -21,6 +21,7 @@ package org.olat.course.certificate.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
@@ -50,16 +51,19 @@ public class CertificateRow {
 	private final RecertificationInDays recertificationInDays;
 	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
+	private final FormLink toolsLink;
+	
 	public CertificateRow(Certificate certificate, RepositoryEntry course,
 			RepositoryEntryCertificateConfiguration certificateConfig, CertificationProgram certificationProgram,
 			String uploadedByName, CertificationStatus status, String statusExplained,
 			RecertificationInDays recertificationInDays, Long recertificationCount,
-			String filename, String origin, String points) {
+			String filename, String origin, String points, FormLink toolsLink) {
 		this.status = status;
 		this.points = points;
 		this.course = course;
 		this.origin = origin;
 		this.filename = filename;
+		this.toolsLink = toolsLink;
 		this.certificate = certificate;
 		this.certificateConfig = certificateConfig;
 		this.statusExplained = statusExplained;
@@ -239,5 +243,9 @@ public class CertificateRow {
 	
 	public String getFilename() {
 		return filename;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
 	}
 }

@@ -30,6 +30,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -55,6 +56,25 @@ public class GenericAiSPI extends AbstractSpringModule {
 
 	private static final String GENERIC_INSTANCES = "generic.instances";
 
+	// Reserved id for the preset instance defined via olat.properties. User
+	// created instances always start at 1, so this id can never collide.
+	private static final int PRESET_ID = 0;
+
+	// Preset generic provider defined via olat.properties / olat.local.properties.
+	// These values act as defaults and can be overridden in the admin UI (the
+	// overridden values are persisted under generic.0.*). Leave the base URL
+	// empty to not provide a preset generic provider.
+	@Value("${ai.generic.preset.name:}")
+	private String presetNameDefault;
+	@Value("${ai.generic.preset.base.url:}")
+	private String presetBaseUrlDefault;
+	@Value("${ai.generic.preset.api.key:}")
+	private String presetApiKeyDefault;
+	@Value("${ai.generic.preset.models:}")
+	private String presetModelsDefault;
+	@Value("${ai.generic.preset.enabled:false}")
+	private boolean presetEnabledDefault;
+
 	private final List<GenericAiSpiInstance> instances = new ArrayList<>();
 	private final AtomicInteger nextId = new AtomicInteger(1);
 
@@ -75,6 +95,8 @@ public class GenericAiSPI extends AbstractSpringModule {
 
 	private void updateProperties() {
 		instances.clear();
+		loadPresetInstance();
+
 		String instancesStr = getStringPropertyValue(GENERIC_INSTANCES, "");
 		if (!StringHelper.containsNonWhitespace(instancesStr)) {
 			return;
@@ -100,6 +122,30 @@ public class GenericAiSPI extends AbstractSpringModule {
 			}
 		}
 		nextId.set(maxId + 1);
+	}
+
+	/**
+	 * Load the preset instance (id 0) defined via olat.properties. The values
+	 * from olat.properties act as defaults; if an admin has overridden them in
+	 * the UI, the persisted generic.0.* values take precedence. The preset is
+	 * only created when an effective base URL is available. Id 0 is never part
+	 * of the {@link #GENERIC_INSTANCES} list and is always listed first.
+	 */
+	private void loadPresetInstance() {
+		String baseUrl = getStringPropertyValue("generic." + PRESET_ID + ".base.url", presetBaseUrlDefault);
+		if (!StringHelper.containsNonWhitespace(baseUrl)) {
+			return;
+		}
+		String name = getStringPropertyValue("generic." + PRESET_ID + ".name", presetNameDefault);
+		String apiKey = getStringPropertyValue("generic." + PRESET_ID + ".api.key", presetApiKeyDefault);
+		String models = getStringPropertyValue("generic." + PRESET_ID + ".models", presetModelsDefault);
+		boolean enabled = "true".equals(getStringPropertyValue("generic." + PRESET_ID + ".enabled",
+				String.valueOf(presetEnabledDefault)));
+
+		GenericAiSpiInstance preset = new GenericAiSpiInstance(PRESET_ID, this);
+		preset.load(name, baseUrl, apiKey, models, enabled);
+		preset.setPreset(true);
+		instances.add(preset);
 	}
 
 	/**
@@ -130,6 +176,11 @@ public class GenericAiSPI extends AbstractSpringModule {
 	 * @param instanceId The instance ID to delete
 	 */
 	void deleteInstance(int instanceId) {
+		if (instanceId == PRESET_ID) {
+			// The preset instance is defined via olat.properties and cannot be deleted
+			log.warn("Attempt to delete the preset generic SPI instance (id {}) ignored", PRESET_ID);
+			return;
+		}
 		instances.removeIf(i -> i.getInstanceId() == instanceId);
 		// Remove all properties for this instance
 		removeProperty("generic." + instanceId + ".name", true);
@@ -174,6 +225,7 @@ public class GenericAiSPI extends AbstractSpringModule {
 	 */
 	private void saveInstanceIds() {
 		String ids = instances.stream()
+				.filter(i -> i.getInstanceId() != PRESET_ID)
 				.map(i -> String.valueOf(i.getInstanceId()))
 				.collect(Collectors.joining(","));
 		setStringProperty(GENERIC_INSTANCES, ids, true);
