@@ -13,10 +13,10 @@
 		<property name="order" value="9016" />
 		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.modules.roommanagement.ui.RoomsAdminController"/>
+				<property name="className" value="org.olat.modules.roommanagement.ui.RoomManagementAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="Rooms" />
+		<property name="navigationKey" value="roommanagement" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.roommanagement.ui"/>

@@ -41,7 +41,7 @@ import org.olat.core.util.resource.OresHelper;
  * Initial date: 28 May 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RoomsAdminController extends BasicController implements Activateable2 {
+public class RoomManagementAdminController extends BasicController implements Activateable2 {
 
 	private static final String ORES_TYPE_SETTINGS = "Settings";
 	private static final String ORES_TYPE_ROOM_SCHEDULING = "RoomScheduling";
@@ -57,7 +57,7 @@ public class RoomsAdminController extends BasicController implements Activateabl
 
 	private RoomsAdminSettingsController settingsCtrl;
 
-	public RoomsAdminController(UserRequest ureq, WindowControl wControl) {
+	public RoomManagementAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("admin");
 		putInitialPanel(mainVC);
