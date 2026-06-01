@@ -22,6 +22,7 @@ package org.olat.selenium.page.qpool;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
@@ -142,17 +143,19 @@ public class QuestionPoolPage {
 		
 		if(taxonomy != null) {
 			By taxonomyBy = By.cssSelector(".o_sel_qpool_confirm_start_form button.o_selection_display");
+			OOGraphene.waitElement(taxonomyBy, browser);
+			Point taxonomyLocation = OOGraphene.getLocation(taxonomyBy, browser);
 			OOGraphene.waitElement(taxonomyBy, browser).click();
 			OOGraphene.waitCallout(browser, ".o_object_selection");
 			
-			By taxonomyElementBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio']");
+			By taxonomyElementBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio']");
 			browser.findElement(taxonomyElementBy).click();
 			
-			By taxonomyElementCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio'][@checked='checked']");
+			By taxonomyElementCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio'][@checked='checked']");
 			OOGraphene.waitElement(taxonomyElementCheckedBy, browser);
 			
-			By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
-			OOGraphene.waitElement(transferBy, browser).click();
+			//By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
+			OOGraphene.click(taxonomyLocation, browser);
 			OOGraphene.waitCalloutDisappears(browser, ".o_object_selection");
 		}
 		

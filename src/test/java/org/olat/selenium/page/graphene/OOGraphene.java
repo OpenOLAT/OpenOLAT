@@ -37,6 +37,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
@@ -502,7 +503,7 @@ public class OOGraphene {
 	 * @param browser The web driver
 	 * @return The location Y
 	 */
-	private static int getLocationY(By by, WebDriver browser) {
+	public static int getLocationY(By by, WebDriver browser) {
 		int y = 0;
 		try {
 			y = browser.findElement(by).getLocation().getY();
@@ -512,6 +513,18 @@ public class OOGraphene {
 			y = browser.findElement(by).getLocation().getY();
 		}
 		return y;
+	}
+	
+	public static Point getLocation(By by, WebDriver browser) {
+		Point p = null;
+		try {
+			p = browser.findElement(by).getLocation();
+		} catch (StaleElementReferenceException e) {
+			log.warn("", e);
+			waitingALittleBit();
+			p = browser.findElement(by).getLocation();
+		}
+		return p;
 	}
 	
 	/**
@@ -1019,6 +1032,23 @@ public class OOGraphene {
 			log.warn("Wait blue box, but it doesn't appear", e);
 		}
 		closeBlueMessageWindow(browser);
+	}
+	
+	public static void click(Point location, WebDriver browser) {
+		new Actions(browser)
+			.moveToLocation(location.getX(), location.getY())
+			.click()
+			.build()
+			.perform();
+	}
+	
+	public static void clickAbove(By location, WebDriver browser) {
+		WebElement element = browser.findElement(location);
+		new Actions(browser)
+			.moveToElement(element, 0, -50 - element.getSize().getHeight())
+			.click()
+			.build()
+			.perform();
 	}
 	
 	public static final void closeBlueMessageWindow(WebDriver browser) {
