@@ -67,12 +67,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String FOR_USE_AS_IMPL = "implementation";
 	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
 	private static final String FOR_USE_AS_ELEM = "element";
-	private static final String TYPE_OF_ELEM_SINGLE_COURSE = "singleCourse";
-	private static final String TYPE_OF_ELEM_COURSE_BUNDLE = "courseBundle";
 	private static final String TYPE_OF_ELEM_STRUCTURAL = "structuralElement";
-	private static final String SCOPE_STRUCT_ONLY = "structureOnly";
-	private static final String SCOPE_STRUCT_SINGLE = "structureSingleCourse";
-	private static final String SCOPE_STRUCT_BUNDLE = "structureCourseBundle";
+	private static final String TYPE_OF_ELEM_SINGLE_ELEMENT = "singleElement";
+	private static final String CONTENT_NO_CONTENT = "noContent";
+	private static final String CONTENT_SINGLE_COURSE = "singleCourse";
+	private static final String CONTENT_COURSE_BUNDLE = "courseBundle";
 	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
@@ -82,7 +81,8 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	private SingleSelection forUseAsEl;
 	private SingleSelection typeOfElementEl;
-	private SingleSelection scopeOfUseEl;
+	private SingleSelection contentStructuralEl;
+	private SingleSelection contentSingleEl;
 	private SpacerElement dividerEl;
 	private MultipleSelectionElement parentTypesEl;
 	private MultipleSelectionElement childTypesEl;
@@ -167,52 +167,65 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		}
 
 		SelectionValues typeOfElementKV = new SelectionValues();
-		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_SINGLE_COURSE,
-				translate("table.type.type.of.element.single.course"),
-				translate("table.type.type.of.element.single.course.desc"),
-				"o_icon o_icon_courserun", null, true));
-		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_COURSE_BUNDLE,
-				translate("table.type.type.of.element.course.bundle"),
-				translate("table.type.type.of.element.course.bundle.desc"),
-				"o_icon o_icon_course_bundle", null, true));
 		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_STRUCTURAL,
 				translate("table.type.type.of.element.structural.element"),
 				translate("table.type.type.of.element.structural.element.desc"),
 				"o_icon o_icon_structure", null, true));
+		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_SINGLE_ELEMENT,
+				translate("table.type.type.of.element.single.element"),
+				translate("table.type.type.of.element.single.element.desc"),
+				"o_icon o_icon_single_element", null, true));
 		typeOfElementEl = uifactory.addCardSingleSelectHorizontal("type.type.of.element", "table.type.header.type.typeOfElement",
 				configurationContainer, typeOfElementKV);
-		typeOfElementEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite)
-				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
+		typeOfElementEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
 		typeOfElementEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
 			typeOfElementEl.select(TYPE_OF_ELEM_STRUCTURAL, true);
-		} else if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == -1) {
-			typeOfElementEl.select(TYPE_OF_ELEM_COURSE_BUNDLE, true);
 		} else {
-			typeOfElementEl.select(TYPE_OF_ELEM_SINGLE_COURSE, true);
+			typeOfElementEl.select(TYPE_OF_ELEM_SINGLE_ELEMENT, true);
 		}
 
-		String[] scopeKeys = { SCOPE_STRUCT_ONLY, SCOPE_STRUCT_SINGLE, SCOPE_STRUCT_BUNDLE };
-		String[] scopeValues = {
-				translate("table.type.type.of.application.structure.only"),
-				translate("table.type.type.of.application.structure.single.course"),
-				translate("table.type.type.of.application.structure.course.bundle")
-		};
-		scopeOfUseEl = uifactory.addDropdownSingleselect("type.scope.of.use", "type.scope.of.use",
-				configurationContainer, scopeKeys, scopeValues, null);
-		scopeOfUseEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
-		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
-			int maxRelationsForScope = curriculumElementType.getMaxRepositoryEntryRelations();
-			if(maxRelationsForScope == 1) {
-				scopeOfUseEl.select(SCOPE_STRUCT_SINGLE, true);
-			} else if(maxRelationsForScope == -1) {
-				scopeOfUseEl.select(SCOPE_STRUCT_BUNDLE, true);
-			} else {
-				scopeOfUseEl.select(SCOPE_STRUCT_ONLY, true);
-			}
+		boolean contentManaged = CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations);
+		String initialContent;
+		if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == -1) {
+			initialContent = CONTENT_COURSE_BUNDLE;
+		} else if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == 0) {
+			initialContent = CONTENT_NO_CONTENT;
 		} else {
-			scopeOfUseEl.select(SCOPE_STRUCT_ONLY, true);
+			initialContent = CONTENT_SINGLE_COURSE;
 		}
+
+		SelectionValues contentStructuralKV = new SelectionValues();
+		contentStructuralKV.add(SelectionValues.entry(CONTENT_NO_CONTENT,
+				translate("table.type.content.no.content"),
+				translate("table.type.content.no.content.desc"),
+				"o_icon o_icon_ban", null, true));
+		contentStructuralKV.add(SelectionValues.entry(CONTENT_SINGLE_COURSE,
+				translate("table.type.content.single.course"),
+				translate("table.type.content.single.course.desc"),
+				"o_icon o_icon_courserun", null, true));
+		contentStructuralKV.add(SelectionValues.entry(CONTENT_COURSE_BUNDLE,
+				translate("table.type.content.course.bundle"),
+				translate("table.type.content.course.bundle.desc"),
+				"o_icon o_icon_course_bundle", null, true));
+		contentStructuralEl = uifactory.addCardSingleSelectHorizontal("type.content.structural", "table.type.header.type.content",
+				configurationContainer, contentStructuralKV);
+		contentStructuralEl.setEnabled(!contentManaged);
+		contentStructuralEl.select(initialContent, true);
+
+		SelectionValues contentSingleKV = new SelectionValues();
+		contentSingleKV.add(SelectionValues.entry(CONTENT_SINGLE_COURSE,
+				translate("table.type.content.single.course"),
+				translate("table.type.content.single.course.desc"),
+				"o_icon o_icon_courserun", null, true));
+		contentSingleKV.add(SelectionValues.entry(CONTENT_COURSE_BUNDLE,
+				translate("table.type.content.course.bundle"),
+				translate("table.type.content.course.bundle.desc"),
+				"o_icon o_icon_course_bundle", null, true));
+		contentSingleEl = uifactory.addCardSingleSelectHorizontal("type.content.single", "table.type.header.type.content",
+				configurationContainer, contentSingleKV);
+		contentSingleEl.setEnabled(!contentManaged);
+		contentSingleEl.select(CONTENT_NO_CONTENT.equals(initialContent) ? CONTENT_SINGLE_COURSE : initialContent, true);
 
 		dividerEl = uifactory.addSpacerElement("divider", configurationContainer, false);
 
@@ -277,15 +290,22 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private void updateUI() {
 		boolean structural = typeOfElementEl.isOneSelected()
 				&& TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
-		scopeOfUseEl.setVisible(structural);
+
+		if(structural) {
+			if(contentSingleEl.isOneSelected()) {
+				contentStructuralEl.select(contentSingleEl.getSelectedKey(), true);
+			}
+		} else {
+			String structuralContent = contentStructuralEl.isOneSelected() ? contentStructuralEl.getSelectedKey() : CONTENT_SINGLE_COURSE;
+			contentSingleEl.select(CONTENT_NO_CONTENT.equals(structuralContent) ? CONTENT_SINGLE_COURSE : structuralContent, true);
+		}
+		contentStructuralEl.setVisible(structural);
+		contentSingleEl.setVisible(!structural);
 
 		boolean showParentElements = forUseAsEl.isOneSelected() && !FOR_USE_AS_IMPL.equals(forUseAsEl.getSelectedKey());
 		parentTypesEl.setVisible(showParentElements);
-		
-		boolean showChildElements = typeOfElementEl.isOneSelected() && TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
-		childTypesEl.setVisible(showChildElements);
-
-		dividerEl.setVisible(showParentElements || showChildElements);
+		childTypesEl.setVisible(structural);
+		dividerEl.setVisible(showParentElements || structural);
 	}
 
 	@Override
@@ -359,24 +379,16 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		}
 
 		if(typeOfElementEl.isOneSelected()) {
-			String selected = typeOfElementEl.getSelectedKey();
-			if(TYPE_OF_ELEM_COURSE_BUNDLE.equals(selected)) {
-				curriculumElementType.setSingleElement(true);
+			curriculumElementType.setSingleElement(TYPE_OF_ELEM_SINGLE_ELEMENT.equals(typeOfElementEl.getSelectedKey()));
+		}
+		SingleSelection contentEl = contentStructuralEl.isVisible() ? contentStructuralEl : contentSingleEl;
+		if(contentEl.isOneSelected()) {
+			String content = contentEl.getSelectedKey();
+			if(CONTENT_COURSE_BUNDLE.equals(content)) {
 				curriculumElementType.setMaxRepositoryEntryRelations(-1);
-			} else if(TYPE_OF_ELEM_STRUCTURAL.equals(selected)) {
-				curriculumElementType.setSingleElement(false);
-				if(scopeOfUseEl.isOneSelected()) {
-					String scope = scopeOfUseEl.getSelectedKey();
-					if(SCOPE_STRUCT_SINGLE.equals(scope)) {
-						curriculumElementType.setMaxRepositoryEntryRelations(1);
-					} else if(SCOPE_STRUCT_BUNDLE.equals(scope)) {
-						curriculumElementType.setMaxRepositoryEntryRelations(-1);
-					} else {
-						curriculumElementType.setMaxRepositoryEntryRelations(0);
-					}
-				}
+			} else if(CONTENT_NO_CONTENT.equals(content)) {
+				curriculumElementType.setMaxRepositoryEntryRelations(0);
 			} else {
-				curriculumElementType.setSingleElement(true);
 				curriculumElementType.setMaxRepositoryEntryRelations(1);
 			}
 		}
