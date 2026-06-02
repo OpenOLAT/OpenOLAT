@@ -160,6 +160,7 @@ This product uses software based on the BSD License
 * qtiworks (BSD License) [https://github.com/davemckain/qtiworks][https://webapps.ph.ed.ac.uk/qtiworks/public/]
 * snuggletex (BSD License) [https://sourceforge.net/projects/snuggletex/]
 * commonmark-java (BSD License) [https://github.com/commonmark/commonmark-java/tree/main]
+* Leaflet (BSD 2-Clause License) [https://github.com/Leaflet/Leaflet]
 
 -----------------------------------------------------------------------
 This product uses software based on the Common Public License Version
