@@ -19,6 +19,8 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +50,9 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -85,6 +90,8 @@ public class BuildingListController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private EditBuildingController editBuildingCtrl;
+	private MapsCalloutController mapsCalloutCtrl;
+	private CloseableCalloutWindowController mapsCalloutWindowCtrl;
 
 	private final Roles roles;
 
@@ -206,8 +213,7 @@ public class BuildingListController extends FormBasicController {
 		row.setReferenceLink(referenceLink);
 
 		if (StringHelper.containsNonWhitespace(building.getAddress())) {
-			FormLink addressLink = uifactory.addFormLink(
-					"addr_" + building.getKey(), "address",
+			FormLink addressLink = uifactory.addFormLink("addr_" + building.getKey(), "address", 
 					building.getAddress(), null, null, Link.LINK | Link.NONTRANSLATED);
 			addressLink.setIconLeftCSS("o_icon o_icon_location");
 			addressLink.setUserObject(row);
@@ -241,6 +247,8 @@ public class BuildingListController extends FormBasicController {
 			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
+		} else if (source == mapsCalloutWindowCtrl) {
+			cleanUpMapsCallout();
 		}
 		super.event(ureq, source, event);
 	}
@@ -250,6 +258,13 @@ public class BuildingListController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		editBuildingCtrl = null;
 		cmc = null;
+	}
+
+	private void cleanUpMapsCallout() {
+		removeAsListenerAndDispose(mapsCalloutWindowCtrl);
+		removeAsListenerAndDispose(mapsCalloutCtrl);
+		mapsCalloutWindowCtrl = null;
+		mapsCalloutCtrl = null;
 	}
 
 	@Override
@@ -266,7 +281,8 @@ public class BuildingListController extends FormBasicController {
 				BuildingRow row = (BuildingRow) link.getUserObject();
 				doEditBuilding(ureq, row);
 			} else if ("address".equals(cmd)) {
-				// maps callout — to be implemented
+				BuildingRow row = (BuildingRow) link.getUserObject();
+				doOpenMapsCallout(ureq, row, link);
 			} else if ("rooms".equals(cmd)) {
 				// rooms callout — to be implemented
 			}
@@ -297,9 +313,39 @@ public class BuildingListController extends FormBasicController {
 		cmc.activate();
 	}
 
+	private void doOpenMapsCallout(UserRequest ureq, BuildingRow row, FormLink link) {
+		cleanUpMapsCallout();
+		mapsCalloutCtrl = new MapsCalloutController(ureq, getWindowControl(), row.getBuilding());
+		listenTo(mapsCalloutCtrl);
+		mapsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				mapsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(mapsCalloutWindowCtrl);
+		mapsCalloutWindowCtrl.activate();
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private static final class MapsCalloutController extends BasicController {
+
+		public MapsCalloutController(UserRequest ureq, WindowControl wControl, Building building) {
+			super(ureq, wControl);
+			VelocityContainer mainVC = createVelocityContainer("maps_callout");
+
+			String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
+
+			mainVC.contextPut("appleMapsUrl", "https://maps.apple.com/?q=" + query);
+			mainVC.contextPut("googleMapsUrl", "https://www.google.com/maps/search/?api=1&query=" + query);
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, org.olat.core.gui.components.Component source,
+				org.olat.core.gui.control.Event event) {
+			//
+		}
 	}
 
 	private static final class ColorCellRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
