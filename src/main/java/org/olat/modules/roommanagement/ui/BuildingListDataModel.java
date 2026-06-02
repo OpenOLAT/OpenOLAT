@@ -63,7 +63,7 @@ public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRo
 			case description -> row.getBuilding().getDescription();
 			case status -> row.getBuilding().getStatus();
 			case address -> row.getAddressLink();
-			case infoUrl -> row.getBuilding().getInfoUrl();
+			case infoUrl -> row.getInfoUrlLink();
 			case orgRestriction -> row.getOrganisations();
 			case additionalInfo -> row.getBuilding().getInfo();
 			case rooms -> row.getRoomsLink();

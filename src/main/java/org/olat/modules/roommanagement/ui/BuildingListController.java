@@ -222,6 +222,16 @@ public class BuildingListController extends FormBasicController {
 			row.setAddressLink(addressLink);
 		}
 
+		if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
+			FormLink infoUrlLink = uifactory.addFormLink("info_" + building.getKey(), "infoUrl",
+					"building.information", null, null, Link.LINK);
+			infoUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+			infoUrlLink.setUrl(building.getInfoUrl());
+			infoUrlLink.setNewWindow(true, true, false);
+			infoUrlLink.setUserObject(row);
+			row.setInfoUrlLink(infoUrlLink);
+		}
+
 		SearchRoomParameters roomParams = new SearchRoomParameters();
 		roomParams.setBuilding(building);
 		roomParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
@@ -285,6 +295,10 @@ public class BuildingListController extends FormBasicController {
 			if ("select".equals(cmd)) {
 				BuildingRow row = (BuildingRow) link.getUserObject();
 				doEditBuilding(ureq, row);
+			} else if ("infoUrl".equals(cmd)) {
+				BuildingRow row = (BuildingRow) link.getUserObject();
+				getWindowControl().getWindowBackOffice().sendCommandTo(
+						CommandFactory.createNewWindowRedirectTo(row.getBuilding().getInfoUrl()));
 			} else if ("address".equals(cmd)) {
 				BuildingRow row = (BuildingRow) link.getUserObject();
 				doOpenMapsCallout(ureq, row, link);

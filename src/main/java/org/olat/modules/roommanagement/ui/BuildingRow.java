@@ -34,6 +34,7 @@ public class BuildingRow {
 	private final Building building;
 	private FormLink referenceLink;
 	private FormLink addressLink;
+	private FormLink infoUrlLink;
 	private FormLink roomsLink;
 	private List<Organisation> organisations;
 	private int roomCount;
@@ -60,6 +61,14 @@ public class BuildingRow {
 
 	public void setAddressLink(FormLink addressLink) {
 		this.addressLink = addressLink;
+	}
+
+	public FormLink getInfoUrlLink() {
+		return infoUrlLink;
+	}
+
+	public void setInfoUrlLink(FormLink infoUrlLink) {
+		this.infoUrlLink = infoUrlLink;
 	}
 
 	public FormLink getRoomsLink() {
