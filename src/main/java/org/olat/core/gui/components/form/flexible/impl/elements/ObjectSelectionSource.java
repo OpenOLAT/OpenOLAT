@@ -47,6 +47,10 @@ public interface ObjectSelectionSource {
 	
 	public ControllerCreator getBrowserCreator(boolean multiSelection);
 
+	public default ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
+		return getBrowserCreator(multiSelection);
+	}
+
 	public void addMissingOptions(Collection<String> keys);
 
 }

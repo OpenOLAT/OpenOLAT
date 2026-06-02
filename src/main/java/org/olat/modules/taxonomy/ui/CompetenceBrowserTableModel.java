@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSelectionDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.ui.CompetenceBrowserController.TaxonomyTreeNodeComparator;
 
@@ -36,12 +37,46 @@ import org.olat.modules.taxonomy.ui.CompetenceBrowserController.TaxonomyTreeNode
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<CompetenceBrowserTableRow> {
-	
+public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<CompetenceBrowserTableRow>
+		implements FlexiTableSelectionDelegate<CompetenceBrowserTableRow> {
+
 	private static final CompetenceBrowserCols[] COLS = CompetenceBrowserCols.values();
 
-	public CompetenceBrowserTableModel(FlexiTableColumnModel columnModel) {
+	private final boolean multiSelection;
+	private String taxonomyFilterKey;
+	
+	public CompetenceBrowserTableModel(FlexiTableColumnModel columnModel, boolean multiSelection) {
 		super(columnModel);
+		this.multiSelection = multiSelection;
+	}
+
+	public void setTaxonomyFilter(String taxonomyFilterKey) {
+		this.taxonomyFilterKey = taxonomyFilterKey;
+	}
+
+	@Override
+	public boolean isSelectable(int row) {
+		CompetenceBrowserTableRow tableRow = getObject(row);
+		if (tableRow == null) {
+			return true;
+		}
+		if (!multiSelection) {
+			return true;
+		}
+		return !tableRow.isPreselected();
+	}
+
+	@Override
+	public List<CompetenceBrowserTableRow> getSelectedTreeNodes() {
+		return backupRows.stream()
+				.filter(CompetenceBrowserTableRow::isSelected)
+				.collect(Collectors.toList());
+	}
+
+	public void clearAllSelections() {
+		for (CompetenceBrowserTableRow row : backupRows) {
+			row.setSelected(false);
+		}
 	}
 	
 	@Override
@@ -52,6 +87,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 			case competences: return tableRow.getTaxonomyOrLevel();
 			case identifier: return tableRow.getIdentifier();
 			case externalId: return tableRow.getExternalId();
+			case taxonomy: return tableRow.getTaxonomy();
 			case details: return tableRow.getDetailsLink();
 			default: return "ERROR";
 		}
@@ -59,20 +95,35 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if (StringHelper.containsNonWhitespace(searchString)) {
-			List<CompetenceBrowserTableRow> filteredRows = backupRows.stream().filter(row -> row.containsSearch(searchString.toLowerCase())).collect(Collectors.toList());
-			List<CompetenceBrowserTableRow> filteredRowsWithParents = new ArrayList<>(filteredRows);
-			
-			for (CompetenceBrowserTableRow row : filteredRows) {
-				addToFilter(row, filteredRowsWithParents);
-			}
-			
-			Collections.sort(filteredRowsWithParents, new TaxonomyTreeNodeComparator());
-			
-			setFilteredObjects(filteredRowsWithParents);
-		} else {
+		boolean hasSearch = StringHelper.containsNonWhitespace(searchString);
+		boolean hasTaxonomyFilter = taxonomyFilterKey != null;
+
+		if (!hasSearch && !hasTaxonomyFilter) {
 			setUnfilteredObjects();
+			return;
 		}
+
+		String search = hasSearch ? searchString.toLowerCase() : null;
+		List<CompetenceBrowserTableRow> filteredRows = backupRows.stream()
+				.filter(row -> search == null || row.containsSearch(search))
+				.filter(this::matchesTaxonomy)
+				.collect(Collectors.toList());
+		List<CompetenceBrowserTableRow> filteredRowsWithParents = new ArrayList<>(filteredRows);
+
+		for (CompetenceBrowserTableRow row : filteredRows) {
+			addToFilter(row, filteredRowsWithParents);
+		}
+
+		Collections.sort(filteredRowsWithParents, new TaxonomyTreeNodeComparator());
+		setFilteredObjects(filteredRowsWithParents);
+	}
+
+	private boolean matchesTaxonomy(CompetenceBrowserTableRow row) {
+		if (taxonomyFilterKey == null) {
+			return true;
+		}
+		return row.getTaxonomy() != null
+				&& taxonomyFilterKey.equals(row.getTaxonomy().getKey().toString());
 	}
 	
 	private void addToFilter(CompetenceBrowserTableRow row, List<CompetenceBrowserTableRow> filteredList) {
@@ -96,6 +147,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 		competences("table.header.competence"),
 		identifier("table.header.taxonomy.level.external.ref"),
 		externalId("table.header.taxonomy.level.external.id"),
+		taxonomy("table.header.taxonomy.displayName"),
 		details("table.header.info", "o_icon o_icon_fw o_icon_description"),
 		type("table.header.taxonomy.level.type");
 		

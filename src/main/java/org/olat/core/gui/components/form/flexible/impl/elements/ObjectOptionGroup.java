@@ -30,15 +30,25 @@ import java.util.List;
 public final class ObjectOptionGroup {
 
 	private final String label;
+	private final String subLabel;
 	private final List<? extends ObjectOption> options;
 
-	public ObjectOptionGroup(String label, List<? extends ObjectOption> options) {
+	private ObjectOptionGroup(String label, List<? extends ObjectOption> options) {
+		this(label, null, options);
+	}
+
+	private ObjectOptionGroup(String label, String subLabel, List<? extends ObjectOption> options) {
 		this.label = label;
+		this.subLabel = subLabel;
 		this.options = List.copyOf(options);
 	}
 
 	public String getLabel() {
 		return label;
+	}
+
+	public String getSubLabel() {
+		return subLabel;
 	}
 
 	public List<? extends ObjectOption> getOptions() {
@@ -47,6 +57,10 @@ public final class ObjectOptionGroup {
 
 	public static ObjectOptionGroup of(String label, List<? extends ObjectOption> options) {
 		return new ObjectOptionGroup(label, options);
+	}
+
+	public static ObjectOptionGroup of(String label, String subLabel, List<? extends ObjectOption> options) {
+		return new ObjectOptionGroup(label, subLabel, options);
 	}
 
 }

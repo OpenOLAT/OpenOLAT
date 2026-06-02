@@ -183,11 +183,15 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 			}
 		}
 		
+		boolean multiTaxonomy = allTaxonomies.size() > 1;
 		groups = new ArrayList<>(allTaxonomies.size());
 		for (Taxonomy taxonomy : allTaxonomies) {
-			String label = TaxonomyUIFactory.translateDisplayName(translator, taxonomy, taxonomy::getIdentifier);
+			String label = taxonomy.getDisplayName();
+			String subLabel = multiTaxonomy && StringHelper.containsNonWhitespace(taxonomy.getIdentifier())
+					? taxonomy.getIdentifier()
+					: null;
 			List<ObjectOptionValues> groupOptions = taxonomyKeyToOptions.getOrDefault(taxonomy.getKey(), List.of());
-			groups.add(new ObjectOptionGroup(label, groupOptions));
+			groups.add(ObjectOptionGroup.of(label, subLabel, groupOptions));
 		}
 		groups.sort(Comparator.comparing(ObjectOptionGroup::getLabel, Comparator.nullsLast(Comparator.naturalOrder())));
 	}
@@ -271,9 +275,17 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 
 	@Override
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+		return getBrowserCreator(multiSelection, List.of());
+	}
+
+	@Override
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
+		Set<Long> preselectedKeys = selectedKeys.stream()
+				.map(key -> Long.valueOf(key))
+				.collect(Collectors.toSet());
 		return (UserRequest lureq, WindowControl lwControl) -> {
 			initOptions();
-			return new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader);
+			return new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader, preselectedKeys);
 		};
 	}
 

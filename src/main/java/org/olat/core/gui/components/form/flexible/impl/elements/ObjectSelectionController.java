@@ -32,6 +32,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.expand.FormExpandButton;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -136,7 +137,13 @@ public class ObjectSelectionController extends FormBasicController {
 			FormExpandButton expandButton = null;
 			if (multiGroup) {
 				expandButton = uifactory.addExpandLink("selection.expand_g" + i, groupContainer);
-				expandButton.setText(Objects.requireNonNullElse(group.getLabel(), translate("options")));
+				if (StringHelper.containsNonWhitespace(group.getSubLabel())) {
+					expandButton.setEscapeMode(EscapeMode.none);
+					expandButton.setText(StringHelper.escapeHtml(Objects.requireNonNullElse(group.getLabel(), translate("options")))
+							+ " - <small>" + StringHelper.escapeHtml(group.getSubLabel()) + "</small>");
+				} else {
+					expandButton.setText(Objects.requireNonNullElse(group.getLabel(), translate("options")));
+				}
 				expandButton.setExpanded(true);
 			}
 
@@ -159,6 +166,7 @@ public class ObjectSelectionController extends FormBasicController {
 			}
 
 			groupContainer.contextPut("groupLabel", Objects.requireNonNullElse(group.getLabel(), translate("options")));
+			groupContainer.contextPut("groupSubLabel", StringHelper.containsNonWhitespace(group.getSubLabel()) ? group.getSubLabel() : null);
 			groupContainer.contextPut("expandButtonName", expandButton != null ? expandButton.getName() : "");
 			groupContainer.contextPut("elementName", binding.multiEl != null ? binding.multiEl.getName() : binding.singleEl.getName());
 			groupContainer.contextPut("loadMoreName", loadMoreLink.getName());

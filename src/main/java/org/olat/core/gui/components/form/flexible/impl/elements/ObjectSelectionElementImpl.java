@@ -184,12 +184,6 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		expandFormItem.setExpanded(false);
 		expandFormItem.setAriaControls(null);
 		
-		if (dirty && !getRootForm().isHideDirtyMarkingMessage()) {
-			Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
-			getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
-			dirty = false;
-		}
-		
 		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
 		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
@@ -197,6 +191,12 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	private void cleanUpBrowse() {
 		browseCtrl = cleanUp(browseCtrl);
 		cmc = cleanUp(cmc);
+
+		if (dirty && !getRootForm().isHideDirtyMarkingMessage()) {
+			Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+			getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+			dirty = false;
+		}
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {
@@ -333,7 +333,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	}
 	
 	private void doOpenBrowser(UserRequest ureq) {
-		browseCtrl = source.getBrowserCreator(multiSelection).createController(ureq, wControl);
+		browseCtrl = source.getBrowserCreator(multiSelection, selectedKeys).createController(ureq, wControl);
 		browseCtrl.addControllerListener(this);
 
 		String browserTitle = source.getBrowserTitle(getTranslator().getLocale());
