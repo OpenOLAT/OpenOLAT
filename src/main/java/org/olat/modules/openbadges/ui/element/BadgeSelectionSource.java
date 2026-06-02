@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -102,17 +102,11 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return translator.translate("class.selection.option");
-	}
-	
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOptions();
-		
-		return options;
+		return List.of(ObjectOptionGroup.of(translator.translate("class.selection.option"), options));
 	}
-	
+
 	private void initOptions() {
 		if (options != null) {
 			return;
@@ -155,6 +149,11 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 		return false;
 	}
 	
+	@Override
+	public String getBrowserTitle(Locale locale) {
+		return null;
+	}
+
 	@Override
 	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return null;

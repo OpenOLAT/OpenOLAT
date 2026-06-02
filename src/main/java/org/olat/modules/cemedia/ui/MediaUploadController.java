@@ -43,7 +43,6 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
@@ -417,11 +416,13 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 			return;
 		}
 		String subjectLower = subject.trim().toLowerCase();
-		for (ObjectOption option : taxonomyLevelSource.getOptions()) {
-			String title = option.getTitle();
-			if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
-				taxonomyLevelEl.select(option.getKey());
-				return;
+		for (var group : taxonomyLevelSource.getOptionGroups(getLocale())) {
+			for (var option : group.getOptions()) {
+				String title = option.getTitle();
+				if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
+					taxonomyLevelEl.select(option.getKey());
+					return;
+				}
 			}
 		}
 	}

@@ -15,34 +15,26 @@
 				</div>
 			#end
 		</div>
-		
+
 		<div class="o_object_selection_main">
-			#if($r.available("options") && $r.visible("options"))
+			#if($r.available("selections.expand") && $r.visible("selections.expand"))
 				<div class="o_object_selection_divider">
 					$r.render("selections.expand")
 				</div>
-				$r.render("selection")
-				<div class="o_object_selection_divider">
-					<span class="o_object_selection_divider_text">$optionsLabel</span>
-				</div>
-				$r.render("options")
+				#if($r.available("selection") && $r.visible("selection"))
+					$r.render("selection")
+				#end
 			#end
-			
-			#if($r.available("single.selection") && $r.visible("single.selection"))
-				$r.render("single.selection")
+
+			#foreach($groupContainerName in $groupContainerNames)
+				$r.render($groupContainerName)
 			#end
-			
-			#if($r.available("selection.load.more") && $r.visible("selection.load.more"))
-				<div class="o_button_group">
-					$r.render("selection.load.more")
-				</div>
-			#end
-			
+
 			$r.render("options.nothing.found")
 		</div>
-		
+
 		<div class="o_object_selection_footer o_block_top"></div>
-	#else 
+	#else
 		$r.translate("no.values.available")
 	#end
 </div>

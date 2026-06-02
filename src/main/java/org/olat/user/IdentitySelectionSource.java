@@ -38,6 +38,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.render.StringOutput;
@@ -117,19 +118,13 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return Util.createPackageTranslator(IdentitySelectionSource.class, locale)
-				.translate("identity.selection.options.label");
-	}
-
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		if (options == null) {
 			Collection<Identity> identities = getIdentities();
 			if (identities == null || identities.isEmpty()) {
 				return List.of();
 			}
-			Map<Long, PortraitUser> portraitUsersByKey = userPortraitService.createPortraitUsers(locale, identities).stream()
+			Map<Long, PortraitUser> portraitUsersByKey = userPortraitService.createPortraitUsers(this.locale, identities).stream()
 					.collect(Collectors.toMap(PortraitUser::getIdentityKey, Function.identity()));
 
 			options = identities.stream()
@@ -137,7 +132,9 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 					.sorted((o1, o2) -> collator.compare(o1.getTitle(), o2.getTitle()))
 					.toList();
 		}
-		return options;
+		String label = Util.createPackageTranslator(IdentitySelectionSource.class, locale)
+				.translate("identity.selection.options.label");
+		return List.of(ObjectOptionGroup.of(label, options));
 	}
 
 	private Collection<Identity> getIdentities() {
@@ -199,6 +196,12 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	@Override
 	public boolean isBrowserAvailable() {
 		return browserCreatorProvider != null;
+	}
+
+	@Override
+	public String getBrowserTitle(Locale locale) {
+		return Util.createPackageTranslator(IdentitySelectionSource.class, locale)
+				.translate("identity.selection.options.label");
 	}
 
 	@Override

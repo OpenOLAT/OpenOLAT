@@ -35,14 +35,14 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 public class ObjectListSource implements ObjectSelectionSource {
 	
 	private final ObjectDisplayValues defaultDisplayValue;
-	private final List<? extends ObjectOption> options;
 	private final String optionsLabel;
+	private final List<? extends ObjectOption> options;
 	
 	public ObjectListSource(List<ObjectOption> options) {
-		this(null, options, null);
+		this(null, null, options);
 	}
 	
-	public ObjectListSource(ObjectDisplayValues defaultDisplayValue, List<? extends ObjectOption> options, String optionsLabel) {
+	public ObjectListSource(ObjectDisplayValues defaultDisplayValue, String optionsLabel, List<? extends ObjectOption> options) {
 		this.defaultDisplayValue = defaultDisplayValue != null? defaultDisplayValue: ObjectDisplayValues.NONE;
 		this.options = options;
 		this.optionsLabel = optionsLabel;
@@ -69,18 +69,18 @@ public class ObjectListSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return optionsLabel;
-	}
-
-	@Override
-	public List<? extends ObjectOption> getOptions() {
-		return options;
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
+		return List.of(ObjectOptionGroup.of(optionsLabel, options));
 	}
 
 	@Override
 	public boolean isBrowserAvailable() {
 		return false;
+	}
+
+	@Override
+	public String getBrowserTitle(Locale locale) {
+		return null;
 	}
 
 	@Override

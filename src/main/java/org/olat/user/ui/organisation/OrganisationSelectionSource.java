@@ -34,6 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
@@ -102,14 +103,10 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return Util.createPackageTranslator(OrganisationOverviewController.class, locale).translate("option.label.organisations");
-	}
-
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOptions();
-		return options;
+		String label = Util.createPackageTranslator(OrganisationOverviewController.class, locale).translate("option.label.organisations");
+		return List.of(ObjectOptionGroup.of(label, options));
 	}
 
 	private void initOptions() {
@@ -216,6 +213,11 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	@Override
 	public boolean isBrowserAvailable() {
 		return false;
+	}
+
+	@Override
+	public String getBrowserTitle(Locale locale) {
+		return null;
 	}
 
 	@Override

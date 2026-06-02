@@ -25,8 +25,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -39,6 +41,7 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -53,7 +56,7 @@ import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 
 /**
- * 
+ *
  * Initial date: Sep 24, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
@@ -65,21 +68,28 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	private final Collection<TaxonomyLevel> selectedLevels;
 	private final Supplier<Collection<TaxonomyLevel>> levelsSupplier;
 	private String ariaTitleLabel;
-	private final String optionsLabel;
+	private final String browserTitle;
 	private final String browserTableHeader;
 	private Predicate<TaxonomyLevel> optionsFilter = level -> true;
 	private Collection<TaxonomyLevel> allTaxonomyLevels;
 	private List<Taxonomy> allTaxonomies;
 	private List<ObjectOptionValues> options;
-	
+	private Map<Long, List<ObjectOptionValues>> taxonomyKeyToOptions;
+	private List<ObjectOptionGroup> groups;
+
 	public TaxonomyLevelSelectionSource(Locale locale, Collection<TaxonomyLevel> selectedLevels,
-			Supplier<Collection<TaxonomyLevel>> levelsSupplier, String optionsLabel, String browserTableHeader) {
+			Supplier<Collection<TaxonomyLevel>> levelsSupplier, String browserTableHeader) {
+		this(locale, selectedLevels, levelsSupplier, null, browserTableHeader);
+	}
+
+	public TaxonomyLevelSelectionSource(Locale locale, Collection<TaxonomyLevel> selectedLevels,
+			Supplier<Collection<TaxonomyLevel>> levelsSupplier, String browserTitle, String browserTableHeader) {
 		translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 		collator = Collator.getInstance(locale);
 		
 		this.selectedLevels = selectedLevels;
 		this.levelsSupplier = levelsSupplier;
-		this.optionsLabel = optionsLabel;
+		this.browserTitle = browserTitle;
 		this.browserTableHeader = browserTableHeader;
 	}
 
@@ -90,6 +100,8 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	public void setOptionsFilter(Predicate<TaxonomyLevel> optionsFilter) {
 		this.optionsFilter = optionsFilter;
 		this.options = null;
+		this.taxonomyKeyToOptions = null;
+		this.groups = null;
 	}
 
 	@Override
@@ -136,16 +148,11 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public final String getOptionsLabel(Locale locale) {
-		return optionsLabel;
-	}
-	
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOptions();
-		return options;
+		return groups;
 	}
-	
+
 	private void initOptions() {
 		if (options != null) {
 			return;
@@ -159,8 +166,30 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		Set<TaxonomyLevel> additionalLevels = new HashSet<>(selectedLevels);
 		additionalLevels.removeAll(allLevels);
 		allLevels.addAll(additionalLevels);
-		
+
 		options = toOptions(allLevels);
+
+		Map<Long, Long> levelKeyToTaxonomyKey = allLevels.stream()
+				.collect(Collectors.toMap(TaxonomyLevel::getKey, l -> l.getTaxonomy().getKey(), (a, b) -> a));
+
+		taxonomyKeyToOptions = new LinkedHashMap<>();
+		for (Taxonomy taxonomy : allTaxonomies) {
+			taxonomyKeyToOptions.put(taxonomy.getKey(), new ArrayList<>());
+		}
+		for (ObjectOptionValues option : options) {
+			Long taxonomyKey = levelKeyToTaxonomyKey.get(Long.valueOf(option.getKey()));
+			if (taxonomyKey != null && taxonomyKeyToOptions.containsKey(taxonomyKey)) {
+				taxonomyKeyToOptions.get(taxonomyKey).add(option);
+			}
+		}
+		
+		groups = new ArrayList<>(allTaxonomies.size());
+		for (Taxonomy taxonomy : allTaxonomies) {
+			String label = TaxonomyUIFactory.translateDisplayName(translator, taxonomy, taxonomy::getIdentifier);
+			List<ObjectOptionValues> groupOptions = taxonomyKeyToOptions.getOrDefault(taxonomy.getKey(), List.of());
+			groups.add(new ObjectOptionGroup(label, groupOptions));
+		}
+		groups.sort(Comparator.comparing(ObjectOptionGroup::getLabel, Comparator.nullsLast(Comparator.naturalOrder())));
 	}
 	
 	private List<ObjectOptionValues> toOptions(Collection<TaxonomyLevel> levels) {
@@ -217,7 +246,6 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		
 		@Override
 		public int compare(ObjectOptionValues o1, ObjectOptionValues o2) {
-			
 			// Use title fallback, otherwise all root options will be at the top of the list.
 			String subTitle1 = StringHelper.containsNonWhitespace(o1.getSubTitle())? o1.getSubTitle(): o1.getTitle();
 			String subTitle2 = StringHelper.containsNonWhitespace(o2.getSubTitle())? o2.getSubTitle(): o2.getTitle();
@@ -234,6 +262,11 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	@Override
 	public boolean isBrowserAvailable() {
 		return true;
+	}
+
+	@Override
+	public String getBrowserTitle(Locale locale) {
+		return browserTitle;
 	}
 
 	@Override

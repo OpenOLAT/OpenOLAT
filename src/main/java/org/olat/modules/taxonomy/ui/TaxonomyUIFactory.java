@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -47,6 +48,12 @@ public class TaxonomyUIFactory {
 		return PREFIX_DISPLAY_NAME + level.getI18nSuffix();
 	}
 	
+	public static String translateDisplayName(Translator translator, Taxonomy taxonomy, Supplier<String> notFound) {
+		if (taxonomy == null) return notFound.get();
+		String displayName = taxonomy.getDisplayName();
+		return StringHelper.containsNonWhitespace(displayName) ? displayName : notFound.get();
+	}
+
 	public static String translateDisplayName(Translator translator, TaxonomyLevel level) {
 		return translateDisplayName(translator, level, StringHelper.NULL);
 	}

@@ -289,7 +289,7 @@ public class LectureListDetailsController extends FormBasicController {
 			return;
 		}
 		
-		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null, null);
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null);
 		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
 				"lecture.subjects", formLayout, getWindowControl(), true, source);
 		taxonomyLevelEl.setEnabled(false);

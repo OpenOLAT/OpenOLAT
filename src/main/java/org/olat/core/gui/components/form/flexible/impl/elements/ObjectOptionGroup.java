@@ -19,34 +19,34 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
-
-import org.olat.core.gui.control.creator.ControllerCreator;
 
 /**
  *
- * Initial date: Sep 10, 2025<br>
+ * Initial date: 29 May 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface ObjectSelectionSource {
-	
-	public Collection<String> getDefaultSelectedKeys();
-	
-	public ObjectDisplayValues getDefaultDisplayValue();
-	
-	public ObjectDisplayValues getDisplayValue(Collection<String> keys);
-	
-	public List<ObjectOptionGroup> getOptionGroups(Locale locale);
-	
-	public boolean isBrowserAvailable();
-	
-	public String getBrowserTitle(Locale locale);
-	
-	public ControllerCreator getBrowserCreator(boolean multiSelection);
+public final class ObjectOptionGroup {
 
-	public void addMissingOptions(Collection<String> keys);
+	private final String label;
+	private final List<? extends ObjectOption> options;
+
+	public ObjectOptionGroup(String label, List<? extends ObjectOption> options) {
+		this.label = label;
+		this.options = List.copyOf(options);
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public List<? extends ObjectOption> getOptions() {
+		return options;
+	}
+
+	public static ObjectOptionGroup of(String label, List<? extends ObjectOption> options) {
+		return new ObjectOptionGroup(label, options);
+	}
 
 }

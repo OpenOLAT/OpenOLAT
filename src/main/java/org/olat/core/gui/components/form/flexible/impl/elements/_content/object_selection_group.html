@@ -1,0 +1,27 @@
+#if(!$expandButtonName.isEmpty())
+	#if($r.visible($expandButtonName))
+		<div class="o_object_selection_divider">
+			$r.render($expandButtonName)
+		</div>
+		#if($r.visible($elementName))
+			$r.render($elementName)
+			#if($r.visible($loadMoreName))
+				<div class="o_button_group">
+					$r.render($loadMoreName)
+				</div>
+			#end
+		#end
+	#end
+#else
+	<div class="o_object_selection_divider">
+		<span class="o_object_selection_divider_text">$r.escapeHtml($groupLabel)</span>
+	</div>
+	#if($r.visible($elementName))
+		$r.render($elementName)
+		#if($r.visible($loadMoreName))
+			<div class="o_button_group">
+				$r.render($loadMoreName)
+			</div>
+		#end
+	#end
+#end

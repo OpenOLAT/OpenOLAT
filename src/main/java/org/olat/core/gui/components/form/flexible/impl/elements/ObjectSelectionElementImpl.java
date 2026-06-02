@@ -74,6 +74,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	private String noSelectionText;
 	private ObjectSelectionSource source;
 	private Set<String> selectedKeys;
+	private boolean dirty;
 
 	public ObjectSelectionElementImpl(WindowControl wControl, String name, boolean multiSelection, ObjectSelectionSource source) {
 		super(name);
@@ -149,9 +150,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 				if (!selectedKeys.equals(selectionEvent.getSelectedKeys())) {
 					selectedKeys = new HashSet<>(selectionEvent.getSelectedKeys());
 					updateDisplayUI();
-					
-					Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
-					wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+					dirty = true;
 					
 					if (getAction() == FormEvent.ONCHANGE) {
 						getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
@@ -184,6 +183,12 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		
 		expandFormItem.setExpanded(false);
 		expandFormItem.setAriaControls(null);
+		
+		if (dirty && !getRootForm().isHideDirtyMarkingMessage()) {
+			Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+			getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+			dirty = false;
+		}
 		
 		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
 		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
@@ -224,7 +229,9 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 			selectedKeys.clear();
 		}
 		
-		if (source.getOptions().stream().anyMatch(option -> key.equals(option.getKey()))) {
+		if (source.getOptionGroups(getTranslator().getLocale()).stream()
+				.flatMap(g -> g.getOptions().stream())
+				.anyMatch(option -> key.equals(option.getKey()))) {
 			selectedKeys.add(key);
 		}
 		
@@ -235,6 +242,12 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	public void unselectAll() {
 		selectedKeys.clear();
 		updateDisplayUI();
+	}
+
+	@Override
+	public void setEnabled(boolean isEnabled) {
+		expandFormItem.setEnabled(isEnabled);
+		super.setEnabled(isEnabled);
 	}
 	
 	@Override
@@ -323,9 +336,11 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		browseCtrl = source.getBrowserCreator(multiSelection).createController(ureq, wControl);
 		browseCtrl.addControllerListener(this);
 
-		String optionsLabel = source.getOptionsLabel(getTranslator().getLocale());
-		optionsLabel = StringHelper.containsNonWhitespace(optionsLabel)? optionsLabel: getTranslator().translate("options");
-		cmc = new CloseableModalController(wControl, getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, optionsLabel);
+		String browserTitle = source.getBrowserTitle(getTranslator().getLocale());
+		if (!StringHelper.containsNonWhitespace(browserTitle)) {
+			browserTitle = elementTranslator.translate("options");
+		}
+		cmc = new CloseableModalController(wControl, getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, browserTitle);
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}
@@ -335,22 +350,24 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 
 		if (multiSelection) {
 			Set<String> validKeys = new HashSet<>();
-			for (ObjectOption option : source.getOptions()) {
-				validKeys.add(option.getKey());
+			for (ObjectOptionGroup group : source.getOptionGroups(getTranslator().getLocale())) {
+				for (ObjectOption option : group.getOptions()) {
+					validKeys.add(option.getKey());
+				}
 			}
 			for (String key : keys) {
-				if (validKeys.contains(key)) {
-					selectedKeys.add(key);
+				if (validKeys.contains(key) && selectedKeys.add(key)) {
+					dirty = true;
 				}
 			}
 		} else if (keys != null && keys.size() == 1) {
-			selectedKeys.clear();
-			selectedKeys.addAll(keys);
+			if (!selectedKeys.equals(keys)) {
+				selectedKeys.clear();
+				selectedKeys.addAll(keys);
+				dirty = true;
+			}
 		}
 		updateDisplayUI();
-
-		Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
-		wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
 
 		if (getAction() == FormEvent.ONCHANGE) {
 			getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));

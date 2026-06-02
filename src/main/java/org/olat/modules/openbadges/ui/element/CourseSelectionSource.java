@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -109,17 +110,11 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return translator.translate("course.selection.option");
-	}
-	
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOption();
-		
-		return options;
+		return List.of(ObjectOptionGroup.of(translator.translate("course.selection.option"), options));
 	}
-	
+
 	private void initOption() {
 		if (options == null) {
 			options = toOptions();
@@ -141,6 +136,11 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	@Override
 	public boolean isBrowserAvailable() {
 		return true;
+	}
+	
+	@Override
+	public String getBrowserTitle(Locale locale) {
+		return translator.translate("course.selection.option");
 	}
 	
 	@Override
