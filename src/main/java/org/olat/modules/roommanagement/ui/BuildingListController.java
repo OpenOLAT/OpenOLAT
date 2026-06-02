@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -53,6 +54,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -247,6 +249,9 @@ public class BuildingListController extends FormBasicController {
 			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
+		} else if (source == mapsCalloutCtrl && event == Event.DONE_EVENT) {
+			mapsCalloutWindowCtrl.deactivate();
+			cleanUpMapsCallout();
 		} else if (source == mapsCalloutWindowCtrl) {
 			cleanUpMapsCallout();
 		}
@@ -330,21 +335,42 @@ public class BuildingListController extends FormBasicController {
 
 	private static final class MapsCalloutController extends BasicController {
 
+		private final Link appleMapsLink;
+		private final Link googleMapsLink;
+		private final String appleMapsUrl;
+		private final String googleMapsUrl;
+
 		public MapsCalloutController(UserRequest ureq, WindowControl wControl, Building building) {
 			super(ureq, wControl);
 			VelocityContainer mainVC = createVelocityContainer("maps_callout");
 
 			String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
+			appleMapsUrl = "https://maps.apple.com/?q=" + query;
+			googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
 
-			mainVC.contextPut("appleMapsUrl", "https://maps.apple.com/?q=" + query);
-			mainVC.contextPut("googleMapsUrl", "https://www.google.com/maps/search/?api=1&query=" + query);
+			appleMapsLink = LinkFactory.createLink("building.open.apple.maps", mainVC, this);
+			appleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+			appleMapsLink.setUrl(appleMapsUrl);
+			appleMapsLink.setNewWindow(true, true);
+
+			googleMapsLink = LinkFactory.createLink("building.open.google.maps", mainVC, this);
+			googleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+			googleMapsLink.setUrl(googleMapsUrl);
+			googleMapsLink.setNewWindow(true, true);
+
 			putInitialPanel(mainVC);
 		}
 
 		@Override
 		protected void event(UserRequest ureq, org.olat.core.gui.components.Component source,
 				org.olat.core.gui.control.Event event) {
-			//
+			if (source == appleMapsLink) {
+				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(appleMapsUrl));
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else if (source == googleMapsLink) {
+				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(googleMapsUrl));
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 	}
 
