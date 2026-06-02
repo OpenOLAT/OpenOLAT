@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
@@ -409,13 +410,14 @@ public class ImportedRow extends AbstractImportRow {
 		return subjects;
 	}
 	
-	public List<String> getSubjectsList() {
-		List<String> list = new ArrayList<>(3);
+	public List<TaxonomyKey> getSubjectsList() {
+		List<TaxonomyKey> list = new ArrayList<>(3);
 		if(StringHelper.containsNonWhitespace(subjects)) {
 			String[] subjectsArr = subjects.split(";");
 			for(String subject:subjectsArr) {
-				if(StringHelper.containsNonWhitespace(subject)) {
-					list.add(subject.trim());
+				TaxonomyKey tkey = TaxonomyKey.valueOf(subject);
+				if(tkey != null) {
+					list.add(tkey);
 				}
 			}
 		}
@@ -435,12 +437,14 @@ public class ImportedRow extends AbstractImportRow {
 				.collect(Collectors.toSet());
 	}
 	
-	public TaxonomyLevel getTaxonomyLevel(String subject) {
+	public TaxonomyLevel getTaxonomyLevel(TaxonomyKey subject) {
 		if(taxonomyLevels == null) return null;
 		
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 			String path = taxonomyLevel.getMaterializedPathIdentifiers();
-			if(subject.equals(path)) {
+			String taxonomyIdentifier = taxonomyLevel.getTaxonomy().getIdentifier();
+			if(subject.levelPathIdentifiers().equals(path)
+					&& (subject.taxonomyIdentifier() == null || subject.taxonomyIdentifier().equals(taxonomyIdentifier))) {
 				return taxonomyLevel;
 			}
 		}
