@@ -90,10 +90,13 @@ public class RoomManagementAdminController extends BasicController implements Ac
 			doOpenSettings(ureq);
 			segmentView.select(settingsLink);
 		} else if (ORES_TYPE_ROOM_SCHEDULING.equalsIgnoreCase(type) && roomSchedulingLink.isVisible()) {
+			doOpenRoomScheduling(ureq);
 			segmentView.select(roomSchedulingLink);
 		} else if (ORES_TYPE_ROOMS.equalsIgnoreCase(type) && roomsLink.isVisible()) {
+			doOpenRooms(ureq);
 			segmentView.select(roomsLink);
 		} else if (ORES_TYPE_BUILDINGS.equalsIgnoreCase(type) && buildingsLink.isVisible()) {
+			doOpenBuildings(ureq);
 			segmentView.select(buildingsLink);
 		}
 	}
