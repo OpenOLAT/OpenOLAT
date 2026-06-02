@@ -319,7 +319,10 @@ public class BuildingListController extends FormBasicController {
 		public void render(Renderer renderer, StringOutput target, Object cellValue,
 				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			if (cellValue instanceof RoomStatus status) {
-				target.append(translator.translate("building.status." + status.name()));
+				target.append("<span class='o_labeled_light o_building_status_").append(status.name()).append("'>")
+				      .append("<i class='o_icon o_icon-fw o_icon_building_status_").append(status.name()).append("'> </i> <span>")
+				      .append(StringHelper.escapeHtml(translator.translate("building.status." + status.name())))
+				      .append("</span></span>");
 			}
 		}
 	}

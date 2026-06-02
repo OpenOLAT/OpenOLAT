@@ -1,3 +1,15 @@
+.o_labeled_light {
+	&.o_building_status_active {
+		@extend %o_labeled_light_green;
+	}
+	&.o_building_status_inactive {
+		@extend %o_labeled_light_grey;
+	}
+	&.o_building_status_deleted {
+		@extend %o_labeled_light_red;
+	}
+}
+
 .o_building_square_container {
 	display: flex;
 	height: 20px;
