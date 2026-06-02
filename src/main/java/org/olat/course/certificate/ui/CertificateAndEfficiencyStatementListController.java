@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -66,8 +67,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
@@ -148,7 +147,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CloseableModalController cmc;
 	private CollectArtefactController collectorCtrl;
 	private CurriculumLecturesInfosController curriculumLecturesCtrl;
-	private DialogBoxController confirmDeleteCtr;
+	private ConfirmDeleteEfficiencyStatementController confirmDeleteCtr;
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final boolean canModify;
@@ -748,10 +747,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		 if (source == confirmDeleteCtr) {
-			if (DialogBoxUIFactory.isYesEvent(event)) {
-				CertificateAndEfficiencyStatementRow statement = (CertificateAndEfficiencyStatementRow)confirmDeleteCtr.getUserObject();
-				doDelete(statement);
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+				tableEl.reset(true, true, true);
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(collectorCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
@@ -831,36 +832,32 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 
 	private void doConfirmDelete(UserRequest ureq, CertificateAndEfficiencyStatementRow statement) {
-		RepositoryEntry re = repositoryService.loadByResourceKey(statement.getResourceKey());
-		if(re == null) {
-			String title = translate("efficiencyStatements.delete.confirm.title");
-			String text = translate("efficiencyStatements.delete.confirm", statement.getDisplayName());
-			confirmDeleteCtr = activateYesNoDialog(ureq, title, text, confirmDeleteCtr);
-			confirmDeleteCtr.setUserObject(statement);
-		} else {
-			showWarning("efficiencyStatements.cannot.delete");
-		}
-	}
-	
-	private void doDelete(CertificateAndEfficiencyStatementRow statement) {
-		if (statement == null) {
-			return;
-		}
+		RepositoryEntry re = statement.getResourceKey() != null && statement.getResourceKey().longValue() > 0
+				? repositoryService.loadByResourceKey(statement.getResourceKey())
+				: null;
 		
-		UserEfficiencyStatementLight efficiencyStatement = esm.getUserEfficiencyStatementLightByKey(statement.getEfficiencyStatementKey());
-		if(efficiencyStatement != null) {
-			esm.deleteEfficiencyStatement(efficiencyStatement);
+		String confirmationI18nKey;
+		if(re == null) {
+			confirmationI18nKey = "efficiencyStatements.delete.confirm";
 		} else {
-			// Delete standalone certificate
-			Certificate certificate = certificatesManager.getCertificateByUuid(statement.getCertificate().getUuid());
-			if (certificate != null) {
-				certificatesManager.deleteStandalonCertificate(certificate);
+			boolean participant = repositoryService.hasRoleExpanded(assessedIdentity, re, GroupRoles.participant.name());
+			if(participant) {
+				confirmationI18nKey = "efficiencyStatements.delete.confirm.participant";
+				
+			} else {
+				confirmationI18nKey = "efficiencyStatements.delete.confirm";
 			}
 		}
 		
-		loadModel();
-		tableEl.reset();
-		showInfo("info.efficiencyStatement.deleted");
+		confirmDeleteCtr = new ConfirmDeleteEfficiencyStatementController(ureq, getWindowControl(),
+				translate(confirmationI18nKey, statement.getDisplayName()), null, translate("delete"),
+				assessedIdentity,  re, statement.getCertificateKey(), statement.getEfficiencyStatementKey());
+		listenTo(confirmDeleteCtr);
+
+		String title = translate("efficiencyStatements.delete.confirm.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtr.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doLaunchCoachingTool(UserRequest ureq) {
@@ -929,8 +926,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				toolsContainer.put("startCourse", startCourse);
 			}
 				
-			if (canModify && (row.getResourceKey() == null || row.getResourceKey().longValue() <= 0l)
-					&& !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete)) {
+			if (canModify && !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete)) {
 				deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
 				deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
 				toolsContainer.put("deleteStatement", deleteStatement);
