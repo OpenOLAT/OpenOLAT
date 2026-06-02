@@ -40,7 +40,7 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	private List<CurriculumElementType> childTypes;
 	private String forUseAsLabel;
 	private String typeOfElementLabel;
-	private String typeOfApplicationLabel;
+	private String contentLabel;
 	private final CurriculumElementType type;
 
 	public CurriculumElementTypeRow(CurriculumElementType type) {
@@ -80,12 +80,12 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 		this.typeOfElementLabel = typeOfElementLabel;
 	}
 
-	public String getTypeOfApplicationLabel() {
-		return typeOfApplicationLabel;
+	public String getContentLabel() {
+		return contentLabel;
 	}
 
-	public void setTypeOfApplicationLabel(String typeOfApplicationLabel) {
-		this.typeOfApplicationLabel = typeOfApplicationLabel;
+	public void setContentLabel(String contentLabel) {
+		this.contentLabel = contentLabel;
 	}
 
 	public CurriculumElementType getType() {

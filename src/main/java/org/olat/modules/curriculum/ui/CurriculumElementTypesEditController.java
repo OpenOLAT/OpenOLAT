@@ -107,7 +107,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfElement));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfApplication));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
 		
@@ -162,30 +162,21 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			forUseAsKey = "table.type.for.use.as.implementation.or.element";
 		}
 		row.setForUseAsLabel(translate(forUseAsKey));
-		String typeOfElementKey;
-		if(!type.isSingleElement()) {
-			typeOfElementKey = "table.type.type.of.element.structural.element";
+		String typeOfElementKey = type.isSingleElement()
+				? "table.type.type.of.element.single.element"
+				: "table.type.type.of.element.structural.element";
+		row.setTypeOfElementLabel(translate(typeOfElementKey));
+		String contentKey;
+		if(type.getMaxRepositoryEntryRelations() == 0) {
+			contentKey = "table.type.content.no.content";
 		} else if(type.getMaxRepositoryEntryRelations() == 1) {
-			typeOfElementKey = "table.type.type.of.element.single.course";
+			contentKey = "table.type.content.single.course";
 		} else if(type.getMaxRepositoryEntryRelations() == -1) {
-			typeOfElementKey = "table.type.type.of.element.course.bundle";
+			contentKey = "table.type.content.course.bundle";
 		} else {
-			typeOfElementKey = null;
+			contentKey = null;
 		}
-		row.setTypeOfElementLabel(typeOfElementKey != null ? translate(typeOfElementKey) : null);
-		if(!type.isSingleElement()) {
-			String typeOfApplicationKey;
-			if(type.getMaxRepositoryEntryRelations() == 0) {
-				typeOfApplicationKey = "table.type.type.of.application.structure.only";
-			} else if(type.getMaxRepositoryEntryRelations() == 1) {
-				typeOfApplicationKey = "table.type.type.of.application.structure.single.course";
-			} else if(type.getMaxRepositoryEntryRelations() == -1) {
-				typeOfApplicationKey = "table.type.type.of.application.structure.course.bundle";
-			} else {
-				typeOfApplicationKey = null;
-			}
-			row.setTypeOfApplicationLabel(typeOfApplicationKey != null ? translate(typeOfApplicationKey) : null);
-		}
+		row.setContentLabel(contentKey != null ? translate(contentKey) : null);
 		row.setParentTypes(parents);
 		if(!parents.isEmpty()) {
 			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
