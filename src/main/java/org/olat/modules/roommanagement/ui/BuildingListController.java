@@ -58,6 +58,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -67,6 +68,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.BuildingRefImpl;
@@ -99,6 +101,8 @@ public class BuildingListController extends FormBasicController implements Flexi
 	private EditBuildingController editBuildingCtrl;
 	private MapsCalloutController mapsCalloutCtrl;
 	private CloseableCalloutWindowController mapsCalloutWindowCtrl;
+	private RoomsCalloutController roomsCalloutCtrl;
+	private CloseableCalloutWindowController roomsCalloutWindowCtrl;
 
 	private final Roles roles;
 
@@ -259,11 +263,12 @@ public class BuildingListController extends FormBasicController implements Flexi
 		int roomCount = (int) roomManagementService.countRooms(roomParams);
 		row.setRoomCount(roomCount);
 
-		FormLink roomsLink = uifactory.addFormLink(
-				"rooms_" + building.getKey(), "rooms",
-				String.valueOf(roomCount), null, null, Link.LINK | Link.NONTRANSLATED);
-		roomsLink.setUserObject(row);
-		row.setRoomsLink(roomsLink);
+		if (roomCount > 0) {
+			FormLink roomsLink = uifactory.addFormLink("rooms_" + building.getKey(), "rooms",
+					String.valueOf(roomCount), null, null, Link.LINK | Link.NONTRANSLATED);
+			roomsLink.setUserObject(row);
+			row.setRoomsLink(roomsLink);
+		}
 
 		row.setOrganisations(roomManagementService.getOrganisations(building));
 
@@ -287,6 +292,11 @@ public class BuildingListController extends FormBasicController implements Flexi
 			cleanUpMapsCallout();
 		} else if (source == mapsCalloutWindowCtrl) {
 			cleanUpMapsCallout();
+		} else if (source == roomsCalloutCtrl && event == Event.DONE_EVENT) {
+			roomsCalloutWindowCtrl.deactivate();
+			cleanUpRoomsCallout();
+		} else if (source == roomsCalloutWindowCtrl) {
+			cleanUpRoomsCallout();
 		}
 		super.event(ureq, source, event);
 	}
@@ -303,6 +313,13 @@ public class BuildingListController extends FormBasicController implements Flexi
 		removeAsListenerAndDispose(mapsCalloutCtrl);
 		mapsCalloutWindowCtrl = null;
 		mapsCalloutCtrl = null;
+	}
+
+	private void cleanUpRoomsCallout() {
+		removeAsListenerAndDispose(roomsCalloutWindowCtrl);
+		removeAsListenerAndDispose(roomsCalloutCtrl);
+		roomsCalloutWindowCtrl = null;
+		roomsCalloutCtrl = null;
 	}
 
 	@Override
@@ -351,7 +368,8 @@ public class BuildingListController extends FormBasicController implements Flexi
 				BuildingRow row = (BuildingRow) link.getUserObject();
 				doOpenMapsCallout(ureq, row, link);
 			} else if ("rooms".equals(cmd)) {
-				// rooms callout — to be implemented
+				BuildingRow row = (BuildingRow) link.getUserObject();
+				doOpenRoomsCallout(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -408,9 +426,65 @@ public class BuildingListController extends FormBasicController implements Flexi
 		mapsCalloutWindowCtrl.activate();
 	}
 
+	private void doOpenRoomsCallout(UserRequest ureq, BuildingRow row, FormLink link) {
+		cleanUpRoomsCallout();
+		SearchRoomParameters params = new SearchRoomParameters();
+		params.setBuilding(row.getBuilding());
+		params.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+		List<Room> rooms = roomManagementService.searchRooms(params, roles);
+		roomsCalloutCtrl = new RoomsCalloutController(ureq, getWindowControl(), rooms, getTranslator());
+		listenTo(roomsCalloutCtrl);
+		roomsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				roomsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(roomsCalloutWindowCtrl);
+		roomsCalloutWindowCtrl.activate();
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private static final class RoomsCalloutController extends BasicController {
+
+		private final List<Link> roomLinks = new ArrayList<>();
+		private final String roomsUrl;
+
+		public RoomsCalloutController(UserRequest ureq, WindowControl wControl, List<Room> rooms, Translator translator) {
+			super(ureq, wControl);
+			VelocityContainer mainVC = createVelocityContainer("rooms_callout");
+
+			roomsUrl = Settings.getServerContextPathURI() + "/auth/AdminSite/0/roommanagement/0/Rooms/0";
+
+			mainVC.contextPut("title", translator.translate("building.rooms.callout", String.valueOf(rooms.size())));
+
+			List<String> linkNames = new ArrayList<>();
+			for (Room room : rooms) {
+				String label = StringHelper.containsNonWhitespace(room.getExternalRef())
+						? room.getExternalRef() : room.getDescription();
+				if (!StringHelper.containsNonWhitespace(label)) {
+					continue;
+				}
+				Link roomLink = LinkFactory.createCustomLink("room_" + room.getKey(), "room_" + room.getKey(), 
+						"roomLink", StringHelper.escapeHtml(label), Link.LINK | Link.NONTRANSLATED, 
+						mainVC, this);
+				roomLink.setUrl(roomsUrl);
+				roomLink.setNewWindow(true, true);
+				roomLinks.add(roomLink);
+				linkNames.add(roomLink.getComponentName());
+			}
+			mainVC.contextPut("roomLinkNames", linkNames);
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, org.olat.core.gui.components.Component source, org.olat.core.gui.control.Event event) {
+			if (roomLinks.contains(source)) {
+				// Add route to exact room once the route is available
+				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(roomsUrl));
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		}
 	}
 
 	private static final class MapsCalloutController extends BasicController {
