@@ -96,10 +96,24 @@
 	}
 }
 
-.o_building_detail_map_actions {
-	margin-top: 8px;
-	display: flex;
-	gap: 8px;
+.o_building_detail_map_wrapper {
+	position: relative;
+
+	.o_building_detail_map_actions {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 8px;
+		display: flex;
+		gap: 8px;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.85);
+		
+		a {
+			z-index: 400;
+		}
+	}
 }
 
 .o_building_room_status_active {
