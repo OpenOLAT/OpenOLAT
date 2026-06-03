@@ -99,7 +99,7 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public FormItem addFormItem(Locale locale, final User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
-		org.olat.core.gui.components.form.flexible.elements.DateChooser dateElem = null;
+		DateChooser dateElem = null;
 		Date val = decode(getInternalValue(user));
 		dateElem = FormUIFactory.getInstance().addDateChooser(getName(), i18nFormElementLabelKey(), val, formItemContainer);
 		dateElem.setItemValidatorProvider(new ItemValidatorProvider() {
@@ -115,8 +115,7 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
 			dateElem.setMandatory(true);
 		}
-		
-		dateElem.setExampleKey("form.example.free", new String[] {Formatter.getInstance(locale).formatDate(new Date())});
+		dateElem.setExampleKey("form.example.date", null);
 		return dateElem;
 	}
 
