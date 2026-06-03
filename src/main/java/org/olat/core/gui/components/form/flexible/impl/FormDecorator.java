@@ -153,9 +153,13 @@ public class FormDecorator {
 	}
 	
 	public String ffXHREvent(String key, String value) {
+		return ffXHREvent(key,  value, true, true);
+	}
+	
+	public String ffXHREvent(String key, String value, boolean dirtyCheck, boolean pushState) {
 		Form theForm = container.getRootForm();
 		String elementId = "o_fi" + container.getComponent().getDispatchID();
-		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true, new NameValuePair(key, value));
+		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, dirtyCheck, pushState, new NameValuePair(key, value));
 	}
 	
 	public String openFfXHREvent(boolean dirtyCheck, boolean pushState, boolean submit) {
