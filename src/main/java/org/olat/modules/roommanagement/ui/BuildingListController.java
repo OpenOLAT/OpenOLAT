@@ -36,10 +36,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -66,6 +69,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.model.BuildingRefImpl;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.olat.modules.roommanagement.ui.BuildingListDataModel.BuildingCols;
@@ -75,12 +79,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 1 Jun 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BuildingListController extends FormBasicController {
+public class BuildingListController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	private static final String FILTER_STATUS = "status";
 	private static final String TAB_ID_ALL = "all";
 	private static final String TAB_ID_RELEVANT = "relevant";
 	private static final String TAB_ID_DELETED = "deleted";
+	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 
 	private FormLink createBuildingButton;
 	private FlexiTableElement tableEl;
@@ -114,7 +119,7 @@ public class BuildingListController extends FormBasicController {
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.color, new ColorCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.reference));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.reference, TOGGLE_DETAILS_CMD));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.description));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.status,
 				new StatusCellRenderer()));
@@ -133,8 +138,24 @@ public class BuildingListController extends FormBasicController {
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-buildings");
 
+		VelocityContainer detailsVC = createVelocityContainer("building_details");
+		tableEl.setDetailsRenderer(detailsVC, this);
+
 		initFilters();
 		initFilterTabs(ureq);
+	}
+
+	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
+	public Iterable<org.olat.core.gui.components.Component> getComponents(int row, Object rowObject) {
+		if (rowObject instanceof BuildingRow buildingRow && buildingRow.getDetailsController() != null) {
+			return List.of(buildingRow.getDetailsController().getInitialFormItem().getComponent());
+		}
+		return List.of();
 	}
 
 	private void initFilters() {
@@ -259,6 +280,8 @@ public class BuildingListController extends FormBasicController {
 			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
+		} else if (source instanceof BuildingDetailsController detailsCtrl && event == Event.CHANGED_EVENT) {
+			doEditBuilding(ureq, detailsCtrl.getBuilding());
 		} else if (source == mapsCalloutCtrl && event == Event.DONE_EVENT) {
 			mapsCalloutWindowCtrl.deactivate();
 			cleanUpMapsCallout();
@@ -287,14 +310,39 @@ public class BuildingListController extends FormBasicController {
 		if (source == createBuildingButton) {
 			doCreateBuilding(ureq);
 		} else if (source == tableEl) {
-			if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+			if (event instanceof DetailsToggleEvent toggleEvent) {
+				BuildingRow row = dataModel.getObject(toggleEvent.getRowIndex());
+				if (toggleEvent.isVisible()) {
+					doOpenDetails(ureq, row, toggleEvent.getRowIndex());
+				} else {
+					doCloseDetails(row);
+				}
+			} else if (event instanceof SelectionEvent se && TOGGLE_DETAILS_CMD.equals(se.getCommand())) {
+				BuildingRow row = dataModel.getObject(se.getIndex());
+				if (row.isDetailsControllerAvailable()) {
+					doCloseDetails(row);
+					tableEl.collapseDetails(se.getIndex());
+				} else {
+					doOpenDetails(ureq, row, se.getIndex());
+					tableEl.expandDetails(se.getIndex());
+				}
+			} else if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
 				loadModel();
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if ("select".equals(cmd)) {
 				BuildingRow row = (BuildingRow) link.getUserObject();
-				doEditBuilding(ureq, row);
+				int rowIndex = dataModel.getObjects().indexOf(row);
+				if (rowIndex >= 0) {
+					if (row.isDetailsControllerAvailable()) {
+						doCloseDetails(row);
+						tableEl.collapseDetails(rowIndex);
+					} else {
+						doOpenDetails(ureq, row, rowIndex);
+						tableEl.expandDetails(rowIndex);
+					}
+				}
 			} else if ("infoUrl".equals(cmd)) {
 				BuildingRow row = (BuildingRow) link.getUserObject();
 				getWindowControl().getWindowBackOffice().sendCommandTo(
@@ -320,10 +368,28 @@ public class BuildingListController extends FormBasicController {
 		cmc.activate();
 	}
 
-	private void doEditBuilding(UserRequest ureq, BuildingRow row) {
+	private void doOpenDetails(UserRequest ureq, BuildingRow row, @SuppressWarnings("unused") int rowIndex) {
+		doCloseDetails(row);
+		Building building = roomManagementService.getBuilding(new BuildingRefImpl(row.getBuilding().getKey()));
+		if (building == null) return;
+		BuildingDetailsController detailsCtrl = new BuildingDetailsController(ureq, getWindowControl(), building, mainForm);
+		listenTo(detailsCtrl);
+		row.setDetailsController(detailsCtrl);
+		flc.add(detailsCtrl.getInitialFormItem());
+	}
+
+	private void doCloseDetails(BuildingRow row) {
+		BuildingDetailsController detailsCtrl = row.getDetailsController();
+		if (detailsCtrl == null) return;
+		removeAsListenerAndDispose(detailsCtrl);
+		flc.remove(detailsCtrl.getInitialFormItem());
+		row.setDetailsController(null);
+	}
+
+	private void doEditBuilding(UserRequest ureq, Building building) {
 		removeAsListenerAndDispose(editBuildingCtrl);
-		editBuildingCtrl = new EditBuildingController(ureq, getWindowControl(),
-				row.getBuilding(), row.getOrganisations());
+		List<Organisation> organisations = roomManagementService.getOrganisations(building);
+		editBuildingCtrl = new EditBuildingController(ureq, getWindowControl(), building, organisations);
 		listenTo(editBuildingCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

@@ -38,6 +38,7 @@ public class BuildingRow {
 	private FormLink roomsLink;
 	private List<Organisation> organisations;
 	private int roomCount;
+	private BuildingDetailsController detailsController;
 
 	public BuildingRow(Building building) {
 		this.building = building;
@@ -61,6 +62,22 @@ public class BuildingRow {
 
 	public void setAddressLink(FormLink addressLink) {
 		this.addressLink = addressLink;
+	}
+
+	public BuildingDetailsController getDetailsController() {
+		return detailsController;
+	}
+
+	public void setDetailsController(BuildingDetailsController detailsController) {
+		this.detailsController = detailsController;
+	}
+
+	public boolean isDetailsControllerAvailable() {
+		return detailsController != null;
+	}
+
+	public String getDetailsControllerName() {
+		return detailsController != null ? detailsController.getInitialFormItem().getName() : null;
 	}
 
 	public FormLink getInfoUrlLink() {

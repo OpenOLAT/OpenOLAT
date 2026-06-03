@@ -127,6 +127,7 @@ public class EditBuildingController extends FormBasicController {
 
 		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorService.getColors(), getLocale());
 		colorEl = uifactory.addColorPickerElement("building.color", "building.col.color", formLayout, colors);
+		colorEl.setElementCssClass("o_building_color_picker");
 		if (building != null && StringHelper.containsNonWhitespace(building.getColorCss())) {
 			colorEl.setColor(toColorId(building.getColorCss()));
 		}
