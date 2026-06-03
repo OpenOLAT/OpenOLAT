@@ -40,6 +40,7 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.tree.TreeNodeTitleComparator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -138,7 +139,7 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 			return newNode;
 		};
 		GenericTreeModelBuilder<Organisation> treeModelBuilder = new GenericTreeModelBuilder<>(keyExtractor, parentExtractor, toNode);
-		GenericTreeModel treeModel = treeModelBuilder.build(organisations);
+		GenericTreeModel treeModel = treeModelBuilder.build(organisations, new OrganisationRootComparator());
 		
 		OptionCreationVisitor optionCreationVisitor = new OptionCreationVisitor(keyExtractor);
 		TreeVisitor tv = new TreeVisitor(optionCreationVisitor, treeModel.getRootNode(), false);
@@ -236,6 +237,26 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	
 	public static final Collection<? extends OrganisationRef> toRefs(Collection<String> keys) {
 		return keys.stream().map(key -> new OrganisationRefImpl(Long.valueOf(key))) .toList();
+	}
+
+	private static final class OrganisationRootComparator extends TreeNodeTitleComparator {
+
+		@Override
+		public int compare(INode n1, INode n2) {
+			if (isDefaultOrganisation(n1)) {
+				return -1;
+			}
+			if (isDefaultOrganisation(n2)) {
+				return 1;
+			}
+			return super.compare(n1, n2);
+		}
+
+		private static boolean isDefaultOrganisation(INode node) {
+			return node instanceof TreeNode treeNode
+					&& treeNode.getUserObject() instanceof Organisation organisation
+					&& organisation.isDefault();
+		}
 	}
 
 }

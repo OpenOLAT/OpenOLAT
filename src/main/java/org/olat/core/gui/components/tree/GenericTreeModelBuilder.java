@@ -46,18 +46,22 @@ public class GenericTreeModelBuilder<T> {
 	}
 	
 	public GenericTreeModel build(Collection<T> ts) {
+		return build(ts, new TreeNodeTitleComparator());
+	}
+
+	public GenericTreeModel build(Collection<T> ts, Comparator<INode> rootComparator) {
 		GenericTreeModel model = new GenericTreeModel();
 		
 		GenericTreeNode root = new GenericTreeNode();
 		root.setTitle("ROOT");
 		model.setRootNode(root);
 		
-		loadTreeModel(model, ts);
+		loadTreeModel(model, ts, rootComparator);
 		
 		return model;
 	}
-	
-	private void loadTreeModel(GenericTreeModel model, Collection<T> ts) {
+
+	private void loadTreeModel(GenericTreeModel model, Collection<T> ts, Comparator<INode> rootComparator) {
 		Map<String, GenericTreeNode> keyToNode = new HashMap<>();
 		for (T t: ts) {
 			String key = keyExtractor.apply(t);
@@ -87,10 +91,10 @@ public class GenericTreeModelBuilder<T> {
 			}
 		}
 		
-		Comparator<INode> comparator = new TreeNodeTitleComparator();
-		model.getRootNode().sort(comparator);
+		model.getRootNode().sort(rootComparator);
+		Comparator<INode> innerComparator = new TreeNodeTitleComparator();
 		for (GenericTreeNode node : keyToNode.values()) {
-			node.sort(comparator);
+			node.sort(innerComparator);
 		}
 	}
 
