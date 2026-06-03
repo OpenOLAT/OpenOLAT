@@ -45,12 +45,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCol
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -205,7 +207,13 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.recertificationCount));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.status,
 				new CertificationStatusCellRenderer(getTranslator())));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("open", translate("open"), "open"));
+		
+		// Workaround to prevent dirty marking after uploading a certificate
+		StaticFlexiCellRenderer reportRenderer = new StaticFlexiCellRenderer(translate("open"), "open");
+		reportRenderer.setPush(true);
+		reportRenderer.setDirtyCheck(false);
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "open", null, -1, "open", false, null, FlexiColumnModel.ALIGNMENT_LEFT, reportRenderer));
+
 		tableColumnModel.addFlexiColumnModel(new ActionsColumnModel(CertificateCols.tools));
 		
 		tableModel = new CertificatesListDataModel(tableColumnModel, getLocale());	

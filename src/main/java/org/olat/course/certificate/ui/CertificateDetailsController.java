@@ -108,6 +108,7 @@ public class CertificateDetailsController extends BasicController {
 		mainVC.contextPut("certificateKey", certificate.getKey());
 		mainVC.contextPut("filename", DownloadCertificateCellRenderer.getName(certificate));
 		mainVC.contextPut("awardedBy", StringHelper.containsNonWhitespace(certificateRow.getAwardedBy()));
+		mainVC.contextPut("awardedByName", StringHelper.escapeHtml(certificateRow.getAwardedBy()));
 		mainVC.contextPut("awardedByIconCss", certificateRow.getAwardedByIconCSS());
 		mainVC.contextPut("origin", certificateRow.getOrigin());
 		mainVC.contextPut("creationDate", certificate.getCreationDate());
