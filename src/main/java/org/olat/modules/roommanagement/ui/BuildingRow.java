@@ -36,6 +36,7 @@ public class BuildingRow {
 	private FormLink addressLink;
 	private FormLink infoUrlLink;
 	private FormLink roomsLink;
+	private FormLink toolsLink;
 	private List<Organisation> organisations;
 	private int roomCount;
 	private BuildingDetailsController detailsController;
@@ -94,6 +95,14 @@ public class BuildingRow {
 
 	public void setRoomsLink(FormLink roomsLink) {
 		this.roomsLink = roomsLink;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 
 	public List<Organisation> getOrganisations() {

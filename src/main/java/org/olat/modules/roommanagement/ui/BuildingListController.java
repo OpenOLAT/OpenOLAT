@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -57,6 +58,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -99,6 +102,9 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 	private CloseableModalController cmc;
 	private EditBuildingController editBuildingCtrl;
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutWindowCtrl;
+	private DialogBoxController confirmDeactivateDialog;
 	private MapsCalloutController mapsCalloutCtrl;
 	private CloseableCalloutWindowController mapsCalloutWindowCtrl;
 	private RoomsCalloutController roomsCalloutCtrl;
@@ -133,6 +139,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 				new OrgRestrictionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BuildingCols.additionalInfo));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.rooms));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BuildingCols.tools));
 
 		dataModel = new BuildingListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "buildings", dataModel, 20, false,
@@ -272,6 +279,12 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 		row.setOrganisations(roomManagementService.getOrganisations(building));
 
+		if (building.getStatus() != RoomStatus.deleted) {
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
+
 		return row;
 	}
 
@@ -297,6 +310,15 @@ public class BuildingListController extends FormBasicController implements Flexi
 			cleanUpRoomsCallout();
 		} else if (source == roomsCalloutWindowCtrl) {
 			cleanUpRoomsCallout();
+		} else if (source == toolsCalloutWindowCtrl) {
+			cleanUpToolsCallout();
+		} else if (source == confirmDeactivateDialog) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				BuildingRow row = (BuildingRow) confirmDeactivateDialog.getUserObject();
+				doDeactivate(row);
+			}
+			removeAsListenerAndDispose(confirmDeactivateDialog);
+			confirmDeactivateDialog = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -348,28 +370,28 @@ public class BuildingListController extends FormBasicController implements Flexi
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if ("select".equals(cmd)) {
-				BuildingRow row = (BuildingRow) link.getUserObject();
-				int rowIndex = dataModel.getObjects().indexOf(row);
-				if (rowIndex >= 0) {
-					if (row.isDetailsControllerAvailable()) {
-						doCloseDetails(row);
-						tableEl.collapseDetails(rowIndex);
-					} else {
-						doOpenDetails(ureq, row, rowIndex);
-						tableEl.expandDetails(rowIndex);
+			if (link.getUserObject() instanceof BuildingRow row) {
+				if ("select".equals(cmd)) {
+					int rowIndex = dataModel.getObjects().indexOf(row);
+					if (rowIndex >= 0) {
+						if (row.isDetailsControllerAvailable()) {
+							doCloseDetails(row);
+							tableEl.collapseDetails(rowIndex);
+						} else {
+							doOpenDetails(ureq, row, rowIndex);
+							tableEl.expandDetails(rowIndex);
+						}
 					}
+				} else if ("infoUrl".equals(cmd)) {
+					getWindowControl().getWindowBackOffice().sendCommandTo(
+							CommandFactory.createNewWindowRedirectTo(row.getBuilding().getInfoUrl()));
+				} else if ("address".equals(cmd)) {
+					doOpenMapsCallout(ureq, row, link);
+				} else if ("rooms".equals(cmd)) {
+					doOpenRoomsCallout(ureq, row, link);
+				} else if ("tools".equals(cmd)) {
+					doOpenTools(ureq, row, link);
 				}
-			} else if ("infoUrl".equals(cmd)) {
-				BuildingRow row = (BuildingRow) link.getUserObject();
-				getWindowControl().getWindowBackOffice().sendCommandTo(
-						CommandFactory.createNewWindowRedirectTo(row.getBuilding().getInfoUrl()));
-			} else if ("address".equals(cmd)) {
-				BuildingRow row = (BuildingRow) link.getUserObject();
-				doOpenMapsCallout(ureq, row, link);
-			} else if ("rooms".equals(cmd)) {
-				BuildingRow row = (BuildingRow) link.getUserObject();
-				doOpenRoomsCallout(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -416,6 +438,69 @@ public class BuildingListController extends FormBasicController implements Flexi
 		cmc.activate();
 	}
 
+	private void cleanUpToolsCallout() {
+		removeAsListenerAndDispose(toolsCalloutWindowCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		toolsCalloutWindowCtrl = null;
+		toolsCtrl = null;
+	}
+
+	private void doOpenTools(UserRequest ureq, BuildingRow row, FormLink link) {
+		cleanUpToolsCallout();
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+		toolsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutWindowCtrl);
+		toolsCalloutWindowCtrl.activate();
+	}
+
+	private void doConfirmDeactivate(UserRequest ureq, BuildingRow row) {
+		String title = translate("building.confirm.deactivate.title");
+		String text = translate("building.confirm.deactivate", String.valueOf(row.getRoomCount()));
+		List<String> buttons = List.of(translate("building.tools.deactivate"), translate("cancel"));
+		confirmDeactivateDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
+		listenTo(confirmDeactivateDialog);
+		confirmDeactivateDialog.setUserObject(row);
+		confirmDeactivateDialog.activate();
+	}
+
+	private void doDeactivate(BuildingRow row) {
+		Building building = roomManagementService.getBuilding(new BuildingRefImpl(row.getBuilding().getKey()));
+		if (building == null) return;
+		building.setStatus(RoomStatus.inactive);
+		List<Organisation> orgs = roomManagementService.getOrganisations(building);
+		roomManagementService.updateBuilding(building, orgs, getIdentity());
+
+		SearchRoomParameters params = new SearchRoomParameters();
+		params.setBuilding(building);
+		params.setStatus(List.of(RoomStatus.active));
+		List<Room> activeRooms = roomManagementService.searchRooms(params, roles);
+		for (Room room : activeRooms) {
+			room.setStatus(RoomStatus.inactive);
+			roomManagementService.updateRoom(room, getIdentity());
+		}
+		loadModel();
+	}
+
+	private void doReactivate(BuildingRow row) {
+		Building building = roomManagementService.getBuilding(new BuildingRefImpl(row.getBuilding().getKey()));
+		if (building == null) return;
+		building.setStatus(RoomStatus.active);
+		List<Organisation> orgs = roomManagementService.getOrganisations(building);
+		roomManagementService.updateBuilding(building, orgs, getIdentity());
+		loadModel();
+	}
+
+	private void doDelete(UserRequest ureq, BuildingRow row) {
+		if (row.getRoomCount() > 0) {
+			showWarning("building.error.has.rooms");
+			return;
+		}
+		roomManagementService.deleteBuilding(new BuildingRefImpl(row.getBuilding().getKey()), getIdentity());
+		loadModel();
+	}
+
 	private void doOpenMapsCallout(UserRequest ureq, BuildingRow row, FormLink link) {
 		cleanUpMapsCallout();
 		mapsCalloutCtrl = new MapsCalloutController(ureq, getWindowControl(), row.getBuilding());
@@ -443,6 +528,57 @@ public class BuildingListController extends FormBasicController implements Flexi
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final BuildingRow row;
+
+		public ToolsController(UserRequest ureq, WindowControl wControl, BuildingRow row) {
+			super(ureq, wControl);
+			setTranslator(BuildingListController.this.getTranslator());
+			this.row = row;
+			VelocityContainer mainVC = createVelocityContainer("tools");
+
+			List<String> links = new ArrayList<>();
+			addLink("building.tools.edit", "edit", "o_icon o_icon-fw o_icon_edit", links, mainVC);
+			if (row.getBuilding().getStatus() == RoomStatus.active) {
+				addLink("building.tools.deactivate", "deactivate", "o_icon o_icon-fw o_icon_ban", links, mainVC);
+			} else {
+				addLink("building.tools.reactivate", "reactivate", "o_icon o_icon-fw o_icon_check", links, mainVC);
+			}
+			links.add("-");
+			addLink("building.tools.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
+
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+
+		private void addLink(String name, String cmd, String iconCSS, List<String> links, VelocityContainer vc) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), vc, this, Link.LINK);
+			link.setIconLeftCSS(iconCSS);
+			vc.put(name, link);
+			links.add(name);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, org.olat.core.gui.components.Component source, org.olat.core.gui.control.Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if (source instanceof Link link) {
+				switch (link.getCommand()) {
+					case "edit" -> { close(); doEditBuilding(ureq, row.getBuilding()); }
+					case "deactivate" -> { close(); doConfirmDeactivate(ureq, row); }
+					case "reactivate" -> { close(); doReactivate(row); }
+					case "delete" -> { close(); doDelete(ureq, row); }
+					default -> { /* ignore */ }
+				}
+			}
+		}
+
+		private void close() {
+			toolsCalloutWindowCtrl.deactivate();
+			cleanUpToolsCallout();
+		}
 	}
 
 	private static final class RoomsCalloutController extends BasicController {
