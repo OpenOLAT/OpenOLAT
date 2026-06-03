@@ -177,6 +177,15 @@ public class CertificateRow {
 		return certificate.getRevocationDate();
 	}
 	
+	public String getTitle() {
+		if(certificate != null && certificate.getUploadedBy() != null
+				&& certificate.getOlatResource() == null
+				&& certificate.getCertificationProgram() == null) {
+			return certificate.getCourseTitle();
+		}
+		return null;
+	}
+	
 	public RepositoryEntry getCourse() {
 		return course;
 	}
