@@ -182,6 +182,11 @@ public class CertificateRow {
 	}
 	
 	public String getCourseTitle() {
+		if(course == null) {
+			return certificate == null
+					? ""
+					: certificate.getCourseTitle();
+		}
 		return course.getDisplayname();
 	}
 	

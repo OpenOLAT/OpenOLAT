@@ -17,7 +17,10 @@
 					#if($r.available("courselink"))
 						$r.render("courselink")
 					#else
-					<span><i class="o_icon o_icon-fw $awardedByIconCss"> </i> $awardedByName</span>
+					<span><i class="o_icon o_icon-fw $awardedByIconCss"> </i> $r.escapeHtml($awardedByName)
+					#if($r.isNotEmpty($awardedByTitle))
+						&ndash; $r.escapeHtml($awardedByTitle)
+					#end</span>
 					#end
 				</div>
 				#end

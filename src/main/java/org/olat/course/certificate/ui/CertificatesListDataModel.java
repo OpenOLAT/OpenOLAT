@@ -185,7 +185,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 		dateRevocation("table.header.revocation.date"),
 		recertificationCount("table.header.recertification.count"),
 		status("table.header.status"),
-		tools("table.header.tools");
+		tools("action.more");
 
 		private final String i18n;
 

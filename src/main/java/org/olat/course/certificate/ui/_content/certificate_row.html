@@ -1,6 +1,6 @@
 <div class="o_card o_certificate_card">
 	<div class="o_certificate_thumbnail">
-		<div class="o_certificate_img" onclick="javascript:${f.ffXHREvent("select_row","$row.key")}">
+		<div class="o_certificate_img" onclick="javascript:${f.ffXHREvent("select_row","$row.key",false,false)}">
 			#if($row.isThumbnailAvailable())
 				<img src="${mapperThumbnailUrl}/${row.key}/${row.filename}.png" alt=""/>
 			#else
