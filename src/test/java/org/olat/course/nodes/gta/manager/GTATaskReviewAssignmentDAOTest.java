@@ -27,15 +27,25 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.TaskReviewAssignmentImpl;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -54,7 +64,13 @@ public class GTATaskReviewAssignmentDAOTest extends OlatTestCase {
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
+	private GTAPeerReviewManager peerReviewManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
 	private GTATaskReviewAssignmentDAO reviewAssignmentDao;
+	@Autowired
+	private EvaluationFormTestsHelper evaluationFormTestsHelper;
 	
 	private static RepositoryEntry COURSE_FOR_ALL_TESTS;
 	
@@ -229,7 +245,60 @@ public class GTATaskReviewAssignmentDAOTest extends OlatTestCase {
 		
 		Assert.assertNotNull(assignment);
 		Assert.assertNotNull(assignment.getKey());
-		
+
 		gtaManager.deleteTaskList(re, node);
+	}
+	
+	@Test
+	public void deleteAssignmentPeerReview() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-to-review-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-to-review-1");
+		Identity assignee = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-assignee-1");
+		Identity assignee2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-assignee-2");
+		Identity reviewer = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-reviewer-1");
+		Identity reviewer2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-reviewer-2");
+		
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_PEER_REVIEW, Boolean.TRUE);
+		GTACourseNode.setPeerReviewEvaluationFormReference(formEntry, node.getModuleConfiguration());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		SubscriptionContext markedSubscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), node, true);
+		PublisherData publisherDate = gtaManager.getPublisherData(course.getCourseEnvironment(), node, true);
+		notificationsManager.subscribe(reviewer, markedSubscriptionContext, publisherDate);
+
+		//select
+		Task task = gtaManager.ensureTaskExists(null, null, assignee, re, node);
+		Task task2  = gtaManager.ensureTaskExists(null, null, assignee2, re, node);
+		dbInstance.commitAndCloseSession();
+		
+		TaskReviewAssignment assignment = reviewAssignmentDao.createAssignment(task, assignee);
+		EvaluationFormSession session = peerReviewManager.loadOrCreateSession(task.getSurvey(), participant);
+		TaskReviewAssignment assignment2 = reviewAssignmentDao.createAssignment(task2, assignee2);
+		EvaluationFormSession session2 = peerReviewManager.loadOrCreateSession(task2.getSurvey(), participant2);
+		dbInstance.commit();
+		
+		EvaluationFormParticipation participation = peerReviewManager.loadOrCreateParticipation(task.getSurvey(), reviewer);
+		((TaskReviewAssignmentImpl)assignment).setParticipation(participation);
+		assignment = peerReviewManager.updateAssignment(assignment);
+		
+		EvaluationFormParticipation participation2 = peerReviewManager.loadOrCreateParticipation(task2.getSurvey(), reviewer2);
+		((TaskReviewAssignmentImpl)assignment2).setParticipation(participation2);
+		assignment2 = peerReviewManager.updateAssignment(assignment2);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(tasks);
+		Assert.assertNotNull(assignment);
+		Assert.assertNotNull(assignment2);
+		Assert.assertNotNull(session);
+		Assert.assertNotNull(session2);
+		
+		node.cleanupOnDelete(course);
+		dbInstance.commit();
 	}
 }

@@ -151,6 +151,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Autowired
 	private GTATaskDAO taskDao;
 	@Autowired
+	private GTATaskListDAO taskListDao;
+	@Autowired
 	private GTAIdentityMarkDAO gtaMarkDao;
 	@Autowired
 	private GTATaskRevisionDAO taskRevisionDao;
@@ -762,13 +764,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public TaskList getTaskList(RepositoryEntryRef entry, GTACourseNode cNode) {
-		String q = "select tasks from gtatasklist tasks where tasks.entry.key=:entryKey and tasks.courseNodeIdent=:courseNodeIdent";
-		List<TaskList> tasks = dbInstance.getCurrentEntityManager().createQuery(q, TaskList.class)
-			.setParameter("entryKey", entry.getKey())
-			.setParameter("courseNodeIdent", cNode.getIdent())
-			.getResultList();
-
-		return tasks.isEmpty() ? null : tasks.get(0);
+		return taskListDao.getTaskList(entry, cNode);
 	}
 
 	@Override
@@ -782,8 +778,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			numOfDeletedObjects += peerReviewManager.deleteAssignments(taskList); // Make commits
 			numOfDeletedObjects += taskDao.deleteTask(taskList);
 			numOfDeletedObjects += gtaMarkDao.deleteMark(taskList);
-			dbInstance.getCurrentEntityManager().remove(taskList);
-			numOfDeletedObjects++;
+			numOfDeletedObjects += taskListDao.deleteTaskList(taskList);
 		}
 		return numOfDeletedObjects;
 	}
