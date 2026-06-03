@@ -1,0 +1,38 @@
+#if($r.available("leafletLoader"))
+$r.render("leafletLoader")
+#end
+#if($geoLat && $geoLon)
+<div id="o_building_detail_map_$r.getCId()" class="o_building_map_container"></div>
+<script>
+(function() {
+	var mapId  = 'o_building_detail_map_$r.getCId()';
+	var lat    = $geoLat;
+	var lng    = $geoLon;
+	var color  = '$r.escapeHtml($!colorCss)';
+	function initBuildingMap() {
+		if (typeof L === 'undefined') { setTimeout(initBuildingMap, 50); return; }
+		var el = document.getElementById(mapId);
+		if (!el || el._leaflet_id) return;
+		var map = L.map(mapId, { zoomControl: false }).setView([lat, lng], 16);
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+			maxZoom: 19
+		}).addTo(map);
+		var pin = L.divIcon({
+			className: '',
+			html: '<div class="o_building_map_pin o_color_background o_color_border_darken ' + color + '"></div>',
+			iconSize: [24, 32],
+			iconAnchor: [12, 32]
+		});
+		L.marker([lat, lng], { icon: pin }).addTo(map);
+	}
+	initBuildingMap();
+})();
+</script>
+#end
+#if($r.available("detail.apple.maps") || $r.available("detail.google.maps"))
+<div class="o_building_detail_map_actions">
+	#if($r.available("detail.apple.maps"))$r.render("detail.apple.maps")#end
+	#if($r.available("detail.google.maps"))$r.render("detail.google.maps")#end
+</div>
+#end

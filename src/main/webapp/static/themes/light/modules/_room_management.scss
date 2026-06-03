@@ -58,7 +58,56 @@
 		flex-grow: 1;
 		display: flex;
 		justify-content: end;
+	} 
+}
+
+.o_building_detail_body {
+	margin-top: 16px;
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 24px;
+	align-items: start;
+}
+
+.o_building_detail_left {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px 24px;
+	align-content: start;
+
+	.o_building_detail_top_left  { grid-column: 1; grid-row: 1; }
+	.o_building_detail_top_right { grid-column: 2; grid-row: 1; }
+	.o_building_detail_mid_left  { grid-column: 1; grid-row: 2; }
+	.o_building_detail_mid_right { grid-column: 2; grid-row: 2; }
+	.o_building_detail_full      { grid-column: 1 / -1; }
+}
+
+.o_building_room_status_icon {
+	display: inline-block; 
+	font-size: 7px; 
+	height: 11px; 
+	vertical-align: middle;
+}
+
+.o_building_detail_section {
+	.o_building_detail_section_label {
+		font-weight: $headings-font-weight;
+		margin-bottom: 2px;
 	}
+}
+
+.o_building_detail_map_actions {
+	margin-top: 8px;
+	display: flex;
+	gap: 8px;
+}
+
+.o_building_room_status_active {
+	color: $brand-success;
+}
+
+.o_building_room_status_inactive {
+	color: $gray-light;
 }
 
 .o_building_rect_container {
