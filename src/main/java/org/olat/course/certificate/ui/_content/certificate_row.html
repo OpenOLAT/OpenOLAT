@@ -16,7 +16,7 @@
 				<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
 				<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())
 				#if($r.isNotEmpty($row.getTitle()))
-					&ndash; $r.escapeHtml($row.getTitle());
+					&ndash; $r.escapeHtml($row.getTitle())
 				#end</span>
 			#end
 			#if(${row.isRevoked()})
