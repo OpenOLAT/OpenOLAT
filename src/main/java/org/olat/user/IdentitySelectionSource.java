@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
@@ -43,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionS
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -111,10 +113,10 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 
 	private ObjectDisplayValues joinNames(Stream<? extends Identity> stream) {
 		String joined = stream
-				.map(userManager::getUserDisplayName)
+				.map(identity -> "<i class=\"o_icon o_icon_user\"></i> " + StringHelper.escapeHtml(userManager.getUserDisplayName(identity)))
 				.sorted(collator::compare)
-				.collect(Collectors.joining(", "));
-		return new ObjectDisplayValues(joined, joined);
+				.collect(Collectors.joining("&nbsp;&nbsp;"));
+		return new ObjectDisplayValues(joined, EscapeMode.none, joined, null);
 	}
 
 	@Override
