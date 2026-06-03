@@ -22,6 +22,8 @@ package org.olat.modules.curriculum.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +32,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
@@ -65,6 +69,7 @@ import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoDateUnit;
+import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
@@ -277,9 +282,148 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		return members;
 	}
 
+	public Set<Identity> getCandidateIntersection(Collection<CurriculumElement> elements) {
+		if (elements.isEmpty()) {
+			return Set.of();
+		}
+		Map<Long, Set<Identity>> sharedByCurriculum = new HashMap<>();
+		Set<Identity> result = null;
+		for (CurriculumElement element : elements) {
+			Set<Identity> shared = sharedByCurriculum.computeIfAbsent(
+					element.getCurriculum().getKey(),
+					k -> getSharedCandidateIdentities(element));
+			Set<Identity> combined = new HashSet<>(getElementOwnerIdentities(element));
+			combined.addAll(shared);
+			if (result == null) {
+				result = combined;
+			} else {
+				result.retainAll(combined);
+			}
+			if (result.isEmpty()) {
+				return result;
+			}
+		}
+		return result;
+	}
+
+	private Set<Identity> getElementOwnerIdentities(CurriculumElement element) {
+		SearchMemberParameters params = new SearchMemberParameters(element);
+		params.setRoles(List.of(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner));
+		return curriculumService.getCurriculumElementsMembers(params).stream()
+				.map(CurriculumMember::getIdentity)
+				.collect(Collectors.toCollection(HashSet::new));
+	}
+
+	private Set<Identity> getSharedCandidateIdentities(CurriculumElement element) {
+		SearchMemberParameters curriculumParams = new SearchMemberParameters(element.getCurriculum());
+		curriculumParams.setRoles(List.of(CurriculumRoles.curriculumowner));
+		Set<Identity> shared = curriculumService.getCurriculumMembers(curriculumParams).stream()
+				.map(CurriculumMember::getIdentity)
+				.collect(Collectors.toCollection(HashSet::new));
+		Organisation organisation = element.getCurriculum().getOrganisation();
+		if (organisation != null) {
+			shared.addAll(organisationService.getMembersIdentity(organisation, OrganisationRoles.curriculummanager));
+			shared.addAll(organisationService.getMembersIdentity(organisation, OrganisationRoles.administrator));
+		}
+		return shared;
+	}
+
+	public void createToDoTasks(Identity doer, Collection<CurriculumElement> elements,
+			String title, String description, ToDoStatus status, ToDoPriority priority,
+			Date startDate, Date dueDate, Long expenditureOfWork,
+			Collection<? extends IdentityRef> assignees,
+			Collection<? extends IdentityRef> delegatees,
+			List<String> tagDisplayNames) {
+		createToDoTasks(doer, elements, title, description, status, priority,
+				startDate, dueDate, null, expenditureOfWork, assignees, delegatees, tagDisplayNames);
+	}
+
+	public void createToDoTasks(Identity doer, Collection<CurriculumElement> elements,
+			String title, String description, ToDoStatus status, ToDoPriority priority,
+			Date startDate, Date dueDate, ToDoRelativeDates relativeDates, Long expenditureOfWork,
+			Collection<? extends IdentityRef> assignees,
+			Collection<? extends IdentityRef> delegatees,
+			List<String> tagDisplayNames) {
+		int count = 0;
+		for (CurriculumElement element : elements) {
+			ToDoTask task = toDoService.createToDoTask(doer, TYPE,
+					element.getCurriculum().getKey(),
+					element.getKey().toString(),
+					element.getCurriculum().getIdentifier(),
+					getContextSubTitle(element), null);
+			task.setTitle(title);
+			task.setDescription(description);
+			task.setStatus(status);
+			task.setPriority(priority);
+			if (relativeDates != null) {
+				task.setRelativeDates(relativeDates);
+				if (relativeDates.getStartRef() != null && relativeDates.getStartUnit() != null) {
+					task.setStartDate(computeRelativeDate(relativeDates.getStartRef(), relativeDates.getStartUnit(),
+							relativeDates.getStartValue(), element.getBeginDate(), element.getEndDate()));
+				} else {
+					task.setStartDate(startDate);
+				}
+				if (relativeDates.getDueRef() != null && relativeDates.getDueUnit() != null) {
+					task.setDueDate(computeRelativeDate(relativeDates.getDueRef(), relativeDates.getDueUnit(),
+							relativeDates.getDueValue(), element.getBeginDate(), element.getEndDate()));
+				} else {
+					task.setDueDate(dueDate);
+				}
+			} else {
+				task.setStartDate(startDate);
+				task.setDueDate(dueDate);
+			}
+			task.setExpenditureOfWork(expenditureOfWork);
+			task.setAssigneeRights(ASSIGNEE_RIGHTS);
+			task.setContentModifiedDate(new Date());
+			task = toDoService.update(doer, task, null);
+			if ((assignees != null && !assignees.isEmpty()) || (delegatees != null && !delegatees.isEmpty())) {
+				toDoService.updateMember(doer, task, assignees, delegatees);
+			}
+			if (tagDisplayNames != null && !tagDisplayNames.isEmpty()) {
+				toDoService.updateTags(task, tagDisplayNames);
+			}
+			if (++count % 10 == 0) {
+				dbInstance.intermediateCommit();
+			}
+		}
+	}
+
+	public List<TagInfo> getTagInfos() {
+		return toDoService.getTagInfos(createTagSearchParams(), null);
+	}
+
+	public ToDoTaskDateConfig createBulkDateConfig(Locale locale) {
+		return ToDoTaskDateConfig.absoluteOrRelative(
+				new CurriculumElementsBulkDatePicker(locale));
+	}
+
 	private ToDoTaskDateConfig createDateConfig(Locale locale, CurriculumElement element) {
 		return ToDoTaskDateConfig.absoluteOrRelative(
 				new CurriculumElementDatePicker(locale, curriculumService, element));
+	}
+
+	private static String buildDisplayValue(Translator translator, String prefix, String ref, ToDoDateUnit unit, Integer value) {
+		if (ref == null) return "";
+		String tplKey = switch (ref) {
+			case DATE_REF_BEFORE_BEGIN   -> "task.date.relative.display.before.begin";
+			case DATE_REF_AFTER_BEGIN    -> "task.date.relative.display.after.begin";
+			case DATE_REF_BEFORE_END     -> "task.date.relative.display.before.end";
+			case DATE_REF_AFTER_END      -> "task.date.relative.display.after.end";
+			case DATE_REF_SAME_DAY_BEGIN -> "task.date.relative.display.same.day.begin";
+			case DATE_REF_SAME_DAY_END   -> "task.date.relative.display.same.day.end";
+			default -> null;
+		};
+		if (tplKey == null) return "";
+		String valueStr = value != null ? String.valueOf(value) : "";
+		String unitLabel = "";
+		if (unit != null && unit != ToDoDateUnit.SAME_DAY) {
+			String unitKey = (value != null && value == 1)
+					? "unit." + unit.name().toLowerCase().replaceAll("s$", "")
+					: "unit." + unit.name().toLowerCase();
+			unitLabel = translator.translate(unitKey);
+		}
+		return translator.translate(tplKey, prefix, valueStr, unitLabel);
 	}
 
 	private static final class CurriculumElementDatePicker implements ToDoTaskDatePicker {
@@ -326,27 +470,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			Date endDate = element != null ? element.getEndDate() : null;
 			Date resolvedDate = computeRelativeDate(ref, unit, value, beginDate, endDate);
 			String formatted = resolvedDate != null ? Formatter.getInstance(locale).formatDate(resolvedDate) : "";
-
-			String tplKey = switch (ref) {
-				case DATE_REF_BEFORE_BEGIN   -> "task.date.relative.display.before.begin";
-				case DATE_REF_AFTER_BEGIN    -> "task.date.relative.display.after.begin";
-				case DATE_REF_BEFORE_END     -> "task.date.relative.display.before.end";
-				case DATE_REF_AFTER_END      -> "task.date.relative.display.after.end";
-				case DATE_REF_SAME_DAY_BEGIN -> "task.date.relative.display.same.day.begin";
-				case DATE_REF_SAME_DAY_END   -> "task.date.relative.display.same.day.end";
-				default -> null;
-			};
-			if (tplKey == null) return "";
-
-			String valueStr = value != null ? String.valueOf(value) : "";
-			String unitLabel = "";
-			if (unit != null && unit != ToDoDateUnit.SAME_DAY) {
-				String unitKey = (value != null && value == 1)
-						? "unit." + unit.name().toLowerCase().replaceAll("s$", "")
-						: "unit." + unit.name().toLowerCase();
-				unitLabel = translator.translate(unitKey);
-			}
-			return translator.translate(tplKey, formatted, valueStr, unitLabel);
+			String prefix = formatted.isEmpty() ? "" : formatted + " – ";
+			return buildDisplayValue(translator, prefix, ref, unit, value);
 		}
 
 		@Override
@@ -375,6 +500,46 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 							? translator.translate("task.date.relative.callout.ref.end.with.date", fmt.formatDate(endDate))
 							: translator.translate("task.date.relative.callout.ref.end.no.date")));
 			ToDoDateResolver resolver = (ref, unit, value) -> computeRelativeDate(ref, unit, value, beginDate, endDate);
+			return new ToDoRelativeDatePickerController(ureq, wc, refs, resolver, current, start);
+		}
+	}
+
+	private static final class CurriculumElementsBulkDatePicker implements ToDoTaskDatePicker {
+
+		private final Translator translator;
+
+		CurriculumElementsBulkDatePicker(Locale locale) {
+			this.translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
+					Util.createPackageTranslator(ToDoUIFactory.class, locale));
+		}
+
+		@Override
+		public void contextChanged(ToDoContext context) {
+			//
+		}
+
+		@Override
+		public String getDisplayValue(ToDoRelativeDates rd, boolean start) {
+			String ref = start ? rd.getStartRef() : rd.getDueRef();
+			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
+			Integer value = start ? rd.getStartValue() : rd.getDueValue();
+			return buildDisplayValue(translator, "", ref, unit, value);
+		}
+
+		@Override
+		public Date resolve(ToDoRelativeDates rd, boolean start) {
+			return null;
+		}
+
+		@Override
+		public Controller createPickerController(UserRequest ureq, WindowControl wc,
+				ToDoRelativeDates current, boolean start) {
+			SelectionValues refs = new SelectionValues();
+			refs.add(SelectionValues.entry("BEGIN",
+					translator.translate("task.date.relative.callout.ref.begin.no.date")));
+			refs.add(SelectionValues.entry("END",
+					translator.translate("task.date.relative.callout.ref.end.no.date")));
+			ToDoDateResolver resolver = (ref, unit, value) -> null;
 			return new ToDoRelativeDatePickerController(ureq, wc, refs, resolver, current, start);
 		}
 	}

@@ -1,0 +1,9 @@
+<div class="o_form">
+	$r.render("content")
+</div>
+
+#if($r.available("buttons") && $r.visible("buttons"))
+	<div class="o_block_top">
+		$r.render("buttons")
+	</div>
+#end
