@@ -62,7 +62,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 			case displayName: return row.getDisplayName();
 			case externalId: return row.getExternalId();
 			case forUseAs: return row.getForUseAsLabel();
-			case typeOfElement: return row.getTypeOfElementLabel();
+			case subelements: return !row.getType().isSingleElement();
 			case content: return row.getContentLabel();
 			case parents: return row.getParentsLink();
 			case children: return row.getChildrenLink();
@@ -77,7 +77,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 		identifier("table.type.header.type.identifier"),
 		externalId("table.type.header.type.externalId"),
 		forUseAs("table.type.header.type.forUseAs"),
-		typeOfElement("table.type.header.type.typeOfElement"),
+		subelements("table.type.header.type.subelements"),
 		content("table.type.header.type.content"),
 		parents("table.type.header.type.parents"),
 		children("table.type.header.type.children"),

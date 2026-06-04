@@ -109,7 +109,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.typeOfElement));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.subelements, new SubelementsRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
@@ -165,10 +165,6 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			forUseAsKey = "table.type.for.use.as.implementation.or.element";
 		}
 		row.setForUseAsLabel(translate(forUseAsKey));
-		String typeOfElementKey = type.isSingleElement()
-				? "table.type.type.of.element.single.element"
-				: "table.type.type.of.element.structural.element";
-		row.setTypeOfElementLabel(translate(typeOfElementKey));
 		String contentKey;
 		if(type.getMaxRepositoryEntryRelations() == 0) {
 			contentKey = "table.type.content.no.content";
@@ -363,6 +359,24 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			tableEl.reset(true, true, true);
 		} else {
 			showWarning("warning.delete.element.type", row.getDisplayName());
+		}
+	}
+
+	private static class SubelementsRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
+		@Override
+		public void render(org.olat.core.gui.render.Renderer renderer, org.olat.core.gui.render.StringOutput target,
+				Object cellValue, int row,
+				org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent source,
+				org.olat.core.gui.render.URLBuilder ubu, org.olat.core.gui.translator.Translator translator) {
+			if (cellValue instanceof Boolean hasSubelements) {
+				if (hasSubelements) {
+					target.append("<i class='o_icon o_icon-fw o_icon_sitemap'> </i> ")
+					      .append(StringHelper.escapeHtml(translator.translate("yes")));
+				} else {
+					target.append("<i class='o_icon o_icon-fw o_icon_single_element'> </i> ")
+					      .append(StringHelper.escapeHtml(translator.translate("no")));
+				}
+			}
 		}
 	}
 

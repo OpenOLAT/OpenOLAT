@@ -163,15 +163,15 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		uifactory.addStaticTextElement("type.for.use.as", "type.for.use.as", forUseAsLabel, configurationContainer);
 
 		SelectionValues typeOfElementKV = new SelectionValues();
-		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_STRUCTURAL,
-				translate("table.type.type.of.element.structural.element"),
-				translate("table.type.type.of.element.structural.element.desc"),
-				"o_icon o_icon_structure", null, true));
 		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_SINGLE_ELEMENT,
-				translate("table.type.type.of.element.single.element"),
-				translate("table.type.type.of.element.single.element.desc"),
+				translate("no"),
+				translate("table.type.subelements.no.desc"),
 				"o_icon o_icon_single_element", null, true));
-		typeOfElementEl = uifactory.addCardSingleSelectHorizontal("type.type.of.element", "table.type.header.type.typeOfElement",
+		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_STRUCTURAL,
+				translate("yes"),
+				translate("table.type.subelements.yes.desc"),
+				"o_icon o_icon_sitemap", null, true));
+		typeOfElementEl = uifactory.addCardSingleSelectHorizontal("type.type.of.element", "table.type.header.type.subelements",
 				configurationContainer, typeOfElementKV);
 		typeOfElementEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
 		typeOfElementEl.addActionListener(FormEvent.ONCHANGE);

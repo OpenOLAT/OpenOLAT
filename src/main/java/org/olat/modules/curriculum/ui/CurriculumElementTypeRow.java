@@ -39,7 +39,6 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	private FormLink childrenLink;
 	private List<CurriculumElementType> childTypes;
 	private String forUseAsLabel;
-	private String typeOfElementLabel;
 	private String contentLabel;
 	private final CurriculumElementType type;
 
@@ -70,14 +69,6 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 
 	public void setForUseAsLabel(String forUseAsLabel) {
 		this.forUseAsLabel = forUseAsLabel;
-	}
-
-	public String getTypeOfElementLabel() {
-		return typeOfElementLabel;
-	}
-
-	public void setTypeOfElementLabel(String typeOfElementLabel) {
-		this.typeOfElementLabel = typeOfElementLabel;
 	}
 
 	public String getContentLabel() {
