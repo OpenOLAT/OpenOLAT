@@ -71,7 +71,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementTypesEditController extends FormBasicController implements Activateable2 {
 	
-	private FormLink addNewElementTypeButton;
+	private FormLink addNewImplTypeButton;
+	private FormLink addNewElemTypeButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementTypesTableModel model;
 	
@@ -95,8 +96,10 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addNewElementTypeButton = uifactory.addFormLink("add.new.element.type", formLayout, Link.BUTTON);
-		addNewElementTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addNewImplTypeButton = uifactory.addFormLink("add.new.impl.type", formLayout, Link.BUTTON);
+		addNewImplTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addNewElemTypeButton = uifactory.addFormLink("add.new.elem.type", formLayout, Link.BUTTON);
+		addNewElemTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.key));
@@ -238,8 +241,10 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addNewElementTypeButton == source) {
-			doAddNewElementType(ureq);
+		if(addNewImplTypeButton == source) {
+			doAddNewImplType(ureq);
+		} else if(addNewElemTypeButton == source) {
+			doAddNewElemType(ureq);
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
@@ -305,12 +310,22 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		typeNamesCalloutWindowCtrl.activate();
 	}
 
-	private void doAddNewElementType(UserRequest ureq) {
-		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), null);
+	private void doAddNewImplType(UserRequest ureq) {
+		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), 
+				EditCurriculumElementTypeController.FOR_USE_AS_IMPL);
 		listenTo(rootElementTypeCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
-				rootElementTypeCtrl.getInitialComponent(), true, translate("add.new.element.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				rootElementTypeCtrl.getInitialComponent(), true, translate("add.new.impl.type"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddNewElemType(UserRequest ureq) {
+		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), 
+				EditCurriculumElementTypeController.FOR_USE_AS_ELEM);
+		listenTo(rootElementTypeCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				rootElementTypeCtrl.getInitialComponent(), true, translate("add.new.elem.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}

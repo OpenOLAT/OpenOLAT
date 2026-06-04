@@ -64,9 +64,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String LECTURES = "lectures";
 	private static final String CALENDAR = "calendar";
 	private static final String LEARNING_PROGRESS = "learningprogress";
-	private static final String FOR_USE_AS_IMPL = "implementation";
+	public static final String FOR_USE_AS_IMPL = "implementation";
 	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
-	private static final String FOR_USE_AS_ELEM = "element";
+	public static final String FOR_USE_AS_ELEM = "element";
 	private static final String TYPE_OF_ELEM_STRUCTURAL = "structuralElement";
 	private static final String TYPE_OF_ELEM_SINGLE_ELEMENT = "singleElement";
 	private static final String CONTENT_NO_CONTENT = "noContent";
@@ -88,6 +88,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private MultipleSelectionElement childTypesEl;
 	
 	private CurriculumElementType curriculumElementType;
+	private final String preselectedForUseAs;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -95,6 +96,15 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	public EditCurriculumElementTypeController(UserRequest ureq, WindowControl wControl, CurriculumElementType curriculumElementType) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.curriculumElementType = curriculumElementType;
+		this.preselectedForUseAs = null;
+		initForm(ureq);
+		updateUI();
+	}
+
+	public EditCurriculumElementTypeController(UserRequest ureq, WindowControl wControl, String preselectedForUseAs) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.curriculumElementType = null;
+		this.preselectedForUseAs = preselectedForUseAs;
 		initForm(ureq);
 		updateUI();
 	}
@@ -149,21 +159,33 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		formLayout.add(configurationContainer);
 		configurationContainer.setFormTitle(translate("configuration"));
 		
-		SelectionValues forUseAsPK = new SelectionValues();
-		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL, translate("table.type.for.use.as.implementation")));
-		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL_OR_ELEM, translate("table.type.for.use.as.implementation.or.element")));
-		forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_ELEM, translate("table.type.for.use.as.element")));
-		forUseAsEl = uifactory.addRadiosVertical("type.for.use.as", "type.for.use.as", configurationContainer,
-				forUseAsPK.keys(), forUseAsPK.values());
-		forUseAsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.implOnly)
-				&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
-		forUseAsEl.addActionListener(FormEvent.ONCHANGE);
-		if(curriculumElementType != null && curriculumElementType.isImplOnly()) {
-			forUseAsEl.select(FOR_USE_AS_IMPL, true);
-		} else if(curriculumElementType != null && !curriculumElementType.isAllowedAsRootElement()) {
-			forUseAsEl.select(FOR_USE_AS_ELEM, true);
+		if(preselectedForUseAs != null) {
+			String forUseAsLabel;
+			if(FOR_USE_AS_IMPL.equals(preselectedForUseAs)) {
+				forUseAsLabel = translate("table.type.for.use.as.implementation");
+			} else if(FOR_USE_AS_ELEM.equals(preselectedForUseAs)) {
+				forUseAsLabel = translate("table.type.for.use.as.element");
+			} else {
+				forUseAsLabel = translate("table.type.for.use.as.implementation.or.element");
+			}
+			uifactory.addStaticTextElement("type.for.use.as", "type.for.use.as", forUseAsLabel, configurationContainer);
 		} else {
-			forUseAsEl.select(FOR_USE_AS_IMPL_OR_ELEM, true);
+			SelectionValues forUseAsPK = new SelectionValues();
+			forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL, translate("table.type.for.use.as.implementation")));
+			forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_IMPL_OR_ELEM, translate("table.type.for.use.as.implementation.or.element")));
+			forUseAsPK.add(SelectionValues.entry(FOR_USE_AS_ELEM, translate("table.type.for.use.as.element")));
+			forUseAsEl = uifactory.addRadiosVertical("type.for.use.as", "type.for.use.as", configurationContainer,
+					forUseAsPK.keys(), forUseAsPK.values());
+			forUseAsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.implOnly)
+					&& !CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
+			forUseAsEl.addActionListener(FormEvent.ONCHANGE);
+			if(curriculumElementType != null && curriculumElementType.isImplOnly()) {
+				forUseAsEl.select(FOR_USE_AS_IMPL, true);
+			} else if(curriculumElementType != null && !curriculumElementType.isAllowedAsRootElement()) {
+				forUseAsEl.select(FOR_USE_AS_ELEM, true);
+			} else {
+				forUseAsEl.select(FOR_USE_AS_IMPL_OR_ELEM, true);
+			}
 		}
 
 		SelectionValues typeOfElementKV = new SelectionValues();
@@ -287,6 +309,16 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
+	private String getSelectedForUseAs() {
+		if(preselectedForUseAs != null) {
+			return preselectedForUseAs;
+		}
+		if(forUseAsEl != null && forUseAsEl.isOneSelected()) { 
+			return forUseAsEl.getSelectedKey();
+		}
+		return FOR_USE_AS_IMPL_OR_ELEM;
+	}
+
 	private void updateUI() {
 		boolean structural = typeOfElementEl.isOneSelected()
 				&& TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
@@ -302,7 +334,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		contentStructuralEl.setVisible(structural);
 		contentSingleEl.setVisible(!structural);
 
-		boolean showParentElements = forUseAsEl.isOneSelected() && !FOR_USE_AS_IMPL.equals(forUseAsEl.getSelectedKey());
+		boolean showParentElements = !FOR_USE_AS_IMPL.equals(getSelectedForUseAs());
 		parentTypesEl.setVisible(showParentElements);
 		childTypesEl.setVisible(structural);
 		dividerEl.setVisible(showParentElements || structural);
@@ -363,19 +395,17 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		} else {
 			curriculumElementType.setLearningProgress(CurriculumLearningProgress.disabled);
 		}
-		
-		if(forUseAsEl.isOneSelected()) {
-			String selected = forUseAsEl.getSelectedKey();
-			if(FOR_USE_AS_IMPL.equals(selected)) {
-				curriculumElementType.setImplOnly(true);
-				curriculumElementType.setAllowedAsRootElement(true);
-			} else if(FOR_USE_AS_ELEM.equals(selected)) {
-				curriculumElementType.setImplOnly(false);
-				curriculumElementType.setAllowedAsRootElement(false);
-			} else {
-				curriculumElementType.setImplOnly(false);
-				curriculumElementType.setAllowedAsRootElement(true);
-			}
+
+		String selected = getSelectedForUseAs();
+		if(FOR_USE_AS_IMPL.equals(selected)) {
+			curriculumElementType.setImplOnly(true);
+			curriculumElementType.setAllowedAsRootElement(true);
+		} else if(FOR_USE_AS_ELEM.equals(selected)) {
+			curriculumElementType.setImplOnly(false);
+			curriculumElementType.setAllowedAsRootElement(false);
+		} else {
+			curriculumElementType.setImplOnly(false);
+			curriculumElementType.setAllowedAsRootElement(true);
 		}
 
 		if(typeOfElementEl.isOneSelected()) {
