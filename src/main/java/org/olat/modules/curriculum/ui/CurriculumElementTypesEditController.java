@@ -110,7 +110,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.subelements, new SubelementsRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content, new ContentRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
 		
@@ -175,7 +175,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		} else {
 			contentKey = null;
 		}
-		row.setContentLabel(contentKey != null ? translate(contentKey) : null);
+		row.setContentLabel(contentKey);
 		row.setParentTypes(parents);
 		if(!parents.isEmpty()) {
 			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
@@ -359,6 +359,27 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			tableEl.reset(true, true, true);
 		} else {
 			showWarning("warning.delete.element.type", row.getDisplayName());
+		}
+	}
+
+	private static class ContentRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
+		@Override
+		public void render(org.olat.core.gui.render.Renderer renderer, org.olat.core.gui.render.StringOutput target,
+				Object cellValue, int row,
+				org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent source,
+				org.olat.core.gui.render.URLBuilder ubu, org.olat.core.gui.translator.Translator translator) {
+			if (cellValue instanceof String key) {
+				String icon = switch (key) {
+					case "table.type.content.no.content"    -> "o_icon_ban";
+					case "table.type.content.single.course" -> "o_icon_courserun";
+					case "table.type.content.course.bundle" -> "o_icon_course_bundle";
+					default -> null;
+				};
+				if (icon != null) {
+					target.append("<i class='o_icon o_icon-fw ").append(icon).append("'> </i> ")
+					      .append(StringHelper.escapeHtml(translator.translate(key)));
+				}
+			}
 		}
 	}
 
