@@ -36,7 +36,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -50,6 +52,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -60,6 +66,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
@@ -112,6 +119,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(displayNameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.status, new TypeStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.subelements, new SubelementsRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content, new ContentRenderer()));
@@ -388,12 +396,27 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
-	private static class ContentRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
+	private static class TypeStatusRenderer implements FlexiCellRenderer {
 		@Override
-		public void render(org.olat.core.gui.render.Renderer renderer, org.olat.core.gui.render.StringOutput target,
-				Object cellValue, int row,
-				org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent source,
-				org.olat.core.gui.render.URLBuilder ubu, org.olat.core.gui.translator.Translator translator) {
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+		                   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (cellValue instanceof CurriculumElementTypeStatus status) {
+				String icon = status == CurriculumElementTypeStatus.active ? "o_icon_check" : "o_icon_ban";
+				String cssClass = status == CurriculumElementTypeStatus.active
+						? "o_cur_el_type_status_active" : "o_cur_el_type_status_inactive";
+				String label = translator.translate("table.type.status." + status.name());
+				target.append("<span class='o_labeled_light ").append(cssClass).append("'>")
+				      .append("<i class='o_icon o_icon-fw ").append(icon).append("'> </i> ")
+				      .append(StringHelper.escapeHtml(label))
+				      .append("</span>");
+			}
+		}
+	}
+
+	private static class ContentRenderer implements FlexiCellRenderer {
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+		                   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			if (cellValue instanceof String key) {
 				String icon = switch (key) {
 					case "table.type.content.no.content"    -> "o_icon_ban";
@@ -409,12 +432,10 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
-	private static class SubelementsRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
+	private static class SubelementsRenderer implements FlexiCellRenderer {
 		@Override
-		public void render(org.olat.core.gui.render.Renderer renderer, org.olat.core.gui.render.StringOutput target,
-				Object cellValue, int row,
-				org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent source,
-				org.olat.core.gui.render.URLBuilder ubu, org.olat.core.gui.translator.Translator translator) {
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+		                   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			if (cellValue instanceof Boolean hasSubelements) {
 				if (hasSubelements) {
 					target.append("<i class='o_icon o_icon-fw o_icon_sitemap'> </i> ")
