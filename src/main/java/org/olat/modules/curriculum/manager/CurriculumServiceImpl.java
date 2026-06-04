@@ -104,6 +104,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
@@ -265,10 +266,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			defaultType.setMaxRepositoryEntryRelations(-1);
 			defaultType.setSingleElement(false);
 			defaultType.setImplOnly(false);
+			defaultType.setStatus(CurriculumElementTypeStatus.active);
 			defaultType.setManagedFlags(new CurriculumElementTypeManagedFlag[] {
 					CurriculumElementTypeManagedFlag.identifier, CurriculumElementTypeManagedFlag.externalId,
 					CurriculumElementTypeManagedFlag.allowAsRoot, CurriculumElementTypeManagedFlag.composite,
-					CurriculumElementTypeManagedFlag.implOnly, CurriculumElementTypeManagedFlag.maxEntryRelations });
+					CurriculumElementTypeManagedFlag.implOnly, CurriculumElementTypeManagedFlag.status,
+					CurriculumElementTypeManagedFlag.maxEntryRelations });
 			updateCurriculumElementType(defaultType);
 			log.info("Default curriculum element type created.");
 		}

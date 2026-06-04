@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
@@ -250,6 +251,13 @@ public class CurriculumElementTypesWebService {
 		}
 		if(elementTypeVo.getImplOnly() != null) {
 			elementType.setImplOnly(elementTypeVo.getImplOnly().booleanValue());
+		}
+		if(elementTypeVo.getStatus() != null) {
+			try {
+				elementType.setStatus(CurriculumElementTypeStatus.valueOf(elementTypeVo.getStatus()));
+			} catch(IllegalArgumentException e) {
+				// ignore unknown values
+			}
 		}
 
 		elementType.setManagedFlags(CurriculumElementTypeManagedFlag.toEnum(elementTypeVo.getManagedFlagsString()));

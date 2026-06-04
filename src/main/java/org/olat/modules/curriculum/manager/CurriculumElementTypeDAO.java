@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.model.CurriculumElementTypeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class CurriculumElementTypeDAO {
 		type.setMaxRepositoryEntryRelations(-1);
 		type.setAllowedAsRootElement(true);
 		type.setImplOnly(false);
+		type.setStatus(CurriculumElementTypeStatus.active);
 		dbInstance.getCurrentEntityManager().persist(type);
 		return type;
 	}
@@ -73,6 +75,7 @@ public class CurriculumElementTypeDAO {
 		clone.setMaxRepositoryEntryRelations(reloadedType.getMaxRepositoryEntryRelations());
 		clone.setAllowedAsRootElement(reloadedType.isAllowedAsRootElement());
 		clone.setImplOnly(reloadedType.isImplOnly());
+		clone.setStatus(reloadedType.getStatus());
 		dbInstance.getCurrentEntityManager().persist(clone);
 		return clone;
 	}

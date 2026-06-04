@@ -1008,6 +1008,7 @@ create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assigne
 
 -- Curriculum element type
 alter table o_cur_element_type add column c_impl_only bool default false not null;
+alter table o_cur_element_type add column c_status varchar(32) default 'active' not null;
 
 
 

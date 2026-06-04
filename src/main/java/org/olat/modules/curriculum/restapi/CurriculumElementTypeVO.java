@@ -87,6 +87,7 @@ public class CurriculumElementTypeVO {
 	private Integer maxRepositoryEntryRelations;
 	private Boolean allowedAsRootElement;
 	private Boolean implOnly;
+	private String status;
 	
 	public CurriculumElementTypeVO() {
 		//
@@ -107,6 +108,9 @@ public class CurriculumElementTypeVO {
 		vo.setMaxRepositoryEntryRelations(type.getMaxRepositoryEntryRelations());
 		vo.setAllowedAsRootElement(type.isAllowedAsRootElement());
 		vo.setImplOnly(type.isImplOnly());
+		if(type.getStatus() != null) {
+			vo.setStatus(type.getStatus().name());
+		}
 		return vo;
 	}
 
@@ -220,6 +224,14 @@ public class CurriculumElementTypeVO {
 
 	public void setImplOnly(Boolean implOnly) {
 		this.implOnly = implOnly;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	@Override
