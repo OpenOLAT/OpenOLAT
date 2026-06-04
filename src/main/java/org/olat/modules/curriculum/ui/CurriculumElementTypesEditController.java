@@ -286,7 +286,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	}
 	
 	private void doOpenUsesSearch(UserRequest ureq, CurriculumElementTypeRow row) {
-		String businessPath = "[CurriculumAdmin:0][Search:0]";
+		String businessPath = "[CurriculumAdmin:0][Search:0][Type:" + row.getKey() + "]";
 		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 		if(StringHelper.containsNonWhitespace(url)) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));

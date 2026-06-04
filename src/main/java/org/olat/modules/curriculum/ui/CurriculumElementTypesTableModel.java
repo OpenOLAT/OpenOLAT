@@ -64,7 +64,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 			case forUseAs: return row.getForUseAsLabel();
 			case subelements: return !row.getType().isSingleElement();
 			case content: return row.getContentLabel();
-			case uses: return row.getUsesLink() != null ? row.getUsesLink() : null;
+			case uses: return row.getUsesLink();
 			case parents: return row.getParentsLink();
 			case children: return row.getChildrenLink();
 			case tools: return row.getToolsLink();

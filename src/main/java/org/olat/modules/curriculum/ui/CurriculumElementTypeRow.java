@@ -80,9 +80,6 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 		this.usesLink = usesLink;
 	}
 
-	public void setUsesCount(int usesCount) {
-	}
-
 	public String getContentLabel() {
 		return contentLabel;
 	}

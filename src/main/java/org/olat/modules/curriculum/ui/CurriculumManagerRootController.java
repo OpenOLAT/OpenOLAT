@@ -232,6 +232,12 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if("ToDos".equalsIgnoreCase(type) && todosLink.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenToDos(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Search".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doSearch(ureq, null);
+			if(searchCtrl != null && !subEntries.isEmpty()) {
+				searchCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if("Reports".equalsIgnoreCase(type) && reportsLink.isVisible()) {
 			doOpenReports(ureq);
 		} else if("Certification".equalsIgnoreCase(type) && certificationProgramsLink.isVisible()) {

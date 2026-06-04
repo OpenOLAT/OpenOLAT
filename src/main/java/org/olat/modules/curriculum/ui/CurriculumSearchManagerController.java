@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -61,8 +62,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
@@ -98,7 +101,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumSearchManagerController extends FormBasicController {
+public class CurriculumSearchManagerController extends FormBasicController implements Activateable2 {
 
 	protected static final String CMD_CURRICULUM = "curriculum";
 	protected static final String CMD_SELECT = "select";
@@ -113,6 +116,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private CurriculumElementSearchDataModel tableModel;
+	private FlexiTableExtendedFilter typeFilterEl;
 	private final TooledStackedPanel toolbarPanel;
 	
 	private ToolsController toolsCtrl;
@@ -146,6 +150,20 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			tableEl.quickSearch( ureq, searchString);
 		}
 	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		String entryType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Type".equalsIgnoreCase(entryType) && typeFilterEl != null) {
+			Long typeKey = entries.get(0).getOLATResourceable().getResourceableId();
+			tableEl.setFiltersValues(null, null,
+					List.of(FlexiTableFilterValue.valueOf(FILTER_TYPE, List.of(typeKey.toString()))));
+			doSearch(tableEl.getQuickSearchString(), tableEl.getFilters());
+		}
+	}
+
 
 	@Override
 	protected void doDispose() {
@@ -249,6 +267,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		}
 		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 				FILTER_TYPE, typesValues, true);
+		typeFilterEl = typeFilter;
 		filters.add(typeFilter);
 		
 		tableEl.setFilters(true, filters, false, false);
