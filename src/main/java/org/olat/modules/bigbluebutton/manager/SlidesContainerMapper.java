@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
+import java.util.Map;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.Logger;
@@ -27,6 +29,7 @@ import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -45,12 +48,14 @@ public class SlidesContainerMapper implements Mapper {
 	
 	private final VFSContainer container;
 	private final VFSContainer tempContainer;
+	private final Map<String,VFSLeaf> itemsMap;
 	
-	public SlidesContainerMapper(VFSContainer container) {
-		this(null, container);
+	public SlidesContainerMapper(VFSContainer container, Map<String,VFSLeaf> itemsMap) {
+		this(null, container, itemsMap);
 	}
 	
-	public SlidesContainerMapper(VFSContainer tempContainer, VFSContainer container) {
+	public SlidesContainerMapper(VFSContainer tempContainer, VFSContainer container, Map<String,VFSLeaf> itemsMap) {
+		this.itemsMap = itemsMap;
 		this.container = container;
 		this.tempContainer = tempContainer;
 	}
@@ -59,6 +64,7 @@ public class SlidesContainerMapper implements Mapper {
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		MediaResource resource = null;
 		if(relPath.startsWith(DOWNLOAD_PREFIX)) {
+			System.out.println(relPath);
 			String filename = relPath.substring(DOWNLOAD_PREFIX.length());
 			VFSItem slide = null;
 			if(tempContainer != null) {
@@ -67,6 +73,10 @@ public class SlidesContainerMapper implements Mapper {
 			if(slide == null && container != null) {
 				slide = container.resolve(filename);
 			}
+			if(slide == null && itemsMap.containsKey(filename)) {
+				slide = itemsMap.get(filename);
+			}
+			
 			if(slide instanceof VFSLeaf) {
 				resource = new VFSMediaResource((VFSLeaf)slide);
 			} else {
@@ -78,5 +88,29 @@ public class SlidesContainerMapper implements Mapper {
 			resource = new ForbiddenMediaResource();
 		}
 		return resource;
+	}
+	
+	/**
+	 * BigBlueButton can be very picky for the file names.
+	 * 
+	 * @param item The file
+	 * @return A very clean file name
+	 */
+	public static final String cleanFilename(VFSLeaf item) {
+		return FileUtils.cleanFilename(item.getName())
+				.replace('&', '_')
+				.replace('$', '_')
+				.replace('#', '_')
+				.replace('\'', '_')
+				.replace('[', '_')
+				.replace(']', '_')
+				.replace('(', '_')
+				.replace(')', '_')
+				.replace('@', '_')
+				.replace('!', '_')
+				.replace('+', '_')
+				.replace(';', '_');
+		
+		
 	}
 }

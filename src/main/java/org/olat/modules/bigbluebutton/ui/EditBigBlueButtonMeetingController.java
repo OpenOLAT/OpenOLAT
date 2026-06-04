@@ -163,7 +163,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		templates = bigBlueButtonManager.getTemplates();
 
 		temporaryContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
-		slidesMapper = new SlidesContainerMapper(temporaryContainer);
+		slidesMapper = new SlidesContainerMapper(temporaryContainer, Map.of());
 		mapperUri = registerCacheableMapper(null, null, slidesMapper);
 		
 		initForm(ureq);
@@ -189,7 +189,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 		slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
 		temporaryContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
-		slidesMapper = new SlidesContainerMapper(temporaryContainer, slidesContainer);
+		slidesMapper = new SlidesContainerMapper(temporaryContainer, slidesContainer, Map.of());
 		mapperUri = registerCacheableMapper(null, null, slidesMapper);
 		
 		initForm(ureq);
@@ -215,7 +215,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 		slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
 		temporaryContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
-		slidesMapper = new SlidesContainerMapper(temporaryContainer, slidesContainer);
+		slidesMapper = new SlidesContainerMapper(temporaryContainer, slidesContainer, Map.of());
 		mapperUri = registerCacheableMapper(null, null, slidesMapper);
 		
 		initForm(ureq);
@@ -857,6 +857,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	
 	private void doUploadSlide(File file, String filename) {
 		if(uploadSlidesEl.validate()) {
+			//filename = FileUtils.cleanFilename(filename);
 			VFSLeaf newSlide = VFSManager.resolveOrCreateLeafFromPath(temporaryContainer, filename);
 			VFSManager.copyContent(file, newSlide, getIdentity());
 			
