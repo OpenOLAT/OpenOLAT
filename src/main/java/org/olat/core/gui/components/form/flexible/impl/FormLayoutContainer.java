@@ -71,6 +71,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		LAYOUT_HORIZONTAL("horizontal", false, VELOCITY_ROOT + "/form_horizontal.html"),
 		LAYOUT_VERTICAL("vertical", false, VELOCITY_ROOT + "/form_vertical.html"),
 		LAYOUT_BAREBONE("barebone", true, VELOCITY_ROOT + "/form_barebone.html"),
+		LAYOUT_TWO_COLS("vertical", false, VELOCITY_ROOT + "/form_two_cols.html"),
 		LAYOUT_BUTTONGROUP("buttongroup", false, VELOCITY_ROOT + "/form_buttongroup.html"),
 		LAYOUT_INPUTGROUP("inputgroup", false, VELOCITY_ROOT + "/form_inputgroup.html"),
 		LAYOUT_PANEL("panel", false, VELOCITY_ROOT + "/form_panel.html"),
@@ -382,6 +383,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		return formLayoutContainer.getContext();
 	}
 	
+	@Override
 	public void contextPut(String key, Object value) {
 		formLayoutContainer.contextPut(key, value);
 	}
@@ -591,6 +593,18 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_BAREBONE, null);
 	}
 	
+	/**
+	 * Create a layout container that arranges its form items side-by-side in two equal columns
+	 * at viewports >= 992 px (CSS grid via .o_form_two_cols). Below that breakpoint the items stack.
+	 *
+	 * @param name
+	 * @param formTranslator
+	 * @return
+	 */
+	public static FormLayoutContainer createTwoColsFormLayout(String name, Translator formTranslator) {
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_TWO_COLS, DOM_REQUIRED_FALSE);
+	}
+
 	/**
 	 * Create a layout container based on the panel of bootstrap
 	 * @param name
