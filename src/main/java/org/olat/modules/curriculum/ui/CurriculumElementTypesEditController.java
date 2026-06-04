@@ -49,6 +49,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -60,6 +62,8 @@ import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumElementTypesTableModel.TypesCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -111,6 +115,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.subelements, new SubelementsRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content, new ContentRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.uses));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
 		
@@ -176,6 +181,17 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			contentKey = null;
 		}
 		row.setContentLabel(contentKey);
+
+		CurriculumElementSearchParams usesParams = new CurriculumElementSearchParams(getIdentity());
+		usesParams.setElementTypes(List.of(new CurriculumElementTypeRefImpl(type.getKey())));
+		int usesCount = curriculumService.searchCurriculumElements(usesParams).size();
+		if(usesCount > 0) {
+			FormLink usesLink = uifactory.addFormLink("uses_" + type.getKey(), "uses",
+					String.valueOf(usesCount), null, null, Link.LINK | Link.NONTRANSLATED);
+			usesLink.setUserObject(row);
+			row.setUsesLink(usesLink);
+		}
+
 		row.setParentTypes(parents);
 		if(!parents.isEmpty()) {
 			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
@@ -243,7 +259,9 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			doAddNewElemType(ureq);
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+			if("uses".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+				doOpenUsesSearch(ureq, row);
+			} else if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenTools(ureq, row, link);
 			} else if("parents".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenParents(ureq, row, link);
@@ -267,6 +285,14 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		//
 	}
 	
+	private void doOpenUsesSearch(UserRequest ureq, CurriculumElementTypeRow row) {
+		String businessPath = "[CurriculumAdmin:0][Search:0]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		if(StringHelper.containsNonWhitespace(url)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		}
+	}
+
 	private void doOpenTools(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
