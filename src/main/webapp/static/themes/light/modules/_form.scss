@@ -879,7 +879,7 @@ form.o_dnd_over {
 			cursor: pointer;
 			font-weight: normal;
 
-			input {
+			input[type="radio"] {
 				position: absolute;
 				opacity: 0;
 				width: 0;
