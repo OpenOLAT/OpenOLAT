@@ -335,7 +335,9 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		editElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), reloadedType);
 		listenTo(editElementTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editElementTypeCtrl.getInitialComponent(), true, translate("edit"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				editElementTypeCtrl.getInitialComponent(), true, 
+				translate("type.edit.title", reloadedType.getDisplayName()));
 		listenTo(cmc);
 		cmc.activate();
 	}
