@@ -188,8 +188,12 @@ public class ScoreCalculator implements Serializable {
 			}
 			sb.append(")");
 		} 
-		else if (getPassedType().equals(PASSED_TYPE_CUTVALUE)) { 
-			sb.append(getScoreExpressionFromEasyModeConfiguration());
+		else if (getPassedType().equals(PASSED_TYPE_CUTVALUE)) {
+			String scoreExpr = getScoreExpressionFromEasyModeConfiguration();
+			if (scoreExpr == null) {
+				return null;
+			}
+			sb.append(scoreExpr);
 			sb.append(" >= ");
 			sb.append(getPassedCutValue());
 		}

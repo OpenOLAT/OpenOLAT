@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.TimerTask;
 
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -251,7 +252,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
 			VFSContainer slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
 			if(slidesMapper == null) {
-				slidesMapper = new SlidesContainerMapper(slidesContainer);
+				slidesMapper = new SlidesContainerMapper(slidesContainer, Map.of());
 				String mapperUri = registerCacheableMapper(null, "BigBlueButtonSlides::" + meeting.getKey(), slidesMapper);
 				layoutCont.contextPut("mapperUri", mapperUri);
 			}

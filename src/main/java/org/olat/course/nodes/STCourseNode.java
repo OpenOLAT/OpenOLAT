@@ -363,7 +363,11 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			scoreCalculator = new ScoreCalculator();
 			scoreCalculator.setFailedType(FailedEvaluationType.failedAsNotPassedAfterEndDate);
 		}
-		
+		String pe = scoreCalculator.getPassedExpression();
+		if (pe != null && pe.startsWith("null ")) {
+			scoreCalculator.setPassedExpression(null);
+		}
+
 		passedExpression = new Condition();
 		passedExpression.setConditionId("passed");
 		if (scoreCalculator.getPassedExpression() != null) {

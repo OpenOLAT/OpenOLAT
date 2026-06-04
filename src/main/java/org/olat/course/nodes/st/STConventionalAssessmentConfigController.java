@@ -577,6 +577,13 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		}
 		
 		passedNodesEl.clearError();
+		passedTypeEl.clearError();
+		if (passedTypeEl.isVisible() && passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
+			if (!configEl.isKeySelected(KEY_SCORE_ENABLED)) {
+				passedTypeEl.setErrorKey("scform.passedType.error");
+				allOk &= false;
+			}
+		}
 		if (passedNodesEl.isVisible()) {
 			if (passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
 				if (passedNodesEl.getSelectedKeys().isEmpty()) {
@@ -584,11 +591,6 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 					allOk &= false;
 				} else if (passedNodesEl.getSelectedKeys().contains(DELETED_NODE_IDENTIFYER)) {
 					passedNodesEl.setErrorKey("scform.deletedNode.error");
-					allOk &= false;
-				}
-			} else if (passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
-				if (!configEl.isKeySelected(KEY_SCORE_ENABLED)) {
-					passedTypeEl.setErrorKey("scform.passedType.error");
 					allOk &= false;
 				}
 			}
