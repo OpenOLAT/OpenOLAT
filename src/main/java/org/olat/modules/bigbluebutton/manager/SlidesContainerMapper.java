@@ -64,7 +64,6 @@ public class SlidesContainerMapper implements Mapper {
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		MediaResource resource = null;
 		if(relPath.startsWith(DOWNLOAD_PREFIX)) {
-			System.out.println(relPath);
 			String filename = relPath.substring(DOWNLOAD_PREFIX.length());
 			VFSItem slide = null;
 			if(tempContainer != null) {
@@ -109,7 +108,8 @@ public class SlidesContainerMapper implements Mapper {
 				.replace('@', '_')
 				.replace('!', '_')
 				.replace('+', '_')
-				.replace(';', '_');
+				.replace(';', '_')
+				.replace(' ', '_');
 		
 		
 	}
