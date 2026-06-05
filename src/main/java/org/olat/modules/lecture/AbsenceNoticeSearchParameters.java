@@ -28,6 +28,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -48,6 +49,7 @@ public class AbsenceNoticeSearchParameters {
 	private IdentityRef teacher;
 	private IdentityRef masterCoach;
 	private IdentityRef participant;
+	private RepositoryEntryRef repositoryEntry;
 	private List<OrganisationRef> managedOrganisations;
 	
 	public AbsenceNoticeSearchParameters() {
@@ -166,4 +168,14 @@ public class AbsenceNoticeSearchParameters {
 	public void setAbsenceCategory(AbsenceCategory absenceCategory) {
 		this.absenceCategory = absenceCategory;
 	}
+
+	public RepositoryEntryRef getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public void setRepositoryEntry(RepositoryEntryRef repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
+	}
+	
+	
 }

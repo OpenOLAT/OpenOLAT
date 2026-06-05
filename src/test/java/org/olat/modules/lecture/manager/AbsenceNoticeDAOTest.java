@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -34,6 +35,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeSearchParameters;
@@ -44,7 +46,10 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.LectureBlockWithNotice;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +69,8 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	@Autowired
 	private AbsenceNoticeDAO absenceNoticeDao;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private AbsenceCategoryDAO absenceCategoryDao;
 	@Autowired
 	private OrganisationService organisationService;
@@ -71,6 +78,8 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	private LectureBlockRollCallDAO lectureBlockRollCallDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
 	@Autowired
 	private AbsenceNoticeToLectureBlockDAO absenceNoticeToLectureBlockDao;
 	@Autowired
@@ -302,6 +311,128 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		
 		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
 		Assert.assertNotNull(foundNotices);
+	}
+	
+	@Test
+	public void searchAbsenceNoticeByRepositoryEntryViaLectureBlock() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3d");
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, new Date(), DateUtils.addHours(new Date(), 1));
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+		Group defGroup = repositoryEntryRelationDao.getDefaultGroup(lectureBlock.getEntry());
+		lectureBlockDao.addGroupToLectureBlock(lectureBlock, defGroup);
+		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				start, end, null, null, null, null, null);
+		absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(notice);
+		
+		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setParticipant(identity);
+		
+		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
+		Assertions.assertThat(foundNotices)
+			.hasSize(1)
+			.map(AbsenceNoticeInfos::getAbsenceNotice)
+			.containsExactly(notice);
+	}
+	
+	@Test
+	public void searchAbsenceNoticeByRepositoryEntryViaRepositoryEntry() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3d");
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				start, end, null, null, null, null, null);
+		absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(notice);
+		
+		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setParticipant(identity);
+		
+		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
+		Assertions.assertThat(foundNotices)
+			.hasSize(1)
+			.map(AbsenceNoticeInfos::getAbsenceNotice)
+			.containsExactly(notice);
+	}
+	
+	@Test
+	public void searchAbsenceNoticeByRepositoryEntryByDate() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3d");
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+		
+		Date now = new Date();
+		Date startEntry = DateUtils.addDays(now, -5);
+		Date endEntry = DateUtils.addDays(now, 5);
+		RepositoryEntryLifecycle cycle = repositoryEntryLifecycleDao.create("Sem.", null, true, startEntry, endEntry);
+		entry = repositoryManager.setDescriptionAndName(entry, entry.getDisplayname(), "Course with dates", null, null, null, null, null, null, cycle);
+		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(notice);
+		
+		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setParticipant(identity);
+		
+		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
+		Assertions.assertThat(foundNotices)
+			.hasSize(1)
+			.map(AbsenceNoticeInfos::getAbsenceNotice)
+			.containsExactly(notice);
+	}
+	
+	/**
+	 * Make sure that the notice dates must overlap the date of the course.
+	 */
+	@Test
+	public void searchAbsenceNoticeByRepositoryEntryByDateNegativeTest() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3d");
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+		
+		Date now = new Date();
+		Date startEntry = DateUtils.addDays(now, -15);
+		Date endEntry = DateUtils.addDays(now, -5);
+		RepositoryEntryLifecycle cycle = repositoryEntryLifecycleDao.create("Sem.", null, true, startEntry, endEntry);
+		entry = repositoryManager.setDescriptionAndName(entry, entry.getDisplayname(), "Course with dates", null, null, null, null, null, null, cycle);
+		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(notice);
+		
+		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setParticipant(identity);
+		
+		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
+		Assertions.assertThat(foundNotices)
+			.isEmpty();
 	}
 	
 	@Test

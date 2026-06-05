@@ -92,6 +92,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.gotomeeting.restapi.GoToTrainingWebService;
 import org.olat.modules.invitation.restapi.RepositoryEntryInvitationsWebService;
+import org.olat.modules.lecture.restapi.AbsenceNoticesWebService;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
@@ -271,6 +272,7 @@ public class CourseWebService {
 	/**
 	 * To get the web service for the lecture blocks of a specific course.
 	 * 
+	 * @param request The request
 	 * @return The web service for lecture blocks.
 	 */
 	@Path("lectureblocks")
@@ -278,6 +280,21 @@ public class CourseWebService {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		boolean administrator = isManagerWithLectures(request);
 		LectureBlocksWebService service = new LectureBlocksWebService(courseRe, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * To get the web service for the absence notices of a specific course.
+	 * 
+	 * @param request The request
+	 * @return The web service for absence notices
+	 */
+	@Path("absencenotices")
+	public AbsenceNoticesWebService getAbsenceNoticesWebService(@Context HttpServletRequest request) {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean administrator = isManagerWithLectures(request);
+		AbsenceNoticesWebService service = new AbsenceNoticesWebService(courseRe, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

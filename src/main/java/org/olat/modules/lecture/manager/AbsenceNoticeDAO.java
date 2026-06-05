@@ -296,6 +296,29 @@ public class AbsenceNoticeDAO {
 			  .append(")");
 		}
 		
+		if(searchParams.getRepositoryEntry() != null) {
+			sb.and()
+			  .append(" (")
+			  .append("  exists (select noticeToBlock.key from absencenoticetolectureblock noticeToBlock")
+			  .append("    inner join noticeToBlock.lectureBlock as block")
+			  .append("    where notice.target ").in(AbsenceNoticeTarget.lectureblocks)
+			  .append("    and noticeToBlock.absenceNotice.key=notice.key and block.entry.key=:repositoryEntryKey")
+			  .append("  ) or exists (select noticeToEntry.key from absencenoticetoentry noticeToEntry")
+			  .append("    where notice.target ").in(AbsenceNoticeTarget.entries)
+			  .append("    and noticeToEntry.absenceNotice.key=notice.key and noticeToEntry.entry.key=:repositoryEntryKey")
+			  .append("  ) or (exists (select reLifecycle from repositoryentrylifecycle as reLifecycle")
+			  .append("      inner join repositoryentry as v on (v.lifecycle.key=reLifecycle.key)")
+			  .append("      where v.key=:repositoryEntryKey and notice.target ").in(AbsenceNoticeTarget.allentries)
+			  .append("      and (")
+			  .append("        (notice.startDate<=reLifecycle.validFrom and notice.endDate>=reLifecycle.validTo)")
+			  .append("        or (notice.startDate>=reLifecycle.validFrom and notice.startDate<reLifecycle.validTo)")
+			  .append("        or (notice.endDate>=reLifecycle.validFrom and notice.endDate<reLifecycle.validTo)")
+			  .append("      )")
+			  .append("    )")
+			  .append("  )")
+			  .append(")");
+		}
+		
 		TypedQuery<AbsenceNotice> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), AbsenceNotice.class);
 		if(!searchParams.getTypes().isEmpty()) {
@@ -321,6 +344,9 @@ public class AbsenceNoticeDAO {
 		}
 		if(searchParams.getAbsenceCategory() != null) {
 			query.setParameter("absenceCategoryKey", searchParams.getAbsenceCategory().getKey());
+		}
+		if(searchParams.getRepositoryEntry() != null) {
+			query.setParameter("repositoryEntryKey", searchParams.getRepositoryEntry().getKey());
 		}
 
 		if(searchParams.getManagedOrganisations() != null && !searchParams.getManagedOrganisations().isEmpty()) {
