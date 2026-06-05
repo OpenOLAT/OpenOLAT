@@ -105,6 +105,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -322,6 +323,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 			
 			for(CurriculumElementType allowedType:allowedTypes) {
+				if(allowedType.getStatus() == CurriculumElementTypeStatus.inactive) continue;
+				if(rootElement != null && allowedType.isImplOnly()) continue;
 				String link = translate("add.curriculum.element.typed", StringHelper.escapeHtml(allowedType.getDisplayName()));
 				newGenericElementButton = uifactory.addFormLink("add.curriculum.element." + allowedType.getKey(),
 						CMD_ADD_ELEMENT, link, null, formLayout, Link.LINK | Link.NONTRANSLATED);
@@ -1635,6 +1638,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				newLink = addLink("add.element.under", "o_icon_levels", links);
 			} else {
 				for(CurriculumElementType type:types) {
+					if(type.getStatus() == CurriculumElementTypeStatus.inactive || type.isImplOnly()) continue;
 					String name = "new_el_" + type.getKey();
 					String label = translate("add.element.with.type.under", StringHelper.escapeHtml(type.getDisplayName()));
 					Link link = LinkFactory.createLink(name, name, NEW_ELEMENT, label, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
