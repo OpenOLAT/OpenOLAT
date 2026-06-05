@@ -20,7 +20,10 @@
 package org.olat.modules.oaipmh.common.exceptions;
 
 public class InvalidResumptionTokenException extends Exception {
-    public InvalidResumptionTokenException() {
+    
+	private static final long serialVersionUID = -1093654644295828981L;
+
+	public InvalidResumptionTokenException() {
     }
 
     public InvalidResumptionTokenException(String message) {

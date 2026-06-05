@@ -10,7 +10,6 @@
 
 package org.olat.modules.oaipmh.dataprovider.handlers;
 
-import com.lyncode.builder.Builder;
 import org.olat.modules.oaipmh.common.exceptions.InvalidResumptionTokenException;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.dataprovider.builder.OAIRequestParametersBuilder;
@@ -44,10 +43,6 @@ public abstract class VerbHandler<T extends XmlWritable> {
 	}
 
 	public T handle(OAIRequestParametersBuilder parameters) throws OAIException, HandlerException, InvalidResumptionTokenException {
-		return handle(parameters.build());
-	}
-
-	public T handle(Builder<OAICompiledRequest> parameters) throws OAIException, HandlerException {
 		return handle(parameters.build());
 	}
 

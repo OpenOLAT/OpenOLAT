@@ -435,6 +435,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.grading.manager.GradingServiceTest.class,
 	org.olat.modules.message.manager.AssessmentMessageDAOTest.class,
 	org.olat.modules.message.manager.AssessmentMessageLogDAOTest.class,
+	org.olat.modules.oaipmh.OAIServiceTest.class,
 	org.olat.modules.library.LibraryManagerTest.class,
 	org.olat.basesecurity.manager.OrganisationDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationTypeDAOTest.class,

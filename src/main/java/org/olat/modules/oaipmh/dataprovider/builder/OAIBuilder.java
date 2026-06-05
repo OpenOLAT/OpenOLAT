@@ -5,7 +5,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,26 +17,18 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.oaipmh.common.exceptions;
+package org.olat.modules.oaipmh.dataprovider.builder;
 
-
-public class XmlWriteException extends Exception {
-
-    private static final long serialVersionUID = -3239455298342537607L;
-
-	public XmlWriteException() {
-    }
-
-    public XmlWriteException(String message) {
-        super(message);
-    }
-
-    public XmlWriteException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public XmlWriteException(Throwable cause) {
-        super(cause);
-    }
-
+/**
+ * 
+ * Initial date: 4 juin 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ *
+ * @param <T>
+ */
+@FunctionalInterface
+public interface OAIBuilder<T> {
+	
+	T build();
+	
 }

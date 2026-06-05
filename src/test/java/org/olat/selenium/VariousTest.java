@@ -25,11 +25,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.library.LibraryManagerTest;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
@@ -44,10 +46,10 @@ import org.olat.selenium.page.project.ProjectPage;
 import org.olat.selenium.page.project.ProjectsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
-import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.repository.OAIPMHClient;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -62,6 +64,8 @@ import org.openqa.selenium.WebDriver;
  */
 @RunWith(Arquillian.class)
 public class VariousTest extends Deployments {
+	
+	private static final Logger log = Tracing.createLoggerFor(VariousTest.class);
 
 	private WebDriver browser = getWebDriver(0);
 	
@@ -415,6 +419,7 @@ public class VariousTest extends Deployments {
 		
 		OAIPMHClient oaiPmhClient = new OAIPMHClient(deploymentUrl);
 		String indexXml = oaiPmhClient.getOAIPMHIndex();
+		log.debug("OAIPMH: ", indexXml);
 		oaiPmhClient
 			.assertOnOAIPMH(indexXml)
 			.assertOnTitle(indexXml, title)
@@ -467,6 +472,7 @@ public class VariousTest extends Deployments {
 
 		OAIPMHClient oaiPmhClient = new OAIPMHClient(deploymentUrl);
 		String sitemap = oaiPmhClient.getSitemap();
+		log.debug("Sitemap: ", sitemap);
 		oaiPmhClient
 			.assertOnSitemap(sitemap)
 			.assertOnUrlLoc(sitemap, currentUrl);

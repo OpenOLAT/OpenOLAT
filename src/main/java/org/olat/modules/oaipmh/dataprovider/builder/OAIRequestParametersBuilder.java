@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.lyncode.builder.Builder;
 import org.olat.modules.oaipmh.common.exceptions.InvalidResumptionTokenException;
 import org.olat.modules.oaipmh.common.model.Verb;
 import org.olat.modules.oaipmh.common.services.impl.UTCDateProvider;
@@ -29,7 +28,7 @@ import org.olat.modules.oaipmh.dataprovider.exceptions.UnknownParameterException
 import org.olat.modules.oaipmh.dataprovider.parameters.OAICompiledRequest;
 import org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest;
 
-public class OAIRequestParametersBuilder implements Builder<OAIRequest> {
+public class OAIRequestParametersBuilder implements OAIBuilder<OAIRequest> {
 	private final UTCDateProvider utcDateProvider = new UTCDateProvider();
 	private final Map<String, List<String>> params = new HashMap<>();
 
