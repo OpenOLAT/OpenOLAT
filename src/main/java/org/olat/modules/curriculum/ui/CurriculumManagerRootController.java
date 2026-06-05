@@ -196,7 +196,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 
-		toDoTasksWidgetCtrl = new CurriculumManagerToDoTasksWidgetController(ureq, getWindowControl());
+		toDoTasksWidgetCtrl = new CurriculumManagerToDoTasksWidgetController(ureq, getWindowControl(), secCallback);
 		listenTo(toDoTasksWidgetCtrl);
 		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
 

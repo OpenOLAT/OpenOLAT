@@ -20,13 +20,18 @@
 package org.olat.modules.curriculum.ui.widgets;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
+import org.olat.modules.curriculum.ui.CurriculumManagerToDoSecurityCallback;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskRow;
 import org.olat.modules.todo.ui.ToDoTasksWidgetController;
@@ -40,18 +45,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumManagerToDoTasksWidgetController extends ToDoTasksWidgetController {
 
-	private final List<String> originSubPaths;
-	
+	private final Set<String> originSubPaths;
+	private ToDoTaskSecurityCallback securityCallback;
+
 	@Autowired
 	private CurriculumService curriculumService;
 
-	public CurriculumManagerToDoTasksWidgetController(UserRequest ureq, WindowControl wControl) {
+	public CurriculumManagerToDoTasksWidgetController(UserRequest ureq, WindowControl wControl,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
-		
+
 		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
 		searchParams.setIncludeImplementationOwnership(false);
-		originSubPaths = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys().stream()
-				.map(String::valueOf).toList();
+		Set<Long> elementKeys = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys();
+		originSubPaths = elementKeys.stream().map(String::valueOf).collect(Collectors.toSet());
+		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, elementKeys, curriculumService);
+
 		initForm(ureq);
 	}
 
@@ -80,5 +89,10 @@ public class CurriculumManagerToDoTasksWidgetController extends ToDoTasksWidgetC
 		String fullPath = "[ToDos:0][" + ToDoTaskListController.TYPE_TODO + ":" + row.getKey() + "]";
 		doOpen(ureq, fullPath);
 	}
-	
+
+	@Override
+	protected ToDoTaskSecurityCallback getSecurityCallback() {
+		return securityCallback;
+	}
+
 }

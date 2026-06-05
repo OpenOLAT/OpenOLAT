@@ -44,6 +44,7 @@ public class ToDoTasksWidgetDataModel extends DefaultFlexiTableDataModel<ToDoTas
 
 	public Object getValueAt(ToDoTaskRow row, int col) {
 		switch (COLS[col]) {
+		case done: return row.getDoItem();
 		case title: return row.getDisplayName();
 		case priority: return row;
 		case dueDate: return row;
@@ -53,6 +54,7 @@ public class ToDoTasksWidgetDataModel extends DefaultFlexiTableDataModel<ToDoTas
 	}
 
 	public enum WidgetCols implements FlexiColumnDef {
+		done("task.do"),
 		title("task.title"),
 		priority("task.priority"),
 		dueDate("task.due.date"),

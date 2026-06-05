@@ -643,7 +643,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewCtrl.addWidget("courses", translate("tab.resources"), coursesWidgetCtrl, BentoBoxSize.box_4_1);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
-		toDoTasksWidgetCtrl = new CurriculumElementToDoTasksWidgetController(ureq, getWindowControl(), curriculumElement);
+		toDoTasksWidgetCtrl = new CurriculumElementToDoTasksWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
 		listenTo(toDoTasksWidgetCtrl);
 		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
 

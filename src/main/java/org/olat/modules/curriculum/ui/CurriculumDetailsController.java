@@ -304,7 +304,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
 
-		toDoTasksWidgetCtrl = new CurriculumToDoTasksWidgetController(ureq, getWindowControl(), curriculum);
+		toDoTasksWidgetCtrl = new CurriculumToDoTasksWidgetController(ureq, getWindowControl(), curriculum, secCallback);
 		listenTo(toDoTasksWidgetCtrl);
 		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
 

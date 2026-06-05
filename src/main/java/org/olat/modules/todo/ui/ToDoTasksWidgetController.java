@@ -34,6 +34,8 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -50,6 +52,7 @@ import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.DateRange;
@@ -58,10 +61,14 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTasksWidgetDataModel.WidgetCols;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class ToDoTasksWidgetController extends TableWidgetController implements TableWidgetConfigProvider {
 
 	private static final String CMD_OPEN = "open";
+	private static final String CMD_DOIT_PREFIX = "o_do_";
 
 	private final Formatter formatter;
 	private IndicatorsItem indicatorsEl;
@@ -85,6 +93,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 
 	private SelectionValues figureValues;
 	private String keyFigureKey;
+	private int counter = 0;
 
 	@Autowired
 	private ToDoService toDoService;
@@ -98,8 +107,10 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	protected abstract String getBaseBusinessPath();
 
 	protected abstract ToDoTaskSearchParams createBaseParams();
-	
+
 	protected abstract void doOpenRow(UserRequest ureq, ToDoTaskRow row);
+
+	protected abstract ToDoTaskSecurityCallback getSecurityCallback();
 
 	@Override
 	protected TableWidgetConfigProvider getConfigProvider() {
@@ -167,6 +178,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	@Override
 	protected String createTable(FormLayoutContainer widgetCont) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.done));
 		FlexiCellRenderer renderer = new TextFlexiCellRenderer(EscapeMode.none);
 		renderer = wrapCellLink(renderer);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.title, renderer));
@@ -203,6 +215,9 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 			}
 		} else if (source == showAllLink && showAllLink.getUserObject() instanceof String businessPath) {
 			doOpen(ureq, businessPath);
+		} else if (source instanceof FormToggle toggleEl && toggleEl.getName().startsWith(CMD_DOIT_PREFIX)
+				&& toggleEl.getUserObject() instanceof ToDoTaskRow row) {
+			doSetDone(row);
 		} else if (source instanceof FormLink link) {
 			if (CMD_OPEN.equals(link.getCmd())) {
 				if (link.getUserObject() instanceof String businessPath) {
@@ -245,19 +260,20 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 
 	private void updateTableRows(List<ToDoTask> tasks) {
 		LocalDate now = LocalDate.now();
-		
+		Map<Long, ToDoTaskMembers> groupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(tasks, ToDoRole.ALL);
+
 		List<ToDoTaskRow> rows = tasks.stream()
 				.sorted(Comparator.comparing(ToDoTask::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
 								.thenComparing(ToDoTask::getTitle, Comparator.nullsLast(Comparator.naturalOrder())))
-				.map(task -> toRow(task, now))
+				.map(task -> toRow(task, now, groupKeyToMembers))
 				.limit(tableEl.getPageSize())
 				.toList();
-		
+
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
-	private ToDoTaskRow toRow(ToDoTask task, LocalDate now) {
+	private ToDoTaskRow toRow(ToDoTask task, LocalDate now, Map<Long, ToDoTaskMembers> groupKeyToMembers) {
 		ToDoTaskRow row = new ToDoTaskRow(task);
 		String displayName = ToDoUIFactory.getDisplayName(getTranslator(), task);
 		displayName = StringHelper.escapeHtml(displayName);
@@ -269,7 +285,42 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 			row.setDue(due.name());
 			row.setOverdue(due.overdue());
 		}
+
+		ToDoTaskMembers members = groupKeyToMembers.get(task.getBaseGroup().getKey());
+		if (members != null) {
+			Identity creator = members.getMembers(ToDoRole.creator).stream().findFirst().orElse(null);
+			row.setCreator(creator);
+			row.setAssignees(members.getMembers(ToDoRole.assignee));
+			row.setDelegatees(members.getMembers(ToDoRole.delegatee));
+		}
+
+		boolean creator = row.getCreator() != null && row.getCreator().getKey().equals(getIdentity().getKey());
+		boolean assignee = row.getAssignees() != null && row.getAssignees().contains(getIdentity());
+		boolean delegatee = row.getDelegatees() != null && row.getDelegatees().contains(getIdentity());
+		row.setCanEdit(getSecurityCallback().canEdit(task, creator, assignee, delegatee));
+
+		forgeDoItem(row);
 		return row;
+	}
+
+	private void forgeDoItem(ToDoTaskRow row) {
+		FormToggle doEl = uifactory.addToggleButton(CMD_DOIT_PREFIX + counter++, null, null, null, null);
+		doEl.setPresentation(Presentation.CHECK);
+		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
+		doEl.addActionListener(FormEvent.ONCHANGE);
+		doEl.setEnabled(row.canEdit());
+		doEl.toggleOff();
+		doEl.setUserObject(row);
+		row.setDoItem(doEl);
+	}
+
+	private void doSetDone(ToDoTaskRow row) {
+		if (!row.canEdit()) {
+			return;
+		}
+		ToDoProvider provider = toDoService.getProvider(row.getType());
+		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), ToDoStatus.done);
+		reload();
 	}
 	
 	private ToDoTaskSearchParams createMyToDosParams() {
