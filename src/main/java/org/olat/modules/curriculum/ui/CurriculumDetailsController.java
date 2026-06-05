@@ -249,7 +249,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		if(secCallback.canViewToDos()) {
 			todosTab = tabPane.addTab(ureq, translate("tab.todos"), "o_sel_curriculum_todos", uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_TODOS), null);
-				todosCtrl = new CurriculumToDoListController(uureq, subControl, curriculum);
+				todosCtrl = new CurriculumToDoListController(uureq, subControl, curriculum, secCallback);
 				listenTo(todosCtrl);
 				return todosCtrl.getInitialComponent();
 			}, true);

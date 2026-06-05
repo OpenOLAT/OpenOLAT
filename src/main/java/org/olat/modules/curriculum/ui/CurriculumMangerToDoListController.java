@@ -22,16 +22,16 @@ package org.olat.modules.curriculum.ui;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
-import org.olat.modules.todo.ToDoStatus;
-import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
@@ -47,22 +47,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	
 	private Collection<String> subPaths;
+	private ToDoTaskSecurityCallback securityCallback;
 
 	@Autowired
 	private CurriculumService curriculumService;
 
-	public CurriculumMangerToDoListController(UserRequest ureq, WindowControl wControl) {
+	public CurriculumMangerToDoListController(UserRequest ureq, WindowControl wControl,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "manager_todos", CurriculumElementToDoProvider.TYPE, null, null);
-		
+
 		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
 		searchParams.setIncludeImplementationOwnership(false);
-		subPaths = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys().stream()
-				.map(String::valueOf)
-				.toList();
+		Set<Long> elementKeys = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys();
+		subPaths = elementKeys.stream().map(String::valueOf).toList();
 		if (subPaths.isEmpty()) {
 			// Not existing key to prevent loading all to-dos.
 			subPaths = List.of("-1");
 		}
+		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, elementKeys, curriculumService);
 
 		initForm(ureq);
 
@@ -145,43 +147,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
-		return CurriculumManagerSecurityCallback.INSTANCE;
-	}
-	
-	private final static class CurriculumManagerSecurityCallback implements ToDoTaskSecurityCallback {
-		
-		private final static CurriculumManagerSecurityCallback INSTANCE = new CurriculumManagerSecurityCallback();
-
-		@Override
-		public boolean canCreateToDoTasks() {
-			return false;
-		}
-
-		@Override
-		public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return canEdit(toDoTask, creator, assignee, delegatee);
-		}
-
-		@Override
-		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted != toDoTask.getStatus() ;
-		}
-
-		@Override
-		public boolean canBulkDeleteToDoTasks() {
-			return true;
-		}
-
-		@Override
-		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted != toDoTask.getStatus();
-		}
-
-		@Override
-		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted == toDoTask.getStatus();
-		}
-		
+		return securityCallback;
 	}
 
 }

@@ -34,17 +34,24 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
  */
 public class CurriculumElementToDoSecurityCallback implements ToDoTaskSecurityCallback {
 
-	private final CurriculumSecurityCallback secCallback;
-	private final CurriculumElement element;
+	protected final CurriculumSecurityCallback secCallback;
+	protected final CurriculumElement element;
 
 	public CurriculumElementToDoSecurityCallback(CurriculumSecurityCallback secCallback, CurriculumElement element) {
 		this.secCallback = secCallback;
 		this.element = element;
 	}
 
+	/**
+	 * @param toDoTask 
+	 */
+	protected CurriculumElement getCurriculumElement(ToDoTask toDoTask) {
+		return element;
+	}
+
 	@Override
 	public boolean canCreateToDoTasks() {
-		return secCallback.canEditCurriculumElement(element);
+		return element != null && secCallback.canEditCurriculumElement(element);
 	}
 
 	@Override
@@ -54,27 +61,40 @@ public class CurriculumElementToDoSecurityCallback implements ToDoTaskSecurityCa
 
 	@Override
 	public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-		return ToDoStatus.deleted != toDoTask.getStatus() && secCallback.canEditCurriculumElement(element);
+		if (ToDoStatus.deleted == toDoTask.getStatus()) {
+			return false;
+		}
+		CurriculumElement el = getCurriculumElement(toDoTask);
+		return el != null && secCallback.canEditCurriculumElement(el);
 	}
 
 	@Override
 	public boolean canBulkDeleteToDoTasks() {
-		return secCallback.canEditCurriculumElement(element);
+		return element != null && secCallback.canEditCurriculumElement(element);
 	}
 
 	@Override
 	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-		return ToDoStatus.deleted != toDoTask.getStatus() && secCallback.canEditCurriculumElement(element);
+		if (ToDoStatus.deleted == toDoTask.getStatus()) {
+			return false;
+		}
+		CurriculumElement el = getCurriculumElement(toDoTask);
+		return el != null && secCallback.canEditCurriculumElement(el);
 	}
 
 	@Override
 	public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-		return ToDoStatus.deleted == toDoTask.getStatus() && secCallback.canEditCurriculumElement(element);
+		if (ToDoStatus.deleted != toDoTask.getStatus()) {
+			return false;
+		}
+		CurriculumElement el = getCurriculumElement(toDoTask);
+		return el != null && secCallback.canEditCurriculumElement(el);
 	}
 
 	@Override
 	public ToDoRight[] getAssigneeRightsOverride(ToDoTask toDoTask) {
-		return secCallback.canEditCurriculumElement(element)
+		CurriculumElement el = getCurriculumElement(toDoTask);
+		return el != null && secCallback.canEditCurriculumElement(el)
 				? new ToDoRight[] { ToDoRight.all }
 				: null;
 	}

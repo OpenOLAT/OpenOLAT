@@ -374,7 +374,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		removeAsListenerAndDispose(todosCtrl);
 
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("ToDos", 0l), null);
-		todosCtrl = new CurriculumMangerToDoListController(ureq, subControl);
+		todosCtrl = new CurriculumMangerToDoListController(ureq, subControl, secCallback);
 		listenTo(todosCtrl);
 		toolbarPanel.pushController(translate("curriculum.todos"), todosCtrl);
 		return todosCtrl;

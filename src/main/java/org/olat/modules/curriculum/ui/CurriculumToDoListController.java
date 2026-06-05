@@ -28,11 +28,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
-import org.olat.modules.todo.ToDoStatus;
-import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
@@ -49,11 +48,13 @@ public class CurriculumToDoListController extends ToDoTaskListController {
 
 	private final Long curriculumKey;
 	private List<String> subPaths;
+	private ToDoTaskSecurityCallback securityCallback;
 
 	@Autowired
 	private CurriculumService curriculumService;
 
-	public CurriculumToDoListController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
+	public CurriculumToDoListController(UserRequest ureq, WindowControl wControl, Curriculum curriculum,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "manager_todos", CurriculumElementToDoProvider.TYPE, null, null);
 
 		this.curriculumKey = curriculum.getKey();
@@ -67,6 +68,7 @@ public class CurriculumToDoListController extends ToDoTaskListController {
 			// Not existing key to prevent loading all to-dos.
 			subPaths = List.of("-1");
 		}
+		securityCallback = new CurriculumToDoSecurityCallback(secCallback, curriculum, curriculumService);
 
 		initForm(ureq);
 
@@ -153,43 +155,7 @@ public class CurriculumToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
-		return CurriculumSecurityCallbackImpl.INSTANCE;
-	}
-
-	private final static class CurriculumSecurityCallbackImpl implements ToDoTaskSecurityCallback {
-
-		private final static CurriculumSecurityCallbackImpl INSTANCE = new CurriculumSecurityCallbackImpl();
-
-		@Override
-		public boolean canCreateToDoTasks() {
-			return false;
-		}
-
-		@Override
-		public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return canEdit(toDoTask, creator, assignee, delegatee);
-		}
-
-		@Override
-		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted != toDoTask.getStatus();
-		}
-
-		@Override
-		public boolean canBulkDeleteToDoTasks() {
-			return true;
-		}
-
-		@Override
-		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted != toDoTask.getStatus();
-		}
-
-		@Override
-		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted == toDoTask.getStatus();
-		}
-
+		return securityCallback;
 	}
 
 }
