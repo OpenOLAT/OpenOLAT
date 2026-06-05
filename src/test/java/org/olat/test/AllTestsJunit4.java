@@ -700,6 +700,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RepositoryEntriesTest.class,
 	org.olat.restapi.RepositoryEntryWebServiceTest.class,
 	org.olat.restapi.RepositoryEntryInvitationsWebServiceTest.class,
+	org.olat.restapi.RepositoryEntryAbsenceNoticesWebServiceTest.class,
 	org.olat.restapi.RemindersWebServiceTest.class,
 	org.olat.restapi.RestApiLoginFilterTest.class,
 	org.olat.restapi.UserAuthenticationsWebServiceTest.class,

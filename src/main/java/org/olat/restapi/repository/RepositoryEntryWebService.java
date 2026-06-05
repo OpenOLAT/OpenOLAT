@@ -91,6 +91,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.invitation.restapi.RepositoryEntryInvitationsWebService;
+import org.olat.modules.lecture.restapi.AbsenceNoticesWebService;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -240,6 +241,20 @@ public class RepositoryEntryWebService {
 	throws WebApplicationException {
 		boolean administrator = isLectureManager(request);
 		LectureBlocksWebService service = new LectureBlocksWebService(entry, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * To get the web service for the absence notices of a specific course.
+	 * 
+	 * @param request The request
+	 * @return The web service for absence notices
+	 */
+	@Path("absencenotices")
+	public AbsenceNoticesWebService getAbsenceNoticesWebService(@Context HttpServletRequest request) {
+		boolean administrator = isLectureManager(request);
+		AbsenceNoticesWebService service = new AbsenceNoticesWebService(entry, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
