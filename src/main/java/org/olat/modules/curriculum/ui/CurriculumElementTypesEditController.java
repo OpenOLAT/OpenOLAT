@@ -372,6 +372,15 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		cmc.activate();
 	}
 	
+	private void doSetStatus(CurriculumElementTypeRow row, CurriculumElementTypeStatus status) {
+		CurriculumElementType type = curriculumService.getCurriculumElementType(row);
+		if(type != null) {
+			type.setStatus(status);
+			curriculumService.updateCurriculumElementType(type);
+			loadModel();
+		}
+	}
+
 	private void doCopy(CurriculumElementTypeRow row) {
 		curriculumService.cloneCurriculumElementType(row);
 		loadModel();
@@ -465,6 +474,13 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.copy)) {
 				addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
 			}
+			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.status)) {
+				if(type.getStatus() == CurriculumElementTypeStatus.active) {
+					addLink("type.tools.set.inactive", "setInactive", "o_icon o_icon-fw o_icon_ban", links);
+				} else {
+					addLink("type.tools.set.active", "setActive", "o_icon o_icon-fw o_icon_check", links);
+				}
+			}
 			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.delete)) {
 				links.add("-");
 				addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
@@ -494,6 +510,12 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 				} else if("copy".equals(cmd)) {
 					close();
 					doCopy(row);
+				} else if("setInactive".equals(cmd)) {
+					close();
+					doSetStatus(row, CurriculumElementTypeStatus.inactive);
+				} else if("setActive".equals(cmd)) {
+					close();
+					doSetStatus(row, CurriculumElementTypeStatus.active);
 				} else if("delete".equals(cmd)) {
 					close();
 					doConfirmDelete(ureq, row);
