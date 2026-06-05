@@ -37,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -119,10 +121,32 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(displayNameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.status, new TypeStatusRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.status, new LabelCellRenderer() {
+			@Override protected String getCellValue(Object val, Translator translator) {
+				return val instanceof CurriculumElementTypeStatus s ? translator.translate("table.type.status." + s.name()) : null;
+			}
+			@Override protected String getIconCssClass(Object val) {
+				return val == CurriculumElementTypeStatus.active ? "o_icon-fw o_icon_check" : "o_icon-fw o_icon_ban";
+			}
+			@Override protected String getElementCssClass(Object val) {
+				return val == CurriculumElementTypeStatus.active ? "o_cur_el_type_status_active" : "o_cur_el_type_status_inactive";
+			}
+		}));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.subelements, new SubelementsRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content, new ContentRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content, new IconCssCellRenderer() {
+			@Override protected String getIconCssClass(Object val) {
+				return val instanceof String key ? "o_icon o_icon-fw " + switch (key) {
+					case "table.type.content.no.content"    -> "o_icon_ban";
+					case "table.type.content.single.course" -> "o_icon_courserun";
+					case "table.type.content.course.bundle" -> "o_icon_course_bundle";
+					default -> "";
+				} : null;
+			}
+			@Override protected String getCellValue(Object val) {
+				return val instanceof String key ? translate(key) : null;
+			}
+		}));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.uses));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
@@ -402,42 +426,6 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			tableEl.reset(true, true, true);
 		} else {
 			showWarning("warning.delete.element.type", row.getDisplayName());
-		}
-	}
-
-	private static class TypeStatusRenderer implements FlexiCellRenderer {
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
-		                   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (cellValue instanceof CurriculumElementTypeStatus status) {
-				String icon = status == CurriculumElementTypeStatus.active ? "o_icon_check" : "o_icon_ban";
-				String cssClass = status == CurriculumElementTypeStatus.active
-						? "o_cur_el_type_status_active" : "o_cur_el_type_status_inactive";
-				String label = translator.translate("table.type.status." + status.name());
-				target.append("<span class='o_labeled_light ").append(cssClass).append("'>")
-				      .append("<i class='o_icon o_icon-fw ").append(icon).append("'> </i> ")
-				      .append(StringHelper.escapeHtml(label))
-				      .append("</span>");
-			}
-		}
-	}
-
-	private static class ContentRenderer implements FlexiCellRenderer {
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
-		                   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (cellValue instanceof String key) {
-				String icon = switch (key) {
-					case "table.type.content.no.content"    -> "o_icon_ban";
-					case "table.type.content.single.course" -> "o_icon_courserun";
-					case "table.type.content.course.bundle" -> "o_icon_course_bundle";
-					default -> null;
-				};
-				if (icon != null) {
-					target.append("<i class='o_icon o_icon-fw ").append(icon).append("'> </i> ")
-					      .append(StringHelper.escapeHtml(translator.translate(key)));
-				}
-			}
 		}
 	}
 
