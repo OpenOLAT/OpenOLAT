@@ -1633,7 +1633,6 @@ create table o_as_eff_statement (
    statement_xml text,
    fk_identity int8,
    fk_resource_id int8,
-   unique(fk_identity, fk_resource_id),
    primary key (id)
 );
 
