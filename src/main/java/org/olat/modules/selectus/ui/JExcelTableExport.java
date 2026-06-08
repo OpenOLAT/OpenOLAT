@@ -17,8 +17,7 @@
 * Copyright (c) 1999-2006 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <p>
-*/ 
-
+*/
 package org.olat.modules.selectus.ui;
 
 import java.io.BufferedOutputStream;
