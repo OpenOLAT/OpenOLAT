@@ -39,6 +39,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -504,12 +505,17 @@ public class VFSManager {
 	public static File getRealFile(VFSContainer container) {
 		File realFile = null;
 		LocalFolderImpl localFolder = null;
-		if (container instanceof NamedContainerImpl)  {
-			container = ((NamedContainerImpl)container).getDelegate();
+		if (container instanceof VFSMetadataContainer metadataContainer
+				&& metadataContainer.getItem() instanceof VFSContainer vfsContainer) {
+			container = vfsContainer;
 		}
-		if (container instanceof MergeSource) {
-			container = ((MergeSource)container).getRootWriteContainer();
+		if (container instanceof NamedContainerImpl namedContainer)  {
+			container = namedContainer.getDelegate();
 		}
+		if (container instanceof MergeSource mergedSource) {
+			container = mergedSource.getRootWriteContainer();
+		}
+		
 		if (container != null && container instanceof LocalFolderImpl) {
 			localFolder = (LocalFolderImpl) container;
 			realFile = localFolder.getBasefile();

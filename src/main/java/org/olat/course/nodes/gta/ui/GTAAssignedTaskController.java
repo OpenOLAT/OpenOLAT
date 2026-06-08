@@ -44,6 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -267,7 +268,9 @@ public class GTAAssignedTaskController extends BasicController {
 	private void doPreview(UserRequest ureq) {
 		if(guardModalController(viewTaskCtrl)) return;
 		
-		IFrameSettings securityOptions = IFrameSettings.sanitize();
+		IFrameSettings securityOptions = Settings.isContentDomainNameEnabled()
+				? IFrameSettings.secure()
+				: IFrameSettings.sanitize();	
 		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		viewTaskCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, taskFile.getName(),
 				false, null, null, TaskHelper.getStandardDeliveryOptions(), securityOptions, null);

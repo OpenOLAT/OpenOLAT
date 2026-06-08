@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -255,7 +256,9 @@ public class DirectoryController extends BasicController implements Activateable
 
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		if (vfsLeaf.getName().endsWith(".html")) {
-			IFrameSettings securityOptions = IFrameSettings.sanitize();
+			IFrameSettings securityOptions = Settings.isContentDomainNameEnabled()
+					? IFrameSettings.secure()
+					: IFrameSettings.sanitize();	
 			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), securityOptions);
 			listenTo(previewCtrl);
 

@@ -122,3 +122,12 @@ body.o_doceditor_body {
 		}
 	}
 }
+
+.o_html.o_html_full {
+	.o_iframedisplay {
+		border-width: 0;
+		width: 90dvw;
+		height: 95dvh;
+		background-color: white;
+	}
+}

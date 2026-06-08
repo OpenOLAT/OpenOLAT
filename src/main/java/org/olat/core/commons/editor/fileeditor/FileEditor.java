@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
@@ -95,6 +96,9 @@ public class FileEditor implements DocEditor {
 	
 	@Override
 	public DocEditorDisplayInfo getEditorInfo(Mode mode) {
+		if(Settings.isContentDomainNameEnabled() && (mode == Mode.VIEW || mode == Mode.EMBEDDED)) {
+			return DefaultEditorInfo.get(mode, false);
+		}
 		return DefaultEditorInfo.get(mode, true);
 	}
 
