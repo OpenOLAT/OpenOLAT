@@ -79,8 +79,8 @@
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.1.Final</io.undertow>
 		<io.undertow.ee>2.0.0.Final</io.undertow.ee>
-		<jackson.version>2.21.4</jackson.version>
-		<jackson.annotations.version>2.21</jackson.annotations.version>
+		<jackson.version>2.22.0</jackson.version>
+		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.32.6</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
 		<org.postgresql.version>42.7.11</org.postgresql.version>
@@ -93,7 +93,7 @@
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.32</qtiworks.version>
 		<org.commonmark>0.28.0</org.commonmark>
-		<dev.langchain4j>1.15.1</dev.langchain4j>
+		<dev.langchain4j>1.16.1</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -384,7 +384,7 @@
 				<dependency>
 				    <groupId>com.sun.xml.messaging.saaj</groupId>
 				    <artifactId>saaj-impl</artifactId>
-				    <version>3.0.5</version>
+				    <version>3.0.6</version>
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate.orm</groupId>
@@ -1837,7 +1837,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>2.0.5</version>
+			<version>2.0.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.ibm.icu</groupId>
@@ -2477,7 +2477,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-tomcat-managed-10</artifactId>
-			<version>1.2.4.Final</version>
+			<version>1.2.5.Final</version>
 		<scope>test</scope>
       	</dependency>
 		<dependency>
