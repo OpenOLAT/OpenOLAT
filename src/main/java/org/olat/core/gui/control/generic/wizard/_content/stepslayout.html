@@ -64,4 +64,13 @@
 <script>
 "use strict";
 o_guiShowModal('dialog.o_wizard.dialog');
+jQuery('dialog.o_wizard.dialog .o_steps_main, dialog.o_wizard.dialog .o_steps_sub').each(function() {
+	var box = this;
+	var active = box.querySelector('li.active');
+	if (!active) return;
+	requestAnimationFrame(function() {
+		var offset = active.offsetLeft - (box.clientWidth - active.offsetWidth) / 2;
+		box.scrollLeft = Math.max(0, offset);
+	});
+});
 </script>

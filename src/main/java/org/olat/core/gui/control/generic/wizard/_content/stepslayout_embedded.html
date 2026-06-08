@@ -55,6 +55,20 @@
 	</div>
 </div></div></div>
 
+<script>
+jQuery(function() {
+	jQuery('.o_wizard_embedded .o_steps_main, .o_wizard_embedded .o_steps_sub').each(function() {
+		var box = this;
+		var active = box.querySelector('li.active');
+		if (!active) return;
+		requestAnimationFrame(function() {
+			var offset = active.offsetLeft - (box.clientWidth - active.offsetWidth) / 2;
+			box.scrollLeft = Math.max(0, offset);
+		});
+	});
+});
+</script>
+
 #set($historyPoint = ${historyProxy.getCurrentPoint()})
 #if($push.isTrue())
 <script>
