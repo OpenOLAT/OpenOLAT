@@ -35,6 +35,10 @@ public interface CSPDirectiveProvider {
 	public Collection<String> getImgSrcUrls();
 
 	public Collection<String> getFontSrcUrls();
+	
+	public default Collection<String> getStyleSrcUrls() {
+		return List.of();
+	}
 
 	public Collection<String> getConnectSrcUrls();
 

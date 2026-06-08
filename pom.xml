@@ -214,6 +214,8 @@
 										<include>js/jquery/openolat/jquery.bgcarrousel.js</include>
 										<include>js/jquery/transit/jquery.transit.js</include>
 										<include>js/openolat/textarea.js</include>
+										<include>js/openolat/resize.js</include>
+										<include>js/edusharing/edusharing.js</include>
 										<include>js/tinymce4/tinymce/jquery.tinymce.min.js</include>
 										<include>js/functions.js</include>
 									</includes>

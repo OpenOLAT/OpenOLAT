@@ -196,10 +196,12 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		
 		String token = "";
 		if(iframeSettings != null && iframeSettings.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
+			contentMapper.setUseContentDomain(true);
 			MapperKey mKey = registerSandboxedMapper(ureq, mapperID, contentMapper);
 			baseURI = Settings.createContentServerURI() + mKey.getUrl();
 			token = "?token=" + mKey.getToken();
 		} else {
+			contentMapper.setUseContentDomain(false);
 			baseURI = registerCacheableMapper(ureq, mapperID, contentMapper);
 		}
 		myContent.contextPut("token", token);

@@ -95,6 +95,7 @@ public class IFrameDeliveryMapper implements Mapper {
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
 	private boolean iframeResizer = true;
+	private boolean useContentDomain = false;
 	
 	public IFrameDeliveryMapper() {
 		//for XStream
@@ -175,6 +176,10 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	public void setStrictSanitize(boolean strictSanitize) {
 		this.strictSanitize = strictSanitize;
+	}
+	
+	public void setUseContentDomain(boolean useContentDomain) {
+		this.useContentDomain = useContentDomain;
 	}
 
 	@Override
@@ -401,9 +406,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 			
 			if (enableTextmarking) {
-				if (log.isDebugEnabled()) {
-					log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
-				}
+				log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
 				sb.appendJQuery();	
 				sb.appendGlossary();
 			}
@@ -411,12 +414,19 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(jQueryEnabled != null && jQueryEnabled.booleanValue()) {
 				sb.appendJQuery();
 			}
+
+			EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
 			
 			// Load some iframe.js helper code
 			sb.append("\n<script>\n");
 			// Set the iframe id. Important to set before iframe.js is loaded.
 			sb.append("b_iframeid=\"").append(frameId).append("\";\n");
 			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";\n");
+			if(useContentDomain) {
+				sb.append("o_info = new Object();\n");
+				sb.append("o_info.uriprefix='/auth/';\n");
+				sb.append("o_info.edusharing_enabled=").append(edusharingModule.isEnabled()).append(";\n");
+			}
 			if(iframeResizer) {
 				sb.append("window.iFrameResizer = {\n")
 				  .append(" targetOrigin: '").append(Settings.createServerURI()).append("',\n")
@@ -429,14 +439,18 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 	
 			if (parser.getHtmlContent().length() > 0) {
-				EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
-				if (edusharingModule.isEnabled() && StringHelper.containsNonWhitespace(edusharingModule.getH5pResizerUrl())
-						&& parser.getHtmlContent().indexOf("file-h5p") > -1) {
-					sb.append("<script src=\"" + edusharingModule.getH5pResizerUrl() + "\"></script>\n");
+				if (edusharingModule.isEnabled()) {
+					if(useContentDomain) {
+						sb.appendStaticJs("js/openolat/resize.js");
+						sb.appendStaticJs("js/edusharing/edusharing.js");
+					}
+					if(StringHelper.containsNonWhitespace(edusharingModule.getH5pResizerUrl())
+							&& parser.getHtmlContent().indexOf("file-h5p") > -1) {
+						sb.append("<script src=\"" + edusharingModule.getH5pResizerUrl() + "\"></script>\n");
+					}
 				}
 				
 				sb.append("\n<script>\n");
-				
 				// register the tooltips enabling on document load event
 				sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
 				if (addCheckForInlineEvents) {

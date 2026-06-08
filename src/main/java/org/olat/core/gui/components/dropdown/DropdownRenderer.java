@@ -179,7 +179,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			// Check if dropdown has enough space in center main container, enlarge if necessary
 			if (dropdown.isExpandContentHeight()) {
 				sb.append("<script>setTimeout(function(){");
-				sb.append("OPOL.adjustContentHeightForAbsoluteElement('#").append(itemsDomID).append("');");
+				sb.append("o_adjustContentHeightForAbsoluteElement('#").append(itemsDomID).append("');");
 				sb.append("});</script>");
 			}
 		}

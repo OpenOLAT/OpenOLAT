@@ -72,7 +72,7 @@ public class CSPBuilder {
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getScriptSrcUrls));
 		styleSrc = new Directive("style-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC,
 				securityModule.getContentSecurityPolicyStyleSrc(),
-				null);
+				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getStyleSrcUrls));
 		imgSrc = new Directive("img-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_IMG_SRC,
 				securityModule.getContentSecurityPolicyImgSrc(),
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getImgSrcUrls));
