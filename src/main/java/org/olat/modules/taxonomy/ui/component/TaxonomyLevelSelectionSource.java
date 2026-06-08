@@ -36,6 +36,13 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
+import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.TreeVisitor;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
@@ -157,32 +164,26 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		if (options != null) {
 			return;
 		}
-		
+
 		allTaxonomyLevels = levelsSupplier.get();
 		allTaxonomies = allTaxonomyLevels.stream().map(TaxonomyLevel::getTaxonomy).distinct().collect(Collectors.toList());
-		
-		Collection<TaxonomyLevel> allLevels = new HashSet<>(allTaxonomyLevels);
-		
-		Set<TaxonomyLevel> additionalLevels = new HashSet<>(selectedLevels);
-		additionalLevels.removeAll(allLevels);
-		allLevels.addAll(additionalLevels);
 
-		options = toOptions(allLevels);
+		Set<TaxonomyLevel> allLevels = new HashSet<>(allTaxonomyLevels);
+		allLevels.addAll(selectedLevels);
 
-		Map<Long, Long> levelKeyToTaxonomyKey = allLevels.stream()
-				.collect(Collectors.toMap(TaxonomyLevel::getKey, l -> l.getTaxonomy().getKey(), (a, b) -> a));
+		Map<Long, List<TaxonomyLevel>> levelsByTaxonomyKey = allLevels.stream()
+				.filter(l -> l.getTaxonomy() != null)
+				.collect(Collectors.groupingBy(l -> l.getTaxonomy().getKey()));
 
+		options = new ArrayList<>();
 		taxonomyKeyToOptions = new LinkedHashMap<>();
 		for (Taxonomy taxonomy : allTaxonomies) {
-			taxonomyKeyToOptions.put(taxonomy.getKey(), new ArrayList<>());
+			List<TaxonomyLevel> taxonomyLevels = levelsByTaxonomyKey.getOrDefault(taxonomy.getKey(), List.of());
+			List<ObjectOptionValues> taxonomyOptions = toHierarchicalOptions(taxonomyLevels);
+			taxonomyKeyToOptions.put(taxonomy.getKey(), taxonomyOptions);
+			options.addAll(taxonomyOptions);
 		}
-		for (ObjectOptionValues option : options) {
-			Long taxonomyKey = levelKeyToTaxonomyKey.get(Long.valueOf(option.getKey()));
-			if (taxonomyKey != null && taxonomyKeyToOptions.containsKey(taxonomyKey)) {
-				taxonomyKeyToOptions.get(taxonomyKey).add(option);
-			}
-		}
-		
+
 		boolean multiTaxonomy = allTaxonomies.size() > 1;
 		groups = new ArrayList<>(allTaxonomies.size());
 		for (Taxonomy taxonomy : allTaxonomies) {
@@ -193,27 +194,67 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 			List<ObjectOptionValues> groupOptions = taxonomyKeyToOptions.getOrDefault(taxonomy.getKey(), List.of());
 			groups.add(ObjectOptionGroup.of(label, subLabel, groupOptions));
 		}
-		groups.sort(Comparator.comparing(ObjectOptionGroup::getLabel, Comparator.nullsLast(Comparator.naturalOrder())));
+		groups.sort(Comparator.comparing(ObjectOptionGroup::getLabel, Comparator.nullsLast(collator)));
 	}
-	
-	private List<ObjectOptionValues> toOptions(Collection<TaxonomyLevel> levels) {
-		List<ObjectOptionValues> options = new ArrayList<>(levels.size());
-		for (TaxonomyLevel level : levels) {
-			if (optionsFilter.test(level)) {
-				String title = getDisplayName(level);
-				
-				List<String> displayNamePath = getIdentifierPath(level);
-				String subTitle = ObjectOption.createFullPath(displayNamePath, Function.identity(), false);
 
-				ObjectOptionValues option = new ObjectOptionValues(level.getKey().toString(), title, subTitle);
-				
-				options.add(option);
+	private List<ObjectOptionValues> toHierarchicalOptions(Collection<TaxonomyLevel> levels) {
+		Set<TaxonomyLevel> visibleSet = new HashSet<>();
+		for (TaxonomyLevel l : levels) {
+			if (optionsFilter.test(l)) {
+				visibleSet.add(l);
 			}
 		}
-		
-		options.sort(new PathTitleComparator());
-		
-		return options;
+		if (visibleSet.isEmpty()) {
+			return List.of();
+		}
+
+		Function<TaxonomyLevel, String> keyExtractor = l -> l.getKey().toString();
+		Function<TaxonomyLevel, TaxonomyLevel> parentExtractor = l -> {
+			TaxonomyLevel p = l.getParent();
+			while (p != null && !visibleSet.contains(p)) {
+				p = p.getParent();
+			}
+			return p;
+		};
+		Function<TaxonomyLevel, GenericTreeNode> toNode = l -> {
+			GenericTreeNode n = new GenericTreeNode();
+			n.setTitle(getDisplayName(l));
+			n.setUserObject(l);
+			return n;
+		};
+
+		Comparator<INode> siblingComparator = (n1, n2) -> {
+			TaxonomyLevel l1 = (TaxonomyLevel) ((TreeNode) n1).getUserObject();
+			TaxonomyLevel l2 = (TaxonomyLevel) ((TreeNode) n2).getUserObject();
+			Integer s1 = l1.getSortOrder();
+			Integer s2 = l2.getSortOrder();
+			int c;
+			if (s1 == null || s2 == null) {
+				c = (s1 == null ? 1 : 0) - (s2 == null ? 1 : 0);
+			} else {
+				c = s1.compareTo(s2);
+			}
+			if (c != 0) {
+				return c;
+			}
+			return collator.compare(getDisplayName(l1), getDisplayName(l2));
+		};
+
+		GenericTreeModelBuilder<TaxonomyLevel> builder =
+				new GenericTreeModelBuilder<>(keyExtractor, parentExtractor, toNode);
+		GenericTreeModel treeModel = builder.build(visibleSet, siblingComparator);
+
+		List<ObjectOptionValues> result = new ArrayList<>();
+		new TreeVisitor(node -> {
+			if (node instanceof TreeNode tn && tn.getUserObject() instanceof TaxonomyLevel level) {
+				String title = getDisplayName(level);
+				List<String> displayNamePath = getIdentifierPath(level);
+				String subTitle = ObjectOption.createFullPath(displayNamePath, Function.identity(), false);
+				result.add(new ObjectOptionValues(level.getKey().toString(), title, subTitle));
+			}
+		}, treeModel.getRootNode(), false).visitAll();
+
+		return result;
 	}
 	
 	public List<String> getIdentifierPath(TaxonomyLevel taxonomyLevel) {
@@ -246,22 +287,6 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 				: null;
 	}
 	
-	private final static class PathTitleComparator implements Comparator<ObjectOptionValues> {
-		
-		@Override
-		public int compare(ObjectOptionValues o1, ObjectOptionValues o2) {
-			// Use title fallback, otherwise all root options will be at the top of the list.
-			String subTitle1 = StringHelper.containsNonWhitespace(o1.getSubTitle())? o1.getSubTitle(): o1.getTitle();
-			String subTitle2 = StringHelper.containsNonWhitespace(o2.getSubTitle())? o2.getSubTitle(): o2.getTitle();
-
-			int c = subTitle1.compareToIgnoreCase(subTitle2);
-			if (c == 0) {
-				c = o1.getTitle().compareToIgnoreCase(o2.getTitle());
-			}
-			return c;
-		}
-		
-	}
 
 	@Override
 	public boolean isBrowserAvailable() {

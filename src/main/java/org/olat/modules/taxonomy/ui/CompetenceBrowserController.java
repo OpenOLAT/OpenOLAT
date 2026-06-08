@@ -128,7 +128,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.details));
 		
 		// Create table model
-		tableModel = new CompetenceBrowserTableModel(columnsModel, multiSelection);
+		tableModel = new CompetenceBrowserTableModel(columnsModel, multiSelection, Collator.getInstance(getLocale()));
 
 		// Add table model to formlayout
 		tableEl = uifactory.addTableElement(getWindowControl(), "browser_table", tableModel, 20, false, getTranslator(), formLayout);
@@ -183,7 +183,7 @@ public class CompetenceBrowserController extends FormBasicController {
 						.findFirst().orElse(null)
 				));	
 			// Sort rows
-			rows.sort(new TaxonomyTreeNodeComparator());
+			rows.sort(new TaxonomyTreeNodeComparator(Collator.getInstance(getLocale())));
 		}
 		
 		tableModel.setObjects(rows);
@@ -366,36 +366,50 @@ public class CompetenceBrowserController extends FormBasicController {
 	}
 	
 	public static class TaxonomyTreeNodeComparator extends FlexiTreeNodeComparator {
-		
+
+		private final Collator collator;
+
+		public TaxonomyTreeNodeComparator(Collator collator) {
+			this.collator = collator;
+		}
+
 		@Override
 		protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
 			CompetenceBrowserTableRow r1 = (CompetenceBrowserTableRow)o1;
 			CompetenceBrowserTableRow r2 = (CompetenceBrowserTableRow)o2;
-
-			int c = 0;
 			if(r1 == null || r2 == null) {
-				c = compareNullObjects(r1, r2);
-			} else {
-				Integer s1 = r1.getSortOrder();
-				Integer s2 = r2.getSortOrder();
-	
-				if(s1 == null || s2 == null) {
-					c = -compareNullObjects(s1, s2);
-				} else {
-					c = s1.compareTo(s2);
-				}
-				
-				if(c == 0) {
-					String c1 = r1.getDisplayName();
-					String c2 = r2.getDisplayName();
-					if(c1 == null || c2 == null) {
-						c = -compareNullObjects(c1, s2);
-					} else {
-						c = c1.compareTo(c2);
-					}
-				}
+				return compareNullObjects(r1, r2);
 			}
-			return c;
+
+			String t1 = r1.getTaxonomy() == null ? null : r1.getTaxonomy().getDisplayName();
+			String t2 = r2.getTaxonomy() == null ? null : r2.getTaxonomy().getDisplayName();
+			int c;
+			if(t1 == null || t2 == null) {
+				c = compareNullObjects(t1, t2);
+			} else {
+				c = collator.compare(t1, t2);
+			}
+			if(c != 0) {
+				return c;
+			}
+
+			Integer s1 = r1.getSortOrder();
+			Integer s2 = r2.getSortOrder();
+			if(s1 == null || s2 == null) {
+				c = -compareNullObjects(s1, s2);
+			} else {
+				c = s1.compareTo(s2);
+			}
+			if(c != 0) {
+				return c;
+			}
+
+			String d1 = r1.getDisplayName();
+			String d2 = r2.getDisplayName();
+			if(d1 == null || d2 == null) {
+				return -compareNullObjects(d1, d2);
+			}
+			return collator.compare(d1, d2);
 		}
 	}
 }

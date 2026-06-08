@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,11 +44,13 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 	private static final CompetenceBrowserCols[] COLS = CompetenceBrowserCols.values();
 
 	private final boolean multiSelection;
+	private final Collator collator;
 	private String taxonomyFilterKey;
-	
-	public CompetenceBrowserTableModel(FlexiTableColumnModel columnModel, boolean multiSelection) {
+
+	public CompetenceBrowserTableModel(FlexiTableColumnModel columnModel, boolean multiSelection, Collator collator) {
 		super(columnModel);
 		this.multiSelection = multiSelection;
+		this.collator = collator;
 	}
 
 	public void setTaxonomyFilter(String taxonomyFilterKey) {
@@ -114,7 +117,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 			addToFilter(row, filteredRowsWithParents);
 		}
 
-		Collections.sort(filteredRowsWithParents, new TaxonomyTreeNodeComparator());
+		Collections.sort(filteredRowsWithParents, new TaxonomyTreeNodeComparator(collator));
 		setFilteredObjects(filteredRowsWithParents);
 	}
 
