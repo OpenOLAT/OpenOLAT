@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,6 +38,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -48,6 +52,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Util;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
@@ -69,6 +74,7 @@ public class RoomListController extends FormBasicController {
 	private FormLink createRoomButton;
 	private FlexiTableElement tableEl;
 	private RoomListDataModel dataModel;
+	private FullCalendarElement calendarEl;
 
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRelevant;
@@ -81,6 +87,7 @@ public class RoomListController extends FormBasicController {
 
 	public RoomListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "rooms_admin");
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 		roles = ureq.getUserSession().getRoles();
 		initForm(ureq);
 		loadModel();
@@ -101,6 +108,13 @@ public class RoomListController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-rooms");
+
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setExternalRenderer(new RoomCalendarRenderer(), "o_icon_calendar o_icon-lg");
+
+		calendarEl = new FullCalendarElement(ureq, RoomCalendarRenderer.CALENDAR_ITEM_NAME, new ArrayList<>(), getTranslator());
+		formLayout.add(RoomCalendarRenderer.CALENDAR_ITEM_NAME, calendarEl);
 
 		initFilters();
 		initFilterTabs(ureq);
@@ -183,13 +197,28 @@ public class RoomListController extends FormBasicController {
 		if (source == createRoomButton) {
 			doCreateRoom(ureq);
 		} else if (source == tableEl) {
-			if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
-				loadModel();
+			if (event instanceof FlexiTableRenderEvent renderEvent
+					&& FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(renderEvent.getCommand())) {
+				if (renderEvent.getRendererType() == FlexiTableRendererType.classic) {
+					loadModel();
+				} else {
+					loadCalendar();
+				}
+			} else if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+				if (tableEl.getRendererType() == FlexiTableRendererType.classic) {
+					loadModel();
+				} else {
+					loadCalendar();
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	private void loadCalendar() {
+		//
+	}
+	
 	private void doCreateRoom(UserRequest ureq) {
 		//
 	}
