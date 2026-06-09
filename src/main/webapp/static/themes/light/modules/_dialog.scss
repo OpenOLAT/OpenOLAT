@@ -309,34 +309,42 @@ body.o_width_full dialog.modal {
 }
 
 /* Portrait mode of phones*/
-@media (max-width: 480px) {
+@media (max-width: 480px) and (orientation: portrait) {
 	dialog.dialog.modal {
 		width: 100%;
 		padding: 0;
 		margin: 0;
 		max-width: 100%;
-		max-height: 100%;
-		
-		> .modal-dialog {
-			padding: 20px;// For Chrome
-		}
-	}
-}
-
-@media (max-height: 480px) {
-	dialog.dialog.modal {
-		padding-top: 0;
-		padding-bottom: 0;
-		margin-top: 0;
-		margin-bottom: 0;
-		max-height: 100%;
+		max-height: calc(100vh - 2em - 6px);
 		
 		> .modal-dialog {
 			padding: 20px;// For Chrome
 		}
 		
 		> .modal-dialog .modal-content {
-			max-height: calc(96vh - 25px);
+			max-height: calc(96vh - 3em - 25px);
+		}
+	}
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+	dialog.dialog.modal {
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		max-height: calc(100vh - 3em - 6px);
+		
+		> .modal-dialog {
+			padding: 10px 20px;// For Chrome
+		}
+		
+		> .modal-dialog .modal-content {
+			max-height: calc(96vh - 3em - 25px);
+		}
+		
+		.modal-footer {
+			padding: 5px;
 		}
 	}
 }
