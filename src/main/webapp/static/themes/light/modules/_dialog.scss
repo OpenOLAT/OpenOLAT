@@ -295,15 +295,49 @@ body#o_body:has(dialog.dialog.modal.show) {
 }
 /* when page is in full-width mode, also apply to modal, e.g. for editors */
 body.o_width_full dialog.modal {
-	@media (min-width: $screen-sm-min) {
-		width: 90%;
-	}
+
 	@media (min-width: $screen-md-min) {
 		width: 80%;
+	}
+	@media (max-width: 480px) {
+		width: 95%;
 	}
 	
 	> .modal-dialog {
 		width: 100%;
+	}
+}
+
+/* Portrait mode of phones*/
+@media (max-width: 480px) {
+	dialog.dialog.modal {
+		width: 100%;
+		padding: 0;
+		margin: 0;
+		max-width: 100%;
+		max-height: 100%;
+		
+		> .modal-dialog {
+			padding: 20px;// For Chrome
+		}
+	}
+}
+
+@media (max-height: 480px) {
+	dialog.dialog.modal {
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		max-height: 100%;
+		
+		> .modal-dialog {
+			padding: 20px;// For Chrome
+		}
+		
+		> .modal-dialog .modal-content {
+			max-height: calc(96vh - 25px);
+		}
 	}
 }
 
