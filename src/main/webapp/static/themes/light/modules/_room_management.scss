@@ -1,23 +1,23 @@
 .o_labeled_light {
-	&.o_building_status_active {
+	&.o_rm_status_active {
 		@extend %o_labeled_light_green;
 	}
-	&.o_building_status_inactive {
+	&.o_rm_status_inactive {
 		@extend %o_labeled_light_grey;
 	}
-	&.o_building_status_deleted {
+	&.o_rm_status_deleted {
 		@extend %o_labeled_light_red;
 	}
 }
 
 .o_labeled {
-	&.o_building_status_active {
+	&.o_rm_status_active {
 		@extend %o_labeled_green;
 	}
-	&.o_building_status_inactive {
+	&.o_rm_status_inactive {
 		@extend %o_labeled_grey;
 	}
-	&.o_building_status_deleted {
+	&.o_rm_status_deleted {
 		@extend %o_labeled_red;
 	}
 }
@@ -138,6 +138,25 @@
 	}
 }
 
+.o_building_color_ref {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+}
+
+.o_building_small_square_container {
+	display: flex;
+
+	align-items: center;
+	justify-content: center;
+	
+	.o_building_small_square {
+		width: 12px;
+		height: 12px;
+		border-radius: 2px;
+	}
+}
+
 .o_building_square_container {
 	display: flex;
 	height: 20px;
@@ -191,6 +210,14 @@
 	border: 1px solid $input-border;
 }
 
+.o_room_visiting_card {
+	.o_building_map_container {
+		width: 160px;
+		height: 100px;
+		margin-top: 0;
+	}
+}
+
 .o_building_map_pin {
 	width: 20px;
 	height: 20px;
@@ -199,4 +226,86 @@
 	transform: rotate(-45deg);
 	margin-left: -10px;
 	margin-top: -20px;
+}
+
+.o_rm_detail {
+	margin-top: 8px;
+	padding: 16px;
+	border: 1px solid $panel-default-border;
+	border-radius: $border-radius-base;
+	background: $panel-bg;
+	
+	.o_rm_detail_title {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		flex-wrap: wrap;
+		
+		.o_rm_detail_ref {
+			font-size: $font-size-large;
+			font-weight: bold;
+		}
+	}
+	
+	.o_rm_detail_cmd {
+		flex-grow: 1;
+		display: flex;
+		gap: 16px;
+		justify-content: end;
+	}
+}
+
+.o_rm_detail_attribute_row {
+	margin-top: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 24px;
+
+	.o_rm_detail_attribute_cell {
+		min-width: 160px;
+	}
+}
+
+.o_rm_detail_attribute_section {
+	margin-top: 12px;
+}
+
+.o_rm_detail_attribute_row .o_rm_detail_attribute_cell, .o_rm_detail_attribute_section {
+	.o_rm_detail_label {
+		font-weight: $headings-font-weight;
+		margin-bottom: 2px;
+	}
+}
+
+.o_rm_detail_preview_label {
+	margin-top: 16px;
+	font-weight: $headings-font-weight;
+	margin-bottom: 8px;
+}
+
+.o_room_visiting_card {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 16px;
+	align-items: start;
+	padding: 12px;
+	border: 1px solid $panel-default-border;
+	border-radius: $border-radius-base;
+}
+
+.o_room_visiting_card_info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.o_room_visiting_card_name {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.o_room_visiting_card_ref {
+	font-size: $font-size-large;
+	font-weight: bold;
 }

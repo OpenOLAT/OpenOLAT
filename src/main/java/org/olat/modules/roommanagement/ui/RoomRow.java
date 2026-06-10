@@ -19,6 +19,8 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 
 /**
@@ -28,6 +30,11 @@ import org.olat.modules.roommanagement.Room;
 public class RoomRow {
 
 	private final Room room;
+	private FormLink referenceLink;
+	private FormLink buildingLink;   // getUserObject() == Building
+	private FormLink calendarIconLink;
+	private int occupancyRatePercent = -1;  // -1 = N/A
+	private RoomDetailsController detailsController;  // stub, null for now
 
 	public RoomRow(Room room) {
 		this.room = room;
@@ -35,5 +42,53 @@ public class RoomRow {
 
 	public Room getRoom() {
 		return room;
+	}
+
+	public FormLink getReferenceLink() {
+		return referenceLink;
+	}
+
+	public void setReferenceLink(FormLink referenceLink) {
+		this.referenceLink = referenceLink;
+	}
+
+	public FormLink getBuildingLink() {
+		return buildingLink;
+	}
+
+	public void setBuildingLink(FormLink buildingLink) {
+		this.buildingLink = buildingLink;
+	}
+
+	public FormLink getCalendarIconLink() {
+		return calendarIconLink;
+	}
+
+	public void setCalendarIconLink(FormLink calendarIconLink) {
+		this.calendarIconLink = calendarIconLink;
+	}
+
+	public int getOccupancyRatePercent() {
+		return occupancyRatePercent;
+	}
+
+	public void setOccupancyRatePercent(int occupancyRatePercent) {
+		this.occupancyRatePercent = occupancyRatePercent;
+	}
+
+	public RoomDetailsController getDetailsController() {
+		return detailsController;
+	}
+
+	public void setDetailsController(RoomDetailsController detailsController) {
+		this.detailsController = detailsController;
+	}
+
+	public boolean isDetailsControllerAvailable() {
+		return detailsController != null;
+	}
+
+	public String getDetailsControllerName() {
+		return detailsController != null ? detailsController.getInitialFormItem().getName() : null;
 	}
 }

@@ -131,8 +131,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.color, new ColorCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.reference, TOGGLE_DETAILS_CMD));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.description));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.status,
-				new StatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.status, new RoomStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.address));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.infoUrl));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.orgRestriction,
@@ -408,6 +407,20 @@ public class BuildingListController extends FormBasicController implements Flexi
 		cmc.activate();
 	}
 
+	void selectBuilding(UserRequest ureq, Long buildingKey) {
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+		loadModel();
+		List<BuildingRow> rows = dataModel.getObjects();
+		for (int i = 0; i < rows.size(); i++) {
+			BuildingRow row = rows.get(i);
+			if (row.getBuilding().getKey().equals(buildingKey)) {
+				doOpenDetails(ureq, row, i);
+				tableEl.expandDetails(i);
+				break;
+			}
+		}
+	}
+
 	private void doOpenDetails(UserRequest ureq, BuildingRow row, @SuppressWarnings("unused") int rowIndex) {
 		doCloseDetails(row);
 		Building building = roomManagementService.getBuilding(new BuildingRefImpl(row.getBuilding().getKey()));
@@ -672,19 +685,6 @@ public class BuildingListController extends FormBasicController implements Flexi
 				target.append("<div class=\"o_building_square_container\">");
 				target.append("<div class=\"o_building_square o_color_background o_color_border_darken ").append(StringHelper.escapeHtml(colorCss)).append("\"> </div>");
 				target.append("</div>");
-			}
-		}
-	}
-
-	private static final class StatusCellRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue,
-				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (cellValue instanceof RoomStatus status) {
-				target.append("<span class='o_labeled_light o_building_status_").append(status.name()).append("'>")
-				      .append("<i class='o_icon o_icon-fw o_icon_building_status_").append(status.name()).append("'> </i> <span>")
-				      .append(StringHelper.escapeHtml(translator.translate("building.status." + status.name())))
-				      .append("</span></span>");
 			}
 		}
 	}

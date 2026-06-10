@@ -276,6 +276,11 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	}
 
 	@Override
+	public List<RoomBooking> getBookingsForRoom(RoomRef room, Date from, Date to) {
+		return roomBookingDao.getBookingsForRoom(room, from, to);
+	}
+
+	@Override
 	public CollisionReport findCollisions(RoomRef room, Date start, Date end,
 			int bufferBeforeMin, int bufferAfterMin, RoomBookingRef excluding) {
 		Long excludeKey = excluding != null ? excluding.getKey() : null;

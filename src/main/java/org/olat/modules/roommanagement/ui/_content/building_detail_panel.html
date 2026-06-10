@@ -1,5 +1,5 @@
-<div class="o_block o_building_detail clearfix">
-	<div class="o_block_title o_building_detail_title">
+<div class="o_building_detail clearfix">
+	<div class="o_building_detail_title">
 		<div class="o_building_rect_container">
 			#if($colorCss)
 			<div class="o_building_rect o_color_background $r.escapeHtml($colorCss)"> </div>
@@ -14,8 +14,8 @@
 			#end
 		</div>
 		<div>
-			<span class="o_labeled o_building_status_$r.escapeHtml($statusName) o_building_detail_status">
-				<i class="o_icon o_icon-fw o_icon_building_status_$r.escapeHtml($statusName)"> </i>
+			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName) o_building_detail_status">
+				<i class="o_icon o_icon-fw o_icon_rm_status_$r.escapeHtml($statusName)"> </i>
 				<span>$r.escapeHtml($statusLabel)</span>
 			</span>
 		</div>

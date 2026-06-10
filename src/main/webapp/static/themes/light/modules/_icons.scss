@@ -67,9 +67,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bookmark_add { @include o-add-icon('bookmark', false);  color: $o-bookmark-color;}
 .o_icon_bookmark_header { @include o-add-icon('bookmark');}
 .o_icon_branch { @include o-add-icon('code-fork');}
-.o_icon_building_status_active { @include o-add-icon('check');}
-.o_icon_building_status_deleted { @include o-add-icon('trash-can', false);}
-.o_icon_building_status_inactive { @include o-add-icon('ban');}
+.o_icon_rm_status_active { @include o-add-icon('check');}
+.o_icon_rm_status_deleted { @include o-add-icon('trash-can', false);}
+.o_icon_rm_status_inactive { @include o-add-icon('ban');}
 .o_icon_breadcrumb_more { @include o-add-icon('ellipsis');}
 .o_icon_breadcrumb_root { @include o-add-icon('house');}
 .o_icon_browse { @include o-add-icon('search-plus');} 

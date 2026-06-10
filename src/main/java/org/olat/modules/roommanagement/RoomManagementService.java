@@ -79,6 +79,8 @@ public interface RoomManagementService {
 
 	List<RoomBooking> getBookings(LectureBlockRef lb);
 
+	List<RoomBooking> getBookingsForRoom(RoomRef room, Date from, Date to);
+
 	CollisionReport findCollisions(RoomRef room, Date start, Date end,
 			int bufferBeforeMin, int bufferAfterMin, RoomBookingRef excluding);
 

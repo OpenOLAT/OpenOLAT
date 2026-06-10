@@ -58,12 +58,41 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 	@Override
 	public Object getValueAt(RoomRow row, int col) {
 		return switch (COLS[col]) {
+			case reference -> row.getReferenceLink();
 			case description -> row.getRoom().getDescription();
+			case status -> row.getRoom().getStatus();
+			case seats -> row.getRoom().getSeats();
+			case additionalInfo -> row.getRoom().getRoomInfo();
+			case adminInfo -> row.getRoom().getAdminInfo();
+			case building -> row;
+			case occupancyRate -> {
+				int pct = row.getOccupancyRatePercent();
+				yield pct < 0 ? null : pct + "%";
+			}
+			case calendarIcon -> row.getCalendarIconLink();
 		};
 	}
 
 	public enum RoomCols implements FlexiSortableColumnDef {
-		description("room.col.description");
+		reference("room.col.reference"),
+		description("room.col.description"),
+		status("room.col.status"),
+		seats("room.col.seats"),
+		additionalInfo("room.col.additional.info"),
+		adminInfo("room.col.admin.info"),
+		building("room.col.building"),
+		occupancyRate("room.col.occupancy.rate"),
+		calendarIcon("room.col.calendar") {
+			@Override
+			public String iconHeader() {
+				return "o_icon o_icon_calendar";
+			}
+			
+			@Override
+			public boolean sortable() { 
+				return false;
+			}
+		};
 
 		private final String i18nKey;
 

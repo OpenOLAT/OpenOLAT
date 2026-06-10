@@ -26,9 +26,12 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -56,6 +59,7 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private final Link buildingsLink;
 
 	private RoomsAdminSettingsController settingsCtrl;
+	private BreadcrumbedStackedPanel roomsPanel;
 	private RoomListController roomListCtrl;
 	private BuildingListController buildingListCtrl;
 
@@ -103,8 +107,20 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == roomListCtrl && event instanceof OpenBuildingEvent openBuildingEvent) {
+			doOpenBuildings(ureq);
+			segmentView.select(buildingsLink);
+			buildingListCtrl.selectBuilding(ureq, openBuildingEvent.getBuildingKey());
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == segmentView && event instanceof SegmentViewEvent sve) {
+		if (source == roomsPanel && event instanceof PopEvent) {
+			// panel handles controller disposal automatically
+		} else if (source == segmentView && event instanceof SegmentViewEvent sve) {
 			String segmentCName = sve.getComponentName();
 			Component clickedLink = mainVC.getComponent(segmentCName);
 			if (clickedLink == settingsLink) {
@@ -138,12 +154,14 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private void doOpenRooms(UserRequest ureq) {
 		if (roomListCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOMS), null);
-			roomListCtrl = new RoomListController(ureq, swControl);
+			roomsPanel = new BreadcrumbedStackedPanel("roomsPanel", getTranslator(), this);
+			roomListCtrl = new RoomListController(ureq, swControl, roomsPanel);
 			listenTo(roomListCtrl);
+			roomsPanel.pushController(translate("admin.rooms"), roomListCtrl);
 		} else {
 			addToHistory(ureq, roomListCtrl);
 		}
-		mainVC.put("segmentCmp", roomListCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", roomsPanel);
 	}
 
 	private void doOpenBuildings(UserRequest ureq) {
