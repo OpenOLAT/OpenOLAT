@@ -52,6 +52,8 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_ESSAY_GENERATION_MODEL = "ai.feature.essay.generation.model";
 	private static final String AI_ESSAY_GRADING_SPI = "ai.feature.essay.grading.spi";
 	private static final String AI_ESSAY_GRADING_MODEL = "ai.feature.essay.grading.model";
+	private static final String AI_TASK_POOL_INTERACTIVE_SIZE = "ai.task.pool.interactive.size";
+	private static final String AI_TASK_POOL_BATCH_SIZE = "ai.task.pool.batch.size";
 
 	// Per-user rate limit defaults (calls / minute / identity). Sized so a
 	// fast-typing learner submitting essay answers across many questions in a
@@ -62,6 +64,12 @@ public class AiModule extends AbstractSpringModule {
 	// once the admin UI surface for per-feature rate limits exists.
 	private static final int DEFAULT_ESSAY_GRADING_MAX_CALLS_PER_MINUTE_PER_USER = 30;
 	private static final int DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER = 10;
+
+	// AI task pool defaults (worker threads per node). The right values
+	// depend on the infrastructure behind the provider: cloud APIs handle
+	// 10+ parallel calls, a single self-hosted GPU saturates at 2-4.
+	private static final int DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE = 4;
+	private static final int DEFAULT_AI_TASK_POOL_BATCH_SIZE = 2;
 
 	// List of all Spring-registered SPI implementations (OpenAI, Anthropic)
 	private List<AiSPI> springProviders = List.of();
@@ -79,6 +87,11 @@ public class AiModule extends AbstractSpringModule {
 	private String essayGenerationModel;
 	private String essayGradingSpiId;
 	private String essayGradingModel;
+	private int aiTaskPoolInteractiveSize = DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE;
+	private int aiTaskPoolBatchSize = DEFAULT_AI_TASK_POOL_BATCH_SIZE;
+
+	@Autowired
+	private org.olat.core.commons.services.ai.manager.AiTaskExecutorService aiTaskExecutorService;
 
 	/**
 	 * Spring constructor
@@ -111,6 +124,58 @@ public class AiModule extends AbstractSpringModule {
 		essayGenerationModel = getStringPropertyValue(AI_ESSAY_GENERATION_MODEL, essayGenerationModel);
 		essayGradingSpiId = getStringPropertyValue(AI_ESSAY_GRADING_SPI, essayGradingSpiId);
 		essayGradingModel = getStringPropertyValue(AI_ESSAY_GRADING_MODEL, essayGradingModel);
+		aiTaskPoolInteractiveSize = getIntPropertyValue(AI_TASK_POOL_INTERACTIVE_SIZE,
+				DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE);
+		aiTaskPoolBatchSize = getIntPropertyValue(AI_TASK_POOL_BATCH_SIZE,
+				DEFAULT_AI_TASK_POOL_BATCH_SIZE);
+		applyTaskPoolSizes();
+	}
+
+	/**
+	 * Push the configured pool sizes onto the live executors. Called at
+	 * startup and whenever the configuration changes (cluster-wide via
+	 * {@code initFromChangedProperties}).
+	 */
+	private void applyTaskPoolSizes() {
+		if (aiTaskExecutorService != null) {
+			aiTaskExecutorService.setInteractivePoolSize(aiTaskPoolInteractiveSize);
+			aiTaskExecutorService.setBatchPoolSize(aiTaskPoolBatchSize);
+		}
+	}
+
+	/**
+	 * Number of worker threads (per node) for interactive AI tasks — calls
+	 * a user is actively waiting on, e.g. essay AI correction at learner
+	 * submit.
+	 */
+	public int getAiTaskPoolInteractiveSize() {
+		return aiTaskPoolInteractiveSize;
+	}
+
+	public void setAiTaskPoolInteractiveSize(int size) {
+		if (size < 1) {
+			return;
+		}
+		aiTaskPoolInteractiveSize = size;
+		setIntProperty(AI_TASK_POOL_INTERACTIVE_SIZE, size, true);
+		applyTaskPoolSizes();
+	}
+
+	/**
+	 * Number of worker threads (per node) for AI batch tasks — long-running
+	 * jobs like question generation from page content.
+	 */
+	public int getAiTaskPoolBatchSize() {
+		return aiTaskPoolBatchSize;
+	}
+
+	public void setAiTaskPoolBatchSize(int size) {
+		if (size < 1) {
+			return;
+		}
+		aiTaskPoolBatchSize = size;
+		setIntProperty(AI_TASK_POOL_BATCH_SIZE, size, true);
+		applyTaskPoolSizes();
 	}
 
 	/**

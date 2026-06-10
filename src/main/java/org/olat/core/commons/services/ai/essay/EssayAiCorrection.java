@@ -25,42 +25,52 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
  *
- * Backing row for a single asynchronous essay formative-feedback run.
- * Triggered on student submit from the ceditor QuizPart runtime, polled
- * by the overlay UI, and transitions through
- * {@link State#PENDING} &rarr; {@link State#RUNNING} &rarr;
- * {@link State#DONE} / {@link State#FAILED} / {@link State#TIMEOUT}.
+ * Result of a single AI essay correction run, tied to the learner's answer:
+ * the answer text itself plus the QTI assessment item session it came from
+ * (soft reference by key — item sessions are deleted on quiz reset, the
+ * correction result is kept for audit, same as
+ * {@code o_ai_usage_log.a_assessment_item_session_key}).
  * <p>
- * The feedback payload on DONE is the serialised {@link FormativeFeedback}
- * record. On FAILED or TIMEOUT, {@link #errorMessage} carries a short
- * human-readable reason (full stack trace only in server logs).
+ * The row is created at learner submit time, the correction itself runs as
+ * a generic persisted task ({@link EssayAiCorrectionTask} in
+ * {@code o_ex_task}), and the overlay UI polls this row's {@link #status}
+ * until it reaches a terminal state. On {@link Status#DONE} the
+ * {@link #feedbackJson} holds the serialised {@link FormativeFeedback}
+ * record; on {@link Status#FAILED} or {@link Status#TIMEOUT} the
+ * {@link #errorMessage} carries a short human-readable reason (full stack
+ * trace only in server logs).
  *
- * Initial date: 2026-04-20<br>
+ * Initial date: 2026-06-10<br>
  *
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
-@Entity(name = "essayfeedbackjob")
-@Table(name = "o_essay_feedback_job")
-public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
+@Entity(name = "aiessaycorrection")
+@Table(name = "o_ai_essay_correction")
+public class EssayAiCorrection implements CreateInfo, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum State {
+	public enum Status {
 		PENDING,
 		RUNNING,
 		DONE,
@@ -70,36 +80,37 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "a_id", nullable = false, unique = true, insertable = true, updatable = false)
+	@Column(name = "id", nullable = false, unique = true, insertable = true, updatable = false)
 	private Long key;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "a_creationdate", nullable = false, insertable = true, updatable = false)
+	@Column(name = "creationdate", nullable = false, insertable = true, updatable = false)
 	private Date creationDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "a_lastmodified", nullable = false, insertable = true, updatable = true)
+	@Column(name = "lastmodified", nullable = false, insertable = true, updatable = true)
 	private Date lastModified;
 
-	@Column(name = "a_storage_path", nullable = true, insertable = true, updatable = true, length = 1024)
+	@ManyToOne(targetEntity = IdentityImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_identity", nullable = false, insertable = true, updatable = false)
+	private Identity identity;
+
+	@Column(name = "a_item_session_key", nullable = true, insertable = true, updatable = false)
+	private Long assessmentItemSessionKey;
+
+	@Column(name = "a_storage_path", nullable = true, insertable = true, updatable = false, length = 1024)
 	private String storagePath;
 
-	@Column(name = "a_question_id", nullable = true, insertable = true, updatable = true, length = 64)
+	@Column(name = "a_question_id", nullable = true, insertable = true, updatable = false, length = 64)
 	private String questionId;
-
-	@Column(name = "a_identity_fk", nullable = false, insertable = true, updatable = false)
-	private Long identityKey;
-
-	@Column(name = "a_assessment_item_session_key", nullable = true, insertable = true, updatable = false)
-	private Long assessmentItemSessionKey;
 
 	@Lob
 	@Column(name = "a_student_answer", nullable = false, insertable = true, updatable = false)
 	private String studentAnswer;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "a_state", nullable = false, insertable = true, updatable = true)
-	private State state = State.PENDING;
+	@Column(name = "a_status", nullable = false, insertable = true, updatable = true)
+	private Status status = Status.PENDING;
 
 	@Lob
 	@Column(name = "a_feedback_json", nullable = true, insertable = true, updatable = true)
@@ -109,12 +120,8 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 	private String errorMessage;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "a_started_at", nullable = true, insertable = true, updatable = true)
-	private Date startedAt;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "a_completed_at", nullable = true, insertable = true, updatable = true)
-	private Date completedAt;
+	@Column(name = "a_completed", nullable = true, insertable = true, updatable = true)
+	private Date completedDate;
 
 	@Override
 	public Long getKey() {
@@ -144,6 +151,22 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 		this.lastModified = lastModified;
 	}
 
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+
+	public Long getAssessmentItemSessionKey() {
+		return assessmentItemSessionKey;
+	}
+
+	public void setAssessmentItemSessionKey(Long assessmentItemSessionKey) {
+		this.assessmentItemSessionKey = assessmentItemSessionKey;
+	}
+
 	public String getStoragePath() {
 		return storagePath;
 	}
@@ -160,22 +183,6 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 		this.questionId = questionId;
 	}
 
-	public Long getIdentityKey() {
-		return identityKey;
-	}
-
-	public void setIdentityKey(Long identityKey) {
-		this.identityKey = identityKey;
-	}
-
-	public Long getAssessmentItemSessionKey() {
-		return assessmentItemSessionKey;
-	}
-
-	public void setAssessmentItemSessionKey(Long assessmentItemSessionKey) {
-		this.assessmentItemSessionKey = assessmentItemSessionKey;
-	}
-
 	public String getStudentAnswer() {
 		return studentAnswer;
 	}
@@ -184,12 +191,12 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 		this.studentAnswer = studentAnswer;
 	}
 
-	public State getState() {
-		return state;
+	public Status getStatus() {
+		return status;
 	}
 
-	public void setState(State state) {
-		this.state = state;
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 
 	public String getFeedbackJson() {
@@ -208,20 +215,12 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 		this.errorMessage = errorMessage;
 	}
 
-	public Date getStartedAt() {
-		return startedAt;
+	public Date getCompletedDate() {
+		return completedDate;
 	}
 
-	public void setStartedAt(Date startedAt) {
-		this.startedAt = startedAt;
-	}
-
-	public Date getCompletedAt() {
-		return completedAt;
-	}
-
-	public void setCompletedAt(Date completedAt) {
-		this.completedAt = completedAt;
+	public void setCompletedDate(Date completedDate) {
+		this.completedDate = completedDate;
 	}
 
 	@Override
@@ -239,8 +238,8 @@ public class EssayFeedbackJob implements CreateInfo, ModifiedInfo, Persistable {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof EssayFeedbackJob job) {
-			return key != null && key.equals(job.key);
+		if (obj instanceof EssayAiCorrection correction) {
+			return key != null && key.equals(correction.key);
 		}
 		return false;
 	}

@@ -28,10 +28,10 @@ import org.olat.core.commons.services.ai.content.AiContentHardener;
 /**
  *
  * Static sanity checks for {@link EssayItemDraft} instances returned by the
- * generator. Drafts that fail validation are flagged {@code REJECTED} on
- * their owning {@link EssayGenerationJob} with the reasons serialised into
- * {@link EssayGenerationJob#getErrorJson()} so the author sees exactly why
- * a draft was dropped from the drawer.
+ * generator. Drafts that fail validation are dropped by
+ * {@link EssayGenerationService#runTask(EssayGenerationTask)} with the
+ * reasons written to the server log so the author sees exactly why a draft
+ * was dropped.
  * <p>
  * Limits are intentionally conservative — they catch pathological LLM output
  * without second-guessing the author's final editorial choices.

@@ -27,13 +27,19 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 
 /**
- * Segmented admin controller for the AI module. Provides two segments:
- * configuration and usage log.
+ * Segmented admin controller for the AI module. Provides four segments:
+ * providers, features, processing pools and usage log.
+ * <p>
+ * The segment controller is recreated on every activation so each view
+ * always shows the current configuration — e.g. a provider added in the
+ * first segment is immediately selectable in the features segment, and
+ * the pool statistics are a fresh snapshot on every visit.
  *
  * Initial date: 07.04.2026<br>
  *
@@ -44,11 +50,12 @@ public class AiAdminController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link configurationLink;
+	private final Link providersLink;
+	private final Link featuresLink;
+	private final Link poolsLink;
 	private final Link usageLogLink;
 
-	private AiConfigurationAdminController configurationCtrl;
-	private AiUsageLogAdminController usageLogCtrl;
+	private Controller segmentCtrl;
 
 	public AiAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -57,12 +64,16 @@ public class AiAdminController extends BasicController {
 		putInitialPanel(mainVC);
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		configurationLink = LinkFactory.createLink("configuration", mainVC, this);
-		segmentView.addSegment(configurationLink, true);
+		providersLink = LinkFactory.createLink("segment.providers", mainVC, this);
+		segmentView.addSegment(providersLink, true);
+		featuresLink = LinkFactory.createLink("segment.features", mainVC, this);
+		segmentView.addSegment(featuresLink, false);
+		poolsLink = LinkFactory.createLink("segment.pools", mainVC, this);
+		segmentView.addSegment(poolsLink, false);
 		usageLogLink = LinkFactory.createLink("usagelog", mainVC, this);
 		segmentView.addSegment(usageLogLink, false);
 
-		doOpenConfiguration(ureq);
+		doOpenProviders(ureq);
 	}
 
 	@Override
@@ -71,8 +82,12 @@ public class AiAdminController extends BasicController {
 			if (event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == configurationLink) {
-					doOpenConfiguration(ureq);
+				if (clickedLink == providersLink) {
+					doOpenProviders(ureq);
+				} else if (clickedLink == featuresLink) {
+					doOpenFeatures(ureq);
+				} else if (clickedLink == poolsLink) {
+					doOpenPools(ureq);
 				} else if (clickedLink == usageLogLink) {
 					doOpenUsageLog(ureq);
 				}
@@ -80,19 +95,31 @@ public class AiAdminController extends BasicController {
 		}
 	}
 
-	private void doOpenConfiguration(UserRequest ureq) {
-		if (configurationCtrl == null) {
-			configurationCtrl = new AiConfigurationAdminController(ureq, getWindowControl());
-			listenTo(configurationCtrl);
-		}
-		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
+	private void doOpenProviders(UserRequest ureq) {
+		setSegmentController(new AiProvidersAdminController(ureq, getWindowControl()));
+	}
+
+	private void doOpenFeatures(UserRequest ureq) {
+		setSegmentController(new AiFeaturesAdminController(ureq, getWindowControl()));
+	}
+
+	private void doOpenPools(UserRequest ureq) {
+		setSegmentController(new AiTaskPoolAdminController(ureq, getWindowControl()));
 	}
 
 	private void doOpenUsageLog(UserRequest ureq) {
-		if (usageLogCtrl == null) {
-			usageLogCtrl = new AiUsageLogAdminController(ureq, getWindowControl());
-			listenTo(usageLogCtrl);
-		}
-		mainVC.put("segmentCmp", usageLogCtrl.getInitialComponent());
+		setSegmentController(new AiUsageLogAdminController(ureq, getWindowControl()));
+	}
+
+	/**
+	 * Replace the active segment controller. The previous controller is
+	 * disposed and a fresh one rendered — never reuse a cached instance,
+	 * its form values would show stale configuration.
+	 */
+	private void setSegmentController(Controller ctrl) {
+		removeAsListenerAndDispose(segmentCtrl);
+		segmentCtrl = ctrl;
+		listenTo(segmentCtrl);
+		mainVC.put("segmentCmp", segmentCtrl.getInitialComponent());
 	}
 }

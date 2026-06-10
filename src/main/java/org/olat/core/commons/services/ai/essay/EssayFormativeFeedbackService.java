@@ -26,13 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.manager.AiEssayGradingServiceImpl;
@@ -51,9 +46,14 @@ import org.springframework.stereotype.Service;
  *
  * Synchronous entry point for the formative-feedback flow. Loads the
  * persisted {@link EssayAiGrading}, runs the pre-filters, invokes the
- * grader SPI under a hard 30-second timeout, sanitises the student-facing
- * free-form text, and persists the essay-specific provenance on the usage
- * log row.
+ * grader SPI, sanitises the student-facing free-form text, and persists
+ * the essay-specific provenance on the usage log row.
+ * <p>
+ * The grading call runs inline on the calling thread (normally an
+ * {@code aiInteractive} task-executor worker). The hard time bound is the
+ * HTTP client timeout configured in {@link AiEssayGradingServiceImpl} —
+ * timeout causes are mapped to {@link EssayGradingTimeoutException} so the
+ * correction row gets the TIMEOUT status.
  * <p>
  * Call sequence:
  * <ol>
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
  *   <li>{@link LengthPreFilter} → {@link GibberishPreFilter} → {@link LanguagePreFilter}.</li>
  *   <li>Tier classify; Lang tier refused inline.</li>
  *   <li>Router → {@link AiEssayGradingSPI}.</li>
- *   <li>SPI call via {@link AiEssayGradingServiceImpl} with 30 s hard timeout.</li>
+ *   <li>SPI call via {@link AiEssayGradingServiceImpl}, bounded by the HTTP timeout.</li>
  *   <li>Free-form text sanitised via OpenOlat's XSS filter.</li>
  *   <li>Essay provenance written to the {@code AiUsageLog} row.</li>
  * </ol>
@@ -75,9 +75,6 @@ import org.springframework.stereotype.Service;
 public class EssayFormativeFeedbackService {
 	private static final Logger log = Tracing.createLoggerFor(EssayFormativeFeedbackService.class);
 
-	/** Hard timeout (seconds) for the synchronous grading call. */
-	public static final int GRADING_TIMEOUT_SECONDS = 30;
-
 	/** Usage-context type stamped on the {@code AiUsageLog} row. */
 	static final String USAGE_CONTEXT_TYPE = "essay-grading";
 
@@ -85,8 +82,6 @@ public class EssayFormativeFeedbackService {
 	private AiEssayGradingService aiEssayGradingService;
 	@Autowired
 	private AiUsageLogDAO aiUsageLogDAO;
-	@Autowired
-	private DB dbInstance;
 
 	/**
 	 * Grade a student essay answer synchronously against a pre-loaded
@@ -166,11 +161,11 @@ public class EssayFormativeFeedbackService {
 			throw new AiEssayGradingException("Essay grading is not configured or not enabled.");
 		}
 
-		// 6. Service call with 30 s hard timeout.
+		// 6. Service call, bounded by the HTTP client timeout of the SPI.
 		AiEssayGradingService.GradingRun run;
 		try {
-			run = invokeWithTimeout(() -> aiEssayGradingService.gradeWithLog(
-					usageContext, grading, studentAnswer, effectiveLocale, tier));
+			run = aiEssayGradingService.gradeWithLog(
+					usageContext, grading, studentAnswer, effectiveLocale, tier);
 		} catch (AiEssayResponseTruncatedException e) {
 			// The LLM reply was cut off (typically max_tokens) and Jackson failed
 			// to parse it. Surface this as a graceful rejection card instead of
@@ -194,6 +189,12 @@ public class EssayFormativeFeedbackService {
 			return FormativeFeedback.rejected(new RejectionReason(
 					"ai.essay.error.response.truncated",
 					"AI response truncated (tier=" + tier + ")"));
+		} catch (AiEssayGradingException e) {
+			if (isTimeoutCause(e)) {
+				throw new EssayGradingTimeoutException(
+						"Essay grading hit the provider HTTP timeout", e);
+			}
+			throw e;
 		}
 
 		// 7. Sanitise free-form student feedback strings.
@@ -288,50 +289,29 @@ public class EssayFormativeFeedbackService {
 	}
 
 	/**
-	 * Invoke the grading service under a hard timeout.
-	 * {@link EssayGradingTimeoutException} on expiry; any other failure is
-	 * rewrapped as an {@link AiEssayGradingException}.
-	 * <p>
-	 * The body runs on the common ForkJoinPool, which has no Spring or
-	 * OpenOlat transaction context bound. {@link DB} uses a ThreadLocal
-	 * EntityManager + manual commit, so anything persisted on this thread
-	 * (notably the {@code AiLoggingChatModel} row and any
-	 * {@code aiUsageLogDAO.updateAsFailed} from the inner catch) would be
-	 * silently lost unless we commit and close the session here.
+	 * Walk the cause chain looking for a network/HTTP timeout. The SPI's
+	 * HTTP client enforces the hard time bound on the provider call; the
+	 * timeout surfaces wrapped in an {@link AiEssayGradingException}, and
+	 * this check lets the caller map it to
+	 * {@link EssayGradingTimeoutException} (→ TIMEOUT status on the
+	 * correction row instead of generic FAILED).
 	 */
-	private AiEssayGradingService.GradingRun invokeWithTimeout(
-			java.util.concurrent.Callable<AiEssayGradingService.GradingRun> call) {
-		CompletableFuture<AiEssayGradingService.GradingRun> future = CompletableFuture.supplyAsync(() -> {
-			try {
-				return call.call();
-			} catch (RuntimeException re) {
-				throw re;
-			} catch (Exception e) {
-				throw new AiEssayGradingException("Grading service call failed", e);
-			} finally {
-				try {
-					dbInstance.commitAndCloseSession();
-				} catch (Exception flushError) {
-					log.warn("Failed to commit/close DB session on async grading thread: {}",
-							flushError.getMessage());
-				}
+	private static boolean isTimeoutCause(Throwable t) {
+		for (Throwable c = t; c != null; c = c.getCause()) {
+			if (c instanceof java.net.http.HttpTimeoutException
+					|| c instanceof java.net.SocketTimeoutException
+					|| c instanceof java.util.concurrent.TimeoutException) {
+				return true;
 			}
-		});
-		try {
-			return future.get(GRADING_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-		} catch (TimeoutException e) {
-			future.cancel(true);
-			throw new EssayGradingTimeoutException(
-					"Essay grading exceeded " + GRADING_TIMEOUT_SECONDS + " s hard timeout", e);
-		} catch (ExecutionException e) {
-			Throwable cause = e.getCause();
-			if (cause instanceof AiEssayGradingException aege) throw aege;
-			if (cause instanceof RuntimeException re) throw re;
-			throw new AiEssayGradingException("Grading service call failed", cause);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new AiEssayGradingException("Grading service call interrupted", e);
+			String message = c.getMessage();
+			if (message != null && message.toLowerCase(Locale.ROOT).contains("timed out")) {
+				return true;
+			}
+			if (c == c.getCause()) {
+				break;
+			}
 		}
+		return false;
 	}
 
 	/**

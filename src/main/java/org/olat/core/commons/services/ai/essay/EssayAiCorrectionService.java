@@ -22,13 +22,8 @@ package org.olat.core.commons.services.ai.essay;
 import java.io.File;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiFeature;
@@ -40,6 +35,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,15 +46,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * Asynchronous entry point for the essay AI correction flow used at
  * learner submit time in the ceditor QuizPart runtime. Persists an
- * {@link EssayFeedbackJob} row, schedules an
- * {@link EssayFeedbackLongRunnable} on the low-priority task executor
- * queue, and exposes a status view the overlay UI polls until the job
- * reaches a terminal state.
+ * {@link EssayAiCorrection} result row tied to the learner's answer,
+ * schedules an {@link EssayAiCorrectionTask} on the generic persisted
+ * task executor ({@code o_ex_task}, {@code aiInteractive} queue), and
+ * exposes a status view the overlay UI polls until the result row reaches
+ * a terminal state. The executor's task row is deleted on success — the
+ * result row is the durable record of the correction.
  * <p>
- * The underlying {@link EssayFormativeFeedbackService#grade} call already
- * enforces a hard 30-second timeout. This service adds a defence-in-depth
- * 35-second wrapper in case the service-internal timeout is bypassed by a
- * future change.
+ * The grading runs inline on the AI worker thread; the hard time bound is
+ * the HTTP client timeout of the grading SPI, surfaced as
+ * {@link EssayGradingTimeoutException} (→ TIMEOUT status).
  *
  * Initial date: 2026-04-20<br>
  *
@@ -66,29 +63,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Service
-public class EssayFeedbackJobService {
-	private static final Logger log = Tracing.createLoggerFor(EssayFeedbackJobService.class);
-
-	/**
-	 * Defence-in-depth outer timeout on the grading call. One second past
-	 * the inner {@link EssayFormativeFeedbackService#GRADING_TIMEOUT_SECONDS}
-	 * so that the service-internal timeout has a chance to fire first and
-	 * produce a TIMEOUT state before this outer cap is hit.
-	 */
-	public static final int OUTER_TIMEOUT_SECONDS = EssayFormativeFeedbackService.GRADING_TIMEOUT_SECONDS + 5;
+public class EssayAiCorrectionService implements UserDataDeletable {
+	private static final Logger log = Tracing.createLoggerFor(EssayAiCorrectionService.class);
 
 	private static final int ERROR_MESSAGE_MAX = 2000;
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private EssayFeedbackJobDao essayFeedbackJobDao;
+	private EssayAiCorrectionDao correctionDao;
 	@Autowired
 	private EssayFormativeFeedbackService essayFormativeFeedbackService;
 	@Autowired
 	private EssayAiGradingFileStore essayAiGradingFileStore;
-	@Autowired
-	private BaseSecurity baseSecurity;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -101,9 +88,9 @@ public class EssayFeedbackJobService {
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	/**
-	 * Persist a new job, schedule the {@link EssayFeedbackLongRunnable}
-	 * on the task executor, commit, and return the job key so the overlay
-	 * UI can poll for status.
+	 * Persist a new correction result row, schedule the
+	 * {@link EssayAiCorrectionTask} on the task executor, commit, and
+	 * return the correction key so the overlay UI can poll for status.
 	 *
 	 * @param storagePath              ceditor QuizPart storage path (= the
 	 *                                 directory that contains all question
@@ -116,7 +103,7 @@ public class EssayFeedbackJobService {
 	 *                                 came from; may be {@code null} for
 	 *                                 an in-memory session
 	 * @param identity                 the learner
-	 * @return the newly persisted job key
+	 * @return the newly persisted correction key
 	 */
 	public Long submit(String storagePath, String questionId, String studentAnswer,
 			Long assessmentItemSessionKey, Identity identity) {
@@ -124,104 +111,100 @@ public class EssayFeedbackJobService {
 			throw new IllegalArgumentException("identity must not be null");
 		}
 		assertWithinRateLimit(identity);
-		EssayFeedbackJob job = essayFeedbackJobDao.create(storagePath, questionId, identity,
+		EssayAiCorrection correction = correctionDao.create(storagePath, questionId, identity,
 				assessmentItemSessionKey, studentAnswer);
 		dbInstance.commit();
 
 		try {
-			TaskExecutorManager tem = taskExecutorManager != null
-					? taskExecutorManager : CoreSpringFactory.getImpl(TaskExecutorManager.class);
 			// No back-pointer from (storagePath, questionId) to a RepositoryEntry —
-			// pass null OlatResource. Job execution is unaffected; only some
+			// pass null OlatResource. Task execution is unaffected; only some
 			// auxiliary scoping/auditing in the task executor sees null here.
-			tem.execute(new EssayFeedbackLongRunnable(job.getKey()), identity, null, null, null);
+			taskExecutorManager.execute(new EssayAiCorrectionTask(correction.getKey()),
+					identity, null, null, null);
 		} catch (Exception e) {
-			log.error("Failed to schedule essay feedback job {}", job.getKey(), e);
-			markFailed(job.getKey(), "failed to schedule: " + e.getMessage());
+			log.error("Failed to schedule essay AI correction {}", correction.getKey(), e);
+			markFailed(correction.getKey(), "failed to schedule: " + e.getMessage());
 		}
-		return job.getKey();
+		return correction.getKey();
 	}
 
 	/**
-	 * Execute the grading body for a single job. Called from
-	 * {@link EssayFeedbackLongRunnable#run()} but also reachable directly
+	 * Execute the grading body for a single correction. Called from
+	 * {@link EssayAiCorrectionTask#run()} but also reachable directly
 	 * for synchronous execution in tests.
 	 */
-	public void runJob(Long jobKey) {
-		if (jobKey == null) return;
-		EssayFeedbackJob job = essayFeedbackJobDao.loadByKey(jobKey);
-		if (job == null) {
-			log.warn("Essay feedback job {} not found — skipping", jobKey);
+	public void runCorrection(Long correctionKey) {
+		if (correctionKey == null) return;
+		EssayAiCorrection correction = correctionDao.loadByKey(correctionKey);
+		if (correction == null) {
+			log.warn("Essay AI correction {} not found — skipping", correctionKey);
 			return;
 		}
-		if (job.getState() != EssayFeedbackJob.State.PENDING) {
-			log.warn("Essay feedback job {} in state {} — skipping", jobKey, job.getState());
+		if (correction.getStatus() != EssayAiCorrection.Status.PENDING) {
+			log.warn("Essay AI correction {} in status {} — skipping", correctionKey, correction.getStatus());
 			return;
 		}
-		job.setState(EssayFeedbackJob.State.RUNNING);
-		job.setStartedAt(new Date());
-		essayFeedbackJobDao.update(job);
+		correction.setStatus(EssayAiCorrection.Status.RUNNING);
+		correctionDao.update(correction);
 		dbInstance.commit();
 
 		try {
-			Identity identity = job.getIdentityKey() == null ? null
-					: baseSecurity.loadIdentityByKey(job.getIdentityKey());
-			AssessmentItemSession itemSession = job.getAssessmentItemSessionKey() == null ? null
-					: loadItemSession(job.getAssessmentItemSessionKey());
+			Identity identity = correction.getIdentity();
+			AssessmentItemSession itemSession = correction.getAssessmentItemSessionKey() == null ? null
+					: loadItemSession(correction.getAssessmentItemSessionKey());
 			Locale locale = identity != null && identity.getUser() != null
 					? new Locale(identity.getUser().getPreferences() == null ? "en"
 							: safeLanguage(identity))
 					: Locale.ENGLISH;
 
-			String storagePath = job.getStoragePath();
-			String questionId = job.getQuestionId();
+			String storagePath = correction.getStoragePath();
+			String questionId = correction.getQuestionId();
 			if (storagePath == null || questionId == null) {
-				String message = "no (storagePath, questionId) linked to job";
-				logJobGuard(identity, questionId, "GradingArtefactMissing", message);
-				markFailed(jobKey, message);
+				String message = "no (storagePath, questionId) linked to correction";
+				logCorrectionGuard(identity, questionId, "GradingArtefactMissing", message);
+				markFailed(correctionKey, message);
 				return;
 			}
 			EssayAiGrading grading = loadGradingFromDisk(storagePath, questionId);
 			if (grading == null) {
 				String message = "ai-grading.json not found for question " + questionId;
-				logJobGuard(identity, questionId, "GradingArtefactMissing", message);
-				markFailed(jobKey, message);
+				logCorrectionGuard(identity, questionId, "GradingArtefactMissing", message);
+				markFailed(correctionKey, message);
 				return;
 			}
-			String studentAnswer = job.getStudentAnswer();
+			String studentAnswer = correction.getStudentAnswer();
 
-			FormativeFeedback feedback = invokeWithOuterTimeout(() ->
-					essayFormativeFeedbackService.grade(grading, studentAnswer,
-							itemSession, identity, locale));
+			FormativeFeedback feedback = essayFormativeFeedbackService.grade(grading, studentAnswer,
+					itemSession, identity, locale);
 
-			EssayFeedbackJob doneJob = essayFeedbackJobDao.loadByKey(jobKey);
-			doneJob.setState(EssayFeedbackJob.State.DONE);
-			doneJob.setFeedbackJson(toJson(feedback));
-			doneJob.setCompletedAt(new Date());
-			essayFeedbackJobDao.update(doneJob);
+			EssayAiCorrection doneCorrection = correctionDao.loadByKey(correctionKey);
+			doneCorrection.setStatus(EssayAiCorrection.Status.DONE);
+			doneCorrection.setFeedbackJson(toJson(feedback));
+			doneCorrection.setCompletedDate(new Date());
+			correctionDao.update(doneCorrection);
 			dbInstance.commit();
 
 		} catch (EssayGradingTimeoutException timeout) {
-			log.info("Essay feedback job {} hit the hard timeout", jobKey);
-			markTimeout(jobKey, timeout.getMessage());
+			log.info("Essay AI correction {} hit the hard timeout", correctionKey);
+			markTimeout(correctionKey, timeout.getMessage());
 		} catch (EssayGradingIntegrityException integrity) {
-			log.warn("Essay feedback job {} refused — integrity hash mismatch: {}", jobKey, integrity.getMessage());
-			Identity owner = job.getIdentityKey() == null ? null
-					: baseSecurity.loadIdentityByKey(job.getIdentityKey());
-			logJobGuard(owner, job.getQuestionId(), "IntegrityFailure", integrity.getMessage());
-			markFailed(jobKey, "integrity check failed: " + integrity.getMessage());
+			log.warn("Essay AI correction {} refused — integrity hash mismatch: {}", correctionKey,
+					integrity.getMessage());
+			logCorrectionGuard(correction.getIdentity(), correction.getQuestionId(),
+					"IntegrityFailure", integrity.getMessage());
+			markFailed(correctionKey, "integrity check failed: " + integrity.getMessage());
 		} catch (RuntimeException e) {
-			log.error("Essay feedback job {} failed", jobKey, e);
-			markFailed(jobKey, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+			log.error("Essay AI correction {} failed", correctionKey, e);
+			markFailed(correctionKey, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
 		}
 	}
 
 	/**
-	 * Write a guard log row for a job-level refusal (missing artefact,
+	 * Write a guard log row for a correction-level refusal (missing artefact,
 	 * integrity check failure) so the rate limiter and cost reports see the
 	 * attempt even when no LLM call ever happened.
 	 */
-	private void logJobGuard(Identity owner, String questionId, String errorCode, String message) {
+	private void logCorrectionGuard(Identity owner, String questionId, String errorCode, String message) {
 		AiUsageContext usageContext = AiUsageContext.builder()
 				.usageContextType(EssayFormativeFeedbackService.USAGE_CONTEXT_TYPE)
 				.usageContextId(questionId)
@@ -276,105 +259,60 @@ public class EssayFeedbackJobService {
 		}
 	}
 
-	/**
-	 * Defence-in-depth wrapper around
-	 * {@link EssayFormativeFeedbackService#grade}. The inner call already
-	 * enforces a 30-second timeout; this wrapper catches the case where
-	 * the inner timeout somehow misses and prevents the task executor
-	 * thread from being held for minutes.
-	 */
-	private FormativeFeedback invokeWithOuterTimeout(java.util.concurrent.Callable<FormativeFeedback> call) {
-		CompletableFuture<FormativeFeedback> future = CompletableFuture.supplyAsync(() -> {
-			try {
-				return call.call();
-			} catch (RuntimeException re) {
-				throw re;
-			} catch (Exception e) {
-				throw new AiEssayGradingException("grade() failed", e);
-			} finally {
-				// The async thread has its own ThreadLocal EntityManager (DBImpl).
-				// Commit and close so pre-filter guard logs, updateEssayFields,
-				// and any updateAsFailed writes persist; otherwise the row is
-				// silently dropped when the future returns.
-				try {
-					dbInstance.commitAndCloseSession();
-				} catch (Exception flushError) {
-					log.warn("Failed to commit/close DB session on async grading job thread: {}",
-							flushError.getMessage());
-				}
-			}
-		});
-		try {
-			return future.get(OUTER_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-		} catch (TimeoutException e) {
-			future.cancel(true);
-			throw new EssayGradingTimeoutException(
-					"Essay grading exceeded outer " + OUTER_TIMEOUT_SECONDS + " s timeout", e);
-		} catch (ExecutionException e) {
-			Throwable cause = e.getCause();
-			if (cause instanceof EssayGradingTimeoutException egte) throw egte;
-			if (cause instanceof EssayGradingIntegrityException egie) throw egie;
-			if (cause instanceof AiEssayGradingException aege) throw aege;
-			if (cause instanceof RuntimeException re) throw re;
-			throw new AiEssayGradingException("grade() failed", cause);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new AiEssayGradingException("grade() interrupted", e);
-		}
-	}
-
-	private void markFailed(Long jobKey, String reason) {
-		EssayFeedbackJob job = essayFeedbackJobDao.loadByKey(jobKey);
-		if (job == null) return;
-		job.setState(EssayFeedbackJob.State.FAILED);
-		job.setErrorMessage(truncate(reason == null ? "unknown" : reason));
-		job.setCompletedAt(new Date());
-		essayFeedbackJobDao.update(job);
+	private void markFailed(Long correctionKey, String reason) {
+		EssayAiCorrection correction = correctionDao.loadByKey(correctionKey);
+		if (correction == null) return;
+		correction.setStatus(EssayAiCorrection.Status.FAILED);
+		correction.setErrorMessage(truncate(reason == null ? "unknown" : reason));
+		correction.setCompletedDate(new Date());
+		correctionDao.update(correction);
 		dbInstance.commit();
 	}
 
-	private void markTimeout(Long jobKey, String reason) {
-		EssayFeedbackJob job = essayFeedbackJobDao.loadByKey(jobKey);
-		if (job == null) return;
-		job.setState(EssayFeedbackJob.State.TIMEOUT);
-		job.setErrorMessage(truncate(reason == null ? "timeout" : reason));
-		job.setCompletedAt(new Date());
-		essayFeedbackJobDao.update(job);
+	private void markTimeout(Long correctionKey, String reason) {
+		EssayAiCorrection correction = correctionDao.loadByKey(correctionKey);
+		if (correction == null) return;
+		correction.setStatus(EssayAiCorrection.Status.TIMEOUT);
+		correction.setErrorMessage(truncate(reason == null ? "timeout" : reason));
+		correction.setCompletedDate(new Date());
+		correctionDao.update(correction);
 		dbInstance.commit();
 	}
 
 	/**
 	 * Status view returned to the overlay UI. {@code feedbackJson} is the
 	 * raw serialised {@link FormativeFeedback} record — the caller parses
-	 * it with {@link #parseFeedback(String)} when state is
-	 * {@link EssayFeedbackJob.State#DONE}.
+	 * it with {@link #parseFeedback(String)} when status is
+	 * {@link EssayAiCorrection.Status#DONE}.
 	 * <p>
 	 * The owner check is mandatory on the public surface: the feedback JSON
 	 * embeds rubric-derived signals plus evidence quotes from the original
 	 * student answer, so a leak via guessed PKs would be a privacy
-	 * regression. When the caller is not the job owner the response is
-	 * indistinguishable from "not found" — we never log who tried.
+	 * regression. When the caller is not the correction owner the response
+	 * is indistinguishable from "not found" — we never log who tried.
 	 *
-	 * @param jobKey the job primary key
-	 * @param caller the polling identity (must not be {@code null}); when the
-	 *               job exists but was created by a different identity the
-	 *               method returns the same "not found" view as for missing
-	 *               keys
+	 * @param correctionKey the correction primary key
+	 * @param caller        the polling identity (must not be {@code null});
+	 *                      when the correction exists but was created by a
+	 *                      different identity the method returns the same
+	 *                      "not found" view as for missing keys
 	 */
-	public JobStatusView getStatus(Long jobKey, Identity caller) {
+	public CorrectionStatusView getStatus(Long correctionKey, Identity caller) {
 		if (caller == null) {
 			throw new IllegalArgumentException("caller must not be null");
 		}
-		EssayFeedbackJob job = essayFeedbackJobDao.loadByKey(jobKey);
-		if (job == null) {
-			return new JobStatusView(jobKey, null, null, null);
+		EssayAiCorrection correction = correctionDao.loadByKey(correctionKey);
+		if (correction == null) {
+			return new CorrectionStatusView(correctionKey, null, null, null);
 		}
-		if (job.getIdentityKey() == null || !job.getIdentityKey().equals(caller.getKey())) {
+		Long ownerKey = correction.getIdentity() == null ? null : correction.getIdentity().getKey();
+		if (ownerKey == null || !ownerKey.equals(caller.getKey())) {
 			// Indistinguishable from "not found". Do not log the caller — that
 			// would itself reveal that the key exists.
-			return new JobStatusView(jobKey, null, null, null);
+			return new CorrectionStatusView(correctionKey, null, null, null);
 		}
-		return new JobStatusView(jobKey, job.getState(), job.getFeedbackJson(), job.getErrorMessage());
+		return new CorrectionStatusView(correctionKey, correction.getStatus(),
+				correction.getFeedbackJson(), correction.getErrorMessage());
 	}
 
 	/**
@@ -383,12 +321,13 @@ public class EssayFeedbackJobService {
 	 * authority (background runners, admin diagnostics). Public callers must
 	 * use {@link #getStatus(Long, Identity)} instead.
 	 */
-	JobStatusView getStatusInternal(Long jobKey) {
-		EssayFeedbackJob job = essayFeedbackJobDao.loadByKey(jobKey);
-		if (job == null) {
-			return new JobStatusView(jobKey, null, null, null);
+	CorrectionStatusView getStatusInternal(Long correctionKey) {
+		EssayAiCorrection correction = correctionDao.loadByKey(correctionKey);
+		if (correction == null) {
+			return new CorrectionStatusView(correctionKey, null, null, null);
 		}
-		return new JobStatusView(jobKey, job.getState(), job.getFeedbackJson(), job.getErrorMessage());
+		return new CorrectionStatusView(correctionKey, correction.getStatus(),
+				correction.getFeedbackJson(), correction.getErrorMessage());
 	}
 
 	/**
@@ -431,6 +370,45 @@ public class EssayFeedbackJobService {
 	}
 
 	/**
+	 * Delete all correction results of all questions under the given
+	 * QuizPart storage path. Called by the ceditor when a QuizPart (or the
+	 * page containing it) is deleted.
+	 */
+	public int deleteCorrections(String storagePath) {
+		int deleted = correctionDao.deleteByStoragePath(storagePath);
+		if (deleted > 0) {
+			log.info("Deleted {} essay AI corrections for storagePath={}", deleted, storagePath);
+		}
+		return deleted;
+	}
+
+	/**
+	 * Delete all correction results of a single question. Called by the
+	 * ceditor when one question is removed from a QuizPart.
+	 */
+	public int deleteCorrections(String storagePath, String questionId) {
+		int deleted = correctionDao.deleteByQuestion(storagePath, questionId);
+		if (deleted > 0) {
+			log.info("Deleted {} essay AI corrections for storagePath={} questionId={}",
+					deleted, storagePath, questionId);
+		}
+		return deleted;
+	}
+
+	/**
+	 * User-data-deletion lifecycle: the student answer in the correction
+	 * row is personal data, delete all rows of the user.
+	 */
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		int deleted = correctionDao.deleteByIdentity(identity);
+		if (deleted > 0) {
+			log.info(Tracing.M_AUDIT, "Deleted {} essay AI corrections of identity {}",
+					deleted, identity.getKey());
+		}
+	}
+
+	/**
 	 * Parse the persisted feedback JSON back into a
 	 * {@link FormativeFeedback} record. Returns {@code null} on parse
 	 * failure (the overlay UI falls back to the error state).
@@ -460,6 +438,6 @@ public class EssayFeedbackJobService {
 		return s.substring(0, ERROR_MESSAGE_MAX - 3) + "...";
 	}
 
-	public record JobStatusView(Long jobKey, EssayFeedbackJob.State state,
+	public record CorrectionStatusView(Long correctionKey, EssayAiCorrection.Status status,
 			String feedbackJson, String errorMessage) { }
 }

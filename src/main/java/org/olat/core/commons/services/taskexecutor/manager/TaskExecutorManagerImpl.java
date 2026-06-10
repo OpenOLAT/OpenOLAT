@@ -79,23 +79,28 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	private final ExecutorService externalExecutor;
 	private final ExecutorService sequentialTaskExecutor;
 	private final ExecutorService lowPriorityTaskExecutor;
-	
+	private final ExecutorService aiInteractiveTaskExecutor;
+	private final ExecutorService aiBatchTaskExecutor;
+
 	private DB dbInstance;
 	private Scheduler scheduler;
 	private PersistentTaskDAO persistentTaskDao;
 	private ConcurrentMap<Long, Future<?>> taskKeyToFuture = new ConcurrentHashMap<>();
-	
+
 	private Timer timer = new Timer();
 
 	/**
 	 * [used by spring]
 	 */
 	private TaskExecutorManagerImpl(ExecutorService mpTaskExecutor, ExecutorService sequentialTaskExecutor,
-			ExecutorService lowPriorityTaskExecutor, ExecutorService externalExecutor) {
+			ExecutorService lowPriorityTaskExecutor, ExecutorService externalExecutor,
+			ExecutorService aiInteractiveTaskExecutor, ExecutorService aiBatchTaskExecutor) {
 		this.taskExecutor = mpTaskExecutor;
 		this.externalExecutor = externalExecutor;
 		this.sequentialTaskExecutor = sequentialTaskExecutor;
 		this.lowPriorityTaskExecutor = lowPriorityTaskExecutor;
+		this.aiInteractiveTaskExecutor = aiInteractiveTaskExecutor;
+		this.aiBatchTaskExecutor = aiBatchTaskExecutor;
 	}
 	
 	/**
@@ -185,6 +190,10 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 				future = lowPriorityTaskExecutor.submit(task);
 			} else if(queue == Queue.external) {
 				future = externalExecutor.submit(task);
+			} else if(queue == Queue.aiInteractive) {
+				future = aiInteractiveTaskExecutor.submit(safetask);
+			} else if(queue == Queue.aiBatch) {
+				future = aiBatchTaskExecutor.submit(safetask);
 			} else {
 				future = taskExecutor.submit(safetask);
 			}

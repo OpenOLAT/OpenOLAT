@@ -28,42 +28,40 @@ import org.olat.core.logging.Tracing;
 
 /**
  *
- * {@link LongRunnable} wrapper persisted by the task executor. Thin —
- * it only carries the {@code jobKey} and delegates the actual work to
- * {@link EssayGenerationService#runJob(Long)} so we keep
- * database/identity/locale access behind the Spring-managed service
- * (the runnable itself is serialised to the tasks table and must stay
- * lightweight).
- * <p>
- * This mirrors the pattern of {@code UserDataExportTask}: the task holds
- * only the primary key of the row that describes the work, and the
- * service does the heavy lifting.
+ * {@link LongRunnable} for a single essay AI correction run, persisted by
+ * the generic task executor in {@code o_ex_task}. Thin — it only carries
+ * the key of the {@link EssayAiCorrection} result row that describes the
+ * work and delegates to
+ * {@link EssayAiCorrectionService#runCorrection(Long)}. All state
+ * (timeout, feedback payload, error) is persisted on the result row.
  *
  * Initial date: 2026-04-20<br>
  *
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
-public class EssayGenerationLongRunnable implements LongRunnable {
+public class EssayAiCorrectionTask implements LongRunnable {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger log = Tracing.createLoggerFor(EssayGenerationLongRunnable.class);
+	private static final Logger log = Tracing.createLoggerFor(EssayAiCorrectionTask.class);
 
-	private final Long jobKey;
+	private final Long correctionKey;
 
-	public EssayGenerationLongRunnable(Long jobKey) {
-		this.jobKey = jobKey;
+	public EssayAiCorrectionTask(Long correctionKey) {
+		this.correctionKey = correctionKey;
 	}
 
-	public Long getJobKey() {
-		return jobKey;
+	public Long getCorrectionKey() {
+		return correctionKey;
 	}
 
 	@Override
 	public Queue getExecutorsQueue() {
-		return Queue.lowPriority;
+		// A learner is actively waiting on the result — dedicated AI pool,
+		// sized via the AI module configuration.
+		return Queue.aiInteractive;
 	}
 
 	@Override
@@ -75,14 +73,14 @@ public class EssayGenerationLongRunnable implements LongRunnable {
 	public void run() {
 		long startTime = System.currentTimeMillis();
 		try {
-			EssayGenerationService service = CoreSpringFactory.getImpl(EssayGenerationService.class);
-			service.runJob(jobKey);
+			EssayAiCorrectionService service = CoreSpringFactory.getImpl(EssayAiCorrectionService.class);
+			service.runCorrection(correctionKey);
 		} catch (Exception e) {
-			// The service already persists FAILED; re-throw so the task executor marks the task record failed too.
-			log.error("Essay generation job {} failed", jobKey, e);
+			log.error("Essay AI correction {} failed", correctionKey, e);
 			throw e;
 		} finally {
-			log.info("Finished essay generation job {} in {} ms", jobKey, System.currentTimeMillis() - startTime);
+			log.info("Finished essay AI correction {} in {} ms", correctionKey,
+					System.currentTimeMillis() - startTime);
 		}
 	}
 }

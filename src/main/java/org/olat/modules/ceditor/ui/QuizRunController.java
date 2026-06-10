@@ -30,7 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
-import org.olat.core.commons.services.ai.essay.EssayFeedbackJobService;
+import org.olat.core.commons.services.ai.essay.EssayAiCorrectionService;
 import org.olat.core.commons.services.ai.essay.FormativeFeedback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -103,7 +103,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private QuizQuestion currentQuizQuestion;
 
 	/** Async AI correction — per-question state. Reset on each new question. */
-	private Long aiCorrectionJobKey;
+	private Long aiCorrectionKey;
 	/** Maximum poll attempts before the UI gives up (≈ 35 s at 2-s cadence). */
 	private static final int MAX_POLL_ATTEMPTS = 18;
 	/** Generation poll cadence (matches QuizEditorController for parity). */
@@ -138,7 +138,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	@Autowired
 	private EssayAiGradingFileStore essayAiGradingFileStore;
 	@Autowired
-	private EssayFeedbackJobService essayFeedbackJobService;
+	private EssayAiCorrectionService essayAiCorrectionService;
 
 	public QuizRunController(UserRequest ureq, WindowControl wControl, QuizPart quizPart, boolean editable,
 							 RepositoryEntry entry, String subIdent) {
@@ -433,20 +433,20 @@ public class QuizRunController extends BasicController implements PageRunElement
 	 * (client-side safety cap ≈ 35 s at the 2-s cadence).
 	 */
 	private void doPollAiCorrection(UserRequest ureq) {
-		if (aiCorrectionJobKey == null) {
+		if (aiCorrectionKey == null) {
 			return;
 		}
 		aiCorrectionPollAttempts++;
-		EssayFeedbackJobService.JobStatusView status = essayFeedbackJobService.getStatus(aiCorrectionJobKey, getIdentity());
+		EssayAiCorrectionService.CorrectionStatusView status = essayAiCorrectionService.getStatus(aiCorrectionKey, getIdentity());
 		boolean stateChanged = true;
-		if (status == null || status.state() == null) {
-			// Job vanished — treat as failed, drop overlay with an error message.
+		if (status == null || status.status() == null) {
+			// Correction vanished — treat as failed, drop overlay with an error message.
 			aiCorrectionError = translate("ai.essay.correction.failed");
 			finishAiCorrection();
 		} else {
-			switch (status.state()) {
+			switch (status.status()) {
 				case DONE -> {
-					FormativeFeedback feedback = essayFeedbackJobService.parseFeedback(status.feedbackJson());
+					FormativeFeedback feedback = essayAiCorrectionService.parseFeedback(status.feedbackJson());
 					aiCorrectionFeedbackView = AiEssayFeedbackViewFlattener.flatten(feedback, getTranslator());
 					if (aiCorrectionFeedbackView == null) {
 						aiCorrectionError = translate("ai.essay.correction.failed");
@@ -508,7 +508,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	private void finishAiCorrection() {
-		aiCorrectionJobKey = null;
+		aiCorrectionKey = null;
 		aiCorrectionVisible = false;
 		aiCorrectionPollAttempts = 0;
 	}
@@ -519,7 +519,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	 * into the current one.
 	 */
 	private void resetAiCorrectionState() {
-		aiCorrectionJobKey = null;
+		aiCorrectionKey = null;
 		aiCorrectionForQuestionId = null;
 		aiCorrectionPollAttempts = 0;
 		aiCorrectionVisible = false;
@@ -578,14 +578,14 @@ public class QuizRunController extends BasicController implements PageRunElement
 			itemSessionKey = quizCtrl.getItemSessionKey();
 		}
 		try {
-			aiCorrectionJobKey = essayFeedbackJobService.submit(quizPart.getStoragePath(),
+			aiCorrectionKey = essayAiCorrectionService.submit(quizPart.getStoragePath(),
 					currentQuizQuestion.getId(), studentAnswer, itemSessionKey, getIdentity());
 			aiCorrectionForQuestionId = currentQuizQuestion.getId();
 			aiCorrectionPollAttempts = 0;
 			aiCorrectionVisible = true;
 			aiCorrectionFeedbackView = null;
 			aiCorrectionError = null;
-			logInfo("AI correction job " + aiCorrectionJobKey
+			logInfo("AI correction " + aiCorrectionKey
 					+ " submitted for assessmentItemIdentifier=" + currentQuizQuestion.getId());
 		} catch (AiRateLimitExceededException rl) {
 			logInfo("Essay AI correction throttled: " + rl.getMessage());

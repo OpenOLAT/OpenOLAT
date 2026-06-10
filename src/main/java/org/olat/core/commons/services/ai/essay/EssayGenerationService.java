@@ -25,25 +25,25 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.persistence.DB;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.ai.AiEssayGenerationService;
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.content.AiContentChunker;
 import org.olat.core.commons.services.ai.content.AiContentHardener;
-import org.olat.core.commons.services.ai.essay.EssayGenerationJob.State;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.MCQuestionData;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,18 +53,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  *
  * Public entry point for AI-assisted question generation from page
- * content. Persists an {@link EssayGenerationJob} row (the row name is
- * kept for schema stability; despite "essay" in the name the job can
- * produce mixed essay + multiple-choice output for the ceditor
- * Markdown-import → QuizPart flow), schedules an
- * {@link EssayGenerationLongRunnable} on the task executor and exposes
- * status + draft lookups for the drawer UI.
+ * content. Schedules a self-contained {@link EssayGenerationTask} on the
+ * generic persisted task executor ({@code o_ex_task}). Despite "essay" in
+ * the name the task can produce mixed essay + multiple-choice output for
+ * the ceditor Markdown-import → QuizPart flow.
  * <p>
- * The {@link #runJob(Long)} method is the body of the LongRunnable —
- * it is exposed on the service (not the runnable) so the runnable stays
- * serialisable, Spring-managed services can be accessed via
- * {@code CoreSpringFactory}, and re-runs (if ever needed) can reuse the
- * same code path directly.
+ * There is no job table and no status API: the destination sinks
+ * ({@link EssayGenerationQuizPartSink}, {@link EssayGenerationPoolSink})
+ * carry all user-visible outcomes, and execution state lives on the
+ * executor's task row (failed tasks stay visible in the task admin list).
+ * <p>
+ * The {@link #runTask(EssayGenerationTask)} method is the body of the
+ * LongRunnable — it is exposed on the service (not the runnable) so the
+ * runnable stays serialisable and Spring-managed services can be accessed
+ * via {@code CoreSpringFactory}.
  *
  * Initial date: 2026-04-20<br>
  *
@@ -97,10 +99,6 @@ public class EssayGenerationService {
 	private static final String USAGE_CONTEXT_TYPE = "essay-generation-submit";
 
 	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private EssayGenerationJobDao generationJobDao;
-	@Autowired
 	private AiEssayGenerationService aiEssayGenerationService;
 	@Autowired
 	private AiMCQuestionService aiMCQuestionService;
@@ -109,7 +107,9 @@ public class EssayGenerationService {
 	@Autowired
 	private AiContentHardener contentHardener;
 	@Autowired
-	private EssayGenerationJobPayloadStore payloadStore;
+	private TaskExecutorManager taskExecutorManager;
+	@Autowired
+	private BaseSecurity baseSecurity;
 	@Autowired
 	private AiModule aiModule;
 	@Autowired
@@ -118,10 +118,12 @@ public class EssayGenerationService {
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	/**
-	 * Persist a new job, schedule it for asynchronous execution, and
-	 * return the job key so the caller (drawer UI) can poll status.
+	 * Schedule the generation request for asynchronous execution on the
+	 * generic persisted task executor. The full request payload travels
+	 * inside the serialised {@link EssayGenerationTask}; there is nothing
+	 * to poll — the destination sink reports the outcome.
 	 */
-	public Long submit(GenerationRequest request) {
+	public void submit(GenerationRequest request) {
 		if (request == null) {
 			throw new IllegalArgumentException("request must not be null");
 		}
@@ -132,55 +134,30 @@ public class EssayGenerationService {
 			throw new IllegalArgumentException("request.pageMarkdown must not be blank");
 		}
 		assertWithinRateLimit(request.requester());
-		EssayGenerationJob job = generationJobDao.create(request.requester());
-		payloadStore.store(job.getKey(), request);
-		dbInstance.commit();
 
-		try {
-			RepositoryEntry entry = RepositoryManager.getInstance()
-					.lookupRepositoryEntry(request.repositoryEntryKey(), false);
-			if (entry != null) {
-				org.olat.core.commons.services.taskexecutor.TaskExecutorManager tem =
-						org.olat.core.CoreSpringFactory.getImpl(
-								org.olat.core.commons.services.taskexecutor.TaskExecutorManager.class);
-				tem.execute(new EssayGenerationLongRunnable(job.getKey()), request.requester(),
-						entry.getOlatResource(), null, null);
-			} else {
-				log.warn("Essay generation job {} has no resolvable repository entry — running inline",
-						job.getKey());
-				runJob(job.getKey());
-			}
-		} catch (Exception e) {
-			log.error("Failed to schedule essay generation job {}", job.getKey(), e);
-			markFailed(job.getKey(), e.getMessage());
-		}
-		return job.getKey();
+		RepositoryEntry entry = RepositoryManager.getInstance()
+				.lookupRepositoryEntry(request.repositoryEntryKey(), false);
+		OLATResource resource = entry == null ? null : entry.getOlatResource();
+		taskExecutorManager.execute(new EssayGenerationTask(request), request.requester(),
+				resource, null, null);
 	}
 
 	/**
-	 * Execute the job body. Called from
-	 * {@link EssayGenerationLongRunnable#run()} but also reachable
-	 * directly for synchronous execution in tests.
+	 * Execute the task body. Called from {@link EssayGenerationTask#run()}
+	 * but also reachable directly for synchronous execution in tests.
+	 * Throws on total failure so the task executor marks the task row
+	 * failed; partial successes are handed to the sink and count as done.
 	 */
-	public void runJob(Long jobKey) {
-		if (jobKey == null) return;
-		EssayGenerationJob job = generationJobDao.loadByKey(jobKey);
-		if (job == null) {
-			log.warn("Essay generation job {} not found — skipping", jobKey);
+	public void runTask(EssayGenerationTask task) {
+		if (task == null) return;
+		Identity requester = task.getRequesterKey() == null ? null
+				: baseSecurity.loadIdentityByKey(task.getRequesterKey());
+		if (requester == null) {
+			log.warn("Essay generation task has no resolvable requester (key={}) — skipping",
+					task.getRequesterKey());
 			return;
 		}
-		if (job.getState() != State.PENDING) {
-			log.warn("Essay generation job {} in state {} — skipping", jobKey, job.getState());
-			return;
-		}
-		GenerationRequest request = payloadStore.take(jobKey);
-		if (request == null) {
-			markFailed(jobKey, "generation request payload missing");
-			return;
-		}
-		job.setState(State.RUNNING);
-		generationJobDao.update(job);
-		dbInstance.commit();
+		GenerationRequest request = task.toGenerationRequest(requester);
 
 		int accepted = 0;
 		int rejected = 0;
@@ -198,9 +175,9 @@ public class EssayGenerationService {
 			List<org.olat.core.commons.services.ai.essay.AiContentChunk> chunks =
 					contentChunker.chunk(scrubbedMarkdown, request.language());
 			if (chunks.isEmpty()) {
-				markFailed(jobKey, "no content chunks produced from page markdown");
-				notifyQuizPartSinkFailed(request, "no content chunks produced from page markdown");
-				return;
+				String reason = "no content chunks produced from page markdown";
+				notifySinkFailed(request, reason);
+				throw new AiEssayGenerationException(reason);
 			}
 
 			// ------------------------------------------------------------------
@@ -213,10 +190,10 @@ public class EssayGenerationService {
 			String essayFailure = null;
 			boolean essaySkippedByRequest = request.targetQuestionCount() == 0;
 			if (essaySkippedByRequest) {
-				log.info("Essay generation skipped for job {} — targetQuestionCount=0", jobKey);
+				log.info("Essay generation skipped for requester {} — targetQuestionCount=0", requester.getKey());
 			} else if (!aiEssayGenerationService.isEnabled()) {
 				essayFailure = "essay generation is not configured or enabled";
-				log.warn("Essay generation disabled for job {} — skipping essay part", jobKey);
+				log.warn("Essay generation disabled for requester {} — skipping essay part", requester.getKey());
 			} else {
 				try {
 					int essayCount = request.targetQuestionCount() > 0
@@ -254,7 +231,8 @@ public class EssayGenerationService {
 					String raw = essayEx.getMessage() == null
 							? essayEx.getClass().getSimpleName() : essayEx.getMessage();
 					essayFailure = humanizeProviderError("essay", raw);
-					log.error("Essay generation leg of job {} failed — will still try MC leg", jobKey, essayEx);
+					log.error("Essay generation leg for requester {} failed — will still try MC leg",
+							requester.getKey(), essayEx);
 				}
 			}
 
@@ -267,11 +245,11 @@ public class EssayGenerationService {
 			String mcFailure = null;
 			boolean mcSkippedByRequest = request.mcQuestionCount() == 0;
 			if (wantsMc && mcSkippedByRequest) {
-				log.info("MC question generation skipped for job {} — mcQuestionCount=0", jobKey);
+				log.info("MC question generation skipped for requester {} — mcQuestionCount=0", requester.getKey());
 			} else if (wantsMc) {
 				if (aiMCQuestionService == null || !aiMCQuestionService.isEnabled()) {
 					mcFailure = "MC question generation is not configured or enabled";
-					log.info("MC question generation disabled for job {} — skipping MC part", jobKey);
+					log.info("MC question generation disabled for requester {} — skipping MC part", requester.getKey());
 				} else {
 					try {
 						int mcCount = request.mcQuestionCount() > 0
@@ -302,7 +280,7 @@ public class EssayGenerationService {
 							String raw = mcResponse == null ? "no response" : mcResponse.getError();
 							// Log the full raw body for developers, but surface a
 							// short human message via mcFailure for the UI.
-							log.warn("MC generation for job {} did not succeed: {}", jobKey, raw);
+							log.warn("MC generation for requester {} did not succeed: {}", requester.getKey(), raw);
 							mcFailure = humanizeProviderError("mc", raw);
 						} else if (mcResponse.getQuestions() != null) {
 							for (MCQuestionData q : mcResponse.getQuestions()) {
@@ -316,17 +294,18 @@ public class EssayGenerationService {
 						String raw = mcEx.getMessage() == null
 								? mcEx.getClass().getSimpleName() : mcEx.getMessage();
 						mcFailure = humanizeProviderError("mc", raw);
-						log.error("MC generation leg of job {} failed — continuing with essays only", jobKey, mcEx);
+						log.error("MC generation leg for requester {} failed — continuing with essays only",
+								requester.getKey(), mcEx);
 					}
 				}
 			}
 
 			// ------------------------------------------------------------------
 			// Decide overall outcome. If we got nothing useful in either leg,
-			// mark FAILED. Otherwise DONE with possibly partial results.
+			// fail the task. Otherwise done with possibly partial results.
 			// Special case: if the caller opted out of BOTH legs (counts of 0)
-			// we treat that as an intentional no-op and mark DONE — the sink
-			// can then clear the placeholder gracefully.
+			// we treat that as an intentional no-op — the sink can then clear
+			// the placeholder gracefully.
 			// ------------------------------------------------------------------
 			boolean bothLegsSkippedByRequest = essaySkippedByRequest
 					&& (wantsMc ? mcSkippedByRequest : true);
@@ -337,38 +316,31 @@ public class EssayGenerationService {
 			if (everythingFailed) {
 				String reason = "essay=" + (essayFailure == null ? "none" : essayFailure)
 						+ "; mc=" + (mcFailure == null ? "n/a" : mcFailure);
-				markFailed(jobKey, reason);
 				notifySinkFailed(request, reason);
-				return;
+				throw new AiEssayGenerationException(reason);
 			}
 
-			job = generationJobDao.loadByKey(jobKey);
-			job.setState(State.DONE);
-			Map<String, Object> progress = new java.util.HashMap<>();
-			progress.put("accepted", accepted);
-			progress.put("rejected", rejected);
-			progress.put("rejectionReasons", rejectionReasons);
-			progress.put("chunkCount", chunks.size());
-			progress.put("mcAccepted", acceptedMcQuestions.size());
-			if (essayFailure != null) {
-				progress.put("essayFailure", essayFailure);
+			log.info("Question generation for requester {} done: accepted={} rejected={} mcAccepted={} chunks={}{}{}",
+					requester.getKey(), accepted, rejected, acceptedMcQuestions.size(), chunks.size(),
+					essayFailure == null ? "" : " essayFailure=" + essayFailure,
+					mcFailure == null ? "" : " mcFailure=" + mcFailure);
+			if (!rejectionReasons.isEmpty()) {
+				log.info("Question generation for requester {} rejected drafts: {}",
+						requester.getKey(), rejectionReasons);
 			}
-			if (mcFailure != null) {
-				progress.put("mcFailure", mcFailure);
-			}
-			job.setProgressJson(toJson(progress));
-			generationJobDao.update(job);
-			dbInstance.commit();
 
 			// Optional hand-off: attach accepted drafts + MC questions to the
 			// destination sink (ceditor QuizPart, question pool, or no-op
 			// for the legacy author-drawer flow).
 			notifySinkDone(request, acceptedDrafts, draftToGrading, acceptedMcQuestions);
 
+		} catch (AiEssayGenerationException e) {
+			// Sink already notified — re-throw so the task executor marks the
+			// task row failed.
+			throw e;
 		} catch (Exception e) {
-			log.error("Question generation job {} failed mid-run", jobKey, e);
+			log.error("Question generation for requester {} failed mid-run", requester.getKey(), e);
 			String shortReason = humanizeProviderError("essay", e.getMessage());
-			markFailed(jobKey, shortReason);
 			notifySinkFailed(request, shortReason);
 			throw e;
 		}
@@ -513,60 +485,6 @@ public class EssayGenerationService {
 		return grading;
 	}
 
-	private void markFailed(Long jobKey, String reason) {
-		EssayGenerationJob job = generationJobDao.loadByKey(jobKey);
-		if (job == null) return;
-		job.setState(State.FAILED);
-		String safeReason = reason == null ? "unknown" : truncate(reason, PROGRESS_ERROR_MAX);
-		job.setErrorJson(toJson(Map.of("reason", safeReason)));
-		generationJobDao.update(job);
-		dbInstance.commit();
-	}
-
-	/**
-	 * Status view returned to the drawer / pool import poller. The owner
-	 * check is mandatory: the progress JSON contains generated essay drafts
-	 * (model answers, key points, rubric) until they are detached, so a leak
-	 * via guessed PKs would expose another author's in-flight work and burn
-	 * the same content twice. When the caller is not the job owner the
-	 * response is indistinguishable from "not found".
-	 *
-	 * @param jobKey the job primary key
-	 * @param caller the polling identity (must not be {@code null}); when the
-	 *               job exists but was created by a different identity the
-	 *               method returns the same "not found" view as for missing
-	 *               keys
-	 */
-	public JobStatusView getStatus(Long jobKey, Identity caller) {
-		if (caller == null) {
-			throw new IllegalArgumentException("caller must not be null");
-		}
-		EssayGenerationJob job = generationJobDao.loadByKey(jobKey);
-		if (job == null) {
-			return new JobStatusView(jobKey, null, null, null);
-		}
-		Long ownerKey = job.getCreatedBy() == null ? null : job.getCreatedBy().getKey();
-		if (ownerKey == null || !ownerKey.equals(caller.getKey())) {
-			// Indistinguishable from "not found". Do not log the caller.
-			return new JobStatusView(jobKey, null, null, null);
-		}
-		return new JobStatusView(jobKey, job.getState(), job.getProgressJson(), job.getErrorJson());
-	}
-
-	/**
-	 * Trusted internal status lookup that bypasses the owner check. Reserved
-	 * for code paths that have already established ownership / admin
-	 * authority (background runners, admin diagnostics). Public callers must
-	 * use {@link #getStatus(Long, Identity)} instead.
-	 */
-	JobStatusView getStatusInternal(Long jobKey) {
-		EssayGenerationJob job = generationJobDao.loadByKey(jobKey);
-		if (job == null) {
-			return new JobStatusView(jobKey, null, null, null);
-		}
-		return new JobStatusView(jobKey, job.getState(), job.getProgressJson(), job.getErrorJson());
-	}
-
 	/**
 	 * Per-user rate limiter for the AI question-generation submit path.
 	 * Counts {@link AiFeature#EssayGeneration} usage log rows recorded for
@@ -704,7 +622,7 @@ public class EssayGenerationService {
 	 * Generator request. {@code targetQuestionCount <= 0} means "do not
 	 * generate essay questions" (opt-out). For legacy callers that don't set
 	 * a count, {@link #DEFAULT_QUESTION_COUNT} is used as a fallback inside
-	 * {@link #runJob(Long)} (value {@code -1} or unspecified paths).
+	 * {@link #runTask(EssayGenerationTask)} (value {@code -1} or unspecified paths).
 	 * <p>
 	 * {@code mcQuestionCount} behaves the same way for the MC generation leg
 	 * of the Markdown-import → QuizPart flow: {@code 0} means "skip MC",
@@ -863,8 +781,4 @@ public class EssayGenerationService {
 					GenerationDestination.POOL, taxonomyLevelKey);
 		}
 	}
-
-	/** Status view returned to the drawer UI — JSON blobs are returned raw. */
-	public record JobStatusView(Long jobKey, EssayGenerationJob.State state,
-			String progressJson, String errorJson) { }
 }

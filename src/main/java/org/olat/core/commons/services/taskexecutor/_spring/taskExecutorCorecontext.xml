@@ -10,6 +10,8 @@
 		<constructor-arg index="1" ref="sequentialTaskExecutorService" />
 		<constructor-arg index="2" ref="lowPriorityTaskSpringExecutorService" />
 		<constructor-arg index="3" ref="externalPriorityTaskSpringExecutorService" />
+		<constructor-arg index="4" ref="aiInteractiveTaskSpringExecutorService" />
+		<constructor-arg index="5" ref="aiBatchTaskSpringExecutorService" />
 		<property name="persistentTaskDao" ref="persistentTaskDao"/>
 		<property name="dbInstance" ref="database"/>
 		<property name="scheduler" ref="schedulerFactoryBean"/>
@@ -53,6 +55,31 @@
 		<property name="corePoolSize" value="2" />
 		<property name="maxPoolSize" value="5" />
 		<property name="queueCapacity" value="1000" />
+	</bean>
+
+	<bean id="aiInteractiveTaskSpringExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+		<constructor-arg index="0" ref="aiInteractiveTaskSpringExecutor" />
+	</bean>
+
+	<bean id="aiBatchTaskSpringExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+		<constructor-arg index="0" ref="aiBatchTaskSpringExecutor" />
+	</bean>
+
+	<!-- AI task pools. The pool sizes here are bootstrap defaults; the
+	     effective sizes are applied at startup (and at runtime) from the
+	     AI module configuration, see AiModule / AiTaskExecutorService. -->
+	<bean id="aiInteractiveTaskSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="4" />
+		<property name="maxPoolSize" value="4" />
+		<property name="queueCapacity" value="1000" />
+		<property name="threadNamePrefix" value="ai-interactive-" />
+	</bean>
+
+	<bean id="aiBatchTaskSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="2" />
+		<property name="maxPoolSize" value="2" />
+		<property name="queueCapacity" value="1000" />
+		<property name="threadNamePrefix" value="ai-batch-" />
 	</bean>
 	
 	<!-- Persistent task executor job -->

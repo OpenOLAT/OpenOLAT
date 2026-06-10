@@ -148,21 +148,6 @@ alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lect
 create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);
 
 
--- AI essay generation job
-create table o_essay_generation_job (
-  a_id                 number(20) generated always as identity,
-  a_creationdate       timestamp not null,
-  a_lastmodified       timestamp not null,
-  a_created_by_fk      number(20) not null,
-  a_state              varchar2(24 char) not null,
-  a_progress_json      clob,
-  a_error_json         clob,
-  primary key (a_id)
-);
-
-alter table o_essay_generation_job add constraint essay_gen_job_createdby_fk foreign key (a_created_by_fk) references o_bs_identity (id);
-create index idx_essay_gen_job_createdby on o_essay_generation_job (a_created_by_fk);
-
 -- AI usage log essay extension
 alter table o_ai_usage_log add a_assessment_item_identifier varchar2(64 char);
 alter table o_ai_usage_log add a_content_hash_at_call varchar2(64 char);
@@ -174,25 +159,24 @@ create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_ident
 create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 
 
--- AI essay feedback job
-create table o_essay_feedback_job (
-  a_id                          number(20) generated always as identity,
-  a_creationdate                timestamp not null,
-  a_lastmodified                timestamp not null,
-  a_storage_path                varchar2(1024 char),
-  a_question_id                 varchar2(64 char),
-  a_identity_fk                 number(20) not null,
-  a_assessment_item_session_key number(20),
-  a_student_answer              clob not null,
-  a_state                       varchar2(24 char) not null,
-  a_feedback_json               clob,
-  a_error_message               varchar2(2048 char),
-  a_started_at                  timestamp,
-  a_completed_at                timestamp,
-  primary key (a_id)
+-- AI essay correction result
+create table o_ai_essay_correction (
+  id                   number(20) generated always as identity,
+  creationdate         timestamp not null,
+  lastmodified         timestamp not null,
+  fk_identity          number(20) not null,
+  a_item_session_key   number(20),
+  a_storage_path       varchar2(1024 char),
+  a_question_id        varchar2(64 char),
+  a_student_answer     clob not null,
+  a_status             varchar2(24 char) not null,
+  a_feedback_json      clob,
+  a_error_message      varchar2(2048 char),
+  a_completed          timestamp,
+  primary key (id)
 );
 
-alter table o_essay_feedback_job add constraint essay_fb_job_identity_fk foreign key (a_identity_fk) references o_bs_identity (id);
-create index idx_essay_fb_job_identity on o_essay_feedback_job (a_identity_fk);
-create index idx_essay_fb_job_identity_state on o_essay_feedback_job (a_identity_fk, a_state);
-create index idx_essay_fb_job_question on o_essay_feedback_job (a_storage_path, a_question_id);
+alter table o_ai_essay_correction add constraint ai_essay_corr_ident_fk foreign key (fk_identity) references o_bs_identity (id);
+create index idx_ai_essay_corr_ident on o_ai_essay_correction (fk_identity);
+create index idx_ai_essay_corr_item_session on o_ai_essay_correction (a_item_session_key);
+create index idx_ai_essay_corr_question on o_ai_essay_correction (a_storage_path, a_question_id);

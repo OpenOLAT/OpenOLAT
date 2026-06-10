@@ -37,6 +37,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.commons.services.ai.essay.EssayAiCorrectionService;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -73,6 +74,8 @@ public class ContentEditorQti {
 	private QTI21Service qtiService;
 	@Autowired
 	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
+	@Autowired
+	private EssayAiCorrectionService essayAiCorrectionService;
 
 	public String generateStoragePath(QuizPart quizPart) {
 		String id = quizPart.getKey() != null ? quizPart.getId() : null;
@@ -228,6 +231,7 @@ public class ContentEditorQti {
 		if (!FileUtils.deleteDirsAndFiles(questionDir, true, true)) {
 			logger.error("Failed to delete question directory '{}'", questionDir.toPath().toString());
 		}
+		essayAiCorrectionService.deleteCorrections(quizPart.getStoragePath(), quizQuestion.getId());
 	}
 
 	public void deleteQuestionsDirectory(QuizPart quizPart) {
@@ -237,6 +241,7 @@ public class ContentEditorQti {
 		if (!FileUtils.deleteDirsAndFiles(questionsDir, true, true)) {
 			logger.warn("Failed to delete the questions directory '{}'", questionsDir.toPath().toString());
 		}
+		essayAiCorrectionService.deleteCorrections(quizPart.getStoragePath());
 	}
 
 	public List<QuizQuestion> importQuestions(QuizPart quizPart, List<QuestionItemView> questionItems, int maxNumberToImport, Locale locale) {

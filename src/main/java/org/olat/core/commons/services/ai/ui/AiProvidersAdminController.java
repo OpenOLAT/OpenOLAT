@@ -51,17 +51,17 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Admin user interface to configure the AI service. Shows a dropdown to add
- * new providers, per-provider configuration forms with enable/disable toggles
- * and delete buttons, and per-feature configuration (which provider/model to
- * use).
+ * Admin user interface for the AI providers segment. Shows a dropdown to
+ * add new providers and per-provider configuration forms with
+ * enable/disable toggles and delete buttons. Feature and task pool
+ * configuration live in their own segments of {@link AiAdminController}.
  *
  * Initial date: 22.05.2024<br>
  *
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
-public class AiConfigurationAdminController extends BasicController {
+public class AiProvidersAdminController extends BasicController {
 	@Autowired
 	private AiModule aiModule;
 
@@ -74,21 +74,17 @@ public class AiConfigurationAdminController extends BasicController {
 	private final List<Controller> spiConfigCtrs = new ArrayList<>();
 	private final Map<Controller, AiSPI> spiByController = new HashMap<>();
 
-	// Features section
-	private AiFeaturesAdminController featuresFormCtr;
-
 	// Delete confirmation
 	private DialogBoxController confirmDeleteCtrl;
 	private AiSPI deleteCandidate;
 
-	public AiConfigurationAdminController(UserRequest ureq, WindowControl wControl) {
+	public AiProvidersAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("ai_module");
 		putInitialPanel(mainVC);
 
 		doInitAddProviderDropdown(ureq);
 		doInitSpiConfigControllers(ureq);
-		doInitFeaturesController(ureq);
 	}
 
 	@Override
@@ -109,11 +105,10 @@ public class AiConfigurationAdminController extends BasicController {
 				doDelete(ureq);
 			}
 			cleanUp();
-		} else if (spiByController.containsKey(source)
-				&& (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT)) {
-			// A provider toggle changed or config saved - refresh features
-			doInitFeaturesController(ureq);
 		}
+		// Provider toggles/saves need no further handling here — the
+		// features segment is recreated on activation and always reads the
+		// current provider list.
 	}
 
 	@Override
@@ -248,17 +243,9 @@ public class AiConfigurationAdminController extends BasicController {
 		mainVC.contextPut("spiConfigCtrlNames", spiConfigCtrlNames);
 	}
 
-	private void doInitFeaturesController(UserRequest ureq) {
-		removeAsListenerAndDispose(featuresFormCtr);
-		featuresFormCtr = new AiFeaturesAdminController(ureq, getWindowControl());
-		listenTo(featuresFormCtr);
-		mainVC.put("featuresForm", featuresFormCtr.getInitialComponent());
-	}
-
 	private void doRebuildAll(UserRequest ureq) {
 		doInitAddProviderDropdown(ureq);
 		doInitSpiConfigControllers(ureq);
-		doInitFeaturesController(ureq);
 	}
 
 	// ------ Helpers ------

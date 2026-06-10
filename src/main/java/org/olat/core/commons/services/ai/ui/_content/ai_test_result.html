@@ -34,7 +34,9 @@
       <strong style="color: #2e7d32;">Correct answers:</strong>
       <ul style="margin: 0.25rem 0 0 1.5rem;">
         #foreach($answer in $mcData.correctAnswers)
-          <li style="color: #2e7d32;">$r.escapeHtml($answer)</li>
+          <li style="color: #2e7d32;">$r.escapeHtml($answer.text)
+            #if($answer.feedback)<br/><span style="color: #777; font-size: 0.9em;">$r.escapeHtml($answer.feedback)</span>#end
+          </li>
         #end
       </ul>
     </div>
@@ -42,7 +44,9 @@
       <strong style="color: #c62828;">Wrong answers:</strong>
       <ul style="margin: 0.25rem 0 0 1.5rem;">
         #foreach($answer in $mcData.wrongAnswers)
-          <li style="color: #c62828;">$r.escapeHtml($answer)</li>
+          <li style="color: #c62828;">$r.escapeHtml($answer.text)
+            #if($answer.feedback)<br/><span style="color: #777; font-size: 0.9em;">$r.escapeHtml($answer.feedback)</span>#end
+          </li>
         #end
       </ul>
     </div>

@@ -35,6 +35,16 @@ public interface TaskRunnable extends Runnable {
 		sequential,
 		lowPriority,
 		external,
-		standard;	
+		/**
+		 * AI calls a user is actively waiting for (e.g. essay AI correction
+		 * at learner submit). Pool size configurable in the AI module.
+		 */
+		aiInteractive,
+		/**
+		 * Long-running AI batch work (e.g. question generation from page
+		 * content). Pool size configurable in the AI module.
+		 */
+		aiBatch,
+		standard;
 	}
 }

@@ -128,18 +128,21 @@ public class AiUsageLogImpl implements AiUsageLog, Persistable {
 	@Column(name = "a_cache_creation_input_tokens", nullable = true, insertable = true, updatable = false)
 	private Long cacheCreationInputTokens;
 
-	// Essay grading trace — five nullable columns added in alter_21_0_x_to_21_1_0.
-	// They are set only on essay-grading calls; other AI features leave them null.
-	@Column(name = "a_assessment_item_identifier", nullable = true, insertable = true, updatable = false, length = 64)
+	// Essay grading trace — five nullable columns set only on essay-grading
+	// calls; other AI features leave them null. The row is inserted by
+	// AiLoggingChatModel (which does not know these values) and the fields
+	// are attached afterwards via AiUsageLogDAO.updateEssayFields, so they
+	// must be updatable (same pattern as a_invocation_id).
+	@Column(name = "a_assessment_item_identifier", nullable = true, insertable = true, updatable = true, length = 64)
 	private String assessmentItemIdentifier;
-	@Column(name = "a_content_hash_at_call", nullable = true, insertable = true, updatable = false)
+	@Column(name = "a_content_hash_at_call", nullable = true, insertable = true, updatable = true)
 	private String contentHashAtCall;
-	@Column(name = "a_prompt_template_version", nullable = true, insertable = true, updatable = false)
+	@Column(name = "a_prompt_template_version", nullable = true, insertable = true, updatable = true)
 	private String promptTemplateVersion;
-	@Column(name = "a_tier", nullable = true, insertable = true, updatable = false)
+	@Column(name = "a_tier", nullable = true, insertable = true, updatable = true)
 	@Enumerated(EnumType.STRING)
 	private AiGradingTier tier;
-	@Column(name = "a_assessment_item_session_key", nullable = true, insertable = true, updatable = false)
+	@Column(name = "a_assessment_item_session_key", nullable = true, insertable = true, updatable = true)
 	private Long assessmentItemSessionKey;
 
 	@Override

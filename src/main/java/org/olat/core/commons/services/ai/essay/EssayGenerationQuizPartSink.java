@@ -34,16 +34,14 @@ import org.olat.core.commons.services.ai.model.MCQuestionData;
  * <p>
  * Implemented by the ceditor module as a Spring {@code @Service} and looked
  * up via {@code CoreSpringFactory} from
- * {@link EssayGenerationService#runJob(Long)} when a
+ * {@link EssayGenerationService#runTask(EssayGenerationTask)} when a
  * {@link EssayGenerationService.GenerationRequest} carries both a
  * {@code pageKey} and a {@code quizPartKey}.
  * <p>
- * Despite the legacy "essay" in the type/table/bean names, the sink
- * attaches a mixed QTI item set (multiple-choice + essay) because the
- * Markdown-import generation flow now produces both kinds. The underlying
- * {@code o_essay_generation_job} row is kept named as-is for schema
- * stability — the job is effectively a "generate questions from content"
- * job, not essay-only.
+ * Despite the legacy "essay" in the type/bean names, the sink attaches a
+ * mixed QTI item set (multiple-choice + essay) because the Markdown-import
+ * generation flow now produces both kinds — the task is effectively a
+ * "generate questions from content" task, not essay-only.
  *
  * Initial date: 2026-04-20<br>
  *

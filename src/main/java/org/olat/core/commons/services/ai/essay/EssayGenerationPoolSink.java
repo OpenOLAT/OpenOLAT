@@ -34,7 +34,7 @@ import org.olat.core.id.Identity;
  * <p>
  * Implemented by the question pool module as a Spring {@code @Service}
  * and looked up via {@code CoreSpringFactory} from
- * {@link EssayGenerationService#runJob(Long)} when a
+ * {@link EssayGenerationService#runTask(EssayGenerationTask)} when a
  * {@link EssayGenerationService.GenerationRequest} carries
  * {@code destination == POOL}.
  * <p>
