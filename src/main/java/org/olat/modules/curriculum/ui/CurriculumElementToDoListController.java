@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
@@ -87,9 +88,15 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
 		searchParams.setIncludeImplementationOwnership(false);
 		searchParams.setCurriculums(List.of(element.getCurriculum()));
-		allLevelsSubPaths = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys().stream()
+		Set<Long> accessibleElementKeys = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys();
+		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
+		descendants.add(element);
+		allLevelsSubPaths = descendants.stream()
+				.filter(level -> accessibleElementKeys.contains(level.getKey()))
+				.map(CurriculumElement::getKey)
 				.map(String::valueOf)
 				.toList();
+		
 		if (allLevelsSubPaths.isEmpty()) {
 			// Not existing key to prevent loading all to-dos.
 			allLevelsSubPaths = List.of("-1");
