@@ -110,7 +110,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("Physics", taxonomy, 5, 2.0);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels("QuantumThermodynamics", taxonomy, 5, 2.0);
 
 		assertThat(matches).isEmpty();
 	}
@@ -154,6 +154,44 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 
 		assertThat(matches).hasSize(1);
 		assertThat(matches.get(0).level()).isEqualTo(biology);
+	}
+
+	@Test
+	public void shouldReturnExactMatchEvenWhenBelowMinScore() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy(random(), "Bypass test", null, null);
+		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "Biology", null, null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+
+		EmbeddingModel model = deterministicModel();
+		embeddingDao.upsert(biology, "en", TaxonomyEmbeddingTextVariant.NAME, "Biology", model.embed("Biology").content().vector(), "test-model", "v1", null);
+		dbInstance.commitAndCloseSession();
+
+		matchingService.setEmbeddingModel(model);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels("Biology", taxonomy, 5, 1.01);
+
+		assertThat(matches).hasSize(1);
+		assertThat(matches.get(0).level()).isEqualTo(biology);
+		assertThat(matches.get(0).exactMatch()).isTrue();
+	}
+
+	@Test
+	public void shouldSortExactMatchFirst() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy(random(), "Sort test", null, null);
+		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "Biology", null, null, null, null, null, taxonomy);
+		TaxonomyLevel chemistry = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "Chemistry", null, null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+
+		EmbeddingModel model = deterministicModel();
+		embeddingDao.upsert(biology, "en", TaxonomyEmbeddingTextVariant.NAME, "Biology", model.embed("Biology").content().vector(), "test-model", "v1", null);
+		embeddingDao.upsert(chemistry, "en", TaxonomyEmbeddingTextVariant.NAME, "Chemistry", model.embed("Chemistry").content().vector(), "test-model", "v1", null);
+		dbInstance.commitAndCloseSession();
+
+		matchingService.setEmbeddingModel(model);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels("Biology", taxonomy, 5, 0.0);
+
+		assertThat(matches).isNotEmpty();
+		assertThat(matches.get(0).level()).isEqualTo(biology);
+		assertThat(matches.get(0).exactMatch()).isTrue();
 	}
 
 	private EmbeddingModel deterministicModel() {
