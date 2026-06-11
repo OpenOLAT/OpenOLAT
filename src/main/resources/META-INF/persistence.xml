@@ -405,6 +405,7 @@
 		<class>org.olat.modules.selectus.model.migration.SettingImpl</class>
 		<class>org.olat.upgrade.model.UpgradeOrganisationUnitMembershipImpl</class>
 		<class>org.olat.upgrade.model.UpgradePositionUnitImpl</class>
+		<class>org.olat.modules.taxonomy.matching.model.TaxonomyLevelEmbeddingImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyLevelTypeImpl</class>

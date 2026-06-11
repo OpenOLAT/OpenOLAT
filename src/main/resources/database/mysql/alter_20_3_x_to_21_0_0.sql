@@ -37,6 +37,30 @@ create table o_ai_usage_log (
 );
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
 
+-- Taxonomy matching embeddings
+create table o_tax_level_embedding (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  t_text_variant varchar(16) not null,
+  t_locale varchar(10) not null,
+  t_embedding_text longtext not null,
+  t_model_id varchar(128) not null,
+  t_model_version varchar(64),
+  t_vector_json longtext,
+  fk_level bigint not null,
+  fk_taxonomy bigint not null,
+  primary key (id),
+  constraint fk_tax_emb_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint fk_tax_emb_taxonomy foreign key (fk_taxonomy)
+    references o_tax_taxonomy(id)
+) engine=InnoDB;
+
+create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
+create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
+create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id(64), t_text_variant);
+
 -- ac offer indexes
 drop index idx_offer_guest_idx on o_ac_offer;
 drop index idx_offer_open_idx on o_ac_offer;
@@ -998,7 +1022,5 @@ create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assigne
 -- Curriculum element type
 alter table o_cur_element_type add column c_impl_only bool default false not null;
 alter table o_cur_element_type add column c_status varchar(32) default 'active' not null;
-
-
 
 

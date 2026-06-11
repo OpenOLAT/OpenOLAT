@@ -4081,6 +4081,26 @@ create table o_tax_competence_audit_log (
   primary key (id)
 );
 
+-- Taxonomy matching embeddings
+create table o_tax_level_embedding (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  t_text_variant varchar(16) not null,
+  t_locale varchar(10) not null,
+  t_embedding_text longtext not null,
+  t_model_id varchar(128) not null,
+  t_model_version varchar(64),
+  t_vector_json longtext,
+  fk_level bigint not null,
+  fk_taxonomy bigint not null,
+  primary key (id),
+  constraint fk_tax_emb_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint fk_tax_emb_taxonomy foreign key (fk_taxonomy)
+    references o_tax_taxonomy(id)
+) engine=InnoDB;
+
 -- dialog elements
 create table o_dialog_element (
   id bigint not null auto_increment,
@@ -7217,6 +7237,11 @@ create index idx_tax_level_path_key_idx on o_tax_taxonomy_level (t_m_path_keys);
 
 alter table o_tax_taxonomy_competence add constraint tax_comp_to_tax_level_idx foreign key (fk_level) references o_tax_taxonomy_level (id);
 alter table o_tax_taxonomy_competence add constraint tax_level_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
+-- Taxonomy matching embeddings
+create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
+create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
+create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id(64), t_text_variant);
 
 -- dialog elements
 alter table o_dialog_element add constraint dial_el_author_idx foreign key (fk_author) references o_bs_identity (id);

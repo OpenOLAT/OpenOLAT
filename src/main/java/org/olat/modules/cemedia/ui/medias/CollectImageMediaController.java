@@ -28,6 +28,7 @@ import java.util.Set;
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
 import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -70,6 +71,8 @@ import org.olat.modules.cemedia.ui.MediaRelationsController;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingHelper;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +119,10 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private AiModule aiModule;
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
 
 
 	public CollectImageMediaController(UserRequest ureq, WindowControl wControl) {
@@ -407,6 +414,14 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 
 	private void mapSubjectToTaxonomy(String subject) {
 		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
+			return;
+		}
+		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
+				subject, mediaModule.getTaxonomyRefs(), taxonomyService,
+				taxonomyMatchingService, aiModule, getLocale());
+		if (!matches.isEmpty()) {
+			String key = matches.get(0).getKey().toString();
+			taxonomyLevelEl.select(key);
 			return;
 		}
 		String subjectLower = subject.trim().toLowerCase();

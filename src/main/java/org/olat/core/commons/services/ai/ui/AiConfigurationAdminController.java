@@ -213,17 +213,19 @@ public class AiConfigurationAdminController extends BasicController {
 
 		List<String> spiConfigCtrlNames = new ArrayList<>();
 
-		// Spring providers: show config only when enabled (i.e. "added")
+		// Spring providers: show the admin controller when present, regardless of
+		// whether the SPI is enabled (e.g. LocalOnnxSPI shows upload form before any model exists)
 		for (AiSPI spi : aiModule.getSpringProviders()) {
-			if (spi.isEnabled()) {
-				String ctrlName = "spiConfig_" + spi.getId();
-				spiConfigCtrlNames.add(ctrlName);
-				Controller ctrl = spi.createAdminController(ureq, getWindowControl());
-				listenTo(ctrl);
-				spiConfigCtrs.add(ctrl);
-				spiByController.put(ctrl, spi);
-				mainVC.put(ctrlName, ctrl.getInitialComponent());
+			Controller ctrl = spi.createAdminController(ureq, getWindowControl());
+			if (ctrl == null) {
+				continue;
 			}
+			String ctrlName = "spiConfig_" + spi.getId();
+			spiConfigCtrlNames.add(ctrlName);
+			listenTo(ctrl);
+			spiConfigCtrs.add(ctrl);
+			spiByController.put(ctrl, spi);
+			mainVC.put(ctrlName, ctrl.getInitialComponent());
 		}
 
 		// Generic instances: always shown

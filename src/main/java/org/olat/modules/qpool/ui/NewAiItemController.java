@@ -19,15 +19,9 @@
  */
 package org.olat.modules.qpool.ui;
 
-import static org.olat.core.util.StringHelper.EMPTY;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
@@ -49,7 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -67,8 +60,10 @@ import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingHelper;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
@@ -89,8 +84,6 @@ public class NewAiItemController extends FormBasicController {
 
 	private TextElement contentEl;
 
-	private final Set<TaxonomyLevel> allTaxonomyLevels;
-
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -110,13 +103,11 @@ public class NewAiItemController extends FormBasicController {
 	private AiModule aiModule;
 	@Autowired
 	private AiMCQuestionService mcQuestionService;
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
 
 	public NewAiItemController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
-		Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
-		allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomy));
-
 		initForm(ureq);
 	}
 
@@ -233,56 +224,55 @@ public class NewAiItemController extends FormBasicController {
 		if (keywords != null) {
 			metaItem.setKeywords(StringHelper.xssScan(keywords));
 		}
+		TaxonomyLevel matchedTaxonomyLevel = null;
 		String subject = itemData.getSubject();
 		if (subject != null) {
-			// Try mapping to a taxonomy
-			TaxonomyLevel finalTaxonomy = null;
-			Set<TaxonomyLevel> taxonomies = new HashSet<>();
-			taxonomies.addAll(searchTaxonomyLevels(subject));
-			int currentLevel = 0;
-			for (TaxonomyLevel taxLevel : taxonomies) {
-				// use the most specific taxonomy if multiple have been found
-				int level = StringUtils.countMatches(taxLevel.getMaterializedPathIdentifiers(), "/");
-				if (level > currentLevel) {					
-					finalTaxonomy = taxLevel;			
-				}
-			}
-			if (finalTaxonomy == null) {
-				// try fallback to keywords
-				String[] keywordsArray = keywords.split(",");
-				for (String keyword : keywordsArray) {
-					keyword = keyword.trim();
-					taxonomies.addAll(searchTaxonomyLevels(keyword));
-				}		
-				currentLevel = 0;
-				for (TaxonomyLevel taxLevel : taxonomies) {
-					// use the most specific taxonomy if multiple have been found
-					int level = StringUtils.countMatches(taxLevel.getMaterializedPathIdentifiers(), "/");
-					if (level > currentLevel) {					
-						finalTaxonomy = taxLevel;			
+			Taxonomy qpoolTaxonomy = qpoolService.getQPoolTaxonomy();
+			List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
+					subject, qpoolTaxonomy != null ? List.of(qpoolTaxonomy) : List.of(),
+					taxonomyService, taxonomyMatchingService, aiModule, getLocale());
+			if (matches.isEmpty() && StringHelper.containsNonWhitespace(keywords)) {
+				for (String keyword : keywords.split(",")) {
+					matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
+							keyword.trim(), qpoolTaxonomy != null ? List.of(qpoolTaxonomy) : List.of(),
+							taxonomyService, taxonomyMatchingService, aiModule, getLocale());
+					if (!matches.isEmpty()) {
+						break;
 					}
 				}
 			}
-			if (finalTaxonomy != null) {
-				metaItem.setTaxonomyPath(finalTaxonomy.getMaterializedPathIdentifiers());
+			if (!matches.isEmpty()) {
+				TaxonomyLevel taxLevel = taxonomyService.getTaxonomyLevel(matches.get(0));
+				if (taxLevel != null) {
+					matchedTaxonomyLevel = taxLevel;
+				}
 			}
 		}
 		// Meta: used AI service and AI model
 		metaItem.setEditor("OpenOlat.AI.QTI12.Generator." + aiModule.getMCGeneratorSpiId());
 		metaItem.setEditorVersion(aiModule.getMCGeneratorModel());
-		
+
 		// 3) Persist item in question pool using the Excel import SPI
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
 		QuestionItem importedItem = spi.importExcelItem(getIdentity(), metaItem, getLocale());
 		QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(), Action.CREATE_QUESTION_ITEM_BY_IMPORT);
 		builder.withAfter(importedItem);
 		qpoolService.persist(builder.create());
-		
-		// 4: Set review status, but only if review process is not enabled		
-		if( !qpoolModule.isReviewProcessEnabled() && importedItem instanceof QuestionItemImpl) { 
-			QuestionItemImpl itemImpl = (QuestionItemImpl)importedItem;
-			itemImpl.setQuestionStatus(QuestionStatus.review);
-			qpoolService.updateItem(itemImpl);
+
+		// 4: Set taxonomy level and/or review status directly on the persisted item
+		if (importedItem instanceof QuestionItemImpl itemImpl) {
+			boolean dirty = false;
+			if (matchedTaxonomyLevel != null) {
+				itemImpl.setTaxonomyLevel(matchedTaxonomyLevel);
+				dirty = true;
+			}
+			if (!qpoolModule.isReviewProcessEnabled()) {
+				itemImpl.setQuestionStatus(QuestionStatus.review);
+				dirty = true;
+			}
+			if (dirty) {
+				qpoolService.updateItem(itemImpl);
+			}
 		}
 		
 		// 5: Set default license
@@ -297,28 +287,5 @@ public class NewAiItemController extends FormBasicController {
 		return importedItem;
 	}
 	
-	
-	/** 
-	 * Helper method to search for a taxonomy that matches the given keyword
-	 * @param searchText the keyword to search for in the taxonomy
-	 * @return
-	 */
-	private Set<TaxonomyLevel> searchTaxonomyLevels(String searchText) {
-		String lowerSearchText = searchText.toLowerCase();
-		return allTaxonomyLevels.stream()
-				.filter(level -> searchTaxonomyLevel(level, lowerSearchText))
-				.collect(Collectors.toSet());
-	}
-
-	/**
-	 * Compare taxonomy level and search text using the translated taxonomy name
-	 * @param taxonomylevel
-	 * @param searchText
-	 * @return
-	 */
-	private boolean searchTaxonomyLevel(TaxonomyLevel taxonomylevel, String searchText) {
-		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomylevel, EMPTY);
-		return displayName.toLowerCase().indexOf(searchText) > -1;
-	}
 	
 }

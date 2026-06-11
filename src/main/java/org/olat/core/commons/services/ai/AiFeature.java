@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
 public enum AiFeature {
 	
 	MCQuestionGenerator("mc-question-generator"),
-	ImageDescriptionGenerator("image-description-generator")
+	ImageDescriptionGenerator("image-description-generator"),
+	TaxonomyMatching("taxonomy-matching")
 	;
 	
 	public static List<AiFeature> VALUES = List.of(values());

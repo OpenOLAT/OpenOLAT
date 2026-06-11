@@ -20,12 +20,15 @@
 package org.olat.core.commons.services.ai.ui;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.olat.core.commons.services.ai.AiEmbeddingSPI;
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,6 +45,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +78,13 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private FormItem imgDescModelEl;
 	private FormLink imgDescTestLink;
 
+	// Taxonomy Matching elements — removed and re-added to maintain ordering
+	private SpacerElement taxMatchSpacer;
+	private StaticTextElement taxMatchTitle;
+	private FormToggle taxMatchEnabledEl;
+	private SingleSelection taxMatchSpiEl;
+	private FormItem taxMatchModelEl;
+
 	// Buttons — removed and re-added to maintain ordering
 	private FormLayoutContainer buttonsCont;
 
@@ -86,6 +97,10 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private AiMCQuestionService mcQuestionService;
 	@Autowired
 	private AiImageDescriptionService imageDescriptionService;
+	@Autowired
+	private TaxonomyMatchingModule taxonomyMatchingModule;
+	@Autowired
+	private org.olat.modules.taxonomy.matching.TaxonomyMatchingService taxonomyMatchingService;
 
 	public AiFeaturesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -124,6 +139,20 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout);
 
+		// ---- Taxonomy Matching section ----
+		taxMatchSpacer = uifactory.addSpacerElement("taxMatchSpacer", formLayout, false);
+		taxMatchTitle = uifactory.addStaticTextElement("taxMatchTitle", null,
+				"<h4>" + translate(AiFeature.TaxonomyMatching.getI18nKey()) + "</h4>", formLayout);
+
+		boolean taxMatchEnabled = taxonomyMatchingModule != null && taxonomyMatchingModule.isEnabled();
+		taxMatchEnabledEl = uifactory.addToggleButton("taxMatch.enabled", "ai.feature.enabled",
+				translate("on"), translate("off"), formLayout);
+		taxMatchEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		taxMatchEnabledEl.toggle(taxMatchEnabled);
+
+		String taxMatchSpiId = taxonomyMatchingModule != null ? taxonomyMatchingModule.getSpiId() : null;
+		taxMatchSpiEl = buildEmbeddingSpiDropdown("taxMatch.spi", taxMatchSpiId, formLayout);
+
 		// Save button
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -133,8 +162,10 @@ public class AiFeaturesAdminController extends FormBasicController {
 		// Create initial model elements and set visibility
 		doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
 		doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
+		doUpdateTaxMatchModelDropdown(getSelectedKey(taxMatchSpiEl));
 		updateMcVisibility();
 		updateImgDescVisibility();
+		updateTaxMatchVisibility();
 	}
 
 	private SingleSelection buildSpiDropdown(String elName, String currentSpiId, FormItemContainer container) {
@@ -145,12 +176,13 @@ public class AiFeaturesAdminController extends FormBasicController {
 			keys = new String[] { "-" };
 			values = new String[] { translate("ai.feature.spi.none") };
 		} else {
-			keys = new String[spis.size()];
-			values = new String[spis.size()];
-			for (int i = 0; i < spis.size(); i++) {
-				keys[i] = spis.get(i).getId();
-				values[i] = spis.get(i).getName();
+			SelectionValues sv = new SelectionValues();
+			for (AiSPI spi : spis) {
+				sv.add(SelectionValues.entry(spi.getId(), spi.getName()));
 			}
+			sv.sort(SelectionValues.VALUE_ASC);
+			keys = sv.keys();
+			values = sv.values();
 		}
 
 		SingleSelection spiEl = uifactory.addDropdownSingleselect(elName, "ai.feature.spi",
@@ -191,6 +223,14 @@ public class AiFeaturesAdminController extends FormBasicController {
 				doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
 			} else {
 				updateImgDescVisibility();
+			}
+		} else if (source == taxMatchSpiEl) {
+			doUpdateTaxMatchModelDropdown(getSelectedKey(taxMatchSpiEl));
+		} else if (source == taxMatchEnabledEl) {
+			if (taxMatchEnabledEl.isOn()) {
+				doUpdateTaxMatchModelDropdown(getSelectedKey(taxMatchSpiEl));
+			} else {
+				updateTaxMatchVisibility();
 			}
 		} else if (source == mcTestLink) {
 			doTestMcGenerator(ureq);
@@ -237,6 +277,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 			formLayout.remove(mcTestLink);
 		}
 		removeImgDescSection();
+		removeTaxMatchSection();
 		formLayout.remove(buttonsCont);
 
 		mcGeneratorModelEl = buildModelElement(spiId, "ai.feature.model",
@@ -247,6 +288,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		mcTestLink.setIconLeftCSS("o_icon o_icon_ai");
 
 		reAddImgDescSection();
+		reAddTaxMatchSection();
 		formLayout.add(buttonsCont);
 		updateMcVisibility();
 	}
@@ -258,6 +300,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (imgDescTestLink != null) {
 			formLayout.remove(imgDescTestLink);
 		}
+		removeTaxMatchSection();
 		formLayout.remove(buttonsCont);
 
 		imgDescModelEl = buildModelElement(spiId, "ai.feature.image-description-generator.model",
@@ -267,6 +310,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		imgDescTestLink.setGhost(true);
 		imgDescTestLink.setIconLeftCSS("o_icon o_icon_ai");
 
+		reAddTaxMatchSection();
 		formLayout.add(buttonsCont);
 		updateImgDescVisibility();
 	}
@@ -302,9 +346,14 @@ public class AiFeaturesAdminController extends FormBasicController {
 		boolean hasSpi = StringHelper.containsNonWhitespace(spiId) && !"-".equals(spiId);
 
 		if (!models.isEmpty()) {
-			String[] keys = models.toArray(new String[0]);
+			SelectionValues sv = new SelectionValues();
+			for (String model : models) {
+				sv.add(SelectionValues.entry(model, model));
+			}
+			sv.sort(SelectionValues.VALUE_ASC);
+			String[] keys = sv.keys();
 			SingleSelection dropdown = uifactory.addDropdownSingleselect(elName, labelKey,
-					formLayout, keys, keys, null);
+					formLayout, keys, sv.values(), null);
 			dropdown.setMandatory(true);
 			boolean selected = false;
 			if (StringHelper.containsNonWhitespace(currentModel)) {
@@ -384,6 +433,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (imgDescEnabledEl.isOn() && hasSpiSelected(imgDescSpiEl) && imgDescModelEl != null) {
 			allOk &= validateModelElement(imgDescModelEl);
 		}
+		if (taxMatchEnabledEl.isOn() && hasSpiSelected(taxMatchSpiEl) && taxMatchModelEl != null) {
+			allOk &= validateModelElement(taxMatchModelEl);
+		}
 
 		return allOk;
 	}
@@ -426,6 +478,25 @@ public class AiFeaturesAdminController extends FormBasicController {
 			logAudit("Image description generator disabled");
 		}
 
+		if (taxonomyMatchingModule != null) {
+			if (taxMatchEnabledEl.isOn()) {
+				String taxSpiId = getSelectedSpiId(taxMatchSpiEl);
+				String taxModel = extractModelValue(taxMatchModelEl);
+				boolean modelChanged = !Objects.equals(taxSpiId, taxonomyMatchingModule.getSpiId())
+						|| !Objects.equals(taxModel, taxonomyMatchingModule.getModel());
+				taxonomyMatchingModule.setEnabled(true);
+				taxonomyMatchingModule.setSpiId(taxSpiId);
+				taxonomyMatchingModule.setModel(taxModel);
+				logAudit("Taxonomy matching configured: provider=" + taxSpiId + ", model=" + taxModel);
+				if (modelChanged && taxonomyMatchingService != null) {
+					taxonomyMatchingService.scheduleFullReindex();
+				}
+			} else {
+				taxonomyMatchingModule.setEnabled(false);
+				logAudit("Taxonomy matching disabled");
+			}
+		}
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -464,5 +535,94 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	private boolean hasModelValue(FormItem modelEl) {
 		return StringHelper.containsNonWhitespace(extractModelValue(modelEl));
+	}
+
+	private SingleSelection buildEmbeddingSpiDropdown(String elName, String currentSpiId, FormItemContainer container) {
+		List<AiSPI> spis = aiModule.getEnabledProviders().stream()
+				.filter(spi -> spi instanceof AiEmbeddingSPI es && es.isEmbeddingEnabled())
+				.toList();
+		String[] keys;
+		String[] values;
+		if (spis.isEmpty()) {
+			keys = new String[] { "-" };
+			values = new String[] { translate("ai.feature.spi.none") };
+		} else {
+			keys = new String[spis.size()];
+			values = new String[spis.size()];
+			for (int i = 0; i < spis.size(); i++) {
+				keys[i] = spis.get(i).getId();
+				values[i] = spis.get(i).getName();
+			}
+		}
+		SingleSelection spiEl = uifactory.addDropdownSingleselect(elName, "ai.feature.spi",
+				container, keys, values, null);
+		spiEl.setEnabled(!spis.isEmpty());
+		spiEl.addActionListener(FormEvent.ONCHANGE);
+		if (StringHelper.containsNonWhitespace(currentSpiId)) {
+			for (String key : keys) {
+				if (key.equals(currentSpiId)) {
+					spiEl.select(key, true);
+					break;
+				}
+			}
+		}
+		if (!spis.isEmpty() && !spiEl.isOneSelected()) {
+			spiEl.select(keys[0], true);
+		}
+		return spiEl;
+	}
+
+	private void doUpdateTaxMatchModelDropdown(String spiId) {
+		if (taxMatchModelEl != null) {
+			formLayout.remove(taxMatchModelEl);
+		}
+		formLayout.remove(buttonsCont);
+
+		String currentModel = taxonomyMatchingModule != null ? taxonomyMatchingModule.getModel() : null;
+		taxMatchModelEl = buildModelElement(spiId, "ai.feature.taxonomy-matching.model",
+				getEmbeddingModelsForSpi(spiId), currentModel);
+
+		formLayout.add(buttonsCont);
+		updateTaxMatchVisibility();
+	}
+
+	private void updateTaxMatchVisibility() {
+		boolean on = taxMatchEnabledEl.isOn();
+		taxMatchSpiEl.setVisible(on);
+		if (taxMatchModelEl != null) {
+			taxMatchModelEl.setVisible(on);
+		}
+	}
+
+	private void removeTaxMatchSection() {
+		if (taxMatchModelEl != null) {
+			formLayout.remove(taxMatchModelEl);
+		}
+		formLayout.remove(taxMatchSpiEl);
+		formLayout.remove(taxMatchEnabledEl);
+		formLayout.remove(taxMatchTitle);
+		formLayout.remove(taxMatchSpacer);
+	}
+
+	private void reAddTaxMatchSection() {
+		formLayout.add(taxMatchSpacer);
+		formLayout.add(taxMatchTitle);
+		formLayout.add(taxMatchEnabledEl);
+		formLayout.add(taxMatchSpiEl);
+		if (taxMatchModelEl != null) {
+			formLayout.add(taxMatchModelEl);
+		}
+	}
+
+	private List<String> getEmbeddingModelsForSpi(String spiId) {
+		if (!StringHelper.containsNonWhitespace(spiId) || "-".equals(spiId)) {
+			return List.of();
+		}
+		for (AiSPI spi : aiModule.getAiProviders()) {
+			if (spi.getId().equals(spiId) && spi instanceof AiEmbeddingSPI embSpi) {
+				return embSpi.getAvailableEmbeddingModels();
+			}
+		}
+		return List.of();
 	}
 }

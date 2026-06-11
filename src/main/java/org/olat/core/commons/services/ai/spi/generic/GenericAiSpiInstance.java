@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiApiKeySPI;
-import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.AiEmbeddingSPI;
 import org.olat.core.commons.services.ai.manager.LangChain4jHttpClientBuilder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -36,7 +36,9 @@ import org.olat.core.util.StringHelper;
 
 import dev.langchain4j.model.chat.Capability;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelCatalog;
 
 /**
@@ -50,7 +52,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI {
+public class GenericAiSpiInstance implements AiEmbeddingSPI, AiApiKeySPI {
 	private static final Logger log = Tracing.createLoggerFor(GenericAiSpiInstance.class);
 
 	private final int instanceId;
@@ -238,5 +240,34 @@ public class GenericAiSpiInstance implements AiSPI, AiApiKeySPI {
 				.map(String::trim)
 				.filter(StringHelper::containsNonWhitespace)
 				.toList();
+	}
+
+	@Override
+	public boolean isEmbeddingEnabled() {
+		return enabled && StringHelper.containsNonWhitespace(baseUrl);
+	}
+
+	@Override
+	public EmbeddingModel buildEmbeddingModel(String modelName) {
+		var builder = OpenAiEmbeddingModel.builder()
+				.httpClientBuilder(new LangChain4jHttpClientBuilder())
+				.baseUrl(baseUrl)
+				.modelName(modelName);
+		if (StringHelper.containsNonWhitespace(apiKey)) {
+			builder.apiKey(apiKey);
+		} else {
+			builder.apiKey("no-key");
+		}
+		return builder.build();
+	}
+
+	@Override
+	public List<String> getAvailableEmbeddingModels() {
+		return getAvailableModels();
+	}
+
+	@Override
+	public int getEmbeddingDimension(String modelName) {
+		return -1;
 	}
 }

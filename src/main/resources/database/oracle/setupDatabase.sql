@@ -4152,6 +4152,26 @@ create table o_tax_competence_audit_log (
   primary key (id)
 );
 
+-- Taxonomy matching embeddings
+create table o_tax_level_embedding (
+  id number(20) generated always as identity,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_text_variant varchar2(16) not null,
+  t_locale varchar2(10) not null,
+  t_embedding_text clob not null,
+  t_model_id varchar2(128) not null,
+  t_model_version varchar2(64),
+  t_vector_json clob,
+  fk_level number(20) not null,
+  fk_taxonomy number(20) not null,
+  constraint pk_tax_emb primary key (id),
+  constraint fk_tax_emb_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint fk_tax_emb_taxonomy foreign key (fk_taxonomy)
+    references o_tax_taxonomy(id)
+);
+
 -- dialog elements
 create table o_dialog_element (
   id number(20) generated always as identity,
@@ -7237,6 +7257,11 @@ alter table o_tax_taxonomy_competence add constraint tax_comp_to_tax_level_idx f
 create index idx_tax_comp_to_tax_level_idx on o_tax_taxonomy_competence (fk_level);
 alter table o_tax_taxonomy_competence add constraint tax_level_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_tax_level_to_ident_idx on o_tax_taxonomy_competence (fk_identity);
+
+-- Taxonomy matching embeddings
+create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
+create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
+create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id, t_text_variant);
 
 -- lectures
 alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
