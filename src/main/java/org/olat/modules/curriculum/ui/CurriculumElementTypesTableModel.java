@@ -95,7 +95,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 
 		@Override
 		public boolean sortable() {
-			return this != tools && this != parents && this != children;
+			return this != tools;
 		}
 
 		@Override

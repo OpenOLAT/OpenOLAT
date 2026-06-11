@@ -217,6 +217,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		CurriculumElementSearchParams usesParams = new CurriculumElementSearchParams(getIdentity());
 		usesParams.setElementTypes(List.of(new CurriculumElementTypeRefImpl(type.getKey())));
 		int usesCount = curriculumService.searchCurriculumElements(usesParams).size();
+		row.setNumUses(usesCount);
 		if(usesCount > 0) {
 			FormLink usesLink = uifactory.addFormLink("uses_" + type.getKey(), "uses",
 					String.valueOf(usesCount), null, null, Link.LINK | Link.NONTRANSLATED);
@@ -225,6 +226,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 
 		row.setParentTypes(parents);
+		row.setNumParents(parents.size());
 		if(!parents.isEmpty()) {
 			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
 					String.valueOf(parents.size()), null, null, Link.NONTRANSLATED);
@@ -232,6 +234,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			row.setParentsLink(parentsLink);
 		}
 		row.setChildTypes(children);
+		row.setNumChildren(children.size());
 		if(!children.isEmpty()) {
 			FormLink childrenLink = uifactory.addFormLink("children_" + type.getKey(), "children",
 					String.valueOf(children.size()), null, null, Link.NONTRANSLATED);

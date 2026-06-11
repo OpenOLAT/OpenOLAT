@@ -19,10 +19,13 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.curriculum.ui.CurriculumElementTypesTableModel.TypesCols;
 
 /**
  * 
@@ -34,5 +37,19 @@ public class CurriculumElementTypesTableModelSortDelegate extends SortableFlexiT
 	
 	public CurriculumElementTypesTableModelSortDelegate(SortKey orderBy, CurriculumElementTypesTableModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
+	}
+
+	@Override
+	protected void sort(List<CurriculumElementTypeRow> rows) {
+		String sortKey = getOrderBy() != null ? getOrderBy().getKey() : null;
+		if (TypesCols.parents.name().equals(sortKey)) {
+			rows.sort(Comparator.comparingInt(CurriculumElementTypeRow::getNumParents));
+		} else if (TypesCols.children.name().equals(sortKey)) {
+			rows.sort(Comparator.comparingInt(CurriculumElementTypeRow::getNumChildren));
+		} else if (TypesCols.uses.name().equals(sortKey)) {
+			rows.sort(Comparator.comparingInt(CurriculumElementTypeRow::getNumUses));
+		} else {
+			super.sort(rows);
+		}
 	}
 }

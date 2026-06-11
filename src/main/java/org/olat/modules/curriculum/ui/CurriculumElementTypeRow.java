@@ -36,11 +36,14 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	private FormLink toolsLink;
 	private FormLink parentsLink;
 	private List<CurriculumElementType> parentTypes;
+	private int numParents;
 	private FormLink childrenLink;
 	private List<CurriculumElementType> childTypes;
+	private int numChildren;
 	private String forUseAsLabel;
 	private String contentLabel;
 	private FormLink usesLink;
+	private int numUses;
 	private final CurriculumElementType type;
 
 	public CurriculumElementTypeRow(CurriculumElementType type) {
@@ -80,6 +83,14 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 		this.usesLink = usesLink;
 	}
 
+	public int getNumUses() {
+		return numUses;
+	}
+
+	public void setNumUses(int numUses) {
+		this.numUses = numUses;
+	}
+
 	public String getContentLabel() {
 		return contentLabel;
 	}
@@ -108,6 +119,14 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 		this.parentsLink = parentsLink;
 	}
 
+	public int getNumParents() {
+		return numParents;
+	}
+
+	public void setNumParents(int numParents) {
+		this.numParents = numParents;
+	}
+
 	public List<CurriculumElementType> getParentTypes() {
 		return parentTypes;
 	}
@@ -122,6 +141,14 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 
 	public void setChildrenLink(FormLink childrenLink) {
 		this.childrenLink = childrenLink;
+	}
+
+	public int getNumChildren() {
+		return numChildren;
+	}
+
+	public void setNumChildren(int numChildren) {
+		this.numChildren = numChildren;
 	}
 
 	public List<CurriculumElementType> getChildTypes() {
