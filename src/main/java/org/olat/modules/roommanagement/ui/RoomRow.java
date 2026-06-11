@@ -20,7 +20,6 @@
 package org.olat.modules.roommanagement.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 
 /**
