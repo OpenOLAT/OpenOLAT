@@ -229,29 +229,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		elementTypes.sort(new CurriculumElementTypeComparator(getLocale()));
 		elementTypes.remove(curriculumElementType);
 
-		SelectionValues childTypesKV = new SelectionValues();
-		for(CurriculumElementType type:elementTypes) {
-			if(!type.isImplOnly()) {
-				String label = StringHelper.escapeHtml(type.getDisplayName())
-						+ "<span class=\"text-muted o_small\"> · " + StringHelper.escapeHtml(type.getIdentifier())
-						+ "</span>";
-				childTypesKV.add(SelectionValues.entry(type.getKey().toString(), label));
-			}
-		}
-
-		childTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer,
-				childTypesKV.keys(), childTypesKV.values(), 2);
-		childTypesEl.setEscapeHtml(false);
-		childTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
-
-		if(curriculumElementType != null) {
-			Set<CurriculumElementTypeToType> typeToTypes = curriculumElementType.getAllowedSubTypes();
-			for(CurriculumElementTypeToType typeToType:typeToTypes) {
-				String subTypeKey = typeToType.getAllowedSubType().getKey().toString();
-				childTypesEl.select(subTypeKey, true);
-			}
-		}
-
 		SelectionValues parentTypesKV = new SelectionValues();
 		for(CurriculumElementType type:elementTypes) {
 			if(!type.isSingleElement()) {
@@ -275,6 +252,29 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				.collect(Collectors.toSet());
 		for(Long parentKey : currentParentTypeKeys) {
 			parentTypesEl.select(parentKey.toString(), true);
+		}
+
+		SelectionValues childTypesKV = new SelectionValues();
+		for(CurriculumElementType type:elementTypes) {
+			if(!type.isImplOnly()) {
+				String label = StringHelper.escapeHtml(type.getDisplayName())
+						+ "<span class=\"text-muted o_small\"> · " + StringHelper.escapeHtml(type.getIdentifier())
+						+ "</span>";
+				childTypesKV.add(SelectionValues.entry(type.getKey().toString(), label));
+			}
+		}
+
+		childTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", configurationContainer,
+				childTypesKV.keys(), childTypesKV.values(), 2);
+		childTypesEl.setEscapeHtml(false);
+		childTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
+
+		if(curriculumElementType != null) {
+			Set<CurriculumElementTypeToType> typeToTypes = curriculumElementType.getAllowedSubTypes();
+			for(CurriculumElementTypeToType typeToType:typeToTypes) {
+				String subTypeKey = typeToType.getAllowedSubType().getKey().toString();
+				childTypesEl.select(subTypeKey, true);
+			}
 		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
