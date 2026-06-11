@@ -67,8 +67,8 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	public static final String FOR_USE_AS_IMPL = "implementation";
 	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
 	public static final String FOR_USE_AS_ELEM = "element";
-	private static final String TYPE_OF_ELEM_STRUCTURAL = "structuralElement";
-	private static final String TYPE_OF_ELEM_SINGLE_ELEMENT = "singleElement";
+	private static final String SUB_ELEMENTS_YES = "subElementsYes";
+	private static final String SUB_ELEMENTS_NO = "subElementsNo";
 	private static final String CONTENT_NO_CONTENT = "noContent";
 	private static final String CONTENT_SINGLE_COURSE = "singleCourse";
 	private static final String CONTENT_COURSE_BUNDLE = "courseBundle";
@@ -79,9 +79,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private MultipleSelectionElement featuresEnabledEl;
 
-	private SingleSelection typeOfElementEl;
-	private SingleSelection contentStructuralEl;
-	private SingleSelection contentSingleEl;
+	private SingleSelection subElementsEl;
+	private SingleSelection contentSubelementsYesEl;
+	private SingleSelection contentSubelementsNoEl;
 	private SpacerElement dividerEl;
 	private MultipleSelectionElement parentTypesEl;
 	private MultipleSelectionElement childTypesEl;
@@ -162,26 +162,28 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		String forUseAsLabel = getForUseAsLabel(forUseAs);
 		uifactory.addStaticTextElement("type.for.use.as", "type.for.use.as", forUseAsLabel, configurationContainer);
 
-		SelectionValues typeOfElementKV = new SelectionValues();
-		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_SINGLE_ELEMENT,
+		SelectionValues subElementsKV = new SelectionValues();
+		subElementsKV.add(SelectionValues.entry(SUB_ELEMENTS_NO,
 				translate("no"),
 				translate("table.type.subelements.no.desc"),
 				"o_icon o_icon_single_element", null, true));
-		typeOfElementKV.add(SelectionValues.entry(TYPE_OF_ELEM_STRUCTURAL,
+		subElementsKV.add(SelectionValues.entry(SUB_ELEMENTS_YES,
 				translate("yes"),
 				translate("table.type.subelements.yes.desc"),
 				"o_icon o_icon_sitemap", null, true));
-		typeOfElementEl = uifactory.addCardSingleSelectHorizontal("type.type.of.element", "table.type.header.type.subelements",
-				configurationContainer, typeOfElementKV);
-		typeOfElementEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
-		typeOfElementEl.addActionListener(FormEvent.ONCHANGE);
+		subElementsEl = uifactory.addCardSingleSelectHorizontal("subelements", 
+				"table.type.header.type.subelements", configurationContainer, subElementsKV);
+		subElementsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, 
+				CurriculumElementTypeManagedFlag.composite));
+		subElementsEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
-			typeOfElementEl.select(TYPE_OF_ELEM_STRUCTURAL, true);
+			subElementsEl.select(SUB_ELEMENTS_YES, true);
 		} else {
-			typeOfElementEl.select(TYPE_OF_ELEM_SINGLE_ELEMENT, true);
+			subElementsEl.select(SUB_ELEMENTS_NO, true);
 		}
 
-		boolean contentManaged = CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations);
+		boolean contentManaged = CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, 
+				CurriculumElementTypeManagedFlag.maxEntryRelations);
 		String initialContent;
 		if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == -1) {
 			initialContent = CONTENT_COURSE_BUNDLE;
@@ -191,37 +193,38 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			initialContent = CONTENT_SINGLE_COURSE;
 		}
 
-		SelectionValues contentStructuralKV = new SelectionValues();
-		contentStructuralKV.add(SelectionValues.entry(CONTENT_NO_CONTENT,
+		SelectionValues contentSubelementsYesKV = new SelectionValues();
+		contentSubelementsYesKV.add(SelectionValues.entry(CONTENT_NO_CONTENT,
 				translate("table.type.content.no.content"),
 				translate("table.type.content.no.content.desc"),
 				"o_icon o_icon_ban", null, true));
-		contentStructuralKV.add(SelectionValues.entry(CONTENT_SINGLE_COURSE,
+		contentSubelementsYesKV.add(SelectionValues.entry(CONTENT_SINGLE_COURSE,
 				translate("table.type.content.single.course"),
 				translate("table.type.content.single.course.desc"),
 				"o_icon o_icon_courserun", null, true));
-		contentStructuralKV.add(SelectionValues.entry(CONTENT_COURSE_BUNDLE,
+		contentSubelementsYesKV.add(SelectionValues.entry(CONTENT_COURSE_BUNDLE,
 				translate("table.type.content.course.bundle"),
 				translate("table.type.content.course.bundle.desc"),
 				"o_icon o_icon_course_bundle", null, true));
-		contentStructuralEl = uifactory.addCardSingleSelectHorizontal("type.content.structural", "table.type.header.type.content",
-				configurationContainer, contentStructuralKV);
-		contentStructuralEl.setEnabled(!contentManaged);
-		contentStructuralEl.select(initialContent, true);
+		contentSubelementsYesEl = uifactory.addCardSingleSelectHorizontal("type.content.structural", 
+				"table.type.header.type.content", configurationContainer, contentSubelementsYesKV);
+		contentSubelementsYesEl.setEnabled(!contentManaged);
+		contentSubelementsYesEl.select(initialContent, true);
 
-		SelectionValues contentSingleKV = new SelectionValues();
-		contentSingleKV.add(SelectionValues.entry(CONTENT_SINGLE_COURSE,
+		SelectionValues contentSubelementsNoKV = new SelectionValues();
+		contentSubelementsNoKV.add(SelectionValues.entry(CONTENT_SINGLE_COURSE,
 				translate("table.type.content.single.course"),
 				translate("table.type.content.single.course.desc"),
 				"o_icon o_icon_courserun", null, true));
-		contentSingleKV.add(SelectionValues.entry(CONTENT_COURSE_BUNDLE,
+		contentSubelementsNoKV.add(SelectionValues.entry(CONTENT_COURSE_BUNDLE,
 				translate("table.type.content.course.bundle"),
 				translate("table.type.content.course.bundle.desc"),
 				"o_icon o_icon_course_bundle", null, true));
-		contentSingleEl = uifactory.addCardSingleSelectHorizontal("type.content.single", "table.type.header.type.content",
-				configurationContainer, contentSingleKV);
-		contentSingleEl.setEnabled(!contentManaged);
-		contentSingleEl.select(CONTENT_NO_CONTENT.equals(initialContent) ? CONTENT_SINGLE_COURSE : initialContent, true);
+		contentSubelementsNoEl = uifactory.addCardSingleSelectHorizontal("type.content.single", 
+				"table.type.header.type.content", configurationContainer, contentSubelementsNoKV);
+		contentSubelementsNoEl.setEnabled(!contentManaged);
+		// Override the illegal state "no subelements" and "no content":
+		contentSubelementsNoEl.select(CONTENT_NO_CONTENT.equals(initialContent) ? CONTENT_SINGLE_COURSE : initialContent, true);
 
 		dividerEl = uifactory.addSpacerElement("divider", configurationContainer, false);
 
@@ -312,24 +315,22 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		boolean structural = typeOfElementEl.isOneSelected()
-				&& TYPE_OF_ELEM_STRUCTURAL.equals(typeOfElementEl.getSelectedKey());
+		boolean subElementsYes = subElementsEl.isOneSelected() && SUB_ELEMENTS_YES.equals(subElementsEl.getSelectedKey());
 
-		if(structural) {
-			if(contentSingleEl.isOneSelected()) {
-				contentStructuralEl.select(contentSingleEl.getSelectedKey(), true);
-			}
-		} else {
-			String structuralContent = contentStructuralEl.isOneSelected() ? contentStructuralEl.getSelectedKey() : CONTENT_SINGLE_COURSE;
-			contentSingleEl.select(CONTENT_NO_CONTENT.equals(structuralContent) ? CONTENT_SINGLE_COURSE : structuralContent, true);
+		if(!subElementsYes) {
+			// If subelements==no, copy the content state of the other element,
+			// but override the illegal state "subelements==no" and "no content". 
+			// Change the value to "single course" in that case.
+			String content = contentSubelementsYesEl.isOneSelected() ? contentSubelementsYesEl.getSelectedKey() : CONTENT_SINGLE_COURSE;
+			contentSubelementsNoEl.select(CONTENT_NO_CONTENT.equals(content) ? CONTENT_SINGLE_COURSE : content, true);
 		}
-		contentStructuralEl.setVisible(structural);
-		contentSingleEl.setVisible(!structural);
+		contentSubelementsYesEl.setVisible(subElementsYes);
+		contentSubelementsNoEl.setVisible(!subElementsYes);
 
 		boolean showParentElements = !FOR_USE_AS_IMPL.equals(getForUseAs());
 		parentTypesEl.setVisible(showParentElements);
-		childTypesEl.setVisible(structural);
-		dividerEl.setVisible(showParentElements || structural);
+		childTypesEl.setVisible(subElementsYes);
+		dividerEl.setVisible(showParentElements || subElementsYes);
 	}
 
 	@Override
@@ -353,7 +354,10 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(typeOfElementEl == source) {
+		if(subElementsEl == source) {
+			if(SUB_ELEMENTS_YES.equals(subElementsEl.getSelectedKey())) {
+				contentSubelementsYesEl.select(CONTENT_NO_CONTENT, true);
+			}
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -400,10 +404,10 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			curriculumElementType.setAllowedAsRootElement(true);
 		}
 
-		if(typeOfElementEl.isOneSelected()) {
-			curriculumElementType.setSingleElement(TYPE_OF_ELEM_SINGLE_ELEMENT.equals(typeOfElementEl.getSelectedKey()));
+		if(subElementsEl.isOneSelected()) {
+			curriculumElementType.setSingleElement(SUB_ELEMENTS_NO.equals(subElementsEl.getSelectedKey()));
 		}
-		SingleSelection contentEl = contentStructuralEl.isVisible() ? contentStructuralEl : contentSingleEl;
+		SingleSelection contentEl = contentSubelementsYesEl.isVisible() ? contentSubelementsYesEl : contentSubelementsNoEl;
 		if(contentEl.isOneSelected()) {
 			String content = contentEl.getSelectedKey();
 			if(CONTENT_COURSE_BUNDLE.equals(content)) {
