@@ -1353,6 +1353,23 @@ dialog {
 		}
 	}
 
+	.o_object_selection_main {
+		.checkbox,
+		.radio {
+			&:hover,
+			&:focus-within {
+				background-color: $dropdown-link-hover-bg;
+				color: $dropdown-link-hover-color;
+				border-radius: $input-border-radius;
+				margin-left: -8px;
+				margin-right: -8px;
+				padding-left: 8px;
+				padding-right: 8px;
+				cursor: pointer;
+			}
+		}
+	}
+
 	.o_object_selection_image {
 		width: 40px;
 		max-width: 40px;
