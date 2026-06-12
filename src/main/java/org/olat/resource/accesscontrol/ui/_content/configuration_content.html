@@ -34,6 +34,15 @@
 	</div>
 #end
 
+#if($offer.cancelable)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_cancel_${offer.link.key}">$r.translate("access.info.cancelable")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_cancel_${offer.link.key}">
+		$offer.cancelable
+	</div>
+#end
+
 #if($offer.openOrdersLink)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_access_${offer.link.key}">$r.translate("access.bookings")</label>
