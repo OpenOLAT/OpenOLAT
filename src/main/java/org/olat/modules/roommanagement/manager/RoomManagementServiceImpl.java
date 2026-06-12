@@ -271,6 +271,11 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 	}
 
 	@Override
+	public List<RoomBooking> getBookings(Date from, Date to) {
+		return roomBookingDao.getBookings(from, to);
+	}
+
+	@Override
 	public List<RoomBooking> getBookings(LectureBlockRef lb) {
 		return roomBookingDao.getBookingsForLectureBlock(lb);
 	}

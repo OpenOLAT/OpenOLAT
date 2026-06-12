@@ -77,6 +77,8 @@ public interface RoomManagementService {
 
 	void deleteBooking(RoomBookingRef ref, Identity doer);
 
+	List<RoomBooking> getBookings(Date from, Date to);
+
 	List<RoomBooking> getBookings(LectureBlockRef lb);
 
 	List<RoomBooking> getBookingsForRoom(RoomRef room, Date from, Date to);

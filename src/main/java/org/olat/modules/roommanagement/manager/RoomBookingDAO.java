@@ -19,6 +19,7 @@
  */
 package org.olat.modules.roommanagement.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -63,6 +64,30 @@ public class RoomBookingDAO {
 	public RoomBooking update(RoomBooking booking) {
 		booking.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(booking);
+	}
+
+	public List<RoomBooking> getBookings(Date from, Date to) {
+		String query = "select b from rmroombooking b";
+		List<String> conditions = new ArrayList<>();
+		if (from != null) {
+			conditions.add("b.endDate >= :from");
+		}
+		if (to != null) {
+			conditions.add("b.startDate <= :to");
+		}
+		if (!conditions.isEmpty()) {
+			query += " where " + String.join(" and ", conditions);
+		}
+		query += " order by b.startDate asc";
+
+		var typedQuery = dbInstance.getCurrentEntityManager().createQuery(query, RoomBooking.class);
+		if (from != null) {
+			typedQuery.setParameter("from", from);
+		}
+		if (to != null) {
+			typedQuery.setParameter("to", to);
+		}
+		return typedQuery.getResultList();
 	}
 
 	public List<RoomBooking> getBookingsForRoom(RoomRef room, Date from, Date to) {
