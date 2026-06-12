@@ -302,7 +302,7 @@ public class QTI21ImportProcessor {
 		return poolItem;
 	}
 
-	protected QItemType convertType(AssessmentItem assessmentItem) {
+	public QItemType convertType(AssessmentItem assessmentItem) {
 		QTI21QuestionType qti21Type = QTI21QuestionType.getType(assessmentItem);
 		switch(qti21Type) {
 			case sc: return qItemTypeDao.loadByType(QuestionType.SC.name());
@@ -320,6 +320,7 @@ public class QTI21ImportProcessor {
 			case drawing: return qItemTypeDao.loadByType(QuestionType.DRAWING.name());
 			case order: return qItemTypeDao.loadByType(QuestionType.ORDER.name());
 			case inlinechoice: return qItemTypeDao.loadByType(QuestionType.INLINECHOICE.name());
+			case gapmixed: return qItemTypeDao.loadByType(QuestionType.GAPMIXED.name());
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}

@@ -85,7 +85,9 @@ public class GapEditorController extends FormBasicController {
 	
 	private TextElement titleEl;
 	private RichTextElement textEl;
+	private FormLink convertToGapMixButton;
 	private FormToggle addGlobalChoiceToggle;
+	private FormLayoutContainer convertToCont;
 	private FormLayoutContainer globalChoicesCont;
 
 	private CloseableModalController cmc;
@@ -140,6 +142,8 @@ public class GapEditorController extends FormBasicController {
 		setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
 		mainForm.setMultipartEnabled(true);
 		
+		initMixingWarning(formLayout);
+		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
@@ -176,6 +180,25 @@ public class GapEditorController extends FormBasicController {
 		buttonsContainer.setElementCssClass("o_sel_gap_save");
 		buttonsContainer.setVisible(!readOnly);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+	}
+	
+	private void initMixingWarning(FormItemContainer formLayout) {
+		int numOfText = 0;
+		int numOfNumerical = 0;
+		for(AbstractEntry entry:itemBuilder.getTextEntries()) {
+			if(entry instanceof TextEntry) {
+				numOfText++;
+			} else if(entry instanceof NumericalEntry) {
+				numOfNumerical++;
+			}
+		}
+		
+		if(numOfText > 0 && numOfNumerical > 0 && type != QTI21QuestionType.gapmixed) {
+			String page = velocity_root + "/convert_type.html";
+			convertToCont = uifactory.addCustomFormLayout("convertcont", null, page, formLayout);
+			convertToGapMixButton = uifactory.addFormLink("convert.to", "convert.to.gapmix", null, convertToCont, Link.BUTTON);
+			convertToCont.contextPut("message", translate("convert.to.gapmix.explain"));
+		}
 	}
 
 	@Override
@@ -310,6 +333,8 @@ public class GapEditorController extends FormBasicController {
 			if(addGlobalChoiceToggle.isOn()) {
 				doEnableGlobalChoices();
 			}
+		} else if(convertToGapMixButton == source) {
+			doConvertToGapMixed(ureq);
 		} else if(source instanceof FormLink link) {
 			if("add".equals(link.getCmd()) && link.getUserObject() instanceof GlobalInlineChoiceWrapper choiceWrapper) {
 				doCommitGlobalChoices();
@@ -319,11 +344,10 @@ public class GapEditorController extends FormBasicController {
 				doRemoveGlobalChoice(choiceWrapper);
 			}
 		} else if(source instanceof TextElement el) {
-			if(el.getName().startsWith("gic_") && el.getUserObject() instanceof GlobalInlineChoiceWrapper) {
-				((GlobalInlineChoiceWrapper)el.getUserObject()).setText();
+			if(el.getName().startsWith("gic_") && el.getUserObject() instanceof GlobalInlineChoiceWrapper choiceWrapper) {
+				choiceWrapper.setText();
 			}
 		}
-		
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -438,7 +462,8 @@ public class GapEditorController extends FormBasicController {
 		itemBuilder.setQuestion(questionText);
 
 		// notify
-		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.inlinechoice));
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED,
+				itemBuilder.getAssessmentItem(), itemBuilder.getQuestionType()));
 
 		itemBuilder.extractQuestions();
 		itemBuilder.extractEntriesSettingsFromResponseDeclaration();
@@ -450,6 +475,14 @@ public class GapEditorController extends FormBasicController {
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//
+	}
+	
+	private void doConvertToGapMixed(UserRequest ureq) {
+		itemBuilder.changeQuestionType(QTI21QuestionType.gapmixed);
+		convertToCont.setVisible(false);
+		// notify
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED,
+				itemBuilder.getAssessmentItem(), QTI21QuestionType.gapmixed));
 	}
 	
 	private void doCopyGapEntry(String responseIdentifier, String selectedText, String type) {

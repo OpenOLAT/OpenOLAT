@@ -68,6 +68,7 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 			case hottext: return "QTI 2.1 " + trans.translate("new.hottext");
 			case inlinechoice: return "QTI 2.1 " + trans.translate("new.inlinechoice");
 			case order: return "QTI 2.1 " + trans.translate("new.order");
+			case gapmixed: return "QTI 2.1 " + trans.translate("new.gapmixed");
 			default: return type.name();
 		}
 	}

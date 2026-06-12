@@ -293,6 +293,12 @@ span.o_qti_gaptext_score_alternative {
 	}
 }
 
+.o_gap_convert {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	columns-gap: 10px;
+}
+
 .o_inlinechoice_choices, .o_inlinechoice_globalchoices {
 	.o_inlinechoice_choice {
 		display: grid;

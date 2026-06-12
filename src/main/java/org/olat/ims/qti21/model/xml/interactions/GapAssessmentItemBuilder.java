@@ -959,6 +959,31 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 				.map(InlineChoiceInteraction.class::cast)
 				.collect(Collectors.toList());
 	}
+	
+	public void changeQuestionType(QTI21QuestionType type) {
+		this.questionType = type;
+		
+		List<String> classAttr = assessmentItem.getItemBody().getClassAttr();
+		if(classAttr == null) {
+			classAttr = new ArrayList<>();
+			assessmentItem.getItemBody().setClassAttr(classAttr);
+		} else {
+			classAttr.remove(QTI21Constants.CSS_GAP_NUMERICAL);
+			classAttr.remove(QTI21Constants.CSS_GAP_TEXT);
+			classAttr.remove(QTI21Constants.CSS_INLINE_CHOICE);
+			classAttr.remove(QTI21Constants.CSS_GAP_MIXED);
+		}
+
+		if(questionType == QTI21QuestionType.numerical) {
+			classAttr.add(QTI21Constants.CSS_GAP_NUMERICAL);
+		} else if(questionType == QTI21QuestionType.fib ) {
+			classAttr.add(QTI21Constants.CSS_GAP_TEXT);
+		} else if(questionType == QTI21QuestionType.inlinechoice) {
+			classAttr.add(QTI21Constants.CSS_INLINE_CHOICE);
+		} else if(questionType == QTI21QuestionType.gapmixed ) {
+			classAttr.add(QTI21Constants.CSS_GAP_MIXED);
+		}
+	}
 
 	@Override
 	protected void buildItemBody() {
