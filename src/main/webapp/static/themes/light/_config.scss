@@ -902,7 +902,7 @@ $o-curriculum-import-bg-ignored					: $o-color-note-text-bg !default;
 /* Activity */
 $o-activity-add-border							: 1px solid $brand-success !default;
 $o-activity-modify-border						: 1px solid $brand-warning !default;
-$o-activity-remove-border						: 1px solid $brand-danger !default;
+$o-activity-remove-border						: 1px solid $o-labeled-grey-light-border-color !default;
 $o-activity-border-radius						: 4px !default;
 $o-activity-remove-color						: $brand-danger !default;
 

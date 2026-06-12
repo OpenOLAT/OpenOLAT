@@ -55,8 +55,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -129,7 +129,6 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		
 		tableModel = new CopyElementOverviewTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "elements", tableModel, 2000, true, getTranslator(), formLayout);
-		tableEl.setCustomizeColumns(false);
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 	}
