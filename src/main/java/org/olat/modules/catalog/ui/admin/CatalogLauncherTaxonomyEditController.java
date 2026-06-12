@@ -117,10 +117,10 @@ public class CatalogLauncherTaxonomyEditController extends CatalogLauncherEditCo
 
 	private void initTaxonomy(FormItemContainer formLayout, Config config) {
 		SelectionValues modeKV = new SelectionValues();
-		modeKV.add(new SelectionValue(MODE_TAXONOMY, translate("admin.taxonomy.mode.taxonomy"),
-				translate("admin.taxonomy.mode.taxonomy.desc"), null, null, true));
 		modeKV.add(new SelectionValue(MODE_TAXONOMY_LEVEL, translate("admin.taxonomy.mode.level"),
 				translate("admin.taxonomy.mode.level.desc"), null, null, true));
+		modeKV.add(new SelectionValue(MODE_TAXONOMY, translate("admin.taxonomy.mode.taxonomy"),
+				translate("admin.taxonomy.mode.taxonomy.desc"), null, null, true));
 		modeEl = uifactory.addCardSingleSelectHorizontal("admin.taxonomy.mode", "admin.taxonomy.mode",
 				formLayout, modeKV);
 		modeEl.addActionListener(FormEvent.ONCHANGE);

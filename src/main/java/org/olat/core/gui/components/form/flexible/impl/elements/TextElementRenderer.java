@@ -173,6 +173,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			  .append("\" disabled=\"disabled\" class='form-control o_disabled ").append(elementCSS, elementCSS != null)
 			  .append("' size=\"").append(size)
 			  .append("\" value=\"").append(htmlVal).append("\"");
+			if(StringHelper.containsNonWhitespace(te.getAriaLabel())) {
+				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
+			}
 			if (te.hasPlaceholder()) {
 				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
 			}

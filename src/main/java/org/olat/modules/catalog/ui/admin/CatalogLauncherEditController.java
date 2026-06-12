@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -62,8 +62,8 @@ public abstract class CatalogLauncherEditController extends FormBasicController 
 	private static final String KEY_CATALOG = "catalog";
 	private static final String KEY_WEBCATALOG = "webcatalog";
 	
+	private TextElement nameEl;
 	private FormLink nameLink;
-	private StaticTextElement nameEl;
 	private MultipleSelectionElement enabledEl;
 	private ObjectSelectionElement organisationsEl;
 	
@@ -104,19 +104,22 @@ public abstract class CatalogLauncherEditController extends FormBasicController 
 	}
 
 	protected void initTitle(FormItemContainer formLayout) {
-		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
+		FormLayoutContainer nameCont = FormLayoutContainer.createInputGroupLayout("nameCont", getTranslator(), null, null);
 		nameCont.setLabel("admin.launcher.title", null);
 		nameCont.setElementCssClass("o_inline_cont");
 		nameCont.setRootForm(mainForm);
 		formLayout.add(nameCont);
 		
-		nameLink = uifactory.addFormLink("admin.launcher.name.edit", "name", "", null, nameCont, Link.BUTTON + Link.NONTRANSLATED);
-		nameLink.setTitle(translate("admin.launcher.adjust.languages"));
-		nameLink.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
-		
 		String translateLauncherName = CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier);
 		translateLauncherName = StringHelper.escapeHtml(translateLauncherName);
-		nameEl = uifactory.addStaticTextElement("admin.launcher.name", null, translateLauncherName, nameCont);
+		nameEl = uifactory.addTextElement("admin.launcher.name", 100, translateLauncherName, nameCont);
+		nameEl.setAriaLabel(translate("admin.launcher.name"));
+		nameEl.setEnabled(false);
+		nameEl.setDomReplacementWrapperRequired(false);
+		
+		nameLink = uifactory.addFormLink("rightAddOn", "translate", "translate", null, nameCont, Link.BUTTON);
+		nameLink.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
+		nameLink.setElementCssClass("input-group-addon");
 	}
 
 	protected void initEnabled(FormItemContainer formLayout) {
