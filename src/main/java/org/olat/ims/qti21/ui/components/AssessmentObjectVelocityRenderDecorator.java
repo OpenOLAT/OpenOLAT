@@ -26,8 +26,11 @@ import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderV
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -58,6 +61,7 @@ import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.InlineChoiceInteractionEntry;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
@@ -75,6 +79,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.Flow;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
@@ -701,6 +706,135 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, identifier);
 	}
 	
+	public String renderInlineChoiceScoreAndAlternatives(InlineChoiceInteraction inlineChoiceInteraction, boolean solutionMode, boolean correctionMode) {
+		if(inlineChoiceInteraction == null || inlineChoiceInteraction.getResponseIdentifier() == null) return "";
+		
+		String text = "";
+		if(avc.isScorePerAnswers()) {
+			text = renderScorePerInteraction(inlineChoiceInteraction);
+			text += " ";
+		}
+		
+		if(solutionMode || correctionMode) {
+			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(inlineChoiceInteraction.getResponseIdentifier());
+			if(responseDeclaration != null) {
+				text += renderInlineChoiceAlternatives(inlineChoiceInteraction, responseDeclaration, solutionMode, correctionMode);
+			}
+		} 
+		return text;
+	}
+	
+	private String renderInlineChoiceAlternatives(InlineChoiceInteraction inlineChoiceInteraction,
+			ResponseDeclaration responseDeclaration, boolean solutionMode, boolean correctionMode) {
+		InlineChoiceInteractionEntry entryForScore = new InlineChoiceInteractionEntry(inlineChoiceInteraction);
+		GapAssessmentItemBuilder.extractInlineChoicesInteractionSettingsFromResponseDeclaration(responseDeclaration, entryForScore);
+
+		String val = "";
+		if(correctionMode) {
+			val = renderInlineChoiceAlternativesInCorrectionMode(inlineChoiceInteraction, entryForScore);
+		} else if(solutionMode) {
+			val = renderInlineChoiceAlternativesInSolutionMode(inlineChoiceInteraction, entryForScore);
+		}
+		return val;
+	}
+	
+	private final String renderInlineChoiceAlternativesInCorrectionMode(InlineChoiceInteraction inlineChoiceInteraction,
+			InlineChoiceInteractionEntry entryForScore) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<span title='").append(translator.translate("correction.alternatives")).append("'>");
+		
+		
+		List<InlineChoice> inlineChoices = inlineChoiceInteraction.getInlineChoices();
+		List<ScoreAndAnswer> scoreAndAnswers = new ArrayList<>(inlineChoices.size());
+		for(InlineChoice inlineChoice:inlineChoices) {
+			Double score = null;
+			if(entryForScore != null) {
+				score = entryForScore.getScore(inlineChoice.getIdentifier());
+			}
+			String alternative = GapAssessmentItemBuilder.getText(inlineChoice);
+			scoreAndAnswers.add(new ScoreAndAnswer(alternative, score));
+		}
+		
+		if(scoreAndAnswers.size() > 1) {
+			Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
+		}
+		
+		for(ScoreAndAnswer scoreAndAnswer:scoreAndAnswers) {
+			Double score = scoreAndAnswer.score();
+			sb.append(" <span class='o_qti_gaptext_alternative");
+			if(score != null) {
+				if(score.doubleValue() > 0.0d) {
+					sb.append(" success");
+				} else {
+					sb.append(" danger");
+				}
+			}
+			String alternative = scoreAndAnswer.answer();
+			sb.append("'>").append(alternative);
+			if(score != null) {
+				String val = renderScorePerAlternative(score, translator);
+				sb.append(" ").append(val);
+			}
+			sb.append("</span>");
+		}
+		
+		sb.append("</span>");
+		return sb.toString();
+	}
+	
+	private final String renderInlineChoiceAlternativesInSolutionMode(InlineChoiceInteraction inlineChoiceInteraction,
+			InlineChoiceInteractionEntry entryForScore) {
+		StringBuilder sb = new StringBuilder();
+		
+		String separator = ", ";
+		// Don't use , as a separator on punctuation exercise
+		List<InlineChoice> inlineChoices = inlineChoiceInteraction.getInlineChoices();
+		List<ScoreAndAnswer> scoreAndAnswers = new ArrayList<>(inlineChoices.size());
+		for(InlineChoice inlineChoice:inlineChoices) {
+			if(entryForScore != null && entryForScore.getCorrectResponseId() != null
+					&& inlineChoice.getIdentifier().equals(entryForScore.getCorrectResponseId())) {
+				continue;
+			}
+			
+			String alternative = GapAssessmentItemBuilder.getText(inlineChoice);
+			if(alternative.equals(",") || alternative.equals(" ") || alternative.equals(".")) {
+				separator = " \u007C ";
+			}
+			
+			Double score = entryForScore == null
+					? null
+					: entryForScore.getScore(inlineChoice.getIdentifier());
+			scoreAndAnswers.add(new ScoreAndAnswer(alternative, score));
+		}
+		
+		if(scoreAndAnswers.size() > 1) {
+			Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
+		}
+		
+		sb.append("<span class='o_qti_gaptext_alternatives' title='").append(translator.translate("correction.alternatives")).append("'>");
+		
+		boolean first = true;
+		for(ScoreAndAnswer scoreAndAnswer:scoreAndAnswers) {
+			Double score = scoreAndAnswer.score();
+			if(score == null || score.doubleValue() > 0.0d) {
+				if(first) {
+					first = false;
+				} else {
+					sb.append(separator);
+				}
+				String alternative = scoreAndAnswer.answer();
+				sb.append(alternative);
+				if(avc.isScorePerAnswers() && score != null) {
+					String val = renderScorePerAlternative(score, translator);
+					sb.append(" ").append(val);
+				}
+			}
+		}
+
+		sb.append("</span>");
+		return sb.toString();
+	}
+	
 	public String textEntryType(TextEntryInteraction textEntry) {
 		try {
 			AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(assessmentItem, textEntry);
@@ -734,43 +868,162 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return Boolean.valueOf(correct);
 	}
 	
-	public String renderTextEntryAlternatives(TextEntryInteraction textEntry) {
+	public String renderTextEntryScoreAndAlternatives(TextEntryInteraction textEntry, boolean solutionMode, boolean correctionMode) {
+		if(textEntry == null || textEntry.getResponseIdentifier() == null) return "";
 
-		TextEntry entryForScore = null;
-		LinkedHashSet<String> alternatives = new LinkedHashSet<>();
-		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(textEntry.getResponseIdentifier());
-		if(responseDeclaration != null &&responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
-			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
-			if(correctResponse != null && correctResponse.getFieldValues() != null) {
-				for(FieldValue fValue:correctResponse.getFieldValues()) {
-					SingleValue aValue = fValue.getSingleValue();
-					if(aValue instanceof StringValue stringValue) {
-						alternatives.add(stringValue.stringValue());
-					}
-				}
-			}
-
-			Mapping mapping = responseDeclaration.getMapping();
-			if(mapping != null) {
-				for(MapEntry mapEntry:mapping.getMapEntries()) {
-					SingleValue sValue = mapEntry.getMapKey();
-					if(sValue instanceof StringValue stringValue) {
-						alternatives.add(stringValue.stringValue());
-					}
-				}
-			}
+		String text = "";
+		if(solutionMode || correctionMode) {
+			Double score = avc.isScorePerAnswers()
+					? getScore(textEntry)
+					: null;
 			
-			// if there is a correct answer, remove the first one
-			if(correctResponse != null && correctResponse.getFieldValues() != null
-					&& !correctResponse.getFieldValues().isEmpty() && !alternatives.isEmpty()) {
-				alternatives.remove(alternatives.iterator().next());
+			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(textEntry.getResponseIdentifier());
+			if(responseDeclaration != null && responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+				if(score != null) {
+					text = renderScorePerInteraction(textEntry) + " ";
+				}
+				text += renderTextEntryAlternatives(textEntry, responseDeclaration, solutionMode, correctionMode);
+			} else if(responseDeclaration != null && responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+				text= renderNumericalEntryTolerance(textEntry, score, responseDeclaration, solutionMode, correctionMode);
+			} else {
+				text = renderScorePerInteraction(textEntry);
 			}
+		} else if(avc.isScorePerAnswers()) {
+			text = renderScorePerInteraction(textEntry);
+		}
+		return text;
+	}
+	
+	private String renderNumericalEntryTolerance(TextEntryInteraction textEntry, Double score,
+			ResponseDeclaration responseDeclaration, boolean solutionMode, boolean correctionMode) {
+		StringBuilder sb = new StringBuilder();
+		
+		if(solutionMode || correctionMode) {
+			NumericalEntry numericalEntry = new NumericalEntry(textEntry);
+			GapAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 			
-			if(avc.isScorePerAnswers()) {
-				entryForScore = new TextEntry(textEntry);
-				GapAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(entryForScore, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+			if(numericalEntry != null) {
+				ToleranceMode mode = numericalEntry.getToleranceMode();
+				if(mode == ToleranceMode.ABSOLUTE || mode == ToleranceMode.RELATIVE) {
+					BigDecimal lowerBound = numericalEntry.getSolutionLowerToleranceBound();
+					BigDecimal upperBound = numericalEntry.getSolutionUpperToleranceBound();
+					Double solution = numericalEntry.getSolution();
+					String bounds = translator.translate("fib.tolerance.solution", solution.toString(),
+							AssessmentHelper.getRoundedScore(lowerBound),
+							AssessmentHelper.getRoundedScore(upperBound));
+					
+					if(correctionMode) {
+						sb.append(" (");
+						if(score != null) {
+							String scoreStr = translatedScorePerAnswer(score, translator, true);
+							sb.append(scoreStr)
+							  .append(" / ");
+						}
+						sb.append(bounds).append(")");
+					} else if(solutionMode) {
+						if(score != null) {
+							String scoreStr = renderScorePerAnswer(score, translator);
+							sb.append(scoreStr)
+							  .append(" ");
+						}
+						sb.append(" <span class='o_qti_gaptext_alternative'>").append(bounds).append("</span>");
+					}
+				}	
 			}
 		}
+		return sb.toString();
+	}
+
+	private String renderTextEntryAlternatives(TextEntryInteraction textEntry, ResponseDeclaration responseDeclaration, boolean solutionMode, boolean correctionMode) {
+		LinkedHashSet<String> alternatives = new LinkedHashSet<>();
+		
+		CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+		if(correctResponse != null && correctResponse.getFieldValues() != null) {
+			for(FieldValue fValue:correctResponse.getFieldValues()) {
+				SingleValue aValue = fValue.getSingleValue();
+				if(aValue instanceof StringValue stringValue) {
+					alternatives.add(stringValue.stringValue());
+				}
+			}
+		}
+
+		Mapping mapping = responseDeclaration.getMapping();
+		if(mapping != null) {
+			for(MapEntry mapEntry:mapping.getMapEntries()) {
+				SingleValue sValue = mapEntry.getMapKey();
+				if(sValue instanceof StringValue stringValue) {
+					alternatives.add(stringValue.stringValue());
+				}
+			}
+		}
+		
+		// if there is a correct answer, remove the first one
+		if(correctResponse != null && correctResponse.getFieldValues() != null
+				&& !correctResponse.getFieldValues().isEmpty() && !alternatives.isEmpty()
+				&& !correctionMode) {
+			alternatives.remove(alternatives.iterator().next());
+		}
+		
+		TextEntry entryForScore = new TextEntry(textEntry);
+		GapAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(entryForScore, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+		
+		String val = "";
+		if(correctionMode) {
+			val = renderTextEntryAlternativesInCorrectionMode(alternatives, entryForScore);
+		} else if(solutionMode) {
+			val = renderTextEntryAlternativesInSolutionMode(alternatives, entryForScore);
+		}
+		return val;
+	}
+	
+	private final String renderTextEntryAlternativesInCorrectionMode(LinkedHashSet<String> alternatives, TextEntry entryForScore) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<span title='").append(translator.translate("correction.alternatives")).append("'>");
+		
+		List<ScoreAndAnswer> scoreAndAnswers = new ArrayList<>(alternatives.size());
+		for(String alternative:alternatives) {
+			Double score = null;
+			if(entryForScore != null) {
+				if(alternative.equals(entryForScore.getSolution())) {
+					score = entryForScore.getScore();
+				} else {
+					score = entryForScore.getAlternativeScore(alternative);
+				}
+			}
+			scoreAndAnswers.add(new ScoreAndAnswer(alternative, score));
+		}
+		
+		if(scoreAndAnswers.size() > 1) {
+			Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
+		}
+
+		for(ScoreAndAnswer scoreAndAnswer:scoreAndAnswers) {
+			sb.append(" <span class='o_qti_gaptext_alternative");
+			
+			Double score = scoreAndAnswer.score();
+			if(score != null) {
+				if(score.doubleValue() > 0.0d) {
+					sb.append(" success");
+				} else {
+					sb.append(" danger");
+				}
+			}
+			
+			String alternative = scoreAndAnswer.answer();
+			sb.append("'>").append(alternative);
+			if(score != null) {
+				String val = renderScorePerAlternative(score, translator);
+				sb.append(" ").append(val);
+			}
+			sb.append("</span>");
+		}
+		
+		sb.append("</span>");
+		return sb.toString();
+	}
+	
+	private final String renderTextEntryAlternativesInSolutionMode(LinkedHashSet<String> alternatives, TextEntry entryForScore) {
+		StringBuilder sb = new StringBuilder();
 		
 		String separator = ", ";
 		// Don't use , as a separator on punctuation exercise
@@ -778,16 +1031,40 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			separator = " \u007C ";
 		}
 		
-		StringBuilder sb = new StringBuilder();
+		sb.append("<span class='o_qti_gaptext_alternatives' title='").append(translator.translate("correction.alternatives")).append("'>");
+		
+		List<ScoreAndAnswer> scoreAndAnswers = new ArrayList<>(alternatives.size());
 		for(String alternative:alternatives) {
-			if(sb.length() > 0) sb.append(separator);
-			sb.append(alternative);
+			Double score = entryForScore == null
+					? null
+					: entryForScore.getAlternativeScore(alternative);
+			if(score == null || score.doubleValue() > 0.0d) {
+				scoreAndAnswers.add(new ScoreAndAnswer(alternative, score));
+			}
+		}
+		
+		if(scoreAndAnswers.size() > 1) {
+			Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
+		}
+		
+		boolean first = true;
+		for(ScoreAndAnswer scoreAndAnswer:scoreAndAnswers) {
+			Double score = scoreAndAnswer.score();
+			String alternative = scoreAndAnswer.answer();
 			
-			if(entryForScore != null) {
-				String val = renderScorePerAnswer(entryForScore.getAlternativeScore(alternative), translator);
+			if(first) {
+				first = false;
+			} else {
+				sb.append(separator);
+			}
+			sb.append(alternative);
+			if(avc.isScorePerAnswers() && score != null) {
+				String val = renderScorePerAlternative(score, translator);
 				sb.append(" ").append(val);
 			}
 		}
+
+		sb.append("</span>");
 		return sb.toString();
 	}
 	
@@ -890,6 +1167,12 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderScorePerInteraction(Interaction interaction) {
 		if(interaction == null || interaction.getResponseIdentifier() == null || !avc.isScorePerAnswers()) return "";
 		
+		Double score = getScore(interaction);
+		return renderScorePerAnswer(score, translator);
+	}
+	
+	private Double getScore(Interaction interaction) {
+		
 		Double score = null;
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
 		if(interaction instanceof TextEntryInteraction && responseDeclaration != null) {
@@ -907,9 +1190,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			if(numOfInteractions == 1) {
 				score = QtiNodesExtractor.extractMaxScore(assessmentItem);
 			}
+		} else if(interaction instanceof InlineChoiceInteraction inlineChoiceInteraction && responseDeclaration != null) {
+			InlineChoiceInteractionEntry forScore = new InlineChoiceInteractionEntry(inlineChoiceInteraction);
+			GapAssessmentItemBuilder.extractInlineChoicesInteractionSettingsFromResponseDeclaration(responseDeclaration, forScore);
+			Identifier correctIdentifier = forScore.getCorrectResponseId();
+			score = forScore.getScore(correctIdentifier);
 		}
-		
-		return renderScorePerAnswer(score, translator);
+		return score;
 	}
 	
 	public boolean hasScorePerChoice(Interaction interaction) {
@@ -1005,6 +1292,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	/**
+	 * With add-on points abbreviated.
+	 * 
 	 * @param value The score value
 	 * @param translator The translator
 	 * @return Returns the value formatted and decorated in a span with a short translated add on for points.
@@ -1017,14 +1306,28 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return "<span class='o_qti_score_infos'>" + stringVal + "</span>";
 	}
 	
+	public static String renderScorePerAlternative(Double value, Translator translator) {
+		if(value == null) {
+			return "";
+		}
+		String stringVal = translator.translate("point.answer", AssessmentHelper.getRoundedScore(value));
+		return "<span class='o_qti_score_infos'>" + stringVal + "</span>";
+	}
+	
 	public static String translatedScorePerAnswer(Double value, Translator translator) {
+		return translatedScorePerAnswer(value, translator, false);
+	}
+	
+	public static String translatedScorePerAnswer(Double value, Translator translator, boolean small) {
 		String stringVal;
 		if(value == null) {
 			stringVal = "";
 		} else if(value.doubleValue() < 1.1d) {
-			stringVal = translator.translate("point.answer.singular", AssessmentHelper.getRoundedScore(value));
+			String i18nKey = small ? "point.answer.short.singular" : "point.answer.singular";
+			stringVal = translator.translate(i18nKey, AssessmentHelper.getRoundedScore(value));
 		} else {
-			stringVal = translator.translate("point.answer.plural", AssessmentHelper.getRoundedScore(value));
+			String i18nKey = small ? "point.answer.short.plural" : "point.answer.plural";
+			stringVal = translator.translate(i18nKey, AssessmentHelper.getRoundedScore(value));
 		}
 		return stringVal;
 	}
@@ -1396,6 +1699,31 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 
 		public List<SimpleChoice> getUnselectedVisibleChoices() {
 			return unselectedVisibleChoices;
+		}
+	}
+	
+	public record ScoreAndAnswer(String answer, Double score) {
+		//
+	}
+	
+	public static final class ScoreAndAnswerComparator implements Comparator<ScoreAndAnswer> {
+
+		@Override
+		public int compare(ScoreAndAnswer o1, ScoreAndAnswer o2) {
+			double p1 = o1.score() == null ? -2.0 : o1.score().doubleValue();
+			double p2 = o2.score() == null ? -2.0 : o2.score().doubleValue();
+			int c = - Double.compare(p1, p2);
+			if(c == 0) {
+				String t1 = getText(o1);
+				String t2 = getText(o2);
+				c = - t1.compareTo(t2);
+			}
+			return c;
+		}
+		
+		private String getText(ScoreAndAnswer o) {
+			String text = o.answer();
+			return text == null ? "" : text;
 		}
 	}
 }

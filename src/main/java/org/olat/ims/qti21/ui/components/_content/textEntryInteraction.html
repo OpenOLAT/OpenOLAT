@@ -58,13 +58,12 @@
 	#if($isInvalidResponse)
 	<span class="badResponse">$r.translate("error.required.format")</span>
 	#end
-	$r.renderScorePerInteraction($interaction)
-	#if($r.isTrue($isCorrectionSolution) || $r.isTrue($isSolutionMode))
-		#set($alternativesString = $r.renderTextEntryAlternatives($interaction))
-		#if($r.isNotEmpty($alternativesString))
-			<span class="o_qti_gaptext_alternatives" title='$r.translate("correction.alternatives")'>$alternativesString</span>
-		#end
+	
+	#set($alternativesString = $r.renderTextEntryScoreAndAlternatives($interaction, $isSolutionMode, $isCorrectionSolution))
+	#if($r.isNotEmpty($alternativesString))
+		$r.xssScan($alternativesString)
 	#end
+
 </span>
 
 #if($isPageMode)

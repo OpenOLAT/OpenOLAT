@@ -31,6 +31,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseP
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createTextEntryResponseDeclaration;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1965,6 +1966,32 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		public void setToleranceMode(ToleranceMode toleranceMode) {
 			this.toleranceMode = toleranceMode;
+		}
+		
+		public BigDecimal getSolutionLowerToleranceBound() {
+			if(toleranceMode == ToleranceMode.ABSOLUTE) {
+				BigDecimal solutionBig = BigDecimal.valueOf(solution);
+	            BigDecimal lowerTolerance = BigDecimal.valueOf(getLowerTolerance());
+	            return solutionBig.subtract(lowerTolerance);
+			} else if(toleranceMode == ToleranceMode.RELATIVE) {
+				double tolerance1 = Math.abs(getLowerTolerance());
+	            double lower = solution.doubleValue() * (1 - tolerance1 / 100);
+	            return BigDecimal.valueOf(lower);
+			}
+			return null;
+		}
+		
+		public BigDecimal getSolutionUpperToleranceBound() {
+			if(toleranceMode == ToleranceMode.ABSOLUTE) {
+				BigDecimal solutionBig = BigDecimal.valueOf(solution);
+	            BigDecimal upperTolerance = BigDecimal.valueOf(getUpperTolerance());
+	            return solutionBig.add(upperTolerance);
+			} else if(toleranceMode == ToleranceMode.RELATIVE) {
+	        	double tolerance2 = Math.abs(getUpperTolerance());
+	            double upper = solution.doubleValue() * (1 + tolerance2 / 100);
+	            return BigDecimal.valueOf(upper);
+			}
+			return null;
 		}
 
 		@Override

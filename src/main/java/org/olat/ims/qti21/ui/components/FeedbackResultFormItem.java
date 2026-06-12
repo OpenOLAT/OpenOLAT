@@ -74,6 +74,14 @@ public class FeedbackResultFormItem extends AssessmentObjectFormItem {
 		component.setShowSolution(showSolution);
 	}
 
+	public boolean isScorePerAnswers() {
+		return component.isScorePerAnswers();
+	}
+
+	public void setScorePerAnswers(boolean scorePerAnswers) {
+		component.setScorePerAnswers(scorePerAnswers);
+	}
+
 	@Override
 	public FeedbackResultComponent getComponent() {
 		return component;

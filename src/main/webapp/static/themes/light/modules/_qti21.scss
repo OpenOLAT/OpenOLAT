@@ -260,6 +260,24 @@ img.o_hotspot_responsive[usemap] {
 	padding: 2px 5px;
 }
 
+.o_qti_gaptext_alternative {
+	background-color: $gray-lighter;
+	color: $gray;
+	border: 1px solid $gray-lighter;
+	border-radius: $border-radius-base;
+	padding: 2px 5px;
+	
+	&.success {
+		background-color: $state-success-bg;
+		border: 1px solid $state-success-bg;
+	}
+	
+	&.danger {
+		background-color: $state-danger-bg;
+		border: 1px solid $state-danger-bg;
+	}
+}
+
 span.o_qti_gaptext_score_alternative {
 	padding-left: 2em;
 	color: $gray;

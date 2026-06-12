@@ -61,6 +61,11 @@
         	</option>
         #end
 	</select>
+	#set($alternativesString = $r.renderInlineChoiceScoreAndAlternatives($interaction, $isSolutionMode, $isCorrectionSolution))
+	#if($r.isNotEmpty($alternativesString))
+		$r.xssScan($alternativesString)
+	#end
+	
 	$r.appendFlexiFormDirty("oo_${responseIdentifier}")
 	#end
 </span>
