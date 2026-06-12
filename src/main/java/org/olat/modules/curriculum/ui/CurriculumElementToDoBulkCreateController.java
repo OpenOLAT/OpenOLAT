@@ -66,7 +66,7 @@ public class CurriculumElementToDoBulkCreateController extends FormBasicControll
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Set<Identity> candidates = provider.getCandidateIntersection(elements);
 		IdentitySelectionSource source = new IdentitySelectionSource(getLocale(), List.of(),
-				() -> new ArrayList<>(candidates));
+				() -> new ArrayList<>(candidates), getIdentity());
 
 		ToDoTaskMemberConfig assigneeCfg = candidates.isEmpty()
 				? ToDoTaskMemberConfig.disabled(source, false)

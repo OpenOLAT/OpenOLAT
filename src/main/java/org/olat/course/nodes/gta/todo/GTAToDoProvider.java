@@ -137,8 +137,10 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
 		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
 		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
-		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees);
-		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees,
+				() -> assignees, ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees,
+				() -> delegatees, ureq.getIdentity());
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, contextConfig,
 				ToDoTaskMemberConfig.disabled(assigneeSource, true),
 				ToDoTaskMemberConfig.disabled(delegateeSource, false),

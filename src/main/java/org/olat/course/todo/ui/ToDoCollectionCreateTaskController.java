@@ -79,7 +79,7 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 		
 		List<TagInfo> tagInfos = toDoService.getTagInfos(courseToDoService.createCourseTagSearchParams(context.getRepositoryEntry()), sourceToDoTask);
 		
-		IdentitySelectionSource emptySource = new IdentitySelectionSource(getLocale(), List.of(), List::of);
+		IdentitySelectionSource emptySource = new IdentitySelectionSource(getLocale(), List.of(), List::of, getIdentity());
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
 				ToDoTaskContextConfig.off(null),
 				ToDoTaskMemberConfig.disabled(emptySource, true),

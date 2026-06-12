@@ -57,12 +57,12 @@ import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
-import org.olat.user.IdentitySelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -131,7 +131,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(originId);
 		ToDoContext context = ToDoContext.of(TYPE, repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 		ToDoTaskMemberConfig assigneeConfig = buildEditableSingleAssigneeConfig(ureq, repositoryEntry, Set.of());
-		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), Set.of(), Set::of);
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), Set.of(), Set::of, ureq.getIdentity());
 		return createEditController(ureq, wControl, null, null, true, repositoryEntry, context,
 				assigneeConfig, ToDoTaskMemberConfig.disabled(delegateeSource, false), null);
 	}
@@ -154,7 +154,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 		Set<Identity> sourceAssignees = sourceMembers.getMembers(ToDoRole.assignee);
 		Set<Identity> sourceDelegatees = sourceMembers.getMembers(ToDoRole.delegatee);
 		ToDoTaskMemberConfig assigneeConfig = buildEditableSingleAssigneeConfig(ureq, repositoryEntry, sourceAssignees);
-		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), sourceDelegatees, () -> sourceDelegatees);
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), sourceDelegatees, () -> sourceDelegatees, ureq.getIdentity());
 		return createEditController(ureq, wControl, null, sourceToDoTask, true, repositoryEntry, sourceToDoTask,
 				assigneeConfig, ToDoTaskMemberConfig.disabled(delegateeSource, false), null);
 	}
@@ -166,8 +166,8 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
 		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
 		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
-		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees);
-		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees, ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees, ureq.getIdentity());
 		ToDoTaskMemberConfig assigneeConfig = showSingleAssignee
 				? ToDoTaskMemberConfig.readOnly(assigneeSource, true)
 				: ToDoTaskMemberConfig.disabled(assigneeSource, true);
@@ -193,7 +193,8 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 				ureq.getLocale(), currentAssignees,
 				() -> isAdmin
 						? repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
-						: repositoryService.getCoachedParticipants(currentUser, repositoryEntry));
+						: repositoryService.getCoachedParticipants(currentUser, repositoryEntry),
+				ureq.getIdentity());
 		return ToDoTaskMemberConfig.editableSingle(assigneeSource, true);
 	}
 

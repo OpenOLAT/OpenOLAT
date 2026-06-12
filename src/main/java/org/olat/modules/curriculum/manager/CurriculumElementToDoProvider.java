@@ -34,10 +34,10 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -228,10 +228,12 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		};
 		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
 				ureq.getLocale(), assignees, candidatesSupplier,
-				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element));
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element),
+				ureq.getIdentity());
 		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(
 				ureq.getLocale(), delegatees, candidatesSupplier,
-				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element));
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element),
+				ureq.getIdentity());
 		CurriculumElement implementation = curriculumService.getImplementationOf(element);
 		CurriculumElement effectiveRoot = implementation != null ? implementation : element;
 		CurriculumElementType implementationType = effectiveRoot.getType();

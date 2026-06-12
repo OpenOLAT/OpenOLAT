@@ -137,12 +137,10 @@ public class QualityToDoEditController extends FormBasicController {
 			tagInfos = toDoService.getTagInfos(tagSearchParams, null);
 		}
 
-		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
-				getLocale(), initialAssignees, List::of,
-				multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w));
-		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(
-				getLocale(), initialDelegatees, List::of,
-				multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w));
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(getLocale(), initialAssignees, List::of,
+				multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w), getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(getLocale(), initialDelegatees, List::of,
+				multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w), getIdentity());
 
 		ToDoTaskContextConfig contextConfig = showContext
 				? ToDoTaskContextConfig.dropdown(availableContexts, currentContext)

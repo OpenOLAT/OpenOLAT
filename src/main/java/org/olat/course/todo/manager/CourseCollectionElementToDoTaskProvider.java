@@ -57,8 +57,8 @@ import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
-import org.olat.user.IdentitySelectionSource;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -164,8 +164,8 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
 		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
 		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
-		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees);
-		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees, ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees, ureq.getIdentity());
 		ToDoTaskContextConfig contextConfig = showContext
 				? ToDoTaskContextConfig.dropdown(List.of(context), context)
 				: ToDoTaskContextConfig.off(context);

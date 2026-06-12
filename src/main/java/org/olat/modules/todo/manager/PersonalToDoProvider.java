@@ -58,8 +58,8 @@ import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoTaskListController;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.IdentityObjectSourceBrowserWrapper;
 import org.olat.user.IdentitySelectionSource;
@@ -173,28 +173,46 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		IdentitySelectionSource assigneeSource;
 		ToDoTaskMemberConfig assigneeMemberConfig;
 		if (ToDoModule.PERSONAL_CANDIDATE_NONE.equals(assigneeModuleConfig)) {
-			assigneeSource = new IdentitySelectionSource(ureq.getLocale(), currentAssignees, () -> currentAssignees);
+			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentAssignees,
+					() -> currentAssignees,
+					ureq.getIdentity());
 			assigneeMemberConfig = ToDoTaskMemberConfig.disabled(assigneeSource, true);
 		} else if (ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(assigneeModuleConfig)) {
-			assigneeSource = new IdentitySelectionSource(ureq.getLocale(), currentAssignees, () -> getMemberCandidates(ureq.getIdentity()));
+			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentAssignees,
+					() -> getMemberCandidates(ureq.getIdentity()),
+					ureq.getIdentity());
 			assigneeMemberConfig = ToDoTaskMemberConfig.editable(assigneeSource, true);
 		} else {
-			assigneeSource = new IdentitySelectionSource(ureq.getLocale(), currentAssignees, List::of,
-					multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w));
+			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentAssignees,
+					List::of,
+					multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w),
+					ureq.getIdentity());
 			assigneeMemberConfig = ToDoTaskMemberConfig.editable(assigneeSource, true);
 		}
 
 		IdentitySelectionSource delegateeSource;
 		ToDoTaskMemberConfig delegateeMemberConfig;
 		if (ToDoModule.PERSONAL_CANDIDATE_NONE.equals(delegateeModuleConfig)) {
-			delegateeSource = new IdentitySelectionSource(ureq.getLocale(), currentDelegatees, () -> currentDelegatees);
+			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentDelegatees,
+					() -> currentDelegatees,
+					ureq.getIdentity());
 			delegateeMemberConfig = ToDoTaskMemberConfig.disabled(delegateeSource, false);
 		} else if (ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(delegateeModuleConfig)) {
-			delegateeSource = new IdentitySelectionSource(ureq.getLocale(), currentDelegatees, () -> getMemberCandidates(ureq.getIdentity()));
+			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentDelegatees,
+					() -> getMemberCandidates(ureq.getIdentity()), 
+					ureq.getIdentity());
 			delegateeMemberConfig = ToDoTaskMemberConfig.editable(delegateeSource, false);
 		} else {
-			delegateeSource = new IdentitySelectionSource(ureq.getLocale(), currentDelegatees, List::of,
-					multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w));
+			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentDelegatees,
+					List::of,
+					multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w), 
+					ureq.getIdentity());
 			delegateeMemberConfig = ToDoTaskMemberConfig.editable(delegateeSource, false);
 		}
 

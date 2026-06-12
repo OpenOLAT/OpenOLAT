@@ -101,10 +101,12 @@ public class ProjToDoContentEditController extends FormBasicController {
 				: ToDoTaskContextConfig.off(toDoTask);
 		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
 				getLocale(), initialAssignees,
-				() -> projectService.getMembers(project, ProjectRole.PROJECT_ROLES));
+				() -> projectService.getMembers(project, ProjectRole.PROJECT_ROLES),
+				ureq.getIdentity());
 		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(
 				getLocale(), initialDelegatees,
-				() -> projectService.getMembers(project, ProjectRole.PROJECT_ROLES));
+				() -> projectService.getMembers(project, ProjectRole.PROJECT_ROLES),
+				ureq.getIdentity());
 		ToDoTaskMemberConfig assigneeConfig = template
 				? ToDoTaskMemberConfig.disabled(assigneeSource, true)
 				: ToDoTaskMemberConfig.editable(assigneeSource, true);

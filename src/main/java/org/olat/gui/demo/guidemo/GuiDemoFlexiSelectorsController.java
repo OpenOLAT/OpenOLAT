@@ -105,14 +105,14 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 		List<Identity> selected = initDefaultSelection
 				? List.of(identities.get(2), identities.get(20), identities.get(200))
 				: List.of(getIdentity());
-		return new IdentitySelectionSource(getLocale(), selected, () -> identities);
+		return new IdentitySelectionSource(getLocale(), selected, () -> identities, getIdentity());
 	}
 
 	private IdentitySelectionSource createBrowserNamesSource() {
 		List<Identity> identities = createDemoIdentities();
 		List<Identity> selected = List.of(identities.get(0), identities.get(1));
 		return new IdentitySelectionSource(getLocale(), selected, () -> identities,
-				multi -> (u, w) -> new GuiDemoObjectSelectionBrowserController(u, w, identities));
+				multi -> (u, w) -> new GuiDemoObjectSelectionBrowserController(u, w, identities), getIdentity());
 	}
 
 	private List<Identity> createDemoIdentities() {

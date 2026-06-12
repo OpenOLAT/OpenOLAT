@@ -61,6 +61,7 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	private final Collection<? extends Identity> selectedIdentities;
 	private final Supplier<Collection<Identity>> identitiesSupplier;
 	private final Function<Boolean, ControllerCreator> browserCreatorProvider;
+	private final IdentityRef currentIdentity;
 	private Collection<Identity> identities;
 	private List<? extends ObjectOption> options;
 
@@ -72,16 +73,17 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	private UserPortraitService userPortraitService;
 
 	public IdentitySelectionSource(Locale locale, Collection<? extends Identity> selectedIdentities,
-			Supplier<Collection<Identity>> identitiesSupplier) {
-		this(locale, selectedIdentities, identitiesSupplier, null);
+			Supplier<Collection<Identity>> identitiesSupplier, IdentityRef currentIdentity) {
+		this(locale, selectedIdentities, identitiesSupplier, null, currentIdentity);
 	}
 
 	public IdentitySelectionSource(Locale locale, Collection<? extends Identity> selectedIdentities,
 			Supplier<Collection<Identity>> identitiesSupplier,
-			Function<Boolean, ControllerCreator> browserCreatorProvider) {
+			Function<Boolean, ControllerCreator> browserCreatorProvider, IdentityRef currentIdentity) {
 		CoreSpringFactory.autowireObject(this);
 		this.locale = locale;
 		this.collator = Collator.getInstance(locale);
+		this.currentIdentity = currentIdentity;
 		this.selectedIdentities = selectedIdentities;
 		this.identitiesSupplier = identitiesSupplier;
 		this.browserCreatorProvider = browserCreatorProvider;
@@ -112,8 +114,15 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	}
 
 	private ObjectDisplayValues joinNames(Stream<? extends Identity> stream) {
+		String meSuffix = " (" + Util.createPackageTranslator(IdentitySelectionSource.class, locale).translate("identity.selection.me") + ")";
 		String joined = stream
-				.map(identity -> "<i class=\"o_icon o_icon_user\"></i> " + StringHelper.escapeHtml(userManager.getUserDisplayName(identity)))
+				.map(identity -> {
+					String name = StringHelper.escapeHtml(userManager.getUserDisplayName(identity));
+					if (currentIdentity != null && currentIdentity.getKey().equals(identity.getKey())) {
+						name = name + meSuffix;
+					}
+					return "<i class=\"o_icon o_icon_user\"></i> " + name;
+				})
 				.sorted(collator::compare)
 				.collect(Collectors.joining("&nbsp;&nbsp;"));
 		return new ObjectDisplayValues(joined, EscapeMode.none, joined, null);
@@ -129,13 +138,21 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 			Map<Long, PortraitUser> portraitUsersByKey = userPortraitService.createPortraitUsers(this.locale, identities).stream()
 					.collect(Collectors.toMap(PortraitUser::getIdentityKey, Function.identity()));
 
+			String currentKey = currentIdentity != null ? currentIdentity.getKey().toString() : null;
+			String meSuffix = " (" + Util.createPackageTranslator(IdentitySelectionSource.class, locale).translate("identity.selection.me") + ")";
 			options = identities.stream()
-					.map(identity -> toOption(identity, portraitUsersByKey.get(identity.getKey())))
-					.sorted((o1, o2) -> collator.compare(o1.getTitle(), o2.getTitle()))
+					.map(identity -> toOption(identity, portraitUsersByKey.get(identity.getKey()), currentKey, meSuffix))
+					.sorted((o1, o2) -> {
+						// I am always on top ;-)
+						if (currentKey != null) {
+							if (currentKey.equals(o1.getKey())) return -1;
+							if (currentKey.equals(o2.getKey())) return 1;
+						}
+						return collator.compare(o1.getTitle(), o2.getTitle());
+					})
 					.toList();
 		}
-		String label = Util.createPackageTranslator(IdentitySelectionSource.class, locale)
-				.translate("identity.selection.options.label");
+		String label = Util.createPackageTranslator(IdentitySelectionSource.class, locale).translate("identity.selection.options.label");
 		return List.of(ObjectOptionGroup.of(label, options));
 	}
 
@@ -157,9 +174,12 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 		return identities;
 	}
 
-	private ObjectOption.ObjectOptionValues toOption(Identity identity, PortraitUser portraitUser) {
+	private ObjectOption.ObjectOptionValues toOption(Identity identity, PortraitUser portraitUser, String currentKey, String meSuffix) {
 		String key = identity.getKey().toString();
 		String displayName = userManager.getUserDisplayName(identity);
+		if (currentKey != null && currentKey.equals(key)) {
+			displayName = displayName + meSuffix;
+		}
 
 		UserPortraitComponent comp = new UserPortraitComponent("upc_" + identity.getKey(), locale);
 		comp.setSize(PortraitSize.small);
