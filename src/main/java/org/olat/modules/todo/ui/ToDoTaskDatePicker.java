@@ -33,9 +33,11 @@ import org.olat.modules.todo.ToDoRelativeDates;
  */
 public interface ToDoTaskDatePicker {
 
+	record DisplayValue(String text, String iconLeftCss) {}
+
 	void contextChanged(ToDoContext context);
 
-	String getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
+	DisplayValue getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
 
 	Date resolve(ToDoRelativeDates relativeDates, boolean start);
 

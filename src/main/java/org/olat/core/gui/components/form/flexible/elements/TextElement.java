@@ -259,5 +259,9 @@ public interface TextElement extends FormItem{
 	 * @param otp true/false
 	 */
 	public void setOneTimePassword(boolean otp);
-	
+
+	public String getIconLeftCSS();
+
+	public void setIconLeftCSS(String iconLeftCSS);
+
 }

@@ -295,7 +295,26 @@ form .o_form, form.o_form {
 		pointer-events: auto;
 	}
 
-	
+	.o_input_with_icon_left {
+		display: grid;
+		grid-template-columns: 1fr;
+		width: 100%;
+	}
+	.o_input_with_icon_left > input.form-control,
+	.o_input_with_icon_left > i.o_icon {
+		grid-area: 1 / 1;
+	}
+	.o_input_with_icon_left > i.o_icon {
+		justify-self: start;
+		align-self: center;
+		margin-left: 8px;
+		pointer-events: none;
+		z-index: 2;
+	}
+	.o_input_with_icon_left > input.form-control {
+		padding-left: 28px;
+	}
+
 /* Card Radio Buttons */
 /* Markup:
 	<div class="form-inline o_radio_cards_wrapper">

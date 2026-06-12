@@ -359,7 +359,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 			if (rd.getStartRef() != null) {
 				currentRelStart = rd;
 				startDateModeEl.select(MODE_RELATIVE, true);
-				startRelDisplayEl.setValue(datesConfig.getPicker().getDisplayValue(rd, true));
+				applyRelDisplay(startRelDisplayEl, datesConfig.getPicker().getDisplayValue(rd, true));
 				doSwitchDateMode(true);
 			} else {
 				startDateEl.setDate(values.getStartDate());
@@ -367,7 +367,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 			if (rd.getDueRef() != null) {
 				currentRelDue = rd;
 				dueDateModeEl.select(MODE_RELATIVE, true);
-				dueRelDisplayEl.setValue(datesConfig.getPicker().getDisplayValue(rd, false));
+				applyRelDisplay(dueRelDisplayEl, datesConfig.getPicker().getDisplayValue(rd, false));
 				doSwitchDateMode(false);
 			} else {
 				dueDateEl.setDate(values.getDueDate());
@@ -476,10 +476,10 @@ public class ToDoTaskEditForm extends FormBasicController {
 				} else {
 					if (trdse.isStart()) {
 						currentRelStart = trdse.getRelativeDates();
-						startRelDisplayEl.setValue(datesConfig.getPicker().getDisplayValue(currentRelStart, true));
+						applyRelDisplay(startRelDisplayEl, datesConfig.getPicker().getDisplayValue(currentRelStart, true));
 					} else {
 						currentRelDue = trdse.getRelativeDates();
-						dueRelDisplayEl.setValue(datesConfig.getPicker().getDisplayValue(currentRelDue, false));
+						applyRelDisplay(dueRelDisplayEl, datesConfig.getPicker().getDisplayValue(currentRelDue, false));
 					}
 				}
 			}
@@ -632,11 +632,16 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 		picker.contextChanged(selectedContext);
 		if (isRelativeMode(startDateModeEl) && currentRelStart != null && startRelDisplayEl != null) {
-			startRelDisplayEl.setValue(picker.getDisplayValue(currentRelStart, true));
+			applyRelDisplay(startRelDisplayEl, picker.getDisplayValue(currentRelStart, true));
 		}
 		if (isRelativeMode(dueDateModeEl) && currentRelDue != null && dueRelDisplayEl != null) {
-			dueRelDisplayEl.setValue(picker.getDisplayValue(currentRelDue, false));
+			applyRelDisplay(dueRelDisplayEl, picker.getDisplayValue(currentRelDue, false));
 		}
+	}
+
+	private void applyRelDisplay(TextElement el, ToDoTaskDatePicker.DisplayValue dv) {
+		el.setValue(dv.text());
+		el.setIconLeftCSS(dv.iconLeftCss());
 	}
 
 	private void doToggleStatus(boolean done) {

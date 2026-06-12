@@ -462,18 +462,21 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 
 		@Override
-		public String getDisplayValue(ToDoRelativeDates rd, boolean start) {
+		public ToDoTaskDatePicker.DisplayValue getDisplayValue(ToDoRelativeDates rd, boolean start) {
 			String ref = start ? rd.getStartRef() : rd.getDueRef();
 			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
 			Integer value = start ? rd.getStartValue() : rd.getDueValue();
-			if (ref == null) return "";
+			if (ref == null) return new ToDoTaskDatePicker.DisplayValue("", null);
 
 			Date beginDate = element != null ? element.getBeginDate() : null;
 			Date endDate = element != null ? element.getEndDate() : null;
 			Date resolvedDate = computeRelativeDate(ref, unit, value, beginDate, endDate);
-			String formatted = resolvedDate != null ? Formatter.getInstance(locale).formatDate(resolvedDate) : "";
-			String prefix = formatted.isEmpty() ? "" : formatted + " – ";
-			return buildDisplayValue(translator, prefix, ref, unit, value);
+			if (resolvedDate != null) {
+				String prefix = Formatter.getInstance(locale).formatDate(resolvedDate) + " – ";
+				return new ToDoTaskDatePicker.DisplayValue(buildDisplayValue(translator, prefix, ref, unit, value), null);
+			}
+			String prefix = translator.translate("task.date.relative.display.no.date") + " – ";
+			return new ToDoTaskDatePicker.DisplayValue(buildDisplayValue(translator, prefix, ref, unit, value), "o_icon o_icon_warn");
 		}
 
 		@Override
@@ -521,11 +524,12 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 
 		@Override
-		public String getDisplayValue(ToDoRelativeDates rd, boolean start) {
+		public ToDoTaskDatePicker.DisplayValue getDisplayValue(ToDoRelativeDates rd, boolean start) {
 			String ref = start ? rd.getStartRef() : rd.getDueRef();
 			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
 			Integer value = start ? rd.getStartValue() : rd.getDueValue();
-			return buildDisplayValue(translator, "", ref, unit, value);
+			String prefix = translator.translate("task.date.relative.display.no.date") + " – ";
+			return new ToDoTaskDatePicker.DisplayValue(buildDisplayValue(translator, prefix, ref, unit, value), "o_icon o_icon_warn");
 		}
 
 		@Override

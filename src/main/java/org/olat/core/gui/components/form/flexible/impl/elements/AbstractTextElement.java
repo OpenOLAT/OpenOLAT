@@ -92,8 +92,8 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private ItemValidatorProvider itemValidatorProvider;
 	protected boolean originalInitialised=false;
 	private boolean isOneTimePassword;
-	
-	
+	private String iconLeftCSS;
+
 	@Override
 	public boolean validate() {
 		if(checkForNotEmpty && !notEmpty()) {
@@ -480,6 +480,16 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public void setOneTimePassword(boolean otp) {
 		isOneTimePassword = otp;
+	}
+
+	@Override
+	public String getIconLeftCSS() {
+		return iconLeftCSS;
+	}
+
+	@Override
+	public void setIconLeftCSS(String iconLeftCSS) {
+		this.iconLeftCSS = iconLeftCSS;
 	}
 
 	/**
