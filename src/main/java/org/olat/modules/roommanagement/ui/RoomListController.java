@@ -40,12 +40,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -63,10 +60,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -443,34 +436,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		//
 	}
 
-	private static final class BuildingCellRenderer implements FlexiCellRenderer {
+	private static final class BuildingCellRenderer extends AbstractBuildingCellRenderer {
 		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue,
-				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (!(cellValue instanceof RoomRow roomRow)) return;
-			FormLink link = roomRow.getBuildingLink();
-			if (link == null || !(link.getUserObject() instanceof Building building)) return;
-
-			FlexiTableElementImpl ftE = source.getFormItem();
-			link.setTranslator(translator);
-			if (ftE.getRootForm() != link.getRootForm()) {
-				link.setRootForm(ftE.getRootForm());
-			}
-			ftE.addFormItem(link);
-
-			target.append("<div class='o_building_color_ref'>");
-			String colorCss = building.getColorCss();
-			if (StringHelper.containsNonWhitespace(colorCss)) {
-				target.append("<div class=\"o_building_small_square_container\">");
-				target.append("<div class=\"o_building_small_square o_color_background ")
-				      .append(StringHelper.escapeHtml(colorCss)).append("\"> </div>");
-				target.append("</div>");
-			}
-			if (link.isVisible()) {
-				renderer.render(target, link.getComponent(), null);
-				link.getComponent().setDirty(false);
-			}
-			target.append("</div>");
+		protected FormLink getBuildingLink(Object cellValue) {
+			return cellValue instanceof RoomRow roomRow ? roomRow.getBuildingLink() : null;
 		}
 	}
 

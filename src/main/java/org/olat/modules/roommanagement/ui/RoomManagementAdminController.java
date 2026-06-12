@@ -59,6 +59,7 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private final Link buildingsLink;
 
 	private RoomsAdminSettingsController settingsCtrl;
+	private RoomSchedulingController roomSchedulingCtrl;
 	private BreadcrumbedStackedPanel roomsPanel;
 	private RoomListController roomListCtrl;
 	private BuildingListController buildingListCtrl;
@@ -108,7 +109,8 @@ public class RoomManagementAdminController extends BasicController implements Ac
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == roomListCtrl && event instanceof OpenBuildingEvent openBuildingEvent) {
+		if (event instanceof OpenBuildingEvent openBuildingEvent
+				&& (source == roomListCtrl || source == roomSchedulingCtrl)) {
 			doOpenBuildings(ureq);
 			segmentView.select(buildingsLink);
 			buildingListCtrl.selectBuilding(ureq, openBuildingEvent.getBuildingKey());
@@ -147,8 +149,14 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	}
 
 	private void doOpenRoomScheduling(UserRequest ureq) {
-		addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOM_SCHEDULING), null);
-		mainVC.remove("segmentCmp");
+		if (roomSchedulingCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOM_SCHEDULING), null);
+			roomSchedulingCtrl = new RoomSchedulingController(ureq, swControl);
+			listenTo(roomSchedulingCtrl);
+		} else {
+			addToHistory(ureq, roomSchedulingCtrl);
+		}
+		mainVC.put("segmentCmp", roomSchedulingCtrl.getInitialComponent());
 	}
 
 	private void doOpenRooms(UserRequest ureq) {
