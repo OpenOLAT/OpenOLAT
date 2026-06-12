@@ -42,14 +42,8 @@ public interface ObjectSelectionSource {
 	public List<ObjectOptionGroup> getOptionGroups(Locale locale);
 	
 	public boolean isBrowserAvailable();
-	
-	public String getBrowserTitle(Locale locale);
-	
-	public ControllerCreator getBrowserCreator(boolean multiSelection);
 
-	public default ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
-		return getBrowserCreator(multiSelection);
-	}
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys);
 
 	public void addMissingOptions(Collection<String> keys);
 

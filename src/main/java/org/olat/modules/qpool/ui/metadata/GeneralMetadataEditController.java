@@ -169,7 +169,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		taxonomyLevelSelectionSource = new TaxonomyLevelSelectionSource(getLocale(),
 				selectedTaxonomyLevels,
 				() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
-				translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+				translate("general.taxonomy.level"));
 		taxonomyLevelEl.setSource(taxonomyLevelSelectionSource);
 		
 		setTaxonomicPath();

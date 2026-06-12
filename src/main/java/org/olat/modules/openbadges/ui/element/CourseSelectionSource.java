@@ -139,12 +139,7 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getBrowserTitle(Locale locale) {
-		return translator.translate("course.selection.option");
-	}
-	
-	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
 		return (UserRequest lureq, WindowControl lwControl) -> new CourseSelectionController(lureq, lwControl);
 	}
 

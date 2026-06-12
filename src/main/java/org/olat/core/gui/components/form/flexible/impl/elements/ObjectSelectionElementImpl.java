@@ -335,12 +335,9 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	private void doOpenBrowser(UserRequest ureq) {
 		browseCtrl = source.getBrowserCreator(multiSelection, selectedKeys).createController(ureq, wControl);
 		browseCtrl.addControllerListener(this);
-
-		String browserTitle = source.getBrowserTitle(getTranslator().getLocale());
-		if (!StringHelper.containsNonWhitespace(browserTitle)) {
-			browserTitle = elementTranslator.translate("options");
-		}
-		cmc = new CloseableModalController(wControl, getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, browserTitle);
+		
+		cmc = new CloseableModalController(wControl, getTranslator().translate("close"),
+				browseCtrl.getInitialComponent(), true, elementTranslator.translate("add"));
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}

@@ -96,7 +96,7 @@ public class CompetencesEditController extends FormBasicController {
 		TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 				existingCompetences,
 				() -> taxonomyService.getTaxonomyLevels(portfolioModule.getLinkedTaxonomies()),
-				translate("table.header.competence"), translate("table.header.competence"));
+				translate("table.header.competence"));
 		source.setOptionsFilter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence());
 		competencesEl = uifactory.addObjectSelectionElement("competences", "competences", formLayout, getWindowControl(), true, source);
 

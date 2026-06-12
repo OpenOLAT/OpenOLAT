@@ -217,12 +217,7 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public String getBrowserTitle(Locale locale) {
-		return null;
-	}
-
-	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
 		return null;
 	}
 

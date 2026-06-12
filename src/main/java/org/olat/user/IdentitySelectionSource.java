@@ -221,13 +221,7 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public String getBrowserTitle(Locale locale) {
-		return Util.createPackageTranslator(IdentitySelectionSource.class, locale)
-				.translate("identity.selection.options.label");
-	}
-
-	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
 		return browserCreatorProvider != null ? browserCreatorProvider.apply(multiSelection) : null;
 	}
 

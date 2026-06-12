@@ -180,7 +180,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 			TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 					List.of(),
 					() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
-					translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+					translate("general.taxonomy.level"));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("general.taxonomy.level", "general.taxonomy.level",
 					generalCont, getWindowControl(), false, source);
 			decorate(taxonomyLevelEl, generalCont);

@@ -148,14 +148,9 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 	public boolean isBrowserAvailable() {
 		return false;
 	}
-	
-	@Override
-	public String getBrowserTitle(Locale locale) {
-		return null;
-	}
 
 	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
 		return null;
 	}
 

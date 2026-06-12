@@ -176,7 +176,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		taxonomyLevelSource = new TaxonomyLevelSelectionSource(getLocale(),
 				List.of(),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
-				translate("taxonomy.levels"), translate("table.header.taxonomy"));
+				translate("table.header.taxonomy"));
 		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, taxonomyLevelSource);
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());

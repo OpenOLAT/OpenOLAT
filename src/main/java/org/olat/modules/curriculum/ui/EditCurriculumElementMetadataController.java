@@ -263,7 +263,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 					curriculumService.getTaxonomy(element),
 					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
-					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+					translate(labelI18nKey));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
 			taxonomyLevelEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taxonomyLevel) && canEdit);
 			if (isCatalogCandidate) {

@@ -424,7 +424,7 @@ public class EditLectureBlockController extends FormBasicController {
 			TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 					taxonomyLevels,
 					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
-					translate(taxonomyLevelLabelI18n), translate(taxonomyLevelLabelI18n));
+					translate(taxonomyLevelLabelI18n));
 			source.setAriaTitleLabel(translate(taxonomyLevelLabelI18n));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy.levels", null, subjectsLayout, getWindowControl(), true, source);
 			taxonomyLevelEl.setEnabled(taxonomyEnabled);

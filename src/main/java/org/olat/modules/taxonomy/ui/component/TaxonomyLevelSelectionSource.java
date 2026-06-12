@@ -36,13 +36,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.TreeVisitor;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
@@ -50,11 +43,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
+import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.TreeVisitor;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -75,7 +74,6 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	private final Collection<TaxonomyLevel> selectedLevels;
 	private final Supplier<Collection<TaxonomyLevel>> levelsSupplier;
 	private String ariaTitleLabel;
-	private final String browserTitle;
 	private final String browserTableHeader;
 	private Predicate<TaxonomyLevel> optionsFilter = level -> true;
 	private Collection<TaxonomyLevel> allTaxonomyLevels;
@@ -86,17 +84,11 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 
 	public TaxonomyLevelSelectionSource(Locale locale, Collection<TaxonomyLevel> selectedLevels,
 			Supplier<Collection<TaxonomyLevel>> levelsSupplier, String browserTableHeader) {
-		this(locale, selectedLevels, levelsSupplier, null, browserTableHeader);
-	}
-
-	public TaxonomyLevelSelectionSource(Locale locale, Collection<TaxonomyLevel> selectedLevels,
-			Supplier<Collection<TaxonomyLevel>> levelsSupplier, String browserTitle, String browserTableHeader) {
 		translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 		collator = Collator.getInstance(locale);
 		
 		this.selectedLevels = selectedLevels;
 		this.levelsSupplier = levelsSupplier;
-		this.browserTitle = browserTitle;
 		this.browserTableHeader = browserTableHeader;
 	}
 
@@ -291,16 +283,6 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	@Override
 	public boolean isBrowserAvailable() {
 		return true;
-	}
-
-	@Override
-	public String getBrowserTitle(Locale locale) {
-		return browserTitle;
-	}
-
-	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
-		return getBrowserCreator(multiSelection, List.of());
 	}
 
 	@Override
