@@ -269,7 +269,7 @@ public class ToDoServiceImpl implements ToDoService {
 		
 		ToDoProvider provider = getProvider(toDoTask.getType());
 		boolean sendAssignmentEmail = provider.getToDoMailRule(toDoTask).isSendAssignmentEmail(
-				doer != null && doer.getKey().longValue() != identity.getKey().longValue(),
+				doer != null && doer.getKey().longValue() == identity.getKey().longValue(),
 				roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)),
 				currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)));
 		if (sendAssignmentEmail) {
