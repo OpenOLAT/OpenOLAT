@@ -235,9 +235,14 @@ public class ObjectSelectionController extends FormBasicController {
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if (source != searchTermEl) {
-			super.propagateDirtinessToContainer(source, fe);
+		if (source == searchTermEl) {
+			return;
 		}
+		for (GroupBinding b : bindings) {
+			if (multiSelection && b.multiEl == source) return;
+			if (!multiSelection && b.singleEl == source) return;
+		}
+		super.propagateDirtinessToContainer(source, fe);
 	}
 
 	private void doSearch() {
@@ -445,7 +450,6 @@ public class ObjectSelectionController extends FormBasicController {
 		if (binding.singleEl.isOneSelected()) {
 			selectedKeys.add(binding.singleEl.getSelectedKey());
 		}
-		doSearch();
 		onSelectionChanged();
 	}
 	
