@@ -25,7 +25,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.AbstractEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;

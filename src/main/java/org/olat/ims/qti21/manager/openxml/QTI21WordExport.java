@@ -65,10 +65,10 @@ import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.w3c.dom.Element;
@@ -1666,7 +1666,7 @@ public class QTI21WordExport implements MediaResource {
 				if(responseDeclaration != null) {
 					if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 						TextEntry textEntry = new TextEntry(responseId);
-						FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+						GapAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 						
 						StringBuilder sb = new StringBuilder();
 						if(StringHelper.containsNonWhitespace(textEntry.getSolution())) {
@@ -1683,7 +1683,7 @@ public class QTI21WordExport implements MediaResource {
 						response = sb.toString();
 					} else if(responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 						NumericalEntry numericalEntry = new NumericalEntry(responseId);
-						FIBAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+						GapAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 						if(numericalEntry.getSolution() != null) {
 							response = numericalEntry.getSolution().toString();
 						}

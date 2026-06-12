@@ -24,17 +24,19 @@ import java.math.BigDecimal;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
@@ -48,15 +50,14 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class FIBNumericalEntrySettingsController extends FormBasicController {
 	
-	private static final String[] toleranceModeKeys = new String[]{
-		ToleranceMode.EXACT.name(), ToleranceMode.ABSOLUTE.name(), ToleranceMode.RELATIVE.name()
-	};
-	
 	private TextElement solutionEl;
 	private TextElement placeholderEl;
 	private TextElement expectedLengthEl;
+	private FormToggle toleranceEl;
 	private SingleSelection toleranceModeEl;
-	private TextElement lowerToleranceEl, upperToleranceEl;
+	private TextElement lowerToleranceEl;
+	private TextElement upperToleranceEl;
+	private FormLayoutContainer toleranceCont;
 	
 	private final boolean restrictedEdit, readOnly;
 	private final NumericalEntry interaction;
@@ -82,43 +83,44 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_gap_numeric_form");
 		
+		uifactory.addStaticTextElement("fib.input.type", translate("form.numerical"), formLayout);
+		
 		Double solution = interaction.getSolution();
 		String solString = solution == null ? "" : solution.toString();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solString, formLayout);
-		solutionEl.setElementCssClass("o_sel_gap_numeric_solution");
+		solutionEl.setElementCssClass("o_sel_gap_numeric_solution form-inline");
 		solutionEl.setEnabled(!restrictedEdit && !readOnly);
 		if(!restrictedEdit && !readOnly && !StringHelper.containsNonWhitespace(solString)) {
 			solutionEl.setFocus(true);
 		}
 		
-		String placeholder = interaction.getPlaceholder();
-		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
-		placeholderEl.setElementCssClass("o_sel_gap_numeric_placeholder");
-		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
+		toleranceEl = uifactory.addToggleButton("fib.tolerance", "fib.tolerance", translate("on"), translate("off"), formLayout);
+		toleranceEl.toggle(interaction.getToleranceMode() != null && interaction.getToleranceMode() != ToleranceMode.EXACT);
+		toleranceEl.setElementCssClass("o_sel_gap_numerical_tolerance_enable");
+		toleranceEl.setHelpText(getToleranceHelp());
+		toleranceEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#ni");
+		toleranceEl.addActionListener(FormEvent.ONCHANGE);
 		
-		Integer expectedLength = interaction.getExpectedLength();
-		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
-		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, formLayout);
-		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
-		
-		String[] toleranceModeValues = new String[] {
-			translate("fib.tolerance.mode.exact"), translate("fib.tolerance.mode.absolute"), translate("fib.tolerance.mode.relative")
-		};
-		toleranceModeEl = uifactory.addDropdownSingleselect("fib.tolerance.mode", "fib.tolerance.mode", formLayout, toleranceModeKeys, toleranceModeValues, null);
+		SelectionValues tolerancePK = new SelectionValues();
+		tolerancePK.add(SelectionValues.entry(ToleranceMode.ABSOLUTE.name(), translate("fib.tolerance.mode.absolute")));
+		tolerancePK.add(SelectionValues.entry(ToleranceMode.RELATIVE.name(), translate("fib.tolerance.mode.relative")));
+		toleranceModeEl = uifactory.addRadiosHorizontal("fib.tolerance.mode", "fib.tolerance.mode", formLayout,
+				tolerancePK.keys(), tolerancePK.values());
+		toleranceModeEl.setElementCssClass("o_sel_gap_numerical_tolerance_mode");
 		toleranceModeEl.setEnabled(!restrictedEdit && !readOnly);
-		toleranceModeEl.setHelpText(getToleranceHelp());
-		toleranceModeEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#ni");
-		if(interaction.getToleranceMode() != null) {
-			for(String toleranceModeKey:toleranceModeKeys) {
-				if(toleranceModeKey.equals(interaction.getToleranceMode().name())) {
-					toleranceModeEl.select(toleranceModeKey, true);
-				}
-			}
-		}
-		if(!toleranceModeEl.isOneSelected()) {
-			toleranceModeEl.select(toleranceModeKeys[0], true);
+		
+		if(interaction.getToleranceMode() == ToleranceMode.ABSOLUTE) {
+			toleranceModeEl.select(ToleranceMode.ABSOLUTE.name(), true);
+		} else if(interaction.getToleranceMode() == ToleranceMode.RELATIVE) {
+			toleranceModeEl.select(ToleranceMode.RELATIVE.name(), true);
+		} else if(!toleranceModeEl.isOneSelected()) {
+			toleranceModeEl.select(ToleranceMode.ABSOLUTE.name(), true);
 		}
 		toleranceModeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String page = velocity_root + "/fib_tolerance.html";
+		toleranceCont = uifactory.addCustomFormLayout("tolerance-up-low", null, page, formLayout);
+		toleranceCont.setFormLayout("nolayout");
 		
 		Double lowerTolerance = interaction.getLowerTolerance();
 		String lowerToleranceString;
@@ -135,7 +137,8 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		} else {
 			lowerToleranceString = lowerTolerance == null ? "" : lowerTolerance.toString();
 		}
-		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, formLayout);
+		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, toleranceCont);
+		lowerToleranceEl.setDomReplacementWrapperRequired(false);
 		lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		lowerToleranceEl.setElementCssClass("o_sel_gap_numeric_lower_bound");
 		lowerToleranceEl.setEnabled(!restrictedEdit && !readOnly);
@@ -155,16 +158,30 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		} else {
 			upperToleranceString = upperTolerance == null ? "" : upperTolerance.toString();
 		}
-		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, formLayout);
+		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, toleranceCont);
+		upperToleranceEl.setDomReplacementWrapperRequired(false);
 		upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		upperToleranceEl.setElementCssClass("o_sel_gap_numeric_upper_bound");
 		upperToleranceEl.setEnabled(!restrictedEdit && !readOnly);
 		updateToleranceUpAndLow();
+		
+		FormLayoutContainer displayCont = uifactory.addDefaultFormLayout("display-options", null, formLayout);
+		displayCont.setFormLayout("nolayout");
+		displayCont.setFormTitle(translate("fib.display.title"));
+		
+		String placeholder = interaction.getPlaceholder();
+		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, displayCont);
+		placeholderEl.setElementCssClass("o_sel_gap_numeric_placeholder");
+		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
+		
+		Integer expectedLength = interaction.getExpectedLength();
+		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
+		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, displayCont);
+		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
+		expectedLengthEl.setElementCssClass("form-inline");
 
 		// Submit Button
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsContainer.setRootForm(mainForm);
-		formLayout.add(buttonsContainer);
+		FormLayoutContainer buttonsContainer = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		if(!restrictedEdit && !readOnly) {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
@@ -182,20 +199,28 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	}
 	
 	private void updateToleranceUpAndLow() {
-		if(toleranceModeEl.isOneSelected()) {
+		boolean tolerance = toleranceEl.isOn();
+		toleranceModeEl.setVisible(tolerance);
+		toleranceCont.setVisible(tolerance);
+		lowerToleranceEl.setVisible(tolerance);
+		upperToleranceEl.setVisible(tolerance);
+
+		if(!toleranceModeEl.isOneSelected()) {
+			toleranceModeEl.select(ToleranceMode.ABSOLUTE.name(), true);
+		}
+		if(toleranceModeEl.isVisible() && toleranceModeEl.isOneSelected()) {
 			String selectedKey = toleranceModeEl.getSelectedKey();
 			ToleranceMode mode = ToleranceMode.valueOf(selectedKey);
-			boolean visible = mode == ToleranceMode.ABSOLUTE || mode == ToleranceMode.RELATIVE;
-			lowerToleranceEl.setVisible(visible);
-			upperToleranceEl.setVisible(visible);
 			if(mode == ToleranceMode.RELATIVE) {
 				lowerToleranceEl.setExampleKey("fib.tolerance.mode.relative.low.example", null);
-				upperToleranceEl.setExampleKey("fib.tolerance.mode.relative.up.example", null);
+				lowerToleranceEl.setTextAddOn("%", false);
+				upperToleranceEl.setTextAddOn("%", false);
 			} else if(mode == ToleranceMode.ABSOLUTE) {
 				lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
-				upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+				lowerToleranceEl.setTextAddOn("", false);
+				upperToleranceEl.setTextAddOn("", false);
 			}
-		}
+		} 
 	}
 
 	@Override
@@ -233,7 +258,9 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		toleranceModeEl.clearError();
 		lowerToleranceEl.clearError();
 		upperToleranceEl.clearError();
-		if(!toleranceModeEl.isOneSelected()) {
+		if(!toleranceEl.isOn()) {
+			//Do nothing
+		} else if(!toleranceModeEl.isOneSelected()) {
 			toleranceModeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
@@ -296,7 +323,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == toleranceModeEl) {
+		if(toleranceEl == source || toleranceModeEl == source) {
 			updateToleranceUpAndLow();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -313,9 +340,13 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		} else {
 			interaction.setExpectedLength(null);
 		}
-		String toleranceMode = toleranceModeEl.getSelectedKey();
-		interaction.setToleranceMode(ToleranceMode.valueOf(toleranceMode));
 		
+		ToleranceMode toleranceMode = ToleranceMode.EXACT;
+		if(toleranceEl.isOn() && toleranceModeEl.isOneSelected()) {
+			toleranceMode = ToleranceMode.valueOf(toleranceModeEl.getSelectedKey());
+		}
+		
+		interaction.setToleranceMode(toleranceMode);
 		if(interaction.getToleranceMode() == ToleranceMode.ABSOLUTE) {
 			BigDecimal solution = new BigDecimal(solutionEl.getValue());
 			BigDecimal upperBound = new BigDecimal(upperToleranceEl.getValue());

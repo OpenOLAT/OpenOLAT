@@ -28,7 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -41,9 +41,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.IdentifierGenerator;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
-import org.olat.ims.qti21.ui.editor.interactions.InlineChoiceEditorController.InlineChoiceInteractionWrapper;
+import org.olat.ims.qti21.ui.editor.interactions.GapEditorController.InlineChoiceInteractionWrapper;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
@@ -53,12 +53,15 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 /**
  * 
  * Initial date: 22 juin 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class InlineChoiceInteractionSettingsController extends FormBasicController {
 	
-	private MultipleSelectionElement shuffleEl;
+	private static final String SHUFFLE_KEY = "shuffle";
+	
+	private SingleSelection shuffleEl;
+	private FormLayoutContainer choicesCont;
 	private List<InlineChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
 	private int counter = 0;
@@ -68,7 +71,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	
 	public InlineChoiceInteractionSettingsController(UserRequest ureq, WindowControl wControl, InlineChoiceInteractionWrapper choiceBlock,
 			boolean restrictedEdit, boolean readOnly) {
-		super(ureq, wControl, "inline_choices_settings", Util.createPackageTranslator(AssessmentTestEditorController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestEditorController.class, ureq.getLocale()));
 		this.inlineChoiceBlock = choiceBlock;
 		this.restrictedEdit = restrictedEdit;
 		this.readOnly = readOnly;
@@ -96,24 +99,38 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		SelectionValues shuffleKeyValues = new SelectionValues();
-		shuffleKeyValues.add(SelectionValues.entry("on", ""));
-		shuffleEl = uifactory.addCheckboxesHorizontal("form.imd.shuffle", "form.imd.shuffle", formLayout,
-				shuffleKeyValues.keys(), shuffleKeyValues.values());
-		shuffleEl.select("on", inlineChoiceBlock.isShuffle());
-		shuffleEl.addActionListener(FormEvent.ONCHANGE);
+		formLayout.setElementCssClass("o_sel_inlinechoice_form");
 		
+		uifactory.addStaticTextElement("fib.input.type", translate("form.inlinechoice"), formLayout);
+		
+		String page = velocity_root + "/inline_choices_settings.html";
+		choicesCont = uifactory.addCustomFormLayout("choices", null, page, formLayout);
+		choicesCont.setFormLayout("nolayout");
+
 		List<InlineChoice> choices = inlineChoiceBlock.getInlineChoices();
 		for(InlineChoice choice:choices) {
-			InlineChoiceWrapper wrapper = forgeInlineChoice(choice, formLayout);
+			InlineChoiceWrapper wrapper = forgeInlineChoice(choice, choicesCont);
 			choiceWrappers.add(wrapper);
 		}
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("correctAnswer", inlineChoiceBlock.getCorrectResponseId());
-			layoutCont.contextPut("choices", choiceWrappers);
+		choicesCont.contextPut("correctAnswer", inlineChoiceBlock.getCorrectResponseId());
+		choicesCont.contextPut("choices", choiceWrappers);
+		
+		FormLayoutContainer displayCont = uifactory.addDefaultFormLayout("display-options", null, formLayout);
+		displayCont.setFormTitle(translate("fib.display.title"));
+		displayCont.setFormLayout("nolayout");
+		
+		SelectionValues shuffleKeyValues = new SelectionValues();
+		shuffleKeyValues.add(SelectionValues.entry(SHUFFLE_KEY, translate("form.imd.order.shuffled")));
+		shuffleKeyValues.add(SelectionValues.entry("", translate("form.imd.order.preset")));
+		shuffleEl = uifactory.addRadiosVertical("form.imd.order", "form.imd.order", displayCont,
+				shuffleKeyValues.keys(), shuffleKeyValues.values());
+		if(inlineChoiceBlock.isShuffle()) {
+			shuffleEl.select(SHUFFLE_KEY, true);
+		} else {
+			shuffleEl.select("", true);
 		}
+		shuffleEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -125,7 +142,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		boolean editable = isEditable(choice);
 		
 		String id = "choice_" + (++counter);
-		String text = InlineChoiceAssessmentItemBuilder.getText(choice);
+		String text = GapAssessmentItemBuilder.getText(choice);
 		TextElement choiceEl = uifactory.addTextElement(id, null, 255, text, formLayout);
 		choiceEl.setUserObject(choice);
 		choiceEl.setEnabled(!restrictedEdit && !readOnly && !choice.getIdentifier().toString().startsWith("global-"));
@@ -165,7 +182,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	
 	private void updateUI() {
 		boolean canDelete = choiceWrappers.size() > 1;
-		boolean fixOrder = !shuffleEl.isAtLeastSelected(1);
+		boolean fixOrder = !shuffleEl.isOneSelected() || !SHUFFLE_KEY.equals(shuffleEl.getSelectedKey());
 		for(int i=0; i<choiceWrappers.size(); i++) {
 			InlineChoiceWrapper choiceWrapper = choiceWrappers.get(i);
 			choiceWrapper.getUpButton().setVisible(fixOrder && i != 0);
@@ -229,7 +246,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	 */
 	private void doCommitChoices() {
 		inlineChoiceBlock.getInlineChoices().clear();
-		inlineChoiceBlock.setShuffle(shuffleEl.isAtLeastSelected(1));
+		inlineChoiceBlock.setShuffle(shuffleEl.isOneSelected() && SHUFFLE_KEY.equals(shuffleEl.getSelectedKey()));
 		
 		for(InlineChoiceWrapper choiceWrapper:choiceWrappers) {
 			InlineChoice inlineChoice = choiceWrapper.getInlineChoice();
@@ -245,7 +262,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	private void doAddChoice(InlineChoiceWrapper wrapper) {
 		Identifier responseId = IdentifierGenerator.newAsIdentifier("inlinec");
 		InlineChoice newChoice = createInlineChoice(null, "", responseId);
-		InlineChoiceWrapper choiceWrapper = forgeInlineChoice(newChoice, flc);
+		InlineChoiceWrapper choiceWrapper = forgeInlineChoice(newChoice, choicesCont);
 		int index = wrapper == null ? -1 : choiceWrappers.indexOf(wrapper) + 1;
 		if(index >= 0 && index < choiceWrappers.size()) {
 			choiceWrappers.add(index, choiceWrapper);

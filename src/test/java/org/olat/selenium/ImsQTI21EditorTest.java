@@ -40,7 +40,6 @@ import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21GapEntriesEditorPage;
 import org.olat.selenium.page.qti.QTI21HotspotEditorPage;
 import org.olat.selenium.page.qti.QTI21HottextEditorPage;
-import org.olat.selenium.page.qti.QTI21InlineChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21LobEditorPage;
 import org.olat.selenium.page.qti.QTI21MatchEditorPage;
@@ -2053,7 +2052,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.deleteNode();
 		
 		// Add an inline choice with score: all answers
-		QTI21InlineChoiceEditorPage inlineChoiceEditor = qtiEditor
+		QTI21GapEntriesEditorPage inlineChoiceEditor = qtiEditor
 			.addInlineChoice()
 			.appendContent("European Rocket ")
 			.addInlineChoice("Falcon")

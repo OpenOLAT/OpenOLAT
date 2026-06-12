@@ -169,6 +169,14 @@ public class QTI21Constants {
 	
 	public static final String CSS_ESSAY_RICHTEXT =  "essay-richtext";
 	
+	public static final String CSS_GAP_TEXT =  "gap_text";
+	
+	public static final String CSS_GAP_NUMERICAL =  "gap_numerical";
+	
+	public static final String CSS_INLINE_CHOICE =  "inline_choice";
+	
+	public static final String CSS_GAP_MIXED =  "gap_mixed";
+	
 
 	public static final String QMD_ENTRY_SUMMARY_NONE = "summaryNone";
 	

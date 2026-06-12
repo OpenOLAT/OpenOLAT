@@ -23,14 +23,14 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 
 /**
+ * Gap editor: FIB text and numerical, inline choices.
  * 
  * Initial date: 2 nov. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
@@ -40,7 +40,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21GapEntriesEditorPage appendContent(String text) {
-		String textSelector = ".o_sel_assessment_item_fib_text";
+		String textSelector = ".o_sel_assessment_item_gap_text";
 		OOGraphene.tinymceInsert(text, textSelector, browser);
 		return this;
 	}
@@ -54,7 +54,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage addGapEntry(String solution, String placeholder) {
-		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_fib_text')]//button[contains(@title,'L\u00FCckentext')]");
+		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_gap_text')]//button[contains(@title,'L\u00FCckentext')]");
 		browser.findElement(addGapBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
@@ -76,7 +76,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage editGapEntry(String solution, String placeholder, int index) {
-		By frameBy = By.cssSelector("div.o_sel_assessment_item_fib_text div.tox-edit-area iframe");
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_gap_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
 		
@@ -118,7 +118,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 */
 	public QTI21GapEntriesEditorPage addNumericalInput(String solution, String placeholder,
 			ToleranceMode toleranceMode, String uperrBound, String lowerBound) {
-		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_fib_text')]//button[contains(@title,'Numeri')]");
+		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_gap_text')]//button[contains(@title,'numeri')]");
 		browser.findElement(addGapBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return fillNumericalInputSettings(solution, placeholder, toleranceMode, uperrBound, lowerBound);
@@ -135,7 +135,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 */
 	public QTI21GapEntriesEditorPage editNumericalInput(String solution, String placeholder,
 			ToleranceMode toleranceMode, String uperrBound, String lowerBound, int index) {
-		By frameBy = By.cssSelector("div.o_sel_assessment_item_fib_text div.tox-edit-area iframe");
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_gap_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
 		
@@ -156,16 +156,19 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 		
 		By placeholderBy = By.cssSelector("fieldset.o_sel_gap_numeric_form div.o_sel_gap_numeric_placeholder input[type=text]");
 		browser.findElement(placeholderBy).sendKeys(placeholder);
-		
-		By toleranceModeBy = By.xpath("//select[contains(@id,'fib_tolerance_mode')]");
-		WebElement toleranceModeEl = browser.findElement(toleranceModeBy);
-		new Select(toleranceModeEl).selectByValue(toleranceMode.name());
-		OOGraphene.waitBusy(browser);
-		
+
+		String toleranceToggleBy = ".o_sel_gap_numeric_form button.o_sel_gap_numerical_tolerance_enable";
 		By upperBoundBy = By.cssSelector("fieldset.o_sel_gap_numeric_form div.o_sel_gap_numeric_upper_bound input[type=text]");
 		if(toleranceMode == ToleranceMode.EXACT) {
+			OOGraphene.toggle(toleranceToggleBy, false, false, browser);
 			OOGraphene.waitElementDisappears(upperBoundBy, 5, browser);
 		} else {
+			OOGraphene.toggle(toleranceToggleBy, true, false, browser);
+
+			By toleranceModeBy = By.cssSelector(".o_sel_gap_numerical_tolerance_mode input[type='radio'][name='fib.tolerance.mode'][value='" + toleranceMode.name() + "']");
+			OOGraphene.waitElement(toleranceModeBy, browser).click();
+			OOGraphene.waitBusy(browser);
+			
 			OOGraphene.waitElement(upperBoundBy, browser).sendKeys(upperBound);
 			By lowerBoundBy = By.cssSelector("fieldset.o_sel_gap_numeric_form div.o_sel_gap_numeric_lower_bound input[type=text]");
 			browser.findElement(lowerBoundBy).sendKeys(lowerBound);
@@ -184,6 +187,72 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
+	
+	/**
+	 * Add a new inline choice. Use the placeholder to locate
+	 * the gap during the test.
+	 * 
+	 * @param solution The first answer
+	 * @return Itself
+	 */
+	public QTI21GapEntriesEditorPage addInlineChoice(String answer) {
+		By addBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_gap_text')]//button[contains(@title,'L\u00FCckentext')]");
+		browser.findElement(addBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By firstAnswerBy = By.cssSelector("fieldset.o_sel_inlinechoice_form .o_sel_choice_1 input[type='text']");
+		browser.findElement(firstAnswerBy).sendKeys(answer);
+		return this;
+	}
+	
+	public QTI21GapEntriesEditorPage addChoice(String choice, int index) {
+		By addChoiceBy = By.cssSelector("fieldset.o_sel_inlinechoice_form .o_sel_choice_" + (index -1) + " a.o_sel_add_choice");
+		browser.findElement(addChoiceBy).click();
+
+		By newChoiceBy = By.cssSelector("fieldset.o_sel_inlinechoice_form .o_sel_choice_" + index + " input[type='text']");
+		OOGraphene.waitElement(newChoiceBy, browser).sendKeys(choice);
+		return this;
+	}
+	
+	public QTI21GapEntriesEditorPage setCorrect(int index) {
+		By correctBy = By.cssSelector("fieldset.o_sel_inlinechoice_form .o_sel_choice_" + index + " input[type='radio']");
+		browser.findElement(correctBy).click();
+		return this;
+	}
+	
+	/**
+	 * Edit an existing gap entry of type text. Use the placeholder to locate
+	 * the gap during the test.
+	 * 
+	 * @param solution The solution
+	 * @param placeholder The placeholder
+	 * @param index The index of the entry in the paragraph
+	 * @return Itself
+	 */
+	public QTI21GapEntriesEditorPage editInlineChoice(String solution, String placeholder, int index) {
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_gap_text div.tox-edit-area iframe");
+		WebElement frameEl = browser.findElement(frameBy);
+		browser.switchTo().frame(frameEl);
+		
+		By inlineChoiceBy = By.xpath("//p/span[@class='inlinechoiceinteraction'][" + index + "]/a");
+		browser.findElement(inlineChoiceBy).click();
+		
+		browser.switchTo().defaultContent();
+		OOGraphene.waitModalDialog(browser);
+		
+		By firstAnswerBy = By.cssSelector("fieldset.o_sel_inlinechoice_form div.o_sel_choice_1 input[type=text]");
+		WebElement answerEl = browser.findElement(firstAnswerBy);
+		answerEl.clear();
+		answerEl.sendKeys(solution);
+		return this;
+	}
+	
+	public QTI21GapEntriesEditorPage saveInlineChoice() {
+		By saveBy = By.cssSelector(".o_sel_inlinechoice_form button.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
 
 	
 	/**
@@ -192,7 +261,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage save() {
-		By saveBy = By.cssSelector("div.o_sel_fib_save button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_sel_gap_save button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;

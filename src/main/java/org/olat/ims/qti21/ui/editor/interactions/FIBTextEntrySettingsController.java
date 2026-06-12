@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,20 +29,22 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 
 import uk.ac.ed.ph.jqtiplus.internal.util.StringUtilities;
@@ -55,14 +58,14 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class FIBTextEntrySettingsController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
+	private static final String OPTION_CASE_SENSITIVITY_KEY = "case";
 	
 	private TextElement solutionEl;
 	private TextElement placeholderEl;
 	private TextElement expectedLengthEl;
-	private FormLink addFirstAlternative;
+	private FormToggle alternativesEl;
 	private FormLink addMultipleAlternativesButton;
-	private MultipleSelectionElement caseSensitiveEl;
+	private MultipleSelectionElement correctionsEl;
 	private FormLayoutContainer alternativesCont;
 	private final List<AlternativeRow> alternativeRows = new ArrayList<>();
 	
@@ -82,11 +85,14 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_gap_entry_form");
+		
+		uifactory.addStaticTextElement("fib.input.type", translate("form.fib"), formLayout);
 		
 		String solution = interaction.getSolution();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solution, formLayout);
@@ -96,27 +102,19 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 			solutionEl.setFocus(true);
 		}
 		
-		String placeholder = interaction.getPlaceholder();
-		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
-		placeholderEl.setElementCssClass("o_sel_gap_entry_placeholder");
-		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
+		alternativesEl = uifactory.addToggleButton("add.alternative.toggle", "add.alternative.toggle", translate("on"), translate("off"), formLayout);
+		alternativesEl.setEnabled(!restrictedEdit && !readOnly);
+		alternativesEl.setHelpText(translate("fib.alternative.help"));
+		alternativesEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#fib");
 		
 		String alternativesPage = velocity_root + "/fib_alternatives.html";
-		alternativesCont = FormLayoutContainer.createCustomFormLayout("alternatives.list", getTranslator(), alternativesPage);
-		alternativesCont.setRootForm(mainForm);
-		formLayout.add(alternativesCont);
-		alternativesCont.setLabel("fib.alternative", null);
-		alternativesCont.setHelpText(translate("fib.alternative.help"));
-		alternativesCont.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#fib");
+		alternativesCont = uifactory.addCustomFormLayout("alternatives.list", null, alternativesPage, formLayout);
 		alternativesCont.contextPut("alternatives", alternativeRows);
 		
-		addFirstAlternative = uifactory.addFormLink("add.first.alternative", "add", "", null, alternativesCont, Link.LINK | Link.NONTRANSLATED);
-		addFirstAlternative.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
-		addFirstAlternative.setVisible(!restrictedEdit && !readOnly);
-		
-		addMultipleAlternativesButton = uifactory.addFormLink("add.multi.alternatives", "add.multi", "fib.add.multiple.alternatives", null, alternativesCont, Link.BUTTON);
+		addMultipleAlternativesButton = uifactory.addFormLink("add.multi.alternatives", "add.multi", "fib.add.multiple.alternatives", null, alternativesCont, Link.LINK);
 		addMultipleAlternativesButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		addMultipleAlternativesButton.setVisible(!restrictedEdit && !readOnly);
+		addMultipleAlternativesButton.setGhost(true);
 
 		List<TextEntryAlternative> alternatives = interaction.getAlternatives();
 		if(alternatives != null && !alternatives.isEmpty()) {
@@ -125,15 +123,32 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 			}
 		}
 		
+		FormLayoutContainer displayCont = uifactory.addDefaultFormLayout("display-options", null, formLayout);
+		displayCont.setFormLayout("nolayout");
+		displayCont.setFormTitle(translate("fib.display.title"));
+		
+		String placeholder = interaction.getPlaceholder();
+		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, displayCont);
+		placeholderEl.setElementCssClass("o_sel_gap_entry_placeholder");
+		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
+		
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
-		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, formLayout);
+		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, displayCont);
 		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
+		expectedLengthEl.setElementCssClass("form-inline");
 		
-		caseSensitiveEl = uifactory.addCheckboxesHorizontal("fib.caseSensitive", "fib.caseSensitive", formLayout, onKeys, new String[]{ "" });
-		caseSensitiveEl.setEnabled(!restrictedEdit && !readOnly);
+		FormLayoutContainer optionsCont = uifactory.addDefaultFormLayout("options", null, formLayout);
+		optionsCont.setFormLayout("nolayout");
+		optionsCont.setFormTitle(translate("fib.options.title"));
+		
+		SelectionValues optionsPK = new SelectionValues();
+		optionsPK.add(SelectionValues.entry(OPTION_CASE_SENSITIVITY_KEY, translate("fib.caseSensitive")));
+		
+		correctionsEl = uifactory.addCheckboxesHorizontal("fib.corrections", "fib.corrections", optionsCont, optionsPK.keys(), optionsPK.values());
+		correctionsEl.setEnabled(!restrictedEdit && !readOnly);
 		if(interaction.isCaseSensitive()) {
-			caseSensitiveEl.select(onKeys[0], true);
+			correctionsEl.select(OPTION_CASE_SENSITIVITY_KEY, true);
 		}
 
 		// Submit Button
@@ -187,7 +202,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 
 		FormLink addButton = null;
 		if(!restrictedEdit && !readOnly) {
-			addButton = uifactory.addFormLink("add.alternative." + count++, "add", "", null, alternativesCont, Link.NONTRANSLATED);
+			addButton = uifactory.addFormLink("add.alternative." + count++, "add", "", null, alternativesCont, Link.BUTTON | Link.NONTRANSLATED);
 			addButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			addButton.setVisible(!restrictedEdit && !readOnly);
 			alternativesCont.add(addButton);
@@ -195,8 +210,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		
 		FormLink removeButton = null;
 		if(!restrictedEdit && !readOnly) {
-			removeButton = uifactory.addFormLink("remove.alternative." + count++, "rm", "", null, alternativesCont, Link.NONTRANSLATED);
-			removeButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+			removeButton = uifactory.addFormLink("remove.alternative." + count++, "rm", "", null, alternativesCont, Link.BUTTON | Link.NONTRANSLATED);
+			removeButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			removeButton.setVisible(!restrictedEdit && !readOnly);
 			alternativesCont.add(removeButton);
 		}
@@ -212,6 +227,14 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 				alternativeRows.add(row);
 			}
 		}
+		
+		alternativesEl.toggle(!alternativeRows.isEmpty());
+	}
+	
+	private void updateUI() {
+		boolean hasAlternatives = alternativesEl.isOn();
+		alternativesCont.setVisible(hasAlternatives);
+		addMultipleAlternativesButton.setVisible(hasAlternatives);
 	}
 	
 	@Override
@@ -259,18 +282,18 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == addFirstAlternative) {
-			TextEntryAlternative alternative = new TextEntryAlternative();
-			if(interaction.getScore() != null) {
-				alternative.setScore(interaction.getScore().doubleValue());
+		if(source == alternativesEl) {
+			if(alternativesEl.isOn()) {
+				doEnableAlternatives();
 			}
-			appendAlternative(alternative, null, true);
+			updateUI();
 		} else if(source == addMultipleAlternativesButton) {
 			doOpenAddVariants(ureq, addMultipleAlternativesButton);
 		} else if(source instanceof FormLink) {
 			for(AlternativeRow alternativeRow:alternativeRows) {
 				if(alternativeRow.getRemoveButton() == source) {
 					alternativeRows.remove(alternativeRow);
+					alternativesEl.toggle(!alternativeRows.isEmpty());
 					flc.setDirty(true);
 					break;
 				} else if(alternativeRow.getAddButton() == source) {
@@ -282,6 +305,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 					break;
 				}
 			}
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -298,7 +322,9 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 			alternatives.add(alternative);
 		}
 		interaction.setAlternatives(alternatives);
-		interaction.setCaseSensitive(caseSensitiveEl.isAtLeastSelected(1));
+		
+		Collection<String> selectedOptions = correctionsEl.getSelectedKeys();
+		interaction.setCaseSensitive(selectedOptions.contains(OPTION_CASE_SENSITIVITY_KEY));
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
 			interaction.setExpectedLength(Integer.valueOf(expectedLengthEl.getValue()));
 		} else {
@@ -310,6 +336,14 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doEnableAlternatives() {
+		TextEntryAlternative alternative = new TextEntryAlternative();
+		if(interaction.getScore() != null) {
+			alternative.setScore(interaction.getScore().doubleValue());
+		}
+		appendAlternative(alternative, null, true);
 	}
 	
 	private void doOpenAddVariants(UserRequest ureq, FormLink link) {

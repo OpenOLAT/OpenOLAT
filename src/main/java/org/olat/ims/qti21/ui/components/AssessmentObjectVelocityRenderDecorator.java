@@ -56,10 +56,10 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
@@ -768,7 +768,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			
 			if(avc.isScorePerAnswers()) {
 				entryForScore = new TextEntry(textEntry);
-				FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(entryForScore, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+				GapAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(entryForScore, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 			}
 		}
 		
@@ -895,11 +895,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		if(interaction instanceof TextEntryInteraction && responseDeclaration != null) {
 			if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 				TextEntry textEntry = new TextEntry((TextEntryInteraction)interaction);
-				FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+				GapAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 				score = textEntry.getScore();
 			} else if(responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 				NumericalEntry numericalEntry = new NumericalEntry((TextEntryInteraction)interaction);
-				FIBAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+				GapAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 				score = numericalEntry.getScore();
 			} 
 		} else if(interaction instanceof OrderInteraction) {

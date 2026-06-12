@@ -41,10 +41,10 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Constants;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.xml.sax.SAXException;
 
@@ -71,14 +71,14 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FIBAssessmentItemBuilderTest {
+public class GapFIBAssessmentItemBuilderTest {
 	
-	private static final Logger log = Tracing.createLoggerFor(FIBAssessmentItemBuilderTest.class);
+	private static final Logger log = Tracing.createLoggerFor(GapFIBAssessmentItemBuilderTest.class);
 	
 	@Test
 	public void createTextEntry_text_duplicatesForbidden_scoreAll() throws IOException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
 		List<TextEntryAlternative> entryAlternatives = toAlternatives(1.0d, "Berset", "Sommaruga", "Cassis");
 
@@ -157,7 +157,7 @@ public class FIBAssessmentItemBuilderTest {
 	@Test
 	public void createTextEntry_text_duplicatesForbidden_scorePerAnswers() throws IOException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
 		List<TextEntryAlternative> entryAlternatives = toAlternatives(1.0d, "Jupiter", "Saturne", "Uranus", "Neptune");
 		
@@ -263,7 +263,7 @@ public class FIBAssessmentItemBuilderTest {
 	@Test
 	public void createTextEntry_text_duplicatesForbidden_nothingShared_scorePerAnswers() throws IOException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
 		List<TextEntryAlternative> bigAlternatives =  toAlternatives(1.0, "Jupiter", "Saturne", "Uranus", "Neptune");
 		String responseIdentifier1 = itemBuilder.generateResponseIdentifier();
@@ -351,7 +351,7 @@ public class FIBAssessmentItemBuilderTest {
 	@Test
 	public void createTextEntry_text_duplicatesAllowed_perAnswer() throws IOException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
 		List<TextEntryAlternative> entryAlternatives = toAlternatives(1.0d, "1", "2", "3");
 
@@ -471,7 +471,7 @@ public class FIBAssessmentItemBuilderTest {
 	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
 		ResolvedAssessmentItem item = readFib("fib-no-duplicates-16-2.xml");
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-        FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
+        GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
         
         Assert.assertFalse(itemBuilder.isAllowDuplicatedAnswers());
 	}
@@ -490,7 +490,7 @@ public class FIBAssessmentItemBuilderTest {
 	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
 		ResolvedAssessmentItem item = readFib("fib-no-duplicates-17-1.xml");
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-        FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
         
         Assert.assertFalse(itemBuilder.isAllowDuplicatedAnswers());
 	}
@@ -500,7 +500,7 @@ public class FIBAssessmentItemBuilderTest {
 	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
 		ResolvedAssessmentItem item = readFib("fib-duplicates-allowed.xml");
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-        FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
         
         Assert.assertTrue(itemBuilder.isAllowDuplicatedAnswers());
 	}

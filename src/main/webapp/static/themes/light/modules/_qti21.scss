@@ -239,12 +239,17 @@ img.o_hotspot_responsive[usemap] {
 
 .form-inline.o_qti_gaptext_add_alternative {
 	margin-bottom: 3px;
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	column-gap: 3px;
+	
+	input {
+		width: 100%;
+	}
 }
 
 .o_qti_gaptext_add_alternatives {
-	position: absolute;
-	top: 0px;
-	right: 15px;
+	margin: 15px;
 }
 
 .o_qti_gaptext_alternatives {
@@ -258,6 +263,24 @@ img.o_hotspot_responsive[usemap] {
 span.o_qti_gaptext_score_alternative {
 	padding-left: 2em;
 	color: $gray;
+}
+
+.o_gap_bounds {
+	label {
+		float:right;
+	}
+	input.form-control {
+		display: inline-block;
+		width: calc(100% - 2em);
+	}
+}
+
+.o_inlinechoice_choices, .o_inlinechoice_globalchoices {
+	.o_inlinechoice_choice {
+		display: grid;
+		grid-template-columns: 1fr auto auto;
+		column-gap: 3px;
+	}
 }
 
 /* Essay extended text */
@@ -1483,7 +1506,7 @@ table.o_qti_item_kprim {
 	}
 }
 
-.o_qti_inlinechoices_scores_map {
+.o_qti_gap_scores_map {
 	padding: 1em;
 	margin-bottom: 0.5em;
 	border: 1px solid $o-qti-editor-box-border-color;

@@ -33,7 +33,7 @@ import org.openqa.selenium.WebElement;
  */
 public class QTI21GapEntriesScoreEditorPage {
 	
-	private static final By choiceScoreTable = By.className("o_sel_gap_entries_scores");
+	private static final By choiceScoreTable = By.className("o_qti_gap_scores_map");
 	
 	private final WebDriver browser;
 	
@@ -54,7 +54,7 @@ public class QTI21GapEntriesScoreEditorPage {
 	}
 	
 	public QTI21GapEntriesScoreEditorPage setScore(String answer, String score) {
-		By scoreBy = By.xpath("//table[contains(@class,'o_sel_gap_entries_scores')]//tr[td[contains(text(),'" + answer + "')]]/td/div/input[@type='text']");
+		By scoreBy = By.xpath("//table[contains(@class,'o_sel_gap_scores')]//tr[td[contains(text(),'" + answer + "')]]/td/div/input[@type='text']");
 		WebElement scoreEl = browser.findElement(scoreBy);
 		scoreEl.clear();
 		scoreEl.sendKeys(score);

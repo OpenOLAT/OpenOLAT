@@ -21,7 +21,11 @@ package org.olat.ims.qti21.model.xml.interactions;
 
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultItemBody;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultOutcomeDeclarations;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendInlineChoice;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendInlineChoiceInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendMapping;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendTextEntryInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createInlineChoiceResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createNumericalEntryResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createTextEntryResponseDeclaration;
@@ -30,26 +34,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
+import uk.ac.ed.ph.jqtiplus.attribute.ForeignAttribute;
 import uk.ac.ed.ph.jqtiplus.exception.QtiAttributeException;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
+import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.ExpressionParent;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
@@ -68,8 +81,10 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -79,8 +94,10 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
+import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.FloatOrVariableRef;
@@ -88,42 +105,60 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
+ * This build constructs question with TextEntry and InlineChoice interactions.
  * 
- * Initial date: 16.02.2016<br>
+ * Initial date: 9 juin 2026<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
+public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 	
-	private static final Logger log = Tracing.createLoggerFor(FIBAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(GapAssessmentItemBuilder.class);
 
 	private String question;
 	private ScoreEvaluation scoreEvaluation;
+	
 	private boolean allowDuplicatedAnswers;
 	private Map<String, AbstractEntry> responseIdentifierToTextEntry;
 	
-	private QTI21QuestionType questionType = QTI21QuestionType.fib;
+	private List<GlobalInlineChoice> globalInlineChoices;
+	private List<InlineChoiceInteractionEntry> inlineChoiceInteractions;
 	
-	public FIBAssessmentItemBuilder(String title, EntryType type, QtiSerializer qtiSerializer) {
+	private QTI21QuestionType questionType;
+	
+	public GapAssessmentItemBuilder(String title, EntryType type, QtiSerializer qtiSerializer) {
 		super(createAssessmentItem(title, type), qtiSerializer);
 	}
 	
-	public FIBAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
+	public GapAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
 	private static AssessmentItem createAssessmentItem(String title, EntryType type) {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.fib, title);
+		AssessmentItem assessmentItem;
+		if(type == EntryType.inlineChoice) {
+			assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.inlinechoice, title);
+		} else {
+			assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.fib, title);
+		}
+		
+		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
+		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("inline");
 		
 		//define the response
-		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
 		if(type == EntryType.numerical) {
 			ResponseDeclaration responseDeclaration = createNumericalEntryResponseDeclaration(assessmentItem, responseDeclarationId, 42);
+			assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
+		} else if(type == EntryType.inlineChoice) {
+			ResponseDeclaration responseDeclaration = createInlineChoiceResponseDeclaration(assessmentItem, responseDeclarationId,
+					correctResponseId);
 			assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		} else {
 			ResponseDeclaration responseDeclaration = createTextEntryResponseDeclaration(assessmentItem, responseDeclarationId,
@@ -131,31 +166,90 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		}
 	
-		//outcomes
-		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
-		
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		appendTextEntryInteraction(itemBody, responseDeclarationId);
+		if(type == EntryType.inlineChoice) {
+			InlineChoiceInteraction interaction = appendInlineChoiceInteraction(itemBody, responseDeclarationId);
+			appendInlineChoice(interaction, "Gap", correctResponseId);
+		} else {
+			appendTextEntryInteraction(itemBody, responseDeclarationId);
+		}
+		
+		if(itemBody.getClassAttr() == null) {
+			itemBody.setClassAttr(new ArrayList<>());
+		}
+		if(type == EntryType.numerical) {
+			itemBody.getClassAttr().add(QTI21Constants.CSS_GAP_NUMERICAL);
+		} else if(type == EntryType.text) {
+			itemBody.getClassAttr().add(QTI21Constants.CSS_GAP_TEXT);
+		} else if(type == EntryType.inlineChoice) {
+			itemBody.getClassAttr().add(QTI21Constants.CSS_INLINE_CHOICE);
+		} else {
+			itemBody.getClassAttr().add(QTI21Constants.CSS_GAP_MIXED);
+		}
 		
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
 		assessmentItem.getNodeGroups().getResponseProcessingGroup().setResponseProcessing(responseProcessing);
+
+		//outcomes
+		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
+		
 		return assessmentItem;
 	}
 
 	@Override
 	protected void extract() {
 		super.extract();
+		extractTemplateDeclarationsForGlobal();
 		extractQuestions();
+		extractInteractions();// For inline choices
 		extractEntriesSettingsFromResponseDeclaration();
 		extractQuestionType();
 		extractAllowDuplicatesAnswers();
+	}
+	
+	public void extractTemplateDeclarationsForGlobal() {
+		globalInlineChoices = new ArrayList<>();
+		
+		List<TemplateDeclaration> templateDeclarations = assessmentItem.getTemplateDeclarations();
+		for(TemplateDeclaration templateDeclaration:templateDeclarations) {
+			String identifier = templateDeclaration.getIdentifier().toString();
+			if(identifier.startsWith("global-")) {
+				List<FieldValue> fValues = templateDeclaration.getDefaultValue().getFieldValues();
+				for(FieldValue fValue:fValues) {
+					String id = QtiNodesExtractor.extractId(fValue);
+					SingleValue sValue = fValue.getSingleValue();
+					if(sValue instanceof StringValue) {
+						String val = ((StringValue)sValue).stringValue();
+						globalInlineChoices.add(new GlobalInlineChoice(Identifier.assumedLegal(id), val));
+					}
+				}
+			}
+		}
 	}
 	
 	/**
 	 * Use the extracted entries to calculate the type, fib or numerical.
 	 */
 	private void extractQuestionType() {
+		
+		List<String> classes = assessmentItem.getItemBody().getClassAttr();
+		if(classes == null || classes.isEmpty()) {
+			extractQuestionTypeOfInteractions();
+		} else if(classes.contains(QTI21Constants.CSS_GAP_NUMERICAL)) {
+			questionType = QTI21QuestionType.numerical;
+		} else if(classes.contains(QTI21Constants.CSS_GAP_TEXT)) {
+			questionType = QTI21QuestionType.fib;
+		} else if(classes.contains(QTI21Constants.CSS_INLINE_CHOICE)) {
+			questionType = QTI21QuestionType.inlinechoice;
+		} else if(classes.contains(QTI21Constants.CSS_GAP_MIXED)) {
+			questionType = QTI21QuestionType.gapmixed;
+		} else {
+			extractQuestionTypeOfInteractions();
+		}
+	}
+	
+	private void extractQuestionTypeOfInteractions() {
 		int text = 0;
 		int numerical = 0;
 		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
@@ -167,12 +261,16 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 		
-		if(text > 0 && numerical == 0) {
+		int inlineChoices = inlineChoiceInteractions.size();
+		
+		if(text > 0 && numerical == 0 && inlineChoices == 0) {
 			questionType = QTI21QuestionType.fib;
-		} else if(text == 0 && numerical > 0) {
+		} else if(text == 0 && numerical > 0 && inlineChoices == 0) {
 			questionType = QTI21QuestionType.numerical;
+		} else if(text == 0 && numerical == 0 && inlineChoices > 0) {
+			questionType = QTI21QuestionType.inlinechoice;
 		} else {
-			questionType = QTI21QuestionType.fib;
+			questionType = QTI21QuestionType.gapmixed;
 		}
 	}
 	
@@ -189,6 +287,19 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return question;
 	}
 	
+	public void extractInteractions() {
+		inlineChoiceInteractions = new ArrayList<>();
+		
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		if(interactions != null) {
+			for(Interaction interaction:interactions) {
+				if(interaction instanceof InlineChoiceInteraction inlineChoiceInteraction) {
+					inlineChoiceInteractions.add(new InlineChoiceInteractionEntry(inlineChoiceInteraction));
+				}
+			}
+		}
+	}
+	
 	/**
 	 * We loop around the textEntryInteraction, search the responseDeclaration. responseDeclaration
 	 * of type string are gap text, of type float are numerical.
@@ -196,7 +307,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	public void extractEntriesSettingsFromResponseDeclaration() {
 		DoubleAdder mappedScore = new DoubleAdder();
 		AtomicInteger countAlternatives = new AtomicInteger(0);
-
+		
+		boolean hasMapping = false;
 		responseIdentifierToTextEntry = new HashMap<>();
 		
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
@@ -230,16 +342,52 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				if(entry != null) {
 					responseIdentifierToTextEntry.put(interaction.getResponseIdentifier().toString(), entry);
 				}
+			} else if(interaction instanceof InlineChoiceInteraction inlineChoiceInteraction && inlineChoiceInteraction.getResponseIdentifier() != null) {
+				ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+				if(responseDeclaration != null && responseDeclaration.hasBaseType(BaseType.IDENTIFIER) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+					InlineChoiceInteractionEntry inlineChoiceBlock = getInlineChoiceInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
+					extractInlineChoicesInteractionSettingsFromResponseDeclaration(responseDeclaration, inlineChoiceBlock);
+					String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
+					if(inlineChoiceBlock.getCorrectResponseId() != null && inlineChoiceBlock.getSolution() != null) {
+						String solution = inlineChoiceBlock.getSolution();
+						question = question.replace(marker, marker + " data-qti-solution=\"" + escapeForDataQtiSolution(solution) + "\"");
+					}
+					
+					hasMapping |= inlineChoiceBlock.hasScores();
+				}
 			}
 		}
 
-		boolean hasMapping = Math.abs(mappedScore.doubleValue() - (-1.0 * countAlternatives.get())) > 0.0001;
+		hasMapping |= Math.abs(mappedScore.doubleValue() - (-1.0 * countAlternatives.get())) > 0.0001;
 		if(hasMapping) {
 			scoreEvaluation = ScoreEvaluation.perAnswer;
 		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
 			scoreEvaluation = ScoreEvaluation.negativePointSystem;
 		} else {
 			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
+	}
+	
+	public static void extractInlineChoicesInteractionSettingsFromResponseDeclaration(ResponseDeclaration responseDeclaration,
+			InlineChoiceInteractionEntry inlineChoiceBlock) {
+		CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+		if(correctResponse != null) {
+			Value value = FieldValue.computeValue(Cardinality.SINGLE, correctResponse.getFieldValues());
+			if(value instanceof IdentifierValue identifierValue) {
+				inlineChoiceBlock.setCorrectResponseId(identifierValue.identifierValue());
+			}
+		}
+		
+		Mapping mapping = responseDeclaration.getMapping();
+		if(mapping != null) {
+			List<MapEntry> mapEntries = mapping.getMapEntries();
+			for(MapEntry mapEntry:mapEntries) {
+				SingleValue iValue = mapEntry.getMapKey();
+				if(iValue instanceof IdentifierValue) {
+					Identifier identifier = ((IdentifierValue)iValue).identifierValue();
+					inlineChoiceBlock.putScore(identifier, mapEntry.getMappedValue());
+				}	
+			}
 		}
 	}
 	
@@ -487,13 +635,77 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return false;
 	}
 
+	public InlineChoiceInteractionEntry createInlineChoiceEntry(Identifier responseIdentifier) {
+		InlineChoiceInteractionEntry choiceBlock = new InlineChoiceInteractionEntry(responseIdentifier);
+		inlineChoiceInteractions.add(choiceBlock);
+		return choiceBlock;
+	}
+	
+	public InlineChoiceInteractionEntry getInlineChoiceInteractionEntry(Identifier responseIdentifier) {
+		for(InlineChoiceInteractionEntry interaction:inlineChoiceInteractions) {
+			if(responseIdentifier.equals(interaction.getResponseIdentifier())) {
+				return interaction;
+			}
+		}
+		return null;
+	}
+
+	public List<InlineChoiceInteractionEntry> getInlineChoiceInteractions() {
+		return new ArrayList<>(inlineChoiceInteractions);
+	}
+	
+	public void removeInlineChoiceInteraction(InlineChoiceInteractionEntry interaction) {
+		inlineChoiceInteractions.remove(interaction);
+	}
+	
+	public static InlineChoice cloneInlineChoice(Interaction interaction, InlineChoice inlineChoice) {
+		InlineChoice copy = new InlineChoice(interaction);
+		copy.setIdentifier(inlineChoice.getIdentifier());
+		String text = getText(inlineChoice);
+		copy.getTextOrVariables().add(new TextRun(copy, text));
+		return copy;
+	}
+	
+	public List<GlobalInlineChoice> getGlobalInlineChoices() {
+		return globalInlineChoices;
+	}
+	
+	public void setGlobalInlineChoices(List<GlobalInlineChoice> globalChoices) {
+		globalInlineChoices = new ArrayList<>(globalChoices);
+	}
+	
+	private GlobalInlineChoice getGlobalInlineChoice(Identifier inlineChoiceId) {
+		String identifier = inlineChoiceId.toString();
+		
+		for(GlobalInlineChoice globalInlineChoice:globalInlineChoices) {
+			String globalId = globalInlineChoice.getIdentifier().toString();	
+			if(identifier.startsWith(globalId)) {
+				return globalInlineChoice;
+			}
+		}
+		return null;
+	}
+	
+	private GlobalInlineChoice getGlobalInlineChoiceByText(String text) {
+		if(text == null) return null;
+
+		for(GlobalInlineChoice globalInlineChoice:globalInlineChoices) {
+			String globalText = globalInlineChoice.getText();
+			if(text.equals(globalText)) {
+				return globalInlineChoice;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public QTI21QuestionType getQuestionType() {
 		return questionType;
 	}
 	
 	public void setQuestionType(QTI21QuestionType type) {
-		if(type == QTI21QuestionType.numerical || type == QTI21QuestionType.fib) {
+		if(type == QTI21QuestionType.numerical || type == QTI21QuestionType.fib
+				|| type == QTI21QuestionType.inlinechoice || type == QTI21QuestionType.gapmixed) {
 			this.questionType = type;
 		}
 	}
@@ -559,6 +771,10 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return new ArrayList<>(responseIdentifierToTextEntry.values());
 	}
 	
+	public List<Interaction> getOrderedInteractions() {
+		return assessmentItem.getItemBody().findInteractions();
+	}
+	
 	public List<AbstractEntry> getOrderedTextEntries() {
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 		
@@ -611,6 +827,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 	}
 	
+	public Identifier generateGlobalChoiceIdentifier(Identifier globalChoice) {
+		String choiceIdentifier = globalChoice.toString() + "-" + CodeHelper.getRAMUniqueID();
+		return Identifier.assumedLegal(choiceIdentifier);
+	}
+	
 	public TextEntry createTextEntry(String responseIdentifier) {
 		TextEntry entry = new TextEntry(Identifier.parseString(responseIdentifier));
 		entry.setScore(1.0d);
@@ -629,6 +850,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	protected void buildResponseAndOutcomeDeclarations() {
 		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
 		
+		buildResponseAndOutcomeDeclarationsOfTextEntries(responseDeclarations);
+		buildResponseAndOutcomeDeclarationsOfInlineChoices(responseDeclarations);
+	}
+	
+	private void buildResponseAndOutcomeDeclarationsOfTextEntries(List<ResponseDeclaration> responseDeclarations) {		
 		/*
 		<responseDeclaration identifier="RESPONSE_1" cardinality="single" baseType="string">
 			<correctResponse>
@@ -666,6 +892,72 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 	}
+	
+	private void buildResponseAndOutcomeDeclarationsOfInlineChoices(List<ResponseDeclaration> responseDeclarations) {
+		/*
+		<responseDeclaration identifier="RESPONSE_1" cardinality="single" baseType="identifier">
+			<correctResponse>
+				<value>Inline</value>
+			</correctResponse>
+			<mapping defaultValue="0">
+				<mapEntry mapKey="inline" mappedValue="2" />
+				<mapEntry mapKey="inline1" mappedValue="2" />
+				<mapEntry mapKey="inline2" mappedValue="1" />
+			</mapping>
+		</responseDeclaration>
+		*/
+		
+		List<InlineChoiceInteraction> interactions = getInlineChoiceInteractionsFromBody();
+		for(InlineChoiceInteraction inlineChoiceInteraction:interactions) {
+			InlineChoiceInteractionEntry inlineChoiceInteractionEntry = getInlineChoiceInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
+			if(inlineChoiceInteractionEntry != null
+					&& inlineChoiceInteractionEntry.getResponseIdentifier() != null
+					&& inlineChoiceInteractionEntry.getCorrectResponseId() != null) {
+				ResponseDeclaration responseDeclaration = createInlineChoiceResponseDeclaration(assessmentItem,
+						inlineChoiceInteractionEntry.getResponseIdentifier(), inlineChoiceInteractionEntry.getCorrectResponseId());
+				responseDeclarations.add(responseDeclaration);
+				
+				if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+					Map<Identifier,Double> scoreMap = inlineChoiceInteractionEntry.getScores();
+					appendMapping(responseDeclaration, scoreMap);
+				}
+			}
+		}
+		
+		List<TemplateDeclaration> templateDeclarations = assessmentItem.getTemplateDeclarations();
+		templateDeclarations.clear();
+		if(!globalInlineChoices.isEmpty()) {
+			buildTemplateDeclaration("global-inline-choices-1", globalInlineChoices, templateDeclarations);
+		}
+	}
+	
+	private void buildTemplateDeclaration(String identifier, List<GlobalInlineChoice> choices, List<TemplateDeclaration> templateDeclarations) {
+		TemplateDeclaration templateDeclaration = new TemplateDeclaration(assessmentItem);
+		templateDeclaration.setIdentifier(Identifier.assumedLegal(identifier));
+		templateDeclaration.setCardinality(Cardinality.MULTIPLE);
+		templateDeclaration.setBaseType(BaseType.STRING);
+		templateDeclarations.add(templateDeclaration);
+		
+		DefaultValue defaultValue = new DefaultValue(templateDeclaration);
+		templateDeclaration.setDefaultValue(defaultValue);
+		
+		List<FieldValue> fValues = defaultValue.getFieldValues();
+		for(GlobalInlineChoice choice:choices) {
+			FieldValue fieldVal = new FieldValue(defaultValue, new StringValue(choice.getText()));
+			ForeignAttribute idAttr = new ForeignAttribute(fieldVal, "id", "");
+			idAttr.setValue(choice.getIdentifier().toString());
+			fieldVal.getAttributes().add(idAttr);
+			fValues.add(fieldVal);
+		}
+	}
+	
+	private List<InlineChoiceInteraction> getInlineChoiceInteractionsFromBody() {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		return interactions.stream()
+				.filter(InlineChoiceInteraction.class::isInstance)
+				.map(InlineChoiceInteraction.class::cast)
+				.collect(Collectors.toList());
+	}
 
 	@Override
 	protected void buildItemBody() {
@@ -680,8 +972,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 		List<String> usedResponseIdentifiers = new ArrayList<>(interactions.size());
 		for(Interaction interaction:interactions) {
-			if(interaction instanceof TextEntryInteraction && interaction.getResponseIdentifier() != null) {
-				TextEntryInteraction textEntryInteraction = (TextEntryInteraction)interaction;
+			if(interaction instanceof TextEntryInteraction textEntryInteraction && interaction.getResponseIdentifier() != null) {
 				String responseIdentifier = interaction.getResponseIdentifier().toString();
 				AbstractEntry entry = responseIdentifierToTextEntry.get(responseIdentifier);
 				if(entry != null) {
@@ -689,6 +980,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					textEntryInteraction.setExpectedLength(entry.getExpectedLength());
 				}
 				usedResponseIdentifiers.add(responseIdentifier);
+			} else if(interaction instanceof InlineChoiceInteraction) {
+				buildInlineChoiceInteraction((InlineChoiceInteraction)interaction);
 			}
 		}
 		
@@ -696,6 +989,47 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		mappedResponseIdentifiers.removeAll(usedResponseIdentifiers);
 		for(String mappedResponseIdentifier:mappedResponseIdentifiers) {
 			responseIdentifierToTextEntry.remove(mappedResponseIdentifier);
+		}
+	}
+	
+	private void buildInlineChoiceInteraction(InlineChoiceInteraction inlineChoiceInteraction) {
+		Identifier responseIdentifier = inlineChoiceInteraction.getResponseIdentifier();
+		InlineChoiceInteractionEntry inlineChoiceInteractionEntry = inlineChoiceInteractions.stream()
+			.filter(block -> responseIdentifier.equals(block.getResponseIdentifier()))
+			.findFirst().orElse(null);
+		if(inlineChoiceInteractionEntry != null) {
+			inlineChoiceInteraction.setShuffle(inlineChoiceInteractionEntry.isShuffle());
+			inlineChoiceInteraction.getInlineChoices().clear();
+			Set<GlobalInlineChoice> usedGlobalInlineChoices = new HashSet<>();
+			
+			List<InlineChoice> inlineChoices = inlineChoiceInteractionEntry.getInlineChoices();
+			for(InlineChoice inlineChoice:inlineChoices) {
+				Identifier choiceIdentifier = inlineChoice.getIdentifier();
+				InlineChoice copy = new InlineChoice(inlineChoiceInteraction);
+				copy.setIdentifier(choiceIdentifier);
+				
+				String text;
+				GlobalInlineChoice globalInlineChoice = getGlobalInlineChoice(inlineChoice.getIdentifier());
+				if(globalInlineChoice != null) {
+					text = globalInlineChoice.getText();
+					usedGlobalInlineChoices.add(globalInlineChoice);
+				} else {
+					text = getText(inlineChoice);
+				}
+				copy.getTextOrVariables().add(new TextRun(copy, text));
+				inlineChoiceInteraction.getInlineChoices().add(copy);
+			}
+			
+			List<GlobalInlineChoice> missingGlobalInlineChoices = new ArrayList<>(globalInlineChoices);
+			missingGlobalInlineChoices.removeAll(usedGlobalInlineChoices);
+			
+			for(GlobalInlineChoice missingGlobalInlineChoice:missingGlobalInlineChoices ) {
+				InlineChoice copy = new InlineChoice(inlineChoiceInteraction);
+				Identifier choiceIdentifier = generateGlobalChoiceIdentifier(missingGlobalInlineChoice.getIdentifier());
+				copy.setIdentifier(choiceIdentifier);
+				copy.getTextOrVariables().add(new TextRun(copy, missingGlobalInlineChoice.getText()));
+				inlineChoiceInteraction.getInlineChoices().add(copy);
+			}
 		}
 	}
 
@@ -718,8 +1052,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		List<AbstractEntry> entries = getTextEntries();
 		int count = 0;
 		int numOfTextEntry = 0;
-		int numOfChoices = entries.size();
-		for(int i=0; i<numOfChoices; i++) {
+		int numOfEntries = entries.size();
+		for(int i=0; i<numOfEntries; i++) {
 			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 			responseRules.add(count++, rule);
 			ResponseIf responseIf = new ResponseIf(rule);
@@ -756,6 +1090,59 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			sum.getExpressions().add(baseValue);
 			baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
 			baseValue.setSingleValue(new IntegerValue(1));
+		}
+		
+		List<InlineChoiceInteraction> inlineChoices = getInlineChoiceInteractionsFromBody();
+		int numOfInlineChoices = inlineChoices.size();
+		for(int i=0; i<numOfInlineChoices; i++) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(count++, rule);
+			ResponseIf responseIf = new ResponseIf(rule);
+			rule.setResponseIf(responseIf);
+			
+			InlineChoiceInteraction inlineChoiceEntry = inlineChoices.get(i);
+			
+			{// Response match correct answer
+				ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
+						.assumedLegal(inlineChoiceEntry.getResponseIdentifier().toString());
+				
+				Match match = new Match(responseIf);
+				responseIf.getExpressions().add(match);
+					
+				Variable variable = new Variable(match);
+				variable.setIdentifier(responseIdentifier);
+				match.getExpressions().add(variable);
+					
+				Correct correct = new Correct(match);
+				correct.setIdentifier(responseIdentifier);
+				match.getExpressions().add(correct);
+			}
+
+			/*
+			<setOutcomeValue identifier="NPS_NUMCORRECT">
+          		<sum>
+            		<variable identifier="NPS_NUMCORRECT" />
+            		<baseValue baseType="integer">1</baseValue>
+				</sum>
+			</setOutcomeValue>
+			*/
+			{
+				SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseIf);
+				responseIf.getResponseRules().add(setOutcomeValue);
+				setOutcomeValue.setIdentifier(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+				
+				Sum sum = new Sum(setOutcomeValue);
+				setOutcomeValue.getExpressions().add(sum);
+				
+				Variable correctVariable = new Variable(sum);
+				sum.getExpressions().add(correctVariable);
+				correctVariable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+				
+				BaseValue baseValue = new BaseValue(sum);
+				sum.getExpressions().add(baseValue);
+				baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+				baseValue.setSingleValue(new IntegerValue(1));
+			}
 		}
 		
 		// Remove duplicates
@@ -798,6 +1185,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 		
+		int numOfChoices = numOfEntries + numOfInlineChoices;
 		// Calculate incorrect
 		SetOutcomeValue setIncorrectOutcomeValue = AssessmentItemFactory
 				.createNPSNumOfIncorrect(assessmentItem.getResponseProcessing(), numOfChoices);
@@ -864,6 +1252,23 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				} else if(abstractEntry instanceof NumericalEntry numericalEntry) {
 					buildAllCorrectNumericalCorrectAnswer(numericalEntry, and);
 				}
+			}
+			
+			List<InlineChoiceInteraction> interactions = getInlineChoiceInteractionsFromBody();
+			for(InlineChoiceInteraction inlineChoiceEntry:interactions) {
+				ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
+						.assumedLegal(inlineChoiceEntry.getResponseIdentifier().toString());
+				
+				Match match = new Match(and);
+				and.getExpressions().add(match);
+					
+				Variable variable = new Variable(match);
+				variable.setIdentifier(responseIdentifier);
+				match.getExpressions().add(variable);
+					
+				Correct correct = new Correct(match);
+				correct.setIdentifier(responseIdentifier);
+				match.getExpressions().add(correct);
 			}
 			
 			if(!allowDuplicatedAnswers && numOfTextEntry > 1) {
@@ -1157,11 +1562,16 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		int count = 0;
 		List<String> responseIdentifiers = new ArrayList<>(responseIdentifierToTextEntry.keySet());
-		for(count = 0; count <responseIdentifiers.size(); count++) {
-			String responseStringIdentifier = responseIdentifiers.get(count);
+		for(String responseStringIdentifier:responseIdentifiers) {
 			AbstractEntry entry = responseIdentifierToTextEntry.get(responseStringIdentifier);
 			String scoreIdentifier = "SCORE_" + entry.getResponseIdentifier().toString();
-			buildScoreRulePerAnswer(count, entry, Identifier.parseString(scoreIdentifier), responseIdentifiers, responseRules);
+			buildScoreRulePerAnswer(count++, entry, Identifier.parseString(scoreIdentifier), responseIdentifiers, responseRules);
+		}
+		
+		List<InlineChoiceInteraction> interactions = getInlineChoiceInteractionsFromBody();
+		for(InlineChoiceInteraction inlineChoiceInteractionEntry:interactions) {
+			String scoreIdentifier = "SCORE_" + inlineChoiceInteractionEntry.getResponseIdentifier().toString();
+			buildScoreRulePerAnswer(count++, inlineChoiceInteractionEntry, Identifier.parseString(scoreIdentifier), responseRules);
 		}
 
 		/*
@@ -1209,6 +1619,33 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					outcomeDeclarations.add(modalOutcomeDeclaration);
 				}
 			}
+			
+			for(InlineChoiceInteraction inlineChoiceInteraction:interactions) {
+				
+				{//variable score
+					Variable scoreVariable = new Variable(sum);
+					sum.getExpressions().add(scoreVariable);
+					String scoreIdentifier = "SCORE_" + inlineChoiceInteraction.getResponseIdentifier().toString();
+					scoreVariable.setIdentifier(ComplexReferenceIdentifier.parseString(scoreIdentifier));
+					
+					//create associated outcomeDeclaration
+					OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
+							.createOutcomeDeclarationForScoreResponse(assessmentItem, scoreIdentifier);
+					outcomeDeclarations.add(modalOutcomeDeclaration);
+				}
+				
+				{//variable minscore
+					Variable minScoreVariable = new Variable(sum);
+					sum.getExpressions().add(minScoreVariable);
+					String scoreIdentifier = "MINSCORE_" + inlineChoiceInteraction.getResponseIdentifier().toString();
+					minScoreVariable.setIdentifier(ComplexReferenceIdentifier.parseString(scoreIdentifier));
+					
+					//create associated outcomeDeclaration
+					OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
+							.createOutcomeDeclarationForScoreResponse(assessmentItem, scoreIdentifier);
+					outcomeDeclarations.add(modalOutcomeDeclaration);
+				}
+			}
 		}
 		
 		if(correctFeedback != null || incorrectFeedback != null) {
@@ -1222,6 +1659,25 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			
 			responseRules.add(count++, incorrectOutcomeValue);
 		}
+	}
+	
+	/**
+	 * Outcome map response.
+	 * 
+	 * @param count Current position of the rule
+	 * @param entry The text entry
+	 * @param scoreIdentifier The identifier of the score
+	 * @param responseRules The list of response rules
+	 */
+	private void buildScoreRulePerAnswer(int count, InlineChoiceInteraction entry, Identifier scoreIdentifier,
+			 List<ResponseRule> responseRules) {
+		SetOutcomeValue mapOutcomeValue = new SetOutcomeValue(assessmentItem.getResponseProcessing());
+		responseRules.add(count, mapOutcomeValue);
+		mapOutcomeValue.setIdentifier(scoreIdentifier);
+		
+		MapResponse mapResponse = new MapResponse(mapOutcomeValue);
+		mapResponse.setIdentifier(entry.getResponseIdentifier());
+		mapOutcomeValue.setExpression(mapResponse);
 	}
 	
 	private void buildScoreRulePerAnswer(int count, AbstractEntry entry, Identifier scoreIdentifier,
@@ -1332,6 +1788,86 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		correctValue.setBaseTypeAttrValue(BaseType.FLOAT);
 		correctValue.setSingleValue(new FloatValue(numericalEntry.getScore()));
 		mapOutcomeValue.setExpression(correctValue);
+	}
+	
+	@Override
+	public void postImportProcessing() {
+		super.postImportProcessing();
+		postImportGlobalChoiceProcessing();
+	}
+	
+	private void postImportGlobalChoiceProcessing() {
+		List<InlineChoiceInteractionEntry> interactions = getInlineChoiceInteractions();
+		if(interactions.size() <= 1) return;
+		
+		List<String> referenceSet = null;
+		for(InlineChoiceInteractionEntry interaction:interactions) {
+			List<InlineChoice> inlineChoices = interaction.getInlineChoices();
+			List<String> choiceSet = inlineChoices.stream()
+					.map(GapAssessmentItemBuilder::getText)
+					.collect(Collectors.toList());
+			
+			if(referenceSet == null) {
+				referenceSet = choiceSet;
+			} else if(!referenceSet.containsAll(choiceSet) || !choiceSet.containsAll(referenceSet)) {
+				return;
+			}	
+		}
+		
+		if(referenceSet != null) {
+			// Make reference set global
+			for(int i=0; i<referenceSet.size(); i++) {
+				Identifier id = IdentifierGenerator.newAsIdentifier("global-1-");
+				GlobalInlineChoice globalInlineChoice = new GlobalInlineChoice(id, referenceSet.get(i));
+				globalInlineChoices.add(globalInlineChoice);
+			}
+			
+			// Mutate the choice identifier and correct response identifier with global ones
+			for(InlineChoiceInteractionEntry interaction:interactions) {
+				Identifier correctResponse = interaction.getCorrectResponseId();
+				List<InlineChoice> inlineChoices = interaction.getInlineChoices();
+				for(InlineChoice inlineChoice:inlineChoices) {
+					final String text = getText(inlineChoice);
+					final Identifier identifier = inlineChoice.getIdentifier();
+					final GlobalInlineChoice gChoice = getGlobalInlineChoiceByText(text);
+					if(gChoice != null) {
+						Identifier newIdentifier = generateGlobalChoiceIdentifier(gChoice.getIdentifier());
+						if(correctResponse != null && correctResponse.equals(identifier)) {
+							interaction.setCorrectResponseId(newIdentifier);
+						}
+						Double score = interaction.getScore(inlineChoice.getIdentifier());
+						if(score != null) {
+							interaction.putScore(inlineChoice.getIdentifier(), null);
+							interaction.putScore(newIdentifier, score);
+						}
+						inlineChoice.setIdentifier(newIdentifier);
+					}
+				}
+			}
+		}
+	}
+	
+	public static String getText(InlineChoice inlineChoice) {
+		StringBuilder textSolution = new StringBuilder();
+
+		List<TextOrVariable> values = inlineChoice.getTextOrVariables();
+		for(TextOrVariable value:values) {
+			if(value instanceof TextRun) {
+				String text = ((TextRun)value).getTextContent();
+				if(StringHelper.containsNonWhitespace(text)) {
+					textSolution.append(text);
+				}
+			}
+		}
+
+		return textSolution.toString();
+	}
+	
+	public enum EntryType {
+		text,
+		numerical,
+		inlineChoice,
+		mixed
 	}
 	
 	public abstract static class AbstractEntry {
@@ -1627,10 +2163,161 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		public void setScore(double score) {
 			this.score = score;
 		}
+
 	}
 	
-	public enum EntryType {
-		text,
-		numerical
+	public static class GlobalInlineChoice {
+		
+		private final Identifier identifier;
+		private String text;
+		
+		public GlobalInlineChoice(Identifier identifier, String text) {
+			this.identifier = identifier;
+			this.text = text;
+		}
+
+		public Identifier getIdentifier() {
+			return identifier;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
+
+		@Override
+		public int hashCode() {
+			return identifier.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if(obj instanceof GlobalInlineChoice) {
+				GlobalInlineChoice other = (GlobalInlineChoice) obj;
+				return Objects.equals(identifier, other.identifier);
+			}
+			return false;
+		}
+	}
+
+	public static class InlineChoiceInteractionEntry {
+		
+		private final InlineChoiceInteraction interaction;
+		private final Identifier responseIdentifier;
+		private final List<InlineChoice> inlineChoices;
+		private final Map<Identifier,Double> scores = new HashMap<>();
+		
+		private Identifier correctResponseId;
+		private boolean shuffle = true;
+		
+		public InlineChoiceInteractionEntry(InlineChoiceInteraction interaction) {
+			this.interaction = interaction;
+			responseIdentifier = interaction.getResponseIdentifier();
+			inlineChoices = new ArrayList<>(interaction.getInlineChoices());
+			shuffle = interaction.getShuffle();
+		}
+		
+		public InlineChoiceInteractionEntry(Identifier responseIdentifier) {
+			interaction = null;
+			inlineChoices = new ArrayList<>();
+			this.responseIdentifier = responseIdentifier;
+		}
+		
+		public Identifier getResponseIdentifier() {
+			return interaction == null ? responseIdentifier : interaction.getResponseIdentifier();
+		}
+		
+		public Double getScore(Identifier identifier) {
+			return scores.get(identifier);
+		}
+		
+		public void putScore(Identifier identifier, Double score) {
+			if(score != null) {
+				scores.put(identifier, score);
+			} else {
+				scores.remove(identifier);
+			}	
+		}
+		
+		public Map<Identifier,Double> getScores() {
+			Map<Identifier,Double> scoresMap = new HashMap<>();
+			for(InlineChoice inlineChoice:inlineChoices) {
+				Double score = scores.get(inlineChoice.getIdentifier());
+				if(score == null) {
+					score = Double.valueOf(0.0d);
+				}
+				scoresMap.put(inlineChoice.getIdentifier(), score);
+			}
+			return scoresMap;
+		}
+		
+		public boolean hasScores() {
+			return !scores.isEmpty();
+		}
+		
+		public InlineChoiceInteraction getInteraction() {
+			return interaction;
+		}
+		
+		public List<InlineChoice> getInlineChoices() {
+			return inlineChoices;
+		}
+		
+		public InlineChoice getInlineChoice(Identifier identifier) {
+			return inlineChoices.stream()
+					.filter(choice -> identifier.equals(choice.getIdentifier()))
+					.findFirst().orElse(null);
+		}
+
+		public boolean isShuffle() {
+			return shuffle;
+		}
+
+		public void setShuffle(boolean shuffle) {
+			this.shuffle = shuffle;
+		}
+
+		public Identifier getCorrectResponseId() {
+			return correctResponseId;
+		}
+
+		public void setCorrectResponseId(Identifier correctResponseId) {
+			this.correctResponseId = correctResponseId;
+		}
+		
+		public String getSolution() {
+			String textSolution = null;
+			if(correctResponseId != null && interaction != null && interaction.getInlineChoices() != null) {
+				for(InlineChoice inlineChoice:interaction.getInlineChoices()) {
+					if(correctResponseId.equals(inlineChoice.getIdentifier())) {
+						textSolution = getText(inlineChoice);
+					}
+				}
+			}
+			return textSolution;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(responseIdentifier);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof InlineChoiceInteractionEntry) {
+				InlineChoiceInteractionEntry other = (InlineChoiceInteractionEntry) obj;
+				return responseIdentifier != null && Objects.equals(responseIdentifier, other.responseIdentifier);
+			}
+			return false;
+		}
 	}
 }

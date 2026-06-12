@@ -869,6 +869,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_mi_qtiunkown { @include o-add-icon('user-secret');}
 .o_mi_qtiupload { @include o-add-icon('upload');}
 .o_mi_qtiinlinechoice { @include o-add-icon('caret-down');}
+.o_mi_qtigapmixed { @include o-add-icon('blender');}
 
 .o_as_mode_none { @include o-add-icon('clock'); }
 .o_as_mode_leadtime { @include o-add-icon('hourglass-end');}

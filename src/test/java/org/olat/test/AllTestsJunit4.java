@@ -638,7 +638,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.TestFeedbackBuilderTest.class,
 	org.olat.ims.qti21.model.xml.HottextAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.OrderAssessmentItemBuilderTest.class,
-	org.olat.ims.qti21.model.xml.FIBAssessmentItemBuilderTest.class,
+	org.olat.ims.qti21.model.xml.GapFIBAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentHtmlBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemPackageTest.class,
 	org.olat.ims.qti21.model.xml.ManifestPackageTest.class,
