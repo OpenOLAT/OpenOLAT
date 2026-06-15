@@ -22,6 +22,7 @@ package org.olat.modules.roommanagement.ui;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.roommanagement.RoomBooking;
 
 /**
@@ -35,6 +36,7 @@ public class RoomSchedulingRow {
 	private FormLink roomLink;
 	private FormLink buildingLink;
 	private FormLink eventLink;
+	private Reference elementReference;
 	private List<String> warnings = List.of();
 	private int numParticipants;
 
@@ -76,6 +78,14 @@ public class RoomSchedulingRow {
 
 	public void setEventLink(FormLink eventLink) {
 		this.eventLink = eventLink;
+	}
+
+	public Reference getElementReference() {
+		return elementReference;
+	}
+
+	public void setElementReference(Reference elementReference) {
+		this.elementReference = elementReference;
 	}
 
 	public List<String> getWarnings() {

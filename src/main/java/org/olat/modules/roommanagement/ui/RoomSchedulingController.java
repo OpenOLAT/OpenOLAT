@@ -69,9 +69,14 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
@@ -113,6 +118,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	@Autowired
 	private RoomManagementService roomManagementService;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	public RoomSchedulingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "room_scheduling");
@@ -152,7 +159,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.event));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.statusEvent,
 				new LectureBlockStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.element));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.element, "openElement", new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.course));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.numParticipants));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.numSeats));
@@ -332,8 +339,16 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			}
 		}
 
-		// Event link
+		// Curriculum element reference
 		LectureBlock lb = booking.getLectureBlock();
+		if (lb != null) {
+			CurriculumElement ce = lb.getCurriculumElement();
+			if (ce != null) {
+				row.setElementReference(new Reference(ce.getKey(), ce.getDisplayName(), ce.getIdentifier()));
+			}
+		}
+
+		// Event link
 		if (lb != null) {
 			String eventText = StringHelper.escapeHtml(lb.getTitle());
 			if (StringHelper.containsNonWhitespace(lb.getExternalRef())) {
@@ -371,6 +386,9 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 				} else {
 					doOpenDetails(ureq, row, se.getIndex());
 				}
+			} else if (event instanceof SelectionEvent se && "openElement".equals(se.getCommand())) {
+				RoomSchedulingRow row = dataModel.getObject(se.getIndex());
+				doOpenElement(ureq, row);
 			}
 		} else if (source instanceof FormLink link && "building".equals(link.getCmd())) {
 			doOpenBuilding(ureq, link);
@@ -405,6 +423,15 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	private void doOpenEvent(UserRequest ureq) {
 		NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
+	}
+
+	private void doOpenElement(UserRequest ureq, RoomSchedulingRow row) {
+		if (row.getElementReference() == null) return;
+		CurriculumElement el = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(row.getElementReference().key()));
+		if (el == null) return;
+		String path = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + el.getCurriculum().getKey()
+				+ "][CurriculumElement:" + el.getKey() + "]";
+		NewControllerFactory.getInstance().launch(path, ureq, getWindowControl());
 	}
 
 	@Override
