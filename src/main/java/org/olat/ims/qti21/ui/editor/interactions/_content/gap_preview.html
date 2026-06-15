@@ -1,0 +1,11 @@
+<p id="$r.getCId()" class="form-control-static">
+	<span class="textEntryInteraction">$text1 <input type="text" size="$size" class="$type" autocomplete="off" required="required" /> $text2</span>	
+<script>
+jQuery(function() {
+	jQuery("#$refId").keyup(function() {
+		const val = jQuery("input#$refId").val();
+		jQuery("#${r.getCId()} > span > input").attr("size", val);
+	});
+});
+</script>
+</p>

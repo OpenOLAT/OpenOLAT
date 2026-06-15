@@ -64,6 +64,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private TextElement placeholderEl;
 	private TextElement expectedLengthEl;
 	private FormToggle alternativesEl;
+	private FormLayoutContainer previewEl;
 	private FormLink addMultipleAlternativesButton;
 	private MultipleSelectionElement correctionsEl;
 	private FormLayoutContainer alternativesCont;
@@ -133,10 +134,18 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		Integer expectedLength = interaction.getExpectedLength();
-		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
+		String expectedLengthStr = expectedLength == null ? "" : expectedLength.toString();
 		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, displayCont);
 		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
 		expectedLengthEl.setElementCssClass("form-inline");
+		
+		String previewPage = velocity_root + "/gap_preview.html";
+		previewEl = uifactory.addCustomFormLayout("preview", "preview", previewPage, displayCont);
+		previewEl.contextPut("text1", translate("fib.expectedLength.preview1"));
+		previewEl.contextPut("text2", translate("fib.expectedLength.preview2"));
+		previewEl.contextPut("refId", expectedLengthEl.getFormDispatchId());
+		previewEl.contextPut("size", expectedLengthStr);
+		previewEl.contextPut("type", "text");
 		
 		FormLayoutContainer optionsCont = uifactory.addDefaultFormLayout("options", null, formLayout);
 		optionsCont.setFormLayout("nolayout");
@@ -278,6 +287,11 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		removeAsListenerAndDispose(alternativesCtrl);
 		alternativesCalloutCtrl = null;
 		alternativesCtrl = null;
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		super.propagateDirtinessToContainer(fiSrc, event);
 	}
 
 	@Override

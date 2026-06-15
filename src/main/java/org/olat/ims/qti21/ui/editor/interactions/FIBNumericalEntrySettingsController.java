@@ -57,6 +57,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	private SingleSelection toleranceModeEl;
 	private TextElement lowerToleranceEl;
 	private TextElement upperToleranceEl;
+	private FormLayoutContainer previewEl;
 	private FormLayoutContainer toleranceCont;
 	
 	private final boolean restrictedEdit, readOnly;
@@ -179,6 +180,14 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, displayCont);
 		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
 		expectedLengthEl.setElementCssClass("form-inline");
+		
+		String previewPage = velocity_root + "/gap_preview.html";
+		previewEl = uifactory.addCustomFormLayout("preview", "preview", previewPage, displayCont);
+		previewEl.contextPut("text1", translate("fib.expectedLength.numeric.preview1"));
+		previewEl.contextPut("text2", translate("fib.expectedLength.numeric.preview2"));
+		previewEl.contextPut("refId", expectedLengthEl.getFormDispatchId());
+		previewEl.contextPut("size", expectedLengthStr);
+		previewEl.contextPut("type", "numerical");
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = uifactory.addButtonsFormLayout("buttons", null, formLayout);

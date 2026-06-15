@@ -716,10 +716,27 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 
 		@Override
 		public String getContext() {
-			return (context == null ? "" : context)
-					+ " <strong>&lt;"
-					+ (entry instanceof NumericalEntry ? translate("form.numerical") : translate("form.fib"))
-					+ "&gt;</strong>"; 
+			if(context == null) return "";
+			
+			StringBuilder sb = new StringBuilder();
+			if(context != null) {
+				sb.append(context);
+			}
+			sb.append(" <strong>&lt;");
+			if(entry instanceof NumericalEntry numericalEntry) {
+				ToleranceMode mode = numericalEntry.getToleranceMode();
+				if(mode == ToleranceMode.ABSOLUTE) {
+					sb.append(translate("form.numerical.absolute"));
+				} else if(mode == ToleranceMode.RELATIVE) {
+					sb.append(translate("form.numerical.relative"));
+				} else {
+					sb.append(translate("form.numerical.exact"));
+				}
+			} else {
+				sb.append(translate("form.fib"));
+			}
+			sb.append("&gt;</strong>");
+			return sb.toString(); 
 		}
 		
 		@Override
