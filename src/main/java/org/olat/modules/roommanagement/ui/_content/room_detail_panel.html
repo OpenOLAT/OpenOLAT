@@ -31,8 +31,8 @@
 				#if($buildingRef || $buildingDesc)
 				<div class="o_building_color_ref">
 					#if($buildingColorCss)
-					<div class="o_building_small_square_container">
-						<div class="o_building_small_square o_color_background $r.escapeHtml($buildingColorCss)"> </div>
+					<div class="o_color $r.escapeHtml($buildingColorCss)"> 
+					  <i class="o_icon o_icon_square"></i>
 					</div>
 					#end
 					#if($buildingRef)<span>$r.escapeHtml($buildingRef)</span>#end

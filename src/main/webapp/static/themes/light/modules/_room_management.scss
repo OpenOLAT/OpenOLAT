@@ -144,19 +144,6 @@
 	align-items: center;
 }
 
-.o_building_small_square_container {
-	display: flex;
-
-	align-items: center;
-	justify-content: center;
-	
-	.o_building_small_square {
-		width: 12px;
-		height: 12px;
-		border-radius: 2px;
-	}
-}
-
 .o_building_square_container {
 	display: flex;
 	height: 20px;

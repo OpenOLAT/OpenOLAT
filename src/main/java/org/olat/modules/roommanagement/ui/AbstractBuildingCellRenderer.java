@@ -54,10 +54,8 @@ abstract class AbstractBuildingCellRenderer implements FlexiCellRenderer {
 		target.append("<div class='o_building_color_ref'>");
 		String colorCss = building.getColorCss();
 		if (StringHelper.containsNonWhitespace(colorCss)) {
-			target.append("<div class=\"o_building_small_square_container\">");
-			target.append("<div class=\"o_building_small_square o_color_background ")
-					.append(StringHelper.escapeHtml(colorCss)).append("\"> </div>");
-			target.append("</div>");
+			target.append("<div class=\"o_color ")
+					.append(StringHelper.escapeHtml(colorCss)).append("\"><i class=\"o_icon o_icon_square\"></i> </div>");
 		}
 		if (link.isVisible()) {
 			renderer.render(target, link.getComponent(), null);
