@@ -525,6 +525,7 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		Mapping mapping = responseDeclaration.getMapping();
 		if(mapping != null) {
 			boolean caseSensitive = true;
+			boolean ignoreSpaces = false;
 			List<TextEntryAlternative> alternatives = new ArrayList<>();
 
 			List<MapEntry> mapEntries = mapping.getMapEntries();
@@ -533,7 +534,10 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 				SingleValue sValue = mapEntry.getMapKey();
 				if(sValue instanceof StringValue) {
 					String alt = ((StringValue)sValue).stringValue();
-					if(solution == null || !solution.equals(alt)) {
+					if(QTI21Constants.IGNORE_SPACES_KEY.equals(alt) && QTI21Constants.IGNORE_SPACES_VALUE ==  mapEntry.getMappedValue()) {
+						ignoreSpaces = true;
+						continue;
+					} else if(solution == null || !solution.equals(alt)) {
 						alternative.setAlternative(alt);
 						alternative.setScore(mapEntry.getMappedValue());
 						alternatives.add(alternative);
@@ -550,7 +554,8 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 				
 				caseSensitive &= mapEntry.getCaseSensitive();
 			}
-
+			
+			textEntry.setIgnoreSpaces(ignoreSpaces);
 			textEntry.setCaseSensitive(caseSensitive);
 			textEntry.setAlternatives(alternatives);
 		}
@@ -867,6 +872,7 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 				<mapEntry mapKey="Gap" mappedValue="2" />
 				<mapEntry mapKey="gap1" mappedValue="2" />
 				<mapEntry mapKey="gap2" mappedValue="1" />
+				<mapEntry mapKey="oo-ignore-spaces-oo" mappedValue="-32.0" caseSensitive="true" />
 			</mapping>
 		</responseDeclaration>
 		*/
@@ -880,8 +886,8 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 					}
 					ResponseDeclaration	responseDeclaration = createTextEntryResponseDeclaration(assessmentItem,
 								textEntry.getResponseIdentifier(), textEntry.getSolution(),
-								score, textEntry.isCaseSensitive(), textEntry.getAlternatives(),
-								scoreEvaluation == ScoreEvaluation.perAnswer);
+								score, textEntry.isCaseSensitive(), textEntry.isIgnoreSpaces(),
+								textEntry.getAlternatives(), scoreEvaluation == ScoreEvaluation.perAnswer);
 					responseDeclarations.add(responseDeclaration);
 				}
 			} else if(entry instanceof NumericalEntry textEntry) {
@@ -2058,6 +2064,7 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 	public static class TextEntry extends AbstractEntry {
 
 		private boolean caseSensitive;
+		private boolean ignoreSpaces;
 		
 		private String solution;
 		private List<TextEntryAlternative> alternatives;
@@ -2076,6 +2083,14 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		public void setCaseSensitive(boolean caseSensitive) {
 			this.caseSensitive = caseSensitive;
+		}
+
+		public boolean isIgnoreSpaces() {
+			return ignoreSpaces;
+		}
+
+		public void setIgnoreSpaces(boolean ignoreSpaces) {
+			this.ignoreSpaces = ignoreSpaces;
 		}
 
 		public String getSolution() {

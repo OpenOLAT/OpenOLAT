@@ -214,6 +214,11 @@ public class QTI21Constants {
 	public static final ComplexReferenceIdentifier NPS_NUMINCORRECT_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(NPS_NUMINCORRECT);
 	
 	
+	public static final String IGNORE_SPACES_KEY = "oo-ignore-spaces-oo";
+	
+	public static final double IGNORE_SPACES_VALUE = -32.0d;
+	
+	
 	public enum HotspotLayouts {
 		
 		standard(""),

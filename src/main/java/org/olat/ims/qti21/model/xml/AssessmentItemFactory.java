@@ -385,7 +385,7 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
-			Identifier declarationId, String response, Double score, boolean caseSensitive,
+			Identifier declarationId, String response, Double score, boolean caseSensitive, boolean ignoreSpaces,
 			List<TextEntryAlternative> alternatives, boolean useScoreOfAlternatives) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
@@ -425,6 +425,14 @@ public class AssessmentItemFactory {
 					mapping.getMapEntries().add(mapEntry);
 				}
 			}
+		}
+		
+		if(ignoreSpaces) {
+			MapEntry mapEntry = new MapEntry(mapping);
+			mapEntry.setMapKey(new StringValue(QTI21Constants.IGNORE_SPACES_KEY));
+			mapEntry.setMappedValue(QTI21Constants.IGNORE_SPACES_VALUE);
+			mapEntry.setCaseSensitive(Boolean.TRUE);
+			mapping.getMapEntries().add(mapEntry);
 		}
 		
 		return responseDeclaration;

@@ -42,6 +42,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntryAlternative;
@@ -503,6 +504,20 @@ public class GapFIBAssessmentItemBuilderTest {
 		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
         
         Assert.assertTrue(itemBuilder.isAllowDuplicatedAnswers());
+	}
+	
+	@Test
+	public void readFib_ignoreSpaces()
+	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
+		ResolvedAssessmentItem item = readFib("fib-ignore-spaces.xml");
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		Assert.assertNotNull(item.getRootNodeLookup().extractIfSuccessful());
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder(item.getRootNodeLookup().extractIfSuccessful(), qtiSerializer);
+		
+		AbstractEntry entry = itemBuilder.getEntry("RESPONSE_1");
+		Assert.assertTrue(entry instanceof TextEntry);
+		Assert.assertTrue(((TextEntry)entry).isIgnoreSpaces());
+		Assert.assertFalse(((TextEntry)entry).isCaseSensitive());
 	}
 	
 	private ResolvedAssessmentItem readFib(String filename)
