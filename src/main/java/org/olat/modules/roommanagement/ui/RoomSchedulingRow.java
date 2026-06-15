@@ -37,6 +37,7 @@ public class RoomSchedulingRow {
 	private FormLink buildingLink;
 	private FormLink eventLink;
 	private Reference elementReference;
+	private Reference courseReference;
 	private List<String> warnings = List.of();
 	private int numParticipants;
 
@@ -86,6 +87,14 @@ public class RoomSchedulingRow {
 
 	public void setElementReference(Reference elementReference) {
 		this.elementReference = elementReference;
+	}
+
+	public Reference getCourseReference() {
+		return courseReference;
+	}
+
+	public void setCourseReference(Reference courseReference) {
+		this.courseReference = courseReference;
 	}
 
 	public List<String> getWarnings() {

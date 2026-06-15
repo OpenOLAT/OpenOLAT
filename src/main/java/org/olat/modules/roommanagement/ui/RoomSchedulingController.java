@@ -160,7 +160,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.statusEvent,
 				new LectureBlockStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.element, "openElement", new ReferenceRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.course));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.course, "openCourse", new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.numParticipants));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.numSeats));
 
@@ -339,12 +339,16 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			}
 		}
 
-		// Curriculum element reference
+		// Curriculum element and course references
 		LectureBlock lb = booking.getLectureBlock();
 		if (lb != null) {
 			CurriculumElement ce = lb.getCurriculumElement();
 			if (ce != null) {
 				row.setElementReference(new Reference(ce.getKey(), ce.getDisplayName(), ce.getIdentifier()));
+			}
+			var entry = lb.getEntry();
+			if (entry != null) {
+				row.setCourseReference(new Reference(entry.getKey(), entry.getDisplayname(), entry.getExternalRef()));
 			}
 		}
 
@@ -389,6 +393,9 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			} else if (event instanceof SelectionEvent se && "openElement".equals(se.getCommand())) {
 				RoomSchedulingRow row = dataModel.getObject(se.getIndex());
 				doOpenElement(ureq, row);
+			} else if (event instanceof SelectionEvent se && "openCourse".equals(se.getCommand())) {
+				RoomSchedulingRow row = dataModel.getObject(se.getIndex());
+				doOpenCourse(ureq, row);
 			}
 		} else if (source instanceof FormLink link && "building".equals(link.getCmd())) {
 			doOpenBuilding(ureq, link);
@@ -431,6 +438,12 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		if (el == null) return;
 		String path = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + el.getCurriculum().getKey()
 				+ "][CurriculumElement:" + el.getKey() + "]";
+		NewControllerFactory.getInstance().launch(path, ureq, getWindowControl());
+	}
+
+	private void doOpenCourse(UserRequest ureq, RoomSchedulingRow row) {
+		if (row.getCourseReference() == null || row.getCourseReference().key() == null) return;
+		String path = "[RepositoryEntry:" + row.getCourseReference().key() + "]";
 		NewControllerFactory.getInstance().launch(path, ureq, getWindowControl());
 	}
 
