@@ -106,7 +106,6 @@ public abstract class CatalogLauncherEditController extends FormBasicController 
 	protected void initTitle(FormItemContainer formLayout) {
 		FormLayoutContainer nameCont = FormLayoutContainer.createInputGroupLayout("nameCont", getTranslator(), null, null);
 		nameCont.setLabel("admin.launcher.title", null);
-		nameCont.setElementCssClass("o_inline_cont");
 		nameCont.setRootForm(mainForm);
 		formLayout.add(nameCont);
 		
