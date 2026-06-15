@@ -114,6 +114,10 @@ public class RoomManagementAdminController extends BasicController implements Ac
 			doOpenBuildings(ureq);
 			segmentView.select(buildingsLink);
 			buildingListCtrl.selectBuilding(ureq, openBuildingEvent.getBuildingKey());
+		} else if (event instanceof OpenRoomEvent openRoomEvent && source == roomSchedulingCtrl) {
+			doOpenRooms(ureq);
+			segmentView.select(roomsLink);
+			roomListCtrl.selectRoom(ureq, openRoomEvent.getRoomKey());
 		}
 		super.event(ureq, source, event);
 	}

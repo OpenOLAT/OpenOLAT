@@ -364,6 +364,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			}
 		} else if (source instanceof FormLink link && "building".equals(link.getCmd())) {
 			doOpenBuilding(ureq, link);
+		} else if (source instanceof FormLink link && "selectRoom".equals(link.getCmd())) {
+			doOpenRoom(ureq, link);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -380,6 +382,12 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private void doOpenBuilding(UserRequest ureq, FormLink link) {
 		if (link.getUserObject() instanceof Building building) {
 			fireEvent(ureq, new OpenBuildingEvent(building.getKey()));
+		}
+	}
+
+	private void doOpenRoom(UserRequest ureq, FormLink link) {
+		if (link.getUserObject() instanceof RoomSchedulingRow row && row.getBooking().getRoom() != null) {
+			fireEvent(ureq, new OpenRoomEvent(row.getBooking().getRoom().getKey()));
 		}
 	}
 

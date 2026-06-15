@@ -409,6 +409,20 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		//
 	}
 
+	void selectRoom(UserRequest ureq, Long roomKey) {
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+		loadModel();
+		List<RoomRow> rows = dataModel.getObjects();
+		for (int i = 0; i < rows.size(); i++) {
+			RoomRow row = rows.get(i);
+			if (row.getRoom().getKey().equals(roomKey)) {
+				doOpenDetails(ureq, row, i);
+				tableEl.expandDetails(i);
+				break;
+			}
+		}
+	}
+
 	private void doEditRoom(UserRequest ureq, Room room) {
 		removeAsListenerAndDispose(editRoomCtrl);
 		editRoomCtrl = new EditRoomController(ureq, getWindowControl(), room);
