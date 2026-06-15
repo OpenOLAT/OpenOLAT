@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -83,6 +84,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RoomSchedulingController extends FormBasicController implements FlexiTableComponentDelegate {
 
+	private static final String FILTER_WITH_WARNINGS = "withWarnings";
+	private static final String FILTER_WITH_WARNINGS_ON = "on";
 	private static final String FILTER_BUILDINGS = "buildings";
 	private static final String FILTER_ROOMS = "rooms";
 	private static final String TAB_ID_ALL = "all";
@@ -170,6 +173,11 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		SelectionValues warningsValues = new SelectionValues();
+		warningsValues.add(SelectionValues.entry(FILTER_WITH_WARNINGS_ON, translate("room.scheduling.filter.with.warnings")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("room.scheduling.filter.with.warnings"),
+				FILTER_WITH_WARNINGS, warningsValues, true));
 
 		SelectionValues buildingValues = new SelectionValues();
 		roomManagementService.searchBuildings(new SearchBuildingParameters(), roles).forEach(b -> {
@@ -261,7 +269,9 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			rows.add(forgeRow(booking));
 		}
 
-		if (selectedTab == tabWithWarnings) {
+		boolean withWarningsFilterActive = tableEl.getFilters() != null && tableEl.getFilters().stream()
+				.anyMatch(f -> FILTER_WITH_WARNINGS.equals(f.getFilter()) && f.isSelected());
+		if (selectedTab == tabWithWarnings || withWarningsFilterActive) {
 			rows = rows.stream().filter(r -> !r.getWarnings().isEmpty()).collect(Collectors.toList());
 		}
 
