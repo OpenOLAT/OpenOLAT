@@ -68,7 +68,10 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
@@ -113,6 +116,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	public RoomSchedulingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "room_scheduling");
+		setTranslator(Util.createPackageTranslator(LectureListRepositoryController.class, getLocale(), getTranslator()));
+
 		roles = ureq.getUserSession().getRoles();
 		initForm(ureq);
 		loadModel();
@@ -145,7 +150,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.status, new RoomStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.building, new BuildingCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.event));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.statusEvent));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.statusEvent,
+				new LectureBlockStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.element));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SchedulingCols.course));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.numParticipants));

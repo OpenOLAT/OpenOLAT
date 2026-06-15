@@ -76,8 +76,7 @@ public class RoomSchedulingDataModel extends DefaultFlexiTableDataModel<RoomSche
 			case status -> row.getBooking().getRoom() != null ? row.getBooking().getRoom().getStatus() : null;
 			case building -> row;
 			case event -> row.getEventLink();
-			case statusEvent -> row.getBooking().getLectureBlock() != null
-					? row.getBooking().getLectureBlock().getStatus() : null;
+			case statusEvent -> row.getBooking().getLectureBlock();
 			case element -> null;
 			case course -> null;
 			case numParticipants -> row.getNumParticipants();
