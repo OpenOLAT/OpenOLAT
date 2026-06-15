@@ -52,40 +52,10 @@
 	~.form-control-feedback {
 		display: none;
 	}
-
-	> span > .o_date {
-		flex: 1;
-	}
-
-	> span > .input-group {
-		display: flex !important;
-		align-items: stretch;
-		flex: 1;
-
-		> span:not(.input-group-addon) {
-			flex: 1;
-		}
-
-		> span:not(.input-group-addon) > .form-control {
+	
+	.input-group {
+		input {
 			width: 100%;
-			border-top-right-radius: 0;
-			border-bottom-right-radius: 0;
-		}
-
-		> .input-group-addon {
-			display: flex;
-			align-items: center;
-			padding: 0;
-			width: auto;
-
-			> .btn {
-				height: 100%;
-				padding: 6px 12px;
-				background: transparent;
-				border: none;
-				border-radius: 0;
-				box-shadow: none;
-			}
 		}
 	}
 }

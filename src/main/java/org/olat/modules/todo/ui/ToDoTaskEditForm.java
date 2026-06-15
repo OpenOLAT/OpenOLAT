@@ -148,7 +148,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		doEl = uifactory.addToggleButton("task.do", "task.do", null, null, formLayout);
+		doEl = uifactory.addToggleButton("task.do", null, null, null, formLayout);
 		doEl.setPresentation(Presentation.CHECK);
 		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
 		doEl.addActionListener(FormEvent.ONCHANGE);
@@ -223,26 +223,31 @@ public class ToDoTaskEditForm extends FormBasicController {
 		dueDateEl.setEnabled(datesEditable);
 
 		if (datesConfig.getPicker() != null) {
-			String relContPage = velocity_root + "/todo_date_rel_cont.html";
-			startDateRelCont = FormLayoutContainer.createCustomFormLayout("startDateRelCont", getTranslator(), relContPage);
-			startDateRelCont.setLabel(null, null);
+			startDateRelCont = FormLayoutContainer.createInputGroupLayout("startDateRelCont", getTranslator(), null, null);
 			startDateRelCont.setVisible(false);
+			startDateRelCont.setRootForm(mainForm);
 			startDateRowCont.add("startDateRelCont", startDateRelCont);
+			
 			startRelDisplayEl = uifactory.addTextElement("task.start.date.rel", null, 256, null, startDateRelCont);
+			startRelDisplayEl.setAriaLabel(translate("task.start.date.rel"));
 			startRelDisplayEl.setDomReplacementWrapperRequired(false);
 			startRelDisplayEl.setEnabled(false);
-			startRelLink = uifactory.addFormLink("startRelLink", "task.set.rule", null, startDateRelCont, Link.BUTTON);
+			startRelDisplayEl.setDisplaySize(256);
+			startRelLink = uifactory.addFormLink("rightAddOn", "task.set.rule", null, startDateRelCont, Link.BUTTON);
 			startRelLink.setIconLeftCSS("o_icon o_icon_calendar");
+			startRelLink.setElementCssClass("input-group-addon");
 
-			dueDateRelCont = FormLayoutContainer.createCustomFormLayout("dueDateRelCont", getTranslator(), relContPage);
-			dueDateRelCont.setLabel(null, null);
+			dueDateRelCont = FormLayoutContainer.createInputGroupLayout("dueDateRelCont", getTranslator(), null, null);
 			dueDateRelCont.setVisible(false);
 			dueDateRowCont.add("dueDateRelCont", dueDateRelCont);
 			dueRelDisplayEl = uifactory.addTextElement("task.due.date.rel", null, 256, null, dueDateRelCont);
+			dueRelDisplayEl.setAriaLabel(translate("task.due.date.rel"));
 			dueRelDisplayEl.setDomReplacementWrapperRequired(false);
 			dueRelDisplayEl.setEnabled(false);
-			dueRelLink = uifactory.addFormLink("dueRelLink", "task.set.rule", null, dueDateRelCont, Link.BUTTON);
+			dueRelDisplayEl.setDisplaySize(256);
+			dueRelLink = uifactory.addFormLink("rightAddOn", "task.set.rule", null, dueDateRelCont, Link.BUTTON);
 			dueRelLink.setIconLeftCSS("o_icon o_icon_calendar");
+			dueRelLink.setElementCssClass("input-group-addon");
 		}
 
 		// The input-group does not work very well (Display of errors, round border-radius on the right)
