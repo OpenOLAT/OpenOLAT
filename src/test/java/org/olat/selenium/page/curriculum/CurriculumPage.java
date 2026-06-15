@@ -77,14 +77,14 @@ public class CurriculumPage {
 		browser.findElement(organisationBy).click();
 		OOGraphene.waitCallout(browser, ".o_object_selection");
 		
-		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div[contains(text(),'" + organisation + "')]]/input[@type='radio']");
+		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection_main']//label[div/div[contains(text(),'" + organisation + "')]]/input[@type='radio']");
 		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
 		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
 		
-		By openOlatOrgCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div[contains(text(),'" + organisation + "')]]/input[@type='radio'][@checked='checked']");
+		By openOlatOrgCheckedBy = By.cssSelector(".popover .o_object_selection_main input:checked[type='radio']");
 		OOGraphene.waitElement(openOlatOrgCheckedBy, browser);
+		OOGraphene.waitBusy(browser);
 		
-		//By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
 		OOGraphene.click(organisationLocation, browser);
 		OOGraphene.waitElementDisappears(openOlatOrgBy, 5, browser);
 		
