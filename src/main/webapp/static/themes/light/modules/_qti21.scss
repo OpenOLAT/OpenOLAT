@@ -1099,7 +1099,7 @@ tr.choiceinteraction {
 /* Text gap */
 /* there is a copy in _qti21content.scss for TinyMCE */
 .textEntryInteraction {
-	input, span.o_input_value {
+	input, span.o_input_value, span.o_correction_value {
 		margin: -1px 2px;	
 		vertical-align: middle;
 		font-size: ($font-size-base * 0.98);
@@ -1126,10 +1126,18 @@ tr.choiceinteraction {
 	&.has-feedback input {
 		padding-right: 42.5px;
 	}
-	&.has-error input {
+	&.has-feedback span.o_correction_value {
+		padding-right: 26px;
+		vertical-align: baseline;
+		display: inline-block;
+	}
+	
+	&.has-error input,
+	&.has-error span.o_correction_value {
 		border-color: $state-danger-text;
 	}
-	&.has-success input {
+	&.has-success input,
+	&.has-success span.o_correction_value {
 		border-color: $state-success-text;
 	}
 }
