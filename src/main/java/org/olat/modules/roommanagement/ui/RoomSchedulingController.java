@@ -64,6 +64,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -75,6 +76,7 @@ import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.core.util.DateRange;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
+import org.olat.NewControllerFactory;
 import org.olat.modules.roommanagement.ui.RoomSchedulingDataModel.SchedulingCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -93,6 +95,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private static final String TAB_ID_UPCOMING = "upcoming";
 	private static final String TAB_ID_WITH_WARNINGS = "withWarnings";
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
+	private static final String EVENTS_BUSINESS_PATH = "[CurriculumAdmin:0][Events:0][All:0]";
 
 	private FormDateScopeSelection scopeEl;
 	private FlexiTableElement tableEl;
@@ -332,6 +335,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			}
 			FormLink eventLink = uifactory.addFormLink("event_" + booking.getKey(), "openEvent",
 					eventText, null, null, Link.LINK | Link.NONTRANSLATED);
+			eventLink.setUrl(BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(EVENTS_BUSINESS_PATH));
 			eventLink.setUserObject(row);
 			row.setEventLink(eventLink);
 		}
@@ -366,6 +370,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			doOpenBuilding(ureq, link);
 		} else if (source instanceof FormLink link && "selectRoom".equals(link.getCmd())) {
 			doOpenRoom(ureq, link);
+		} else if (source instanceof FormLink link && "openEvent".equals(link.getCmd())) {
+			doOpenEvent(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -389,6 +395,10 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		if (link.getUserObject() instanceof RoomSchedulingRow row && row.getBooking().getRoom() != null) {
 			fireEvent(ureq, new OpenRoomEvent(row.getBooking().getRoom().getKey()));
 		}
+	}
+
+	private void doOpenEvent(UserRequest ureq) {
+		NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
 	}
 
 	@Override
