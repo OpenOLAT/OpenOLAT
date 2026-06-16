@@ -21,7 +21,10 @@ package org.olat.modules.roommanagement.ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,6 +85,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
@@ -90,6 +94,7 @@ import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.core.util.DateRange;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
@@ -131,6 +136,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private RoomManagementService roomManagementService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private LectureService lectureService;
 
 	public RoomSchedulingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "room_scheduling");
@@ -300,6 +307,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		for (RoomBooking booking : bookings) {
 			rows.add(forgeRow(booking));
 		}
+		computeWarnings(rows);
 
 		boolean withWarningsFilterActive = tableEl.getFilters() != null && tableEl.getFilters().stream()
 				.anyMatch(f -> FILTER_WITH_WARNINGS.equals(f.getFilter()) && f.isSelected());
@@ -309,6 +317,79 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+
+	private void computeWarnings(List<RoomSchedulingRow> rows) {
+		// Double-booking: same room, overlapping time periods
+		Map<Long, List<RoomSchedulingRow>> byRoom = rows.stream()
+				.filter(r -> r.getBooking().getRoom() != null)
+				.collect(Collectors.groupingBy(r -> r.getBooking().getRoom().getKey()));
+		Set<Long> doubleBookedKeys = new HashSet<>();
+		for (List<RoomSchedulingRow> roomRows : byRoom.values()) {
+			for (int i = 0; i < roomRows.size(); i++) {
+				for (int j = i + 1; j < roomRows.size(); j++) {
+					RoomBooking a = roomRows.get(i).getBooking();
+					RoomBooking b = roomRows.get(j).getBooking();
+					if (bookingsOverlap(a, b)) {
+						doubleBookedKeys.add(a.getKey());
+						doubleBookedKeys.add(b.getKey());
+					}
+				}
+			}
+		}
+
+		// Overbooked: total seats for all rooms on the same event < participants
+		Map<Long, List<RoomSchedulingRow>> byLectureBlock = rows.stream()
+				.filter(r -> r.getBooking().getLectureBlock() != null)
+				.collect(Collectors.groupingBy(r -> r.getBooking().getLectureBlock().getKey()));
+		
+		Map<Long, Integer> participantCountByLb = new HashMap<>();
+		Map<Long, Integer> totalSeatsByLb = new HashMap<>();
+		for (Map.Entry<Long, List<RoomSchedulingRow>> entry : byLectureBlock.entrySet()) {
+			LectureBlock lb = entry.getValue().get(0).getBooking().getLectureBlock();
+			int participants = lectureService.getParticipants(lb).size();
+			participantCountByLb.put(entry.getKey(), participants);
+			int totalSeats = entry.getValue().stream()
+					.filter(r -> r.getBooking().getRoom() != null && r.getBooking().getRoom().getSeats() != null)
+					.mapToInt(r -> r.getBooking().getRoom().getSeats())
+					.sum();
+			totalSeatsByLb.put(entry.getKey(), totalSeats);
+			for (RoomSchedulingRow r : entry.getValue()) {
+				r.setNumParticipants(participants);
+			}
+		}
+
+		// Assign warnings per row
+		for (RoomSchedulingRow row : rows) {
+			RoomBooking booking = row.getBooking();
+			Room room = booking.getRoom();
+			List<String> warnings = new ArrayList<>();
+
+			if (room != null && RoomStatus.inactive == room.getStatus()) {
+				String ref = StringHelper.containsNonWhitespace(room.getExternalRef()) ? room.getExternalRef() : room.getDescription();
+				warnings.add(translate("room.scheduling.warning.inactive", ref));
+			}
+			if (doubleBookedKeys.contains(booking.getKey())) {
+				String ref = room != null && StringHelper.containsNonWhitespace(room.getExternalRef()) ? room.getExternalRef() : (room != null ? room.getDescription() : "");
+				warnings.add(translate("room.scheduling.warning.double.booked", ref));
+			}
+			LectureBlock lb = booking.getLectureBlock();
+			if (lb != null) {
+				int participants = participantCountByLb.getOrDefault(lb.getKey(), 0);
+				int seats = totalSeatsByLb.getOrDefault(lb.getKey(), 0);
+				if (participants > seats) {
+					warnings.add(translate("room.scheduling.warning.overbooked"));
+				}
+			}
+
+			row.setWarnings(warnings);
+		}
+	}
+
+	private static boolean bookingsOverlap(RoomBooking a, RoomBooking b) {
+		if (a.getStartDate() == null || a.getEndDate() == null) return false;
+		if (b.getStartDate() == null || b.getEndDate() == null) return false;
+		return a.getStartDate().before(b.getEndDate()) && a.getEndDate().after(b.getStartDate());
 	}
 
 	private Set<Long> getSelectedLongKeys(String filterId) {
