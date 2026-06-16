@@ -38,9 +38,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -59,7 +64,11 @@ import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -108,6 +117,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private FormDateScopeSelection scopeEl;
 	private FlexiTableElement tableEl;
 	private RoomSchedulingDataModel dataModel;
+
+	private CloseableCalloutWindowController calloutCtrl;
 
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabToday;
@@ -392,6 +403,10 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			} else if (event instanceof SelectionEvent se && "openCourse".equals(se.getCommand())) {
 				RoomSchedulingRow row = dataModel.getObject(se.getIndex());
 				doOpenCourse(ureq, row);
+			} else if (event instanceof SelectionEvent se && WarningsCellRenderer.CMD_WARNINGS.equals(se.getCommand())) {
+				String targetId = WarningsCellRenderer.getId(se.getIndex());
+				RoomSchedulingRow row = dataModel.getObject(se.getIndex());
+				doOpenWarningsCallout(ureq, row, targetId);
 			}
 		} else if (source instanceof FormLink link && "building".equals(link.getCmd())) {
 			doOpenBuilding(ureq, link);
@@ -401,6 +416,28 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			doOpenEvent(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == calloutCtrl) {
+			calloutCtrl.deactivate();
+			removeAsListenerAndDispose(calloutCtrl);
+			calloutCtrl = null;
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doOpenWarningsCallout(UserRequest ureq, RoomSchedulingRow row, String targetId) {
+		removeAsListenerAndDispose(calloutCtrl);
+		RoomSchedulingWarningsCalloutController warningsCtrl =
+				new RoomSchedulingWarningsCalloutController(ureq, getWindowControl(), row.getWarnings());
+		listenTo(warningsCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				warningsCtrl.getInitialComponent(), targetId, "", true, "",
+				new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
 	private void doOpenDetails(UserRequest ureq, RoomSchedulingRow row, int rowIndex) {
@@ -455,13 +492,37 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		// read-only table
 	}
 
-	private static final class WarningsCellRenderer implements FlexiCellRenderer {
+	private static final class WarningsCellRenderer implements FlexiCellRenderer, ActionDelegateCellRenderer {
+
+		static final String CMD_WARNINGS = "openWarnings";
+		private static final List<String> ACTIONS = List.of(CMD_WARNINGS);
+
+		static String getId(int row) {
+			return "o_c" + CMD_WARNINGS + "_" + row;
+		}
+
+		@Override
+		public List<String> getActions() {
+			return ACTIONS;
+		}
+
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue,
 				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			if (!(cellValue instanceof RoomSchedulingRow schedulingRow)) return;
 			if (schedulingRow.getWarnings().isEmpty()) return;
-			target.append("<i class=\"o_icon o_icon_warn\"> </i>");
+
+			FlexiTableElementImpl ftE = source.getFormItem();
+			String id = source.getFormDispatchId();
+			Form rootForm = ftE.getRootForm();
+			String actionId = getId(row);
+
+			NameValuePair pair = new NameValuePair(CMD_WARNINGS, Integer.toString(row));
+			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, true, false, pair);
+			target.append("<a id=\"").append(actionId).append("\" href=\"javascript:;\" onclick=\"")
+				  .append(jsCode).append("; return false;\">")
+				  .append("<i class=\"o_icon o_icon_warn\"> </i>")
+				  .append("</a>");
 		}
 	}
 
