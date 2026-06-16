@@ -38,6 +38,7 @@ public class LectureBlockParticipantGroupRow {
 	
 	private final Group group;
 	private RepositoryEntry entry;
+	private boolean defaultElement;
 	private CurriculumElementInfos curriculumElement;
 	private StatisticsBusinessGroupRow businessGroup;
 	
@@ -58,10 +59,11 @@ public class LectureBlockParticipantGroupRow {
 		this.excluded = excluded;
 	}
 	
-	public LectureBlockParticipantGroupRow(CurriculumElementInfos curriculumElement, boolean excluded) {
+	public LectureBlockParticipantGroupRow(CurriculumElementInfos curriculumElement, boolean excluded, boolean defaultElement) {
 		this.numOfParticipants = curriculumElement.numOfParticipants();
 		this.group = curriculumElement.curriculumElement().getGroup();
 		this.curriculumElement = curriculumElement;
+		this.defaultElement = defaultElement;
 		this.excluded = excluded;
 	}
 	
@@ -100,7 +102,7 @@ public class LectureBlockParticipantGroupRow {
 			return "o_icon o_icon-fw o_icon_group";
 		}
 		if(curriculumElement != null) {
-			return "o_icon o_icon-fw o_icon_curriculum";
+			return "o_icon o_icon-fw o_icon_curriculum_element";
 		}
 		return null;
 	}
@@ -127,6 +129,14 @@ public class LectureBlockParticipantGroupRow {
 	
 	public void setExcluded(boolean excluded) {
 		this.excluded = excluded;
+	}
+
+	public boolean isDefaultElement() {
+		return defaultElement;
+	}
+
+	public void setDefaultElement(boolean defaultElement) {
+		this.defaultElement = defaultElement;
 	}
 
 	public FormLink getTitleLink() {

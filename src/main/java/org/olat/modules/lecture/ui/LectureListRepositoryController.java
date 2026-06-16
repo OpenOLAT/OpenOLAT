@@ -2032,6 +2032,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		CurriculumElement el = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElement().key()));
 		if(curriculumElement != null && curriculumElement.equals(el)) {
 			elementPath.append("[Overview:0]");
+		} else if((curriculum != null && !curriculum.equals(el.getCurriculum()))
+				|| (curriculumElement != null && curriculumElement.getImplementation() != null
+						&& !curriculumElement.getImplementation().equals(el.getImplementation()))
+				|| (curriculumElement != null && curriculumElement.getImplementation() == null
+						&& (el.getImplementation() == null || !curriculumElement.equals(el.getImplementation())))) {
+			// This is for the case where the selected element is not in the same product or implementation
+			String businessPath = "[CurriculumAdmin:0][Curriculum:" + el.getCurriculum().getKey() + "][CurriculumElement:" + el.getKey() + "][Overview:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			return;
 		} else {
 			if(curriculum == null && curriculumElement == null) {
 				elementPath.append("[Curriculum:").append(el.getCurriculum().getKey()).append("]");

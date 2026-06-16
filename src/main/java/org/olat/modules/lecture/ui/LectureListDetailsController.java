@@ -65,6 +65,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.member.component.DefaultElementCellRenderer;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
@@ -235,6 +236,8 @@ public class LectureListDetailsController extends FormBasicController {
 	private void initFormParticipantsGroupTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.defaultElement,
+				new DefaultElementCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.numParticipants,
 				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_user")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status,
@@ -397,9 +400,11 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(null, repositoryEntry);
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
+			CurriculumElement defaultElement = curriculumService.getDefaultCurriculumElement(repositoryEntry);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean included = selectedGroups.contains(elementInfos.curriculumElement().getGroup());
-				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, !included)));
+				boolean defaultEl = defaultElement != null && defaultElement.equals(elementInfos.curriculumElement());
+				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, !included, defaultEl)));
 			}
 		} else if(row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
 			CurriculumElementRef curriculumElementRef = new CurriculumElementRefImpl(row.getCurriculumElement().key());
@@ -408,7 +413,7 @@ public class LectureListDetailsController extends FormBasicController {
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());
-				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));
+				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded, false)));
 			}
 		}
 		
