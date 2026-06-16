@@ -16,7 +16,6 @@
       <mapEntry mapKey="gap" mappedValue="1.0" caseSensitive="false" />
       <mapEntry mapKey="text" mappedValue="0.8" caseSensitive="false" />
       <mapEntry mapKey="textEntry" mappedValue="0.8" caseSensitive="false" />
-      <mapEntry mapKey="oo-ignore-spaces-oo" mappedValue="-32.0" caseSensitive="true" />
     </mapping>
   </responseDeclaration>
   <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
@@ -60,7 +59,7 @@
     </defaultValue>
   </outcomeDeclaration>
   <itemBody>
-    <p>This interaction is a <textEntryInteraction responseIdentifier="RESPONSE_1" placeholderText="" /></p>
+    <p>This interaction is a <textEntryInteraction class="oo-ignore-spaces-oo" responseIdentifier="RESPONSE_1" placeholderText="" /></p>
     <p>What is <textEntryInteraction responseIdentifier="RESPONSE_2" placeholderText="" /></p>
   </itemBody>
   <responseProcessing>
