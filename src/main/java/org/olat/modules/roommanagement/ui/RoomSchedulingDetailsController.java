@@ -19,13 +19,19 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
@@ -36,6 +42,10 @@ import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class RoomSchedulingDetailsController extends FormBasicController {
+
+	private static final String EVENTS_BUSINESS_PATH = "[CurriculumAdmin:0][Events:0][All:0]";
+
+	private FormLink openInCoursePlannerLink;
 
 	private final RoomSchedulingRow row;
 
@@ -57,6 +67,20 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 		layoutCont.contextPut("externalRef", lb.getExternalRef());
 		String statusBadge = LectureBlockStatusCellRenderer.getStatusLabelSolidWithIcon(lb, false, getTranslator());
 		layoutCont.contextPut("lectureBlockStatusBadge", statusBadge);
+
+		openInCoursePlannerLink = uifactory.addFormLink("openInCoursePlanner", "openInCoursePlanner",
+				"room.scheduling.details.open.in.course.planner", null, formLayout, Link.BUTTON);
+		openInCoursePlannerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+		openInCoursePlannerLink.setUrl(BusinessControlFactory.getInstance()
+				.getRelativeURLFromBusinessPathString(EVENTS_BUSINESS_PATH));
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == openInCoursePlannerLink) {
+			NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
