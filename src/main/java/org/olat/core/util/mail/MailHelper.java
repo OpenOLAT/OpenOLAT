@@ -83,6 +83,11 @@ public class MailHelper {
 		if(bundle.getFromId() != null) {
 			return getMailFooter(bundle.getFromId());
 		}
+		if (bundle.getToId() != null) {
+			String language = bundle.getToId().getUser().getPreferences().getLanguage();
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		    return getMailFooter(locale);
+		}
 		return getMailFooter(I18nModule.getDefaultLocale());
 	}
 	
