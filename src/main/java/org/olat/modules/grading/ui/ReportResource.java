@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
@@ -386,7 +388,10 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			pos += graderPropertyHandlers.size();
 		} else {
 			for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
-				String val = userPropertyHandler.getUserProperty(graderIdentity.getUser(), translator.getLocale());
+				String val = (UserConstants.NICKNAME.equals(userPropertyHandler.getName())
+							&& Objects.equals(Identity.STATUS_DELETED, graderIdentity.getStatus()))
+						? translator.translate("deleted")
+						: userPropertyHandler.getUserProperty(graderIdentity.getUser(), translator.getLocale());
 				row.addCell(pos++, val);
 			}
 		}
@@ -397,7 +402,10 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			pos += assessedUserPropertyHandlers.size();
 		} else {
 			for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
-				String val = userPropertyHandler.getUserProperty(assessedIdentity.getUser(), translator.getLocale());
+				String val = (UserConstants.NICKNAME.equals(userPropertyHandler.getName())
+							&& Objects.equals(Identity.STATUS_DELETED, assessedIdentity.getStatus()))
+						? translator.translate("deleted")
+						: userPropertyHandler.getUserProperty(assessedIdentity.getUser(), translator.getLocale());
 				row.addCell(pos++, val);
 			}
 		}
