@@ -110,7 +110,7 @@ public class SelectCertificationProgramController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<CertificationProgram> programsList = certificationProgramService.getCertificationPrograms(List.of(organisation));
+		List<CertificationProgram> programsList = certificationProgramService.getCertificationPrograms(organisation, getIdentity());
 		tableModel.setObjects(programsList);
 		tableEl.reset(true, true, true);
 	}

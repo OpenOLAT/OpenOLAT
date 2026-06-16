@@ -163,18 +163,35 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadCertificationProgramsByOrganisations() {
+	public void loadCertificationProgramsByOrganisation() {
 		String programIdentifier = "PO - 10";
 		String programName = "OpenOlat certification 10 (organisation)";
 		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cp-1-owner");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
+		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
+		groupDao.addMembershipOneWay(program.getGroup(), owner, CertificationRoles.programowner.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(defaultUnitTestOrganisation, owner);
+		Assertions.assertThat(programs)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(program);
+	}
+	
+	@Test
+	public void loadCertificationProgramsByOrganisationNoPermissions() {
+		String programIdentifier = "PO - 10n";
+		String programName = "OpenOlat certification 10n (organisation)";
+		
+		Identity notowner = JunitTestHelper.createAndPersistIdentityAsRndUser("cp-2-not-owner");
 		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
 		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
-		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(List.of(defaultUnitTestOrganisation));
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(defaultUnitTestOrganisation, notowner);
 		Assertions.assertThat(programs)
-			.hasSizeGreaterThanOrEqualTo(1)
-			.contains(program);
+			.isEmpty();
 	}
 	
 	@Test

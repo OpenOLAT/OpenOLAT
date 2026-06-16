@@ -142,8 +142,8 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public List<CertificationProgram> getCertificationPrograms(List<Organisation> organisations) {
-		return certificationProgramDao.loadCertificationPrograms(organisations);
+	public List<CertificationProgram> getCertificationPrograms(Organisation organisation, IdentityRef identity) {
+		return certificationProgramDao.loadCertificationPrograms(organisation, identity);
 	}
 
 	@Override
