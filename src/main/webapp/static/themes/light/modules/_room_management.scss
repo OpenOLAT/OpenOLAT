@@ -296,3 +296,24 @@
 	font-size: $font-size-large;
 	font-weight: bold;
 }
+
+.o_rm_scheduling_details {
+	container-type: inline-size;
+	container-name: o-event-details-wrapper;
+	
+	.o_flex_header {
+		display: flex;
+		gap: 16px;
+		align-items: center;
+		
+		.o_event_title {
+			display: flex;
+			gap: 5px;
+			align-items: baseline;
+			
+			h3 {
+				margin-top: 10px;
+			}
+		}
+	}
+}

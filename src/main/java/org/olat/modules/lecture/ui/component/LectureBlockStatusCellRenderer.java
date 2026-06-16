@@ -66,6 +66,22 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 		return sb.toString();
 	}
 	
+	public static String getStatusLabelSolidWithIcon(LectureBlock block, boolean nextScheduled, Translator trans) {
+		LectureBlockVirtualStatus vStatus = calculateStatus(block);
+		if (vStatus == null) return "";
+		String statusName = (nextScheduled && vStatus != LectureBlockVirtualStatus.RUNNING) ? "next" : vStatus.name().toLowerCase();
+		String iconCss = switch (vStatus) {
+			case PLANNED -> "o_icon_calendar";
+			case RUNNING -> "o_icon_play";
+			case DONE -> "o_icon_circle_check";
+			case CANCELLED -> "o_icon_cancelled";
+		};
+		return "<span class=\"o_labeled o_lecture_status_" + statusName
+				+ "\" title=\"" + trans.translate(statusName) + "\">"
+				+ "<i class=\"o_icon " + iconCss + " o_icon-fw\"> </i>"
+				+ trans.translate(statusName) + "</span>";
+	}
+	
 	public static final String getStatusString(LectureBlock block, Translator trans) {
 		LectureBlockVirtualStatus vStatus = calculateStatus(block);
 		return vStatus == null ? null: trans.translate(vStatus.name().toLowerCase());

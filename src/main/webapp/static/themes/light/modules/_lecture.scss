@@ -133,6 +133,23 @@
 	}
 }
 
+.o_labeled {
+	&.o_lecture_status_planned,
+	&.o_lecture_status_next {
+		@extend %o_labeled_blue;
+	}
+	&.o_lecture_status_active,
+	&.o_lecture_status_running {
+		@extend %o_labeled_orange;
+	}
+	&.o_lecture_status_cancelled {
+		@extend %o_labeled_grey;
+	}
+	&.o_lecture_status_done {
+		@extend %o_labeled_brown;
+	}
+}
+
 .o_button_group>.o_lecture_badge {
 	display: inline-block;
 	margin-left: 7px;

@@ -184,7 +184,11 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return List.of();
+		List<Component> components = new ArrayList<>();
+		if (rowObject instanceof RoomSchedulingRow schedulingRow && schedulingRow.getDetailsController() != null) {
+			components.add(schedulingRow.getDetailsController().getInitialFormItem().getComponent());
+		}
+		return components;
 	}
 
 	private void initFilters() {
@@ -356,7 +360,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		if (lb != null) {
 			String eventText = StringHelper.escapeHtml(lb.getTitle());
 			if (StringHelper.containsNonWhitespace(lb.getExternalRef())) {
-				eventText += " · " + StringHelper.escapeHtml(lb.getExternalRef());
+				eventText += " · <small>" + StringHelper.escapeHtml(lb.getExternalRef()) + "</small>";
 			}
 			FormLink eventLink = uifactory.addFormLink("event_" + booking.getKey(), "openEvent",
 					eventText, null, null, Link.LINK | Link.NONTRANSLATED);
@@ -409,11 +413,18 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	private void doOpenDetails(UserRequest ureq, RoomSchedulingRow row, int rowIndex) {
 		doCloseDetails(row);
+		RoomSchedulingDetailsController detailsCtrl = new RoomSchedulingDetailsController(ureq, getWindowControl(), row, mainForm);
+		listenTo(detailsCtrl);
+		row.setDetailsController(detailsCtrl);
+		flc.add(detailsCtrl.getInitialFormItem());
 		tableEl.expandDetails(rowIndex);
 	}
 
 	private void doCloseDetails(RoomSchedulingRow row) {
-		//
+		if (row.getDetailsController() == null) return;
+		removeAsListenerAndDispose(row.getDetailsController());
+		flc.remove(row.getDetailsController().getInitialFormItem());
+		row.setDetailsController(null);
 	}
 
 	private void doOpenBuilding(UserRequest ureq, FormLink link) {

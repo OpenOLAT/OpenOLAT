@@ -38,6 +38,7 @@ public class RoomSchedulingRow {
 	private FormLink eventLink;
 	private Reference elementReference;
 	private Reference courseReference;
+	private RoomSchedulingDetailsController detailsController;
 	private List<String> warnings = List.of();
 	private int numParticipants;
 
@@ -95,6 +96,25 @@ public class RoomSchedulingRow {
 
 	public void setCourseReference(Reference courseReference) {
 		this.courseReference = courseReference;
+	}
+
+	public boolean isDetailsControllerAvailable() {
+		return detailsController != null && detailsController.getInitialFormItem().isVisible();
+	}
+
+	public RoomSchedulingDetailsController getDetailsController() {
+		return detailsController;
+	}
+
+	public String getDetailsControllerName() {
+		if (detailsController != null) {
+			return detailsController.getInitialFormItem().getComponent().getComponentName();
+		}
+		return null;
+	}
+
+	public void setDetailsController(RoomSchedulingDetailsController detailsController) {
+		this.detailsController = detailsController;
 	}
 
 	public List<String> getWarnings() {

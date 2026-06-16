@@ -1,0 +1,11 @@
+<div class="o_rm_scheduling_details">
+	<div class="o_flex_header">
+		<div class="o_event_title">
+			<h3>$r.escapeHtml($title)</h3>
+			#if($r.isNotEmpty($externalRef))<h3><small> · $r.escapeHtml($externalRef)</small></h3>#end
+		</div>
+		<div class="o_event_status">
+			$lectureBlockStatusBadge
+		</div>
+	</div>
+</div>
