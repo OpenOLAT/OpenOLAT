@@ -54,6 +54,11 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage addGapEntry(String solution, String placeholder) {
+		return addGapEntry(solution, placeholder, false, false, false);
+	}
+
+	public QTI21GapEntriesEditorPage addGapEntry(String solution, String placeholder,
+			boolean caseSensitive, boolean ignoreSpaces, boolean wildcard) {
 		By addGapBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_gap_text')]//button[contains(@title,'L\u00FCckentext')]");
 		browser.findElement(addGapBy).click();
 		OOGraphene.waitModalDialog(browser);
@@ -61,8 +66,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 		By solutionBy = By.cssSelector("fieldset.o_sel_gap_entry_form div.o_sel_gap_entry_solution input[type=text]");
 		OOGraphene.waitElement(solutionBy, browser).sendKeys(solution);
 		
-		By placeholderBy = By.cssSelector("fieldset.o_sel_gap_entry_form div.o_sel_gap_entry_placeholder input[type=text]");
-		browser.findElement(placeholderBy).sendKeys(placeholder);
+		gapEntryOptions(placeholder, caseSensitive, ignoreSpaces, wildcard);
 		return this;
 	}
 	
@@ -76,6 +80,11 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage editGapEntry(String solution, String placeholder, int index) {
+		return editGapEntry(solution, placeholder, false, false, false, index);
+	}
+	
+	public QTI21GapEntriesEditorPage editGapEntry(String solution, String placeholder,
+			boolean caseSensitive, boolean ignoreSpaces, boolean wildcard, int index) {
 		By frameBy = By.cssSelector("div.o_sel_assessment_item_gap_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
@@ -91,9 +100,32 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 		solutionEl.clear();
 		solutionEl.sendKeys(solution);
 		
+		gapEntryOptions(placeholder, caseSensitive, ignoreSpaces, wildcard);
+		return this;
+	}
+	
+	private void gapEntryOptions(String placeholder,
+			boolean caseSensitive, boolean ignoreSpaces, boolean wildcard) {
 		By placeholderBy = By.cssSelector("fieldset.o_sel_gap_entry_form div.o_sel_gap_entry_placeholder input[type=text]");
 		browser.findElement(placeholderBy).sendKeys(placeholder);
-		return this;
+		
+		if(caseSensitive) {
+			By caseSensitiveBy = By.cssSelector(".o_sel_gap_entry_options input[type='checkbox'][value='case']");
+			WebElement caseSensitiveEl = browser.findElement(caseSensitiveBy);
+			OOGraphene.check(caseSensitiveEl, Boolean.TRUE);
+		}
+		
+		if(ignoreSpaces) {
+			By ignoreSpacesBy = By.cssSelector(".o_sel_gap_entry_options input[type='checkbox'][value='ignoreSpaces']");
+			WebElement ignoreSpacesEl = browser.findElement(ignoreSpacesBy);
+			OOGraphene.check(ignoreSpacesEl, Boolean.TRUE);
+		}
+		
+		if(wildcard) {
+			By wildcardBy = By.cssSelector(".o_sel_gap_entry_options input[type='checkbox'][value='wildcard']");
+			WebElement wildcardEl = browser.findElement(wildcardBy);
+			OOGraphene.check(wildcardEl, Boolean.TRUE);
+		}
 	}
 	
 	/**
