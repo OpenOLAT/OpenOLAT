@@ -11,4 +11,9 @@
 			$r.render("openInCoursePlanner")
 		</div>
 	</div>
+	#if($r.available("lecture.subjects"))
+	<div class="o_lecture_subjects">
+		$r.render("lecture.subjects")
+	</div>
+	#end
 </div>

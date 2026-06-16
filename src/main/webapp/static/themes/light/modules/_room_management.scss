@@ -320,4 +320,12 @@
 			flex-grow: 1;
 		}
 	}
+	
+	.o_lecture_subjects {
+		margin-top: -12px;
+
+		form-control-static {
+			padding-top: 0;
+		}
+	}
 }

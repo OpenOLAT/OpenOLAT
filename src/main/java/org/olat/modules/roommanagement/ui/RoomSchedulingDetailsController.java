@@ -19,6 +19,10 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -28,14 +32,23 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
+import org.olat.repository.RepositoryModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 15 Jun 2026<br>
@@ -48,6 +61,15 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	private FormLink openInCoursePlannerLink;
 
 	private final RoomSchedulingRow row;
+
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 
 	public RoomSchedulingDetailsController(UserRequest ureq, WindowControl wControl, RoomSchedulingRow row, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "room_scheduling_details_view", rootForm);
@@ -73,6 +95,24 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 		openInCoursePlannerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 		openInCoursePlannerLink.setUrl(BusinessControlFactory.getInstance()
 				.getRelativeURLFromBusinessPathString(EVENTS_BUSINESS_PATH));
+
+		initSubjects(formLayout, lb);
+	}
+
+	private void initSubjects(FormItemContainer formLayout, LectureBlock lb) {
+		if (!taxonomyModule.isEnabled() || curriculumModule.getTaxonomyRefs().isEmpty()) return;
+
+		Collection<TaxonomyRef> taxonomyRefs = new HashSet<>(curriculumModule.getTaxonomyRefs());
+		taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
+		if (taxonomyRefs.isEmpty()) return;
+
+		List<TaxonomyLevel> subjects = lectureService.getTaxonomy(lb);
+		if (subjects == null || subjects.isEmpty()) return;
+
+		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
+				"lecture.subjects", formLayout, getWindowControl(), true,
+				new TaxonomyLevelSelectionSource(getLocale(), subjects, List::of, null));
+		taxonomyLevelEl.setEnabled(false);
 	}
 
 	@Override
