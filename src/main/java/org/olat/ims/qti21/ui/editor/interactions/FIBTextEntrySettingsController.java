@@ -60,6 +60,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	
 	private static final String OPTION_CASE_SENSITIVITY_KEY = "case";
 	private static final String OPTION_IGNORE_SPACES_KEY = "ignoreSpaces";
+	private static final String OPTION_WILDCARD_KEY = "wildcard";
 	
 	private TextElement solutionEl;
 	private TextElement placeholderEl;
@@ -155,13 +156,18 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		SelectionValues optionsPK = new SelectionValues();
 		optionsPK.add(SelectionValues.entry(OPTION_CASE_SENSITIVITY_KEY, translate("fib.caseSensitive")));
 		optionsPK.add(SelectionValues.entry(OPTION_IGNORE_SPACES_KEY, translate("fib.ignoreSpaces")));
+		optionsPK.add(SelectionValues.entry(OPTION_WILDCARD_KEY, translate("fib.wildcard")));
 		correctionsEl = uifactory.addCheckboxesVertical("fib.corrections", "fib.corrections", optionsCont, optionsPK.keys(), optionsPK.values(), 1);
+		correctionsEl.setElementCssClass("o_sel_gap_entry_options");
 		correctionsEl.setEnabled(!restrictedEdit && !readOnly);
 		if(interaction.isCaseSensitive()) {
 			correctionsEl.select(OPTION_CASE_SENSITIVITY_KEY, true);
 		}
 		if(interaction.isIgnoreSpaces()) {
 			correctionsEl.select(OPTION_IGNORE_SPACES_KEY, true);
+		}
+		if(interaction.isWildcard()) {
+			correctionsEl.select(OPTION_WILDCARD_KEY, true);
 		}
 
 		// Submit Button
@@ -344,6 +350,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		Collection<String> selectedOptions = correctionsEl.getSelectedKeys();
 		interaction.setCaseSensitive(selectedOptions.contains(OPTION_CASE_SENSITIVITY_KEY));
 		interaction.setIgnoreSpaces(selectedOptions.contains(OPTION_IGNORE_SPACES_KEY));
+		interaction.setWildcard(selectedOptions.contains(OPTION_WILDCARD_KEY));
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
 			interaction.setExpectedLength(Integer.valueOf(expectedLengthEl.getValue()));
 		} else {

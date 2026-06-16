@@ -216,7 +216,8 @@ public class QTI21Constants {
 	
 	public static final String IGNORE_SPACES_KEY = "oo-ignore-spaces-oo";
 	
-	public static final double IGNORE_SPACES_VALUE = -32.0d;
+	public static final String WILDCARD_KEY = "oo-wildcard-oo";
+	
 	
 	
 	public enum HotspotLayouts {

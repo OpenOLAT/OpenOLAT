@@ -25,6 +25,8 @@ import static org.olat.ims.qti21.QTI21Constants.SCORE_CLX_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.SCORE_IDENTIFIER;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -385,7 +387,7 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
-			Identifier declarationId, String response, Double score, boolean caseSensitive, boolean ignoreSpaces,
+			Identifier declarationId, String response, Double score, boolean caseSensitive,
 			List<TextEntryAlternative> alternatives, boolean useScoreOfAlternatives) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
@@ -412,6 +414,11 @@ public class AssessmentItemFactory {
 		
 		//map alternatives
 		if(alternatives != null && !alternatives.isEmpty()) {
+			if(alternatives.size() > 1) {
+				// Make sure the best score match first
+				Collections.sort(alternatives, new TextEntryAlternativeComparator());
+			}
+			
 			for(TextEntryAlternative alternative:alternatives) {
 				if(StringHelper.containsNonWhitespace(alternative.getAlternative())) {
 					MapEntry mapEntry = new MapEntry(mapping);
@@ -427,15 +434,16 @@ public class AssessmentItemFactory {
 			}
 		}
 		
-		if(ignoreSpaces) {
-			MapEntry mapEntry = new MapEntry(mapping);
-			mapEntry.setMapKey(new StringValue(QTI21Constants.IGNORE_SPACES_KEY));
-			mapEntry.setMappedValue(QTI21Constants.IGNORE_SPACES_VALUE);
-			mapEntry.setCaseSensitive(Boolean.TRUE);
-			mapping.getMapEntries().add(mapEntry);
-		}
-		
 		return responseDeclaration;
+	}
+	
+	private static final class TextEntryAlternativeComparator implements Comparator<TextEntryAlternative> {
+		@Override
+		public int compare(TextEntryAlternative o1, TextEntryAlternative o2) {
+			double s1 = o1.getScore();
+			double s2 = o2.getScore();
+			return - Double.compare(s1, s2);
+		}
 	}
 	
 	/**

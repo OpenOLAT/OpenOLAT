@@ -525,7 +525,6 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		Mapping mapping = responseDeclaration.getMapping();
 		if(mapping != null) {
 			boolean caseSensitive = true;
-			boolean ignoreSpaces = false;
 			List<TextEntryAlternative> alternatives = new ArrayList<>();
 
 			List<MapEntry> mapEntries = mapping.getMapEntries();
@@ -534,10 +533,7 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 				SingleValue sValue = mapEntry.getMapKey();
 				if(sValue instanceof StringValue) {
 					String alt = ((StringValue)sValue).stringValue();
-					if(QTI21Constants.IGNORE_SPACES_KEY.equals(alt) && QTI21Constants.IGNORE_SPACES_VALUE ==  mapEntry.getMappedValue()) {
-						ignoreSpaces = true;
-						continue;
-					} else if(solution == null || !solution.equals(alt)) {
+					if(solution == null || !solution.equals(alt)) {
 						alternative.setAlternative(alt);
 						alternative.setScore(mapEntry.getMappedValue());
 						alternatives.add(alternative);
@@ -555,7 +551,6 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 				caseSensitive &= mapEntry.getCaseSensitive();
 			}
 			
-			textEntry.setIgnoreSpaces(ignoreSpaces);
 			textEntry.setCaseSensitive(caseSensitive);
 			textEntry.setAlternatives(alternatives);
 		}
@@ -879,19 +874,18 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 			AbstractEntry entry = textEntryEntry.getValue();
 			if(entry instanceof TextEntry textEntry) {
-				if( textEntry.getSolution() != null) {
+				if(textEntry.getSolution() != null) {
 					Double score = -1.0d;
 					if(scoreEvaluation == ScoreEvaluation.perAnswer) {
 						score = textEntry.getScore();
 					}
 					ResponseDeclaration	responseDeclaration = createTextEntryResponseDeclaration(assessmentItem,
-								textEntry.getResponseIdentifier(), textEntry.getSolution(),
-								score, textEntry.isCaseSensitive(), textEntry.isIgnoreSpaces(),
+								textEntry.getResponseIdentifier(), textEntry.getSolution(), score, textEntry.isCaseSensitive(),
 								textEntry.getAlternatives(), scoreEvaluation == ScoreEvaluation.perAnswer);
 					responseDeclarations.add(responseDeclaration);
 				}
 			} else if(entry instanceof NumericalEntry textEntry) {
-				if( textEntry.getSolution() != null) {
+				if(textEntry.getSolution() != null) {
 					ResponseDeclaration responseDeclaration = createNumericalEntryResponseDeclaration(assessmentItem,
 							textEntry.getResponseIdentifier(), textEntry.getSolution());
 					responseDeclarations.add(responseDeclaration);
@@ -1004,16 +998,14 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 		List<String> usedResponseIdentifiers = new ArrayList<>(interactions.size());
 		for(Interaction interaction:interactions) {
-			if(interaction instanceof TextEntryInteraction textEntryInteraction && interaction.getResponseIdentifier() != null) {
+			if(interaction instanceof TextEntryInteraction textEntryInteraction
+					&& interaction.getResponseIdentifier() != null) {
 				String responseIdentifier = interaction.getResponseIdentifier().toString();
 				AbstractEntry entry = responseIdentifierToTextEntry.get(responseIdentifier);
-				if(entry != null) {
-					textEntryInteraction.setPlaceholderText(entry.getPlaceholder());
-					textEntryInteraction.setExpectedLength(entry.getExpectedLength());
-				}
+				buildTextEntryInteraction(textEntryInteraction, entry);
 				usedResponseIdentifiers.add(responseIdentifier);
-			} else if(interaction instanceof InlineChoiceInteraction) {
-				buildInlineChoiceInteraction((InlineChoiceInteraction)interaction);
+			} else if(interaction instanceof InlineChoiceInteraction inlineChoiceInteraction) {
+				buildInlineChoiceInteraction(inlineChoiceInteraction);
 			}
 		}
 		
@@ -1021,6 +1013,32 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		mappedResponseIdentifiers.removeAll(usedResponseIdentifiers);
 		for(String mappedResponseIdentifier:mappedResponseIdentifiers) {
 			responseIdentifierToTextEntry.remove(mappedResponseIdentifier);
+		}
+	}
+	
+	private void buildTextEntryInteraction(TextEntryInteraction textEntryInteraction, AbstractEntry entry) {
+		if(entry != null) {
+			textEntryInteraction.setPlaceholderText(entry.getPlaceholder());
+			textEntryInteraction.setExpectedLength(entry.getExpectedLength());
+		}
+		if(entry instanceof TextEntry textEntry) {
+			List<String> classAttr = textEntryInteraction.getClassAttr();
+			if(classAttr == null) {
+				classAttr = new ArrayList<>();
+				textEntryInteraction.setClassAttr(classAttr);
+			}
+			
+			if(textEntry.isIgnoreSpaces()) {
+				classAttr.add(QTI21Constants.IGNORE_SPACES_KEY);
+			} else {
+				classAttr.remove(QTI21Constants.IGNORE_SPACES_KEY);
+			}
+			
+			if(textEntry.isWildcard()) {
+				classAttr.add(QTI21Constants.WILDCARD_KEY);
+			} else {
+				classAttr.remove(QTI21Constants.WILDCARD_KEY);
+			}
 		}
 	}
 	
@@ -2065,6 +2083,7 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		private boolean caseSensitive;
 		private boolean ignoreSpaces;
+		private boolean wildcard;
 		
 		private String solution;
 		private List<TextEntryAlternative> alternatives;
@@ -2075,6 +2094,12 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		public TextEntry(TextEntryInteraction entry) {
 			super(entry.getResponseIdentifier(), entry.getPlaceholderText(), entry.getExpectedLength());
+			
+			List<String> classAttr = entry.getClassAttr();
+			if(classAttr != null) {
+				ignoreSpaces = classAttr.contains(QTI21Constants.IGNORE_SPACES_KEY);
+				wildcard = classAttr.contains(QTI21Constants.WILDCARD_KEY);
+			}
 		}
 		
 		public boolean isCaseSensitive() {
@@ -2091,6 +2116,14 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		public void setIgnoreSpaces(boolean ignoreSpaces) {
 			this.ignoreSpaces = ignoreSpaces;
+		}
+
+		public boolean isWildcard() {
+			return wildcard;
+		}
+
+		public void setWildcard(boolean wildcard) {
+			this.wildcard = wildcard;
 		}
 
 		public String getSolution() {
