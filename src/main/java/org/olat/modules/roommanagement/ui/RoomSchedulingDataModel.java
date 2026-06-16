@@ -62,7 +62,7 @@ public class RoomSchedulingDataModel extends DefaultFlexiTableDataModel<RoomSche
 	public Object getValueAt(RoomSchedulingRow row, int col) {
 		return switch (SchedulingCols.values()[col]) {
 			case warnings -> row;
-			case date -> row.getDateLink();
+			case date -> row.getBooking().getStartDate();
 			case from -> row.getBooking().getStartDate();
 			case to -> row.getBooking().getEndDate();
 			case reference -> row.getRoomLink();

@@ -87,6 +87,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 		layoutCont.contextPut("title", lb.getTitle());
 		layoutCont.contextPut("externalRef", lb.getExternalRef());
+		layoutCont.contextPut("warnings", row.getWarnings());
 		String statusBadge = LectureBlockStatusCellRenderer.getStatusLabelSolidWithIcon(lb, false, getTranslator());
 		layoutCont.contextPut("lectureBlockStatusBadge", statusBadge);
 

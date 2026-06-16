@@ -32,7 +32,6 @@ import org.olat.modules.roommanagement.RoomBooking;
 public class RoomSchedulingRow {
 
 	private final RoomBooking booking;
-	private FormLink dateLink;
 	private FormLink roomLink;
 	private FormLink buildingLink;
 	private FormLink eventLink;
@@ -48,14 +47,6 @@ public class RoomSchedulingRow {
 
 	public RoomBooking getBooking() {
 		return booking;
-	}
-
-	public FormLink getDateLink() {
-		return dateLink;
-	}
-
-	public void setDateLink(FormLink dateLink) {
-		this.dateLink = dateLink;
 	}
 
 	public FormLink getRoomLink() {

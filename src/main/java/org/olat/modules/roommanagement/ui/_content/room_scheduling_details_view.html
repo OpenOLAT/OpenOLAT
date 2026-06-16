@@ -16,4 +16,11 @@
 		$r.render("lecture.subjects")
 	</div>
 	#end
+	#if(!$warnings.isEmpty())
+	<div class="o_warning_with_icon">
+		#foreach($warning in $warnings)
+		<p>$r.escapeHtml($warning)</p>
+		#end
+	</div>
+	#end
 </div>

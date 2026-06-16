@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -66,7 +67,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -145,7 +145,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		warningsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(warningsCol);
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.date, TOGGLE_DETAILS_CMD));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.date, TOGGLE_DETAILS_CMD,
+				new DateWithDayFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.from, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SchedulingCols.to, new TimeFlexiCellRenderer(getLocale())));
 
@@ -313,15 +314,6 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 	private RoomSchedulingRow forgeRow(RoomBooking booking) {
 		RoomSchedulingRow row = new RoomSchedulingRow(booking);
-
-		// Date link
-		if (booking.getStartDate() != null) {
-			String dateText = Formatter.getInstance(getLocale()).formatDate(booking.getStartDate());
-			FormLink dateLink = uifactory.addFormLink("date_" + booking.getKey(), TOGGLE_DETAILS_CMD,
-					dateText, null, null, Link.LINK | Link.NONTRANSLATED);
-			dateLink.setUserObject(row);
-			row.setDateLink(dateLink);
-		}
 
 		// Room reference link
 		Room room = booking.getRoom();
