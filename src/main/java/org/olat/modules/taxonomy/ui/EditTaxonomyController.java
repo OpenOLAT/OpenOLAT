@@ -91,10 +91,9 @@ public class EditTaxonomyController extends FormBasicController {
 		descriptionEl.setEnabled(canEdit && !TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.description));
 		
 		if (canEdit) {
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			formLayout.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 			uifactory.addFormSubmitButton("save", buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
 
