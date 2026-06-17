@@ -123,7 +123,7 @@ public class PFEditFormController extends FormBasicController {
 		limitFileCount.select("xx", hasLimitCount);
 		limitFileCount.setVisible(hasStudentBox);
 		fileCount.setValue(String.valueOf(pfNode.getLimitCount()));
-		fileCount.setVisible(limitFileCount.isVisible());
+		fileCount.setVisible(limitFileCount.isSelected(0));
 		boolean hasTimeFrame = pfNode.hasDropboxTimeFrameConfigured();
 		timeFrame.select("xx", hasTimeFrame);
 		timeFrame.setVisible(hasStudentBox);
@@ -249,7 +249,7 @@ public class PFEditFormController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		int numOfFiles = 0;
-		if(fileCount.isVisible() && StringHelper.isLong(fileCount.getValue())) {
+		if(limitFileCount.isSelected(0) && StringHelper.isLong(fileCount.getValue())) {
 			numOfFiles = Integer.parseInt(fileCount.getValue());
 		}
 	
