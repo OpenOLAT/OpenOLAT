@@ -20,6 +20,7 @@
 package org.olat.modules.roommanagement.ui;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -37,10 +38,14 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -98,6 +103,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 				.getRelativeURLFromBusinessPathString(EVENTS_BUSINESS_PATH));
 
 		initSubjects(formLayout, lb);
+		initMetadata(formLayout, lb);
 	}
 
 	private void initSubjects(FormItemContainer formLayout, LectureBlock lb) {
@@ -114,6 +120,44 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 				"lecture.subjects", formLayout, getWindowControl(), true,
 				new TaxonomyLevelSelectionSource(getLocale(), subjects, List::of, null));
 		taxonomyLevelEl.setEnabled(false);
+	}
+
+	private void initMetadata(FormItemContainer formLayout, LectureBlock lb) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+
+		Date startDate = lb.getStartDate();
+		if (startDate != null) {
+			uifactory.addStaticTextElement("lecture.date", "lecture.date",
+					formatter.formatDateWithDay(startDate), formLayout);
+		}
+
+		Date endDate = lb.getEndDate();
+		if (startDate != null && endDate != null) {
+			String time = translate("lecture.from.to.format.short",
+					formatter.formatTimeShort(startDate), formatter.formatTimeShort(endDate));
+			uifactory.addStaticTextElement("lecture.time", "lecture.time", time, formLayout);
+		}
+
+		String location = lb.getLocation();
+		if (StringHelper.containsNonWhitespace(location)) {
+			uifactory.addStaticTextElement("lecture.location", "lecture.location",
+					"<i class=\"o_icon o_icon-fw o_icon_location\"> </i> " + StringHelper.escapeHtml(location), formLayout);
+		}
+
+		String participants = "<i class=\"o_icon o_icon-fw o_icon_user\"> </i> " + row.getNumParticipants();
+		uifactory.addStaticTextElement("lecture.participants", "lecture.participants", participants, formLayout);
+
+		LecturesBlockSearchParameters statsParams = new LecturesBlockSearchParameters();
+		statsParams.setLectureBlocks(List.of(lb));
+		List<LectureBlockBlockStatistics> statsList = lectureService.getLectureBlocksStatistics(statsParams);
+		if (!statsList.isEmpty()) {
+			int openAbsences = statsList.get(0).getNumOfAbsenceUnauthorized();
+			uifactory.addStaticTextElement("lecture.absences", "lecture.absences",
+					openAbsences + " " + translate("open"), formLayout);
+		}
+
+		String compulsory = lb.isCompulsory() ? translate("yes") : translate("no");
+		uifactory.addStaticTextElement("lecture.compulsory", "lecture.compulsory", compulsory, formLayout);
 	}
 
 	@Override

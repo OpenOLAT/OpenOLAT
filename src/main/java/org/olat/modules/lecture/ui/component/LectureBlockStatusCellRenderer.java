@@ -78,7 +78,7 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 		};
 		return "<span class=\"o_labeled o_lecture_status_" + statusName
 				+ "\" title=\"" + trans.translate(statusName) + "\">"
-				+ "<i class=\"o_icon " + iconCss + " o_icon-fw\"> </i>"
+				+ "<i class=\"o_icon " + iconCss + " o_icon-fw\"> </i> "
 				+ trans.translate(statusName) + "</span>";
 	}
 	

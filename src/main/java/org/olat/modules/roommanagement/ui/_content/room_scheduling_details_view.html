@@ -23,4 +23,12 @@
 		#end
 	</div>
 	#end
+	<div class="o_metadata_horizontal">
+		#if($r.available("lecture.date"))$r.render("lecture.date","vertical")#end
+		#if($r.available("lecture.time"))$r.render("lecture.time","vertical")#end
+		#if($r.available("lecture.location"))$r.render("lecture.location","vertical")#end
+		$r.render("lecture.participants","vertical")
+		#if($r.available("lecture.absences"))$r.render("lecture.absences","vertical")#end
+		$r.render("lecture.compulsory","vertical")
+	</div>
 </div>
