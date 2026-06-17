@@ -596,10 +596,10 @@ public class LectureListDetailsController extends FormBasicController {
 			if(secCallback.canEditLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
 				if(groupRow.isExcluded()) {
 					includeLink = LinkFactory.createLink("include.participants", "include.participants", getTranslator(), mainVC, this, Link.LINK);
-					includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+					includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 				} else {
 					excludeLink = LinkFactory.createLink("exclude.participants", "exclude.participants", getTranslator(), mainVC, this, Link.LINK);
-					excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
+					excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_exclude_member");
 				}
 			}
 			putInitialPanel(mainVC);
