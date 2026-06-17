@@ -412,18 +412,18 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 
 		// Map AI subject to taxonomy level
 		if (StringHelper.containsNonWhitespace(data.getSubject())) {
-			mapSubjectToTaxonomy(data.getSubject());
+			mapSubjectToTaxonomy(data.getSubject(), usageContext);
 		}
 
 		setFormWarning("ai.generate.metadata.done");
 	}
 
-	private void mapSubjectToTaxonomy(String subject) {
+	private void mapSubjectToTaxonomy(String subject, AiUsageContext context) {
 		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
 			return;
 		}
 		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
-				subject, mediaModule.getTaxonomyRefs(), taxonomyService,
+				context, subject, mediaModule.getTaxonomyRefs(), taxonomyService,
 				taxonomyMatchingService, aiModule, getLocale());
 		if (!matches.isEmpty()) {
 			taxonomyLevelEl.select(matches.get(0).getKey().toString());

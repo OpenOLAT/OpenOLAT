@@ -75,7 +75,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("Biology", taxonomy, 5, 0.5);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels(null, "Biology", taxonomy, 5, 0.5);
 
 		assertThat(matches).isNotEmpty();
 		assertThat(matches.get(0).level()).isEqualTo(biology);
@@ -94,7 +94,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(deterministicModel());
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("Level1", taxonomy, 2, 0.0);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels(null, "Level1", taxonomy, 2, 0.0);
 
 		assertThat(matches).hasSize(2);
 	}
@@ -110,7 +110,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("QuantumThermodynamics", taxonomy, 5, 2.0);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels(null, "QuantumThermodynamics", taxonomy, 5, 2.0);
 
 		assertThat(matches).isEmpty();
 	}
@@ -127,11 +127,11 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> byDe = matchingService.suggestLevels("Biologie", taxonomy, 5, 0.5);
+		List<TaxonomyMatch> byDe = matchingService.suggestLevels(null, "Biologie", taxonomy, 5, 0.5);
 		assertThat(byDe).isNotEmpty();
 		assertThat(byDe.get(0).level()).isEqualTo(level);
 
-		List<TaxonomyMatch> byEn = matchingService.suggestLevels("Biology", taxonomy, 5, 0.5);
+		List<TaxonomyMatch> byEn = matchingService.suggestLevels(null, "Biology", taxonomy, 5, 0.5);
 		assertThat(byEn).isNotEmpty();
 		assertThat(byEn.get(0).level()).isEqualTo(level);
 	}
@@ -150,7 +150,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("Biology", taxonomy, 5, 0.0);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels(null, "Biology", taxonomy, 5, 0.0);
 
 		assertThat(matches).hasSize(1);
 		assertThat(matches.get(0).level()).isEqualTo(biology);
@@ -167,7 +167,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("Biology", taxonomy, 5, 1.01);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels(null, "Biology", taxonomy, 5, 1.01);
 
 		assertThat(matches).hasSize(1);
 		assertThat(matches.get(0).level()).isEqualTo(biology);
@@ -187,7 +187,7 @@ public class TaxonomyMatchingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		matchingService.setEmbeddingModel(model);
-		List<TaxonomyMatch> matches = matchingService.suggestLevels("Biology", taxonomy, 5, 0.0);
+		List<TaxonomyMatch> matches = matchingService.suggestLevels(null, "Biology", taxonomy, 5, 0.0);
 
 		assertThat(matches).isNotEmpty();
 		assertThat(matches.get(0).level()).isEqualTo(biology);

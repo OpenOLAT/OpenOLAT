@@ -763,14 +763,14 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 
 			// Map AI subject to taxonomy level
 			if (StringHelper.containsNonWhitespace(data.getSubject())) {
-				mapSubjectToTaxonomy(media, data.getSubject(), mediaService);
+				mapSubjectToTaxonomy(media, data.getSubject(), mediaService, usageContext);
 			}
 		} catch (Exception e) {
 			log.warn("Failed to auto-generate AI metadata for image: {}", filename, e);
 		}
 	}
 
-	private void mapSubjectToTaxonomy(Media media, String subject, MediaService mediaService) {
+	private void mapSubjectToTaxonomy(Media media, String subject, MediaService mediaService, AiUsageContext context) {
 		MediaModule mediaModule = CoreSpringFactory.getImpl(MediaModule.class);
 		List<TaxonomyRef> taxonomyRefs = mediaModule.getTaxonomyRefs();
 		if (taxonomyRefs.isEmpty()) {
@@ -780,7 +780,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		AiModule aiModule = CoreSpringFactory.getImpl(AiModule.class);
 		TaxonomyMatchingService matchingService = CoreSpringFactory.getImpl(TaxonomyMatchingService.class);
 		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
-				subject, taxonomyRefs, taxonomyService, matchingService, aiModule,
+				context, subject, taxonomyRefs, taxonomyService, matchingService, aiModule,
 				translator != null ? translator.getLocale() : null);
 		if (!matches.isEmpty()) {
 			mediaService.updateTaxonomyLevels(media, matches);

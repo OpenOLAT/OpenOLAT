@@ -36,7 +36,11 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiEmbeddingSPI;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.manager.AiLoggingEmbeddingModel;
+import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
+import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -89,6 +93,8 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 	private TaxonomyMatchingModule matchingModule;
 	@Autowired
 	private AiModule aiModule;
+	@Autowired
+	private AiUsageLogDAO aiUsageLogDAO;
 
 	private EmbeddingModel embeddingModel;
 
@@ -100,7 +106,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 	private volatile boolean reindexing;
 
 	@Override
-	public List<TaxonomyMatch> suggestLevels(String text, TaxonomyRef taxonomy, int limit, double minScore) {
+	public List<TaxonomyMatch> suggestLevels(AiUsageContext context, String text, TaxonomyRef taxonomy, int limit, double minScore) {
 		if (text == null || text.isBlank()) {
 			return List.of();
 		}
@@ -113,7 +119,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 		log.debug("suggestLevels: text='{}', taxonomy={}, limit={}, minScore={}", text, taxonomy.getKey(), limit, minScore);
 		try {
 			ensurePgVector(model, false);
-			float[] queryVector = embed(model, matchingModule.getQueryPrefix() + text);
+			float[] queryVector = embed(model, matchingModule.getQueryPrefix() + text, context);
 			if (queryVector == null) {
 				return List.of();
 			}
@@ -226,7 +232,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 			return;
 		}
 		ensurePgVector(model, false);
-		indexLevelInternal(level, model);
+		indexLevelInternal(level, model, null, "taxonomy-embedding-index", AiUsageContext.createContextId());
 	}
 
 	public boolean isReindexing() {
@@ -266,6 +272,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 			matchingModule.clearVectorKeyAndDim();
 			dbInstance.commitAndCloseSession();
 
+			String contextId = AiUsageContext.createContextId();
 			List<Taxonomy> taxonomies = taxonomyDao.getTaxonomyList();
 			for (Taxonomy taxonomy : taxonomies) {
 				List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(List.of(taxonomy));
@@ -278,7 +285,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 								myGen, reindexGeneration.get());
 						return;
 					}
-					indexLevelInternal(level, model, levelMap);
+					indexLevelInternal(level, model, levelMap, "taxonomy-embedding-index-full", contextId);
 					count++;
 					if (count % 50 == 0) {
 						dbInstance.intermediateCommit();
@@ -303,11 +310,8 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 		}
 	}
 
-	public void indexLevelInternal(TaxonomyLevel level, EmbeddingModel model) {
-		indexLevelInternal(level, model, null);
-	}
-
-	public void indexLevelInternal(TaxonomyLevel level, EmbeddingModel model, Map<Long, TaxonomyLevel> levelMap) {
+	public void indexLevelInternal(TaxonomyLevel level, EmbeddingModel model, Map<Long, TaxonomyLevel> levelMap,
+			String usageContextType, String usageContextId) {
 		if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorType == null) {
 			log.warn("Skipping index of taxonomy level {}: pgvector column type not resolved", level.getKey());
 			return;
@@ -321,7 +325,14 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 					if (text == null) {
 						continue;
 					}
-					float[] vector = embed(model, matchingModule.getPassagePrefix() + text);
+					AiUsageContext indexContext = AiUsageContext.builder()
+							.usageContextType(usageContextType)
+							.usageContextId(usageContextId)
+							.resourceType("TaxonomyLevel")
+							.resourceId(level.getKey())
+							.resourceSubId(locale.getLanguage())
+							.build();
+					float[] vector = embed(model, matchingModule.getPassagePrefix() + text, indexContext);
 					if (vector != null) {
 						embeddingDao.upsert(level, locale.getLanguage(), textVariant, text, vector,
 								matchingModule.getModel(), null, pgVectorType);
@@ -392,7 +403,8 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 			return -1;
 		}
 		try {
-			float[] probe = embed(model, "dim");
+			Response<Embedding> probeResponse = model.embed("dim");
+			float[] probe = (probeResponse != null && probeResponse.content() != null) ? probeResponse.content().vector() : null;
 			dim = probe != null ? probe.length : -1;
 		} catch (Exception e) {
 			log.warn("Dimension probe embed failed for model '{}': {}", matchingModule.getModel(), e.getMessage());
@@ -404,9 +416,12 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 		return dim;
 	}
 
-	private float[] embed(EmbeddingModel model, String text) {
+	private float[] embed(EmbeddingModel model, String text, AiUsageContext context) {
 		try {
-			Response<Embedding> response = model.embed(text);
+			EmbeddingModel logged = context != null
+					? new AiLoggingEmbeddingModel(model, aiUsageLogDAO, matchingModule.getSpiId(), matchingModule.getModel(), AiFeature.TaxonomyMatching.getType(), context)
+					: model;
+			Response<Embedding> response = logged.embed(text);
 			if (response == null || response.content() == null) {
 				return null;
 			}

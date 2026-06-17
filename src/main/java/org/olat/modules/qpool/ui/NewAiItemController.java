@@ -154,7 +154,7 @@ public class NewAiItemController extends FormBasicController {
 			List<QuestionItem> questionItems = new ArrayList<>();
 
 			for (MCQuestionData questionData : response.getQuestions()) {
-				QuestionItem item = doCreateMCItem(questionData);
+				QuestionItem item = doCreateMCItem(questionData, usageContext);
 				if (item != null) {
 					questionItems.add(item);
 				}
@@ -177,7 +177,7 @@ public class NewAiItemController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private QuestionItem doCreateMCItem(MCQuestionData itemData) {
+	private QuestionItem doCreateMCItem(MCQuestionData itemData, AiUsageContext context) {
 		// 1) Create basic item using the builder in RAM
 		String title = itemData.getTitle();
 		String question = itemData.getQuestion();
@@ -229,12 +229,12 @@ public class NewAiItemController extends FormBasicController {
 		if (subject != null) {
 			Taxonomy qpoolTaxonomy = qpoolService.getQPoolTaxonomy();
 			List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
-					subject, qpoolTaxonomy != null ? List.of(qpoolTaxonomy) : List.of(),
+					context, subject, qpoolTaxonomy != null ? List.of(qpoolTaxonomy) : List.of(),
 					taxonomyService, taxonomyMatchingService, aiModule, getLocale());
 			if (matches.isEmpty() && StringHelper.containsNonWhitespace(keywords)) {
 				for (String keyword : keywords.split(",")) {
 					matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
-							keyword.trim(), qpoolTaxonomy != null ? List.of(qpoolTaxonomy) : List.of(),
+							context, keyword.trim(), qpoolTaxonomy != null ? List.of(qpoolTaxonomy) : List.of(),
 							taxonomyService, taxonomyMatchingService, aiModule, getLocale());
 					if (!matches.isEmpty()) {
 						break;

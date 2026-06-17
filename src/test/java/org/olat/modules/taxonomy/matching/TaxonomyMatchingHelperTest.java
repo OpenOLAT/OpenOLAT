@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -55,7 +56,7 @@ public class TaxonomyMatchingHelperTest {
 		TaxonomyMatch match = new TaxonomyMatch(level, 0.85, "de", "Biologie", false);
 
 		TaxonomyMatchingService matchingService = mock(TaxonomyMatchingService.class);
-		when(matchingService.suggestLevels(eq("Biologie"), eq(taxonomy), anyInt(), anyDouble()))
+		when(matchingService.suggestLevels(isNull(), eq("Biologie"), eq(taxonomy), anyInt(), anyDouble()))
 				.thenReturn(List.of(match));
 
 		AiModule aiModule = mock(AiModule.class);
@@ -65,7 +66,7 @@ public class TaxonomyMatchingHelperTest {
 		TaxonomyService taxonomyService = mock(TaxonomyService.class);
 
 		List<TaxonomyLevelRef> result = TaxonomyMatchingHelper.matchTaxonomyLevels(
-				"Biologie", List.of(taxonomy), taxonomyService, matchingService, aiModule, Locale.GERMAN);
+				null, "Biologie", List.of(taxonomy), taxonomyService, matchingService, aiModule, Locale.GERMAN);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isEqualTo(level);
@@ -88,11 +89,11 @@ public class TaxonomyMatchingHelperTest {
 		when(taxonomyService.getTaxonomyLevels(any(java.util.Collection.class))).thenReturn(List.of(level));
 
 		List<TaxonomyLevelRef> result = TaxonomyMatchingHelper.matchTaxonomyLevels(
-				"biology", List.of(taxonomy), taxonomyService, matchingService, aiModule, Locale.ENGLISH);
+				null, "biology", List.of(taxonomy), taxonomyService, matchingService, aiModule, Locale.ENGLISH);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isEqualTo(level);
-		verify(matchingService, never()).suggestLevels(any(), any(), anyInt(), anyDouble());
+		verify(matchingService, never()).suggestLevels(any(), any(), any(), anyInt(), anyDouble());
 	}
 
 	@Test
@@ -100,7 +101,7 @@ public class TaxonomyMatchingHelperTest {
 		TaxonomyRef taxonomy = mock(TaxonomyRef.class);
 
 		TaxonomyMatchingService matchingService = mock(TaxonomyMatchingService.class);
-		when(matchingService.suggestLevels(any(), any(), anyInt(), anyDouble()))
+		when(matchingService.suggestLevels(any(), any(), any(), anyInt(), anyDouble()))
 				.thenReturn(List.of());
 
 		AiModule aiModule = mock(AiModule.class);
@@ -110,7 +111,7 @@ public class TaxonomyMatchingHelperTest {
 		TaxonomyService taxonomyService = mock(TaxonomyService.class);
 
 		List<TaxonomyLevelRef> result = TaxonomyMatchingHelper.matchTaxonomyLevels(
-				"very obscure subject", List.of(taxonomy), taxonomyService, matchingService, aiModule, Locale.ENGLISH);
+				null, "very obscure subject", List.of(taxonomy), taxonomyService, matchingService, aiModule, Locale.ENGLISH);
 
 		assertThat(result).isEmpty();
 	}

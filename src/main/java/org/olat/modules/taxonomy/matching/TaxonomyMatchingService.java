@@ -21,6 +21,7 @@ package org.olat.modules.taxonomy.matching;
 
 import java.util.List;
 
+import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.matching.model.TaxonomyMatch;
@@ -44,7 +45,7 @@ public interface TaxonomyMatchingService {
 	 * @param minScore minimum cosine similarity (0.0 – 1.0)
 	 * @return matches ordered descending by score, never null
 	 */
-	List<TaxonomyMatch> suggestLevels(String text, TaxonomyRef taxonomy, int limit, double minScore);
+	List<TaxonomyMatch> suggestLevels(AiUsageContext context, String text, TaxonomyRef taxonomy, int limit, double minScore);
 
 	/**
 	 * Index or re-index a single taxonomy level in all configured locales.

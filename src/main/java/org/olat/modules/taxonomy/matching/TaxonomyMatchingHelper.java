@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -61,7 +62,8 @@ public class TaxonomyMatchingHelper {
 	 * @param locale           locale for legacy translated-name matching
 	 * @return matched taxonomy level refs, ordered best-first; never null
 	 */
-	public static List<TaxonomyLevelRef> matchTaxonomyLevels(String subject,
+	public static List<TaxonomyLevelRef> matchTaxonomyLevels(AiUsageContext context,
+			String subject,
 			Collection<? extends TaxonomyRef> taxonomyRefs,
 			TaxonomyService taxonomyService,
 			TaxonomyMatchingService matchingService,
@@ -73,19 +75,20 @@ public class TaxonomyMatchingHelper {
 		}
 
 		if (aiModule != null && aiModule.isTaxonomyMatchingEnabled() && matchingService != null) {
-			return embeddingMatch(subject, taxonomyRefs, matchingService, aiModule);
+			return embeddingMatch(context, subject, taxonomyRefs, matchingService, aiModule);
 		}
 		return legacyMatch(subject, taxonomyRefs, taxonomyService, locale);
 	}
 
-	private static List<TaxonomyLevelRef> embeddingMatch(String subject,
+	private static List<TaxonomyLevelRef> embeddingMatch(AiUsageContext context,
+			String subject,
 			Collection<? extends TaxonomyRef> taxonomyRefs,
 			TaxonomyMatchingService matchingService,
 			AiModule aiModule) {
 		double minScore = aiModule.getTaxonomyMatchingMinScore();
 		List<TaxonomyMatch> allMatches = new ArrayList<>();
 		for (TaxonomyRef ref : taxonomyRefs) {
-			allMatches.addAll(matchingService.suggestLevels(subject, ref, 3, minScore));
+			allMatches.addAll(matchingService.suggestLevels(context, subject, ref, 3, minScore));
 		}
 		if (allMatches.isEmpty()) {
 			return List.of();
