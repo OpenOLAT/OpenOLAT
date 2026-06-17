@@ -32,20 +32,23 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockParticipantGroupExcludeRenderer implements FlexiCellRenderer {
+public class LectureBlockParticipantGroupRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
 	
-	public LectureBlockParticipantGroupExcludeRenderer(Translator translator) {
+	public LectureBlockParticipantGroupRenderer(Translator translator) {
 		this.translator = translator;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(Boolean.TRUE.equals(cellValue)) {
-			target.append("<span class=\"o_lecture_excluded\"><i class=\"o_icon o_icon-fw o_icon_invalidate\" aria-hidden=\"true\"> </i> ")
-			      .append(translator.translate("participants.excluded"))
+		if(cellValue instanceof Boolean included) {
+			String i18nKey = included.booleanValue() ? "participants.included" : "participants.excluded";
+			target.append("<span class=\"o_labeled_light ").append("o_lecture_included", "o_lecture_excluded", included.booleanValue())
+			      .append("\"><i class=\"o_icon o_icon-fw ").append("o_icon_add_member", "o_icon_exclude_member", included.booleanValue())
+			      .append("\" aria-hidden=\"true\"> </i> ")
+			      .append(translator.translate(i18nKey))
 			      .append("</span>");
 		}
 	}

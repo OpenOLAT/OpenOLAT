@@ -67,7 +67,7 @@ implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 			case title -> row.getTitleLink();
 			case defaultElement -> Boolean.valueOf(row.isDefaultElement());
 			case numParticipants -> row.getNumOfParticipants();
-			case status -> Boolean.valueOf(row.isExcluded());
+			case status -> Boolean.valueOf(!row.isExcluded());
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};

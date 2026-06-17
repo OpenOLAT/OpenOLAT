@@ -192,6 +192,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_events { @include o-add-icon('calendar-check');}
 .o_icon_exclamation { @include o-add-icon('exclamation');}
 .o_icon_exclamation_circle { @include o-add-icon('exclamation-circle');}
+.o_icon_exclude_member { @include o-add-icon('user-minus');}
 .o_icon_expand { @include o-add-icon('expand');}
 .o_icon_expenditure { @include o-add-icon('clock', false);}
 .o_icon_export { @include o-add-icon('share-square', false);}

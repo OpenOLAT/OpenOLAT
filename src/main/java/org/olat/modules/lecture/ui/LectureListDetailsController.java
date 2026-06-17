@@ -84,7 +84,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListDetailsParticipantsGroupDataModel.GroupCols;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
-import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExcludeRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
@@ -241,7 +241,7 @@ public class LectureListDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.numParticipants,
 				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_user")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status,
-				new LectureBlockParticipantGroupExcludeRenderer(getTranslator())));
+				new LectureBlockParticipantGroupRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GroupCols.tools));
 		
 		tableModel = new LectureListDetailsParticipantsGroupDataModel(columnsModel, getLocale());

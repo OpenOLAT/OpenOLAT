@@ -573,6 +573,15 @@
 	}
 }
 
+.o_labeled_light {
+	&.o_lecture_included {
+		@extend %o_labeled_light_green;
+	}
+	&.o_lecture_excluded {
+		@extend %o_labeled_light_red;
+	}
+}
+
 /* Edit */
 .o_lecture_date_planned >.col-sm-12,
 .o_lecture_date_planned .col-sm-8,
