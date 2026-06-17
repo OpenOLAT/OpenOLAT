@@ -19,13 +19,18 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -35,8 +40,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -52,7 +59,14 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserInfoProfileController;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,8 +78,13 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	private static final String EVENTS_BUSINESS_PATH = "[CurriculumAdmin:0][Events:0][All:0]";
 
 	private FormLink openInCoursePlannerLink;
+	private FormLink openEntryLink;
 
 	private final RoomSchedulingRow row;
+	private final UserInfoProfileConfig profileConfig;
+	private RepositoryEntry repositoryEntry;
+	private RepositoryEntryImageMapper mapperThumbnail;
+	private MapperKey mapperThumbnailKey;
 
 	@Autowired
 	private LectureService lectureService;
@@ -75,11 +94,26 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private MapperService mapperService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	public RoomSchedulingDetailsController(UserRequest ureq, WindowControl wControl, RoomSchedulingRow row, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "room_scheduling_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(LectureListRepositoryController.class, getLocale(), getTranslator()));
 		this.row = row;
+		profileConfig = userPortraitService.createProfileConfig();
+		LectureBlock lb = row.getBooking().getLectureBlock();
+		if (lb != null && lb.getEntry() != null) {
+			repositoryEntry = repositoryService.loadByKey(lb.getEntry().getKey());
+			if (repositoryEntry != null) {
+				mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
+				mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
+			}
+		}
 		initForm(ureq);
 	}
 
@@ -104,6 +138,8 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 		initSubjects(formLayout, lb);
 		initMetadata(formLayout, lb);
+		initTeachers(layoutCont, ureq, lb);
+		initCourse(layoutCont);
 	}
 
 	private void initSubjects(FormItemContainer formLayout, LectureBlock lb) {
@@ -160,12 +196,64 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 		uifactory.addStaticTextElement("lecture.compulsory", "lecture.compulsory", compulsory, formLayout);
 	}
 
+	private void initTeachers(FormLayoutContainer formLayout, UserRequest ureq, LectureBlock lb) {
+		List<String> profilesIds = new ArrayList<>();
+		List<Identity> teachers = lectureService.getTeachers(lb);
+		if (teachers == null || teachers.isEmpty()) {
+			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("teacher.empty", "lecture.teacher", formLayout);
+			emptyTeachersList.setTitle(translate("lecture.no.teacher.assigned.title"));
+			emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_icon_user");
+			profilesIds.add(emptyTeachersList.getName());
+		} else {
+			for (Identity teacher : teachers) {
+				PortraitUser teacherPortraitUser = userPortraitService.createPortraitUser(getLocale(), teacher);
+				UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherPortraitUser);
+				listenTo(profile);
+				String profileId = "profile_" + teacher.getKey();
+				profilesIds.add(profileId);
+				formLayout.put(profileId, profile.getInitialComponent());
+			}
+		}
+		formLayout.contextPut("profilesIds", profilesIds);
+	}
+
+	private void initCourse(FormLayoutContainer formLayout) {
+		if (repositoryEntry == null) return;
+
+		String entryPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(entryPath);
+
+		openEntryLink = uifactory.addFormLink("entry.open", repositoryEntry.getDisplayname(), null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		openEntryLink.setEscapeMode(EscapeMode.html);
+		openEntryLink.setUrl(url);
+
+		VFSThumbnailInfos thumbnail = mapperThumbnail.getRepositoryThumbnail(repositoryEntry);
+		if (thumbnail != null) {
+			String thumbnailUrl = RepositoryEntryImageMapper.getImageURL(mapperThumbnailKey.getUrl(), thumbnail.metadata(), thumbnail.thumbnailMetadata());
+			formLayout.contextPut("thumbnailUrl", thumbnailUrl);
+		}
+
+		formLayout.contextPut("entryKey", repositoryEntry.getKey());
+		formLayout.contextPut("entryUrl", url);
+		formLayout.contextPut("entryDisplayName", repositoryEntry.getDisplayname());
+		if (StringHelper.containsNonWhitespace(repositoryEntry.getExternalRef())) {
+			formLayout.contextPut("entryExternalRef", repositoryEntry.getExternalRef());
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == openInCoursePlannerLink) {
 			NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
+		} else if (source == openEntryLink) {
+			doOpenRepositoryEntry(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenRepositoryEntry(UserRequest ureq) {
+		String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	@Override
