@@ -19,10 +19,10 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
@@ -64,16 +65,24 @@ public class CurriculumElementToDoBulkCreateController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Set<Identity> candidates = provider.getCandidateIntersection(elements);
-		IdentitySelectionSource source = new IdentitySelectionSource(getLocale(), List.of(),
-				() -> new ArrayList<>(candidates), getIdentity());
+		Set<Identity> candidates = provider.getCandidates(elements).stream()
+				.map(CurriculumMember::getIdentity)
+				.collect(Collectors.toSet());
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(getLocale(), List.of(),
+				() -> candidates,
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, elements),
+				getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(getLocale(), List.of(),
+				() -> candidates,
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, elements),
+				getIdentity());
 
 		ToDoTaskMemberConfig assigneeCfg = candidates.isEmpty()
-				? ToDoTaskMemberConfig.disabled(source, false)
-				: ToDoTaskMemberConfig.editable(source, false);
+				? ToDoTaskMemberConfig.disabled(assigneeSource, false)
+				: ToDoTaskMemberConfig.editable(assigneeSource, false);
 		ToDoTaskMemberConfig delegateeCfg = candidates.isEmpty()
-				? ToDoTaskMemberConfig.disabled(source, false)
-				: ToDoTaskMemberConfig.editable(source, false);
+				? ToDoTaskMemberConfig.disabled(delegateeSource, false)
+				: ToDoTaskMemberConfig.editable(delegateeSource, false);
 
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
 				ToDoTaskContextConfig.off(null),

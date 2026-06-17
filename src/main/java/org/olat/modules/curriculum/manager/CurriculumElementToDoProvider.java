@@ -22,8 +22,6 @@ package org.olat.modules.curriculum.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -226,11 +224,11 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		};
 		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
 				ureq.getLocale(), assignees, candidatesSupplier,
-				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element),
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, List.of(element)),
 				ureq.getIdentity());
 		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(
 				ureq.getLocale(), delegatees, candidatesSupplier,
-				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, element),
+				multi -> (u, w) -> new CurriculumElementToDoMemberController(u, w, List.of(element)),
 				ureq.getIdentity());
 		CurriculumElement implementation = curriculumService.getImplementationOf(element);
 		CurriculumElement effectiveRoot = implementation != null ? implementation : element;
@@ -257,11 +255,19 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	}
 
 	public List<CurriculumMember> getCandidates(CurriculumElement element) {
-		SearchMemberParameters elementParams = new SearchMemberParameters(element);
+		return getCandidates(List.of(element));
+	}
+
+	public List<CurriculumMember> getCandidates(Collection<CurriculumElement> elements) {
+		if (elements.isEmpty()) {
+			return List.of();
+		}
+		SearchMemberParameters elementParams = new SearchMemberParameters(List.copyOf(elements));
 		elementParams.setRoles(List.of(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner));
 		List<CurriculumMember> elementMembers = curriculumService.getCurriculumElementsMembers(elementParams);
 
-		SearchMemberParameters curriculumParams = new SearchMemberParameters(element.getCurriculum());
+		CurriculumElement first = elements.iterator().next();
+		SearchMemberParameters curriculumParams = new SearchMemberParameters(first.getCurriculum());
 		curriculumParams.setRoles(List.of(CurriculumRoles.curriculumowner));
 		List<CurriculumMember> curriculumMembers = curriculumService.getCurriculumMembers(curriculumParams);
 
@@ -269,7 +275,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		members.addAll(elementMembers);
 		members.addAll(curriculumMembers);
 
-		Organisation organisation = element.getCurriculum().getOrganisation();
+		Organisation organisation = first.getCurriculum().getOrganisation();
 		if (organisation != null) {
 			for (Identity identity : organisationService.getMembersIdentity(organisation, OrganisationRoles.curriculummanager)) {
 				members.add(new CurriculumMember(identity, OrganisationRoles.curriculummanager.name(), null, null));
@@ -280,52 +286,6 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 
 		return members;
-	}
-
-	public Set<Identity> getCandidateIntersection(Collection<CurriculumElement> elements) {
-		if (elements.isEmpty()) {
-			return Set.of();
-		}
-		Map<Long, Set<Identity>> sharedByCurriculum = new HashMap<>();
-		Set<Identity> result = null;
-		for (CurriculumElement element : elements) {
-			Set<Identity> shared = sharedByCurriculum.computeIfAbsent(
-					element.getCurriculum().getKey(),
-					k -> getSharedCandidateIdentities(element));
-			Set<Identity> combined = new HashSet<>(getElementOwnerIdentities(element));
-			combined.addAll(shared);
-			if (result == null) {
-				result = combined;
-			} else {
-				result.retainAll(combined);
-			}
-			if (result.isEmpty()) {
-				return result;
-			}
-		}
-		return result;
-	}
-
-	private Set<Identity> getElementOwnerIdentities(CurriculumElement element) {
-		SearchMemberParameters params = new SearchMemberParameters(element);
-		params.setRoles(List.of(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner));
-		return curriculumService.getCurriculumElementsMembers(params).stream()
-				.map(CurriculumMember::getIdentity)
-				.collect(Collectors.toCollection(HashSet::new));
-	}
-
-	private Set<Identity> getSharedCandidateIdentities(CurriculumElement element) {
-		SearchMemberParameters curriculumParams = new SearchMemberParameters(element.getCurriculum());
-		curriculumParams.setRoles(List.of(CurriculumRoles.curriculumowner));
-		Set<Identity> shared = curriculumService.getCurriculumMembers(curriculumParams).stream()
-				.map(CurriculumMember::getIdentity)
-				.collect(Collectors.toCollection(HashSet::new));
-		Organisation organisation = element.getCurriculum().getOrganisation();
-		if (organisation != null) {
-			shared.addAll(organisationService.getMembersIdentity(organisation, OrganisationRoles.curriculummanager));
-			shared.addAll(organisationService.getMembersIdentity(organisation, OrganisationRoles.administrator));
-		}
-		return shared;
 	}
 
 	public void createToDoTasks(Identity doer, Collection<CurriculumElement> elements,

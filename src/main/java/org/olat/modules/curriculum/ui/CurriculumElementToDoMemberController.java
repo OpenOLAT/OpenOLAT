@@ -60,6 +60,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import java.util.Collection;
+
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
@@ -95,7 +97,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private MemberDataModel dataModel;
 
-	private final CurriculumElement element;
+	private final Collection<CurriculumElement> elements;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	@Autowired
@@ -108,10 +110,10 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 	private UserPortraitService userPortraitService;
 
 	public CurriculumElementToDoMemberController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement element) {
+			Collection<CurriculumElement> elements) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.element = element;
+		this.elements = elements;
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(
@@ -208,7 +210,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 	}
 
 	private void loadModel() {
-		List<CurriculumMember> members = curriculumElementToDoProvider.getCandidates(element);
+		List<CurriculumMember> members = curriculumElementToDoProvider.getCandidates(elements);
 
 		Map<Long, Identity> identityByKey = new HashMap<>();
 		Map<Long, Set<String>> rolesByKey = new HashMap<>();
