@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.pf.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -38,7 +39,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.PFCourseNode;
@@ -216,7 +219,102 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertTrue(folders.stream().anyMatch(f -> (!f.startsWith(".") || !f.startsWith("/")) && FileUtils.validateFilename(f.replaceAll(".+?/", ""))));
 	}
 	
-	@Test  
+	@Test
+	public void provideParticipantContainer_dropBoxWritableWithoutLimit() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-author-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-participant-1");
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.updateModuleConfig(true, false, false, false, 0, false, null, null);
+
+		VFSContainer dropBox = getDropBox(pfNode, entry, participant);
+
+		assertThat(dropBox.canWrite()).isEqualTo(VFSStatus.YES);
+	}
+
+	@Test
+	public void provideParticipantContainer_dropBoxWritableWithoutLimit_alterFile() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-author-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-participant-2");
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.updateModuleConfig(true, false, true, false, 0, false, null, null);
+
+		VFSContainer dropBox = getDropBox(pfNode, entry, participant);
+
+		assertThat(dropBox.canWrite()).isEqualTo(VFSStatus.YES);
+		assertThat(dropBox.canDelete()).isEqualTo(VFSStatus.YES);
+	}
+
+	@Test
+	public void provideParticipantContainer_dropBoxWritableWhenLimitNotReached() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-author-3");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-participant-3");
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.updateModuleConfig(true, false, false, true, 5, false, null, null);
+
+		VFSContainer dropBox = getDropBox(pfNode, entry, participant);
+
+		assertThat(dropBox.canWrite()).isEqualTo(VFSStatus.YES);
+		assertThat(dropBox.canDelete()).isNotEqualTo(VFSStatus.YES);
+	}
+
+	@Test
+	public void provideParticipantContainer_dropBoxReadOnlyWhenLimitReached() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-author-4");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-participant-4");
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.updateModuleConfig(true, false, false, true, 0, false, null, null);
+
+		VFSContainer dropBox = getDropBox(pfNode, entry, participant);
+
+		assertThat(dropBox.canWrite()).isNotEqualTo(VFSStatus.YES);
+		assertThat(dropBox.canDelete()).isNotEqualTo(VFSStatus.YES);
+	}
+
+	@Test
+	public void provideParticipantContainer_dropBoxDeleteAllowedWhenLimitReachedAndAlterFile() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-cb-participant-5");
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.updateModuleConfig(true, false, true, true, 0, false, null, null);
+
+		VFSContainer dropBox = getDropBox(pfNode, entry, participant);
+
+		assertThat(dropBox.canWrite()).isNotEqualTo(VFSStatus.YES);
+		assertThat(dropBox.canDelete()).isEqualTo(VFSStatus.YES);
+	}
+
+	private VFSContainer getDropBox(PFCourseNode pfNode, RepositoryEntry entry, Identity participant) {
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		ienv.setIdentity(participant);
+		ICourse course = CourseFactory.loadCourse(entry.getOlatResource().getResourceableId());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		VFSContainer namedContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, participant, false);
+		List<VFSItem> items = namedContainer.getItems();
+		assertThat(items).isNotEmpty();
+		return (VFSContainer) items.get(0);
+	}
+
+	@Test
 	public void getParticipants() {
 		//prepare
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-1");
