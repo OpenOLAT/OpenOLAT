@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -55,8 +56,13 @@ public interface ACService {
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_GUEST = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_OPEN = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
+	public final static List<RepositoryEntryStatusEnum> RESTATUS_AVAILABLE_METHOD = Arrays.stream(RepositoryEntryStatusEnum.preparationToPublished()).toList();
+	
 	public static final CurriculumElementStatus[] CESTATUS_ACTIVE_METHOD = new CurriculumElementStatus[] {
 			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active };
+	public final static List<CurriculumElementStatus> CESTATUS_AVAILABLE_METHOD = List.of(
+			CurriculumElementStatus.preparation, CurriculumElementStatus.provisional,
+			CurriculumElementStatus.confirmed);
 
 	/**
 	 *

@@ -41,7 +41,8 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.date.RelativeDateDisplayValue;
+import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
@@ -50,7 +51,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
@@ -82,8 +82,6 @@ import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ToDoTaskTag;
-import org.olat.modules.todo.ui.ToDoDateResolver;
-import org.olat.modules.todo.ui.ToDoRelativeDatePickerController;
 import org.olat.modules.todo.ui.ToDoTaskContextConfig;
 import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDatePicker;
@@ -405,53 +403,42 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				new CurriculumElementDatePicker(locale, curriculumService, element));
 	}
 
-	private static String buildDisplayValue(Translator translator, String prefix, String ref, ToDoDateUnit unit, Integer value) {
-		if (ref == null) return "";
-		String tplKey = switch (ref) {
-			case DATE_REF_BEFORE_BEGIN   -> "task.date.relative.display.before.begin";
-			case DATE_REF_AFTER_BEGIN    -> "task.date.relative.display.after.begin";
-			case DATE_REF_BEFORE_END     -> "task.date.relative.display.before.end";
-			case DATE_REF_AFTER_END      -> "task.date.relative.display.after.end";
-			case DATE_REF_SAME_DAY_BEGIN -> "task.date.relative.display.same.day.begin";
-			case DATE_REF_SAME_DAY_END   -> "task.date.relative.display.same.day.end";
-			default -> null;
-		};
-		if (tplKey == null) return "";
-		String valueStr = value != null ? String.valueOf(value) : "";
-		String unitLabel = "";
-		if (unit != null && unit != ToDoDateUnit.SAME_DAY) {
-			String unitKey = (value != null && value == 1)
-					? "unit." + unit.name().toLowerCase().replaceAll("s$", "")
-					: "unit." + unit.name().toLowerCase();
-			unitLabel = translator.translate(unitKey);
-		}
-		return translator.translate(tplKey, prefix, valueStr, unitLabel);
-	}
-
 	private static final class CurriculumElementDatePicker implements ToDoTaskDatePicker {
 
 		private final Locale locale;
-		private final Translator translator;
 		private final CurriculumService curriculumService;
 		private CurriculumElement element;
+		private ExecutionPeriodRelativeDateContext context;
 
 		CurriculumElementDatePicker(Locale locale, CurriculumService curriculumService, CurriculumElement element) {
 			this.locale = locale;
-			this.translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
-					Util.createPackageTranslator(ToDoUIFactory.class, locale));
 			this.curriculumService = curriculumService;
 			this.element = element;
+			this.context = buildContext(locale, element);
+		}
+
+		private static ExecutionPeriodRelativeDateContext buildContext(Locale locale, CurriculumElement element) {
+			Date begin = element != null ? element.getBeginDate() : null;
+			Date end = element != null ? element.getEndDate() : null;
+			Translator t = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
+					Util.createPackageTranslator(ToDoUIFactory.class, locale));
+			return new ExecutionPeriodRelativeDateContext(t, begin, end);
 		}
 
 		@Override
-		public void contextChanged(ToDoContext context) {
-			if (context == null || !TYPE.equals(context.getType())
-					|| !StringHelper.containsNonWhitespace(context.getOriginSubPath())) {
+		public ExecutionPeriodRelativeDateContext getContext() {
+			return context;
+		}
+
+		@Override
+		public void contextChanged(ToDoContext toDoContext) {
+			if (toDoContext == null || !TYPE.equals(toDoContext.getType())
+					|| !StringHelper.containsNonWhitespace(toDoContext.getOriginSubPath())) {
 				return;
 			}
 			Long elementKey;
 			try {
-				elementKey = Long.valueOf(context.getOriginSubPath());
+				elementKey = Long.valueOf(toDoContext.getOriginSubPath());
 			} catch (NumberFormatException e) {
 				return;
 			}
@@ -459,24 +446,18 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				return;
 			}
 			element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(elementKey));
+			context = buildContext(locale, element);
 		}
 
 		@Override
-		public ToDoTaskDatePicker.DisplayValue getDisplayValue(ToDoRelativeDates rd, boolean start) {
+		public RelativeDateDisplayValue getDisplayValue(ToDoRelativeDates rd, boolean start) {
 			String ref = start ? rd.getStartRef() : rd.getDueRef();
 			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
 			Integer value = start ? rd.getStartValue() : rd.getDueValue();
-			if (ref == null) return new ToDoTaskDatePicker.DisplayValue("", null);
-
-			Date beginDate = element != null ? element.getBeginDate() : null;
-			Date endDate = element != null ? element.getEndDate() : null;
-			Date resolvedDate = computeRelativeDate(ref, unit, value, beginDate, endDate);
-			if (resolvedDate != null) {
-				String prefix = Formatter.getInstance(locale).formatDate(resolvedDate) + " – ";
-				return new ToDoTaskDatePicker.DisplayValue(buildDisplayValue(translator, prefix, ref, unit, value), null);
+			if (ref == null) {
+				return new RelativeDateDisplayValue("", null);
 			}
-			String prefix = translator.translate("task.date.relative.display.no.date") + " – ";
-			return new ToDoTaskDatePicker.DisplayValue(buildDisplayValue(translator, prefix, ref, unit, value), "o_icon o_icon_warn");
+			return context.getDisplayValue(ref, toUnitKey(unit, value), value);
 		}
 
 		@Override
@@ -489,65 +470,49 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			return computeRelativeDate(ref, unit, value, beginDate, endDate);
 		}
 
-		@Override
-		public Controller createPickerController(UserRequest ureq, WindowControl wc,
-				ToDoRelativeDates current, boolean start) {
-			Formatter fmt = Formatter.getInstance(locale);
-			Date beginDate = element != null ? element.getBeginDate() : null;
-			Date endDate = element != null ? element.getEndDate() : null;
-			SelectionValues refs = new SelectionValues();
-			refs.add(SelectionValues.entry("BEGIN",
-					beginDate != null
-							? translator.translate("task.date.relative.callout.ref.begin.with.date", fmt.formatDate(beginDate))
-							: translator.translate("task.date.relative.callout.ref.begin.no.date")));
-			refs.add(SelectionValues.entry("END",
-					endDate != null
-							? translator.translate("task.date.relative.callout.ref.end.with.date", fmt.formatDate(endDate))
-							: translator.translate("task.date.relative.callout.ref.end.no.date")));
-			ToDoDateResolver resolver = (ref, unit, value) -> computeRelativeDate(ref, unit, value, beginDate, endDate);
-			return new ToDoRelativeDatePickerController(ureq, wc, refs, resolver, current, start);
-		}
 	}
 
 	private static final class CurriculumElementsBulkDatePicker implements ToDoTaskDatePicker {
 
-		private final Translator translator;
+		private final ExecutionPeriodRelativeDateContext context;
 
 		CurriculumElementsBulkDatePicker(Locale locale) {
-			this.translator = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
+			Translator t = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
 					Util.createPackageTranslator(ToDoUIFactory.class, locale));
+			this.context = new ExecutionPeriodRelativeDateContext(t, null, null);
 		}
 
 		@Override
-		public void contextChanged(ToDoContext context) {
+		public ExecutionPeriodRelativeDateContext getContext() {
+			return context;
+		}
+
+		@Override
+		public void contextChanged(ToDoContext toDoContext) {
 			//
 		}
 
 		@Override
-		public ToDoTaskDatePicker.DisplayValue getDisplayValue(ToDoRelativeDates rd, boolean start) {
+		public RelativeDateDisplayValue getDisplayValue(ToDoRelativeDates rd, boolean start) {
 			String ref = start ? rd.getStartRef() : rd.getDueRef();
 			ToDoDateUnit unit = start ? rd.getStartUnit() : rd.getDueUnit();
 			Integer value = start ? rd.getStartValue() : rd.getDueValue();
-			String prefix = translator.translate("task.date.relative.display.no.date") + " – ";
-			return new ToDoTaskDatePicker.DisplayValue(buildDisplayValue(translator, prefix, ref, unit, value), "o_icon o_icon_warn");
+			return context.getDisplayValue(ref, toUnitKey(unit, value), value);
 		}
 
 		@Override
 		public Date resolve(ToDoRelativeDates rd, boolean start) {
 			return null;
 		}
+	}
 
-		@Override
-		public Controller createPickerController(UserRequest ureq, WindowControl wc,
-				ToDoRelativeDates current, boolean start) {
-			SelectionValues refs = new SelectionValues();
-			refs.add(SelectionValues.entry("BEGIN",
-					translator.translate("task.date.relative.callout.ref.begin.no.date")));
-			refs.add(SelectionValues.entry("END",
-					translator.translate("task.date.relative.callout.ref.end.no.date")));
-			ToDoDateResolver resolver = (ref, unit, value) -> null;
-			return new ToDoRelativeDatePickerController(ureq, wc, refs, resolver, current, start);
+	private static String toUnitKey(ToDoDateUnit unit, Integer value) {
+		if (unit == null || unit == ToDoDateUnit.SAME_DAY) {
+			return null;
 		}
+		return (value != null && value == 1)
+				? unit.name().toLowerCase().replaceAll("s$", "")
+				: unit.name().toLowerCase();
 	}
 
 	private ToDoTaskSearchParams createTagSearchParams() {

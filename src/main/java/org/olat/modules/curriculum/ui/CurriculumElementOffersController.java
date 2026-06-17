@@ -97,11 +97,8 @@ public class CurriculumElementOffersController extends BasicController {
 		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Metadata:0]";
 		
 		boolean fullyBooked = curriculumService.isMaxParticipantsReached(element);
-		boolean startDateAvailable = element.getBeginDate() != null;
-		boolean endDateAvailable = element.getEndDate() != null;
 		SelectionValues availableStatuses = new SelectionValues();
-		Arrays.stream(CurriculumElementStatus.selectableAdmin())
-			.filter(status -> status != CurriculumElementStatus.active)
+		ACService.CESTATUS_AVAILABLE_METHOD.stream()
 			.forEach(status -> availableStatuses.add(SelectionValues.entry(
 					status.name(),
 					translate("status." + status.name()),
@@ -116,7 +113,8 @@ public class CurriculumElementOffersController extends BasicController {
 		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), false, true, true,
 				translate("access.taxonomy.level"), details, null, getStatusEvaluator(element.getElementStatus()),
 				translate("offer.available.in.status.curriculum.element"), availableStatuses, defaultStatuses,
-				fullyBooked, startDateAvailable, endDateAvailable, editBusinessPath, translate("access.open.metadata"),
+				fullyBooked, element.getBeginDate(), element.getEndDate(),
+				editBusinessPath, translate("access.open.metadata"),
 				CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
 				taxonomyLevels, true, getSortOrderProvider(element));

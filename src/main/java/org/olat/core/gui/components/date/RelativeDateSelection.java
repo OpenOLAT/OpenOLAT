@@ -17,27 +17,46 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo.ui;
-
-import java.util.Date;
-
-import org.olat.core.gui.components.date.RelativeDateContext;
-import org.olat.core.gui.components.date.RelativeDateDisplayValue;
-import org.olat.modules.todo.ToDoContext;
-import org.olat.modules.todo.ToDoRelativeDates;
+package org.olat.core.gui.components.date;
 
 /**
- * Initial date: 2026-05-18<br>
+ * Initial date: 2026-06-15<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface ToDoTaskDatePicker {
+public class RelativeDateSelection {
 
-	RelativeDateContext getContext();
+	private final String refKey;
+	private final OffsetDirection direction;
+	private final String unitKey;
+	private final Integer value;
+	private final boolean offsetEnabled;
 
-	void contextChanged(ToDoContext context);
+	public RelativeDateSelection(String refKey, OffsetDirection direction, String unitKey, Integer value, boolean offsetEnabled) {
+		this.refKey = refKey;
+		this.direction = direction;
+		this.unitKey = unitKey;
+		this.value = value;
+		this.offsetEnabled = offsetEnabled;
+	}
 
-	RelativeDateDisplayValue getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
+	public String getRefKey() {
+		return refKey;
+	}
 
-	Date resolve(ToDoRelativeDates relativeDates, boolean start);
+	public OffsetDirection getDirection() {
+		return direction;
+	}
+
+	public String getUnitKey() {
+		return unitKey;
+	}
+
+	public Integer getValue() {
+		return value;
+	}
+
+	public boolean isOffsetEnabled() {
+		return offsetEnabled;
+	}
 
 }

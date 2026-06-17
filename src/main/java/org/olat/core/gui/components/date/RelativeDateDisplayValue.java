@@ -17,27 +17,14 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo.ui;
-
-import java.util.Date;
-
-import org.olat.core.gui.components.date.RelativeDateContext;
-import org.olat.core.gui.components.date.RelativeDateDisplayValue;
-import org.olat.modules.todo.ToDoContext;
-import org.olat.modules.todo.ToDoRelativeDates;
+package org.olat.core.gui.components.date;
 
 /**
- * Initial date: 2026-05-18<br>
+ * Display value for a relative date — assembled text and optional icon CSS.
+ *
+ * Initial date: 2026-06-16<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface ToDoTaskDatePicker {
-
-	RelativeDateContext getContext();
-
-	void contextChanged(ToDoContext context);
-
-	RelativeDateDisplayValue getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
-
-	Date resolve(ToDoRelativeDates relativeDates, boolean start);
+public record RelativeDateDisplayValue(String text, String iconLeftCss) {
 
 }

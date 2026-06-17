@@ -296,23 +296,19 @@ form .o_form, form.o_form {
 	}
 
 	.o_input_with_icon_left {
-		display: grid;
-		grid-template-columns: 1fr;
-		width: 100%;
-	}
-	.o_input_with_icon_left > input.form-control,
-	.o_input_with_icon_left > i.o_icon {
-		grid-area: 1 / 1;
-	}
-	.o_input_with_icon_left > i.o_icon {
-		justify-self: start;
-		align-self: center;
-		margin-left: 8px;
-		pointer-events: none;
-		z-index: 2;
-	}
-	.o_input_with_icon_left > input.form-control {
-		padding-left: 28px;
+		position: relative;
+		display: block;
+		> i.o_icon {
+			position: absolute;
+			left: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			pointer-events: none;
+			z-index: 2;
+		}
+		> input.form-control {
+			padding-left: 28px;
+		}
 	}
 
 /* Card Radio Buttons */
@@ -815,6 +811,51 @@ form.o_dnd_over {
 			border-bottom-left-radius: 0;
 			border-top-left-radius: 0;
 			border-left: 0;
+		}
+	}
+}
+
+/* Relative date picker */
+.o_relative_date {
+	~.form-control-feedback::before {
+		display: none;
+	}
+	&.input-group {
+		.input-group-addon {
+			background-color: $input-bg-disabled;
+			padding: 6px 8px;
+			+ input.form-control {
+				border-left-color: transparent;
+				&:focus {
+					border-left-color: $input-border-focus;
+				}
+			}
+		}
+	}
+}
+.form-inline.o_relative_date_offset_row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	> span:first-of-type {
+		flex: 1;
+		> input {
+			width: 100%;
+		}
+	}
+	~.form-control-feedback {
+		display: none;
+	}
+}
+.o_relative_date_unit_row {
+	.btn-group {
+		display: flex;
+		width: 100%;
+
+		> label {
+			flex: 1;
+			text-align: center;
 		}
 	}
 }
@@ -1469,4 +1510,3 @@ dialog {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
-	

@@ -33,10 +33,14 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.date.OffsetDirection;
+import org.olat.core.gui.components.date.RelativeDateElement;
+import org.olat.core.gui.components.date.RelativeDateSelection;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -47,20 +51,17 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
-import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRelativeDates;
@@ -97,19 +98,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private FormLayoutContainer startDateRowCont;
 	private SingleSelection startDateModeEl;
 	private DateChooser startDateEl;
-	private FormLayoutContainer startDateRelCont;
-	private TextElement startRelDisplayEl;
-	private FormLink startRelLink;
-	private ToDoRelativeDates currentRelStart;
+	private RelativeDateElement startDateRelEl;
 	private FormLayoutContainer dueDateRowCont;
 	private SingleSelection dueDateModeEl;
 	private DateChooser dueDateEl;
-	private FormLayoutContainer dueDateRelCont;
-	private TextElement dueRelDisplayEl;
-	private FormLink dueRelLink;
-	private ToDoRelativeDates currentRelDue;
-	private CloseableCalloutWindowController datePickerCalloutCtrl;
-	private Controller datePickerCtrl;
+	private RelativeDateElement dueDateRelEl;
 	private TextElement expenditureOfWorkEl;
 	private TextAreaElement descriptionEl;
 
@@ -223,31 +216,17 @@ public class ToDoTaskEditForm extends FormBasicController {
 		dueDateEl.setEnabled(datesEditable);
 
 		if (datesConfig.getPicker() != null) {
-			startDateRelCont = FormLayoutContainer.createInputGroupLayout("startDateRelCont", getTranslator(), null, null);
-			startDateRelCont.setVisible(false);
-			startDateRelCont.setRootForm(mainForm);
-			startDateRowCont.add("startDateRelCont", startDateRelCont);
-			
-			startRelDisplayEl = uifactory.addTextElement("task.start.date.rel", null, 256, null, startDateRelCont);
-			startRelDisplayEl.setAriaLabel(translate("task.start.date.rel"));
-			startRelDisplayEl.setDomReplacementWrapperRequired(false);
-			startRelDisplayEl.setEnabled(false);
-			startRelDisplayEl.setDisplaySize(256);
-			startRelLink = uifactory.addFormLink("rightAddOn", "task.set.rule", null, startDateRelCont, Link.BUTTON);
-			startRelLink.setIconLeftCSS("o_icon o_icon_calendar");
-			startRelLink.setElementCssClass("input-group-addon");
+			startDateRelEl = uifactory.addRelativeDateElement("startDateRel", null,
+					startDateRowCont, getWindowControl(), datesConfig.getPicker().getContext());
+			startDateRelEl.setAriaLabel(translate("task.start.date.rel"));
+			startDateRelEl.setVisible(false);
+			startDateRelEl.addActionListener(FormEvent.ONCHANGE);
 
-			dueDateRelCont = FormLayoutContainer.createInputGroupLayout("dueDateRelCont", getTranslator(), null, null);
-			dueDateRelCont.setVisible(false);
-			dueDateRowCont.add("dueDateRelCont", dueDateRelCont);
-			dueRelDisplayEl = uifactory.addTextElement("task.due.date.rel", null, 256, null, dueDateRelCont);
-			dueRelDisplayEl.setAriaLabel(translate("task.due.date.rel"));
-			dueRelDisplayEl.setDomReplacementWrapperRequired(false);
-			dueRelDisplayEl.setEnabled(false);
-			dueRelDisplayEl.setDisplaySize(256);
-			dueRelLink = uifactory.addFormLink("rightAddOn", "task.set.rule", null, dueDateRelCont, Link.BUTTON);
-			dueRelLink.setIconLeftCSS("o_icon o_icon_calendar");
-			dueRelLink.setElementCssClass("input-group-addon");
+			dueDateRelEl = uifactory.addRelativeDateElement("dueDateRel", null,
+					dueDateRowCont, getWindowControl(), datesConfig.getPicker().getContext());
+			dueDateRelEl.setAriaLabel(translate("task.due.date.rel"));
+			dueDateRelEl.setVisible(false);
+			dueDateRelEl.addActionListener(FormEvent.ONCHANGE);
 		}
 
 		// The input-group does not work very well (Display of errors, round border-radius on the right)
@@ -362,17 +341,15 @@ public class ToDoTaskEditForm extends FormBasicController {
 		ToDoRelativeDates rd = values.getRelativeDates();
 		if (rd != null && datesConfig.getPicker() != null) {
 			if (rd.getStartRef() != null) {
-				currentRelStart = rd;
 				startDateModeEl.select(MODE_RELATIVE, true);
-				applyRelDisplay(startRelDisplayEl, datesConfig.getPicker().getDisplayValue(rd, true));
+				startDateRelEl.setValue(toRelativeDateSelection(rd.getStartRef(), rd.getStartUnit(), rd.getStartValue()));
 				doSwitchDateMode(true);
 			} else {
 				startDateEl.setDate(values.getStartDate());
 			}
 			if (rd.getDueRef() != null) {
-				currentRelDue = rd;
 				dueDateModeEl.select(MODE_RELATIVE, true);
-				applyRelDisplay(dueRelDisplayEl, datesConfig.getPicker().getDisplayValue(rd, false));
+				dueDateRelEl.setValue(toRelativeDateSelection(rd.getDueRef(), rd.getDueUnit(), rd.getDueValue()));
 				doSwitchDateMode(false);
 			} else {
 				dueDateEl.setDate(values.getDueDate());
@@ -433,8 +410,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 		if (startDateModeEl != null) {
 			startDateModeEl.setEnabled(startEnabled);
 		}
-		if (startRelLink != null) {
-			startRelLink.setEnabled(startEnabled);
+		if (startDateRelEl != null) {
+			startDateRelEl.setEnabled(startEnabled);
 		}
 		boolean dueEnabled = ToDoRight.contains(assigneeRights, ToDoRight.dueDate);
 		if (dueDateEl != null) {
@@ -443,8 +420,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 		if (dueDateModeEl != null) {
 			dueDateModeEl.setEnabled(dueEnabled);
 		}
-		if (dueRelLink != null) {
-			dueRelLink.setEnabled(dueEnabled);
+		if (dueDateRelEl != null) {
+			dueDateRelEl.setEnabled(dueEnabled);
 		}
 		if (expenditureOfWorkEl != null) {
 			expenditureOfWorkEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.expenditureOfWork));
@@ -466,36 +443,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (datePickerCtrl == source) {
-			if (event instanceof ToDoRelativeDateSelectedEvent trdse) {
-				if (trdse.getRelativeDates() == null) {
-					if (trdse.isStart()) {
-						currentRelStart = null;
-						startDateModeEl.select(MODE_ABSOLUTE, true);
-						doSwitchDateMode(true);
-					} else {
-						currentRelDue = null;
-						dueDateModeEl.select(MODE_ABSOLUTE, true);
-						doSwitchDateMode(false);
-					}
-				} else {
-					if (trdse.isStart()) {
-						currentRelStart = trdse.getRelativeDates();
-						applyRelDisplay(startRelDisplayEl, datesConfig.getPicker().getDisplayValue(currentRelStart, true));
-					} else {
-						currentRelDue = trdse.getRelativeDates();
-						applyRelDisplay(dueRelDisplayEl, datesConfig.getPicker().getDisplayValue(currentRelDue, false));
-					}
-				}
-			}
-			CloseableCalloutWindowController callout = datePickerCalloutCtrl;
-			datePickerCalloutCtrl = null;
-			if (callout != null) {
-				callout.deactivate();
-			}
-			cleanUp();
-		} else if (datePickerCalloutCtrl == source) {
-			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		}
@@ -504,12 +451,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(contextPickerCtrl);
-		removeAsListenerAndDispose(datePickerCtrl);
-		removeAsListenerAndDispose(datePickerCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		contextPickerCtrl = null;
-		datePickerCtrl = null;
-		datePickerCalloutCtrl = null;
 		cmc = null;
 	}
 
@@ -525,10 +468,16 @@ public class ToDoTaskEditForm extends FormBasicController {
 			doSwitchDateMode(true);
 		} else if (source == dueDateModeEl) {
 			doSwitchDateMode(false);
-		} else if (source == startRelLink) {
-			doOpenDatePicker(ureq, startRelLink, true);
-		} else if (source == dueRelLink) {
-			doOpenDatePicker(ureq, dueRelLink, false);
+		} else if (source == startDateRelEl && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
+			if (startDateRelEl.getValue() == null) {
+				startDateModeEl.select(MODE_ABSOLUTE, true);
+				doSwitchDateMode(true);
+			}
+		} else if (source == dueDateRelEl && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
+			if (dueDateRelEl.getValue() == null) {
+				dueDateModeEl.select(MODE_ABSOLUTE, true);
+				doSwitchDateMode(false);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -564,14 +513,14 @@ public class ToDoTaskEditForm extends FormBasicController {
 		startDateRowCont.clearError();
 		dueDateRowCont.clearError();
 
-		if (startRelative && startRelDisplayEl != null) {
-			if (currentRelStart == null || currentRelStart.getStartRef() == null) {
+		if (startRelative && startDateRelEl != null) {
+			if (startDateRelEl.getValue() == null) {
 				startDateRowCont.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			}
 		}
-		if (dueRelative && dueRelDisplayEl != null) {
-			if (currentRelDue == null || currentRelDue.getDueRef() == null) {
+		if (dueRelative && dueDateRelEl != null) {
+			if (dueDateRelEl.getValue() == null) {
 				dueDateRowCont.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			}
@@ -586,13 +535,15 @@ public class ToDoTaskEditForm extends FormBasicController {
 			ToDoTaskDatePicker picker = datesConfig.getPicker();
 			Date resolvedStart;
 			if (startRelative) {
-				resolvedStart = currentRelStart != null ? picker.resolve(currentRelStart, true) : null;
+				RelativeDateSelection startSel = startDateRelEl != null ? startDateRelEl.getValue() : null;
+				resolvedStart = startSel != null ? picker.resolve(toRelativeDates(startSel, true), true) : null;
 			} else {
 				resolvedStart = startDateEl.getDate();
 			}
 			Date resolvedDue;
 			if (dueRelative) {
-				resolvedDue = currentRelDue != null ? picker.resolve(currentRelDue, false) : null;
+				RelativeDateSelection dueSel = dueDateRelEl != null ? dueDateRelEl.getValue() : null;
+				resolvedDue = dueSel != null ? picker.resolve(toRelativeDates(dueSel, false), false) : null;
 			} else {
 				resolvedDue = dueDateEl.getDate();
 			}
@@ -619,13 +570,13 @@ public class ToDoTaskEditForm extends FormBasicController {
 		boolean relativeMode = forStart ? isRelativeMode(startDateModeEl) : isRelativeMode(dueDateModeEl);
 		if (forStart) {
 			startDateEl.setVisible(!relativeMode);
-			if (startDateRelCont != null) {
-				startDateRelCont.setVisible(relativeMode);
+			if (startDateRelEl != null) {
+				startDateRelEl.setVisible(relativeMode);
 			}
 		} else {
 			dueDateEl.setVisible(!relativeMode);
-			if (dueDateRelCont != null) {
-				dueDateRelCont.setVisible(relativeMode);
+			if (dueDateRelEl != null) {
+				dueDateRelEl.setVisible(relativeMode);
 			}
 		}
 	}
@@ -636,17 +587,14 @@ public class ToDoTaskEditForm extends FormBasicController {
 			return;
 		}
 		picker.contextChanged(selectedContext);
-		if (isRelativeMode(startDateModeEl) && currentRelStart != null && startRelDisplayEl != null) {
-			applyRelDisplay(startRelDisplayEl, picker.getDisplayValue(currentRelStart, true));
+		if (startDateRelEl != null) {
+			startDateRelEl.setContext(picker.getContext());
+			startDateRelEl.refreshDisplay();
 		}
-		if (isRelativeMode(dueDateModeEl) && currentRelDue != null && dueRelDisplayEl != null) {
-			applyRelDisplay(dueRelDisplayEl, picker.getDisplayValue(currentRelDue, false));
+		if (dueDateRelEl != null) {
+			dueDateRelEl.setContext(picker.getContext());
+			dueDateRelEl.refreshDisplay();
 		}
-	}
-
-	private void applyRelDisplay(TextElement el, ToDoTaskDatePicker.DisplayValue dv) {
-		el.setValue(dv.text());
-		el.setIconLeftCSS(dv.iconLeftCss());
 	}
 
 	private void doToggleStatus(boolean done) {
@@ -678,17 +626,44 @@ public class ToDoTaskEditForm extends FormBasicController {
 		cmc.activate();
 	}
 
-	private void doOpenDatePicker(UserRequest ureq, FormLink link, boolean forStart) {
-		removeAsListenerAndDispose(datePickerCtrl);
-		removeAsListenerAndDispose(datePickerCalloutCtrl);
-		ToDoRelativeDates current = forStart ? currentRelStart : currentRelDue;
-		datePickerCtrl = datesConfig.getPicker().createPickerController(ureq, getWindowControl(), current, forStart);
-		listenTo(datePickerCtrl);
-		datePickerCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				datePickerCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "",
-				new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, null));
-		listenTo(datePickerCalloutCtrl);
-		datePickerCalloutCtrl.activate();
+private ToDoRelativeDates toRelativeDates(RelativeDateSelection sel, boolean forStart) {
+		String composedRef;
+		ToDoDateUnit unit;
+		Integer value = null;
+		if (!sel.isOffsetEnabled()) {
+			composedRef = "SAME_DAY_" + sel.getRefKey();
+			unit = ToDoDateUnit.SAME_DAY;
+		} else {
+			composedRef = sel.getDirection().name() + "_" + sel.getRefKey();
+			unit = ToDoDateUnit.valueOf(sel.getUnitKey());
+			value = sel.getValue();
+		}
+		ToDoRelativeDates rd = new ToDoRelativeDates();
+		if (forStart) {
+			rd.setStartRef(composedRef);
+			rd.setStartUnit(unit);
+			rd.setStartValue(value);
+		} else {
+			rd.setDueRef(composedRef);
+			rd.setDueUnit(unit);
+			rd.setDueValue(value);
+		}
+		return rd;
+	}
+
+	private RelativeDateSelection toRelativeDateSelection(String composedRef, ToDoDateUnit unit, Integer value) {
+		if (composedRef == null) {
+			return null;
+		}
+		if (composedRef.startsWith("SAME_DAY_")) {
+			String refKey = composedRef.substring("SAME_DAY_".length());
+			return new RelativeDateSelection(refKey, OffsetDirection.BEFORE, null, null, false);
+		}
+		int underscore = composedRef.indexOf('_');
+		OffsetDirection direction = OffsetDirection.valueOf(composedRef.substring(0, underscore));
+		String refKey = composedRef.substring(underscore + 1);
+		String unitKey = unit != null ? unit.name() : null;
+		return new RelativeDateSelection(refKey, direction, unitKey, value, true);
 	}
 
 	public ToDoContext getContext() {
@@ -746,15 +721,17 @@ public class ToDoTaskEditForm extends FormBasicController {
 			return null;
 		}
 		ToDoRelativeDates rd = new ToDoRelativeDates();
-		if (startRelative && currentRelStart != null) {
-			rd.setStartRef(currentRelStart.getStartRef());
-			rd.setStartUnit(currentRelStart.getStartUnit());
-			rd.setStartValue(currentRelStart.getStartValue());
+		if (startRelative && startDateRelEl != null && startDateRelEl.getValue() != null) {
+			ToDoRelativeDates startRd = toRelativeDates(startDateRelEl.getValue(), true);
+			rd.setStartRef(startRd.getStartRef());
+			rd.setStartUnit(startRd.getStartUnit());
+			rd.setStartValue(startRd.getStartValue());
 		}
-		if (dueRelative && currentRelDue != null) {
-			rd.setDueRef(currentRelDue.getDueRef());
-			rd.setDueUnit(currentRelDue.getDueUnit());
-			rd.setDueValue(currentRelDue.getDueValue());
+		if (dueRelative && dueDateRelEl != null && dueDateRelEl.getValue() != null) {
+			ToDoRelativeDates dueRd = toRelativeDates(dueDateRelEl.getValue(), false);
+			rd.setDueRef(dueRd.getDueRef());
+			rd.setDueUnit(dueRd.getDueUnit());
+			rd.setDueValue(dueRd.getDueValue());
 		}
 		return rd;
 	}

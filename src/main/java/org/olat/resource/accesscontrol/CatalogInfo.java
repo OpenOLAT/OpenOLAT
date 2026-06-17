@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Set;
 
 import org.olat.core.gui.components.util.SelectionValues;
@@ -28,7 +29,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CatalogInfo {
 
 	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null,
-			null, null, null, null, false, false, false, null, null, null, null, null, true, null);
+			null, null, null, null, false, null, null, null, null, null, null, null, true, null);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -44,8 +45,8 @@ public class CatalogInfo {
 	private final SelectionValues availableStatuses;
 	private final Set<String> defaultStatuses;
 	private final boolean fullyBooked;
-	private final boolean startDateAvailable;
-	private final boolean endDateAvailable;
+	private final Date startDate;
+	private final Date endDate;
 	private final String editBusinessPath;
 	private final String editLabel;
 	private final String catalogBusinessPath;
@@ -58,7 +59,7 @@ public class CatalogInfo {
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
 			String customPublishedIn, CatalogStatusEvaluator statusEvaluator, String statusPeriodOption,
 			SelectionValues availableStatuses, Set<String> defaultStatuses, boolean fullyBooked,
-			boolean startDateAvailable, boolean endDateAvailable, String editBusinessPath, String editLabel,
+			Date startDate, Date endDate, String editBusinessPath, String editLabel,
 			String catalogBusinessPath, String webCatalogBusinessPath, Collection<TaxonomyLevel> microsites,
 			boolean showQRCode, SortPriorityProvider sortPriorityProvider) {
 		this.catalogSupported = catalogSupported;
@@ -74,8 +75,8 @@ public class CatalogInfo {
 		this.availableStatuses = availableStatuses;
 		this.defaultStatuses = defaultStatuses;
 		this.fullyBooked = fullyBooked;
-		this.startDateAvailable = startDateAvailable;
-		this.endDateAvailable = endDateAvailable;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.editBusinessPath = editBusinessPath;
 		this.editLabel = editLabel;
 		this.catalogBusinessPath = catalogBusinessPath;
@@ -137,12 +138,12 @@ public class CatalogInfo {
 		return fullyBooked;
 	}
 
-	public boolean isStartDateAvailable() {
-		return startDateAvailable;
+	public Date getStartDate() {
+		return startDate;
 	}
 
-	public boolean isEndDateAvailable() {
-		return endDateAvailable;
+	public Date getEndDate() {
+		return endDate;
 	}
 
 	public String getEditBusinessPath() {

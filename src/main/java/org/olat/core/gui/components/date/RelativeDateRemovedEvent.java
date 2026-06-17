@@ -17,27 +17,22 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo.ui;
+package org.olat.core.gui.components.date;
 
-import java.util.Date;
-
-import org.olat.core.gui.components.date.RelativeDateContext;
-import org.olat.core.gui.components.date.RelativeDateDisplayValue;
-import org.olat.modules.todo.ToDoContext;
-import org.olat.modules.todo.ToDoRelativeDates;
+import org.olat.core.gui.control.Event;
 
 /**
- * Initial date: 2026-05-18<br>
+ * Initial date: 2026-06-15<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface ToDoTaskDatePicker {
+public class RelativeDateRemovedEvent extends Event {
 
-	RelativeDateContext getContext();
+	private static final long serialVersionUID = 1L;
 
-	void contextChanged(ToDoContext context);
+	public static final String COMMAND = "rel-date-removed";
 
-	RelativeDateDisplayValue getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
-
-	Date resolve(ToDoRelativeDates relativeDates, boolean start);
+	public RelativeDateRemovedEvent() {
+		super(COMMAND);
+	}
 
 }

@@ -17,27 +17,30 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo.ui;
+package org.olat.core.gui.components.date;
 
-import java.util.Date;
-
-import org.olat.core.gui.components.date.RelativeDateContext;
-import org.olat.core.gui.components.date.RelativeDateDisplayValue;
-import org.olat.modules.todo.ToDoContext;
-import org.olat.modules.todo.ToDoRelativeDates;
+import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
- * Initial date: 2026-05-18<br>
+ * Initial date: 2026-06-16<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface ToDoTaskDatePicker {
+public interface RelativeDateElement extends FormItem {
 
-	RelativeDateContext getContext();
+	interface DisplayFormatter {
+		RelativeDateDisplayValue format(RelativeDateSelection value);
+	}
 
-	void contextChanged(ToDoContext context);
+	void setContext(RelativeDateContext context);
 
-	RelativeDateDisplayValue getDisplayValue(ToDoRelativeDates relativeDates, boolean start);
+	void setDisplayFormatter(DisplayFormatter formatter);
 
-	Date resolve(ToDoRelativeDates relativeDates, boolean start);
+	RelativeDateSelection getValue();
+
+	void setValue(RelativeDateSelection value);
+
+	void refreshDisplay();
+
+	void setAriaLabel(String ariaLabel);
 
 }

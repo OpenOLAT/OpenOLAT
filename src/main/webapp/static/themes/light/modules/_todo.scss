@@ -1,36 +1,25 @@
+// Expenditure of work: the <script> injected by the form framework is the last
+// child, making the input a middle child whose right corners Bootstrap squares.
+.o_expenditure_input_group {
+	> input.form-control:not(:first-child):not(:last-child) {
+		@include border-right-radius($border-radius-base);
+	}
+}
+
 .o_todo_task_edit {
-	// The do check and the title have to be on the same line
 	.o_todo_task_do_row {
-		// What a hack!
+		display: flex;
+		align-items: flex-end;
+		gap: 12px;
 		>div:nth-child(2) {
-			margin-left: 45px;
-			margin-top: -70px;
+			flex: 1 1 auto;
 		}
-	}
-	// Expenditure of work needs rounded corners on the right
-	.input-group {
-		>input.form-control:not(:first-child):not(:last-child) {
-			@include border-right-radius($border-radius-base);
+		button {
+			margin-bottom: 3px;
 		}
 	}
 }
 
-// Relative dates picker
-.form-inline.o_todo_relative_offset_row {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-
-	> span:first-of-type {
-		flex: 1;
-		> input {
-			width: 100%;
-		}
-	}
-	~.form-control-feedback {
-		display: none;
-	}
-}
 .form-inline.o_todo_date_row {
 	display: flex;
 	flex-direction: column;
@@ -59,18 +48,6 @@
 		}
 	}
 }
-.o_todo_unit_row {
-	.btn-group {
-		display: flex;
-		width: 100%;
-
-		> label {
-			flex: 1;
-			text-align: center;
-		}
-	}
-}
-
 // List of to-dos
 .o_todo_task_list {
 	// Used in details
