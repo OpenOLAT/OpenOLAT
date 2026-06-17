@@ -54,6 +54,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
+import org.olat.modules.lecture.ui.component.LectureBlocksWidgetRenderer;
 
 /**
  * 
@@ -94,11 +95,13 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		dataModel = new LectureBlocksWidgetTableModel(tableColumnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 1000, true, getTranslator(), widgetCont);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 5000, true, getTranslator(), widgetCont);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		
-		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external);
+		tableEl.setRendererType(FlexiTableRendererType.external);
+		tableEl.setExternalRenderer(new LectureBlocksWidgetRenderer(), "");
 		setVelocityRoot(Util.getPackageVelocityRoot(LectureBlocksWidgetController.class));
 		VelocityContainer rowVC = createVelocityContainer("lecture_block_widget_row");
 		rowVC.setDomReplacementWrapperRequired(false);
@@ -165,11 +168,26 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 
 	protected void loadModel() {
-		Date fromDate = DateUtils.getStartOfDay(dayNavEl.getSelectedDate());
-		Date toDate= DateUtils.getEndOfDay(dayNavEl.getEndDate());
-		List<LectureBlock> lectureBlocks = loadLectureBlocks(fromDate, toDate);
+		Date weekStart = DateUtils.getStartOfDay(dayNavEl.getStartDate());
+		Date toDate = DateUtils.getEndOfDay(dayNavEl.getEndDate());
+		Date selStart = DateUtils.getStartOfDay(dayNavEl.getSelectedDate());
+		List<LectureBlock> allWeekBlocks = loadLectureBlocks(weekStart, toDate);
 		LectureBlockRef nextScheduledBlock = loadNextScheduledBlock();
-		updateTable(lectureBlocks, nextScheduledBlock);
+
+		boolean[] markedDays = new boolean[7];
+		List<LectureBlock> visible = new ArrayList<>(allWeekBlocks.size());
+		for (LectureBlock b : allWeekBlocks) {
+			int idx = (int) DateUtils.countDays(weekStart, DateUtils.getStartOfDay(b.getStartDate()));
+			if (idx >= 0 && idx < 7) {
+				markedDays[idx] = true;
+			}
+			if (!b.getStartDate().before(selStart)) {
+				visible.add(b);
+			}
+		}
+		dayNavEl.setMarkedDays(markedDays);
+
+		updateTable(visible, nextScheduledBlock);
 	}
 	
 	protected abstract List<LectureBlock> loadLectureBlocks(Date fromDate, Date toDate);
@@ -294,7 +312,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return "o_table_row row o_dashboard_table_widget_noborder";
+			return "o_table_row o_dashboard_table_widget_noborder";
 		}
 		
 	}

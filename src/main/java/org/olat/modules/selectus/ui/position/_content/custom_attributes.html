@@ -1,0 +1,43 @@
+#if($r.visible("helps"))
+<fieldset>
+	<legend>$r.translate("edit.help.title")</legend>
+	$r.render("helps")
+</fieldset>
+#end
+
+#if($r.visible("headings"))
+<fieldset>
+	<legend>$r.translate("edit.headings.title")</legend>
+	$r.render("headings")
+</fieldset>
+#end
+
+#if($r.visible("standard.attributes.table"))
+<fieldset class="o_block_bottom">
+	<legend>$r.translate("standard.attributes.title")</legend>
+	$r.render("standard.attributes.table")
+</fieldset>
+#end
+<fieldset>
+	#if($r.isTrue($additionalAttributesEnabled))
+		<legend>$off_title</legend>
+		#if($off_info) <div class="o_info">$off_info</div>#end
+		$r.render("attributes")
+	#else
+		<div class="o_info">$r.translate("custom.attributes.disabled.infos")</div>
+	#end
+	<div class="o_button_group">
+		#if($r.visible("save"))
+			$r.render("save")
+		#end
+		#if($r.visible("add.custom.attribute.list"))
+			$r.render("add.custom.attribute.list")
+		#end
+		#foreach($previewButton in $previewButtons)
+			$r.render($previewButton)
+		#end
+		#if($r.visible("cancel"))
+		$r.render("cancel")
+		#end
+	</div>
+</fieldset>

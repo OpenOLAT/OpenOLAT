@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriUtils;
 import org.w3c.dom.Document;
 
 /**
@@ -1228,10 +1228,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			VFSContainer slidesContainer = bigBlueButtonSlidesStorage.getStorage(meeting);
 			List<VFSLeaf> slides = getSlides(meeting);
 			if(!slides.isEmpty()) {
-				MapperKey mapperKey = mapperService.register(null,  meeting.getMeetingId(), new SlidesContainerMapper(slidesContainer), 360);
+				Map<String,VFSLeaf> itemsMap = new HashMap<>();
+				MapperKey mapperKey = mapperService.register(null,  meeting.getMeetingId(), new SlidesContainerMapper(slidesContainer, itemsMap), 360);
 				String url = Settings.createServerURI() + mapperKey.getUrl() + "/slides/";
 				Collections.sort(slides, new LastModificationComparator());
-				String slidesXml = slidesDocument(url, slides);
+				String slidesXml = slidesDocument(url, slides, itemsMap);
 				uriBuilder.xmlPayload(slidesXml);
 			}
 		}
@@ -1240,14 +1241,15 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		return BigBlueButtonUtils.checkSuccess(doc, errors);
 	}
 	
-	private String slidesDocument(String url, List<VFSLeaf> slides) {
+	private String slidesDocument(String url, List<VFSLeaf> slides, Map<String,VFSLeaf> itemsMap) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("<?xml version='1.0' encoding='UTF-8'?>")
 		  .append("<modules><module name='presentation'>");
 		
 		for(VFSLeaf slide:slides) {
-			String encodedFilename = UriUtils.encodePath(slide.getName(), StandardCharsets.UTF_8);
-			sb.append("<document url='").append(url).append(encodedFilename).append("' filename='").append(slide.getName()).append("' />");
+			String encodedFilename = SlidesContainerMapper.cleanFilename(slide);
+			itemsMap.put(encodedFilename, slide);
+			sb.append("<document url='").append(url).append(encodedFilename).append("' filename='").append(encodedFilename).append("' />");
 		}
 		sb.append("</module></modules>");
 		return sb.toString();

@@ -62,7 +62,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
-import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
+import org.olat.ims.qti21.model.xml.QtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
@@ -327,7 +327,7 @@ public class QTI21ImportProcessor {
 			XMLOutputFactory xof = XMLFactories.newXMLOutputFactory();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 			SAXParser saxParser = XMLFactories.newSAXParser();
-			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, infos);
+			QtiWorksHandler myHandler = new QtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);
 		} catch(Exception e) {
@@ -390,7 +390,7 @@ public class QTI21ImportProcessor {
 		return poolItem;
 	}
 
-	protected QItemType convertType(AssessmentItem assessmentItem) {
+	public QItemType convertType(AssessmentItem assessmentItem) {
 		QTI21QuestionType qti21Type = QTI21QuestionType.getType(assessmentItem);
 		switch(qti21Type) {
 			case sc: return qItemTypeDao.loadByType(QuestionType.SC.name());
@@ -408,6 +408,7 @@ public class QTI21ImportProcessor {
 			case drawing: return qItemTypeDao.loadByType(QuestionType.DRAWING.name());
 			case order: return qItemTypeDao.loadByType(QuestionType.ORDER.name());
 			case inlinechoice: return qItemTypeDao.loadByType(QuestionType.INLINECHOICE.name());
+			case gapmixed: return qItemTypeDao.loadByType(QuestionType.GAPMIXED.name());
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}

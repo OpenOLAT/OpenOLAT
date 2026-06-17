@@ -295,7 +295,22 @@ form .o_form, form.o_form {
 		pointer-events: auto;
 	}
 
-	
+	.o_input_with_icon_left {
+		position: relative;
+		display: block;
+		> i.o_icon {
+			position: absolute;
+			left: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			pointer-events: none;
+			z-index: 2;
+		}
+		> input.form-control {
+			padding-left: 28px;
+		}
+	}
+
 /* Card Radio Buttons */
 /* Markup:
 	<div class="form-inline o_radio_cards_wrapper">
@@ -609,45 +624,6 @@ form .o_form, form.o_form {
 	
 
 
-/* Button group single selection */
-.o_radio_buttons {
-	.radio label {
-		padding-left: 0;
-	}
-	
-	.btn.active {
-		&.o_primary {
-			color: $btn-primary-color;
-			background-color: $btn-primary-bg;
-		}
-		&.o_dark_blue {
-			background-color: $o-selection-dark-blue;
-		}
-		&.o_light_blue {
-			background-color: $o-selection-light-blue;
-		}
-		&.o_purple {
-			background-color: $o-selection-purple;
-		}
-		&.o_red {
-			background-color: $o-selection-red;
-		}
-		&.o_orange {
-			background-color: $o-selection-orange;
-		}
-		&.o_yellow {
-			background-color: $o-selection-yellow;
-		}
-		&.o_light_green {
-			background-color: $o-selection-light-green;
-		}		
-		&.o_dark_green {
-			background-color: $o-selection-dark-green;
-		}
-	}
-}
-
-
 /* file chooser */
 .o_filepreview {
 	display: flex;
@@ -839,6 +815,51 @@ form.o_dnd_over {
 	}
 }
 
+/* Relative date picker */
+.o_relative_date {
+	~.form-control-feedback::before {
+		display: none;
+	}
+	&.input-group {
+		.input-group-addon {
+			background-color: $input-bg-disabled;
+			padding: 6px 8px;
+			+ input.form-control {
+				border-left-color: transparent;
+				&:focus {
+					border-left-color: $input-border-focus;
+				}
+			}
+		}
+	}
+}
+.form-inline.o_relative_date_offset_row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	> span:first-of-type {
+		flex: 1;
+		> input {
+			width: 100%;
+		}
+	}
+	~.form-control-feedback {
+		display: none;
+	}
+}
+.o_relative_date_unit_row {
+	.btn-group {
+		display: flex;
+		width: 100%;
+
+		> label {
+			flex: 1;
+			text-align: center;
+		}
+	}
+}
+
 /* centered form labels are still left aligned */
 .o_centered_form {
 	text-align: center;
@@ -905,12 +926,25 @@ form.o_dnd_over {
 			color: $o-radio-card-label-color-checked;
 		}
 
+		&:focus-within {
+			z-index: 3;
+			outline: 2px solid $input-border-focus;
+			outline-offset: -1px;
+		}
+
 		label {
 			display: block;
 			padding: $padding-base-vertical $padding-base-horizontal;
 			margin-bottom: 0;
 			cursor: pointer;
 			font-weight: normal;
+
+			input[type="radio"] {
+				position: absolute;
+				opacity: 0;
+				width: 0;
+				height: 0;
+			}
 		}
 	}
 
@@ -1308,6 +1342,7 @@ dialog {
 			transform: translateY(50%);
 		}
 		
+		.o_object_selection_divider_text,
 		button {
 			color: $text-color;
 		}
@@ -1320,50 +1355,89 @@ dialog {
 	.checkbox,
 	.radio {
 		label {
-			display: flex;
-			align-items: end;
+			display: grid;
+			column-gap: 10px;
+			align-items: center;
+			padding-left: 0;
 		}
 		input[type="checkbox"],
 		input[type="radio"] {
 			position: initial;
-			margin-right: 10px;
-			margin-bottom: 3px;
+			margin: 0;
+			grid-area: checkbox;
+		}
+		.o_object_selection_option {
+			display: contents;
+		}
+		.o_object_selection_title {
+			grid-area: title;
+			min-width: 0;
+		}
+		.o_object_selection_subtitle {
+			grid-area: subtitle;
+			min-width: 0;
+			small {
+				line-height: 1em;
+			}
+		}
+		&:not(:has(.o_object_selection_image)) {
+			label {
+				grid-template-columns: auto 1fr;
+				grid-template-areas: "checkbox title";
+			}
+			&:has(.o_object_selection_subtitle) {
+				label {
+					// DOM order: title → subtitle (screen reader reads title first); grid places subtitle visually on top
+					grid-template-areas:
+						"subtitle subtitle"
+						"checkbox title";
+					row-gap: 2px;
+				}
+			}
 		}
 		&:has(.o_object_selection_image) {
 			label {
-				align-items: center
+				grid-template-columns: auto auto 1fr;
+				grid-template-areas: "checkbox image title";
 			}
-			input[type="checkbox"],
-			input[type="radio"] {
-				margin-bottom: 0px;
+			.o_object_selection_image {
+				grid-area: image;
+			}
+			&:has(.o_object_selection_subtitle) {
+				label {
+					grid-template-areas:
+						"checkbox image subtitle"
+						"checkbox image title";
+				}
 			}
 		}
 	}
-	
-	.o_object_selection_option {
-		max-width: 100%;
-		display: flex;
-		column-gap: 10px;
-		
-		.o_object_selection_image {
-			width: 40px;
-			max-width: 40px;
-			height: 40px;
-			max-height: 40px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-		.o_object_selection_text {
-			max-width: 100%;
-			display: flex;
-			// Voice over: Title -> Subtitle
-			// Visual    : Subtitle -> Title
-			flex-direction: column-reverse;
-			small {
-				line-hight: 1em;
+
+	.o_object_selection_main {
+		.checkbox,
+		.radio {
+			&:hover,
+			&:focus-within {
+				background-color: $dropdown-link-hover-bg;
+				color: $dropdown-link-hover-color;
+				border-radius: $input-border-radius;
+				margin-left: -8px;
+				margin-right: -8px;
+				padding-left: 8px;
+				padding-right: 8px;
+				cursor: pointer;
 			}
 		}
+	}
+
+	.o_object_selection_image {
+		width: 40px;
+		max-width: 40px;
+		height: 40px;
+		max-height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 }
 
@@ -1382,4 +1456,57 @@ dialog {
 		}
 	}
 }
-	
+
+.o_object_selection_display {
+	display: flex;
+
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	> .o_expand_button.o_selection_display {
+		flex: 1 1 auto;
+		min-width: 0;
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+
+		&:is(.form-group *) {
+			width: auto;
+			max-width: none;
+		}
+	}
+
+	> .o_selection_browse_button {
+		flex: 0 0 auto;
+		min-height: $input-height-base;
+		margin-left: -1px;
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+}
+
+/* Restore border-radius on .form-control elements inside a non-addon span
+   within an .input-group (e.g. disabled TextElement renders as
+   <span id="X_wp"><input class="form-control"></span>) */
+.input-group > span:not(.input-group-addon) > .form-control {
+	border-radius: 0;
+}
+.input-group > span:not(.input-group-addon):first-child > .form-control {
+	border-top-left-radius: $input-border-radius;
+	border-bottom-left-radius: $input-border-radius;
+}
+.input-group > span:not(.input-group-addon):last-child > .form-control {
+	border-top-right-radius: $input-border-radius;
+	border-bottom-right-radius: $input-border-radius;
+}
+
+/* When a button-group dropdown (rendered by MultipleSelectionElement with
+   Layout.dropdown) is the first item of an .input-group, square the right
+   corners of its inner .btn so it merges with the .input-group-addon.
+   The renderer always wraps the .button-group in an outer <div>, so we
+   step through that wrapper. */
+.input-group > div:first-child > .button-group.dropdown > .btn.dropdown-toggle {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}

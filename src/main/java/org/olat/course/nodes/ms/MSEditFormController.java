@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -120,14 +119,6 @@ public class MSEditFormController extends FormBasicController {
 	private SpacerElement incorporateInCourseAssessmentSpacer;
 	private TextElement scoreScalingEl;
 	
-	private FormLink showInfoTextsLink;
-
-	/** Rich text input element for a notice to all users. */
-	private RichTextElement infotextUser;
-
-	/** Rich text input element for a notice to all tutors. */
-	private RichTextElement infotextCoach;
-
 	/** The keys for true / false dropdowns. */
 	private String[] trueFalseKeys;
 
@@ -136,7 +127,6 @@ public class MSEditFormController extends FormBasicController {
 
 	public  static final String scoreRex = "^[0-9]+(\\.[0-9]+)?$";
 
-	private boolean showInfoTexts = false;
 	private final String title;
 	private final String helpUrl;
 	private GradeScale gradeScale;
@@ -304,19 +294,6 @@ public class MSEditFormController extends FormBasicController {
 			individualAssessmentDocsFlag.select("xx", true);
 		}
 
-		showInfoTextsLink = uifactory.addFormLink("show.infotexts", "show.infotexts", null, formLayout, Link.LINK);
-		showInfoTextsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-
-		// Create the rich text fields.
-		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		infotextUser = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user", infoUser, 10, -1,
-				formLayout, getWindowControl());
-
-		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1,
-				formLayout, getWindowControl());
-		showInfoTexts = StringHelper.containsNonWhitespace(infoUser) || StringHelper.containsNonWhitespace(infoCoach);
-
 		// Create submit and cancel buttons
 		final FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttonLayout", null, formLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
@@ -359,9 +336,6 @@ public class MSEditFormController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
-		} else if (source == showInfoTextsLink) {
-			showInfoTexts = true;
-			update(ureq);
 		} else {
 			update(ureq);
 		} 
@@ -406,31 +380,13 @@ public class MSEditFormController extends FormBasicController {
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
 				&& incorporateInCourseAssessmentEl.isOn()
 				&& scoreGranted.isOn() && scoreScalingEnabled);
-		
-		showInfoTextsLink.setVisible(!showInfoTexts);
-		infotextUser.setVisible(showInfoTexts);
-		infotextCoach.setVisible(showInfoTexts);
-		
+
 		validateFormLogic(ureq);
 	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		// coach info text
-		infotextCoach.clearError();
-		if (infotextCoach.getValue().length() > 4000) {
-			infotextCoach.setErrorKey("input.toolong", "4000");
-			allOk &= false;
-		}
-		
-		// user info text
-		infotextUser.clearError();
-		if (infotextUser.getValue().length() > 4000) {
-			infotextUser.setErrorKey("input.toolong", "4000");
-			allOk &= false;
-		}
 		
 		// score flag
 		minVal.clearError();
@@ -545,23 +501,6 @@ public class MSEditFormController extends FormBasicController {
 		// individual assessment docs
 		boolean withAssessmentDocs = individualAssessmentDocsFlag.isVisible() && individualAssessmentDocsFlag.isSelected(0);
 		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, withAssessmentDocs);
-
-		// set info text only if something is in there
-		String iu = infotextUser.getValue();
-		if (StringHelper.containsNonWhitespace(iu)) {
-			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, iu);
-		} else {
-			// remove old config
-			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		}
-
-		String ic = infotextCoach.getValue();
-		if (StringHelper.containsNonWhitespace(ic)) {
-			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, ic);
-		} else {
-			// remove old config
-			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		}
 	}
 
 	/**
@@ -599,13 +538,6 @@ public class MSEditFormController extends FormBasicController {
 		// comment flag is mandatory
 		confElement = config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		isValid = confElement instanceof Boolean;
-
-		// infotext is optional
-		confElement = config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		if (!((confElement == null) || (confElement instanceof String))) return false;
-
-		confElement = config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		if (!((confElement == null) || (confElement instanceof String))) return false;
 
 		return isValid;
 	}

@@ -19,11 +19,9 @@
  */
 package org.olat.course.run.scoring;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import java.math.BigDecimal;
 
-import org.hamcrest.Matchers;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,19 +36,19 @@ public class ScoreScalingHelperTest {
 	@Test
 	public void parseFraction() {
 		BigDecimal half = ScoreScalingHelper.getScoreScale("1/2");
-		assertThat(half, Matchers.comparesEqualTo(BigDecimal.valueOf(0.5d)));
+		Assertions.assertThat(half).isEqualByComparingTo(BigDecimal.valueOf(0.5d));
 	}
 	
 	@Test
 	public void parseIndeterminedFraction() {
 		BigDecimal third = ScoreScalingHelper.getScoreScale("1/3");
-		Assert.assertEquals(0.3333333d, third.doubleValue(), 0.000001);
+		Assertions.assertThat(0.3333333d).isCloseTo(third.doubleValue(), Assertions.within(0.000001d));
 	}
 	
 	@Test
 	public void parseInteger() {
 		BigDecimal three = ScoreScalingHelper.getScoreScale("3");
-		assertThat(three, Matchers.comparesEqualTo(BigDecimal.valueOf(3)));
+		Assertions.assertThat(three).isEqualByComparingTo(BigDecimal.valueOf(3));
 	}
 	
 	@Test

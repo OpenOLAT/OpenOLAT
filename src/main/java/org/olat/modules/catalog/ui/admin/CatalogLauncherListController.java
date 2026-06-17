@@ -59,6 +59,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
@@ -86,6 +87,7 @@ public class CatalogLauncherListController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private Controller catalogLauncherEditController;
+	private SingleKeyTranslatorController translatorCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
 	
@@ -126,6 +128,11 @@ public class CatalogLauncherListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.upDown));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.name));
+		DefaultFlexiColumnModel translateNameColumn = new DefaultFlexiColumnModel("admin.launcher.name.edit", -1);
+		translateNameColumn.setCellRenderer(new StaticFlexiCellRenderer("", "translate_name", null, "o_icon o_icon-lg o_icon_language", translate("translate")));
+		translateNameColumn.setIconHeader("o_icon o_icon-lg o_icon_language");
+		translateNameColumn.setHeaderLabel(translate("translate"));
+		columnsModel.addFlexiColumnModel(translateNameColumn);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.details, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.enabled));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.webEnabled));
@@ -248,6 +255,9 @@ public class CatalogLauncherListController extends FormBasicController {
 				if (CMD_EDIT.equals(cmd)) {
 					CatalogLauncherRow catalogLauncherRow  = dataModel.getObject(se.getIndex());
 					doEditLauncher(ureq, catalogLauncherRow.getHandler(), catalogLauncherRow.getCatalogLauncher());
+				} else if ("translate_name".equals(cmd)) {
+					CatalogLauncherRow catalogLauncherRow = dataModel.getObject(se.getIndex());
+					doTranslateName(ureq, catalogLauncherRow);
 				}
 			}
 		} 
@@ -256,7 +266,11 @@ public class CatalogLauncherListController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (catalogLauncherEditController == source) {
+		if (translatorCtrl == source) {
+			loadModel();
+			cmc.deactivate();
+			cleanUp();
+		} else if (catalogLauncherEditController == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel();
 				initAddLinks();
@@ -278,10 +292,12 @@ public class CatalogLauncherListController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(catalogLauncherEditController);
+		removeAsListenerAndDispose(translatorCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		catalogLauncherEditController = null;
+		translatorCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -315,6 +331,19 @@ public class CatalogLauncherListController extends FormBasicController {
 		initAddLinks();
 	}
 	
+	private void doTranslateName(UserRequest ureq, CatalogLauncherRow row) {
+		if (guardModalController(translatorCtrl)) return;
+
+		String i18nKey = CatalogV2UIFactory.getLauncherNameI18nKey(row.getCatalogLauncher().getIdentifier());
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey, CatalogV2UIFactory.class);
+		listenTo(translatorCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true,
+				translate("admin.launcher.name"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doOpenTools(UserRequest ureq, CatalogLauncherRow catalogLauncherRow, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);

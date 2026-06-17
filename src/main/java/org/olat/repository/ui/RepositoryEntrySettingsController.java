@@ -48,9 +48,9 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
-import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -61,6 +61,7 @@ import org.olat.repository.ui.author.AuthoringEditAccessController;
 import org.olat.repository.ui.author.ConfirmCloseController;
 import org.olat.repository.ui.settings.CatalogSettingsController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
+import org.olat.repository.ui.settings.RepositoryEntryFinishedAccessOptionsController;
 import org.olat.repository.ui.settings.RepositoryEntryInfoController;
 import org.olat.repository.ui.settings.RepositoryEntryMetadataController;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -79,6 +80,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected Link accessLink;
 	private Link catalogLink;
 	private Link metadataLink;
+	protected Link finishedAccessLink;
 	private Dropdown status;
 	protected final StackedPanel mainPanel;
 	protected final TooledStackedPanel stackPanel;
@@ -96,6 +98,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	private ConfirmCloseController confirmCloseCtrl;
 	protected AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryMetadataController metadataCtrl;
+	private RepositoryEntryFinishedAccessOptionsController finishedAccessCtrl;
 	
 	protected final Roles roles;
 	protected RepositoryEntry entry;
@@ -202,9 +205,27 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	}
 	
 	protected void initOptions() {
-		//
+		initFinishedAccessTab();
 	}
-	
+
+	protected void initFinishedAccessTab() {
+		if (entry.getRuntimeType() != RepositoryEntryRuntimeType.embedded) {
+			finishedAccessLink = LinkFactory.createLink("details.options", getTranslator(), this);
+			finishedAccessLink.setElementCssClass("o_sel_options");
+			buttonsGroup.addButton(finishedAccessLink, false);
+		}
+	}
+
+	protected void doOpenFinishedAccess(UserRequest ureq) {
+		removeAsListenerAndDispose(finishedAccessCtrl);
+		entry = repositoryService.loadByKey(entry.getKey());
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Options"), null);
+		finishedAccessCtrl = new RepositoryEntryFinishedAccessOptionsController(ureq, swControl, entry, readOnly);
+		listenTo(finishedAccessCtrl);
+		mainPanel.setContent(finishedAccessCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(finishedAccessLink);
+	}
+
 	protected void updateUI() {
 		if(catalogLink != null) {
 			catalogLink.setVisible(entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone);
@@ -226,6 +247,8 @@ public class RepositoryEntrySettingsController extends BasicController implement
 				doOpenAccess(ureq);
 			} else if("Catalog".equalsIgnoreCase(type)) {
 				doOpenCatalog(ureq);
+			} else if("Options".equalsIgnoreCase(type)) {
+				doOpenFinishedAccess(ureq);
 			}
 		}
 	}
@@ -244,6 +267,9 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		} else if(catalogLink == source) {
 			cleanUp();
 			doOpenCatalog(ureq);
+		} else if(finishedAccessLink == source) {
+			cleanUp();
+			doOpenFinishedAccess(ureq);
 		} else if(preparationLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
 		} else if(reviewLink == source) {
@@ -303,12 +329,14 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		removeAsListenerAndDispose(catalogCtrl);
 		removeAsListenerAndDispose(accessCtrl);
 		removeAsListenerAndDispose(infoCtrl);
+		removeAsListenerAndDispose(finishedAccessCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmCloseCtrl = null;
 		metadataCtrl = null;
 		catalogCtrl = null;
 		accessCtrl = null;
 		infoCtrl = null;
+		finishedAccessCtrl = null;
 		cmc = null;
 	}
 	

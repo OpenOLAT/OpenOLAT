@@ -4,36 +4,34 @@
 		$r.render("task.title", "vertical", "form")
 	</div>
 	#if($r.available("task.context"))
-		$r.render("task.context", "vertical", "form")
+		#if($r.available("contextChangeLink"))
+			<div class="form-group">
+				$r.render("task.context", "label")
+				<div class="input-group">
+					$r.render("task.context", "form")
+					$r.render("contextChangeLink", "inputgroupaddon")
+				</div>
+			</div>
+		#else
+			$r.render("task.context", "vertical", "form")
+		#end
 	#end
 	$r.render("tags", "vertical", "form")
-	#if($r.available("assigneeCont"))
-		<div class="o_form_button_right">
-	#end
 	$r.render("task.assigned", "vertical", "form")
-	#if($r.available("assigneeCont"))
-		$r.render("assigneeCont", "vertical", "form")
-		</div>
-	#end
-	#if($r.available("delegateeCont"))
-		<div class="o_form_button_right">
-	#end
 	$r.render("task.delegated", "vertical", "form")
-	#if($r.available("delegateeCont"))
-		$r.render("delegateeCont", "vertical", "form")
-		</div>
-	#end
 	<div class="o_form_two_cols">
 		$r.render("task.status", "horizontal", "form")
 		$r.render("task.priority", "horizontal", "form")
 	</div>
-	<div class="o_form_two_cols">
-		$r.render("task.start.date", "horizontal", "form")
-		$r.render("task.due.date", "horizontal", "form")
-	</div>
+	#if($r.available("startDateRow"))
+		$r.render("startDateRow", "horizontal", "form")
+	#end
+	#if($r.available("dueDateRow"))
+		$r.render("dueDateRow", "horizontal", "form")
+	#end
 	<div class="form-group clearfix">
 		<label class="control-label" for="$eowId">$r.translate("task.expenditure.of.work")</label>
-		<div class="input-group">
+		<div class="input-group o_expenditure_input_group">
 			<span class="input-group-addon">$r.translate("task.weeks.days.hours")</span>
 			$r.render("task.expenditure.of.work", "barebone", "form")
 		</div>

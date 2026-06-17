@@ -107,6 +107,7 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
+import org.olat.core.util.mail.MailRef;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerSMTPAuthenticator;
@@ -430,27 +431,27 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	
 	/**
 	 * Set the mail as deleted for a user
-	 * @param mail
+	 * @param mailRef
 	 * @param identity
 	 */
 	@Override
-	public void delete(DBMailLight mail, Identity identity, boolean deleteMetaMail) {
-		if(mail == null) return;//already deleted
-		if(StringHelper.containsNonWhitespace(mail.getMetaId()) && deleteMetaMail) {
-			List<DBMailLight> mails = getEmailsByMetaId(mail.getMetaId());
-			for(DBMailLight childMail:mails) {
-				childMail = getMessageByKey(childMail.getKey());
+	public void delete(MailRef mailRef, Identity identity, boolean deleteMetaMail) {
+		if(mailRef == null) return;//already deleted
+		if(StringHelper.containsNonWhitespace(mailRef.getMetaId()) && deleteMetaMail) {
+			List<Long> mailKeys = getMailKeysByMetaId(mailRef.getMetaId());
+			for(Long mailKey:mailKeys) {
+				DBMail childMail = getMessageByKey(mailKey);
 				deleteMail(childMail, identity, false);
 				dbInstance.commitAndCloseSession();
 			}
 		} else {
-			mail = getMessageByKey(mail.getKey());
+			DBMail mail = getMessageByKey(mailRef.getKey());
 			deleteMail(mail, identity, false);
 			dbInstance.commitAndCloseSession();
 		}
 	}
 
-	private void deleteMail(DBMailLight mail, Identity identity, boolean forceRemoveRecipient) {
+	private void deleteMail(DBMail mail, Identity identity, boolean forceRemoveRecipient) {
 		if(mail == null) return;//already deleted
 		
 		boolean delete = true;
@@ -557,6 +558,16 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			.append(" where mail.metaId=:metaId");
 
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), DBMailLight.class)
+				.setParameter("metaId", metaId)
+				.getResultList();
+	}
+
+	protected List<Long> getMailKeysByMetaId(String metaId) {
+		if(!StringHelper.containsNonWhitespace(metaId)) return Collections.emptyList();
+
+		String query = "select mail.key from " + DBMailLightImpl.class.getName() + " mail where mail.metaId=:metaId";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
 				.setParameter("metaId", metaId)
 				.getResultList();
 	}
@@ -1675,7 +1686,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 * @throws MessagingException
 	 * @throws UnsupportedEncodingException
 	 */
-	private MimeMessage createMessage(String subject, Address from)
+	public MimeMessage createMessage(String subject, Address from)
 	throws AddressException, MessagingException, UnsupportedEncodingException {
 		String mailhost = WebappHelper.getMailConfig("mailhost");
 		String mailport = WebappHelper.getMailConfig("mailport");
@@ -1683,6 +1694,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		boolean sslEnabled = Boolean.parseBoolean(WebappHelper.getMailConfig("sslEnabled"));
 		boolean sslCheckCertificate = Boolean.parseBoolean(WebappHelper.getMailConfig("sslCheckCertificate"));
 		boolean startTls = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpStarttls"));
+		boolean tls12 = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpTls12"));
+		boolean tls13and12 = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpTls13andTls12"));
 		
 		Authenticator smtpAuth;
 		if (WebappHelper.isMailHostAuthenticationEnabled()) {
@@ -1707,6 +1720,11 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			p.put("mail.smtp.ssl.trust", mailhost);
 		}
 		p.put("mail.smtp.sendpartial", Boolean.TRUE);
+		if(tls13and12) {
+			p.put("mail.smtp.ssl.protocols", "TLSv1.3 TLSv1.2");
+		} else if(tls12) {
+			p.put("mail.smtp.ssl.protocols", "TLSv1.2");
+		}
 		
 		Session mailSession;
 		if (smtpAuth == null) {

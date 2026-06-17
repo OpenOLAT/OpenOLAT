@@ -1,9 +1,5 @@
-package org.olat.course.member.model;
-
-import java.util.Date;
-
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -18,8 +14,12 @@ import java.util.Date;
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
+package org.olat.course.member.model;
+
+import java.util.Date;
+
 public record OriginGroupRow(String role, Long groupKey, String groupName, String groupManagedFlagsString, Date created) {
 }

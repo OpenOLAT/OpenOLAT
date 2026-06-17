@@ -28,7 +28,9 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
@@ -104,6 +106,16 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	@Autowired
 	private CertificationProgramToCurriculumElementDAO certificationProgramToCurriculumElementDao;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Certification-prog-service-unit-test", "Certification-prog-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
+	
 	@Test
 	public void createCertificationProgram() {
 		String programIdentifier = "Program 1";
@@ -151,19 +163,35 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadCertificationProgramsByOrganisations() {
+	public void loadCertificationProgramsByOrganisation() {
 		String programIdentifier = "PO - 10";
 		String programName = "OpenOlat certification 10 (organisation)";
 		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cp-1-owner");
 		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		certificationProgramToOrganisationDao.createRelation(program, defOrganisation);
+		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
+		groupDao.addMembershipOneWay(program.getGroup(), owner, CertificationRoles.programowner.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(List.of(defOrganisation));
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(defaultUnitTestOrganisation, owner);
 		Assertions.assertThat(programs)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.contains(program);
+	}
+	
+	@Test
+	public void loadCertificationProgramsByOrganisationNoPermissions() {
+		String programIdentifier = "PO - 10n";
+		String programName = "OpenOlat certification 10n (organisation)";
+		
+		Identity notowner = JunitTestHelper.createAndPersistIdentityAsRndUser("cp-2-not-owner");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
+		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(defaultUnitTestOrganisation, notowner);
+		Assertions.assertThat(programs)
+			.isEmpty();
 	}
 	
 	@Test
@@ -272,6 +300,44 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 			.hasSizeGreaterThanOrEqualTo(1)
 			.filteredOn(statistics -> program.equals(statistics.certificationProgram()))
 			.hasSize(1);
+	}
+	
+	@Test
+	public void canViewCertificationProgramOwner() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-owner-1");
+		Identity notOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-not-owner-2");
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-4", "Program to curriculum");
+		groupDao.addMembershipOneWay(program.getGroup(), owner, CertificationRoles.programowner.name());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(program);
+		
+		boolean canView = certificationProgramDao.canViewCertificationProgram(program, owner);
+		Assert.assertTrue(canView);
+		
+		boolean canNotView = certificationProgramDao.canViewCertificationProgram(program, notOwner);
+		Assert.assertFalse(canNotView);
+	}
+	
+	@Test
+	public void canViewCertificationProgramManager() {
+		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-manager-1");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-not-manager-1");
+		organisationService.addMember(defaultUnitTestOrganisation, curriculumManager,
+				OrganisationRoles.curriculummanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(defaultUnitTestOrganisation, notManager,
+				OrganisationRoles.qualitymanager, JunitTestHelper.getDefaultActor());
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("Manager or not - 10",
+				"OpenOlat certification 10 (managed by)");
+		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		boolean canView = certificationProgramDao.canViewCertificationProgram(program, curriculumManager);
+		Assert.assertTrue(canView);
+		
+		boolean canNotView = certificationProgramDao.canViewCertificationProgram(program, notManager);
+		Assert.assertFalse(canNotView);
 	}
 	
 	@Test
@@ -424,6 +490,27 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 			.hasSize(2)
 			.containsExactlyInAnyOrder(participant, notParticipant)
 			.doesNotContain(outOfProgramParticipant);
+	}
+	
+	@Test
+	public void loadCertificationProgramsWithIdentity() {
+		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-owner-20");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-notowner-21");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-6", "Program to curriculum");
+		certificationProgramToOrganisationDao.createRelation(program, defaultUnitTestOrganisation);
+		organisationService.addMember(defaultUnitTestOrganisation, curriculumManager,
+				OrganisationRoles.curriculummanager, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+		
+		// Manager
+		List<CertificationProgram> programs = certificationProgramDao.loadCertificationPrograms(curriculumManager);
+		Assertions.assertThat(programs)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(program);
+		
+		// Not manager
+		List<CertificationProgram> noPrograms = certificationProgramDao.loadCertificationPrograms(notManager);
+		Assert.assertTrue(noPrograms.isEmpty());
 	}
 	
 	private Certificate generateCertificate(Identity participant, CertificationProgram program, Date now, int nextRecertification, int window) {

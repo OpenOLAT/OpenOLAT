@@ -37,13 +37,24 @@ public interface PdfService {
 	
 	/**
 	 * Convert to PDF a file. The file need to have links to the
-	 * CSS and Javascript files.
+	 * CSS and JavaScript files.
 	 * 
 	 * @param path The root directory
 	 * @param rootFilename The root filename
+	 * @param options The options for rendering
 	 * @param out The output stream where the PDF file is written
 	 */
 	public void convert(File path, String rootFilename, PdfOutputOptions options, OutputStream out);
+	
+	/**
+	 * Convert some HTML content to a PDF. The HTML must be self sufficient. No
+	 * CSS or JavaScript is added to it.
+	 * 
+	 * @param htmlContent The content
+	 * @param options The options for rendering
+	 * @param out The output stream where the PDF file is written
+	 */
+	public void convert(String htmlContent, PdfOutputOptions options, OutputStream out);
 	
 	/**
 	 * Convert a controller to the a downloadable PDF.

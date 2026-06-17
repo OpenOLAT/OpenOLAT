@@ -27,7 +27,9 @@ import org.olat.core.commons.services.ai.spi.generic.GenericAiSPI;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -78,10 +80,20 @@ public class AiModule extends AbstractSpringModule {
 	@Autowired
 	private GenericAiSPI genericAiSPI;
 
-	// Per-feature configuration
+	@Autowired
+	private TaxonomyMatchingModule taxonomyMatchingModule;
+
+	// Per-feature configuration. The @Value defaults are read from
+	// olat.properties / olat.local.properties and act as presets: they are used
+	// as long as no value has been saved in the admin UI. Presets are applied
+	// regardless of whether the feature or the referenced provider is enabled.
+	@Value("${ai.feature.mc-question-generator.spi:}")
 	private String mcGeneratorSpiId;
+	@Value("${ai.feature.mc-question-generator.model:}")
 	private String mcGeneratorModel;
+	@Value("${ai.feature.image-description-generator.spi:}")
 	private String imgDescSpiId;
+	@Value("${ai.feature.image-description-generator.model:}")
 	private String imgDescModel;
 	private String essayGenerationSpiId;
 	private String essayGenerationModel;
@@ -231,6 +243,46 @@ public class AiModule extends AbstractSpringModule {
 	 */
 	public String getImgDescModel() {
 		return imgDescModel;
+	}
+
+	/**
+	 * @return true: the taxonomy matching feature is enabled and the configured embedding SPI is available
+	 */
+	public boolean isTaxonomyMatchingEnabled() {
+		if (taxonomyMatchingModule == null) {
+			return false;
+		}
+		return taxonomyMatchingModule.isEnabled()
+				&& getConfiguredEmbeddingSPI() != null
+				&& StringHelper.containsNonWhitespace(taxonomyMatchingModule.getModel());
+	}
+
+	/**
+	 * @return minimum cosine similarity score for taxonomy matching, from TaxonomyMatchingModule
+	 */
+	public double getTaxonomyMatchingMinScore() {
+		if (taxonomyMatchingModule == null) {
+			return 0.65;
+		}
+		return taxonomyMatchingModule.getMinScore();
+	}
+
+	/**
+	 * @return the configured embedding SPI for taxonomy matching, or null if not configured
+	 */
+	public AiEmbeddingSPI getConfiguredEmbeddingSPI() {
+		if (taxonomyMatchingModule == null) {
+			return null;
+		}
+		String spiId = taxonomyMatchingModule.getSpiId();
+		if (!StringHelper.containsNonWhitespace(spiId)) {
+			return null;
+		}
+		AiSPI spi = resolveProvider(spiId);
+		if (spi instanceof AiEmbeddingSPI embeddingSpi && embeddingSpi.isEmbeddingEnabled()) {
+			return embeddingSpi;
+		}
+		return null;
 	}
 
 	/**

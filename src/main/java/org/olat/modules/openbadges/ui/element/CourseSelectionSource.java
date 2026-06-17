@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -109,17 +110,11 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return translator.translate("course.selection.option");
-	}
-	
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOption();
-		
-		return options;
+		return List.of(ObjectOptionGroup.of(translator.translate("course.selection.option"), options));
 	}
-	
+
 	private void initOption() {
 		if (options == null) {
 			options = toOptions();
@@ -135,7 +130,7 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	
 	private ObjectOption toOption(RepositoryEntry courseEntry) {
 		String title = courseEntry.getDisplayname() + " · " + courseEntry.getKey();
-		return new ObjectOption.ObjectOptionValues(courseEntry.getKey().toString(), title, null, null);
+		return new ObjectOption.ObjectOptionValues(courseEntry.getKey().toString(), title, null);
 	}
 	
 	@Override
@@ -144,11 +139,15 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
-		return (UserRequest lureq, WindowControl lwControl) -> 
-				new CourseSelectionController(lureq, lwControl);
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
+		return (UserRequest lureq, WindowControl lwControl) -> new CourseSelectionController(lureq, lwControl);
 	}
-	
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 	public static final Set<Long> toKeys(Collection<String> keys) {
 		return keys.stream()
 				.map(Long::valueOf)

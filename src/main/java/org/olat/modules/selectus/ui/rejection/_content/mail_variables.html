@@ -1,0 +1,7 @@
+<div class="o_info">$r.translate("explain.variables")</div>
+#foreach($variablesCollection in $variablesCollections)
+	<h5>$r.translate(${variablesCollection.i18nKey}):</h5>
+	<ul class="list-unstyled">#foreach($positionVariable in ${variablesCollection.variables})
+		<li>$${positionVariable.name} (${positionVariable.explanation})</li>
+	#end</ul>
+#end

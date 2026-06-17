@@ -60,7 +60,7 @@ public class SameSiteCookieFilter implements Filter {
 	private final Logger log = Tracing.createLoggerFor(SameSiteCookieFilter.class);
 
 	/** The name of the same-site cookie attribute. */
-	private static final String SAMESITE_ATTRIBITE_NAME = "SameSite";
+	private static final String SAMESITE_ATTRIBUTE_NAME = "SameSite";
 	
 	private static final String SET_COOKIE = "Set-Cookie";
 
@@ -193,9 +193,9 @@ public class SameSiteCookieFilter implements Filter {
 		private void appendSameSiteAttribute(String cookieHeader, boolean first) {
 			String sameSiteSetCookieValue = cookieHeader;
 			// only add if does not already exist, else leave
-			if (!cookieHeader.contains(SAMESITE_ATTRIBITE_NAME)) {
+			if (!cookieHeader.contains(SAMESITE_ATTRIBUTE_NAME)) {
 				SameSiteEnum sameSiteValue = securityModule.getCookieSameSite();
-				sameSiteSetCookieValue = String.format("%s; %s", cookieHeader, SAMESITE_ATTRIBITE_NAME + "=" + sameSiteValue.sameSiteValue());
+				sameSiteSetCookieValue = String.format("%s; %s", cookieHeader, SAMESITE_ATTRIBUTE_NAME + "=" + sameSiteValue.sameSiteValue());
 			}
 
 			if (first) {

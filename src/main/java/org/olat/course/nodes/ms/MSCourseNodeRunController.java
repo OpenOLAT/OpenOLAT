@@ -46,7 +46,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseModule;
@@ -62,7 +61,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.properties.LogEntry;
@@ -206,11 +204,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if("show".equals(event.getCommand())) {
-			saveOpenPanel(ureq, ureq.getParameter("panel"), true);
-		} else if("hide".equals(event.getCommand())) {
-			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
-		}
+		//
 	}
 
 	@Override
@@ -266,13 +260,6 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 				}
 			}
 		}
-		
-		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		if(StringHelper.containsNonWhitespace(infoTextUser)) {
-				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-				myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
-		}
 	}
 
 	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
@@ -283,23 +270,4 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		listenTo(timelineCtrl);
 		myContent.put("log", timelineCtrl.getInitialComponent());
 	}
-	
-	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.attributedClass(), getOpenPanelId(panelId));
-		return showConfig == null ? def : showConfig.booleanValue();
-	}
-	
-	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			guiPrefs.putAndSave(panelInfo.attributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
-		}
-		myContent.contextPut("in-" + panelId, Boolean.valueOf(newValue));
-	}
-	
-	private String getOpenPanelId(String panelId) {
-		return panelId + panelInfo.idSuffix();
-	}
-	
 }

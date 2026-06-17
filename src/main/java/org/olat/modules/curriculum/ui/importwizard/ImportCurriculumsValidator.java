@@ -59,6 +59,7 @@ import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.EditCurriculumController;
 import org.olat.modules.curriculum.ui.EditCurriculumElementMetadataController;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
@@ -930,11 +931,11 @@ public class ImportCurriculumsValidator {
 		boolean allOk = true;
 		
 		String subjects = importedRow.getSubjects();
-		List<String> subjectsList = importedRow.getSubjectsList();
-		List<String> currentPaths = ImportCurriculumsObjectsLoader.loadTaxonomyLevels(importedRow);
+		List<TaxonomyKey> subjectsList = importedRow.getSubjectsList();
+		List<TaxonomyKey> currentPaths = ImportCurriculumsObjectsLoader.loadTaxonomyLevels(importedRow);
 		String column = translate(ImportCurriculumsCols.taxonomyLevels.i18nHeaderKey());
 		
-		for(String subject:subjectsList) {
+		for(TaxonomyKey subject:subjectsList) {
 			if(importedRow.getTaxonomyLevel(subject) == null) {
 				if(importedRow.isNew()) {
 					importedRow.addValidationError(ImportCurriculumsCols.taxonomyLevels, column, null,
@@ -949,11 +950,46 @@ public class ImportCurriculumsValidator {
 			}
 		}
 		
-		if(allOk && (!subjectsList.isEmpty() || !currentPaths.isEmpty())
-				&& (!subjectsList.containsAll(currentPaths) || !currentPaths.containsAll(subjectsList)) ) {
+		if(allOk && !equals(subjectsList, currentPaths)) {
 			importedRow.addChanged(column, currentPaths, subjectsList, ImportCurriculumsCols.taxonomyLevels);
 		}
 		return allOk;
+	}
+	
+	private boolean equals(List<TaxonomyKey> subjectsList, List<TaxonomyKey> currentPaths) {
+		if((subjectsList == null && currentPaths == null)
+				|| (subjectsList == null || subjectsList.isEmpty() && (currentPaths == null || currentPaths.isEmpty()))) {
+			return true;
+		}
+		if((subjectsList == null && currentPaths != null) || (subjectsList != null && currentPaths == null)) {
+			return false;
+		}
+		
+		for(TaxonomyKey subject:subjectsList) {
+			boolean found = find(subject, currentPaths);
+			if(!found) {
+				return false;
+			}
+		}
+		
+		for(TaxonomyKey currentPath:currentPaths) {
+			boolean found = find(currentPath, subjectsList);
+			if(!found) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean find(TaxonomyKey value, List<TaxonomyKey> list) {
+		for(TaxonomyKey element:list) {
+			if(element.equals(value)
+					|| (value.taxonomyIdentifier() == null && value.levelPathIdentifiers().equals(element.levelPathIdentifiers()))
+					|| (element.taxonomyIdentifier() == null && value.levelPathIdentifiers().equals(element.levelPathIdentifiers()))) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean validateRole(AbstractImportRow importedRow, String val, ImportCurriculumsCols col) {
@@ -1210,8 +1246,6 @@ public class ImportCurriculumsValidator {
 		}
 		return ok;
 	}
-	
-	
 	
 	public record Identifier(String curriculumIdentifier, String identifier) {
 		@Override

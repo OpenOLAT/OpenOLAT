@@ -19,12 +19,14 @@
  */
 package org.olat.modules.grading.ui;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -34,10 +36,10 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
@@ -46,13 +48,16 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentLog;
+import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.model.GraderWithStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
+import org.olat.modules.grading.model.GradingAssignmentLogSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
+import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.ui.component.GraderStatusCellRenderer;
-import org.olat.modules.grading.ui.component.GradingDeadlineStatusCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -71,13 +76,14 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	
 	private final Date from;
 	private final Date to;
+	private final Date now;
 	private final Identity grader;
 	private final Identity manager;
+	private final boolean onlyClosedAssignments;
 	private final RepositoryEntry referenceEntry;
 	
 	private final Translator translator;
 	private final List<UserPropertyHandler> graderPropertyHandlers;
-	private final GradingDeadlineStatusCellRenderer statusRenderer;
 	private final List<UserPropertyHandler> assessedUserPropertyHandlers;
 	
 	@Autowired
@@ -95,17 +101,17 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public ReportResource(Roles roles, String label, Date from, Date to,
-			RepositoryEntry referenceEntry, Identity grader, Identity manager,
-			Translator translator) {
+	public ReportResource(Roles roles, String label, Date from, Date to, boolean onlyClosedAssignments,
+			RepositoryEntry referenceEntry, Identity grader, Identity manager, Translator translator) {
 		super(label);
 		this.from = from;
 		this.to = to;
+		this.now = new Date();
 		this.grader = grader;
 		this.manager = manager;
 		this.referenceEntry = referenceEntry;
+		this.onlyClosedAssignments = onlyClosedAssignments;
 		
-		statusRenderer = new GradingDeadlineStatusCellRenderer(translator);
 		this.translator = userManager.getPropertyHandlerTranslator(translator);
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		graderPropertyHandlers = userManager.getUserPropertyHandlersFor(GradersListController.USER_PROPS_ID, isAdministrativeUser);
@@ -114,14 +120,22 @@ public class ReportResource extends OpenXMLWorkbookResource {
 
 	@Override
 	protected void generate(OutputStream out) {
-		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 2)) {
+		List<String> sheetsNames = List.of(translator.translate("report.sheet.graders"),
+				translator.translate("report.sheet.assignments"),
+				translator.translate("report.sheet.archive"));
+		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 3, sheetsNames)) {
 			OpenXMLWorksheet gradersSheet = workbook.nextWorksheet();
 			createGradersHeader(gradersSheet, workbook);
 			createGradersData(gradersSheet, workbook);
 			
 			OpenXMLWorksheet assignmentsSheet = workbook.nextWorksheet();
+			Set<Long> assignmentsKeys = new HashSet<>();
 			createAssignmentsHeader(assignmentsSheet, workbook);
-			createAssignmentsData(assignmentsSheet, workbook);
+			createAssignmentsData(assignmentsSheet, assignmentsKeys, workbook);
+			
+			OpenXMLWorksheet logSheet = workbook.nextWorksheet();
+			createAssignmentsLogHeader(logSheet, workbook);
+			createAssignmentsLogData(logSheet, assignmentsKeys, workbook);
 		} catch (Exception e) {
 			log.error("Unable to export report", e);
 		}
@@ -179,6 +193,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		searchParams.setManager(manager);
 		searchParams.setGrader(grader);
 		searchParams.setReferenceEntry(referenceEntry);
+		if(onlyClosedAssignments) {
+			searchParams.setAssignmentStatus(List.of(SearchStatus.closed));
+		}
 
 		List<GraderWithStatistics> statistics = gradingService.getGradersWithStatistics(searchParams);
 		dbInstance.commitAndCloseSession();
@@ -198,7 +215,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
 		}
 
-		headerRow.addCell(pos++, translator.translate("table.header.deadline"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.status"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.duedate"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.missed.deadline"), headerStyle);
 		
 		// assessed identities informations
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
@@ -242,15 +261,21 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			}
 		}
 		
+		GradingAssignmentStatus status = assignment.getAssignmentStatus();
+		row.addCell(pos++, translator.translate("assignment.status.".concat(status.name())));
 		// deadline
-		try(StringOutput status = new StringOutput(32)) {
-			statusRenderer.render(null, status, assignment.getDeadline(), assignment.getExtendedDeadline(),
-					assignment.getAssignmentStatus());
-			row.addCell(pos++, status.toString());
-		} catch(IOException e) {
-			pos++;
+		Date deadline = assignment.getDeadline();
+		if(assignment.getExtendedDeadline() != null && !(deadline != null && !deadline.before(assignment.getExtendedDeadline()))) {
+			deadline = assignment.getExtendedDeadline();// @see org.olat.modules.grading.ui.component.GradingDeadlineStatusCellRenderer
 		}
+		row.addCell(pos++, deadline, workbook.getStyles().getDateStyle());
 		
+		boolean missed = (status != GradingAssignmentStatus.unassigned && status != GradingAssignmentStatus.done
+					&& deadline != null && CalendarUtils.endOfDay(deadline).before(now))
+			|| (status == GradingAssignmentStatus.done && deadline != null
+					&& assignment.getClosingDate() != null && deadline.before(assignment.getClosingDate()));
+		row.addCell(pos++, missed ? "x" : null);
+
 		// assessed identities informations
 		Identity assessedIdentity = assignmentWithInfos.getAssessedIdentity();
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
@@ -303,13 +328,16 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		return sb.toString();
 	}
 	
-	private void createAssignmentsData(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+	private void createAssignmentsData(OpenXMLWorksheet sheet, Set<Long> assignmentsKeys, OpenXMLWorkbook workbook) {
 		GradingAssignmentSearchParameters searchParams = new GradingAssignmentSearchParameters();
 		searchParams.setClosedFromDate(from);
 		searchParams.setClosedToDate(to);
 		searchParams.setGrader(grader);
 		searchParams.setManager(manager);
 		searchParams.setReferenceEntry(referenceEntry);
+		if(onlyClosedAssignments) {
+			searchParams.setAssignmentStatus(List.of(SearchStatus.closed));
+		}
 		
 		List<GradingAssignmentWithInfos> assignmentsWithInfos = gradingService.getGradingAssignmentsWithInfos(searchParams, translator.getLocale());
 		List<IdentityRef> assessedIdentities = assignmentsWithInfos.stream()
@@ -318,6 +346,91 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		Map<Long,List<String>> organisationsMap = organisationService.getUsersOrganisationsNames(assessedIdentities);
 		for(GradingAssignmentWithInfos assignmentWithInfos:assignmentsWithInfos) {
 			createAssignmentsData(assignmentWithInfos, organisationsMap, sheet, workbook);
+			assignmentsKeys.add(assignmentWithInfos.getAssignment().getKey());
 		}
+	}
+	
+	private void createAssignmentsLogHeader(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+		sheet.setHeaderRows(1);
+		Row headerRow = sheet.newRow();
+		CellStyle headerStyle = workbook.getStyles().getHeaderStyle();
+		
+		// grader informations
+		int pos = 0;
+		for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
+			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
+		}
+
+		// assessed identities informations
+		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
+			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
+		}
+
+		// entry (courses) informations 
+		headerRow.addCell(pos++, translator.translate("table.header.entry"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.entry.external.ref"), headerStyle);
+		
+		// assessment infos
+		headerRow.addCell(pos++, translator.translate("table.header.correction.meta.minutes"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.correction.minutes"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.done.date"), headerStyle);
+	}
+	
+	private void createAssignmentsLogData(OpenXMLWorksheet sheet, Set<Long> assignmentsKeys, OpenXMLWorkbook workbook) {
+		GradingAssignmentLogSearchParameters searchParams = new GradingAssignmentLogSearchParameters();
+		searchParams.setGrader(grader);
+		searchParams.setReferenceEntry(referenceEntry);
+		searchParams.setClosedFromDate(from);
+		searchParams.setClosedToDate(to);
+		
+		List<GradingAssignmentLog> assignmentsLogs = gradingService.getGradingAssignmentsLogs(searchParams);
+		for(GradingAssignmentLog assignmentLog:assignmentsLogs) {
+			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey()) && !assignmentLog.isDeleted()) {
+				createAssignmentsLogData(assignmentLog, sheet, workbook);
+			}
+		}
+	}
+
+	private void createAssignmentsLogData(GradingAssignmentLog assignmentLog, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+		Row row = sheet.newRow();
+		// grader informations
+		int pos = 0;
+		
+		// grader name
+		Identity graderIdentity = assignmentLog.getGrader();
+		if(graderIdentity == null) {
+			pos += graderPropertyHandlers.size();
+		} else {
+			for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
+				String val = (UserConstants.NICKNAME.equals(userPropertyHandler.getName())
+							&& Objects.equals(Identity.STATUS_DELETED, graderIdentity.getStatus()))
+						? translator.translate("deleted")
+						: userPropertyHandler.getUserProperty(graderIdentity.getUser(), translator.getLocale());
+				row.addCell(pos++, val);
+			}
+		}
+		
+		// assessed identities informations
+		Identity assessedIdentity = assignmentLog.getAssignee();
+		if(assessedIdentity == null) {
+			pos += assessedUserPropertyHandlers.size();
+		} else {
+			for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
+				String val = (UserConstants.NICKNAME.equals(userPropertyHandler.getName())
+							&& Objects.equals(Identity.STATUS_DELETED, assessedIdentity.getStatus()))
+						? translator.translate("deleted")
+						: userPropertyHandler.getUserProperty(assessedIdentity.getUser(), translator.getLocale());
+				row.addCell(pos++, val);
+			}
+		}
+				
+		// entry (courses) informations 
+		row.addCell(pos++, assignmentLog.getRepositoryEntryDisplayName());
+		row.addCell(pos++, assignmentLog.getRepositoryEntryExternalRef());
+		
+		// time and date
+		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentLog.getMetadataTime()), null);
+		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentLog.getTime()), null);
+		row.addCell(pos++, assignmentLog.getClosingDate(), workbook.getStyles().getDateStyle());
 	}
 }

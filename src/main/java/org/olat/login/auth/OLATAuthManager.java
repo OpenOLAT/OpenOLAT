@@ -83,6 +83,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(OLATAuthManager.class);
 	
+	public static final String PROVIDER_OLAT = "OLAT";
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -119,7 +121,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 
 	@Override
 	public List<String> getProviderNames() {
-		return Collections.singletonList("OLAT");
+		return List.of(PROVIDER_OLAT);
 	}
 
 	@Override
@@ -129,7 +131,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 
 	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
-		return "OLAT".equals(provider);
+		return PROVIDER_OLAT.equals(provider);
 	}
 
 	@Override
@@ -467,18 +469,6 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 		return true;
 	}
-
-	/**
-	 * to change password without knowing exactly who is changing it -> change as admin
-	 * @param identity
-	 * @param newPwd
-	 * @return
-	 */
-	public boolean changePasswordAsAdmin(Identity identity, String newPwd) {
-		Authentication adminAuthIdentity = securityManager.findAuthenticationByAuthusername("administrator", "OLAT", BaseSecurity.DEFAULT_ISSUER);
-		Identity adminUserIdentity = adminAuthIdentity.getIdentity();
-		return changePassword(adminUserIdentity, identity, newPwd);
-	}
 	
 	/**
 	 * to change password by password forgotten link at login screen
@@ -489,5 +479,4 @@ public class OLATAuthManager implements AuthenticationSPI {
 	public boolean changePasswordByPasswordForgottenLink(Identity identity, String newPwd) {
 		return changePassword(identity, identity, newPwd);
 	}
-	
 }

@@ -50,6 +50,7 @@ public class ToDoTaskSearchParams {
 	private Collection<Long> assigneeOrDelegateeKeys;
 	private Boolean assigneeRightsNull;
 	private Collection<Long> collectionKeys;
+	private Boolean relativeDatesNull;
 	private ToDoTaskCustomQuery customQuery;
 
 	public Collection<Long> getToDoTaskKeys() {
@@ -158,6 +159,16 @@ public class ToDoTaskSearchParams {
 		this.assigneeRightsNull = assigneeRightsNull;
 	}
 
+	private Boolean assigneeAvailable;
+
+	public Boolean getAssigneeAvailable() {
+		return assigneeAvailable;
+	}
+
+	public void setAssigneeAvailable(Boolean assigneeAvailable) {
+		this.assigneeAvailable = assigneeAvailable;
+	}
+
 	public Collection<Long> getCollectionKeys() {
 		return collectionKeys;
 	}
@@ -168,6 +179,14 @@ public class ToDoTaskSearchParams {
 	
 	public void setCollections(Collection<? extends ToDoTaskRef> collectionRefs) {
 		this.collectionKeys = collectionRefs != null? collectionRefs.stream().map(ToDoTaskRef::getKey).toList(): null;
+	}
+
+	public Boolean getRelativeDatesNull() {
+		return relativeDatesNull;
+	}
+
+	public void setRelativeDatesNull(Boolean relativeDatesNull) {
+		this.relativeDatesNull = relativeDatesNull;
 	}
 
 	public ToDoTaskCustomQuery getCustomQuery() {

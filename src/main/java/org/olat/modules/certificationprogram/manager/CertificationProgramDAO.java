@@ -123,7 +123,7 @@ public class CertificationProgramDAO {
 			.getResultList();
 	}
 	
-	public List<CertificationProgram> loadCertificationPrograms(List<Organisation> organisations) {
+	public List<CertificationProgram> loadCertificationPrograms(Organisation organisation, IdentityRef identity) {
 		String query = """
 				select program from certificationprogram as program
 				inner join fetch program.group as bGroup
@@ -131,15 +131,22 @@ public class CertificationProgramDAO {
 				left join fetch program.creditPointSystem as system
 				left join fetch program.template as template
 				where exists (select rel.key from certificationprogramtoorganisation as rel
-					where rel.certificationProgram.key=program.key and rel.organisation.key in (:organisationsKeys)
+					where rel.certificationProgram.key=program.key and rel.organisation.key in (:organisationKey)
+				) and (exists (select ownerMember.key from bgroupmember as ownerMember
+				    where ownerMember.identity.key=:identityKey and ownerMember.group.key=bGroup.key and ownerMember.role=:ownerRole
+				  ) or exists (select orel.key from certificationprogramtoorganisation as orel
+				    inner join orel.organisation as org
+				    inner join org.group as oGroup
+				    inner join oGroup.members as manager
+				    where manager.identity.key=:identityKey and orel.certificationProgram.key=program.key and manager.role in (:managerRoles)
+				  )
 				)""";
-		
-		List<Long> organisationsKeys = organisations.stream()
-				.map(Organisation::getKey)
-				.toList();
-		
+
 		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
-				.setParameter("organisationsKeys", organisationsKeys)
+				.setParameter("organisationKey", organisation.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("ownerRole", CertificationRoles.programowner.name())
+				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
 				.getResultList();
 	}
 	
@@ -225,6 +232,60 @@ public class CertificationProgramDAO {
 				.setParameter("ownerRole", CertificationRoles.programowner.name())
 				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
 				.getResultList();
+	}
+	
+	public List<CertificationProgram> loadCertificationPrograms(IdentityRef identity) {
+		String query = """
+				select program from certificationprogram as program
+				inner join fetch program.group as bGroup
+				left join fetch program.creditPointSystem as system
+				where exists (select ownerMember.key from bgroupmember as ownerMember
+				  where ownerMember.identity.key=:identityKey and ownerMember.group.key=bGroup.key and ownerMember.role=:ownerRole
+				) or exists (select rel.key from certificationprogramtoorganisation as rel
+				  inner join rel.organisation as org
+				  inner join org.group as oGroup
+				  inner join oGroup.members as manager
+				  where manager.identity.key=:identityKey and rel.certificationProgram.key=program.key and manager.role in (:managerRoles)
+				)
+				""";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("ownerRole", CertificationRoles.programowner.name())
+				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
+				.getResultList();
+	}
+	
+	/**
+	 * The method use the same permissions check as the query above.
+	 * 
+	 * @param certificationProgram The certification program
+	 * @param identity The identity
+	 * @return true if the specified identity has right to see the certification program
+	 */
+	public boolean canViewCertificationProgram(CertificationProgram certificationProgram, IdentityRef identity) {
+		String query = """
+				select program.key from certificationprogram as program
+				inner join program.group as bGroup
+				where program.key=:programKey
+				and (exists (select ownerMember.key from bgroupmember as ownerMember
+				  where ownerMember.identity.key=:identityKey and ownerMember.group.key=bGroup.key and ownerMember.role=:ownerRole
+				) or exists (select rel.key from certificationprogramtoorganisation as rel
+				  inner join rel.organisation as org
+				  inner join org.group as oGroup
+				  inner join oGroup.members as manager
+				  where manager.identity.key=:identityKey and rel.certificationProgram.key=program.key and manager.role in (:managerRoles)
+				))""";
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(query, Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("ownerRole", CertificationRoles.programowner.name())
+				.setParameter("managerRoles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
+				.setParameter("programKey", certificationProgram.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && certificationProgram.getKey().equals(keys.get(0));
 	}
 	
 	public boolean isCertificationProgram(RepositoryEntryRef entry) {

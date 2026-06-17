@@ -1,0 +1,295 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.selectus.model.mail;
+
+import java.util.Date;
+import java.util.Locale;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
+
+import org.olat.modules.selectus.model.Position;
+import org.olat.modules.selectus.model.PositionImpl;
+import org.olat.modules.selectus.model.PositionMLHelper;
+import org.olat.modules.selectus.model.PositionMailTemplate;
+
+/**
+ * 
+ * Initial date: 24 févr. 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Entity(name="rmailtemplate")
+@Table(name="o_selectus_mail_template")
+public class PositionMailTemplateImpl implements PositionMailTemplate, Persistable {
+
+	private static final long serialVersionUID = -4481170611901527715L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key = null;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=false)
+	private Date lastModified;
+
+	@Column(name="f_id", nullable=true, insertable=true, updatable=false)
+	private String id;
+	@Column(name="f_name", nullable=false, insertable=true, updatable=true)
+	private String name;
+	@Column(name="f_subject", nullable=true, insertable=true, updatable=true)
+	private String subject;
+	@Column(name="f_subject_de", nullable=true, insertable=true, updatable=true)
+	private String subjectDe;
+	@Column(name="f_subject_fr", nullable=true, insertable=true, updatable=true)
+	private String subjectFr;
+	@Column(name="f_body", nullable=true, insertable=true, updatable=true)
+	private String body;
+	@Column(name="f_body_de", nullable=true, insertable=true, updatable=true)
+	private String bodyDe;
+	@Column(name="f_body_fr", nullable=true, insertable=true, updatable=true)
+	private String bodyFr;
+	
+	@Column(name="f_letter", nullable=true, insertable=true, updatable=true)
+	private String letter;
+	
+	@ManyToOne(targetEntity=PositionImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_position_id", nullable=false, insertable=true, updatable=false)
+	private Position position;
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	@Override
+	public String getSubjectDe() {
+		return subjectDe;
+	}
+
+	public void setSubjectDe(String subjectDe) {
+		this.subjectDe = subjectDe;
+	}
+	
+	@Override
+	public String getSubjectFr() {
+		return subjectFr;
+	}
+
+	public void setSubjectFr(String subjectFr) {
+		this.subjectFr = subjectFr;
+	}
+
+	@Override
+	public String getSubject(Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			return getSubjectDe();
+		}
+		if(locale != null && locale.getLanguage().equals("fr")) {
+			return getSubjectFr();
+		}
+		return getSubject();
+	}
+
+	@Override
+	public void setSubject(String text, Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			setSubjectDe(text);
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			setSubjectFr(text);
+		} else {
+			setSubject(text);
+		}
+	}
+
+	@Override
+	public String getMLSubject(Locale locale) {
+		return PositionMLHelper.getMailTemplateMLSubject(getPosition(), this, locale);
+	}
+
+	@Override
+	public String getBody(Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			return getBodyDe();
+		}
+		if(locale != null && locale.getLanguage().equals("fr")) {
+			return getBodyFr();
+		}
+		return getBody();
+	}
+
+	@Override
+	public void setBody(String text, Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			setBodyDe(text);
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			setBodyFr(text);
+		} else {
+			setBody(text);
+		}
+	}
+
+	@Override
+	public String getMLBody(Locale locale) {
+		return PositionMLHelper.getMailTemplateMLBody(getPosition(), this, locale);
+	}
+
+	@Override
+	public String getBody() {
+		return body;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
+	}
+
+	@Override
+	public String getBodyDe() {
+		return bodyDe;
+	}
+
+	public void setBodyDe(String bodyDe) {
+		this.bodyDe = bodyDe;
+	}
+	
+	@Override
+	public String getBodyFr() {
+		return bodyFr;
+	}
+
+	public void setBodyFr(String bodyFr) {
+		this.bodyFr = bodyFr;
+	}
+
+	@Override
+	public String getLetter() {
+		return letter;
+	}
+
+	@Override
+	public void setLetter(String letter) {
+		this.letter = letter;
+	}
+
+	public Position getPosition() {
+		return position;
+	}
+
+	public void setPosition(Position position) {
+		this.position = position;
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 278656791 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof PositionMailTemplateImpl) {
+			PositionMailTemplateImpl template = (PositionMailTemplateImpl)obj;
+			return getKey() != null && getKey().equals(template.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+}

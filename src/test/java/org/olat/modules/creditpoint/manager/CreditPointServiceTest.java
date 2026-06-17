@@ -31,11 +31,13 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
 import org.olat.modules.creditpoint.CreditPointTransaction;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
 import org.olat.modules.creditpoint.CreditPointWallet;
@@ -62,6 +64,8 @@ public class CreditPointServiceTest extends OlatTestCase {
 	private CreditPointServiceImpl creditPointService;
 	@Autowired
 	private CreditPointTransactionDAO transactionDao;
+	@Autowired
+	private CreditPointSystemToOrganisationDAO creditPointSystemToOrganisationDao;
 	
 	@Test
 	public void addAndRemoveTransaction() {
@@ -327,5 +331,58 @@ public class CreditPointServiceTest extends OlatTestCase {
 		Assertions.assertThat(systems)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.containsAnyOf(system);
+	}
+	
+	@Test
+	public void updateCreditPointSystemOrganisationsAdd() {
+		// Add an organisation with a curriculum manager
+		Organisation systemOrganisation1 = organisationService
+				.createOrganisation("Credit-point-unit-test-3", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation systemOrganisation2 = organisationService
+				.createOrganisation("Credit-point-unit-test-4", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		
+		// Create a credit point system restricted to this organisation
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT8", null, null, true, true);
+		creditPointService.updateCreditPointSystemOrganisations(system, List.of(systemOrganisation1, systemOrganisation2));
+		dbInstance.commitAndCloseSession();
+		
+		// Check
+		List<CreditPointSystemToOrganisation> currentRelations = creditPointSystemToOrganisationDao.loadRelations(system);
+		Assertions.assertThat(currentRelations)
+			.hasSize(2)
+			.map(CreditPointSystemToOrganisation::getOrganisation)
+			.containsExactlyInAnyOrder(systemOrganisation1, systemOrganisation2);
+	}
+	
+	@Test
+	public void updateCreditPointSystemOrganisationsAddRemove() {
+		// Add an organisation with a curriculum manager
+		Organisation systemOrganisation1 = organisationService
+				.createOrganisation("Credit-point-unit-test-5", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation systemOrganisation2 = organisationService
+				.createOrganisation("Credit-point-unit-test-6", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation systemOrganisation3 = organisationService
+				.createOrganisation("Credit-point-unit-test-7", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		
+		// Create a credit point system restricted to this organisation
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT8", null, null, true, true);
+		creditPointService.updateCreditPointSystemOrganisations(system, List
+				.of(systemOrganisation1, systemOrganisation2, systemOrganisation3));
+		dbInstance.commit();
+
+		system.setOrganisationsRestrictions(true);
+		system = creditPointService.updateCreditPointSystem(system);
+		
+		List<Organisation> organisations = organisationService.getOrganisation(List
+				.of(new OrganisationRefImpl(systemOrganisation1.getKey()), new OrganisationRefImpl(systemOrganisation2.getKey())));
+		creditPointService.updateCreditPointSystemOrganisations(system, organisations);
+		dbInstance.commit();
+		
+		// Check
+		List<CreditPointSystemToOrganisation> currentRelations = creditPointSystemToOrganisationDao.loadRelations(system);
+		Assertions.assertThat(currentRelations)
+			.hasSize(2)
+			.map(CreditPointSystemToOrganisation::getOrganisation)
+			.containsExactlyInAnyOrder(systemOrganisation1, systemOrganisation2);
 	}
 }

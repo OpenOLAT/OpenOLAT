@@ -449,7 +449,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		CurriculumElement element = qualityTestHelper.createCurriculumElement();
 		CurriculumElementType type = curriculumService.createCurriculumElementType("t", "s", null, null);
 		element.setType(type);
-		element = curriculumService.updateCurriculumElement(element);
+		element = curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), element);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
 				singletonList(executor));
 		qualityService.createContextBuilder(dataCollection, participations.get(0))

@@ -9,6 +9,21 @@
 
 	<context:component-scan base-package="org.olat.core.gui.control.navigation" />
 	
+	<bean id="olatsites_apply" class="org.olat.modules.selectus.site.ApplicationSiteDef" scope="prototype" >
+		<property name="order" value="-10" />
+		<property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
+	</bean>
+	
+	<bean id="olatsites_review" class="org.olat.modules.selectus.site.ReferenceSiteDef" scope="prototype" >
+		<property name="order" value="-8" />
+		<property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
+	</bean>
+	
+	<bean id="olatsites_public_feedback" class="org.olat.modules.selectus.site.PublicFeedbackSiteDef" scope="prototype" >
+		<property name="order" value="-6" />
+		<property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
+	</bean>
+
 	<!-- classes implementing the SiteDefinition interface -->
 	<bean id="olatsites_invitations" class="org.olat.modules.invitation.site.InvitationsSiteDef">
 		<property name="order" value="-1" />
@@ -80,6 +95,12 @@
 		<property name="order" value="8" />
 		<property name="enabled" value="${site.coaching.enable}"/>
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
+	</bean>
+	
+	<bean id="olatsites_recruiting" class="org.olat.modules.selectus.site.SelectusSiteDef" scope="prototype" >
+		<property name="order" value="8" />
+		<property name="enabled" value="${site.selectus.enable}"/>
+		<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 
 	<bean id="olatsites_taxonomy" class="org.olat.modules.docpool.site.DocumentPoolSiteDef">

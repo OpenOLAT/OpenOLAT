@@ -103,11 +103,10 @@ import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -174,7 +173,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Dropdown addItemTools, changeItemDropDown;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
 			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
-			newFIBLink, newInlineChoiceLink, newNumericalLink, newHotspotLink,
+			newFIBLink, newInlineChoiceLink, newNumericalLink, newGapMixedLink, newHotspotLink,
 			newHottextLink, newOrderLink, newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink;
 	private Link importFromTableLink;
@@ -306,12 +305,16 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newFIBLink = LinkFactory.createToolLink("new.fib", translate("new.fib"), this, "o_mi_qtifib");
 		newFIBLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newFIBLink);
-		newInlineChoiceLink = LinkFactory.createToolLink("new.inlinechoice", translate("new.inlinechoice"), this, "o_mi_qtiinlinechoice");
-		newInlineChoiceLink.setDomReplacementWrapperRequired(false);
-		addItemTools.addComponent(newInlineChoiceLink);
 		newNumericalLink = LinkFactory.createToolLink("new.fib.numerical", translate("new.fib.numerical"), this, "o_mi_qtinumerical");
 		newNumericalLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newNumericalLink);
+		newInlineChoiceLink = LinkFactory.createToolLink("new.inlinechoice", translate("new.inlinechoice"), this, "o_mi_qtiinlinechoice");
+		newInlineChoiceLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newInlineChoiceLink);
+		newGapMixedLink = LinkFactory.createToolLink("new.gapmixed", translate("new.gapmixed"), this, "o_mi_qtigapmixed");
+		newGapMixedLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newGapMixedLink);
+		
 		newHottextLink = LinkFactory.createToolLink("new.hottext", translate("new.hottext"), this, "o_mi_qtihottext");
 		newHottextLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newHottextLink);
@@ -572,15 +575,17 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.matchtruefalse"), QTI21Constants.CSS_MATCH_TRUE_FALSE,
 					translate("match.unanswered"), translate("match.true"), translate("match.false"), qtiService.qtiSerializer()));
 		} else if(newFIBLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib"), EntryType.text, qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new GapAssessmentItemBuilder(translate("new.fib"), EntryType.text, qtiService.qtiSerializer()));
 		} else if(newNumericalLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new GapAssessmentItemBuilder(translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()));
+		} else if(newGapMixedLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new GapAssessmentItemBuilder(translate("new.gapmixed"), EntryType.mixed, qtiService.qtiSerializer()));
 		} else if(newHotspotLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(translate("new.hotspot"), qtiService.qtiSerializer()));
 		} else if(newHottextLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HottextAssessmentItemBuilder(translate("new.hottext"), translate("new.hottext.start"), translate("new.hottext.text"), qtiService.qtiSerializer()));
 		} else if(newInlineChoiceLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new InlineChoiceAssessmentItemBuilder(translate("new.inlinechoice"), qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new GapAssessmentItemBuilder(translate("new.inlinechoice"), EntryType.inlineChoice, qtiService.qtiSerializer()));
 		} else if(newOrderLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new OrderAssessmentItemBuilder(translate("new.order"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {

@@ -240,13 +240,9 @@ public class BadgeClassesPage {
 		WebElement selectEl = browser.findElement(selectBy);
 		new Select(selectEl).selectByValue("coursesPassed");
 		
-		By courseElementBy = By.cssSelector(".o_badge_wiz_criteria_step button.o_selection_display");
-		OOGraphene.waitElement(courseElementBy, browser).click();
-		OOGraphene.waitCallout(browser, ".o_object_selection");
-
 		// Open the browser to select a course
-		By browserBy = By.cssSelector(".o_object_selection_header a.o_open_browser");
-		OOGraphene.waitElement(browserBy, browser).click();;
+		By browserBy = By.cssSelector(".o_object_selection_display button.o_selection_browse_button");
+		OOGraphene.waitElement(browserBy, browser).click();
 		OOGraphene.waitModalDialog(browser, "div.o_sel_search_referenceable_entries");
 		
 		By myReferenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments')]/a[contains(@class,'o_sel_repo_popup_my_resources')][contains(@class,'btn-primary')]");
@@ -257,12 +253,9 @@ public class BadgeClassesPage {
 		OOGraphene.waitElement(rowBy, browser).click();
 		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_search_referenceable_entries");
 		
-		By courseSelectBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + course + "')]]/input[@type='checkbox'][@checked='checked']");
+		By courseSelectBy = By.xpath("//div[contains(@class,'o_object_selection_display')]/button/span[contains(text(),'" + course + "')]");
 		OOGraphene.waitElement(courseSelectBy, browser);
 
-		By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
-		OOGraphene.waitElement(transferBy, browser).click();
-		OOGraphene.waitCalloutDisappears(browser, ".o_object_selection");
 		return this;
 	}
 	

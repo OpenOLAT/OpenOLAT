@@ -58,7 +58,27 @@ public interface CertificationProgramService {
 	
 	List<CertificationProgram> getCertificationPrograms();
 	
-	List<CertificationProgram> getCertificationPrograms(List<Organisation> organisations);
+	/**
+	 * Search certification programs within an organisation based on the 
+	 * permissions of the specified identity.
+	 * 
+	 * @param organisation The organisation (mandatory)
+	 * @param identity The identity (mandatory)
+	 * @return A list of organisations
+	 */
+	List<CertificationProgram> getCertificationPrograms(Organisation organisation, IdentityRef identity);
+	
+	/**
+	 * Check if the specified identity has manager permissions to see the certification program.
+	 * Manager roles are administrator, learn resource manager, principal and owner.
+	 * 
+	 * @param certificationProgram The certification program
+	 * @param identity The identity
+	 * @return true if the identity can view the certification program as a manager
+	 */
+	boolean canViewCertificationProgram(CertificationProgram certificationProgram, IdentityRef identity);
+	
+	List<CertificationProgram> getCertificationPrograms(IdentityRef identity);
 	
 	List<CertificationProgramWithStatistics> getCertificationProgramsWithStatistics(IdentityRef identity, Date referenceDate);
 	

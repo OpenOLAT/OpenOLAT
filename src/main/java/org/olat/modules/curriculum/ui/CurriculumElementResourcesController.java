@@ -125,7 +125,7 @@ public class CurriculumElementResourcesController extends BasicController {
 		}
 		
 		if(endElement != null) {
-			Date endDate = endElement.getBeginDate();
+			Date endDate = endElement.getEndDate();
 			Infos closed = formatAutomationInformations(endDate, endElement,
 					"automation.finished.enabled", implementationElement.getAutoClosed(), false);
 			updateAutomationInformations("finished", closed, statusAutomation);

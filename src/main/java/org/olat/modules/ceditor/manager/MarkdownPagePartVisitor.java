@@ -66,6 +66,7 @@ import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
 import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -108,11 +109,11 @@ import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingHelper;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 
 /**
  * CommonMark AST visitor that converts top-level block nodes into
@@ -762,35 +763,27 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 
 			// Map AI subject to taxonomy level
 			if (StringHelper.containsNonWhitespace(data.getSubject())) {
-				mapSubjectToTaxonomy(media, data.getSubject(), mediaService);
+				mapSubjectToTaxonomy(media, data.getSubject(), mediaService, usageContext);
 			}
 		} catch (Exception e) {
 			log.warn("Failed to auto-generate AI metadata for image: {}", filename, e);
 		}
 	}
 
-	private void mapSubjectToTaxonomy(Media media, String subject, MediaService mediaService) {
+	private void mapSubjectToTaxonomy(Media media, String subject, MediaService mediaService, AiUsageContext context) {
 		MediaModule mediaModule = CoreSpringFactory.getImpl(MediaModule.class);
 		List<TaxonomyRef> taxonomyRefs = mediaModule.getTaxonomyRefs();
-		if (taxonomyRefs.isEmpty()) return;
-
+		if (taxonomyRefs.isEmpty()) {
+			return;
+		}
 		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
-		String subjectLower = subject.trim().toLowerCase();
-
-		for (TaxonomyLevel level : levels) {
-			if (translator != null) {
-				String displayName = TaxonomyUIFactory.translateDisplayName(translator, level);
-				if (displayName != null && subjectLower.equals(displayName.trim().toLowerCase())) {
-					mediaService.updateTaxonomyLevels(media, List.of(new TaxonomyLevelRefImpl(level.getKey())));
-					return;
-				}
-			}
-			String identifier = level.getIdentifier();
-			if (identifier != null && subjectLower.equals(identifier.trim().toLowerCase())) {
-				mediaService.updateTaxonomyLevels(media, List.of(new TaxonomyLevelRefImpl(level.getKey())));
-				return;
-			}
+		AiModule aiModule = CoreSpringFactory.getImpl(AiModule.class);
+		TaxonomyMatchingService matchingService = CoreSpringFactory.getImpl(TaxonomyMatchingService.class);
+		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
+				context, subject, taxonomyRefs, taxonomyService, matchingService, aiModule,
+				translator != null ? translator.getLocale() : null);
+		if (!matches.isEmpty()) {
+			mediaService.updateTaxonomyLevels(media, matches);
 		}
 	}
 

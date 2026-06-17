@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
@@ -97,12 +98,14 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -110,6 +113,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
+import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -187,6 +191,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private FormLink overrideLink;
 	private FormLink unOverrideLink;
+	private FormLink bulkCreateToDoButton;
 	private FormLink bulkExportButton;
 	private FormLink bulkDeleteButton;
 	private DropdownItem newElementMenu;
@@ -206,7 +211,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private CurriculumElementLearningPathController learningPathController;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	private ConfirmDeleteCurriculumElementListController bulkDeleteConfirmationCtrl;
-	
+	private CurriculumElementToDoBulkCreateController bulkCreateToDoCtrl;
+
 	private int counter;
 	private final boolean managed;
 	private boolean overrideManaged;
@@ -218,9 +224,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	private final CurriculumComposerConfig config;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private CurriculumElementToDoProvider toDoProvider;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
@@ -244,7 +253,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	 */
 	CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumElement rootElement, CurriculumComposerConfig config,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl, "manage_curriculum_structure");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
@@ -255,6 +265,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		if(curriculum != null) {
@@ -312,6 +323,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 			
 			for(CurriculumElementType allowedType:allowedTypes) {
+				if(allowedType.getStatus() == CurriculumElementTypeStatus.inactive) continue;
+				if(rootElement != null && allowedType.isImplOnly()) continue;
 				String link = translate("add.curriculum.element.typed", StringHelper.escapeHtml(allowedType.getDisplayName()));
 				newGenericElementButton = uifactory.addFormLink("add.curriculum.element." + allowedType.getKey(),
 						CMD_ADD_ELEMENT, link, null, formLayout, Link.LINK | Link.NONTRANSLATED);
@@ -444,16 +457,21 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
-
-		if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
-			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(bulkDeleteButton);
-			tableEl.setMultiSelect(true);
-		}
 		
+		bulkCreateToDoButton = uifactory.addFormLink("todo.bulk.create", formLayout, Link.BUTTON);
+		bulkCreateToDoButton.setVisible(false);
+		tableEl.addBatchButton(bulkCreateToDoButton);
+		tableEl.setMultiSelect(true);
+
 		if(rootElement == null && secCallback.canExportCurriculums()) {
 			bulkExportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkExportButton);
+			tableEl.setMultiSelect(true);
+		}
+		
+		if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
+			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkDeleteButton);
 			tableEl.setMultiSelect(true);
 		}
 	}
@@ -659,6 +677,14 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableModel.setObjects(rows);
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
+
+		if (bulkCreateToDoButton != null) {
+			boolean anyCanManageToDos = IntStream.range(0, tableModel.getRowCount())
+					.mapToObj(tableModel::getObject)
+					.filter(Objects::nonNull)
+					.anyMatch(row -> secCallback.canManageToDos(row.getCurriculumElement()));
+			bulkCreateToDoButton.setVisible(anyCanManageToDos);
+		}
 	}
 	
 	private void loadTaxonomy(Map<Long, CurriculumElementRow> keyToRows, List<CurriculumElementInfos> elements) {
@@ -963,7 +989,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newElementCtrl == source || newSubElementCtrl == source
 				|| moveElementCtrl == source || confirmDeleteCtrl == source
-				|| bulkDeleteConfirmationCtrl == source) {
+				|| bulkDeleteConfirmationCtrl == source || bulkCreateToDoCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -1010,6 +1036,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void cleanUp() {
 		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(bulkCreateToDoCtrl);
 		removeAsListenerAndDispose(copyElementCtrl);
 		removeAsListenerAndDispose(newSubElementCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
@@ -1020,6 +1047,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		removeAsListenerAndDispose(cmc);
 		curriculumStructureCalloutCtrl = null;
 		bulkDeleteConfirmationCtrl = null;
+		bulkCreateToDoCtrl = null;
 		copyElementCtrl = null;
 		newSubElementCtrl = null;
 		toolsCalloutCtrl = null;
@@ -1075,6 +1103,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			doUnOverrideManagedResource();
 		} else if(newGenericElementButton == source) {
 			doNewCurriculumElement(ureq, null);
+		} else if(bulkCreateToDoButton == source) {
+			doBulkCreateToDo(ureq);
 		} else if(bulkDeleteButton == source) {
 			doConfirmBulkDelete(ureq);
 		} else if(bulkExportButton == source) {
@@ -1257,7 +1287,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else {
 			WindowControl swControl	= addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel,
-					element.getCurriculum(), element, secCallback, lecturesSecCallback);
+					element.getCurriculum(), element, secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(editCtrl);
 			addIntermediatePath(element);
 			toolbarPanel.pushController(element.getDisplayName(), editCtrl);
@@ -1445,6 +1475,31 @@ public class CurriculumComposerController extends FormBasicController implements
 		doExport(ureq, curriculums, elements);
 	}
 	
+	private void doBulkCreateToDo(UserRequest ureq) {
+		if(guardModalController(bulkCreateToDoCtrl)) return;
+
+		List<CurriculumElement> elements = tableEl.getMultiSelectedIndex().stream()
+				.map(index -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(CurriculumElementRow::getCurriculumElement)
+				.filter(element -> secCallback.canManageToDos(element))
+				.toList();
+
+		if(elements.isEmpty()) {
+			showWarning("todo.bulk.create.empty.selection");
+			return;
+		}
+
+		bulkCreateToDoCtrl = new CurriculumElementToDoBulkCreateController(ureq, getWindowControl(), elements);
+		listenTo(bulkCreateToDoCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				bulkCreateToDoCtrl.getInitialComponent(),
+				true, translate("todo.bulk.create.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doBulkExport(UserRequest ureq) {
 		List<CurriculumElement> curriculumElements =  tableEl.getMultiSelectedIndex().stream()
 				.map(index  -> tableModel.getObject(index.intValue()))
@@ -1583,6 +1638,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				newLink = addLink("add.element.under", "o_icon_levels", links);
 			} else {
 				for(CurriculumElementType type:types) {
+					if(type.getStatus() == CurriculumElementTypeStatus.inactive || type.isImplOnly()) continue;
 					String name = "new_el_" + type.getKey();
 					String label = translate("add.element.with.type.under", StringHelper.escapeHtml(type.getDisplayName()));
 					Link link = LinkFactory.createLink(name, name, NEW_ELEMENT, label, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);

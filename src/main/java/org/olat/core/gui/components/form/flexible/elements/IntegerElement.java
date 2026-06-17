@@ -25,6 +25,8 @@
 */ 
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.function.UnaryOperator;
+
 /**
  * Initial Date:  22.06.2007 <br>
  * @author patrickb
@@ -75,5 +77,12 @@ public interface IntegerElement extends TextElement {
 	 * @return true if valid, false if not
 	 */
 	public boolean validateIntValue();
+	
+	/**
+	 * A formatter which allow a little more or less.
+	 * 
+	 * @param formatter
+	 */
+	public void setLenientFormatter(UnaryOperator<String> formatter);
 	
 }

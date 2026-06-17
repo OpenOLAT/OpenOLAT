@@ -6,7 +6,7 @@
         http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
 	<persistence-unit name="default">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
-
+		
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.AuthenticationImpl</class>
@@ -62,6 +62,7 @@
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingImpl</class>
+		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingShortImpl</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserCommentImpl</class>
 		<class>org.olat.core.commons.services.sms.model.MessageLogImpl</class>
 		<class>org.olat.core.commons.services.vfs.model.VFSMetadataImpl</class>
@@ -282,6 +283,7 @@
 		<class>org.olat.modules.grading.model.GradingAssignmentImpl</class>
 		<class>org.olat.modules.grading.model.GradingTimeRecordImpl</class>
 		<class>org.olat.modules.grading.model.GradingTimeRecordAppender</class>
+		<class>org.olat.modules.grading.model.GradingAssignmentLogImpl</class>
 		<class>org.olat.modules.grading.model.RepositoryEntryGradingConfigurationImpl</class>
 		<class>org.olat.modules.invitation.model.InvitationImpl</class>
 		<class>org.olat.modules.jupyterhub.model.JupyterDeploymentImpl</class>
@@ -358,11 +360,53 @@
 		<class>org.olat.modules.quality.model.QualityReportAccessImpl</class>
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>
-		<class>org.olat.modules.roommanagement.model.LocationImpl</class>
-		<class>org.olat.modules.roommanagement.model.LocationToOrganisationImpl</class>
+		<class>org.olat.modules.roommanagement.model.BuildingImpl</class>
+		<class>org.olat.modules.roommanagement.model.BuildingToOrganisationImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomBookingImpl</class>
 		<class>org.olat.modules.roommanagement.model.RoomModuleLogImpl</class>
+		<class>org.olat.modules.selectus.model.AttachmentImpl</class>
+		<class>org.olat.modules.selectus.model.AttachmentDataImpl</class>
+		<class>org.olat.modules.selectus.model.NotesImpl</class>
+		<class>org.olat.modules.selectus.model.PositionImpl</class>
+		<class>org.olat.modules.selectus.model.PositionAttributeDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.PositionLightImpl</class>
+		<class>org.olat.modules.selectus.model.AcceptPolicyImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationAttributeImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationAttributeLightImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationLightImpl</class>
+		<class>org.olat.modules.selectus.model.ApplicationDecisionImpl</class>
+		<class>org.olat.modules.selectus.model.DecisionRubricImpl</class>
+		<class>org.olat.modules.selectus.model.DecisionRubricDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.OrganisationUnitImpl</class>
+		<class>org.olat.modules.selectus.model.assignment.ApplicationAssignmentImpl</class>
+		<class>org.olat.modules.selectus.model.committee.ReportCommitteeImpl</class>
+		<class>org.olat.modules.selectus.model.feedback.PublicFeedbackImpl</class>
+		<class>org.olat.modules.selectus.model.feedback.ApplicationFeedbackImpl</class>
+		<class>org.olat.modules.selectus.model.feedback.ApplicationsFeedbackConfigurationImpl</class>
+		<class>org.olat.modules.selectus.model.mail.RejectionEmailLogImpl</class>
+		<class>org.olat.modules.selectus.model.mail.RejectionEmailLogFullImpl</class>
+		<class>org.olat.modules.selectus.model.mail.PositionMailTemplateImpl</class>
+		<class>org.olat.modules.selectus.model.references.ReferenceImpl</class>
+		<class>org.olat.modules.selectus.model.references.ReferenceCommentImpl</class>
+		<class>org.olat.modules.selectus.model.references.ReferenceToApplicationImpl</class>
+		<class>org.olat.modules.selectus.model.review.PositionReviewDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.review.ReviewElementDefinitionImpl</class>
+		<class>org.olat.modules.selectus.model.review.ReviewResponseImpl</class>
+		<class>org.olat.modules.selectus.model.review.ApplicationCommentImpl</class>
+		<class>org.olat.modules.selectus.model.review.ApplicationCommentVoteImpl</class>
+		<class>org.olat.modules.selectus.model.category.CategoryImpl</class>
+		<class>org.olat.modules.selectus.model.category.ApplicationCategoryImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogLightImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserSettingsImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogReadImpl</class>
+		<class>org.olat.modules.selectus.model.log.RecruitingAuditLogUserNotificationsImpl</class>
+		<class>org.olat.modules.selectus.model.migration.SettingImpl</class>
+		<class>org.olat.upgrade.model.UpgradeOrganisationUnitMembershipImpl</class>
+		<class>org.olat.upgrade.model.UpgradePositionUnitImpl</class>
+		<class>org.olat.modules.taxonomy.matching.model.TaxonomyLevelEmbeddingImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyLevelTypeImpl</class>

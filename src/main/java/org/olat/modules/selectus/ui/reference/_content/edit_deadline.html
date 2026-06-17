@@ -1,0 +1,11 @@
+<div class="form-inline">$r.render("deadline.day") $r.render("deadline.month") $r.render("deadline.year")</div>
+#if($f.hasError("deadline.year"))
+	<div>
+		$r.render("deadline.year_ERROR")
+	</div>
+#end
+#if($f.hasError("deadline.day"))
+	<div>
+		$r.render("deadline.day_ERROR")
+	</div>
+#end

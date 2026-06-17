@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.commentAndRating.model;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
@@ -57,12 +57,7 @@ public interface UserRating extends CreateInfo, ModifiedInfo, Persistable {
 	/**
 	 * @return The Author of this comment.
 	 */
-	public Identity getCreator();
-	
-	/**
-	 * @param creator The author of the comment
-	 */
-	public void setCreator(Identity creator);
+	public IdentityRef getCreator();
 	
 	/**
 	 * @return The users rating

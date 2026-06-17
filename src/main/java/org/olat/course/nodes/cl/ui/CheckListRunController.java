@@ -212,11 +212,6 @@ public class CheckListRunController extends FormBasicController implements Activ
 		layoutCont.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		
 		layoutCont.contextPut("withScore", Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode()));
-		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		if(StringHelper.containsNonWhitespace(infoTextUser)) {
-			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-			layoutCont.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
-		}
 		
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		String userLog = preview ? "" : am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());

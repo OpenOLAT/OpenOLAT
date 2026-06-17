@@ -32,6 +32,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.model.PersistedMapper;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -56,6 +57,7 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<>();
 
 	private CacheWrapper<String, Mapper> mapperCache;
+	private CacheWrapper<String,SandboxedMapper> sandboxMapperCache;
 	
 	@Autowired
 	private MapperDAO mapperDao;
@@ -65,6 +67,7 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		mapperCache = coordinatorManager.getCoordinator().getCacher().getCache(MapperService.class.getSimpleName(), "mapper");
+		sandboxMapperCache = coordinatorManager.getCoordinator().getCacher().getCache(MapperService.class.getSimpleName(), "sandboxedmapper");
 	}
 	
 	@Override
@@ -137,6 +140,56 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		log.debug("Mappers: with key: {} with sessions: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size());
 		
 		return mapperKey;
+	}
+
+	@Override
+	public boolean isSandbox(String id) {
+		int index = id.indexOf(DispatcherModule.PATH_MAPPED);
+		if(index >= 0) {
+			id = id.substring(index + DispatcherModule.PATH_MAPPED.length(), id.length());
+		}
+		return sandboxMapperCache.containsKey(id);
+	}
+
+	@Override
+	public MapperKey sandbox(UserSession session, String mapperId, Mapper mapper) {
+		String encryptedMapId = Encoder.md5hash(mapperId);
+		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
+		mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId);
+		String token = UUID.randomUUID().toString().replace("-", "");
+		mapperKey.setToken(token);
+		sandboxMapperCache.put(encryptedMapId, new SandboxedMapper(session, mapper, token));
+		return mapperKey;
+	}
+
+	@Override
+	public synchronized Mapper reclaimMapperById(UserSession newSession, String id, String token) {
+		if(sandboxMapperCache.containsKey(id)) {
+			SandboxedMapper sandboxedMapper = sandboxMapperCache.get(id);
+			MapperKey mapperKey = new MapperKey(newSession, id);
+			Mapper mapper = sandboxedMapper.mapper();
+			UserSession parentSession = sandboxedMapper.usess();
+			if(newSession.getIdentity() != null && !newSession.getIdentity().equals(parentSession.getIdentity())) {
+				return null;
+			}
+			if(newSession.getIdentity() == null && (token == null || !token.equals(sandboxedMapper.token()))) {
+				return null;
+			}
+			if(newSession.getIdentity() == null) {
+				Identity identity = parentSession.getIdentity();
+				Tracing.setIdentity(identity);
+				newSession.setIdentity(identity);
+				newSession.setRoles(parentSession.getRoles());
+				newSession.setLocale(parentSession.getLocale());
+			} 
+			mapperKeyToMapper.computeIfAbsent(mapperKey, key -> mapper);
+			sessionIdToMapperKeys
+				.computeIfAbsent(mapperKey.getSessionId(), sid -> new ArrayList<>())
+				.add(mapperKey);
+			sandboxMapperCache.remove(id);
+			return mapper;
+		}
+		return null;
 	}
 
 	@Override

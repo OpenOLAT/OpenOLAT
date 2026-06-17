@@ -32,6 +32,8 @@ import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -138,7 +140,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private RepositoryEntryEducationalType educationalType;
 	@Column(name="runtime_type", nullable=true, insertable=true, updatable=true)
 	private String runtimeTypeString;
-	
+
 	@Column(name="resourcename", nullable=false, insertable=true, updatable=true)
 	private String resourcename; // mandatory
 	@Column(name="displayname", nullable=false, insertable=true, updatable=true)
@@ -209,6 +211,9 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean canIndexMetadata;
 	@Column(name="allowToLeave", nullable=true, insertable=true, updatable=true)
 	private String allowToLeave;
+	@Enumerated(EnumType.STRING)
+	@Column(name="finished_access", nullable=true, insertable=true, updatable=true)
+	private RepositoryEntryFinishedAccessOptions finishedAccess;
 	
 	@Column(name="invitations_owner_enabled", nullable=true, insertable=true, updatable=true)
 	private boolean invitationByOwnerWithAuthorRightsEnabled;
@@ -634,6 +639,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		} else {
 			allowToLeave = setting.name();
 		}
+	}
+
+	public RepositoryEntryFinishedAccessOptions getFinishedAccess() {
+		return finishedAccess;
+	}
+
+	public void setFinishedAccess(RepositoryEntryFinishedAccessOptions finishedAccess) {
+		this.finishedAccess = finishedAccess;
 	}
 
 	/**

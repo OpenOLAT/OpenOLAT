@@ -32,6 +32,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -96,11 +97,8 @@ public class CurriculumElementOffersController extends BasicController {
 		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Metadata:0]";
 		
 		boolean fullyBooked = curriculumService.isMaxParticipantsReached(element);
-		boolean startDateAvailable = element.getBeginDate() != null;
-		boolean endDateAvailable = element.getEndDate() != null;
 		SelectionValues availableStatuses = new SelectionValues();
-		Arrays.stream(CurriculumElementStatus.selectableAdmin())
-			.filter(status -> status != CurriculumElementStatus.active)
+		ACService.CESTATUS_AVAILABLE_METHOD.stream()
 			.forEach(status -> availableStatuses.add(SelectionValues.entry(
 					status.name(),
 					translate("status." + status.name()),
@@ -115,7 +113,8 @@ public class CurriculumElementOffersController extends BasicController {
 		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), false, true, true,
 				translate("access.taxonomy.level"), details, null, getStatusEvaluator(element.getElementStatus()),
 				translate("offer.available.in.status.curriculum.element"), availableStatuses, defaultStatuses,
-				fullyBooked, startDateAvailable, endDateAvailable, editBusinessPath, translate("access.open.metadata"),
+				fullyBooked, element.getBeginDate(), element.getEndDate(),
+				editBusinessPath, translate("access.open.metadata"),
 				CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
 				taxonomyLevels, true, getSortOrderProvider(element));
@@ -143,16 +142,18 @@ public class CurriculumElementOffersController extends BasicController {
 	
 	private CurriculumElementCatalogSortPriorityProvider getSortOrderProvider(CurriculumElement element) {
 		return catalogV2Module.isEnabled() && catalogV2Module.isPrioritySortingEnabled()
-				? new CurriculumElementCatalogSortPriorityProvider(element)
+				? new CurriculumElementCatalogSortPriorityProvider(getIdentity(), element)
 				: null;
 	}
 	
 	private static final class CurriculumElementCatalogSortPriorityProvider implements SortPriorityProvider {
 		
+		private final Identity doer;
 		private final CurriculumElement element;
 		private Integer priority;
 		
-		public CurriculumElementCatalogSortPriorityProvider(CurriculumElement element) {
+		public CurriculumElementCatalogSortPriorityProvider(Identity doer, CurriculumElement element) {
+			this.doer = doer;
 			this.element = element;
 			this.priority = element.getCatalogSortPriority();
 		}
@@ -168,7 +169,7 @@ public class CurriculumElementOffersController extends BasicController {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
 			if (curriculumElement != null) {
 				curriculumElement.setCatalogSortPriority(priority);
-				curriculumService.updateCurriculumElement(curriculumElement);
+				curriculumService.updateCurriculumElement(doer, curriculumElement);
 				this.priority = priority;
 			}
 		}

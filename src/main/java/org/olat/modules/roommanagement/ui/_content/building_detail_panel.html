@@ -1,0 +1,79 @@
+<div class="o_building_detail clearfix">
+	<div class="o_building_detail_title">
+		<div class="o_building_rect_container">
+			#if($colorCss)
+			<div class="o_building_rect o_color_background $r.escapeHtml($colorCss)"> </div>
+			#end
+		</div>
+		<div>
+			#if($reference)
+			<strong class="o_building_detail_ref">$r.escapeHtml($reference)</strong>
+			#end
+			#if($description)
+			<span class="o_building_detail_desc text-muted"> &middot; $r.escapeHtml($description)</span>
+			#end
+		</div>
+		<div>
+			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName) o_building_detail_status">
+				<i class="o_icon o_icon-fw o_icon_rm_status_$r.escapeHtml($statusName)"> </i>
+				<span>$r.escapeHtml($statusLabel)</span>
+			</span>
+		</div>
+		<div class="o_building_edit_cmd">
+			#if($r.available("building.detail.edit"))
+			$r.render("building.detail.edit")
+			#end
+		</div>
+	</div>
+	<div class="o_building_detail_body">
+		<div class="o_building_detail_left">
+			#if($address)
+			<div class="o_building_detail_section o_building_detail_top_left">
+				<div class="o_building_detail_section_label">$r.translate("building.col.address")</div>
+				<div class="o_building_detail_section_value">$r.escapeHtml($address)</div>
+			</div>
+			#end
+			<div class="o_building_detail_section o_building_detail_top_right">
+				<div class="o_building_detail_section_label">$r.translate("building.col.info.url")</div>
+				<div class="o_building_detail_section_value">
+					#if($r.available("detail.info.url"))$r.render("detail.info.url")#end
+				</div>
+			</div>
+			<div class="o_building_detail_section o_building_detail_mid_left">
+				<div class="o_building_detail_section_label">$r.translate("building.detail.organisation")</div>
+				<div class="o_building_detail_section_value">
+					#if($organisations)$r.escapeHtml($organisations)#else$r.translate("building.detail.any")#end
+				</div>
+			</div>
+			<div class="o_building_detail_section o_building_detail_mid_right">
+				<div class="o_building_detail_section_label">$r.translate("building.col.rooms")</div>
+				<div class="o_building_detail_section_value">
+					#if($hasRooms)
+					$r.translate("building.detail.rooms", $roomCount)
+					&nbsp;|&nbsp;
+					<div class="o_building_room_status_icon">
+						<i class="o_icon o_icon_circle_color o_building_room_status_active"> </i>
+					</div>
+					$r.translate("building.detail.rooms.active", $activeRoomCount)
+					&nbsp;
+					<div class="o_building_room_status_icon">
+						<i class="o_icon o_icon_circle_color o_building_room_status_inactive"> </i>
+					</div>
+					$r.translate("building.detail.rooms.inactive", $inactiveRoomCount)
+					#else
+					$r.translate("building.detail.none")
+					#end
+				</div>
+			</div>
+			#if($additionalInfo)
+			<div class="o_building_detail_section o_building_detail_full">
+				<div class="o_building_detail_section_label">$r.translate("building.col.additional.info")</div>
+				<div class="o_building_detail_section_value o_rich_text">$additionalInfo</div>
+			</div>
+			#end
+		</div>
+		<div class="o_building_detail_right">
+			$r.render("buildingDetailMap")
+		</div>
+	</div>
+</div>

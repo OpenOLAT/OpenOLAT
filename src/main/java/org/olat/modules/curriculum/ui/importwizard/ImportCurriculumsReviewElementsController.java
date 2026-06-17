@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +55,8 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 	
 	private ImportCurriculumsReviewTableModel tableModel;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	
@@ -212,6 +215,20 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 		loadErrorMessage(rows, "error.elements");
 	}
 	
+	@Override
+	protected boolean isIgnored(AbstractImportRow row) {
+		boolean ignored = super.isIgnored(row);
+		if(ignored) {
+			return true;
+		}
+		if(row instanceof ImportedRow importedRow
+				&& importedRow.type() == CurriculumExportType.EVENT
+				&& !lectureModule.isEnabled()) {
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	protected void formNext(UserRequest ureq) {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

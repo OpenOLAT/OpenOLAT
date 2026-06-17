@@ -42,6 +42,7 @@ import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -291,6 +292,34 @@ public class LDAPDAO {
 		
 		List<LDAPUser> users = visitor.getLdapUserList();
 		return users.isEmpty() ? null : users.get(0);
+	}
+	
+	public Attributes searchByEmail(String email, String[] returningAttrs, LdapContext ctx) {
+		List<String> ldapBases = syncConfiguration.getLdapBases();
+		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
+		String ldapUserMailAttribute = syncConfiguration.getLDAPAttributeName(UserConstants.EMAIL);
+		
+		String filter = "(&" + ldapUserFilter + "(" + ldapUserMailAttribute + "=" + email + "))";
+		SearchControls ctls = new SearchControls();
+		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		ctls.setReturningAttributes(returningAttrs);
+
+		Attributes userAttrs = null;
+		a_a:
+		for (String ldapBase : ldapBases) {
+			try {
+				NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
+				while (enm.hasMore()) {
+					SearchResult result = enm.next();
+					userAttrs = result.getAttributes();
+					break a_a;
+				}
+			} catch (NamingException e) {
+				log.error("NamingException when trying to bind user with mail::{} on ldapBase::{}", email, ldapBase, e);
+			}
+		}
+		
+		return userAttrs;
 	}
 	
 	protected static List<String> parseGroupList(Attributes resAttribs, String attributeName, String attributeSeparator) {

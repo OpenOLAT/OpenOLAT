@@ -33,7 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.InlineChoiceInteractionStatistics;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -116,7 +116,7 @@ public class InlineChoiceInteractionsStatisticsController extends BasicControlle
 		
 		for(InlineChoice inlineChoice: interaction.getInlineChoices()) {
 			if(correctResponseId.equals(inlineChoice.getIdentifier())) {
-				return InlineChoiceAssessmentItemBuilder.getText(inlineChoice);
+				return GapAssessmentItemBuilder.getText(inlineChoice);
 			}
 		}
 		return null;

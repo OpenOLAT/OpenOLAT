@@ -144,10 +144,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_HAS_COMMENT_FIELD = "hasCommentField";
 	/** configuration: individual assessment document can be set (use getBooleanSafe default false) */
 	public static final String CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS = "hasIndividualAsssessmentDocs";
-	/** configuration: infotext for user */
-	public static final String CONFIG_KEY_INFOTEXT_USER = "infoTextUser";
-	/** configuration: infotext for coach */
-	public static final String CONFIG_KEY_INFOTEXT_COACH = "nfoTextCoach";
 	
 	public static final String CONFIG_KEY_OPTIONAL = "cnOptional";
 	public static final String CONFIG_KEY_SCORE = "score";
@@ -180,8 +176,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		moduleConfiguration.set(CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 		// no preset for passed cut value -> manual setting of passed
 		moduleConfiguration.set(CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
-		moduleConfiguration.set(CONFIG_KEY_INFOTEXT_USER, "");
-		moduleConfiguration.set(CONFIG_KEY_INFOTEXT_COACH, "");
 	}
 	
 	@Override

@@ -1,0 +1,97 @@
+<fieldset class="fx_r_app_details clearfix">
+	#if($r.isNotEmpty($off_title))
+	<legend>$off_title</legend>
+	#end
+	<div class="clearfix">
+		<div class="col-sm-6">
+			<div class="o_app_details_person">
+				<h4><i class="o_icon o_icon_person"> </i> $r.translate("personal_information")</h4>
+				$r.render("personInfos")
+				#if($r.available("emailAndPhone") && $r.visible("emailAndPhone"))
+					$r.render("emailAndPhone")
+				#end
+				#if($r.available("businessInfos") && $r.visible("businessInfos"))
+					$r.render("businessInfos")
+				#end
+				#if($r.available("singleAddress") && $r.visible("singleAddress"))
+					$r.render("singleAddress")
+				#end
+				#if($r.available("businessAddress") && $r.visible("businessAddress"))
+					$r.render("businessAddress")
+				#end
+				#if($r.available("privateAddress") && $r.visible("privateAddress"))
+					$r.render("privateAddress")
+				#end
+				#if($r.available("additionalPersonalData") && $r.visible("additionalPersonalData"))
+					$r.render("additionalPersonalData")
+				#end
+				#if($r.isNotEmpty($containerspersonalData))
+					#foreach($dcontainer in $containerspersonalData)
+						$r.render(${dcontainer.getComponent().getComponentName()})
+					#end
+				#end
+			</div>
+			<br/>
+			#if($r.available("background"))
+			<div class="o_app_details_background">
+				<h4><i class="o_icon o_icon_certificate"> </i> $r.translate("academical_background")</h4>
+				$r.render("background")
+				
+				#if($r.isNotEmpty($containersacademicalBackground))
+					#foreach($acontainer in $containersacademicalBackground)
+						$r.render(${acontainer.getComponent().getComponentName()})
+					#end
+				#end
+			</div>
+			#end
+			#if($r.available("project"))
+			<div class="o_app_details_project">
+				<h4><i class="o_icon o_icon_project"> </i> $r.translate("project")</h4>
+				$r.render("project")
+				
+				#if($r.isNotEmpty($containersproject))
+					#foreach($pcontainer in $containersproject)
+						$r.render(${pcontainer.getComponent().getComponentName()})
+					#end
+				#end
+			</div>
+			#end
+			#if($r.isNotEmpty($customTabsIds))
+				#foreach($customTabId in $customTabsIds)
+				<div class="o_app_details_custom o_block_large_bottom">
+					<h4>$r.escapeHtml(${customTabId.title()})</h4>
+					$r.render(${customTabId.componentName()})
+					#foreach($ccontainer in ${customTabId.containers()})
+						$r.render(${ccontainer.getComponent().getComponentName()})
+					#end
+				</div>
+				#end
+			#end
+		</div>
+		<div class="col-sm-6">
+			<h4><i class="o_icon o_icon_files"> </i> $r.translate("wizard.documents.title")</h4>
+			$r.render("documents")
+		</div>
+	</div>
+	#if($r.available("jobAds"))
+	<div class="col-sm-12 o_clearfix">$r.render("jobAds")</div>
+	#end
+	<div class="col-sm-12 o_clearfix">
+		<hr class="b_form_spacer" />
+	</div>
+	
+	#if($r.available("acceptTerms"))
+	<div class="col-sm-12 o_clearfix o_sel_accept_terms">
+		$r.render("acceptTerms")
+		#if($f.hasError("acceptTerms"))
+			$r.render("acceptTerms","error")
+		#end
+	</div>
+	#end
+
+	#if($r.isNotEmpty($warningMsg))
+	<div class="col-sm-12 o_clearfix">
+		<p class="o_warning">$warningMsg</p>
+	</div>
+	#end
+</fieldset>

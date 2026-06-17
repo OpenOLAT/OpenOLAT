@@ -33,7 +33,11 @@ public record AiUsageContext(
 		String resourceSubId,
 		Identity identity,
 		Locale locale) {
-
+	
+	public static String createContextId() {
+		return UUID.randomUUID().toString();
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -89,7 +93,7 @@ public record AiUsageContext(
 		}
 
 		public AiUsageContext build() {
-			String contextId = usageContextId != null ? usageContextId : UUID.randomUUID().toString();
+			String contextId = usageContextId != null ? usageContextId : createContextId();
 			return new AiUsageContext(usageContextType, contextId, resourceType, resourceId, resourceSubId, identity, locale);
 		}
 	}

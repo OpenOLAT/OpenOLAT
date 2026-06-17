@@ -39,6 +39,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,6 +122,13 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 			} else {
 				itemImpl.setMaxScore(null);
 			}
+			
+			QItemType type = new QTI21ImportProcessor(getIdentity(), getLocale())
+					.convertType(assessmentItem);
+			if(type != null && !type.equals(itemImpl.getType())) {
+				itemImpl.setType(type);
+			}
+			
 			qpoolService.updateItem(itemImpl);
 			fireEvent(ureq, new QItemEdited(questionItem));
 		}

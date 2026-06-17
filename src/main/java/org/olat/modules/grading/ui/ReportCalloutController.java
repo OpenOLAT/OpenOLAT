@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -52,15 +53,16 @@ public class ReportCalloutController extends FormBasicController {
 	
 	private FormLink lastMonthLink;
 	private FormLink lastYearLink;
-	private FormLink customButton;
-	private DateChooser fromDatesEl;
-	private DateChooser toDatesEl;
+	private FormLink exportButton;
+	private DateChooser dateRangeEl;
+	private FormToggle closedAssignmentEl;
+	private FormLayoutContainer predefinedCont;
 	
 	private Identity grader;
 	private RepositoryEntry referenceEntry;
 	
 	public ReportCalloutController(UserRequest ureq, WindowControl wControl, RepositoryEntry referenceEntry, Identity grader) {
-		super(ureq, wControl, "report_callout");
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.grader = grader;
 		this.referenceEntry = referenceEntry;
 		initForm(ureq);
@@ -68,19 +70,32 @@ public class ReportCalloutController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		lastMonthLink = uifactory.addFormLink("report.last.month", formLayout, Link.LINK);
-		lastMonthLink.setIconLeftCSS("o_icon o_icon_download");
-		lastYearLink = uifactory.addFormLink("report.last.year", formLayout, Link.LINK);
-		lastYearLink.setIconLeftCSS("o_icon o_icon_download");
+		closedAssignmentEl = uifactory.addToggleButton("completed.order", "completed.order", translate("on"), translate("off"), formLayout);
+		closedAssignmentEl.toggle(true);
 		
-		FormLayoutContainer customCont = FormLayoutContainer.createDefaultFormLayout("custom", getTranslator());
-		formLayout.add(customCont);
-		customCont.setRootForm(mainForm);
+		predefinedCont = uifactory.addInlineFormLayout("predefined.ranges", "predefined.ranges", formLayout);
+		lastMonthLink = uifactory.addFormLink("report.last.month", predefinedCont, Link.BUTTON_XSMALL);
+		lastYearLink = uifactory.addFormLink("report.last.year", predefinedCont, Link.BUTTON_XSMALL);
 		
-		fromDatesEl = uifactory.addDateChooser("from", "report.custom.dates.from", null, customCont);
-		toDatesEl = uifactory.addDateChooser("to", "report.custom.dates.to", null, customCont);
-		customButton = uifactory.addFormLink("report.custom", customCont, Link.BUTTON);
-		customButton.setIconLeftCSS("o_icon o_icon_download");
+		dateRangeEl = uifactory.addDateChooser("report.close", "report.close", null, formLayout);
+		dateRangeEl.setElementCssClass("o_date_scope_range");
+		dateRangeEl.setSeparator("to.separator");
+		dateRangeEl.setMandatory(true);
+		dateRangeEl.setSecondDate(true);
+
+		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
+		exportButton = uifactory.addFormLink("export", buttonsCont, Link.BUTTON);
+		exportButton.setIconLeftCSS("o_icon o_icon_download");
+		exportButton.setPrimary(true);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private void updateUI() {
+		boolean onlyCompleteAssignment = closedAssignmentEl.isOn();
+		predefinedCont.setVisible(onlyCompleteAssignment);
+		lastMonthLink.setVisible(onlyCompleteAssignment);
+		lastYearLink.setVisible(onlyCompleteAssignment);
+		dateRangeEl.setVisible(onlyCompleteAssignment);
 	}
 
 	@Override
@@ -89,48 +104,72 @@ public class ReportCalloutController extends FormBasicController {
 	}
 
 	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(lastMonthLink == source) {
-			doLastMonthReport(ureq);
+			doLastMonthRange();
 		} else if(lastYearLink == source) {
-			doLastYearReport(ureq);
-		} else if(customButton == source) {
-			doCustomReport(ureq);
+			doLastYearRange();
+		} else if(closedAssignmentEl == source) {
+			updateUI();
+		} else if(exportButton == source) {
+			if(validateFormLogic(ureq)) {
+				doReport(ureq);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doCustomReport(UserRequest ureq) {
-		Date start = fromDatesEl.getDate();
-		Date end = toDatesEl.getDate();
-		end = CalendarUtils.endOfDay(end);
-		doReport(ureq, start, end);
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(closedAssignmentEl.isOn()) {
+			if(dateRangeEl.getDate() == null || dateRangeEl.getSecondDate() == null) {
+				dateRangeEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
-	
-	private void doLastMonthReport(UserRequest ureq) {
+
+	private void doLastMonthRange() {
 		Calendar cal = Calendar.getInstance();
 		Date end = CalendarUtils.endOfDay(cal.getTime());
+		dateRangeEl.setSecondDate(end);
 		cal.add(Calendar.MONTH, -1);
 		Date start = CalendarUtils.startOfDay(cal.getTime());
-		doReport(ureq, start, end);
+		dateRangeEl.setDate(start);
 	}
 	
-	private void doLastYearReport(UserRequest ureq) {
+	private void doLastYearRange() {
 		Calendar cal = Calendar.getInstance();
 		Date end = CalendarUtils.endOfDay(cal.getTime());
+		dateRangeEl.setSecondDate(end);
 		cal.add(Calendar.YEAR, -1);
 		Date start = CalendarUtils.startOfDay(cal.getTime());
-		doReport(ureq, start, end);
+		dateRangeEl.setDate(start);
 	}
 	
-	private void doReport(UserRequest ureq, Date start, Date end) {
+	private void doReport(UserRequest ureq) {
 		Identity manager = null;
 		if(referenceEntry == null && grader == null) {
 			manager = getIdentity();
 		}
+		
+		Date start = dateRangeEl.getDate();
+		Date end = dateRangeEl.getSecondDate();
+		boolean onlyClosedAssignments = closedAssignmentEl.isOn();
+
 		String label = getLabel(start, end);
 		Roles roles = ureq.getUserSession().getRoles();
-		ReportResource resource = new ReportResource(roles, label, start, end, referenceEntry, grader, manager, getTranslator());
+		ReportResource resource = new ReportResource(roles, label, start, end, onlyClosedAssignments, referenceEntry,
+				grader, manager, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -1,0 +1,16 @@
+<div class="form-inline o_form_fullname">$r.render("edit.reference.title") $r.render("edit.reference.firstname") $r.render("edit.reference.lastname")</div>
+#if($f.hasError("edit.reference.title"))
+	<div>
+		$r.render("edit.reference.title_ERROR")
+	</div>
+#end
+#if($f.hasError("edit.reference.firstname"))
+	<div>
+		$r.render("edit.reference.firstname_ERROR")
+	</div>
+#end
+#if($f.hasError("edit.reference.lastname"))
+	<div>
+		$r.render("edit.reference.lastname_ERROR")
+	</div>
+#end

@@ -244,5 +244,15 @@ public class CurriculumSecurityCallbackFactory {
 			return admin || principal
 					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
+
+		@Override
+		public boolean canViewToDos() {
+			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+		}
+
+		@Override
+		public boolean canManageToDos(CurriculumElement element) {
+			return canEditCurriculumElement(element);
+		}
 	}
 }

@@ -35,8 +35,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.IdentityRelationshipService;
@@ -146,7 +145,8 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		conn.addJsonEntity(method, relationVo);
 		
 		HttpResponse response = conn.execute(method);
-		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		
 		
 		// checked VO
 		IdentityToIdentityRelationVO savedRelationVo = conn.parse(response, IdentityToIdentityRelationVO.class);
@@ -183,7 +183,7 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		conn.addJsonEntity(method, relationVo);
 		
 		HttpResponse response = conn.execute(method);
-		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
 		
 		// checked VO
 		IdentityToIdentityRelationVO savedRelationVo = conn.parse(response, IdentityToIdentityRelationVO.class);

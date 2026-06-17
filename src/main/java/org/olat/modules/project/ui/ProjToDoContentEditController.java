@@ -39,10 +39,13 @@ import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,25 +87,35 @@ public class ProjToDoContentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-		Set<Identity> assignees = Set.of(getIdentity());
-		Set<Identity> delegatees = Set.of();
-		if (toDo != null) {
-			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDo.getToDoTask()), ToDoRole.ASSIGNEE_DELEGATEE)
-					.get(toDo.getToDoTask().getBaseGroup().getKey());
-			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
-			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
-		}
-		
-		List<TagInfo> tagInfos = projectService.getTagInfos(project, toDo != null? toDo.getArtefact(): null);
-		
 		ToDoTask toDoTask = toDo != null ? toDo.getToDoTask() : null;
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ASSIGNEE_DELEGATEE);
+		Set<Identity> initialAssignees = members.getMembers(ToDoRole.assignee).isEmpty() && toDo == null
+				? Set.of(getIdentity()) : members.getMembers(ToDoRole.assignee);
+		Set<Identity> initialDelegatees = members.getMembers(ToDoRole.delegatee);
+
+		List<TagInfo> tagInfos = projectService.getTagInfos(project, toDo != null? toDo.getArtefact(): null);
+
 		List<ToDoContext> toDoContextList = toDoTask == null ? List.of() : List.of(toDoTask);
-		MemberSelection memberSelection = template? MemberSelection.disabled: MemberSelection.candidates;
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
-				toDoContextList, toDoTask, memberSelection, projectMembers, assignees, memberSelection, projectMembers,
-				delegatees, tagInfos, !template);
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(toDoContextList, toDoTask)
+				: ToDoTaskContextConfig.off(toDoTask);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
+				getLocale(), initialAssignees,
+				() -> projectService.getMembers(project, ProjectRole.PROJECT_ROLES),
+				ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(
+				getLocale(), initialDelegatees,
+				() -> projectService.getMembers(project, ProjectRole.PROJECT_ROLES),
+				ureq.getIdentity());
+		ToDoTaskMemberConfig assigneeConfig = template
+				? ToDoTaskMemberConfig.disabled(assigneeSource, true)
+				: ToDoTaskMemberConfig.editable(assigneeSource, true);
+		ToDoTaskMemberConfig delegateeConfig = template
+				? ToDoTaskMemberConfig.disabled(delegateeSource, false)
+				: ToDoTaskMemberConfig.editable(delegateeSource, false);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, contextConfig, assigneeConfig,
+				delegateeConfig, ToDoTaskDateConfig.absoluteOnly(),
+				tagInfos, !template);
 		if (toDoTask != null) {
 			if (toDoTaskIsCopySource) {
 				toDoTaskEditForm.setValues(new CopyValues(getLocale(), toDoTask));

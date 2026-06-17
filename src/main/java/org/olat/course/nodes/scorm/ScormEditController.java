@@ -69,11 +69,11 @@ import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormDisplayEnum;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
+import org.olat.modules.scorm.ScormWrapperController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -262,7 +262,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
 				ScormDisplayEnum fullWindow = ScormDisplayEnum.fromConfiguration(config);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
-				ScormAPIandDisplayController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
+				ScormWrapperController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
 						showMenu, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
 						ScormConstants.SCORM_MODE_NOCREDIT, null, true, false, fullWindow, true, null);				
 				// configure some display options
@@ -532,7 +532,7 @@ class VarForm extends FormBasicController {
 	}
 
 	public boolean isShowMenu() {
-		return showMenuEl.isSelected(0);
+		return showMenuEl.isVisible() && showMenuEl.isSelected(0);
 	}
 	
 	public boolean isSkipLaunchPage() {
@@ -540,7 +540,7 @@ class VarForm extends FormBasicController {
 	}
 
 	public boolean isShowNavButtons() {
-		return showNavButtonsEl.isSelected(0);
+		return showNavButtonsEl.isVisible() && showNavButtonsEl.isSelected(0);
 	}
 
 	public boolean isAssessable() {

@@ -1,0 +1,10 @@
+<div class="o_wizard"><div class="#if($elementCssClass) $elementCssClass #end">			
+	<div class="o_success">
+	#if($r.isNotEmpty($message))
+		$message
+	#else
+		<p><strong>$r.translate("add_application.text1", $names)</strong></p>
+		<p>$r.translate("add_application.text2", $names)</p>
+	#end
+	</div>	
+</div></div>

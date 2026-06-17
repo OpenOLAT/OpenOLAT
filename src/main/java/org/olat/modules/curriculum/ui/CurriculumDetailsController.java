@@ -26,6 +26,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OWNERS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_REPORTS;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_TODOS;
 
 import java.util.List;
 
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -56,6 +58,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -66,8 +69,9 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
-import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumImplementationWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumToDoTasksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
@@ -91,6 +95,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private int overviewTab;
 	private int metadataTab;
 	private int implementationsTab;
+	private int todosTab;
 	
 	private Link deleteButton;
 	private Link exportButton;
@@ -108,10 +113,13 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private ConfirmDeleteCurriculumController deleteCurriculumCtrl;
 	private CurriculumImplementationWidgetController implementationWidgetCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumToDoTasksWidgetController toDoTasksWidgetCtrl;
+	private CurriculumToDoListController todosCtrl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -119,12 +127,14 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CurriculumService curriculumService;
 	
 	public CurriculumDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			Curriculum curriculum, CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			Curriculum curriculum, CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		
 		mainVC = createVelocityContainer("curriculum_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -191,7 +201,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			config.setFlat(true);
 			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_IMPLEMENTATIONS), null);
 			implementationsCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
-					curriculum, null, config, secCallback, lecturesSecCallback);
+					curriculum, null, config, secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(implementationsCtrl);
 			
 			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
@@ -235,6 +245,16 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			});
 		}
 		
+		// To-dos
+		if(secCallback.canViewToDos()) {
+			todosTab = tabPane.addTab(ureq, translate("tab.todos"), "o_sel_curriculum_todos", uureq -> {
+				WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_TODOS), null);
+				todosCtrl = new CurriculumToDoListController(uureq, subControl, curriculum, secCallback);
+				listenTo(todosCtrl);
+				return todosCtrl.getInitialComponent();
+			}, true);
+		}
+
 		// User management
 		ownersTab = tabPane.addTab(ureq, translate("tab.owner.management"), uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_OWNERS), null);
@@ -265,6 +285,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private DashboardController createDashboard(UserRequest ureq) {
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
 		removeAsListenerAndDispose(implementationWidgetCtrl);
+		removeAsListenerAndDispose(toDoTasksWidgetCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		
 		overviewCtrl = new DashboardController(ureq, getWindowControl(), "dashboard.curriculum");
@@ -282,6 +303,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", translate("curriculum.lectures"), lectureBlocksWidgetCtrl, BentoBoxSize.box_4_1);
 		}
+
+		toDoTasksWidgetCtrl = new CurriculumToDoTasksWidgetController(ureq, getWindowControl(), curriculum, secCallback);
+		listenTo(toDoTasksWidgetCtrl);
+		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
+
 		return overviewCtrl;
 	}
 	
@@ -308,6 +334,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			if(lectureBlocksCtrl != null) {
 				lectureBlocksCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
+		} else if(CONTEXT_TODOS.equalsIgnoreCase(type) && todosTab > 0) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			tabPane.setSelectedPane(ureq, todosTab);
+			if(todosCtrl != null) {
+				todosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type) || "CurriculumElement".equalsIgnoreCase(type)) {
@@ -327,7 +359,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
-				|| implementationWidgetCtrl == source) {
+				|| implementationWidgetCtrl == source || toDoTasksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
@@ -359,6 +391,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent pe) {
 				doProcessPopEvent(ureq, pe);
+			}
+		} else if(tabPane == source) {
+			if(event instanceof TabbedPaneChangedEvent tpce) {
+				if(lectureBlocksCtrl != null && lectureBlocksCtrl.getInitialComponent() == tpce.getNewComponent()) {
+					lectureBlocksCtrl.updateAddLectures();
+				}
 			}
 		}
 	}

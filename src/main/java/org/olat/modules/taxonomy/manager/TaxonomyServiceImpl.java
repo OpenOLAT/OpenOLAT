@@ -58,6 +58,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -103,7 +104,9 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
-	
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
+
 	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
 		return taxonomyDao.createTaxonomy(identifier, displayName, description, externalId);
@@ -147,8 +150,12 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Override
 	public TaxonomyLevel createTaxonomyLevel(String identifier, String i18nSuffix, String externalId,
 			TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, Taxonomy taxonomy) {
-		return taxonomyLevelDao.createTaxonomyLevel(identifier, i18nSuffix, null, null, externalId,
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(identifier, i18nSuffix, null, null, externalId,
 				flags, parent, null, taxonomy);
+		if (taxonomyMatchingService != null) {
+			taxonomyMatchingService.indexLevel(level);
+		}
+		return level;
 	}
 
 	@Override
@@ -196,12 +203,20 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 		if (level.getType() != null) {
 			checkLevelTypeCompetences(level.getType());
 		}
-		return taxonomyLevelDao.updateTaxonomyLevel(level);
+		TaxonomyLevel updated = taxonomyLevelDao.updateTaxonomyLevel(level);
+		if (taxonomyMatchingService != null) {
+			taxonomyMatchingService.indexLevel(updated);
+		}
+		return updated;
 	}
 
 	@Override
 	public TaxonomyLevel moveTaxonomyLevel(TaxonomyLevel level, TaxonomyLevel newParentLevel) {
-		return taxonomyLevelDao.moveTaxonomyLevel(level, newParentLevel);
+		TaxonomyLevel moved = taxonomyLevelDao.moveTaxonomyLevel(level, newParentLevel);
+		if (taxonomyMatchingService != null) {
+			taxonomyMatchingService.indexLevel(moved);
+		}
+		return moved;
 	}
 
 	@Override
@@ -255,9 +270,12 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			}
 
 			repositoryEntryToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
-			
+
 			curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
 
+			if (taxonomyMatchingService != null) {
+				taxonomyMatchingService.deleteEmbeddings(reloadedTaxonomyLevel);
+			}
 			return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 		}
 

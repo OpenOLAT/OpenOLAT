@@ -231,7 +231,7 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 			return allTaxonomyLevels;
 		};
-		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), List.of(), levelsSupplier, null, translate("taxonomy.levels"));
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), List.of(), levelsSupplier, translate("taxonomy.levels"));
 		taxonomyEl = uifactory.addObjectSelectionElement("taxonomy.levels", "taxonomy.levels.label", formLayout, getWindowControl(), true, source);
 		List<Long> selectedLevelsKeys = config.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
 		if(selectedLevelsKeys != null) {

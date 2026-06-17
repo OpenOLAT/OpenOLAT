@@ -34,11 +34,13 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.tree.TreeNodeTitleComparator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -102,14 +104,10 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return Util.createPackageTranslator(OrganisationOverviewController.class, locale).translate("option.label.organisations");
-	}
-
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOptions();
-		return options;
+		String label = Util.createPackageTranslator(OrganisationOverviewController.class, locale).translate("option.label.organisations");
+		return List.of(ObjectOptionGroup.of(label, options));
 	}
 
 	private void initOptions() {
@@ -141,7 +139,7 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 			return newNode;
 		};
 		GenericTreeModelBuilder<Organisation> treeModelBuilder = new GenericTreeModelBuilder<>(keyExtractor, parentExtractor, toNode);
-		GenericTreeModel treeModel = treeModelBuilder.build(organisations);
+		GenericTreeModel treeModel = treeModelBuilder.build(organisations, new OrganisationRootComparator());
 		
 		OptionCreationVisitor optionCreationVisitor = new OptionCreationVisitor(keyExtractor);
 		TreeVisitor tv = new TreeVisitor(optionCreationVisitor, treeModel.getRootNode(), false);
@@ -159,9 +157,10 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 		treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
 		
 		String title = createOptionTitle(organisation, totalNodeCount);
-		String subTitle = ObjectOption.createShortPath(treePath, TreeNode::getTitle);
-		String subTitleFull = ObjectOption.createFullPath(treePath, TreeNode::getTitle);
-		return new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, subTitleFull, organisation.getDisplayName());
+		String subTitle = organisation.getParent() == null
+				? createTitle(organisation)
+				: ObjectOption.createFullPath(treePath, TreeNode::getTitle, true);
+		return new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, organisation.getDisplayName());
 	}
 
 	private static String createOptionTitle(Organisation organisation, int totalNodeCount) {
@@ -201,8 +200,8 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 		
 		private final String displayTitle;
 
-		public OrganisationOption(String key, String title, String subTitle, String subTitleFull, String displayTitle) {
-			super(key, title, subTitle, subTitleFull);
+		public OrganisationOption(String key, String title, String subTitle, String displayTitle) {
+			super(key, title, subTitle);
 			this.displayTitle = displayTitle;
 		}
 
@@ -218,16 +217,41 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
 		return null;
 	}
-	
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
+	}
+
 	public static final OrganisationRef toRef(String key) {
 		return new OrganisationRefImpl(Long.valueOf(key));
 	}
 	
 	public static final Collection<? extends OrganisationRef> toRefs(Collection<String> keys) {
 		return keys.stream().map(key -> new OrganisationRefImpl(Long.valueOf(key))) .toList();
+	}
+
+	private static final class OrganisationRootComparator extends TreeNodeTitleComparator {
+
+		@Override
+		public int compare(INode n1, INode n2) {
+			if (isDefaultOrganisation(n1)) {
+				return -1;
+			}
+			if (isDefaultOrganisation(n2)) {
+				return 1;
+			}
+			return super.compare(n1, n2);
+		}
+
+		private static boolean isDefaultOrganisation(INode node) {
+			return node instanceof TreeNode treeNode
+					&& treeNode.getUserObject() instanceof Organisation organisation
+					&& organisation.isDefault();
+		}
 	}
 
 }

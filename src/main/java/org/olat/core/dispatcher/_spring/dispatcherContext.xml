@@ -125,6 +125,42 @@
 				<entry key="/badge/">
 					<ref bean="openBadgesBean" />
 				</entry>
+				<entry key="/apply">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/apply/">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/Apply/">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/position/">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/position">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/positions/">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/positions">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/positiondetails/">
+					<ref bean="positiondispatcher" />
+				</entry>
+				<entry key="/review/">
+					<ref bean="referencedispatcher" />
+				</entry>
+				<entry key="/reference/">
+					<ref bean="referencedispatcher" />
+				</entry>
+				<entry key="/refereedashboard/">
+					<ref bean="refereedashboarddispatcher" />
+				</entry>
+				<entry key="/publicfeedback/">
+					<ref bean="publicfeedbackdispatcher" />
+				</entry>
 				<entry key="/sessionchecker/">
 					<ref bean="sessioncheckerbean" />
 				</entry>
@@ -298,7 +334,13 @@
 	<bean id="resourceinfobean"
 		  class="org.olat.repository.ResourceInfoDispatcher"/>
 
-		
+	<bean id="positiondispatcher"
+		  class="org.olat.modules.selectus.dispatcher.PositionDispatcher" />
+	<bean id="referencedispatcher"
+		  class="org.olat.modules.selectus.dispatcher.ReferenceDispatcher" />
+	<bean id="publicfeedbackdispatcher"
+		  class="org.olat.modules.selectus.dispatcher.PublicFeedbackDispatcher" />
+	
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">
 		<property name="feedManager" ref="feedManager"/>

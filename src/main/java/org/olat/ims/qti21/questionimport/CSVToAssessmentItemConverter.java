@@ -39,12 +39,11 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.InlineChoiceInteractionEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.LobAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
@@ -410,13 +409,13 @@ public class CSVToAssessmentItemConverter {
 			AssessmentItemBuilder itemBuilder;
 			switch(type) {
 				case "fib": {
-					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
+					GapAssessmentItemBuilder fibItemBuilder = new GapAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
 					fibItemBuilder.setQuestionType(QTI21QuestionType.fib);
 					itemBuilder = initFIBAssessmentItemBuilder(fibItemBuilder);
 					break;
 				}
 				case "numerical": {
-					FIBAssessmentItemBuilder numericalItemBuilder = new FIBAssessmentItemBuilder("Numerical", EntryType.numerical, qtiSerializer);
+					GapAssessmentItemBuilder numericalItemBuilder = new GapAssessmentItemBuilder("Numerical", EntryType.numerical, qtiSerializer);
 					numericalItemBuilder.setQuestionType(QTI21QuestionType.numerical);
 					itemBuilder = initFIBAssessmentItemBuilder(numericalItemBuilder);
 					break;
@@ -457,7 +456,7 @@ public class CSVToAssessmentItemConverter {
 					itemBuilder = initMatchAssessmentItemBuilderForTrueFalse(matchBuilder);
 					break;
 				} case "inlinechoice": {
-					InlineChoiceAssessmentItemBuilder matchBuilder = new InlineChoiceAssessmentItemBuilder("Inline choice", qtiSerializer);
+					GapAssessmentItemBuilder matchBuilder = new GapAssessmentItemBuilder("Inline choice", EntryType.inlineChoice, qtiSerializer);
 					itemBuilder = initInlineChoiceAssessmentItemBuilder(matchBuilder);
 					break;
 				}
@@ -475,7 +474,7 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 	
-	private FIBAssessmentItemBuilder initFIBAssessmentItemBuilder(FIBAssessmentItemBuilder fibItemBuilder) {
+	private GapAssessmentItemBuilder initFIBAssessmentItemBuilder(GapAssessmentItemBuilder fibItemBuilder) {
 		fibItemBuilder.setQuestion("");
 		fibItemBuilder.clearTextEntries();
 		fibItemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
@@ -526,11 +525,11 @@ public class CSVToAssessmentItemConverter {
 		return matchBuilder;
 	}
 	
-	private InlineChoiceAssessmentItemBuilder initInlineChoiceAssessmentItemBuilder(InlineChoiceAssessmentItemBuilder inlineChoiceBuilder) {
+	private GapAssessmentItemBuilder initInlineChoiceAssessmentItemBuilder(GapAssessmentItemBuilder inlineChoiceBuilder) {
 		//reset
 		inlineChoiceBuilder.setQuestion("");
-		for(InlineChoiceInteractionEntry entry:inlineChoiceBuilder.getInteractions()) {
-			inlineChoiceBuilder.removeInteraction(entry);
+		for(InlineChoiceInteractionEntry entry:inlineChoiceBuilder.getInlineChoiceInteractions()) {
+			inlineChoiceBuilder.removeInlineChoiceInteraction(entry);
 		}
 		//set default options
 		inlineChoiceBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
@@ -683,11 +682,10 @@ public class CSVToAssessmentItemConverter {
 		double points = parseDouble(parts[1], 1.0d);
 		AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
 		if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder
-				|| itemBuilder instanceof FIBAssessmentItemBuilder
+				|| itemBuilder instanceof GapAssessmentItemBuilder
 				|| itemBuilder instanceof KPrimAssessmentItemBuilder
 				|| itemBuilder instanceof MatchAssessmentItemBuilder
-				|| itemBuilder instanceof LobAssessmentItemBuilder
-				|| itemBuilder instanceof InlineChoiceAssessmentItemBuilder) {
+				|| itemBuilder instanceof LobAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
 		}
@@ -719,24 +717,24 @@ public class CSVToAssessmentItemConverter {
 		}
 		
 		try {
+			//TODO gap
 			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
 			if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
 				processChoiceSmc(parts, (SimpleChoiceAssessmentItemBuilder)itemBuilder);
-			} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
-				FIBAssessmentItemBuilder fibItemBuilder = (FIBAssessmentItemBuilder)itemBuilder;
+			} else if(itemBuilder instanceof GapAssessmentItemBuilder) {
+				GapAssessmentItemBuilder fibItemBuilder = (GapAssessmentItemBuilder)itemBuilder;
 				if(fibItemBuilder.getQuestionType() == QTI21QuestionType.fib) {
 					processChoiceFib(parts, fibItemBuilder);
 				} else if(fibItemBuilder.getQuestionType() == QTI21QuestionType.numerical) {
 					processChoiceNumerical(parts, fibItemBuilder);
+				} else if(fibItemBuilder.getQuestionType() == QTI21QuestionType.inlinechoice) {
+					processInlineChoice(parts, (GapAssessmentItemBuilder)itemBuilder);
 				}
 			} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
 				processChoiceKprim(parts, (KPrimAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof MatchAssessmentItemBuilder) {
 				processChoiceMatch(parts, (MatchAssessmentItemBuilder)itemBuilder);
-			} else if(itemBuilder instanceof InlineChoiceAssessmentItemBuilder) {
-				processInlineChoice(parts, (InlineChoiceAssessmentItemBuilder)itemBuilder);
 			}
-			
 		} catch (NumberFormatException e) {
 			log.warn("Cannot parse point for: {} / {}", parts[0], parts[1], e);
 		}
@@ -804,15 +802,16 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 
-	private void processInlineChoice(String[] parts, InlineChoiceAssessmentItemBuilder inlineChoiceBuilder) {
+	private void processInlineChoice(String[] parts, GapAssessmentItemBuilder inlineChoiceBuilder) {
 		if(isText(parts)) {
 			processText(parts);
 		} else if(StringHelper.containsNonWhitespace(parts[0])) {
 			double score = parseDouble(parts[0], 1.0d);
 			String correctResponse = parts[2];
 			
-			String responseIdentifier = inlineChoiceBuilder.generateResponseIdentifier().toString();
-			InlineChoiceInteractionEntry interactionEntry = inlineChoiceBuilder.createInteraction(responseIdentifier);
+			String responseIdentifier =  inlineChoiceBuilder.generateResponseIdentifier();
+			InlineChoiceInteractionEntry interactionEntry = inlineChoiceBuilder
+					.createInlineChoiceEntry(Identifier.parseString(responseIdentifier));
 			interactionEntry.setShuffle(true);
 			
 			String[] choices = splitInlineChoices(parts);
@@ -845,7 +844,7 @@ public class CSVToAssessmentItemConverter {
 		return choices.split("[" + separator + "]");
 	}
 
-	private void processChoiceFib(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
+	private void processChoiceFib(String[] parts, GapAssessmentItemBuilder fibBuilder) {
 		if(isText(parts)) {
 			processText(parts);
 		} else if(StringHelper.containsNonWhitespace(parts[0])) {
@@ -888,7 +887,7 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 	
-	private void processChoiceNumerical(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
+	private void processChoiceNumerical(String[] parts, GapAssessmentItemBuilder fibBuilder) {
 		String firstPart = parts[0].toLowerCase();
 		if("text".equals(firstPart) || "texte".equals(firstPart)) {
 			String text = parts[1];

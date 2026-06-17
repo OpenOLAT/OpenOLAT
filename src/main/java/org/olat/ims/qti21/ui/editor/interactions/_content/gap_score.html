@@ -1,0 +1,26 @@
+<label>$r.translate("form.score.answer.title")</label>
+
+#foreach($interactionWrapper in $interactionWrappers)
+<div class="o_qti_gap_scores_map">
+	#if($r.isNotEmpty($interactionWrapper.context))
+		<p>$r.xssScan($interactionWrapper.context)</p>
+	#end
+	<table class="table o_table_middle o_sel_gap_scores">
+		<thead><tr>
+			<th scope='col'>$r.translate("form.score.answer.correct")</th>
+			<th scope='col'>$r.translate("form.score.answer.summary")</th>
+			<th scope='col'>$r.translate("form.score.answer.points")</th>
+		</tr></thead>
+		<tbody>
+		#set($variants = ${interactionWrapper.getVariants()})
+		#foreach($variant in $variants)
+		<tr class="#if(${variant.isPositive()}) success #else danger #end">
+			<td>#if(${variant.isCorrect()}) <span class="o_icon o_icon-lg o_icon_qti_summary_correct"> </span> #end</td>
+			<td>$r.escapeHtml($variant.text)</td>
+			<td>$r.render($variant.getPointsEl(), "tablecell")</td>
+		</tr>
+		#end
+		</tbody>
+	</table>
+</div>
+#end

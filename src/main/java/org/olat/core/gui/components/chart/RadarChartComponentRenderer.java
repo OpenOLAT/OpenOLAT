@@ -48,7 +48,7 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<div id='d").append(cmpId).append("d3holder' class='radarChart' style='max-width:800px; max-height:650px; margin:0 auto;'></div>\n");
 		sb.append("<script>\n")
-		  .append("/* <![CDATA[ */ \n")
+		  .append("\"use strict\";")
 		  .append("jQuery(function() {\n")
 		  .append(" var render = function() {\n")
 		  .append("  var placeholderWidth = jQuery('#d").append(cmpId).append("d3holder').width();\n")
@@ -85,7 +85,6 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append(" render();\n")
 		  .append(" jQuery(window).on('resize', render);\n")
 		  .append("});\n")
-		  .append("/* ]]> */\n")
 		  .append("</script>");
 	}
 	

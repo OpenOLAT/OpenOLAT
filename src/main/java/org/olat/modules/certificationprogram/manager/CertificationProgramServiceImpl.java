@@ -142,8 +142,8 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public List<CertificationProgram> getCertificationPrograms(List<Organisation> organisations) {
-		return certificationProgramDao.loadCertificationPrograms(organisations);
+	public List<CertificationProgram> getCertificationPrograms(Organisation organisation, IdentityRef identity) {
+		return certificationProgramDao.loadCertificationPrograms(organisation, identity);
 	}
 
 	@Override
@@ -198,6 +198,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
+	public List<CertificationProgram> getCertificationPrograms(IdentityRef identity) {
+		return certificationProgramDao.loadCertificationPrograms(identity);
+	}
+
+	@Override
 	public List<CertificationProgramWithStatistics> getCertificationProgramsWithStatistics(IdentityRef identity, Date referenceDate) {
 		return certificationProgramDao.loadCertificationProgramsWithStatistics(identity, referenceDate);
 	}
@@ -208,6 +213,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 		return statistics == null || statistics.isEmpty()
 				? new CertificationProgramActiveMemberStatistics(0l, 0l, 0l)
 				: statistics.get(0);
+	}
+
+	@Override
+	public boolean canViewCertificationProgram(CertificationProgram certificationProgram, IdentityRef identity) {
+		return certificationProgramDao.canViewCertificationProgram(certificationProgram, identity);
 	}
 
 	@Override

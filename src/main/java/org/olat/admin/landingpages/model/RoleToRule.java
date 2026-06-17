@@ -34,6 +34,7 @@ public enum RoleToRule {
 	AUTHOR("author", OrganisationRoles.author),
 	USER_MGR("userManager", OrganisationRoles.usermanager),
 	ROLE_MGR(OrganisationRoles.rolesmanager),
+	SELECTUS_MGR(OrganisationRoles.selectusmanager),
 	GROUP_MGR("groupManager", OrganisationRoles.groupmanager),
 	RSRC_MGR("institutionalResourceManager", OrganisationRoles.learnresourcemanager),
 	POOL_MGR("poolAdmin", OrganisationRoles.poolmanager),

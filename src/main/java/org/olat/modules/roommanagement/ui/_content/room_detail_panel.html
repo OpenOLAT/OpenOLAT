@@ -1,0 +1,113 @@
+<div class="o_rm_detail clearfix">
+	<div class="o_rm_detail_title">
+		#if($reference)
+		<div class="o_rm_detail_ref">$r.escapeHtml($reference)</div>
+		#end
+		<div>
+			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName)">
+				<i class="o_icon o_icon-fw o_icon_rm_status_$r.escapeHtml($statusName)"> </i>
+				<span>$r.escapeHtml($statusLabel)</span>
+			</span>
+		</div>
+		<div class="o_rm_detail_cmd">
+			#if($r.available("room.detail.view.calendar"))
+			$r.render("room.detail.view.calendar")
+			#end
+			#if($r.available("room.detail.edit"))
+			$r.render("room.detail.edit")
+			#end
+		</div>
+	</div>
+	<div class="o_rm_detail_attribute_row">
+		<div class="o_rm_detail_attribute_cell">
+			<div class="o_rm_detail_label">$r.translate("room.detail.seats")</div>
+			<div class="o_rm_detail_value">
+				#if($seats)$seats#{else}–#end
+			</div>
+		</div>
+		<div class="o_rm_detail_attribute_cell">
+			<div class="o_rm_detail_label">$r.translate("room.detail.building")</div>
+			<div class="o_rm_detail_value">
+				#if($buildingRef || $buildingDesc)
+				<div class="o_building_color_ref">
+					#if($buildingColorCss)
+					<div class="o_color $r.escapeHtml($buildingColorCss)"> 
+					  <i class="o_icon o_icon_square"></i>
+					</div>
+					#end
+					#if($buildingRef)<span>$r.escapeHtml($buildingRef)</span>#end
+					#if($buildingDesc)<span class="text-muted"> &middot; $r.escapeHtml($buildingDesc)</span>#end
+					#if($buildingStatusName)
+					&nbsp;|&nbsp;
+					<div class="o_building_room_status_icon">
+						<i class="o_icon o_icon_circle_color o_building_room_status_$r.escapeHtml($buildingStatusName)"> </i>
+					</div>
+					<span>$r.escapeHtml($buildingStatusLabel)</span>
+					#end
+				</div>
+				#else
+				–
+				#end
+			</div>
+		</div>
+		<div class="o_rm_detail_attribute_cell">
+			<div class="o_rm_detail_label">$r.translate("room.detail.next.event")</div>
+			<div class="o_rm_detail_value">
+				#if($nextEvent)$r.escapeHtml($nextEvent)#{else}–#end
+			</div>
+		</div>
+		<div class="o_rm_detail_attribute_cell">
+			<div class="o_rm_detail_label">$r.translate("room.detail.occupancy.rate")</div>
+			<div class="o_rm_detail_value">
+				#if($occupancyRate)$r.translate("room.detail.occupancy.rate.value", $occupancyRate)#{else}–#end
+			</div>
+		</div>
+	</div>
+
+	#if($additionalInfo)
+	<div class="o_rm_detail_attribute_section">
+		<div class="o_rm_detail_label">$r.translate("room.col.additional.info")</div>
+		<div class="o_rm_detail_value o_rich_text">$additionalInfo</div>
+	</div>
+	#end
+	#if($adminInfo)
+	<div class="o_rm_detail_attribute_section">
+		<div class="o_rm_detail_label">$r.translate("room.col.admin.info")</div>
+		<div class="o_rm_detail_value o_rich_text">$adminInfo</div>
+	</div>
+	#end
+
+	<div class="o_rm_detail_preview_label">$r.translate("room.detail.preview")</div>
+	<div class="o_room_visiting_card">
+		<div>
+			$r.render("roomVisitingCardMap")
+		</div>
+		<div class="o_room_visiting_card_info">
+			<div class="o_room_visiting_card_name">
+				#if($colorCss)
+				<div class="o_building_rect_container">
+					<div class="o_building_rect o_color_background $r.escapeHtml($colorCss)"> </div>
+				</div>
+				#end
+				#if($reference)
+				<span class="o_room_visiting_card_ref">$r.escapeHtml($reference)</span>
+				#end
+				#if($description)
+				<span class="text-muted">$r.escapeHtml($description)</span>
+				#end
+			</div>
+			#if($buildingRef || $buildingDesc)
+			<div>
+				<span class="text-muted">
+					$r.translate("room.detail.building"):
+					#if($buildingRef)$r.escapeHtml($buildingRef)#end
+					#if($buildingDesc)<span class="text-muted">, $r.escapeHtml($buildingDesc)</span>#end
+				</span>
+			</div>
+			#end
+			#if($address)
+			<div class="text-muted">$r.escapeHtml($address)</div>
+			#end
+		</div>
+	</div>
+</div>

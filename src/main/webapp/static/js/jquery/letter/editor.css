@@ -1,0 +1,26 @@
+html {
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+}
+
+body {
+	transform: scale(0.4);
+	transform-origin: 0 0;
+}
+
+.placeholder.single {
+	border: 1px solid #cfcfcf;
+}
+
+.placeholder.multi {
+	border: 1px solid #cfcfcf;
+}
+
+.placeholder.formatted {
+	border: 1px solid #cfcfcf;
+}
+
+.placeholder.image {
+	border: 1px solid #cfcfcf;
+}

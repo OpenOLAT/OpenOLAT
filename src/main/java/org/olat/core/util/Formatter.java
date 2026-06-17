@@ -32,6 +32,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -85,7 +86,8 @@ public class Formatter {
 	// most likely not what the user meant. 
 	private static final Pattern twoYearDatePattern = Pattern.compile("^(\\d{1,2}[\\./]\\d{1,2}[\\./])(\\d{2})$");
 	private static final String twentyXX_replacementPattern = "$120$2"; // replace xx with 20xx
-	
+
+	private static final DecimalFormat doubleFormat = new DecimalFormat("#0.##", new DecimalFormatSymbols(Locale.ENGLISH));
 
 	private final Locale locale;
 	private final Translator translator;
@@ -911,9 +913,14 @@ public class Formatter {
 		  .append("      }, '']\n")
 		  .append("    }\n")
 		  .append("  },\n")
+		  .append("  loader: {\n")
+		  .append("    paths: {\n")
+		  .append("     fonts: '").append(WebappHelper.getMathJaxCdn()).append("'")
+		  .append("    }\n")
+		  .append("  },\n")
 		  .append("  output: {\n")
-		  .append("    font: 'mathjax-newcm',")
-		  .append("    fontPath: '").append(WebappHelper.getMathJaxCdn()).append("mathjax-newcm-font'")
+		  .append("    font: 'mathjax-newcm',\n")
+		  .append("    fontPath: '").append(WebappHelper.getMathJaxCdn()).append("/%%FONT%%-font'")
 		  .append("  }\n")
 		  .append("};\n");
 		return sb.toString();
@@ -1121,6 +1128,18 @@ public class Formatter {
         decimalFormat.setGroupingSize(3);
         
         return decimalFormat.format(value);
+	}
+	
+	public static String formatDouble(Double value) {
+		if(value == null) return null;
+
+		try {
+			synchronized(doubleFormat) {
+				return doubleFormat.format(value);
+			}
+		} catch (Exception e) {
+			return "ERROR";
+		}
 	}
 
 	/**

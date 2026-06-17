@@ -41,15 +41,18 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -57,11 +60,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
@@ -128,9 +134,12 @@ public class CertificatesListOverviewController extends FormBasicController impl
 	private final Identity assessedIdentity;
 	private final boolean canUploadExternalCertificate;
 
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private LightboxController lightboxCtrl;
 	private CertificateDetailsController detailsCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
+	private ConfirmDeleteCertificateController deleteCertificateCtrl;
 	private UploadExternalCertificateController uploadCertificateController;
 	
 	@Autowired
@@ -198,7 +207,14 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.recertificationCount));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.status,
 				new CertificationStatusCellRenderer(getTranslator())));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("open", translate("open"), "open"));
+		
+		// Workaround to prevent dirty marking after uploading a certificate
+		StaticFlexiCellRenderer reportRenderer = new StaticFlexiCellRenderer(translate("open"), "open");
+		reportRenderer.setPush(true);
+		reportRenderer.setDirtyCheck(false);
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "open", null, -1, "open", false, null, FlexiColumnModel.ALIGNMENT_LEFT, reportRenderer));
+
+		tableColumnModel.addFlexiColumnModel(new ActionsColumnModel(CertificateCols.tools));
 		
 		tableModel = new CertificatesListDataModel(tableColumnModel, getLocale());	
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, 25, false, getTranslator(), formLayout);
@@ -331,12 +347,19 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		
 		// Uploaded are not issued
 		Long issued = null;
+		FormLink toolsLink = null;
 		if(certificate.getUploadedBy() == null) {
 			issued = infos.issued() == 0 ? 1l : infos.issued();
-		}	
+		} else if(canUploadExternalCertificate) {// If you can upload it, you can delete it
+			toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+		}
 
-		return new CertificateRow(certificate, infos.repositoryEntry(), certificateConfig, program, uploadedByName,
-				status, statusString, recertificationInDays, issued, filename, origin, points);
+		CertificateRow certificateRow = new CertificateRow(certificate, infos.repositoryEntry(), certificateConfig, program, uploadedByName,
+				status, statusString, recertificationInDays, issued, filename, origin, points, toolsLink);
+		if(toolsLink != null) {
+			toolsLink.setUserObject(certificateRow);
+		}
+		return certificateRow;
 	}
 	
 	@Override
@@ -349,30 +372,53 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		if(uploadCertificateController == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq);
+				tableEl.reset(true, true, true);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(detailsCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
+			if(event instanceof DeleteCertificateEvent) {
+				loadModel(ureq);
+				filterModel();
+				lightboxCtrl.deactivate();
+				cleanUp();
+			} else if(event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 				filterModel();
 			} else {
 				lightboxCtrl.deactivate();
 				cleanUp();
 			}
-		} else if(cmc == source || lightboxCtrl == source) {
+		} else if(deleteCertificateCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(ureq);
+				filterModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+			
+		} else if(toolsCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();
+		} else if(cmc == source || lightboxCtrl == source || calloutCtrl == source) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(uploadCertificateController);
+		removeAsListenerAndDispose(deleteCertificateCtrl);
 		removeAsListenerAndDispose(lightboxCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		uploadCertificateController = null;
+		deleteCertificateCtrl = null;
 		lightboxCtrl = null;
+		calloutCtrl = null;
 		detailsCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -404,10 +450,13 @@ public class CertificatesListOverviewController extends FormBasicController impl
 				if("open".equals(se.getCommand())) {
 					CertificateRow row = tableModel.getObject(se.getIndex());
 					doOpenCertificateDetails(ureq, row);
-				}
+				} 
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				filterModel();
 			}
+		} else if(source instanceof FormLink link
+				&& link.getUserObject() instanceof CertificateRow selectedRow) {
+			doOpenTools(ureq, selectedRow, link);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -430,12 +479,28 @@ public class CertificatesListOverviewController extends FormBasicController impl
 	}
 	
 	private void doOpenCertificateDetails(UserRequest ureq, CertificateRow row) {
-		detailsCtrl = new CertificateDetailsController(ureq, getWindowControl(), assessedIdentity, row);
+		detailsCtrl = new CertificateDetailsController(ureq, getWindowControl(), assessedIdentity,
+				row, canUploadExternalCertificate);
 		listenTo(detailsCtrl);
 		
 		lightboxCtrl = new LightboxController(ureq, getWindowControl(), detailsCtrl);
 		listenTo(lightboxCtrl);
 		lightboxCtrl.activate();
+	}
+	
+	private void doOpenTools(UserRequest ureq, CertificateRow row, FormLink link) {
+		if(toolsCtrl != null) return;
+		
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private static final class CertificateListCssDelegate extends DefaultFlexiTableCssDelegate {
@@ -494,6 +559,54 @@ public class CertificatesListOverviewController extends FormBasicController impl
 			}
 			
 			return mr == null ? new NotFoundMediaResource() : mr;
+		}
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, CertificateRow row) {
+		removeAsListenerAndDispose(deleteCertificateCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		Certificate certificate = certificatesManager.getCertificateById(row.getKey());
+		if(certificate == null) {
+			loadModel(ureq);
+			tableEl.reset(true, true, true);
+		} else {
+			deleteCertificateCtrl = new ConfirmDeleteCertificateController(ureq, getWindowControl(),
+					translate("confirm.delete.certificate.def.text"), null,
+					translate("delete"), certificate);
+			listenTo(deleteCertificateCtrl);
+	
+			String title = translate("confirm.delete.certificate.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCertificateCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+
+		private final Link deleteLink;
+		
+		private final CertificateRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, CertificateRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("tools_certificate");
+			
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(deleteLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doConfirmDelete(ureq, row);
+			}
 		}
 	}
 }

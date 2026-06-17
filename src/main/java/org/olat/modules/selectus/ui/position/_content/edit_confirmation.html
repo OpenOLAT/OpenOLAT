@@ -1,0 +1,12 @@
+<fieldset>
+	<legend>$r.translate("edit.confirmation.title")</legend>
+	$r.render("helps")
+</fields>
+<div class="o_button_group">
+	$r.render("save")
+	#foreach($previewButton in $previewButtons)
+		$r.render($previewButton)
+	#end
+	$r.render("cancel")
+</div>
+$r.render("mail.templates")

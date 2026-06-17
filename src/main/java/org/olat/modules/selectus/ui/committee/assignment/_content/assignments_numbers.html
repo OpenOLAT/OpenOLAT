@@ -1,0 +1,10 @@
+<div class="form-inline">
+	<span class="form-control-static">$r.translate("assignments.additional")</span> $r.render("assignmentsadditional")
+	<span class="form-control-static">$r.translate("assignments.max")</span> $r.render("assignmentsmax")
+</div>
+#if($f.hasError("assignmentsmax"))
+	$r.render("assignmentsmax","error")
+#end
+#if($f.hasError("assignmentsadditional"))
+	$r.render("assignmentsadditional","error")
+#end

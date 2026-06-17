@@ -84,6 +84,14 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	public boolean isAllowedAsRootElement();
 
 	public void setAllowedAsRootElement(boolean allowedAsRootElement);
+
+	public boolean isImplOnly();
+
+	public void setImplOnly(boolean implOnly);
+
+	public CurriculumElementTypeStatus getStatus();
+
+	public void setStatus(CurriculumElementTypeStatus status);
 	
 	public CurriculumElementTypeManagedFlag[] getManagedFlags();
 	

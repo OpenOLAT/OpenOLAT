@@ -65,6 +65,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.member.component.DefaultElementCellRenderer;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
@@ -83,7 +84,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListDetailsParticipantsGroupDataModel.GroupCols;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
-import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExcludeRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
@@ -235,10 +236,12 @@ public class LectureListDetailsController extends FormBasicController {
 	private void initFormParticipantsGroupTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.defaultElement,
+				new DefaultElementCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.numParticipants,
 				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_user")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status,
-				new LectureBlockParticipantGroupExcludeRenderer(getTranslator())));
+				new LectureBlockParticipantGroupRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GroupCols.tools));
 		
 		tableModel = new LectureListDetailsParticipantsGroupDataModel(columnsModel, getLocale());
@@ -289,7 +292,7 @@ public class LectureListDetailsController extends FormBasicController {
 			return;
 		}
 		
-		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null, null);
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null);
 		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
 				"lecture.subjects", formLayout, getWindowControl(), true, source);
 		taxonomyLevelEl.setEnabled(false);
@@ -397,9 +400,11 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(null, repositoryEntry);
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
+			CurriculumElement defaultElement = curriculumService.getDefaultCurriculumElement(repositoryEntry);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean included = selectedGroups.contains(elementInfos.curriculumElement().getGroup());
-				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, !included)));
+				boolean defaultEl = defaultElement != null && defaultElement.equals(elementInfos.curriculumElement());
+				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, !included, defaultEl)));
 			}
 		} else if(row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
 			CurriculumElementRef curriculumElementRef = new CurriculumElementRefImpl(row.getCurriculumElement().key());
@@ -408,7 +413,7 @@ public class LectureListDetailsController extends FormBasicController {
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());
-				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));
+				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded, false)));
 			}
 		}
 		
@@ -591,10 +596,10 @@ public class LectureListDetailsController extends FormBasicController {
 			if(secCallback.canEditLectureBlock(row.getCurriculumElementRef(), row.getCurriculum())) {
 				if(groupRow.isExcluded()) {
 					includeLink = LinkFactory.createLink("include.participants", "include.participants", getTranslator(), mainVC, this, Link.LINK);
-					includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+					includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 				} else {
 					excludeLink = LinkFactory.createLink("exclude.participants", "exclude.participants", getTranslator(), mainVC, this, Link.LINK);
-					excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
+					excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_exclude_member");
 				}
 			}
 			putInitialPanel(mainVC);

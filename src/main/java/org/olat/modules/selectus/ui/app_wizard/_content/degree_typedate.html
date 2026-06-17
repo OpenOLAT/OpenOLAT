@@ -1,0 +1,13 @@
+<div class="row o_sel_edit_highest_degree_type_date">
+	<div class="col-xs-8 col-sm-10"><div class="form-inline"><div style="display:inline-block; vertical-align:top;">$r.render("type")</div> <div style="display:inline-block; position:relative;">$r.render("degdate")#if($f.hasError("degdate"))<span class="o_icon o_icon_error form-control-feedback"></span>#end</div></div></div>
+	#if($f.hasError("type") || $f.hasError("degdate"))
+	<div class="col-xs-8 col-sm-10">
+		#if($f.hasError("type"))
+			$r.render("type_ERROR")
+		#end
+		#if($f.hasError("degdate"))
+			$r.render("degdate_ERROR")
+		#end
+	</div>
+	#end
+</div>

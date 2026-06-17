@@ -1,0 +1,12 @@
+<div id="$r.getCId()" class="o_with_toolbar o_with_breadcrumb o_toolbar_top">
+	#if($r.visible("backLink"))
+	<div class="o_toolbar o_scorm_back_toolbar clearfix">
+		<div class="o_breadcrumb_bar o_breadcrumb">
+			<ol class="breadcrumb">
+				<li class="o_breadcrumb_back">$r.render("backLink")</li>
+			</ol>
+		</div>
+	</div>
+	#end
+	$!r.render("collayout")
+</div>

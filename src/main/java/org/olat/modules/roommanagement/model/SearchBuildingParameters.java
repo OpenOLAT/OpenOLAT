@@ -1,0 +1,118 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.roommanagement.model;
+
+import java.util.List;
+
+import org.olat.basesecurity.IdentityRef;
+import org.olat.core.id.OrganisationRef;
+import org.olat.modules.roommanagement.RoomStatus;
+
+/**
+ * Initial date: 4 May 2026<br>
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
+ */
+public class SearchBuildingParameters {
+
+	private String searchString;
+	private String exactExternalId;
+	private String exactExternalRef;
+	private List<RoomStatus> status;
+	private List<? extends OrganisationRef> organisations;
+	/** When set, apply the org-scoped visibility predicate for this identity. */
+	private IdentityRef identity;
+	private int firstResult;
+	private int maxResults;
+
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
+	}
+
+	public String getExactExternalId() {
+		return exactExternalId;
+	}
+
+	public void setExactExternalId(String exactExternalId) {
+		this.exactExternalId = exactExternalId;
+	}
+
+	public String getExactExternalRef() {
+		return exactExternalRef;
+	}
+
+	public void setExactExternalRef(String exactExternalRef) {
+		this.exactExternalRef = exactExternalRef;
+	}
+
+	public List<RoomStatus> getStatus() {
+		return status;
+	}
+
+	public void setStatus(List<RoomStatus> status) {
+		this.status = status;
+	}
+
+	public List<? extends OrganisationRef> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(List<? extends OrganisationRef> organisations) {
+		this.organisations = organisations;
+	}
+
+	public IdentityRef getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(IdentityRef identity) {
+		this.identity = identity;
+	}
+
+	public int getFirstResult() {
+		return firstResult;
+	}
+
+	public void setFirstResult(int firstResult) {
+		this.firstResult = firstResult;
+	}
+
+	public int getMaxResults() {
+		return maxResults;
+	}
+
+	public void setMaxResults(int maxResults) {
+		this.maxResults = maxResults;
+	}
+
+	public SearchBuildingParameters withoutPagination() {
+		SearchBuildingParameters copy = new SearchBuildingParameters();
+		copy.searchString = this.searchString;
+		copy.exactExternalId = this.exactExternalId;
+		copy.exactExternalRef = this.exactExternalRef;
+		copy.status = this.status;
+		copy.organisations = this.organisations;
+		copy.identity = this.identity;
+		return copy;
+	}
+}

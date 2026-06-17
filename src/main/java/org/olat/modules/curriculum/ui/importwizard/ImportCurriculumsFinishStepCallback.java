@@ -109,7 +109,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		processCurriculums();
-		processCurriculumElements();
+		processCurriculumElements(ureq.getIdentity());
 		processRepositoryEntries();
 		processEvents();
 		processUsers(ureq.getIdentity());
@@ -316,31 +316,31 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	
-	private void processCurriculumElements() {
+	private void processCurriculumElements(Identity doer) {
 		List<ImportedRow> importedRows = context.getImportedElementsRows();
 		for(ImportedRow importedRow:importedRows) {
 			if(importedRow.type() == CurriculumExportType.IMPL && !isIgnored(importedRow)) {
-				processCurriculumElement(importedRow);
+				processCurriculumElement(importedRow, doer);
 				dbInstance.commit();
 			}
 		}
 		for(ImportedRow importedRow:importedRows) {
 			if(importedRow.type() == CurriculumExportType.ELEM && !isIgnored(importedRow)) {
-				processCurriculumElement(importedRow);
+				processCurriculumElement(importedRow, doer);
 				dbInstance.commit();
 			}
 		}
 		dbInstance.commitAndCloseSession();
 	}
 	
-	private void processCurriculumElement(ImportedRow importedRow) {
+	private void processCurriculumElement(ImportedRow importedRow, Identity doer) {
 		CurriculumElement element = null;
 		if(importedRow.getCurriculumElement() == null) {
 			element = createCurriculumElement(importedRow);
 		} else {
 			element = curriculumService.getCurriculumElement(importedRow.getCurriculumElement());
 			if(element != null) {
-				element = updateCurriculumElement(element, importedRow);
+				element = updateCurriculumElement(element, importedRow, doer);
 			}
 		}
 		importedRow.setCurriculumElement(element);
@@ -388,7 +388,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 				calendars, lectures, learningProgress, curriculum);
 	}
 	
-	private CurriculumElement updateCurriculumElement(CurriculumElement element, ImportedRow importedRow) {
+	private CurriculumElement updateCurriculumElement(CurriculumElement element, ImportedRow importedRow, Identity doer) {
 		element.setDisplayName(Formatter.truncateOnly(importedRow.getDisplayName(),
 				EditCurriculumElementMetadataController.DISPLAY_NAME_MAX_LENGTH));
 		
@@ -420,7 +420,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 			element.setLearningProgress(toCurriculumLearningProgress(importedRow.getProgress()));
 		}
 		
-		return curriculumService.updateCurriculumElement(element);
+		return curriculumService.updateCurriculumElement(doer, element);
 	}
 	
 	private CurriculumLearningProgress toCurriculumLearningProgress(String val) {

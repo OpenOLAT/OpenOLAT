@@ -138,7 +138,7 @@ public class StatusWebservice {
 				//
 			} else {
 				SessionInfo sessInfo = usess.getSessionInfo();
-				if (sessInfo == null || sessInfo.isWebDAV() || sessInfo.isREST()) {
+				if (sessInfo == null || sessInfo.isWebDAV() || sessInfo.isREST() || sessInfo.isContentDelivery()) {
 					//
 				} else if (sessInfo.isSecure()) {
 					secureAuthenticatedCount++;

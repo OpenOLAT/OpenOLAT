@@ -29,11 +29,10 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -62,15 +61,15 @@ public class AssessmentItemBuilderFactory {
 			case matchdraganddrop: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.matchdraganddrop"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()); break;
 			case matchtruefalse: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.matchtruefalse"), QTI21Constants.CSS_MATCH_TRUE_FALSE,
 					translator.translate("match.unanswered"), translator.translate("match.true"), translator.translate("match.false"), qtiService.qtiSerializer()); break;
-			case fib: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib"), EntryType.text, qtiService.qtiSerializer()); break;
-			case numerical: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()); break;
+			case fib: itemBuilder = new GapAssessmentItemBuilder(translator.translate("new.fib"), EntryType.text, qtiService.qtiSerializer()); break;
+			case numerical: itemBuilder = new GapAssessmentItemBuilder(translator.translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()); break;
 			case essay: itemBuilder = new EssayAssessmentItemBuilder(translator.translate("new.essay"), qtiService.qtiSerializer()); break;
 			case upload: itemBuilder = new UploadAssessmentItemBuilder(translator.translate("new.upload"), qtiService.qtiSerializer()); break;
 			case drawing: itemBuilder = new DrawingAssessmentItemBuilder(translator.translate("new.drawing"), qtiService.qtiSerializer()); break;
 			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(translator.translate("new.hotspot"), qtiService.qtiSerializer()); break;
 			case hottext: itemBuilder = new HottextAssessmentItemBuilder(translator.translate("new.hottext"), translator.translate("new.hottext.start"), translator.translate("new.hottext.text"), qtiService.qtiSerializer()); break;
 			case order: itemBuilder = new OrderAssessmentItemBuilder(translator.translate("new.order"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
-			case inlinechoice: itemBuilder = new InlineChoiceAssessmentItemBuilder(translator.translate("new.inlinechoice"), qtiService.qtiSerializer()); break; 
+			case inlinechoice: itemBuilder = new GapAssessmentItemBuilder(translator.translate("new.inlinechoice"), EntryType.inlineChoice, qtiService.qtiSerializer()); break; 
 			default: return null;
 		}
 		return itemBuilder;

@@ -134,6 +134,7 @@ import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -456,11 +457,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock(curriculumElement, curriculum)) {
-			if(entry != null || curriculum != null || curriculumElement != null) {
-				addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
-				addLectureButton.setIconLeftCSS("o_icon o_icon_add");
-				addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
-			}
+			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
+			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
+			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
+			addLectureButton.setEnabled(canAddLecture());			
+			
 			copyLecturesButton = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
@@ -488,6 +489,25 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			String titleSize = config.getTitleSize() <= 0 ? "" : "h" + config.getTitleSize();
 			layoutCont.contextPut("titleSize", titleSize);
 		}
+	}
+	
+	/**
+	 * Update the visibility of the wizard "Add lecture".
+	 */
+	public void updateAddLectures() {
+		if(addLectureButton != null) {
+			addLectureButton.setEnabled(!lectureManagementManaged
+					&& secCallback.canNewLectureBlock(curriculumElement, curriculum)
+					&& canAddLecture());
+		}
+	}
+	
+	private boolean canAddLecture() {
+		if(entry != null || curriculumElement != null) {
+			return true;
+		}
+		return curriculum != null
+				&& curriculumService.hasImplementations(curriculum, CurriculumElementStatus.notDeleted());
 	}
 
 	private  void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
@@ -606,7 +626,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("empty.table.lectures.blocks.admin")
-				.build());
+				.withIconCss("o_icon_events").build());
 		tableEl.setSearchEnabled(true);
 		tableEl.setCssDelegate(this);
 		
@@ -2012,6 +2032,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		CurriculumElement el = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElement().key()));
 		if(curriculumElement != null && curriculumElement.equals(el)) {
 			elementPath.append("[Overview:0]");
+		} else if((curriculum != null && !curriculum.equals(el.getCurriculum()))
+				|| (curriculumElement != null && curriculumElement.getImplementation() != null
+						&& !curriculumElement.getImplementation().equals(el.getImplementation()))
+				|| (curriculumElement != null && curriculumElement.getImplementation() == null
+						&& (el.getImplementation() == null || !curriculumElement.equals(el.getImplementation())))) {
+			// This is for the case where the selected element is not in the same product or implementation
+			String businessPath = "[CurriculumAdmin:0][Curriculum:" + el.getCurriculum().getKey() + "][CurriculumElement:" + el.getKey() + "][Overview:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			return;
 		} else {
 			if(curriculum == null && curriculumElement == null) {
 				elementPath.append("[Curriculum:").append(el.getCurriculum().getKey()).append("]");

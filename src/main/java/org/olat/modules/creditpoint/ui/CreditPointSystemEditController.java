@@ -212,6 +212,7 @@ public class CreditPointSystemEditController extends FormBasicController {
 					defaultExpiration, defaultExpirationType,
 					rolesRestrictions, organisationsRestrictions);
 		} else {
+			creditPointSystem = creditPointService.loadCreditPointSystem(creditPointSystem);
 			creditPointSystem.setName(name);
 			creditPointSystem.setLabel(label);
 			creditPointSystem.setDefaultExpiration(defaultExpiration);
@@ -228,7 +229,7 @@ public class CreditPointSystemEditController extends FormBasicController {
 	}
 	
 	public List<Organisation> getSelectedOrganisations() {
-		if(organisationsEnableEl.isVisible() && !organisationsEl.getSelectedKeys().isEmpty()) {
+		if(organisationsEnableEl.isVisible() && organisationsEnableEl.isOn() && !organisationsEl.getSelectedKeys().isEmpty()) {
 			List<OrganisationRefImpl> refs = organisationsEl.getSelectedKeys().stream()
 					.map(Long::valueOf)
 					.map(OrganisationRefImpl::new).toList();

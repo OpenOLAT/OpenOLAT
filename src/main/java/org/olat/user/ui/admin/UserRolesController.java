@@ -106,6 +106,7 @@ public class UserRolesController extends FormBasicController {
 			OrganisationRoles.curriculummanager,
 			OrganisationRoles.projectmanager,
 			OrganisationRoles.qualitymanager,
+			OrganisationRoles.selectusmanager,
 			OrganisationRoles.usermanager,
 			OrganisationRoles.rolesmanager,
 			OrganisationRoles.administrator,
@@ -488,7 +489,8 @@ public class UserRolesController extends FormBasicController {
 					case user, author, curriculummanager, groupmanager,
 						 learnresourcemanager, lecturemanager, linemanager,
 						 poolmanager, projectmanager, qualitymanager,
-						 rolesmanager, usermanager, educationmanager -> enable = true;
+						 rolesmanager, usermanager, educationmanager,
+						 selectusmanager -> enable = true;
 					default -> { }
 				}
 			}
@@ -771,7 +773,7 @@ public class UserRolesController extends FormBasicController {
 				case author -> iAmAdmin || iAmUserManager;
 				case groupmanager, poolmanager, curriculummanager, linemanager,
 					 projectmanager, qualitymanager, lecturemanager, usermanager,
-					 rolesmanager, learnresourcemanager, educationmanager -> iAmAdmin || iAmRolesManager;
+					 rolesmanager, learnresourcemanager, educationmanager, selectusmanager -> iAmAdmin || iAmRolesManager;
 				case principal, administrator, sysadmin -> iAmAdmin;
 				default -> false;
 			};

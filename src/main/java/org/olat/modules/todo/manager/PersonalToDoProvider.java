@@ -19,7 +19,6 @@
  */
 package org.olat.modules.todo.manager;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -47,17 +46,23 @@ import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
+import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskListController;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
+import org.olat.user.IdentityObjectSourceBrowserWrapper;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -148,7 +153,7 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return createEditController(ureq, wControl, toDoTask, null, showContext);
 	}
 
@@ -156,38 +161,67 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 			ToDoTask sourceToDoTask, boolean showContext) {
 		ToDoTaskSearchParams tagInfoSearchParams = new ToDoTaskSearchParams();
 		tagInfoSearchParams.setAssigneeOrDelegatee(ureq.getIdentity());
-		
-		MemberSelection assigneeSelection = getMemberSelection(toDoModule.getPersonalAssigneeCandidate());
-		MemberSelection delegateeSelection = getMemberSelection(toDoModule.getPersonalDelegateeCandidate());
-		Collection<Identity> assigneeCandidates;
-		Collection<Identity> delegateeCandidates;
-		if (MemberSelection.candidates == assigneeSelection) {
-			assigneeCandidates = getMemberCandidates(ureq.getIdentity());
+
+		ToDoTask sourceOrCurrent = toDoTask != null ? toDoTask : sourceToDoTask;
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(sourceOrCurrent, ToDoRole.ALL);
+		Set<Identity> currentAssignees = sourceOrCurrent == null ? Set.of(ureq.getIdentity()) : members.getMembers(ToDoRole.assignee);
+		Set<Identity> currentDelegatees = members.getMembers(ToDoRole.delegatee);
+
+		String assigneeModuleConfig = toDoModule.getPersonalAssigneeCandidate();
+		String delegateeModuleConfig = toDoModule.getPersonalDelegateeCandidate();
+
+		IdentitySelectionSource assigneeSource;
+		ToDoTaskMemberConfig assigneeMemberConfig;
+		if (ToDoModule.PERSONAL_CANDIDATE_NONE.equals(assigneeModuleConfig)) {
+			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentAssignees,
+					() -> currentAssignees,
+					ureq.getIdentity());
+			assigneeMemberConfig = ToDoTaskMemberConfig.disabled(assigneeSource, true);
+		} else if (ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(assigneeModuleConfig)) {
+			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentAssignees,
+					() -> getMemberCandidates(ureq.getIdentity()),
+					ureq.getIdentity());
+			assigneeMemberConfig = ToDoTaskMemberConfig.editable(assigneeSource, true);
 		} else {
-			assigneeCandidates = List.of(ureq.getIdentity());
+			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentAssignees,
+					List::of,
+					multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w),
+					ureq.getIdentity());
+			assigneeMemberConfig = ToDoTaskMemberConfig.editable(assigneeSource, true);
 		}
-		if (MemberSelection.candidates == assigneeSelection) {
-			if (MemberSelection.candidates == assigneeSelection) {
-				// load only once
-				delegateeCandidates = assigneeCandidates;
-			} else {
-				delegateeCandidates = getMemberCandidates(ureq.getIdentity());
-			}
+
+		IdentitySelectionSource delegateeSource;
+		ToDoTaskMemberConfig delegateeMemberConfig;
+		if (ToDoModule.PERSONAL_CANDIDATE_NONE.equals(delegateeModuleConfig)) {
+			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentDelegatees,
+					() -> currentDelegatees,
+					ureq.getIdentity());
+			delegateeMemberConfig = ToDoTaskMemberConfig.disabled(delegateeSource, false);
+		} else if (ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(delegateeModuleConfig)) {
+			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentDelegatees,
+					() -> getMemberCandidates(ureq.getIdentity()), 
+					ureq.getIdentity());
+			delegateeMemberConfig = ToDoTaskMemberConfig.editable(delegateeSource, false);
 		} else {
-			delegateeCandidates = List.of(ureq.getIdentity());
+			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
+					currentDelegatees,
+					List::of,
+					multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w), 
+					ureq.getIdentity());
+			delegateeMemberConfig = ToDoTaskMemberConfig.editable(delegateeSource, false);
 		}
-		
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, showContext, CONTEXTS,
-				CONTEXTS.get(0), tagInfoSearchParams, ASSIGNEE_RIGHTS, assigneeSelection, assigneeCandidates,
-				List.of(ureq.getIdentity()), delegateeSelection, delegateeCandidates);
-	}
-	
-	private MemberSelection getMemberSelection(String config) {
-		return switch (config) {
-		case ToDoModule.PERSONAL_CANDIDATE_NONE -> MemberSelection.disabled;
-		case ToDoModule.PERSONAL_CANDIDATE_BUDDIES -> MemberSelection.candidates;
-		default -> MemberSelection.search;
-		};
+
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(CONTEXTS, CONTEXTS.get(0))
+				: ToDoTaskContextConfig.off(CONTEXTS.get(0));
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, contextConfig, assigneeMemberConfig,
+				delegateeMemberConfig, toDoTask != null ? members : null, ToDoTaskDateConfig.absoluteOnly(),
+				tagInfoSearchParams, ASSIGNEE_RIGHTS, null);
 	}
 	
 	private Set<Identity> getMemberCandidates(Identity identity) {

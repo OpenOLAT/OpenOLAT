@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:16.1 https://infinispan.org/schemas/infinispan-config-16.1.xsd"
-        xmlns="urn:infinispan:config:16.1">
+        xsi:schemaLocation="urn:infinispan:config:16.2 https://infinispan.org/schemas/infinispan-config-16.2.xsd"
+        xmlns="urn:infinispan:config:16.2">
 
 	<cache-container name="NonTransactionalCacheManager" default-cache="default">
 		<local-cache name="default" />
 
 		<local-cache name="MapperService-mapper" simple-cache="true" statistics="true">
+			<encoding media-type="application/x-java-object"/>
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="10000" when-full="REMOVE" />
+			<expiration max-idle="300000" interval="5000" />
+		</local-cache>
+		
+		<local-cache name="MapperService-sandboxedmapper" simple-cache="true" statistics="true">
 			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />

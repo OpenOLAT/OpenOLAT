@@ -83,6 +83,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -121,6 +122,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public static final String CONTEXT_METADATA = "Metadata";
 	public static final String CONTEXT_REPORTS = "Reports";
 	public static final String CONTEXT_ABSENCES = "Absences";
+	public static final String CONTEXT_TODOS = "ToDos";
 	public static final String CONTEXT_CONFIRMED = "Confirmed";
 	public static final String CONTEXT_CANCELLED = "Cancelled";
 	public static final String CONTEXT_FINISHED = "Finished";
@@ -170,6 +172,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private final boolean isMultiOrganisations;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 
 	@Autowired
 	private LectureModule lectureModule;
@@ -181,11 +184,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private OrganisationService organisationService;
 	
 	public CurriculumListManagerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl, "manage_curriculum");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		
 		roles = ureq.getUserSession().getRoles();
 		toolbarPanel.addListener(this);
@@ -751,7 +756,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			WindowControl subControl = addToHistory(ureq, OresHelper
 					.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
 			detailsCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum,
-					secCallback, lecturesSecCallback);
+					secCallback, lecturesSecCallback, certificationSecCallback);
 			listenTo(detailsCurriculumCtrl);
 			
 			String crumb = row.getExternalRef();

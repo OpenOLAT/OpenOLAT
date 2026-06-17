@@ -19,7 +19,6 @@
  */
 package org.olat.course.todo.ui;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -29,8 +28,6 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.course.todo.CourseToDoService;
 import org.olat.course.todo.manager.CourseCollectionElementToDoTaskProvider;
 import org.olat.course.todo.manager.CourseIndividualToDoTaskProvider;
@@ -53,12 +50,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseMyToDoTaskController extends ToDoTaskListController {
 
-	private static final String GUIPREF_KEY_LAST_VISIT = "course.my.todos.last.visit";
-	
 	private final RepositoryEntry repositoryEntry;
 	private final CourseMyToDoTaskSecurityCallback secCallback;
 	private final ArrayList<String> poviderTypes;
-	private Date lastVisitDate;
 	
 	@Autowired
 	private ToDoService toDoService;
@@ -74,22 +68,6 @@ public class CourseMyToDoTaskController extends ToDoTaskListController {
 		poviderTypes.add(CourseIndividualToDoTaskProvider.TYPE);
 		poviderTypes.add(CourseCollectionElementToDoTaskProvider.TYPE);
 		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			String guiPrefsKey = GUIPREF_KEY_LAST_VISIT + "::" + repositoryEntry.getKey();
-			Object pref = guiPrefs.get(CourseMyToDoTaskController.class, guiPrefsKey);
-			if (pref instanceof String prefDate) {
-				try {
-					lastVisitDate = Formatter.parseDatetime(prefDate);
-				} catch (ParseException e) {
-					//
-				}
-			}
-			
-			String lastVisit = Formatter.formatDatetime(new Date());
-			guiPrefs.putAndSave(CourseNodeToDoTaskController.class, guiPrefsKey, lastVisit);
-		}
-		
 		initForm(ureq);
 		
 		initFilters();
@@ -101,8 +79,8 @@ public class CourseMyToDoTaskController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected Date getLastVisitDate() {
-		return lastVisitDate;
+	protected Date getNewSinceDate() {
+		return null;
 	}
 	
 	@Override

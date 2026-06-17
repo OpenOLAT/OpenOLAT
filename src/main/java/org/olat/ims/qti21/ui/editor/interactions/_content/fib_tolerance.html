@@ -1,0 +1,20 @@
+<div class="o_gap_bounds form-group clearfix">
+	<div class='col-sm-3 col-md-offset-0 o_form_cell'>
+		$r.render("fib.tolerance.low","label")
+	</div>
+	<div class='col-sm-3 o_form_cell o_sel_gap_numeric_lower_bound'>
+		$r.render("fib.tolerance.low","nolayout")
+		#if($f.hasError("fib.tolerance.low"))
+			$r.render("fib.tolerance.low","error")
+		#end
+	</div>
+	<div class='col-sm-3 o_form_cell'>
+		$r.render("fib.tolerance.up","label")
+	</div>
+	<div class='col-sm-3 o_form_cell o_sel_gap_numeric_upper_bound'>
+		$r.render("fib.tolerance.up","nolayout")
+		#if($f.hasError("fib.tolerance.up"))
+			$r.render("fib.tolerance.up","error")
+		#end
+	</div>
+</div>

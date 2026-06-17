@@ -56,8 +56,12 @@ class TextElementRenderer extends DefaultComponentRenderer {
 		StringBuilder htmlVal = new StringBuilder();
 		htmlVal.append(StringHelper.escapeHtml(value));
 		String elementCSS = te.getElementCssClass();
+		String iconLeftCSS = te.getIconLeftCSS();
 		if (source.isEnabled()) {
-			//read write view			
+			//read write view
+			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
+				sb.append("<span class=\"o_input_with_icon_left\">");
+			}
 			sb.append("<input type=\"").append(te.getHtmlInputType()).append("\" id=\"").append(id)
 			  .append("\" name=\"").append(id)
 			  .append("\" class='form-control ").append(elementCSS, elementCSS != null).append(" o_show_hide_eye", te.isShowHideEye())
@@ -96,7 +100,11 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				sb.append(" aria-controls=\"").appendHtmlEscaped(te.getAriaControls()).append("\"");
 			}
 			sb.append(">");
-			
+			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
+				sb.append("<i class=\"").append(iconLeftCSS).append("\"> </i>")
+				  .append("</span>");
+			}
+
 			if(te.isShowHideEye()) {
 				sb.append("<i id='").append(id).append("_eye' class='o_icon o_icon_eye form-control-feedback'> </i>");
 			}
@@ -166,18 +174,28 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append("<span id=\"").append(id).append("_wp\" ")
 			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 			  .append(" title=\"").append(htmlVal) //the uncutted value in tooltip
-			  .append("\" ").append(" >");
+			  .append("\"");
+			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
+				sb.append(" class=\"o_input_with_icon_left\"");
+			}
+			sb.append(" >");
 			// use the longer from display size or real value length
 			int size = (te.displaySize > value.length() ? te.displaySize : value.length());
 			sb.append("<input id=\"").append(id).append("\" type=\"").append(te.getHtmlInputType())
 			  .append("\" disabled=\"disabled\" class='form-control o_disabled ").append(elementCSS, elementCSS != null)
 			  .append("' size=\"").append(size)
-			  .append("\" value=\"").append(htmlVal).append("\"");
+			  .append("\" value=\"").appendHtmlAttributeEscaped(te.getValue()).append("\"");
+			if(StringHelper.containsNonWhitespace(te.getAriaLabel())) {
+				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
+			}
 			if (te.hasPlaceholder()) {
 				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
 			}
-			sb.append(">")
-			  .append("</span>");
+			sb.append(">");
+			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
+				sb.append("<i class=\"").append(iconLeftCSS).append("\"> </i>");
+			}
+			sb.append("</span>");
 		}
 		
 		if(StringHelper.containsNonWhitespace(te.getTextAddOn()) ) {

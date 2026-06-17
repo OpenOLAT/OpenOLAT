@@ -37,6 +37,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -93,17 +94,20 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
+	private boolean iframeResizer = true;
+	private boolean useContentDomain = false;
 	
 	public IFrameDeliveryMapper() {
 		//for XStream
 	}
 	
-	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, String frameId,
-			String themeBaseUri, String contentSecurityPolicy) {
+	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking,
+			boolean iframeResizer, String frameId, String themeBaseUri, String contentSecurityPolicy) {
 		
 		this.rootDir = rootDir;
 		
 		this.rawContent = rawContent;
+		this.iframeResizer = iframeResizer;
 		this.enableTextmarking = enableTextmarking;
 		
 		this.frameId = frameId;
@@ -132,6 +136,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 			if(config.getJavascriptEncoding() != null) {
 				jsEncoding = config.getJavascriptEncoding();
+			}
+			if(config.rawContent()) {
+				this.rawContent = config.rawContent();
 			}
 		}
 	}
@@ -169,6 +176,10 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	public void setStrictSanitize(boolean strictSanitize) {
 		this.strictSanitize = strictSanitize;
+	}
+	
+	public void setUseContentDomain(boolean useContentDomain) {
+		this.useContentDomain = useContentDomain;
 	}
 
 	@Override
@@ -386,8 +397,8 @@ public class IFrameDeliveryMapper implements Mapper {
 				}
 				if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
 						&& customCssDelegate.getCustomCSS().getCSSURLIFrame() != null) {
-					String  customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
-					sb.appendCss(customCssURL, "customcss");	
+					String  customCssUrl = customCssDelegate.getCustomCSS().getCSSURLIFrame();
+					sb.appendCss(customCssUrl, "customcss");	
 				} else if (customCssURL != null) {
 					// add the custom  CSS, e.g. the course css that overrides the standard content css
 					sb.appendCss(customCssURL, "customcss");				
@@ -395,9 +406,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 			
 			if (enableTextmarking) {
-				if (log.isDebugEnabled()) {
-					log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
-				}
+				log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
 				sb.appendJQuery();	
 				sb.appendGlossary();
 			}
@@ -405,25 +414,43 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(jQueryEnabled != null && jQueryEnabled.booleanValue()) {
 				sb.appendJQuery();
 			}
+
+			EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
 			
 			// Load some iframe.js helper code
 			sb.append("\n<script>\n");
 			// Set the iframe id. Important to set before iframe.js is loaded.
-			sb.append("b_iframeid=\"").append(frameId).append("\";");
-			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";");
+			sb.append("b_iframeid=\"").append(frameId).append("\";\n");
+			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";\n");
+			if(useContentDomain) {
+				sb.append("o_info = new Object();\n");
+				sb.append("o_info.uriprefix='/auth/';\n");
+				sb.append("o_info.edusharing_enabled=").append(edusharingModule.isEnabled()).append(";\n");
+			}
+			if(iframeResizer) {
+				sb.append("window.iFrameResizer = {\n")
+				  .append(" targetOrigin: '").append(Settings.createServerURI()).append("',\n")
+				  .append("}");
+			}
 			sb.append("\n</script>");
 			sb.appendStaticJs("js/openolat/iframe.js");
-			sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
+			if(iframeResizer) {
+				sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
+			}
 	
 			if (parser.getHtmlContent().length() > 0) {
-				EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
-				if (edusharingModule.isEnabled() && StringHelper.containsNonWhitespace(edusharingModule.getH5pResizerUrl())
-						&& parser.getHtmlContent().indexOf("file-h5p") > -1) {
-					sb.append("<script src=\"" + edusharingModule.getH5pResizerUrl() + "\"></script>\n");
+				if (edusharingModule.isEnabled()) {
+					if(useContentDomain) {
+						sb.appendStaticJs("js/openolat/resize.js");
+						sb.appendStaticJs("js/edusharing/edusharing.js");
+					}
+					if(StringHelper.containsNonWhitespace(edusharingModule.getH5pResizerUrl())
+							&& parser.getHtmlContent().indexOf("file-h5p") > -1) {
+						sb.append("<script src=\"" + edusharingModule.getH5pResizerUrl() + "\"></script>\n");
+					}
 				}
 				
 				sb.append("\n<script>\n");
-				
 				// register the tooltips enabling on document load event
 				sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
 				if (addCheckForInlineEvents) {

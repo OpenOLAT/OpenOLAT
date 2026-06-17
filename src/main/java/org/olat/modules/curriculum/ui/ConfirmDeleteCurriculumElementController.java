@@ -37,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,11 +55,14 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 	private final List<RepositoryEntry> references;
 	private final List<CurriculumElement> descendants;
 	private final CurriculumElement curriculumElement;
+	private final long toDoCount;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 	
 	public ConfirmDeleteCurriculumElementController(UserRequest ureq, WindowControl wControl,
 			String message, String confirmation, String confirmButton,
@@ -78,10 +82,13 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 		elements.addAll(descendants);
 		membersKeys = curriculumService.getMemberKeys(elements, CurriculumRoles.participant.name(), CurriculumRoles.coach.name(), CurriculumRoles.owner.name(),
 				 CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name());
-		
+
+		toDoCount = curriculumElementToDoProvider.countActiveToDoTasks(curriculumElement, elements);
+
 		initForm(ureq);
 	}
-	
+
+
 	@Override
 	protected void initFormElements(FormLayoutContainer confirmCont) {
 		StringBuilder impact = new StringBuilder();
@@ -100,6 +107,11 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 			impact.append("<li>")
 		          .append(translate("curriculums.elements.bulk.delete.impacts.members", String.valueOf(membersKeys.size())))
 		          .append("</li>");
+		}
+		if(toDoCount > 0) {
+			impact.append("<li>")
+			      .append(translate("curriculums.elements.bulk.delete.impacts.todos", String.valueOf(toDoCount)))
+			      .append("</li>");
 		}
 		impact.append("</ul>");
 

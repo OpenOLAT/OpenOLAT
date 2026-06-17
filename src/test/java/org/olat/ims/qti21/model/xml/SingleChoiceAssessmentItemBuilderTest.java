@@ -62,7 +62,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 /**
  * 
  * Initial date: 20 févr. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SingleChoiceAssessmentItemBuilderTest {
@@ -157,6 +157,48 @@ public class SingleChoiceAssessmentItemBuilderTest {
 		}
 		
 		FileUtils.deleteDirsAndFiles(itemFile.toPath());
+	}
+	
+	@Test
+	public void extractSingleChoiceWithFeedbacksFromExternalEditor()  throws URISyntaxException {
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/onyx/single-choice-1-with-feedbacks_5-11.xml");
+		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
+		
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(assessmentItem, qtiSerializer);
+		
+		//correct answer
+		List<SimpleChoice> choices = itemBuilder.getChoices();
+		Assert.assertNotNull(choices);
+		SimpleChoice choice = choices.get(3);
+		Assert.assertTrue(itemBuilder.isCorrect(choice));
+		
+		//scoring
+		Assert.assertEquals(ScoreEvaluation.allCorrectAnswers, itemBuilder.getScoreEvaluationMode());
+		ScoreBuilder maxScoreBuilder = itemBuilder.getMaxScoreBuilder();
+		Assert.assertEquals(4.0d, maxScoreBuilder.getScore(), 0.00001d);
+		
+		// check standard feedback
+		ModalFeedbackBuilder correctFeedback = itemBuilder.getCorrectFeedback();
+		Assert.assertNotNull(correctFeedback);
+		Assert.assertTrue(correctFeedback.isCorrectRule());
+		Assert.assertEquals("<p>Richtig Text</p>", correctFeedback.getText());
+		
+		ModalFeedbackBuilder incorrectFeedback = itemBuilder.getIncorrectFeedback();
+		Assert.assertNotNull(incorrectFeedback);
+		Assert.assertTrue(incorrectFeedback.isIncorrectRule());
+		Assert.assertEquals("<p>Falsch Text</p>", incorrectFeedback.getText());
+	}
+	
+	@Test
+	public void extractSingleChoiceWithExpertConditionFeedbacksFormExternalEditor() throws URISyntaxException {
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/onyx/sc-expert-conditions-feedback.xml");
+		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
+		
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(assessmentItem, qtiSerializer);
+		List<ModalFeedbackBuilder> feedbackBuilders = itemBuilder.getAdditionalFeedbackBuilders();
+		Assert.assertEquals(1, feedbackBuilders.size());
 	}
 	
 	private AssessmentItem loadAssessmentItem(URL itemUrl) throws URISyntaxException {

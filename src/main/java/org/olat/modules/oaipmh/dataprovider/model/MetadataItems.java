@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.lyncode.builder.ListBuilder;
 import org.olat.modules.oaipmh.common.model.About;
 import org.olat.modules.oaipmh.common.model.Metadata;
 import org.olat.modules.oaipmh.common.oaidc.Element;
@@ -120,13 +119,8 @@ public class MetadataItems implements Item {
 
 	@Override
 	public List<Set> getSets() {
-		List<String> list = ((List<String>) values.get("sets"));
-		return new ListBuilder<String>().add(list.toArray(new String[list.size()])).build(new ListBuilder.Transformer<String, Set>() {
-			@Override
-			public Set transform(String elem) {
-				return new Set(elem);
-			}
-		});
+		List<String> list = (List<String>) values.get("sets");
+		return list.stream().map(Set::new).collect(Collectors.toList());
 	}
 
 	@Override

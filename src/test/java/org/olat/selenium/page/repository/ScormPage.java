@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * Drive the SCORM page
@@ -65,7 +66,11 @@ public class ScormPage {
 	}
 	
 	public ScormPage passVerySimpleScorm() {
-		By frameBy = By.cssSelector("iframe.o_iframe_rel");
+		By frameSandboxBy = By.cssSelector("div.o_iframesandbox > iframe.o_iframe_rel");
+		WebElement frameSandboxEl = OOGraphene.waitElement(frameSandboxBy, browser);
+		browser.switchTo().frame(frameSandboxEl.getAttribute("id"));
+		
+		By frameBy = By.cssSelector("div.o_iframedisplay iframe.o_iframe_rel");
 		OOGraphene.waitElement(frameBy, browser);
 		browser.switchTo().frame("scormContentFrame");
 		
@@ -91,7 +96,7 @@ public class ScormPage {
 	 */
 	public ScormPage assertOnScormScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//span[contains(@class,'o_sel_score')][contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, browser);
+		OOGraphene.waitElement(resultsBy, 15, browser);
 		return this;
 	}
 	
@@ -103,7 +108,7 @@ public class ScormPage {
 	 */
 	public ScormPage assertOnScormPassed() {
 		By passedBy = By.cssSelector("div.o_assessment_preformance_summary div.o_state.o_passed");
-		OOGraphene.waitElement(passedBy, browser);
+		OOGraphene.waitElement(passedBy, 15, browser);
 		return this;
 	}
 	

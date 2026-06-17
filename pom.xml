@@ -66,34 +66,34 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>7.0.7</org.springframework.version>
-		<org.hibernate.version>7.3.2.Final</org.hibernate.version>
+		<org.springframework.version>7.0.8</org.springframework.version>
+		<org.hibernate.version>7.4.1.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.0.Final</org.hibernate.validator.version>
-		<org.glassfish.jaxb.runtime>4.0.7</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.2.0</apache.cxf>
+		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
+		<apache.cxf>4.2.2</apache.cxf>
 		<apache.pdfbox>3.0.7</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
-		<apache.log4j>2.25.4</apache.log4j>
-		<org.slf4j>2.0.17</org.slf4j>
+		<apache.log4j>2.26.0</apache.log4j>
+		<org.slf4j>2.0.18</org.slf4j>
 		<org.bouncycastle>1.84</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
-		<io.undertow>2.4.0.RC4</io.undertow>
-		<io.undertow.ee>2.0.0.RC1</io.undertow.ee>
-		<jackson.version>2.21.3</jackson.version>
-		<jackson.annotations.version>2.21</jackson.annotations.version>
-		<swagger.ui.version>5.32.5</swagger.ui.version>
+		<io.undertow>2.4.1.Final</io.undertow>
+		<io.undertow.ee>2.0.0.Final</io.undertow.ee>
+		<jackson.version>2.22.0</jackson.version>
+		<jackson.annotations.version>2.22</jackson.annotations.version>
+		<swagger.ui.version>5.32.6</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
 		<org.postgresql.version>42.7.11</org.postgresql.version>
-		<org.infinispan.version>16.1.3</org.infinispan.version>
+		<org.infinispan.version>16.2.1</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.43.0</version.selenium>
-		<activemq.artemis.version>2.53.0</activemq.artemis.version>
+		<version.selenium>4.45.0</version.selenium>
+		<activemq.artemis.version>2.54.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
-		<qtiworks.version>1.0.32</qtiworks.version>
+		<qtiworks.version>1.0.35</qtiworks.version>
 		<org.commonmark>0.28.0</org.commonmark>
-		<dev.langchain4j>1.13.1</dev.langchain4j>
+		<dev.langchain4j>1.16.3</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -214,6 +214,8 @@
 										<include>js/jquery/openolat/jquery.bgcarrousel.js</include>
 										<include>js/jquery/transit/jquery.transit.js</include>
 										<include>js/openolat/textarea.js</include>
+										<include>js/openolat/resize.js</include>
+										<include>js/edusharing/edusharing.js</include>
 										<include>js/tinymce4/tinymce/jquery.tinymce.min.js</include>
 										<include>js/functions.js</include>
 									</includes>
@@ -384,7 +386,7 @@
 				<dependency>
 				    <groupId>com.sun.xml.messaging.saaj</groupId>
 				    <artifactId>saaj-impl</artifactId>
-				    <version>3.0.4</version>
+				    <version>3.0.6</version>
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate.orm</groupId>
@@ -1597,6 +1599,34 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<!-- Used by SCORM implementation -->
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>2.11</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis-ext</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.servlet</groupId>
+					<artifactId>servlet-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.22.0</version>
@@ -1687,7 +1717,7 @@
 		<dependency>
 			<groupId>org.dhatim</groupId>
 			<artifactId>fastexcel-reader</artifactId>
-			<version>0.20.0</version>
+			<version>0.20.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -1771,6 +1801,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcjmail-jdk18on</artifactId>
+			<version>${org.bouncycastle}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
 			<version>${org.bouncycastle}</version>
 		</dependency>
@@ -1782,7 +1817,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.30.2.RELEASE</version>
+			<version>0.30.3.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -1804,7 +1839,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.ibm.icu</groupId>
@@ -1835,25 +1870,6 @@
 			<groupId>jgrapht</groupId>
 			<artifactId>jgrapht</artifactId>
 			<version>0.6.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.lyncode</groupId>
-			<artifactId>xml-io</artifactId>
-			<version>1.0.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>wstx-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<!-- Start dependency to qtiworks -->
 		<dependency>
@@ -2164,7 +2180,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20251224</version>
+			<version>20260522</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2204,7 +2220,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>10.9</version>		
+			<version>10.9.1</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
@@ -2217,7 +2233,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.63.0</version>
+			<version>6.65.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2228,7 +2244,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.24.1</version>
+			<version>1.25.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2239,7 +2255,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.18.2</version>
+			<version>1.18.4</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
@@ -2402,6 +2418,11 @@
 			<artifactId>langchain4j-anthropic</artifactId>
 			<version>${dev.langchain4j}</version>
 		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-embeddings</artifactId>
+			<version>${dev.langchain4j}-beta26</version>
+		</dependency>
 		<!-- end AI API -->
 
 		<!-- Start test dependencies -->
@@ -2463,7 +2484,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-tomcat-managed-10</artifactId>
-			<version>1.2.4.Final</version>
+			<version>1.2.5.Final</version>
 		<scope>test</scope>
       	</dependency>
 		<dependency>
@@ -2511,7 +2532,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.10.1.Final</version>
+				<version>1.10.2.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>

@@ -59,7 +59,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -802,11 +801,6 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Override
 	protected Task stepGrading(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepGrading(ureq, assignedTask);
-		
-		String infoTextUser = config.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
-	    	mainVC.contextPut("gradingInfoTextUser", StringHelper.xssScan(infoTextUser));
-	    }
 	    
 	    boolean showGrading = false;
 	    EvaluationFormProvider evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();

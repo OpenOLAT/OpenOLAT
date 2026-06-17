@@ -80,16 +80,17 @@ public class QuestionMetadataPage {
 		if(taxonomy != null) {
 			By taxonomyBy = By.cssSelector(".o_sel_qpool_metadata_general button.o_selection_display");
 			OOGraphene.waitElement(taxonomyBy, browser).click();
-			OOGraphene.waitCallout(browser, ".o_object_selection");
+			OOGraphene.waitCallout(browser, ".o_object_selection > .o_object_selection_main");
 			
-			By taxonomyElementBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio']");
+			By taxonomyElementBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection_main']//label[div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio']");
 			browser.findElement(taxonomyElementBy).click();
 			
-			By taxonomyElementCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio'][@checked='checked']");
+			By taxonomyElementCheckedBy = By.cssSelector(".o_object_selection_main input:checked[type='radio']");
 			OOGraphene.waitElement(taxonomyElementCheckedBy, browser);
+			OOGraphene.waitBusy(browser);
 			
-			By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
-			OOGraphene.waitElement(transferBy, browser).click();
+			By dialogBy = By.xpath("//dialog[div[contains(@class,'popover-content')]]"); 
+			OOGraphene.clickAbove(dialogBy, browser);
 			OOGraphene.waitCalloutDisappears(browser, ".o_object_selection");
 		}
 		

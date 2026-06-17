@@ -1064,11 +1064,19 @@ div.o_reminder_custom_email {
 }
 
 /* Segmented view wrapper */
-.o_segments.btn-group a span {
+.o_segments.btn-group a > span {
 	overflow: hidden;
 	display: block;
 	text-overflow: ellipsis;
+	
+	&.badge {
+		display: block;
+		position: absolute;
+		right: 5px;
+		top: 7px;
+	}
 }
+
 .o_segments_content {
 	margin-top: $line-height-computed;
 }
@@ -1683,6 +1691,7 @@ a.o_labeled_light {
 	@extend %o_labeled_light_grey;
 	padding: 2px 5px;
 	font-size: 85%;
+	line-height: 85%;
  }
  .o_table_flexi {
  	.o_labeled_light {
@@ -2197,11 +2206,25 @@ ul.o_list_narrow {
 				font-size: $o-day-nav-abbr-font-size;
 			}
 			.o_day_button {
-				height: 36px;
+				height: 40px;
 				aspect-ratio: 1;
+				display: grid;
+				grid-template-columns: 1fr;
+				>* {
+					grid-area: 1 / 1;
+				}
 				
 				font-size: $o-day-nav-num-font-size;
 				
+				.o_day_dot {
+					width: 4px;
+					height: 4px;
+					border-radius: 50%;
+					background-color: currentColor;
+					align-self: end;
+					justify-self: center;
+					margin-bottom: 3px;
+				}
 				&.o_day_selected {
 					background-color: hsl(217, 71%, 53%);
 					color: #fff;

@@ -82,7 +82,6 @@ public class ToDoServiceImpl implements ToDoService {
 	private ToDoTaskTagDAO tagDao;
 	@Autowired
 	private DateModule dateModule;
-	
 	@Autowired
 	private List<ToDoProvider> providers;
 	private Map<String, ToDoProvider> typeToProvider;
@@ -151,10 +150,10 @@ public class ToDoServiceImpl implements ToDoService {
 		}
 		
 		updateModifier(doer, toDoTask);
-		
+
 		return toDoTaskDao.save(toDoTask);
 	}
-
+	
 	private void updateModifier(Identity doer, ToDoTask toDoTask) {
 		List<GroupMembership> memberships = groupDao.getMemberships(toDoTask.getBaseGroup(), ToDoRole.modifier.name(), false);
 		
@@ -270,7 +269,7 @@ public class ToDoServiceImpl implements ToDoService {
 		
 		ToDoProvider provider = getProvider(toDoTask.getType());
 		boolean sendAssignmentEmail = provider.getToDoMailRule(toDoTask).isSendAssignmentEmail(
-				doer != null && doer.getKey().longValue() != identity.getKey().longValue(),
+				doer != null && doer.getKey().longValue() == identity.getKey().longValue(),
 				roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)),
 				currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)));
 		if (sendAssignmentEmail) {
@@ -301,6 +300,15 @@ public class ToDoServiceImpl implements ToDoService {
 		}
 		
 		return toDoTaskGroupKeyToMembers;
+	}
+
+	@Override
+	public ToDoTaskMembers getToDoTaskMembers(ToDoTask toDoTask, Collection<ToDoRole> roles) {
+		if (toDoTask == null) {
+			return new ToDoTaskMembersImpl();
+		}
+		return getToDoTaskGroupKeyToMembers(List.of(toDoTask), roles)
+				.get(toDoTask.getBaseGroup().getKey());
 	}
 
 	@Override

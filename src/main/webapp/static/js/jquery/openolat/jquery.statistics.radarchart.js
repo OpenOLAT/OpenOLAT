@@ -247,11 +247,11 @@
 			.on("mouseover", function(d,i) {
 				var newX =  parseFloat(d3.select(this).attr('cx')) - 10;
 				var newY =  parseFloat(d3.select(this).attr('cy')) - 10;
-			
+				
 				tooltip
 					.attr('x', newX)
 					.attr('y', newY)
-					.text(Format(d.value))
+					.text(i.axis + ": " + Format(i.value))
 					.transition().duration(200)
 					.style('opacity', 1);
 			})

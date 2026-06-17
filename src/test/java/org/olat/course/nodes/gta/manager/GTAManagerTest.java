@@ -66,6 +66,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -94,6 +95,8 @@ public class GTAManagerTest extends OlatTestCase {
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private EvaluationFormTestsHelper evaluationFormTestsHelper;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -742,8 +745,6 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, revisionsTask2.size());
 	}
 	
-
-	
 	@Test
 	public void deleteAllTaskLists() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
@@ -966,6 +967,20 @@ public class GTAManagerTest extends OlatTestCase {
 		List<TaskRevisionDate> deletedRevisionsDate2 = gtaManager.getTaskRevisionsDate(response2.getTask());
 		Assert.assertEquals(1, deletedRevisionsDate2.size());
 		Assert.assertEquals(revDate2, deletedRevisionsDate2.get(0));
+	}
+	
+	@Test
+	public void deleteWithout() {
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_PEER_REVIEW, Boolean.TRUE);
+		GTACourseNode.setPeerReviewEvaluationFormReference(formEntry, node.getModuleConfiguration());
+		dbInstance.commit();
+		
+		node.cleanupOnDelete(course);
 	}
 	
 	@Test

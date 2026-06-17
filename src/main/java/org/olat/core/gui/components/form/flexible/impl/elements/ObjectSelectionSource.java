@@ -26,7 +26,7 @@ import java.util.Locale;
 import org.olat.core.gui.control.creator.ControllerCreator;
 
 /**
- * 
+ *
  * Initial date: Sep 10, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
@@ -39,12 +39,12 @@ public interface ObjectSelectionSource {
 	
 	public ObjectDisplayValues getDisplayValue(Collection<String> keys);
 	
-	public String getOptionsLabel(Locale locale);
-	
-	public List<? extends ObjectOption> getOptions();
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale);
 	
 	public boolean isBrowserAvailable();
-	
-	public ControllerCreator getBrowserCreator(boolean multiSelection);
+
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys);
+
+	public void addMissingOptions(Collection<String> keys);
 
 }

@@ -38,7 +38,10 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -87,11 +90,22 @@ public class MapperDispatcher implements Dispatcher {
 		
 		//legacy???
 		DBFactory.getInstance().commitAndCloseSession();
-
+		MapperService mapperService = CoreSpringFactory.getImpl(MapperService.class);
+		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
+		
 		// e.g. non-cacheable: 	23423
 		// e.g. cacheable: 		my.mapper.path
-		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
-		MapperService mapperService = CoreSpringFactory.getImpl(MapperService.class);
+		if(mapperService.isSandbox(smappath)) {
+			String secret = hreq.getParameter("token");
+			UserSession usess = sessionManager.getUserSession(hreq);
+			mapperService.reclaimMapperById(usess, smappath, secret);
+			if(usess.getSessionInfo() == null) {
+				initSessionInfos(usess, hreq);
+				sessionManager.signOn(usess);
+			}
+		}
+
+		UserSession usess = sessionManager.getUserSession(hreq);
 		Mapper m = mapperService.getMapperById(usess, smappath);
 		if (m == null) {
 			//an anonymous mapper?
@@ -115,5 +129,20 @@ public class MapperDispatcher implements Dispatcher {
 		} else {
 			hres.setStatus(HttpServletResponse.SC_NO_CONTENT);
 		}
+	}
+	
+	private void initSessionInfos(UserSession usess, HttpServletRequest hreq) {
+		Identity identity = usess.getIdentity();
+		SessionInfo sinfo = new SessionInfo(identity.getKey(), hreq.getSession());
+		sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, usess.getLocale()));
+		sinfo.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, usess.getLocale()));
+		sinfo.setAuthProvider("CDEL");
+		sinfo.setFromIP(hreq.getRemoteAddr());
+		sinfo.setUserAgent(hreq.getHeader("User-Agent"));
+		sinfo.setSecure(hreq.isSecure());
+		sinfo.setLastClickTime();
+		sinfo.setREST(false);
+		sinfo.setContentDelivery(true);
+		usess.setSessionInfo(sinfo);
 	}
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.certificationprogram.model;
 
+import java.util.Date;
+
 import org.olat.modules.certificationprogram.CertificationProgramRef;
 
 /**
@@ -32,6 +34,9 @@ public class CertificationProgramMemberSearchParameters {
 	private Type type;
 	private OrderBy orderBy;
 	private boolean orderAsc;
+	private Long identityKey;
+	private Date expirationBefore;
+	private Date expirationAfter;
 	private CertificationProgramRef certificationProgram;
 	
 	public CertificationProgramMemberSearchParameters(CertificationProgramRef certificationProgram) {
@@ -53,7 +58,31 @@ public class CertificationProgramMemberSearchParameters {
 	public void setType(Type type) {
 		this.type = type;
 	}
-	
+
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+
+	public Date getExpirationBefore() {
+		return expirationBefore;
+	}
+
+	public void setExpirationBefore(Date expirationBefore) {
+		this.expirationBefore = expirationBefore;
+	}
+
+	public Date getExpirationAfter() {
+		return expirationAfter;
+	}
+
+	public void setExpirationAfter(Date expirationAfter) {
+		this.expirationAfter = expirationAfter;
+	}
+
 	public OrderBy getOrderBy() {
 		return orderBy;
 	}

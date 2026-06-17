@@ -181,7 +181,7 @@ public class CollectDrawioMediaController extends AbstractCollectMediaController
 		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 				mediaService.getTaxonomyLevels(mediaReference),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
-				translate("taxonomy.levels"), translate("table.header.taxonomy"));
+				translate("table.header.taxonomy"));
 		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, source);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();

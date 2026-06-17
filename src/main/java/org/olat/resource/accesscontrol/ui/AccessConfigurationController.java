@@ -73,6 +73,7 @@ import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
@@ -1236,6 +1237,17 @@ public class AccessConfigurationController extends FormBasicController {
 				return PriceFormat.fullFormatVat(getTranslator(), acModule, offer.getPrice());
 			}
 			return null;
+		}
+
+		public String getCancelable() {
+			if (offer == null || !(handler instanceof InvoiceAccessHandler) || !offer.isCancellingEnabled()) {
+				return null;
+			}
+			Price fee = offer.getCancellingFee();
+			if (fee == null || fee.isEmpty()) {
+				return translate("access.info.cancelable.free");
+			}
+			return translate("access.info.cancelable.with.fee");
 		}
 		
 		@Override

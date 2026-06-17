@@ -154,7 +154,9 @@ public class MarkdownImportController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// Mode selection: file upload or text paste
+		formLayout.setElementCssClass("o_sel_import_markdown_form");
+		
+		//Mode selection: file upload or text paste
 		String[] modeKeys = { MODE_FILE, MODE_TEXT };
 		String[] modeTitles = { translate("import.mode.file"), translate("import.mode.text") };
 		String[] modeDescriptions = { translate("import.mode.file.desc"), translate("import.mode.text.desc") };
@@ -174,6 +176,8 @@ public class MarkdownImportController extends FormBasicController {
 
 		// Text input
 		markdownTextEl = uifactory.addTextAreaElement("import.text", "import.text", -1, 15, 80, false, false, "", formLayout);
+		markdownTextEl.setElementCssClass("o_sel_import_text");
+
 		markdownTextEl.setVisible(false);
 
 		// Optional: generate AI questions from imported content (MVP toggle).

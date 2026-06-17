@@ -489,6 +489,7 @@ public class UserWebService {
 				rolesManager || admin ? roles.isCurriculumManager() : defaultRoles.hasRole(OrganisationRoles.curriculummanager),
 				rolesManager || admin ? roles.isUserManager() : defaultRoles.hasRole(OrganisationRoles.usermanager),
 				rolesManager || admin ? roles.isInstitutionalResourceManager() : defaultRoles.hasRole(OrganisationRoles.learnresourcemanager),
+				rolesManager || admin ? roles.isSelectusManager() : defaultRoles.hasRole(OrganisationRoles.selectusmanager),
 				admin ? roles.isOlatAdmin() : defaultRoles.hasRole(OrganisationRoles.administrator),
 				admin ? roles.isSystemAdmin(): defaultRoles.hasRole(OrganisationRoles.sysadmin));
 		securityManager.updateRoles(actingIdentity, identity, modifiedRoles);

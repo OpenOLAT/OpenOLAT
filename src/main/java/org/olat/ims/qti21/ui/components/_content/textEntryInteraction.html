@@ -35,6 +35,8 @@
 			   #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end
 			   autocomplete="off"
 			   required="required" />
+	#elseif($isCorrectionHelp && $r.isItemSessionEnded())
+		<span class="$r.textEntryType($interaction) o_correction_value" #if($interaction.expectedLength) style="min-width: ${interaction.expectedLength}em" #end>#if($responseInputString && !$responseInputString.isEmpty())$r.escapeHtml($responseInputString)#end</span>
 	#else
 		<input id="od_${responseIdentifier}" type="text" class="$r.textEntryType($interaction)" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$r.escapeHtml($responseInputString)" #else value="" #end #if(!$r.isItemSessionEnded()) $r.placeholder($interaction) #end #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectedLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end autocomplete="off" required="required"/>
 	#end
@@ -58,13 +60,12 @@
 	#if($isInvalidResponse)
 	<span class="badResponse">$r.translate("error.required.format")</span>
 	#end
-	$r.renderScorePerInteraction($interaction)
-	#if($r.isTrue($isCorrectionSolution) || $r.isTrue($isSolutionMode))
-		#set($alternativesString = $r.renderTextEntryAlternatives($interaction))
-		#if($r.isNotEmpty($alternativesString))
-			<span class="o_qti_gaptext_alternatives" title='$r.translate("correction.alternatives")'>$alternativesString</span>
-		#end
+	
+	#set($alternativesString = $r.renderTextEntryScoreAndAlternatives($interaction, $isSolutionMode, $isCorrectionSolution))
+	#if($r.isNotEmpty($alternativesString))
+		$r.xssScan($alternativesString)
 	#end
+
 </span>
 
 #if($isPageMode)

@@ -1,0 +1,19 @@
+<div class="o_info">$r.translate("position.tags.description")</div>
+
+#if($r.visible("system.tags.enabled"))
+<fieldset>
+	<legend>$r.translate("system.categories.title")</legend>
+	$r.render("system.tags.enabled")
+	$r.render("systemCategories")
+</fieldset>
+#end
+#if($r.visible("position.tags.enabled"))
+<fieldset class="#if($r.visible("system.tags.enabled")) o_block #end">
+	<legend>$r.translate("position.tags.title")</legend>
+	$r.render("position.tags.enabled")
+	#if($r.visible("add.position.category"))
+	<div class="o_button_group o_button_group_right">$r.render("add.position.category")</div>
+	#end
+	$r.render("positionCategories")
+</fieldset>
+#end

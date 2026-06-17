@@ -1,0 +1,48 @@
+$reviewTitle
+<p>$positionMsg</p>
+
+#if($r.available("reference.template.0") || $r.available("reference.template.0"))
+<p class="$templateCssClass">#if($r.available("reference.template.0")) $r.render("reference.template.0") #end #if($r.available("reference.template.1")) <span>&#160;-&#160;</span> $r.render("reference.template.1")#end</p>
+#end
+
+#if($r.visible("reference.accept.button"))
+	$r.translate("review.description.consent.title")
+	<p>$consentMsg</p>
+	<div class="o_button_group">
+		$r.render("reference.accept.button")
+		$r.render("reference.decline.button")
+	</div>
+#elseif($r.isNotEmpty($consentMsg))
+	<p>$consentMsg</p>
+#end
+
+<fieldset class="o_sel_reference">
+	<legend>$r.translate("review.description.candidate.title")</legend>
+	<div class="o_warning o_sel_reference_overview_warning">
+		$submissionDateMsg
+		#if($r.isNotNull($submissionDate))
+			#if($r.isNotEmpty($submissionDeadlineMsg))
+				<br><br>$submissionDeadlineMsg
+			#end
+			#if($r.isNotEmpty($countdown))
+				<br>$countdown
+			#end
+		#end
+	</div>
+	<div class="o_sel_reference_overview o_wizard">
+		<div class="o_wizard_body">
+			<div class="o_steps">
+				<div class="o_steps_main">
+					<ul class="">
+						<li #if($currentStep == "reference.position.details") class='active o_enabled' #end>$r.render("reference.position.details")<span class="chevron"></span></li>
+						<li #if($currentStep == "reference.application.details") class='active o_enabled' #end>$r.render("applicationDetailsLink")<span class="chevron"></span></li>
+						<li #if($currentStep == "reference.submit") class='active o_enabled' #end>$r.render("reference.submit")<span class="chevron"></span></li>
+					</ul>
+				</div>
+			</div>
+			<div class="o_segments_content">
+				$r.render("content")
+			</div>
+		</div>
+	</div>
+</fieldset>

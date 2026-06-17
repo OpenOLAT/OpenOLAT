@@ -78,9 +78,13 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 			sb.append(" autofocus");
 		}
 		if (ssec.getFormItem().isMandatory()) {
-			sb.append(" aria-required=\"true\"");				
+			sb.append(" aria-required=\"true\"");
 		}
-		
+		String ariaLabel = ssec.getFormItem().getAriaLabel();
+		if (StringHelper.containsNonWhitespace(ariaLabel)) {
+			sb.append(" aria-label=\"").appendHtmlAttributeEscaped(ariaLabel).append("\"");
+		}
+
 		//add ONCHANGE Action to select
 		if(ssec.getAction() == FormEvent.ONCHANGE){
 			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction()));

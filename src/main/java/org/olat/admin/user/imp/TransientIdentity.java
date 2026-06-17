@@ -47,6 +47,9 @@ public class TransientIdentity implements Identity, User {
 	private Integer status;
 	private Date expirationDate;
 	
+	private boolean ldap;
+	private boolean azure;
+	
 	private Map<String, String> properties = new HashMap<>();
 	private String initialsCssClass;
 
@@ -127,6 +130,22 @@ public class TransientIdentity implements Identity, User {
 	@Override
 	public User getUser() {
 		return this;
+	}
+
+	public boolean isLdap() {
+		return ldap;
+	}
+
+	public void setLdap(boolean ldap) {
+		this.ldap = ldap;
+	}
+
+	public boolean isAzure() {
+		return azure;
+	}
+
+	public void setAzure(boolean azure) {
+		this.azure = azure;
 	}
 
 	@Override

@@ -163,7 +163,7 @@ public class LectureBlockDAO {
 	 * @param lectureBlock The block to delete
 	 * @return The number of rows deleted
 	 */
-	public int delete(LectureBlock lectureBlock) {
+	public int delete(LectureBlockRef lectureBlock) {
 
 		AssessmentMode assessmentMode = assessmentModeDao.getAssessmentModeByLecture(lectureBlock);
 		if(assessmentMode != null) {
@@ -198,8 +198,10 @@ public class LectureBlockDAO {
 			.setParameter("lectureBlockKey", lectureBlock.getKey())
 			.executeUpdate();
 
+		LectureBlock lectureBlockReference = dbInstance.getCurrentEntityManager()
+				.getReference(LectureBlockImpl.class, lectureBlock.getKey());
 		dbInstance.getCurrentEntityManager()
-			.remove(lectureBlock);
+			.remove(lectureBlockReference);
 		rows++;
 
 		return rows;
@@ -264,6 +266,28 @@ public class LectureBlockDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, LectureBlock.class)
 				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.getResultList();
+	}
+	
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef curriculumElement, IdentityRef teacher) {
+		String query = """
+				select block from lectureblock as block
+				inner join block.teacherGroup as teacherGroup
+				where (block.curriculumElement.key=:curriculumElementKey
+				or block.entry.key in (select v.key from repositoryentry v
+				  inner join v.groups as baseGroups
+				  inner join baseGroups.group as baseGroup
+				  inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)
+				  where curEl.key = :curriculumElementKey
+				))
+				and exists (select teacherMembership.key from bgroupmember teacherMembership
+				  where teacherMembership.group.key=teacherGroup.key and teacherMembership.identity.key=:teacherKey
+				)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LectureBlock.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.setParameter("teacherKey", teacher.getKey())
 				.getResultList();
 	}
 	

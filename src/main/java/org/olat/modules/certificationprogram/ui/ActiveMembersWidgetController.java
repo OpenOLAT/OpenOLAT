@@ -45,7 +45,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
@@ -128,12 +127,6 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 
 		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
 		return indicatorsEl.getComponent().getComponentName();
-	}
-	
-	private void setUrl(FormLink link, String businessPath) {
-		link.setUserObject(businessPath);
-		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(businessPath);
-		link.setUrl(url);
 	}
 	
 	public void reload(UserRequest ureq) {

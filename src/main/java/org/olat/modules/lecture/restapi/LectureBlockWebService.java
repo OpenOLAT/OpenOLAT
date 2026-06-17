@@ -20,9 +20,19 @@
 package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.model.SearchRoomParameters;
+import org.olat.modules.roommanagement.restapi.RoomBookingVO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -108,7 +118,11 @@ public class LectureBlockWebService {
 	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
-	
+	@Autowired(required = false)
+	private RoomManagementModule roomManagementModule;
+	@Autowired(required = false)
+	private RoomManagementService roomManagementService;
+
 	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry, boolean administrator) {
 		this.entry = entry;
 		this.lectureBlock = lectureBlock;
@@ -539,6 +553,132 @@ public class LectureBlockWebService {
 		return Response.ok().build();
 	}
 	
+	@GET
+	@Path("room")
+	@Operation(summary = "Get the room booking of the lecture block", description = "Get the room booking of the lecture block, if any")
+	@ApiResponse(responseCode = "200", description = "The room booking", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RoomBookingVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RoomBookingVO.class)) })
+	@ApiResponse(responseCode = "204", description = "The lecture block has no room booking")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getRoomBooking() {
+		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		if (!administrator) {
+			return Response.status(Status.FORBIDDEN).build();
+		}
+		List<RoomBooking> bookings = roomManagementService.getBookings(lectureBlock);
+		if (bookings == null || bookings.isEmpty()) {
+			return Response.noContent().status(Status.NO_CONTENT).build();
+		}
+		return Response.ok(RoomBookingVO.valueOf(bookings.get(0))).build();
+	}
+
+	@PUT
+	@Path("room")
+	@Operation(summary = "Create or update the room booking of the lecture block", description = "Create or replace the room booking of the lecture block. Identifier precedence: roomKey > externalId > externalRef (when unique).")
+	@ApiResponse(responseCode = "200", description = "The created or updated room booking", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RoomBookingVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RoomBookingVO.class)) })
+	@ApiResponse(responseCode = "400", description = "No room identifier supplied")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The room was not found")
+	@ApiResponse(responseCode = "422", description = "The externalRef is ambiguous (multiple rooms match)",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(type = "object", example = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":2}")))
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putRoomBooking(RoomBookingVO vo, @Context HttpServletRequest httpRequest) {
+		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		if (!administrator) {
+			return Response.status(Status.FORBIDDEN).build();
+		}
+		if (vo == null) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+
+		Room room;
+		if (vo.getRoomKey() != null) {
+			room = roomManagementService.getRoom(() -> vo.getRoomKey());
+			if (room == null) {
+				return Response.status(Status.NOT_FOUND).build();
+			}
+		} else if (vo.getExternalId() != null && !vo.getExternalId().isBlank()) {
+			SearchRoomParameters idParams = new SearchRoomParameters();
+			idParams.setExactExternalId(vo.getExternalId());
+			idParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+			idParams.setIdentity(getIdentity(httpRequest));
+			List<Room> byId = roomManagementService.searchRooms(idParams, getRoles(httpRequest));
+			if (byId.isEmpty()) {
+				return Response.status(Status.NOT_FOUND).build();
+			}
+			room = byId.get(0);
+		} else if (vo.getExternalRef() != null && !vo.getExternalRef().isBlank()) {
+			SearchRoomParameters refParams = new SearchRoomParameters();
+			refParams.setExactExternalRef(vo.getExternalRef());
+			refParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+			refParams.setIdentity(getIdentity(httpRequest));
+			List<Room> byRef = roomManagementService.searchRooms(refParams, getRoles(httpRequest));
+			if (byRef.isEmpty()) {
+				return Response.status(Status.NOT_FOUND).build();
+			}
+			if (byRef.size() > 1) {
+				String body = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":" + byRef.size() + "}";
+				return Response.status(422).entity(body).type(MediaType.APPLICATION_JSON).build();
+			}
+			room = byRef.get(0);
+		} else {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+
+		Date startDate = vo.getStartDate() != null ? vo.getStartDate() : lectureBlock.getStartDate();
+		Date endDate = vo.getEndDate() != null ? vo.getEndDate() : lectureBlock.getEndDate();
+
+		Identity doer = getIdentity(httpRequest);
+		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
+		RoomBooking booking;
+		if (existing != null && !existing.isEmpty()) {
+			booking = existing.get(0);
+			booking.setRoom(room);
+			booking.setStartDate(startDate);
+			booking.setEndDate(endDate);
+			booking.setBufferBefore(vo.getBufferBeforeMin());
+			booking.setBufferAfter(vo.getBufferAfterMin());
+			booking = roomManagementService.updateBooking(booking, doer);
+		} else {
+			booking = roomManagementService.bookRoom(room, lectureBlock,
+					startDate, endDate,
+					vo.getBufferBeforeMin(), vo.getBufferAfterMin(), doer);
+		}
+		return Response.ok(RoomBookingVO.valueOf(booking)).build();
+	}
+
+	@DELETE
+	@Path("room")
+	@Operation(summary = "Delete the room booking of the lecture block", description = "Delete the room booking of the lecture block (204 if no booking exists)")
+	@ApiResponse(responseCode = "204", description = "Room booking deleted or no booking existed")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	public Response deleteRoomBooking(@Context HttpServletRequest httpRequest) {
+		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		if (!administrator) {
+			return Response.status(Status.FORBIDDEN).build();
+		}
+		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
+		if (existing != null && !existing.isEmpty()) {
+			Identity doer = getIdentity(httpRequest);
+			roomManagementService.deleteBooking(existing.get(0), doer);
+		}
+		return Response.noContent().build();
+	}
+
 	private Response identitiesToResponse(List<Identity> identities) {
 		int count = 0;
 		UserVO[] ownerVOs = new UserVO[identities.size()];

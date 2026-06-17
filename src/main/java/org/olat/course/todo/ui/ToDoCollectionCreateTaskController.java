@@ -34,10 +34,13 @@ import org.olat.course.todo.CourseToDoService;
 import org.olat.course.todo.model.ToDoTaskCollectionCreateContext;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,8 +79,12 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 		
 		List<TagInfo> tagInfos = toDoService.getTagInfos(courseToDoService.createCourseTagSearchParams(context.getRepositoryEntry()), sourceToDoTask);
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, false, List.of(), null,
-				MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of(), List.of(),
+		IdentitySelectionSource emptySource = new IdentitySelectionSource(getLocale(), List.of(), List::of, getIdentity());
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
+				ToDoTaskContextConfig.off(null),
+				ToDoTaskMemberConfig.disabled(emptySource, true),
+				ToDoTaskMemberConfig.disabled(emptySource, false),
+				ToDoTaskDateConfig.absoluteOnly(),
 				tagInfos, true);
 		if (sourceToDoTask != null) {
 			toDoTaskEditForm.setValues(convert ? new ToDoTaskValues(sourceToDoTask) : new CopyValues(getLocale(), sourceToDoTask));

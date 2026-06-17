@@ -1,0 +1,83 @@
+<div class="o_wizard o_wizard_embedded" aria-labelledby="$r.getId('o_md_')"><div class="#if($elementCssClass) $elementCssClass #end"><div class="">
+	<div class="o_wizard_body">
+		<div class="o_steps">
+			## Main steps
+			<div class="o_steps_main clearfix">
+				<ul>
+				#foreach($mainTitle in $mainStepTitles)
+					<li #if($mainStepPos == $foreach.index) class="active" aria-current="step"#end>
+					#if($mainStepPos == $foreach.index)
+						$r.render($mainTitle, "a11yactive")
+					#else
+						$r.render($mainTitle)
+					#end						
+						<span class="chevron"></span>
+					</li>
+				#end
+				</ul>
+			</div>
+			## Substeps
+			#if($r.isNotNull($subStepPos))
+				<div class="o_steps_sub clearfix">
+					<ul>
+					#foreach($subTitle in $subStepTitles)
+						<li #if($subStepPos == $foreach.index) class="active" aria-current="step"#end>
+						#if($subStepPos == $foreach.index)
+							$r.render($subTitle, "a11yactive")
+						#else
+							$r.render($subTitle)
+						#end
+						</li>
+					#end
+					</ul>
+				</div>
+			#end
+		</div>
+			
+		<!-- wizard step content -->
+		<div class="o_wizard_steps_current">
+			<div class="o_wizard_steps_current_inner">
+				<div class="o_wizard_steps_current_content clearfix">
+					<div class="o_floatscrollbox">
+						$r.render("FFO_CURRENTSTEPPAGE")
+					</div>
+				</div>
+				<div style="clear:both; height: 1px">&nbsp;</div>
+			</div>
+		</div>
+	</div>
+	<!-- bottom navigation -->
+	<div class="o_button_group">
+		$r.render("back")
+		$r.render("next")
+		$r.render("finish")
+		$r.render("cancel")
+	</div>
+</div></div></div>
+
+<script>
+jQuery(function() {
+	jQuery('.o_wizard_embedded .o_steps_main, .o_wizard_embedded .o_steps_sub').each(function() {
+		var box = this;
+		var active = box.querySelector('li.active');
+		if (!active) return;
+		requestAnimationFrame(function() {
+			var offset = active.offsetLeft - (box.clientWidth - active.offsetWidth) / 2;
+			box.scrollLeft = Math.max(0, offset);
+		});
+	});
+});
+</script>
+
+#set($historyPoint = ${historyProxy.getCurrentPoint()})
+#if($push.isTrue())
+<script>
+jQuery(function() {
+	try {
+		o_pushState('$historyPoint.uuid', 'Application', '$historyPoint.businessPath');
+	} catch(e) {
+		if(window.console) console.log(e);
+	}
+});		
+</script>
+#end

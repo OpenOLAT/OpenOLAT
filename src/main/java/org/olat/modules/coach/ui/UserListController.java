@@ -52,6 +52,7 @@ import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
+import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +112,7 @@ public class UserListController extends FormBasicController implements Activatea
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countCourse));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressRenderer(false, getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new SuccessStatusCellRenderer()));
 		
 		model = new StudentsTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);

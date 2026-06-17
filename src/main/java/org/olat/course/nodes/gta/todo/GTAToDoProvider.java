@@ -36,13 +36,19 @@ import org.olat.course.todo.ui.CourseToDoUIFactory;
 import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
+import org.olat.modules.todo.ToDoRole;
+import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,6 +63,8 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 	
 	@Autowired
 	private CourseToDoContextFilter contextFilter;
+	@Autowired
+	private ToDoService toDoService;
 	
 	@Override
 	public boolean isEnabled() {
@@ -122,9 +130,22 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, showContext, List.of(toDoTask), toDoTask,
-				null, ASSIGNEE_RIGHTS, MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of());
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(List.of(toDoTask), toDoTask)
+				: ToDoTaskContextConfig.off(toDoTask);
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
+		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
+		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees,
+				() -> assignees, ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees,
+				() -> delegatees, ureq.getIdentity());
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, contextConfig,
+				ToDoTaskMemberConfig.disabled(assigneeSource, true),
+				ToDoTaskMemberConfig.disabled(delegateeSource, false),
+				members, ToDoTaskDateConfig.absoluteOnly(),
+				null, ASSIGNEE_RIGHTS, null);
 	}
 
 	@Override

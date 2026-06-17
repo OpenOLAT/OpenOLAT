@@ -281,7 +281,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		}
 	}
 	
-	private boolean isIgnored(AbstractImportRow row) {
+	protected boolean isIgnored(AbstractImportRow row) {
 		CurriculumImportedStatistics statistics = row.getValidationStatistics();
 		if(statistics.errors() > 0) {
 			return true;

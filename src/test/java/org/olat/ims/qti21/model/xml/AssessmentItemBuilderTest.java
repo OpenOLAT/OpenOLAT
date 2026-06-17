@@ -41,8 +41,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -179,9 +179,9 @@ public class AssessmentItemBuilderTest {
 	}
 	
 	@Test
-	public void buildAssessmentItem_textEntry() throws IOException, URISyntaxException {
+	public void buildAssessmentItem_gapTextEntry() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
+		GapAssessmentItemBuilder itemBuilder = new GapAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
 		if(build.booleanValue()) {
 			itemBuilder.build();
 		}

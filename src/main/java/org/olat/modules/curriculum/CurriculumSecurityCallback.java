@@ -90,4 +90,8 @@ public interface CurriculumSecurityCallback {
 	
 	boolean canCurriculumsReports();
 
+	boolean canViewToDos();
+
+	boolean canManageToDos(CurriculumElement element);
+
 }

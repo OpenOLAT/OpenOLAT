@@ -9,6 +9,23 @@
 	&.o_scorm_not_attempted { background: none; }
 }
 
+/* The frame with the SCORM controller (navigation + SCOs) */
+.o_iframesandbox {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	min-height: 480px;
+	border: none;
+			
+	>iframe {
+		display: block; 
+		width: 100%;
+		border: none;
+		overflow-y: auto;
+		overflow-x: auto;
+	}
+}
+
 body.o_scorm_full_width {
 	margin: 0;
 	padding: 0;
@@ -17,12 +34,46 @@ body.o_scorm_full_width {
 		display:none;
 	}
 	
-	div.o_container_offcanvas {
-		margin-left: 0;
-		margin-right: 0;
+	div.o_container_offcanvas,
+	#o_main_wrapper #o_main_container {
+		margin: 0;
+		padding: 0;
 	}
 	
 	#o_main_wrapper #o_toplink {
+		display: none;
+	}
+
+	.o_iframesandbox {
+		margin: 0;
+		padding: 0;
+		width: 100vw;
+		height: 100vh !important;
+				
+		>iframe {
+			width: 100vw;
+			height: 100vh !important;
+			min-height: 100vh !important;
+		}
+	}
+}
+
+/* The frame with SCOs */
+body.o_scorm_inner_frame {
+	margin: 0;
+	padding: 0;
+	
+	div.o_container_offcanvas {
+		padding: 0;
+		margin: 0;
+		max-width: 100%;
+	}
+	
+	#o_toplink,
+	#o_header_wrapper,
+	#o_navbar_wrapper,
+	.o_scorm_back_toolbar,
+	#o_container_page_width_toggler {
 		display: none;
 	}
 	
@@ -32,27 +83,34 @@ body.o_scorm_full_width {
 		padding: 0;
 	}
 	
-	.o_scorm {
-		.o_iframedisplay {
-			margin: 0;
-			padding: 0;
-			width: 100vw;
-			height: 100vh !important;
- 			border: none;
-			
-			>iframe {
-				display: block; 
- 				width: 100vw;
- 				height: 100vh !important;
- 				min-height: 100vh !important;
- 				border: none; 
-				overflow-y: auto; 
-				overflow-x: auto;
+	&.o_scorm_inner_full_width {
+		.o_scorm {
+			.o_iframedisplay {
+				margin: 0;
+				padding: 0;
+				width: 100vw;
+				height: 100vh !important;
+	 			border: none;
+				
+				>iframe {
+					display: block; 
+	 				width: 100vw;
+	 				height: 100vh !important;
+	 				min-height: 100vh !important;
+	 				border: none; 
+					overflow-y: auto; 
+					overflow-x: auto;
+				}
 			}
 		}
 	}
 	
-	&.o_scorm_with_back {
+	&.o_scorm_inner_with_back .o_scorm_back_toolbar {
+		display: block;
+	}
+	
+	/* Make room for the toolbar */
+	&.o_scorm_inner_full_width.o_scorm_inner_with_back {
 		.o_toolbar {
 			margin: 10px 15px;
 			display: block;
@@ -61,14 +119,12 @@ body.o_scorm_full_width {
 			overflow: hidden;
 		}
 		
-		.o_scorm {
-			.o_iframedisplay {
+		.o_scorm .o_iframedisplay {
+			height: calc(100vh - 50px) !important;
+		
+			>iframe {
 				height: calc(100vh - 50px) !important;
-			
-				>iframe {
- 					height: calc(100vh - 50px) !important;
- 					min-height: calc(100vh - 50px) !important;
-				}
+				min-height: calc(100vh - 50px) !important;
 			}
 		}
 	}

@@ -43,4 +43,6 @@ public interface OAuthConstants {
 	// Reserved to GoToTraining
 	public static final String OAUTH_STATE = "oauthState";
 	public static final String OAUTH_NONCE = "oauthNonce";
+	
+	public static final String OAUTH_TRANSIENT_IDENTITY = "oauthTransientIdentity";
 }

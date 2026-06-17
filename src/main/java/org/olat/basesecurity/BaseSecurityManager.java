@@ -258,6 +258,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.qualitymanager, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.linemanager, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.educationmanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.selectusmanager, actingIdentity, updatedIdentity);
 
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.principal, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.administrator, actingIdentity, updatedIdentity);
@@ -767,6 +768,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public List<Authentication> getAuthentications(IdentityRef identity) {
 		return authenticationDao.getAuthentications(identity);
+	}
+
+	@Override
+	public List<Authentication> getAuthentications(List<? extends IdentityRef> identities) {
+		return authenticationDao.getAuthentications(identities);
 	}
 
 	@Override

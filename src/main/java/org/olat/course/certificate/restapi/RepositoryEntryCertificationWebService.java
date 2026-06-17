@@ -314,8 +314,9 @@ public class RepositoryEntryCertificationWebService {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
-			certificatesManager.uploadCertificate(assessedIdentity, creationDate,
-				externalId, managedFlags, entry.getOlatResource(), nextRecertificationDate, tmpFile);
+			Identity doer = getIdentity(request);
+			certificatesManager.uploadCertificate(assessedIdentity, creationDate, externalId, managedFlags,
+					null, entry.getOlatResource(), nextRecertificationDate, tmpFile, doer);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

@@ -46,4 +46,14 @@ public class ExpandButtonFactory {
 		return button;
 	}
 
+	public static FormExpandButton createFormSelectionDisplay(String name) {
+		FormExpandButtonImpl button = new FormExpandButtonImpl(name);
+		button.setFireEvent(false);
+		button.setCssClass("btn btn-default o_selection_display o_button_printed");
+		button.setIconRightExpandedCss("o_icon o_icon_caret");
+		button.setIconRightCollapsedCss("o_icon o_icon_caret");
+		button.setDisabledAsText(true);
+		return button;
+	}
+
 }

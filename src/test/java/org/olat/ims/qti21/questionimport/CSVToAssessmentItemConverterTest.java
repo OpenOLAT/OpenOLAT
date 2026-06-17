@@ -29,10 +29,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder.InlineChoiceInteractionEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.InlineChoiceInteractionEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
 import org.olat.test.JunitTestHelper;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
@@ -110,7 +109,7 @@ public class CSVToAssessmentItemConverterTest {
 		
 		// first item
 		AssessmentItemAndMetadata item = itemsAndData.get(0);
-		FIBAssessmentItemBuilder builder = (FIBAssessmentItemBuilder)item.getItemBuilder();
+		GapAssessmentItemBuilder builder = (GapAssessmentItemBuilder)item.getItemBuilder();
 		Assert.assertEquals(3.0d, builder.getMaxScoreBuilder().getScore().doubleValue(), 0.00001);
 		
 		List<Interaction> interactions = builder.getAssessmentItem().getItemBody().findInteractions();
@@ -166,16 +165,16 @@ public class CSVToAssessmentItemConverterTest {
 		
 		InlineChoiceInteraction inlineChoiceInteraction = (InlineChoiceInteraction)interactions.get(0);
 		List<InlineChoice> inlineChoices = inlineChoiceInteraction.getInlineChoices();
-		Assert.assertEquals("", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(0)));
-		Assert.assertEquals(".", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(1)));
-		Assert.assertEquals(";", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(2)));
-		Assert.assertEquals("!", InlineChoiceAssessmentItemBuilder.getText(inlineChoices.get(3)));
+		Assert.assertEquals("", GapAssessmentItemBuilder.getText(inlineChoices.get(0)));
+		Assert.assertEquals(".", GapAssessmentItemBuilder.getText(inlineChoices.get(1)));
+		Assert.assertEquals(";", GapAssessmentItemBuilder.getText(inlineChoices.get(2)));
+		Assert.assertEquals("!", GapAssessmentItemBuilder.getText(inlineChoices.get(3)));
 		
-		Assert.assertTrue(itemBuilder instanceof InlineChoiceAssessmentItemBuilder);
-		InlineChoiceAssessmentItemBuilder inlineChoiceBuilder = (InlineChoiceAssessmentItemBuilder)itemBuilder;
+		Assert.assertTrue(itemBuilder instanceof GapAssessmentItemBuilder);
+		GapAssessmentItemBuilder inlineChoiceBuilder = (GapAssessmentItemBuilder)itemBuilder;
 		
 		InlineChoiceInteractionEntry inlineChoiceInteractionEntry = inlineChoiceBuilder
-				.getInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
+				.getInlineChoiceInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
 		Assert.assertEquals(inlineChoices.get(0).getIdentifier(), inlineChoiceInteractionEntry.getCorrectResponseId());
 		Assert.assertEquals(1.0d, inlineChoiceInteractionEntry.getScore(inlineChoices.get(0).getIdentifier()).doubleValue(), 0.0001);
 	}

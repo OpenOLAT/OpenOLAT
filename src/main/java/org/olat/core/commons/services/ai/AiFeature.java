@@ -35,7 +35,8 @@ public enum AiFeature {
 	MCQuestionGenerator("mc-question-generator"),
 	ImageDescriptionGenerator("image-description-generator"),
 	EssayGeneration("essay-generation"),
-	EssayGrading("essay-grading")
+	EssayGrading("essay-grading"),
+	TaxonomyMatching("taxonomy-matching")
 	;
 	
 	public static List<AiFeature> VALUES = List.of(values());

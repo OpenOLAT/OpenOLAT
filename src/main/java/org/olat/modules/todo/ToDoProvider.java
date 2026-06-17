@@ -91,7 +91,7 @@ public interface ToDoProvider {
 	}
 	
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee);
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride);
 
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,

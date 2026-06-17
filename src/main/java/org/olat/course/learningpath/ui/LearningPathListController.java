@@ -162,8 +162,8 @@ public class LearningPathListController extends FormBasicController implements T
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (canEdit) {
 			SelectionValues excludedKV = new SelectionValues();
-			excludedKV.add(new SelectionValue(KEY_EXCLUDED_HIDE, translate("excluded.hide"), "o_primary", true));
-			excludedKV.add(new SelectionValue(KEY_EXCLUDED_SHOW, translate("excluded.show"), "o_primary", true));
+			excludedKV.add(new SelectionValue(KEY_EXCLUDED_HIDE, translate("excluded.hide")));
+			excludedKV.add(new SelectionValue(KEY_EXCLUDED_SHOW, translate("excluded.show")));
 			excludedToggleEl = uifactory.addButtonGroupSingleSelectHorizontal("excluded.toggle", formLayout, excludedKV);
 			excludedToggleEl.select(excludedToggleEl.getKey(0), true);
 			excludedToggleEl.addActionListener(FormEvent.ONCHANGE);

@@ -29,6 +29,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_RESOURCES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_STRUCTURE;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_TODOS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +70,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -85,6 +87,7 @@ import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesControll
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
+import org.olat.modules.curriculum.ui.widgets.CurriculumElementToDoTasksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.CurriculumLectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.MembersWidgetController;
 import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
@@ -114,6 +117,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int absencesTab;
 	private int offersTab;
 	private int metadataTab;
+	private int todosTab;
 
 	private Dropdown statusDropdown;
 	private Link nextButton;
@@ -132,6 +136,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private OffersWidgetController offersWidgetCtrl;
 	private CoursesWidgetController coursesWidgetCtrl;
 	private MembersWidgetController membersWidgetCtrl;
+	private CurriculumElementToDoTasksWidgetController toDoTasksWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
 	private DashboardController overviewCtrl;
 	private CurriculumElementOffersController offersCtrl;
@@ -143,6 +148,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumElementStatusChangeController statusChangeCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
+	private CurriculumElementToDoListController todosCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	private ConfirmDeleteCurriculumElementController deleteCurriculumElementCtrl;
 	
@@ -153,6 +159,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private final CurriculumElement implementationElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -165,13 +172,15 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	public CurriculumElementDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumElement curriculumElement,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.curriculumElement = curriculumElement;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		canChildren = canChildren(curriculumElement);
 		canRepositoryEntries = canRepositoryEntries(curriculumElement);
 		implementationElement = getRootElement();
@@ -485,7 +494,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_STRUCTURE), null);
 				structureCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
-						curriculum, curriculumElement, config, secCallback, lecturesSecCallback);
+						curriculum, curriculumElement, config, secCallback, lecturesSecCallback,
+						certificationSecCallback);
 				listenTo(structureCtrl);
 				
 				List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
@@ -552,6 +562,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			return userManagementCtrl.getInitialComponent();
 		}, false);
 		
+		// To-dos
+		if (secCallback.canViewToDos()) {
+			todosTab = tabPane.addTab(ureq, translate("tab.todos"), "o_sel_curriculum_todos", uureq -> {
+				WindowControl subControl = addToHistory(uureq, OresHelper
+						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_TODOS), null);
+				todosCtrl = new CurriculumElementToDoListController(uureq, subControl, curriculumElement, secCallback);
+				listenTo(todosCtrl);
+				return todosCtrl.getInitialComponent();
+			}, true);
+		}
+
 		// Offers
 		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
 				&& secCallback.canViewCatalogSettings(curriculumElement)) {
@@ -566,7 +587,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		// Metadata
 		metadataTab = tabPane.addTab(ureq, translate("tab.settings"), uureq -> {
 			editMetadataCtrl = new EditCurriculumElementController(uureq, getWindowControl(), toolbarPanel,
-					curriculumElement, curriculumElement.getParent(), curriculum, secCallback);
+					curriculumElement, curriculumElement.getParent(), curriculum, secCallback, certificationSecCallback);
 			listenTo(editMetadataCtrl);
 			return editMetadataCtrl.getInitialComponent();
 		});
@@ -597,6 +618,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		removeAsListenerAndDispose(offersWidgetCtrl);
 		removeAsListenerAndDispose(coursesWidgetCtrl);
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
+		removeAsListenerAndDispose(toDoTasksWidgetCtrl);
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
@@ -621,13 +643,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewCtrl.addWidget("courses", translate("tab.resources"), coursesWidgetCtrl, BentoBoxSize.box_4_1);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
+		toDoTasksWidgetCtrl = new CurriculumElementToDoTasksWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
+		listenTo(toDoTasksWidgetCtrl);
+		overviewCtrl.addWidget("todos", translate("curriculum.todos"), toDoTasksWidgetCtrl, BentoBoxSize.box_4_1);
+
 		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null
 				&& secCallback.canViewCatalogSettings(curriculumElement)) {
 			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(offersWidgetCtrl);
 			overviewCtrl.addWidget("offers", translate("curriculum.offers"), offersWidgetCtrl, BentoBoxSize.box_4_1);
 		}
-		
+
 		return overviewCtrl;
 	}
 	
@@ -663,6 +689,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			tabPane.setSelectedPane(ureq, userManagerTab);
 			if(userManagementCtrl != null) {
 				userManagementCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if(CONTEXT_TODOS.equalsIgnoreCase(type) && todosTab > 0) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			tabPane.setSelectedPane(ureq, todosTab);
+			if(todosCtrl != null) {
+				todosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if(CONTEXT_OFFERS.equalsIgnoreCase(type) && offersTab > 0) {
 			tabPane.setSelectedPane(ureq, offersTab);
@@ -758,7 +790,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(structureCtrl == source || coursesWidgetCtrl == source || offersWidgetCtrl == source
 				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
-				|| resourcesCtrl == source || membersWidgetCtrl == source) {
+				|| resourcesCtrl == source || membersWidgetCtrl == source
+				|| toDoTasksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {

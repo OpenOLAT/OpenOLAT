@@ -55,8 +55,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -255,7 +255,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 					List.of(),
 					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
-					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+					translate(labelI18nKey));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, generalCont, getWindowControl(), true, source);
 			if (catalogModule.isEnabled()) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);

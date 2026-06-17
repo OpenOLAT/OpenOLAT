@@ -44,6 +44,7 @@ public class RolesVO {
 	private boolean institutionalResourceManager = false;
 	private boolean poolAdmin = false;
 	private boolean curriculumManager = false;
+	private boolean selectusManager = false;
 	private boolean invitee = false;
 
 	public RolesVO() {
@@ -61,6 +62,7 @@ public class RolesVO {
 		poolAdmin = roles.isPoolManager();
 		curriculumManager = roles.isCurriculumManager();
 		invitee = roles.isInvitee();
+		selectusManager = roles.isSelectusManager();
 	}
 
 	public boolean isSystemAdmin() {
@@ -133,6 +135,14 @@ public class RolesVO {
 
 	public void setCurriculumManager(boolean curriculumManager) {
 		this.curriculumManager = curriculumManager;
+	}
+
+	public boolean isSelectusManager() {
+		return selectusManager;
+	}
+
+	public void setSelectusManager(boolean selectusManager) {
+		this.selectusManager = selectusManager;
 	}
 
 	public boolean isInvitee() {

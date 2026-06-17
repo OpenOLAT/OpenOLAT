@@ -10,12 +10,22 @@
 
 package org.olat.modules.oaipmh.dataprovider.parameters;
 
-import com.lyncode.builder.Builder;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.From;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Identifier;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.ResumptionToken;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Set;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Until;
+
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
+
 import org.olat.modules.oaipmh.common.exceptions.InvalidResumptionTokenException;
 import org.olat.modules.oaipmh.common.model.ResumptionToken;
+import org.olat.modules.oaipmh.common.model.Verb.Type;
 import org.olat.modules.oaipmh.common.services.api.DateProvider;
 import org.olat.modules.oaipmh.common.services.api.ResumptionTokenFormat;
 import org.olat.modules.oaipmh.common.services.impl.SimpleResumptionTokenFormat;
@@ -24,24 +34,6 @@ import org.olat.modules.oaipmh.dataprovider.exceptions.BadArgumentException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.DuplicateDefinitionException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.IllegalVerbException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.UnknownParameterException;
-
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.olat.modules.oaipmh.common.model.Verb.Type;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.From;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Identifier;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.ResumptionToken;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Set;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Until;
 
 /**
  * @author Development @ Lyncode
@@ -54,12 +46,8 @@ public class OAICompiledRequest {
     public static OAICompiledRequest compile (OAIRequest request, ResumptionTokenFormat formatter) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
         return new OAICompiledRequest(request, formatter);
     }
-    public static OAICompiledRequest compile (Builder<OAIRequest> request) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
-        return new OAICompiledRequest(request.build());
-    }
-    public static OAICompiledRequest compile (Builder<OAIRequest> request, ResumptionTokenFormat formatter) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
-        return new OAICompiledRequest(request.build(), formatter);
-    }
+
+    private static final Set<String> KNOWN_PARAMS = java.util.Set.of("verb", "from", "until", "metadataPrefix", "identifier", "set", "resumptionToken");
 
     private static DateProvider dateProvider = new UTCDateProvider();
 
@@ -82,20 +70,17 @@ public class OAICompiledRequest {
             UnknownParameterException, DuplicateDefinitionException, InvalidResumptionTokenException {
 
         Collection<String> parameterNames = request.getParameterNames();
-        if (isTrueThat(parameterNames, not(hasItem(equalTo("verb")))))
+        if (!parameterNames.contains("verb"))
             throw new IllegalVerbException("No verb provided");
 
         for (String parameterName : parameterNames)
-            if (isTrueThat(parameterName, not(in("verb", "from", "until", "metadataPrefix", "identifier", "set", "resumptionToken"))))
+            if (!KNOWN_PARAMS.contains(parameterName))
                 throw new UnknownParameterException("Unknown parameter '" + parameterName + "'");
 
         String until = request.getString(Until);
         String from = request.getString(From);
-        if (isTrueThat(until, is(not(nullValue())))
-                && isTrueThat(from, is(not(nullValue())))
-                && from.length() != until.length())
+        if (until != null && from != null && from.length() != until.length())
             throw new BadArgumentException("Distinct granularities provided for until and from parameters");
-
 
         this.verbType = request.getVerb();
         this.from = request.getDate(From);
@@ -115,28 +100,6 @@ public class OAICompiledRequest {
 
         this.validate();
         this.loadResumptionToken(this.resumptionToken);
-    }
-
-    private Matcher<String> in(final String... possibilities) {
-        return new TypeSafeMatcher<>() {
-            @Override
-            protected boolean matchesSafely(String item) {
-                for (String possibility : possibilities)
-                    if (possibility.equals(item))
-                        return true;
-
-                return false;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("in");
-            }
-        };
-    }
-
-    private <T> boolean isTrueThat(T value, Matcher<T> matcher) {
-        return matcher.matches(value);
     }
 
     public boolean hasResumptionToken() {

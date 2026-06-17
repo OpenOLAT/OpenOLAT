@@ -68,6 +68,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -134,11 +136,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final Logger log = Tracing.createLoggerFor(ToDoTaskListController.class);
 	
 	public static final String TYPE_TODO = "ToDo";
-	private static final String TAB_ID_MY = "My";
+	public static final String TAB_ID_MY = "My";
 	public static final String TAB_ID_ALL = "All";
-	private static final String TAB_ID_OVERDUE = "Overdue";
-	private static final String TAB_ID_RECENTLY = "Recently";
-	private static final String TAB_ID_NEW = "New";
+	public static final String TAB_ID_OPEN = "Open";
+	public static final String TAB_ID_OVERDUE = "Overdue";
+	private static final String TAB_ID_UNASSIGNED = "Unassigned";
 	private static final String TAB_ID_DONE = "Done";
 	public static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_KEY_MY = "my";
@@ -154,11 +156,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private FormLink bulkDeleteButton;
 	protected FlexiFiltersTab tabMy;
 	protected FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabOpen;
 	private FlexiFiltersTab tabOverdue;
-	private FlexiFiltersTab tabRecently;
-	private FlexiFiltersTab tabNew;
 	private FlexiFiltersTab tabDone;
 	protected FlexiFiltersTab tabDeleted;
+	private FlexiFiltersTab tabUnassigned;
 	private FlexiTableElement tableEl;
 	private ToDoTaskDataModel dataModel;
 	private VelocityContainer detailsVC;
@@ -196,7 +198,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
-	protected abstract Date getLastVisitDate();
+	protected abstract Date getNewSinceDate();
 	
 	protected boolean isFiltersEnabled() {
 		return true;
@@ -211,6 +213,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	protected abstract List<TagInfo> getFilterTags();
+
+	protected boolean isFilterTabUnassignedEnabled() {
+		return false;
+	}
 	
 	protected void reorderFilterTabs(@SuppressWarnings("unused") List<FlexiFiltersTab> tabs) {
 		//
@@ -230,10 +236,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected boolean isCustomizeColumns() {
 		return true;
-	}
-	
-	protected String getPreferenceId() {
-		return null;
 	}
 	
 	protected String getEmptyMessageI18nKey() {
@@ -257,7 +259,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	protected abstract Collection<String> getTypes();
-
 	
 	protected abstract ToDoTaskSearchParams createSearchParams();
 	
@@ -274,9 +275,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if (isVisible(ToDoTaskCols.id) && ureq.getUserSession().getRoles().isAdministrator()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.id));
-		}
 		if (isVisible(ToDoTaskCols.title)) {
 			FlexiCellRenderer renderer = new FormItemCollectonFlexiCellRenderer();
 			if (getToDoTaskRowGrouping().isGrouping()) {
@@ -284,59 +282,27 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(ToDoTaskCols.title, renderer);
 			columnModel.setAlwaysVisible(true);
+			applyLabel(columnModel, ToDoTaskCols.title);
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
-		if (isVisible(ToDoTaskCols.priority)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.priority, new ToDoPriorityCellRenderer(getTranslator())));
-		}
-		if (isVisible(ToDoTaskCols.expenditureOfWork)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.expenditureOfWork));
-		}
-		if (isVisible(ToDoTaskCols.startDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.startDate));
-		}
-		if (isVisible(ToDoTaskCols.dueDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.dueDate, new ToDoDueDateCellRenderer()));
-		}
-		if (isVisible(ToDoTaskCols.due)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.due, new ToDoDueCellRenderer()));
-		}
-		if (isVisible(ToDoTaskCols.doneDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.doneDate));
-		}
-		if (isVisible(ToDoTaskCols.status)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator())));
-		}
-		if (isVisible(ToDoTaskCols.contextType)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextType));
-		}
-		if (isVisible(ToDoTaskCols.contextTitle)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextTitle));
-		}
-		if (isVisible(ToDoTaskCols.contextSubTitle)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.contextSubTitle));
-		}
-		if (isVisible(ToDoTaskCols.assigned)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.assigned));
-		}
-		if (isVisible(ToDoTaskCols.delegated)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.delegated));
-		}
-		if (isVisible(ToDoTaskCols.tags)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
-		}
-		if (isVisible(ToDoTaskCols.creationDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.creationDate));
-		}
-		if (isVisible(ToDoTaskCols.contentLastModifiedDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contentLastModifiedDate));
-		}
-		if (isVisible(ToDoTaskCols.deletedDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedDate));
-		}
-		if (isVisible(ToDoTaskCols.deletedBy)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedBy));
-		}
+		addColumn(columnsModel, ToDoTaskCols.priority, new ToDoPriorityCellRenderer(getTranslator()));
+		addColumn(columnsModel, ToDoTaskCols.expenditureOfWork);
+		addColumn(columnsModel, ToDoTaskCols.startDate);
+		addColumn(columnsModel, ToDoTaskCols.dueDate, new ToDoDueDateCellRenderer());
+		addColumn(columnsModel, ToDoTaskCols.due, new ToDoDueCellRenderer());
+		addColumn(columnsModel, ToDoTaskCols.doneDate);
+		addColumn(columnsModel, ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator()));
+		addColumn(columnsModel, ToDoTaskCols.contextType);
+		addColumn(columnsModel, ToDoTaskCols.contextTitle);
+		addColumn(columnsModel, ToDoTaskCols.contextSubTitle);
+		addColumn(columnsModel, ToDoTaskCols.assigned);
+		addColumn(columnsModel, ToDoTaskCols.delegated);
+		addColumn(columnsModel, ToDoTaskCols.tags, new TextFlexiCellRenderer(EscapeMode.none));
+		addColumn(columnsModel, ToDoTaskCols.creationDate);
+		addColumn(columnsModel, ToDoTaskCols.creationBy);
+		addColumn(columnsModel, ToDoTaskCols.contentLastModifiedDate);
+		addColumn(columnsModel, ToDoTaskCols.deletedDate);
+		addColumn(columnsModel, ToDoTaskCols.deletedBy);
 		if (isVisible(ToDoTaskCols.tools)) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ToDoTaskCols.tools));
 		}
@@ -347,9 +313,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
 		tableEl.setCustomizeColumns(isCustomizeColumns());
-		if (StringHelper.containsNonWhitespace(getPreferenceId())) {
-			tableEl.setAndLoadPersistedPreferences(ureq, getPreferenceId());
-		}
 		
 		if (isShowDetails()) {
 			String page = Util.getPackageVelocityRoot(ToDoTaskListController.class) + "/todo_task_list_details.html";
@@ -360,11 +323,45 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 	}
 
-	@SuppressWarnings("unused") 
+	@SuppressWarnings("unused")
 	protected boolean isVisible(ToDoTaskCols col) {
 		return true;
 	}
-	
+
+	protected boolean isDefaultVisible(ToDoTaskCols col) {
+		return switch (col) {
+			case expenditureOfWork, startDate, doneDate, contextSubTitle,
+				 creationDate, creationBy, contentLastModifiedDate,
+				 deletedDate, deletedBy -> false;
+			default -> true;
+		};
+	}
+
+	@SuppressWarnings("unused")
+	protected String getColumnLabel(ToDoTaskCols col) {
+		return null;
+	}
+
+	private void addColumn(FlexiTableColumnModel columnsModel, ToDoTaskCols col) {
+		addColumn(columnsModel, col, null);
+	}
+
+	private void addColumn(FlexiTableColumnModel columnsModel, ToDoTaskCols col, FlexiCellRenderer renderer) {
+		if (!isVisible(col)) return;
+		DefaultFlexiColumnModel cm = renderer != null
+				? new DefaultFlexiColumnModel(isDefaultVisible(col), col, renderer)
+				: new DefaultFlexiColumnModel(isDefaultVisible(col), col);
+		applyLabel(cm, col);
+		columnsModel.addFlexiColumnModel(cm);
+	}
+
+	private void applyLabel(DefaultFlexiColumnModel cm, ToDoTaskCols col) {
+		String label = getColumnLabel(col);
+		if (label != null) {
+			cm.setHeaderLabel(label);
+		}
+	}
+
 	protected void initBulkLinks() {
 		if (getSecurityCallback().canBulkDeleteToDoTasks()) {
 			tableEl.setMultiSelect(true);
@@ -386,7 +383,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (isFilterMyEnabled()) {
 			SelectionValues myValues = new SelectionValues();
 			myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("filter.my.value")));
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.my"), ToDoTaskFilter.my.name(), myValues, true));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.my"), ToDoTaskFilter.my.name(), myValues, true));
 		}
 		
 		SelectionValues priorityValues = new SelectionValues();
@@ -405,7 +402,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.future.name(), translate("filter.due.future")));
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.noDueDate.name(), translate("filter.due.anytime")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.due"), ToDoTaskFilter.due.name(), dueValues, true));
-		
+
+		SelectionValues creationDateValues = new SelectionValues();
+		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.today.name(), translate("today")));
+		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.last7Days.name(), translate("filter.created.last.7.days")));
+		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.last4Weeks.name(), translate("filter.created.last.4.weeks")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.created"), ToDoTaskFilter.creationDate.name(), creationDateValues, true));
+
 		SelectionValues statusValues = new SelectionValues();
 		addStatusSVEntry(statusValues, ToDoStatus.open);
 		addStatusSVEntry(statusValues, ToDoStatus.inProgress);
@@ -463,6 +466,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
 		tabs.add(tabAll);
 		
+		tabOpen = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_OPEN,
+				translate("tab.open"),
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, ToDoStatus.open.name())));
+		tabs.add(tabOpen);
+
 		tabOverdue = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_OVERDUE,
 				translate("tab.overdue"),
@@ -471,19 +481,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 		tabOverdue.addDefaultFilterValue(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive));
 		tabs.add(tabOverdue);
 		
-		tabRecently = FlexiFiltersTabFactory.tabWithFilters(
-				TAB_ID_RECENTLY,
-				translate("tab.recently"),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
-		tabs.add(tabRecently);
-		
-		tabNew = FlexiFiltersTabFactory.tabWithFilters(
-				TAB_ID_NEW,
-				translate("tab.new"),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
-		tabs.add(tabNew);
+		if (isFilterTabUnassignedEnabled()) {
+			tabUnassigned = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_UNASSIGNED,
+					translate("tab.unassigned"),
+					TabSelectionBehavior.reloadData,
+					List.of());
+			tabs.add(tabUnassigned);
+		}
 		
 		tabDone = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_DONE,
@@ -498,7 +503,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 				TabSelectionBehavior.reloadData,
 				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, ToDoStatus.deleted.name())));
 		tabs.add(tabDeleted);
-		
+
 		reorderFilterTabs(tabs);
 		
 		tableEl.setFilterTabs(true, tabs);
@@ -535,7 +540,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected void setAndLoadPersistedPreferences(UserRequest ureq, String id) {
 		if (tableEl != null) {
-			tableEl.setAndLoadPersistedPreferences(ureq, id);
+			String preferenceId = id;
+			if (StringHelper.containsNonWhitespace(preferenceId)) {
+				preferenceId += "-v2";
+				tableEl.setAndLoadPersistedPreferences(ureq, preferenceId);
+			}
 		}
 	}
 	
@@ -606,6 +615,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			ToDoTaskMembers toDoTaskMembers = toDoTaskGroupKeyToMembers.get(toDoTask.getBaseGroup().getKey());
 			Set<Identity> creators = toDoTaskMembers.getMembers(ToDoRole.creator);
 			row.setCreator(creators.stream().findFirst().orElse(null));
+			if (row.getCreator() != null) {
+				row.setCreationByName(userManager.getUserDisplayName(row.getCreator().getKey()));
+			}
 			Set<Identity> modifiers = toDoTaskMembers.getMembers(ToDoRole.modifier);
 			row.setModifier(modifiers.stream().findFirst().orElse(null));
 			Set<Identity> assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
@@ -654,12 +666,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private void applyFilters(ToDoTaskSearchParams searchParams) {
-		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabNew) {
-			searchParams.setCreatedAfter(getLastVisitDate());
-		} else {
-			searchParams.setCreatedAfter(null);
-		}
-		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
 		
@@ -723,9 +729,23 @@ public abstract class ToDoTaskListController extends FormBasicController
 					searchParams.setDueDateRanges(null);
 				}
 			}
+			if (ToDoTaskFilter.creationDate.name() == filter.getFilter()) {
+				String value = ((FlexiTableSingleSelectionFilter)filter).getValue();
+				if (value != null) {
+					searchParams.setCreatedAfter(ToDoCreationDateFilter.valueOf(value).getFrom(new Date()));
+				} else {
+					searchParams.setCreatedAfter(null);
+				}
+			}
+		}
+
+		if (tabUnassigned != null && tableEl.getSelectedFilterTab() == tabUnassigned) {
+			searchParams.setAssigneeAvailable(Boolean.FALSE);
+		} else {
+			searchParams.setAssigneeAvailable(null);
 		}
 	}
-	
+
 	protected void applyFilters(List<ToDoTaskRow> rows) {
 		applyFiltersOfTable(rows);
 	}
@@ -744,7 +764,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 				}
 			}
 			if (ToDoTaskFilter.my.name().equals(filter.getFilter())) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				List<String> values = ((FlexiTableOneClickSelectionFilter)filter).getValues();
 				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
 					applyFilterMy(rows);
 				}
@@ -784,10 +804,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private SortKey getSortKeyByTabs() {
-		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabRecently) {
+		if (tableEl.getSelectedFilterTab() == null) {
 			return new SortKey(ToDoTaskCols.contentLastModifiedDate.name(), false);
 		} else if (tableEl.getSelectedFilterTab() == tabMy || tableEl.getSelectedFilterTab() == tabAll
-				|| tableEl.getSelectedFilterTab() == tabOverdue || tableEl.getSelectedFilterTab() == tabDone) {
+				|| tableEl.getSelectedFilterTab() == tabOpen || tableEl.getSelectedFilterTab() == tabOverdue
+				|| tableEl.getSelectedFilterTab() == tabDone) {
 			return new SortKey(ToDoTaskCols.dueDate.name(), true);
 		} else if (tableEl.getSelectedFilterTab() == tabDeleted) {
 			return new SortKey(ToDoTaskCols.title.name(), true);
@@ -1000,10 +1021,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void updateTitleItemUI(ToDoTaskRow row) {
-		String displayName = StringHelper.escapeHtml(row.getDisplayName());
-		String title = ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()
-				? "<span class=\"o_todo_title_done_cell\">" + displayName + "</span>"
-				: displayName;
+		String title = StringHelper.escapeHtml(row.getDisplayName());
+		if (ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()) {
+			title = "<span class=\"o_todo_title_done_cell\">" + title + "</span>";
+		} else if (getNewSinceDate() != null && row.getCreationDate() != null && getNewSinceDate().before(row.getCreationDate())) {
+			title += "<span class=\"o_labeled_light o_todo_new\">" + translate("new.label") +  "</span>";
+		}
+		
 		if (row.getTitleItem() instanceof FormLink link) {
 			link.setI18nKey(title);
 		}
@@ -1021,7 +1045,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		if (isVisible(ToDoTaskCols.contextSubTitle) && StringHelper.containsNonWhitespace(row.getOriginSubTitle())) {
 			FormLink link = uifactory.addFormLink("sub_origin_" + row.getKey(), CMD_GOTO_ORIGIN, "", null, null, Link.NONTRANSLATED);
-			link.setI18nKey(StringHelper.escapeHtml(row.getOriginTitle()));
+			link.setI18nKey(StringHelper.escapeHtml(row.getOriginSubTitle()));
 			link.setUserObject(row);
 			row.setGoToSubOriginLink(link);
 		}
@@ -1233,7 +1257,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (guardModalController(toDoTaskEditCtrl)) return;
 		
 		toDoTaskEditCtrl = provider.createEditController(ureq, getWindowControl(), toDoTask,
-				isShowContextInEditDialog(), isShowSingleAssigneeInEditDialog());
+				isShowContextInEditDialog(), isShowSingleAssigneeInEditDialog(),
+				getSecurityCallback().getAssigneeRightsOverride(toDoTask));
 		if (toDoTaskEditCtrl == null) {
 			return;
 		}

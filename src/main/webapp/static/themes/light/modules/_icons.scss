@@ -17,6 +17,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: $brand-success;}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}
 .o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: $brand-danger }
+.o_icon_abstain { @include o-add-icon('hand', false); }
 .o_icon_accepted { @include o-add-icon('thumbs-up', false);}
 .o_icon_accessibility { @include o-add-icon('wheelchair');}
 .o_icon_actions { @include o-add-icon('ellipsis-v');}
@@ -66,6 +67,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bookmark_add { @include o-add-icon('bookmark', false);  color: $o-bookmark-color;}
 .o_icon_bookmark_header { @include o-add-icon('bookmark');}
 .o_icon_branch { @include o-add-icon('code-fork');}
+.o_icon_rm_status_active { @include o-add-icon('check');}
+.o_icon_rm_status_deleted { @include o-add-icon('trash-can', false);}
+.o_icon_rm_status_inactive { @include o-add-icon('ban');}
 .o_icon_breadcrumb_more { @include o-add-icon('ellipsis');}
 .o_icon_breadcrumb_root { @include o-add-icon('house');}
 .o_icon_browse { @include o-add-icon('search-plus');} 
@@ -88,6 +92,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_catalog_intern { @include o-add-icon('book-open');}
 .o_icon_catalog_sub { @include o-add-icon('folder');}
 .o_icon_certificate { @include o-add-icon('certificate');}
+.o_icon_change_notifications_settings { @include o-add-icon('clock', false); }
 .o_icon_changes { @include o-add-icon('pencil'); color: $o-base-blue-color }
 .o_icon_chart_simple { @include o-add-icon('chart-simple');}
 .o_icon_chat { @include o-add-icon('comment', false);}
@@ -124,6 +129,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_column { @include o-add-icon('align-justify');}
 .o_icon_columns { @include o-add-icon('columns');}
 .o_icon_commands { @include o-add-icon('ellipsis-v');}
+.o_icon_committee { @include o-add-icon('users'); }
 .o_icon_container { @include o-add-icon('columns');}
 .o_icon_copy { @include o-add-icon('copy');}
 .o_icon_course_previous { @include o-add-icon('chevron-left');}
@@ -147,6 +153,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correct_answer { @include o-add-icon('check'); color: $brand-success;}
 .o_icon_correct_response { @include o-add-icon('check-circle', false); color: $brand-success;}
 .o_icon_correction { @include o-add-icon('highlighter');}
+.o_icon_course_bundle { @include o-add-icon('cubes-stacked');}
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_curriculum_manager { @include o-add-icon('eye');}
@@ -185,6 +192,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_events { @include o-add-icon('calendar-check');}
 .o_icon_exclamation { @include o-add-icon('exclamation');}
 .o_icon_exclamation_circle { @include o-add-icon('exclamation-circle');}
+.o_icon_exclude_member { @include o-add-icon('user-minus');}
 .o_icon_expand { @include o-add-icon('expand');}
 .o_icon_expenditure { @include o-add-icon('clock', false);}
 .o_icon_export { @include o-add-icon('share-square', false);}
@@ -302,6 +310,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_media { @include o-add-icon('image');}
 .o_icon_mediacenter { @include o-add-icon('folder-open');}
 .o_icon_membersmanagement { @include o-add-icon('users');}
+.o_icon_member_not_valid { @include o-add-icon('exclamation-triangle'); color: $brand-warning; }
+.o_icon_member_skipped { @include o-add-icon('minus-circle'); color: #A87E7E; }
+.o_icon_member_valid { @include o-add-icon('check'); color: $brand-success; }
 .o_icon_menuhandel { @include o-add-icon('bars');}
 .o_icon_message { @include o-add-icon('envelope');}
 .o_icon_message_open { @include o-add-icon('envelope-open');}
@@ -315,6 +326,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_order { @include o-add-icon('arrows-v');}
 .o_icon_overridden { @include o-add-icon('pencil');}
 .o_icon_manager { @include o-add-icon('user-tie');}
+.o_icon_memo { @include o-add-icon('clipboard',true);}
 .o_icon_modified { @include o-add-icon('angle-double-down');}
 .o_icon_move_down { @include o-add-icon('angle-double-down');}
 .o_icon_move_left { @include o-add-icon('angle-double-left');}
@@ -337,7 +349,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_under { @include o-add-icon('mail-reply');}
 .o_icon_node_up_down { @include o-add-icon('arrows-v');}
 .o_icon_non_members { @include o-add-icon('person-circle-minus');}
-.o_icon_notes { @include o-add-icon('sticky-note', false);}
+.o_icon_not_available {  @include o-add-icon('exclamation'); color: $brand-danger;}
+.o_icon_notes { @include o-add-icon('sticky-note', true);}
+.o_icon_notes_empty { @include o-add-icon('sticky-note', false);}
 .o_icon_not_correct { @include o-add-icon('times'); color: $brand-danger }
 .o_icon_not_correct_plus { @include o-add-icon('plus'); color: $brand-danger }
 .o_icon_not_identified { @include o-add-icon('minus');}
@@ -380,6 +394,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_principal { @include o-add-icon('eye');}
 .o_icon_print { @include o-add-icon('print');}
 .o_icon_private { @include o-add-icon('print');}
+.o_icon_profile { @include o-add-icon('user-circle');}
 .o_icon_progress { @include o-add-icon('arrow-up-right-dots');}
 .o_icon_progress_success { @include o-add-icon('check'); color: #e5efe5}
 .o_icon_progress_danger { @include o-add-icon('times'); color: #efe5e5}
@@ -471,6 +486,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_review_added { @include o-add-icon('check');}
 .o_icon_review_remove { @include o-add-icon('minus-square');}
 .o_icon_review_removed { @include o-add-icon('times');}
+.o_icon_reviews { @include o-add-icon('gauge');}
 .o_icon_reviewer { @include o-add-icon('user-md');}
 .o_icon_revision { @include o-add-icon('thumbs-down');}
 .o_icon_revoke { @include o-add-icon('rotate-left');}
@@ -479,6 +495,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rss { @include o-add-icon('rss');}
 .o_icon_rss_unsubscribe { @include o-add-icon('rss'); color: #996633;}
 .o_icon_role { @include o-add-icon('exchange');}
+.o_icon_room_management { @include o-add-icon('person-chalkboard');}
 .o_icon_rubric { @include o-add-icon('sliders');}
 .o_icon_rubric_insufficient { @include o-add-icon('times-circle'); color: $o-evaluation-insufficient-color}
 .o_icon_rubric_sufficient { @include o-add-icon('check-circle'); color: $o-evaluation-sufficient-color}
@@ -503,6 +520,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_shrink { @include o-add-icon('search-minus');}
 .o_icon_shuffle { @include o-add-icon('random');}
 .o_icon_sign_out { @include o-add-icon('sign-out');}
+.o_icon_single_element { @include o-add-icon('square');}
+.o_icon_sitemap { @include o-add-icon('sitemap');}
 .o_icon_slide_backward { @include o-add-icon('backward-step');}
 .o_icon_slide_down { @include o-add-icon('chevron-down');}
 .o_icon_slide_forward { @include o-add-icon('forward-step');}
@@ -517,6 +536,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_sort_amount_asc { @include o-add-icon('sort-amount-asc');}
 .o_icon_sort_amount_desc { @include o-add-icon('sort-amount-desc');}
 .o_icon_sort_menu { @include o-add-icon('sort-amount-asc');}
+.o_icon_square { @include o-add-icon('square');}
 .o_icon_square_rss { @include o-add-icon('square-rss');}
 .o_icon_star { @include o-add-icon('star');}
 .o_icon_start { @include o-add-icon('chevron-right');}
@@ -851,6 +871,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_mi_qtiunkown { @include o-add-icon('user-secret');}
 .o_mi_qtiupload { @include o-add-icon('upload');}
 .o_mi_qtiinlinechoice { @include o-add-icon('caret-down');}
+.o_mi_qtigapmixed { @include o-add-icon('blender');}
 
 .o_as_mode_none { @include o-add-icon('clock'); }
 .o_as_mode_leadtime { @include o-add-icon('hourglass-end');}

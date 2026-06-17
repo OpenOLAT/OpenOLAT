@@ -690,11 +690,17 @@ public class CurriculumExport {
 	public static final String formatTaxonomyLevels(List<TaxonomyLevel> levels) {
 		if(levels == null || levels.isEmpty()) return null;
 
-		List<String> displayNames = levels.stream()
-				.map(level -> level.getMaterializedPathIdentifiers())
+		List<String> identifiers = levels.stream()
+				.map(level -> {
+					String path = level.getMaterializedPathIdentifiers();
+					if(level.getTaxonomy() != null && StringHelper.containsNonWhitespace(level.getTaxonomy().getIdentifier())) {
+						path = level.getTaxonomy().getIdentifier() + ":" + path;
+					}
+					return path;
+				})
 				.filter(Objects::nonNull)
 				.toList();
-		return String.join("; ", displayNames);
+		return String.join("; ", identifiers);
 	}
 	
 	public static final String formatRole(String role) {

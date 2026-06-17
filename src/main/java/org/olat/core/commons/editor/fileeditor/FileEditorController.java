@@ -50,7 +50,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.controller.BlankController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
@@ -125,7 +128,13 @@ public class FileEditorController extends BasicController implements Activateabl
 				}
 				
 				editCtrl = htmlCtrl;
-			} else {
+			} else if(Settings.isContentDomainNameEnabled()) {
+				DeliveryOptions options = DeliveryOptions.defaultWithGlossary();
+				IFrameDisplayController iframeCtrl = new IFrameDisplayController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), null, options);
+				iframeCtrl.setCurrentURI(vfsLeaf.getName());	
+				editCtrl = iframeCtrl;
+				mainVC.contextPut("cssClass", access.getMode() == Mode.EMBEDDED? "o_html o_html_embedded": "o_html o_html_full");
+ 			} else {
  				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), false);
  			}
 		}

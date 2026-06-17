@@ -31,6 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -56,15 +59,13 @@ import org.olat.ims.qti21.model.statistics.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.StatisticsPart;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.vitero.model.GroupRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TypedQuery;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
@@ -874,7 +875,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	
 	private NumericalInputInteractionStatistics getNumericalInputInteractionSettings(Identifier responseIdentifier, ResponseDeclaration responseDeclaration, AssessmentItem item) {
 		NumericalEntry numericalEntry = new NumericalEntry(responseIdentifier);
-		FIBAssessmentItemBuilder.extractNumericalEntrySettings(item, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+		GapAssessmentItemBuilder.extractNumericalEntrySettings(item, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 
 		String correctResponse = "";
 		Double solution = numericalEntry.getSolution();

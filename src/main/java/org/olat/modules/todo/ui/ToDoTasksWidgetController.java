@@ -1,0 +1,347 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.todo.ui;
+
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.indicators.IndicatorsFactory;
+import org.olat.core.gui.components.indicators.IndicatorsItem;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
+import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.DateRange;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRole;
+import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
+import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTasksWidgetDataModel.WidgetCols;
+import org.olat.modules.todo.ui.ToDoUIFactory.Due;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ *
+ * Initial date: 6 May 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
+ *
+ */
+public abstract class ToDoTasksWidgetController extends TableWidgetController implements TableWidgetConfigProvider {
+
+	private static final String CMD_OPEN = "open";
+	private static final String CMD_DOIT_PREFIX = "o_do_";
+
+	private final Formatter formatter;
+	private IndicatorsItem indicatorsEl;
+	private FormLink showAllLink;
+	private ToDoTasksWidgetDataModel dataModel;
+	private FlexiTableElement tableEl;
+	private Map<String, FormLink> keyToIndicatorLink;
+
+	private SelectionValues figureValues;
+	private String keyFigureKey;
+	private int counter = 0;
+
+	@Autowired
+	private ToDoService toDoService;
+
+	protected ToDoTasksWidgetController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(ToDoTasksWidgetController.class, getLocale(), getTranslator()));
+		formatter = Formatter.getInstance(getLocale());
+	}
+	
+	protected abstract String getBaseBusinessPath();
+
+	protected abstract ToDoTaskSearchParams createBaseParams();
+
+	protected abstract void doOpenRow(UserRequest ureq, ToDoTaskRow row);
+
+	protected abstract ToDoTaskSecurityCallback getSecurityCallback();
+
+	@Override
+	protected TableWidgetConfigProvider getConfigProvider() {
+		return this;
+	}
+
+	@Override
+	public SelectionValues getFigureValues() {
+		return figureValues;
+	}
+
+	@Override
+	public TableWidgetConfigPrefs getDefault() {
+		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
+		prefs.setKeyFigureKey("myToDos");
+		prefs.setFocusFigureKeys(Set.of("open", "overdue", "new"));
+		prefs.setNumRows(5);
+		return prefs;
+	}
+
+	@Override
+	public void update(TableWidgetConfigPrefs prefs) {
+		keyFigureKey = prefs.getKeyFigureKey();
+
+		FormLink keyIndicator = keyToIndicatorLink.get(keyFigureKey);
+		indicatorsEl.setKeyIndicator(keyIndicator);
+
+		List<FormItem> focusIndicators = keyToIndicatorLink.entrySet().stream()
+				.filter(e -> prefs.getFocusFigureKeys().contains(e.getKey()))
+				.map(Entry::getValue)
+				.map(FormItem.class::cast)
+				.toList();
+		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
+
+		tableEl.setPageSize(prefs.getNumRows());
+
+		reload();
+	}
+
+	@Override
+	protected String getTitle() {
+		return "<i class=\"o_icon o_icon_todo_task\"> </i> " + translate("widget.todo.title");
+	}
+
+	@Override
+	protected String createIndicators(FormLayoutContainer widgetCont) {
+		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
+
+		keyToIndicatorLink = new LinkedHashMap<>();
+		figureValues = new SelectionValues();
+		createIndicator(widgetCont, "myToDos", "widget.todo.my", "[ToDos:0][" + ToDoTaskListController.TAB_ID_MY + ":0]");
+		createIndicator(widgetCont, "open", "widget.todo.open", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OPEN + ":0]");
+		createIndicator(widgetCont, "overdue", "widget.todo.overdue", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OVERDUE + ":0]");
+
+		return indicatorsEl.getComponent().getComponentName();
+	}
+
+	private void createIndicator(FormLayoutContainer widgetCont, String name, String labelI18nKey, String businessPath) {
+		FormLink link = IndicatorsFactory.createIndicatorFormLink(name, CMD_OPEN, "", "", widgetCont);
+		setUrl(link, businessPath, getBaseBusinessPath() + businessPath);
+		keyToIndicatorLink.put(name, link);
+		figureValues.add(SelectionValues.entry(name, translate(labelI18nKey)));
+	}
+
+	@Override
+	protected String createTable(FormLayoutContainer widgetCont) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.done));
+		FlexiCellRenderer renderer = new TextFlexiCellRenderer(EscapeMode.none);
+		renderer = wrapCellLink(renderer);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.title, renderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.priority, new ToDoPriorityCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.dueDate, new ToDoDueDateCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(WidgetCols.due, new ToDoDueCellRenderer()));
+
+		dataModel = new ToDoTasksWidgetDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 5, false, getTranslator(), widgetCont);
+		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setShowSmallPageSize(false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withMessageI18nKey("widget.todo.empty")
+				.withIconCss("o_icon_todo_task")
+				.build());
+
+		return tableEl.getComponent().getComponentName();
+	}
+
+	@Override
+	protected String createShowAll(FormLayoutContainer widgetCont) {
+		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
+		String businessPath = "[ToDos:0][" + ToDoTaskListController.TAB_ID_ALL + ":0]";
+		setUrl(showAllLink, businessPath, getBaseBusinessPath() + businessPath);
+		return showAllLink.getComponent().getComponentName();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent se) {
+				doOpenRow(ureq, dataModel.getObject(se.getIndex()));
+			}
+		} else if (source == showAllLink && showAllLink.getUserObject() instanceof String businessPath) {
+			doOpen(ureq, businessPath);
+		} else if (source instanceof FormToggle toggleEl && toggleEl.getName().startsWith(CMD_DOIT_PREFIX)
+				&& toggleEl.getUserObject() instanceof ToDoTaskRow row) {
+			doSetDone(row);
+		} else if (source instanceof FormLink link) {
+			if (CMD_OPEN.equals(link.getCmd())) {
+				if (link.getUserObject() instanceof String businessPath) {
+					doOpen(ureq, businessPath);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	protected void doOpen(UserRequest ureq, String businessPath) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+		fireEvent(ureq, new ActivateEvent(entries));
+	}
+
+	protected void updateIndicator(String key, long count, String i18nKey) {
+		FormLink link = keyToIndicatorLink.get(key);
+		if (link != null) {
+			link.setI18nKey(IndicatorsFactory.createLinkText(translate(i18nKey), String.valueOf(count)));
+		}
+	}
+	
+	private void reload() {
+		long myCount = toDoService.getToDoTaskCount(createMyToDosParams());
+		long openCount = toDoService.getToDoTaskCount(createOpenParams());
+		long overdueCount = toDoService.getToDoTaskCount(createOverdueParams());
+
+		updateIndicator("myToDos", myCount, "widget.todo.my");
+		updateIndicator("open", openCount, "widget.todo.open");
+		updateIndicator("overdue", overdueCount, "widget.todo.overdue");
+
+		ToDoTaskSearchParams rowParams = switch (keyFigureKey) {
+			case "open" -> createOpenParams();
+			case "overdue" -> createOverdueParams();
+			default -> createMyToDosParams();
+		};
+		List<ToDoTask> tasks = toDoService.getToDoTasks(rowParams);
+		updateTableRows(tasks);
+	}
+
+	private void updateTableRows(List<ToDoTask> tasks) {
+		LocalDate now = LocalDate.now();
+		Map<Long, ToDoTaskMembers> groupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(tasks, ToDoRole.ALL);
+
+		List<ToDoTaskRow> rows = tasks.stream()
+				.sorted(Comparator.comparing(ToDoTask::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
+								.thenComparing(ToDoTask::getTitle, Comparator.nullsLast(Comparator.naturalOrder())))
+				.map(task -> toRow(task, now, groupKeyToMembers))
+				.limit(tableEl.getPageSize())
+				.toList();
+
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+
+	private ToDoTaskRow toRow(ToDoTask task, LocalDate now, Map<Long, ToDoTaskMembers> groupKeyToMembers) {
+		ToDoTaskRow row = new ToDoTaskRow(task);
+		String displayName = ToDoUIFactory.getDisplayName(getTranslator(), task);
+		displayName = StringHelper.escapeHtml(displayName);
+		row.setDisplayName(displayName);
+
+		if (task.getDueDate() != null) {
+			row.setFormattedDueDate(formatter.formatDate(task.getDueDate()));
+			Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(task.getDueDate()), now, task.getStatus());
+			row.setDue(due.name());
+			row.setOverdue(due.overdue());
+		}
+
+		ToDoTaskMembers members = groupKeyToMembers.get(task.getBaseGroup().getKey());
+		if (members != null) {
+			Identity creator = members.getMembers(ToDoRole.creator).stream().findFirst().orElse(null);
+			row.setCreator(creator);
+			row.setAssignees(members.getMembers(ToDoRole.assignee));
+			row.setDelegatees(members.getMembers(ToDoRole.delegatee));
+		}
+
+		boolean creator = row.getCreator() != null && row.getCreator().getKey().equals(getIdentity().getKey());
+		boolean assignee = row.getAssignees() != null && row.getAssignees().contains(getIdentity());
+		boolean delegatee = row.getDelegatees() != null && row.getDelegatees().contains(getIdentity());
+		row.setCanEdit(getSecurityCallback().canEdit(task, creator, assignee, delegatee));
+
+		forgeDoItem(row);
+		return row;
+	}
+
+	private void forgeDoItem(ToDoTaskRow row) {
+		FormToggle doEl = uifactory.addToggleButton(CMD_DOIT_PREFIX + counter++, null, null, null, null);
+		doEl.setPresentation(Presentation.CHECK);
+		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
+		doEl.addActionListener(FormEvent.ONCHANGE);
+		doEl.setEnabled(row.canEdit());
+		doEl.toggleOff();
+		doEl.setUserObject(row);
+		row.setDoItem(doEl);
+	}
+
+	private void doSetDone(ToDoTaskRow row) {
+		if (!row.canEdit()) {
+			return;
+		}
+		ToDoProvider provider = toDoService.getProvider(row.getType());
+		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), ToDoStatus.done);
+		reload();
+	}
+	
+	private ToDoTaskSearchParams createMyToDosParams() {
+		ToDoTaskSearchParams params = createBaseParams();
+		params.setStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress));
+		params.setAssigneeOrDelegatee(getIdentity());
+		return params;
+	}
+
+	private ToDoTaskSearchParams createOpenParams() {
+		ToDoTaskSearchParams params = createBaseParams();
+		params.setStatus(List.of(ToDoStatus.open));
+		return params;
+	}
+
+	private ToDoTaskSearchParams createOverdueParams() {
+		ToDoTaskSearchParams params = createBaseParams();
+		params.setStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress));
+		DateRange dateRange = ToDoDueFilter.overdue.getDateRange(new Date());
+		params.setDueDateRanges(List.of(dateRange));
+		return params;
+	}
+	
+}

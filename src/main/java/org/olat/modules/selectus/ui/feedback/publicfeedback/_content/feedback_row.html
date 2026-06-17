@@ -1,0 +1,23 @@
+<div id="feedback_${row.id}" class="panel panel-default o_review">
+  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseFeedback${row.id}">
+ 		<h4 class="panel-title">
+ 			<i id="collapseFeedbackToggler${row.id}" class="o_icon o_icon-fw #if($r.isTrue($row.open)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+ 			$r.translate("public.feedback.numbered", $row.feedbackNumber)
+ 			#if($r.isNotEmpty($row.fullName))<small class="o_reviewer_name">$r.translate("public.feedback.reviewer.name",$row.fullName)</small>#end
+ 			<small class="o_review_date">$r.translate("public.feedback.date", $row.feedbackDate, $row.feedbackTime)</small></h4>
+ 	</div>
+ 	<div id="collapseFeedback${row.id}" class="panel-collapse collapse in"><div class="panel-body">
+ 		#if($r.isNotNull($row.deleteLink))
+ 		<div class="pull-right">$r.render($row.deleteLink)</div>
+ 		#end
+ 		<div class="o_feedback_comment">$r.xssScan($row.comment)</div>
+ 	</div></div>
+ </div>
+<script>
+jQuery('#collapseFeedback${row.id}').on('hide.bs.collapse', function () {
+	jQuery('#collapseFeedbackToggler${row.id}').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+})
+jQuery('#collapseFeedback${row.id}').on('show.bs.collapse', function () {
+	jQuery('#collapseFeedbackToggler${row.id}').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+})
+</script>

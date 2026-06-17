@@ -1,0 +1,58 @@
+<fieldset class="fx_r_app_instructions b_clearfix">
+	#if($r.isNotEmpty($off_title))
+	<legend>$off_title</legend>
+	#end
+	#if($r.isNotEmpty($instructionsText)) 
+		$instructionsText
+	#else
+	<div class="b_clearfix">
+		<h5>$r.translate("wizard.instructions.app")</h5>
+		<p>$r.translate("wizard.instructions.app.text1", $positionTitle)</p>
+		#if(($mandatoryDocuments && $mandatoryDocuments.size() > 0) || ($optionalDocuments && $optionalDocuments.size() > 0))
+		<p>$r.translate("wizard.instructions.app.text2")</p>
+		#end
+
+		#if($mandatoryDocuments && $mandatoryDocuments.size() > 0)
+			<h5>$r.translate("wizard.instructions.docs.mandatory")</h5>
+			<ul class="list-unstyled">
+			#foreach($document in $mandatoryDocuments)
+				<li><span><i class="o_icon o_filetype_pdf o_icon-fw"> </i> $document</span></li>
+			#end
+			</ul>
+		#end
+
+		#if($optionalDocuments && $optionalDocuments.size() > 0)
+			<h5>$r.translate("wizard.instructions.docs.optional")</h5>
+			<ul class="list-unstyled">
+			#foreach($document in $optionalDocuments)
+				<li><span><i class="o_icon o_filetype_pdf o_icon-fw"> </i> $document</span></li>
+			#end
+			</ul>
+		#end
+		$r.translate("wizard.instructions.docs.after")
+		#if($referees)
+			<h5>$r.translate("application.recommendations")</h5>
+			#if($r.isNotEmpty($refereesMinMax))
+				<p>$refereesMinMax</p>
+			#end
+			#if($r.isNotEmpty($expertConsent))
+				<p>$expertConsent</p>
+			#end
+		#elseif($r.isNotEmpty($expertConsent))
+			<h5>$r.translate("application.recommendations")</h5>
+			<p>$expertConsent</p>
+		#end
+		
+		<p>$r.translate("wizard.instructions.docs.text")</p>
+		#if($professorship == 'disabled')
+		#elseif($professorship == 'assistant')
+			<p><strong>Please note:</strong> $r.translate("policy.professorship.type.assistant")</p>
+		#elseif($professorship == 'full')
+			<p><strong>Please note:</strong> $r.translate("policy.professorship.type.full")</p>
+		#else
+			<p><strong>Please note:</strong> $r.translate("policy.professorship.type.any")</p>
+		#end
+		<p class="o_warning o_sel_instructions_warning">$r.translate("wizard.instructions.warning", $i18nArguments)</p>
+	</div>
+#end
+</fieldset>

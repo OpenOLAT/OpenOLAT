@@ -52,7 +52,7 @@ public class ReferenceRenderer implements FlexiCellRenderer {
 		
 		String externalRef = reference.externalRef();
 		if(StringHelper.containsNonWhitespace(externalRef)) {
-			target.append(" - <small>").appendHtmlEscaped(externalRef).append("</small>");
+			target.append(" · <small>").appendHtmlEscaped(externalRef).append("</small>");
 		}
 	}
 }

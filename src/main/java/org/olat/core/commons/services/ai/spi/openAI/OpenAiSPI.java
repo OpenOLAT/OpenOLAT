@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiApiKeySPI;
-import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.AiEmbeddingSPI;
 import org.olat.core.commons.services.ai.manager.LangChain4jHttpClientBuilder;
 import org.olat.core.commons.services.ai.ui.GenericAiApiKeyAdminController;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -42,7 +42,9 @@ import org.springframework.stereotype.Service;
 
 import dev.langchain4j.model.chat.Capability;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiModelCatalog;
 
 /**
@@ -55,7 +57,7 @@ import dev.langchain4j.model.openai.OpenAiModelCatalog;
  *
  */
 @Service
-public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI {
+public class OpenAiSPI extends AbstractSpringModule implements AiEmbeddingSPI, AiApiKeySPI {
 	private static final Logger log = Tracing.createLoggerFor(OpenAiSPI.class);
 	private static final String SPI_NAME = "OpenAI";
 	private static final String SPI_ID = "OpenAI";
@@ -187,5 +189,33 @@ public class OpenAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySP
 	@Override
 	public String getAdminApiKeyI18nKey() {
 		return "ai.openai.apikey";
+	}
+
+	@Override
+	public boolean isEmbeddingEnabled() {
+		return enabled && StringHelper.containsNonWhitespace(apiKey);
+	}
+
+	@Override
+	public EmbeddingModel buildEmbeddingModel(String modelName) {
+		return OpenAiEmbeddingModel.builder()
+				.httpClientBuilder(new LangChain4jHttpClientBuilder())
+				.apiKey(apiKey)
+				.modelName(modelName)
+				.build();
+	}
+
+	@Override
+	public List<String> getAvailableEmbeddingModels() {
+		return List.of("text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002");
+	}
+
+	@Override
+	public int getEmbeddingDimension(String modelName) {
+		return switch (modelName) {
+			case "text-embedding-3-large" -> 3072;
+			case "text-embedding-ada-002" -> 1536;
+			default -> 1536;
+		};
 	}
 }

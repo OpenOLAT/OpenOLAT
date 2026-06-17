@@ -415,12 +415,6 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 		return "[Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "][" + tab + ":0]";
 	}
 
-	private void setUrl(FormLink link, String businessPath, String businessPathFull) {
-		link.setUserObject(businessPath);
-		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(businessPathFull);
-		link.setUrl(url);
-	}
-
 	private void appendThumbnail(ImplementationRow row, Map<Long, VFSThumbnailInfos> thumbnails) {
 		String imageUrl = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), row.getKey(), thumbnails);
 		row.setThumbnailRelPath(imageUrl);

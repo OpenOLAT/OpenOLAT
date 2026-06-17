@@ -24,6 +24,8 @@ import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
@@ -96,7 +99,12 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	private int maxRepositoryEntryRelations;
 	@Column(name="c_allow_as_root", nullable=true, insertable=true, updatable=true)
 	private boolean allowedAsRootElement;
-	
+	@Column(name="c_impl_only", nullable=true, insertable=true, updatable=true)
+	private boolean implOnly;
+	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
+	@Enumerated(EnumType.STRING)
+	private CurriculumElementTypeStatus status;
+
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
 	@JoinColumn(name="fk_type")
@@ -277,6 +285,26 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	@Override
 	public void setAllowedAsRootElement(boolean allowedAsRootElement) {
 		this.allowedAsRootElement = allowedAsRootElement;
+	}
+
+	@Override
+	public boolean isImplOnly() {
+		return implOnly;
+	}
+
+	@Override
+	public void setImplOnly(boolean implOnly) {
+		this.implOnly = implOnly;
+	}
+
+	@Override
+	public CurriculumElementTypeStatus getStatus() {
+		return status == null ? CurriculumElementTypeStatus.active : status;
+	}
+
+	@Override
+	public void setStatus(CurriculumElementTypeStatus status) {
+		this.status = status;
 	}
 
 	public String getManagedFlagsString() {

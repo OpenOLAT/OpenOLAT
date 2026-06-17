@@ -89,6 +89,11 @@ class LayeredPanel extends SimpleStackedPanel {
 	}
 
 	@Override
+	public Iterable<Component> getComponents() {
+		return getLayers();
+	}
+
+	@Override
 	public Component popContent() {
 		Component poped = super.popContent();
 		if(poped != null) {

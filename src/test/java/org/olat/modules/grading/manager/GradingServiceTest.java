@@ -24,12 +24,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
@@ -37,16 +41,21 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentLog;
 import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.GradingTimeRecord;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GraderWithStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
+import org.olat.modules.grading.model.GradingAssignmentLogImpl;
+import org.olat.modules.grading.model.GradingAssignmentLogSearchParameters;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.olat.user.manager.AbsenceLeaveDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +75,13 @@ public class GradingServiceTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private GradingService gradingService;
 	@Autowired
 	private AbsenceLeaveDAO absenceLeaveDao;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
@@ -77,6 +90,10 @@ public class GradingServiceTest extends OlatTestCase {
 	private GradingTimeRecordDAO gradingTimeRecordDao;
 	@Autowired
 	private GradingAssignmentDAO gradingAssignmentDao;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
+	@Autowired
+	private GradingAssignmentLogDAO gradingAssignmentLogDao;
 	
 	@Test
 	public void getOrCreateConfiguration() {
@@ -138,7 +155,7 @@ public class GradingServiceTest extends OlatTestCase {
 		((GradingServiceImpl)gradingService).deleteUserData(id, "del-726378");
 		dbInstance.commit();
 
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(id);
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGraderAssignments(id);
 		Assert.assertTrue(assignments.isEmpty());
 		List<GraderToIdentity> gradersRelations = gradedToIdentityDao.getGraderRelations(id);
 		Assert.assertTrue(gradersRelations.isEmpty());
@@ -433,7 +450,7 @@ public class GradingServiceTest extends OlatTestCase {
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
 		Assert.assertTrue(assignmentsGrader.isEmpty());
 		
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(entry);		
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignmentsOfReferenceEntry(entry);		
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertEquals(GradingAssignmentStatus.unassigned, assignments.get(0).getAssignmentStatus());
@@ -464,7 +481,7 @@ public class GradingServiceTest extends OlatTestCase {
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
 		Assert.assertTrue(assignmentsGrader.isEmpty());
 		
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(entry);		
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignmentsOfReferenceEntry(entry);		
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertEquals(GradingAssignmentStatus.unassigned, assignments.get(0).getAssignmentStatus());
@@ -492,7 +509,7 @@ public class GradingServiceTest extends OlatTestCase {
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
 		Assert.assertEquals(1, assignmentsGrader.size());
 		
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(entry);		
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignmentsOfReferenceEntry(entry);		
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertEquals(GradingAssignmentStatus.assigned, assignments.get(0).getAssignmentStatus());
@@ -856,10 +873,10 @@ public class GradingServiceTest extends OlatTestCase {
 		((GradingServiceImpl)gradingService).graderAbsenceLeavesCheck();
 		dbInstance.commitAndCloseSession();
 		
-		List<GradingAssignment> assignments1 = gradingAssignmentDao.getGradingAssignments(grader1);
+		List<GradingAssignment> assignments1 = gradingAssignmentDao.getGraderAssignments(grader1);
 		Assert.assertTrue(assignments1.isEmpty());
 		
-		List<GradingAssignment> assignments2 = gradingAssignmentDao.getGradingAssignments(grader2);
+		List<GradingAssignment> assignments2 = gradingAssignmentDao.getGraderAssignments(grader2);
 		Assert.assertEquals(6, assignments2.size());
 	}
 	
@@ -893,9 +910,9 @@ public class GradingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// checked that the assignments was transfered
-		List<GradingAssignment> assignments1 = gradingAssignmentDao.getGradingAssignments(grader1);
+		List<GradingAssignment> assignments1 = gradingAssignmentDao.getGraderAssignments(grader1);
 		Assert.assertTrue(assignments1.isEmpty());
-		List<GradingAssignment> assignments2 = gradingAssignmentDao.getGradingAssignments(grader2);
+		List<GradingAssignment> assignments2 = gradingAssignmentDao.getGraderAssignments(grader2);
 		Assert.assertEquals(4, assignments2.size());
 	}
 	
@@ -927,6 +944,216 @@ public class GradingServiceTest extends OlatTestCase {
 		List<GradingAssignment> unassignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
 		Assert.assertTrue(unassignments.isEmpty());
 	}
+	
+	@Test
+	public void assignmentDone() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-52");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-53");
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-54");
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commit();
+		
+		gradingService.assignGrader(entry, assessment, new Date(), true);
+		dbInstance.commit();
+		
+		// check assignments
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignments.size());
+		GradingAssignment assignment = assignments.get(0);
+		Assert.assertEquals(assessment, assignment.getAssessmentEntry());
+		
+		// assignment done
+		gradingService.assignmentDone(assignment, Long.valueOf(20l), Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		GradingAssignmentLogSearchParameters searchParams = new GradingAssignmentLogSearchParameters();
+		searchParams.setEntry(entry);
+		searchParams.setReferenceEntry(entry);
+		
+		List<GradingAssignmentLog> assignmentLogs = gradingAssignmentLogDao.getGradingAssignmentsLogs(searchParams);
+		Assertions.assertThat(assignmentLogs)
+			.hasSize(1);
+		
+		GradingAssignmentLog assignmentLog = assignmentLogs.get(0);
+		Assert.assertNotNull(assignmentLog);
+		Assert.assertNotNull(assignmentLog.getCreationDate());
+		Assert.assertNotNull(assignmentLog.getLastModified());
+		Assert.assertEquals(grader, assignmentLog.getGrader());
+		Assert.assertEquals(student, assignmentLog.getAssignee());
+		Assert.assertEquals(entry.getKey(), ((GradingAssignmentLogImpl)assignmentLog).getRepositoryEntryKey());
+		Assert.assertEquals(entry.getDisplayname(), assignmentLog.getRepositoryEntryDisplayName());
+		Assert.assertEquals(entry.getKey(), ((GradingAssignmentLogImpl)assignmentLog).getReferenceEntryKey());
+		Assert.assertEquals(entry.getDisplayname(), assignmentLog.getReferenceEntryDisplayName());
+		Assert.assertEquals(grader, assignmentLog.getGrader());
+		
+	}
+	
+	
+	@Test
+	public void deleteUserAsStudent() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-55");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-56");
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-57");
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commit();
+		
+		gradingService.assignGrader(entry, assessment, new Date(), true);
+		dbInstance.commit();
+
+		// check assignments
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignments.size());
+		GradingAssignment assignment = assignments.get(0);
+		Assert.assertEquals(assessment, assignment.getAssessmentEntry());
+		
+		GradingTimeRecord timeRecord = gradingTimeRecordDao.createRecord(graderRelation, assignment, new Date());
+		dbInstance.commit();
+		Assert.assertNotNull(timeRecord);
+		
+		// assignment done
+		gradingService.assignmentDone(assignment, Long.valueOf(20l), Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		userLifecycleManager.deleteIdentity(student, author);
+		dbInstance.commitAndCloseSession();
+		
+		List<GradingAssignment> deletedAssignments = gradingAssignmentDao.getGraderAssignments(grader);
+		Assert.assertTrue(deletedAssignments.isEmpty());
+	}
+	
+	@Test
+	public void deleteUserAsGrader() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-58");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-59");
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-60");
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commit();
+		
+		gradingService.assignGrader(entry, assessment, new Date(), true);
+		dbInstance.commit();
+		
+		// check assignments
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignments.size());
+		GradingAssignment assignment = assignments.get(0);
+		Assert.assertEquals(assessment, assignment.getAssessmentEntry());
+		
+		GradingTimeRecord timeRecord = gradingTimeRecordDao.createRecord(graderRelation, assignment, new Date());
+		dbInstance.commit();
+		Assert.assertNotNull(timeRecord);
+		
+		// assignment done
+		gradingService.assignmentDone(assignment, Long.valueOf(20l), Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		userLifecycleManager.deleteIdentity(grader, author);
+		dbInstance.commitAndCloseSession();
+		
+		// No assignments for this grader
+		List<GradingAssignment> deletedAssignments = gradingAssignmentDao.getGraderAssignments(grader);
+		Assert.assertTrue(deletedAssignments.isEmpty());
+		
+		// Assignment is done, nothing left but the log
+		List<GradingAssignment> orphanAssignments = gradingAssignmentDao.getAssigneeAssignments(student);
+		Assert.assertTrue(orphanAssignments.isEmpty());
+		
+		// Check that the grader is effectively deleted, but the first name and last name stay for auditing purpose
+		Identity deletedGrader = securityManager.loadIdentityByKey(grader.getKey());
+		Assert.assertNotNull(deletedGrader);
+		Assert.assertEquals(Identity.STATUS_DELETED, deletedGrader.getStatus());
+		Assert.assertNotNull(deletedGrader.getUser().getFirstName());
+		Assert.assertNotNull(deletedGrader.getUser().getLastName());
+		Assert.assertNull(deletedGrader.getUser().getEmail());
+		
+		// Retrieve the logs (log by done + one by deleted)
+		GradingAssignmentLogSearchParameters searchParams = new GradingAssignmentLogSearchParameters();
+		searchParams.setEntry(entry);
+		searchParams.setReferenceEntry(entry);
+		List<GradingAssignmentLog> assignmentLogs = gradingAssignmentLogDao.getGradingAssignmentsLogs(searchParams);
+		Assertions.assertThat(assignmentLogs)
+			.hasSize(2);
+	}
+	
+	@Test
+	public void deleteCourse() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-58");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-59");
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-60");
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commit();
+		
+		gradingService.assignGrader(entry, assessment, new Date(), true);
+		dbInstance.commit();
+		
+		// check assignments
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignments.size());
+		GradingAssignment assignment = assignments.get(0);
+		Assert.assertEquals(assessment, assignment.getAssessmentEntry());
+		
+		GradingTimeRecord timeRecord = gradingTimeRecordDao.createRecord(graderRelation, assignment, new Date());
+		dbInstance.commit();
+		Assert.assertNotNull(timeRecord);
+		
+		// assignment done
+		gradingService.assignmentDone(assignment, Long.valueOf(20l), Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		repositoryService.deleteSoftly(entry, author, false, false);
+		dbInstance.commitAndCloseSession();
+		Roles roles = Roles.administratorRoles();
+		repositoryService.deletePermanently(entry, author, roles, Locale.ENGLISH);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void deleteTest() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-58");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry testEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-59");
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, testEntry, null, false, entry);
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-60");
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(testEntry, grader);
+		dbInstance.commit();
+		
+		gradingService.assignGrader(testEntry, assessment, new Date(), true);
+		dbInstance.commit();
+		
+		// check assignments
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignments.size());
+		GradingAssignment assignment = assignments.get(0);
+		Assert.assertEquals(assessment, assignment.getAssessmentEntry());
+		
+		GradingTimeRecord timeRecord = gradingTimeRecordDao.createRecord(graderRelation, assignment, new Date());
+		dbInstance.commit();
+		Assert.assertNotNull(timeRecord);
+		
+		// assignment done
+		gradingService.assignmentDone(assignment, Long.valueOf(20l), Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		repositoryService.deleteSoftly(testEntry, author, false, false);
+		dbInstance.commitAndCloseSession();
+		Roles roles = Roles.administratorRoles();
+		repositoryService.deletePermanently(testEntry, author, roles, Locale.ENGLISH);
+		dbInstance.commitAndCloseSession();
+	}
+	
 	
 	private Date addDaysToNow(int days) {
 		Calendar cal = Calendar.getInstance();

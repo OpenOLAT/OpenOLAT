@@ -66,6 +66,16 @@ public class DeliveryOptions implements Cloneable, Serializable {
 		defaultOptions.setOpenolatCss(Boolean.TRUE);
 		return defaultOptions;
 	}
+	
+	public static DeliveryOptions defaultContent() {
+		DeliveryOptions defaultOptions = new DeliveryOptions();
+		defaultOptions.setStandardMode(Boolean.TRUE);
+		defaultOptions.setGlossaryEnabled(Boolean.FALSE);
+		defaultOptions.setHeight(null);
+		defaultOptions.setjQueryEnabled(Boolean.FALSE);
+		defaultOptions.setOpenolatCss(Boolean.FALSE);
+		return defaultOptions;
+	}
 
 	public Boolean getInherit() {
 		return inherit;

@@ -63,6 +63,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
@@ -621,8 +622,9 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 	
 	private void doView(UserRequest ureq, String filename) {
 		if(guardModalController(viewDocCtrl)) return;
-		
-		viewDocCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, filename, false);
+
+		IFrameSettings securityOptions = IFrameSettings.secure();
+		viewDocCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, filename, securityOptions);
 		listenTo(viewDocCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), viewDocCtrl.getInitialComponent(), true, filename);

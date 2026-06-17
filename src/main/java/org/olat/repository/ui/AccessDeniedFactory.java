@@ -79,7 +79,11 @@ public class AccessDeniedFactory {
 	public static Controller createRepositoryStatusClosed(UserRequest ureq, WindowControl wControl) {
 		return new AccessDeniedController(ureq, wControl, "access.denied.closed", "access.denied.closed.hint", null);
 	}
-	
+
+	public static Controller createFinishedNoAccess(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		return new RepositoryEntryInfosController(ureq, wControl, entry, new FinishedNoAccessConfig(ureq.getIdentity()), true);
+	}
+
 	public static AccessDeniedMessage createRepositoryEntryStatusNotPublishedMessage() {
 		return new AccessDeniedMessage("access.denied.not.yet.available", "access.denied.not.yet.available.hint", null);
 	}
@@ -292,7 +296,17 @@ public class AccessDeniedFactory {
 				showError("cif.error.corrupted");
 			}
 		}
-		
+
+	}
+
+	private final static class FinishedNoAccessConfig extends BasicDetailsHeaderConfig {
+
+		public FinishedNoAccessConfig(Identity identity) {
+			super(identity);
+			setFinishedNoAccessMessage(true);
+			hideOpenButtons();
+		}
+
 	}
 
 }

@@ -48,7 +48,7 @@ public class AssessmentItemCheckerTest {
 	
 	@Test
 	public void checkAndCorrect_wrongType() throws URISyntaxException {
-		URL itemUrl = OnyxToAssessmentItemBuilderTest.class.getResource("resources/onyx/set-correct-response-wrong-type-5-11.xml");
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/onyx/set-correct-response-wrong-type-5-11.xml");
 		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
 		boolean ok = AssessmentItemChecker.checkAndCorrect(assessmentItem);
 		Assert.assertFalse(ok);
@@ -59,7 +59,7 @@ public class AssessmentItemCheckerTest {
 	
 	@Test
 	public void checkAndCorrect_rightType() throws URISyntaxException {
-		URL itemUrl = OnyxToAssessmentItemBuilderTest.class.getResource("resources/umpc/addition.xml");
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/umpc/addition.xml");
 		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
 		boolean ok = AssessmentItemChecker.checkAndCorrect(assessmentItem);
 		Assert.assertTrue(ok);
@@ -70,7 +70,7 @@ public class AssessmentItemCheckerTest {
 	
 	@Test
 	public void checkAndCorrect_notTemplateDeclaration() throws URISyntaxException {
-		URL itemUrl = OnyxToAssessmentItemBuilderTest.class.getResource("resources/ims/template_image.xml");
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/ims/template_image.xml");
 		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
 		boolean ok = AssessmentItemChecker.checkAndCorrect(assessmentItem);
 		Assert.assertTrue(ok);
@@ -81,7 +81,7 @@ public class AssessmentItemCheckerTest {
 	
 	@Test
 	public void checkAndCorrect_hottextOpenOLAT() throws URISyntaxException {
-		URL itemUrl = OnyxToAssessmentItemBuilderTest.class.getResource("resources/openolat/hottext-score-all-11-4-0.xml");
+		URL itemUrl = AssessmentItemCheckerTest.class.getResource("resources/openolat/hottext-score-all-11-4-0.xml");
 		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
 		boolean ok = AssessmentItemChecker.checkAndCorrect(assessmentItem);
 		Assert.assertTrue(ok);

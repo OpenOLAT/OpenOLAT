@@ -9,7 +9,7 @@
 					<span class="o_certificate_card_label o_labeled o_certification_status_$status">
 						<i class="o_icon o_icon-fw o_icon_certification_status_$status"> </i> $statusExplained</span>
 				</div>
-				<div class="o_button_group_right">$r.render("download.button")</div>
+				<div class="o_button_group_right">$r.render("download.button") #if($r.visible("actions")) $r.render("actions")#end</div>
 
 				#if($r.isNotEmpty($awardedBy))
 				<div class="o_flex_first_grow_vertical">
@@ -17,7 +17,10 @@
 					#if($r.available("courselink"))
 						$r.render("courselink")
 					#else
-					<span><i class="o_icon o_icon-fw $awardedByIconCss"> </i> $awardedBy</span>
+					<span><i class="o_icon o_icon-fw $awardedByIconCss"> </i> $r.escapeHtml($awardedByName)
+					#if($r.isNotEmpty($awardedByTitle))
+						&ndash; $r.escapeHtml($awardedByTitle)
+					#end</span>
 					#end
 				</div>
 				#end

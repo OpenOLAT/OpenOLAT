@@ -1,0 +1,13 @@
+<fieldset class="o_disclaimer">
+	#if($r.isTrue($showLegend))
+	<legend>$r.translate("disclaimer.privacy.title")</legend>
+	#end
+	<p>$r.translate("disclaimer.privacy.text", $i18nArguments)</p>
+	<div class="form-group clearfix o_sel_privacy_disclaimer_accept">
+		$r.render("accept")
+	</div>
+	<div class="o_sel_privacy_disclaimer_buttons o_button_group o_button_group_left">
+		$r.render("dcl.accept")
+		$r.render("disclaimer.nok")
+	</div>
+</fieldset>

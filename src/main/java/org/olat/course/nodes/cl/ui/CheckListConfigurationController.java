@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -84,8 +83,6 @@ public class CheckListConfigurationController extends FormBasicController {
 	private MultipleSelectionElement assessmentDocsEl;
 	private SingleSelection outputEl, numOfCheckListEl, sumCheckboxEl;
 	private TextElement minPointsEl, maxPointsEl, cutValueEl, titlePrefixEl;
-	private RichTextElement tipUserEl;
-	private RichTextElement tipCoachEl;
 	private DateChooser dueDateChooserEl;
 	private SpacerElement passedSpacer;
 	private FormToggle incorporateInCourseAssessmentEl;
@@ -98,12 +95,10 @@ public class CheckListConfigurationController extends FormBasicController {
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
-	private FormLink showTipsLink;
 	
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
 	
-	private boolean showTips = false;
 	private RepositoryEntry courseEntry;
 	private CourseNode courseNode;
 	private final ModuleConfiguration config;
@@ -332,27 +327,12 @@ public class CheckListConfigurationController extends FormBasicController {
 			assessmentDocsEl.select(onKeys[0], true);
 		}
 		
-		showTipsLink = uifactory.addFormLink("show.tips", "show.tips", null, formLayout, Link.LINK);
-		showTipsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-		
-		String iu = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		tipUserEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.user", "config.tip.user", iu, 5, -1, formLayout,
-				getWindowControl());
-		tipUserEl.getEditorConfiguration().enableMathEditor();
-		
-		String ic = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		tipCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.coach", "config.tip.coach", ic, 5, -1, formLayout,
-				getWindowControl());
-		tipCoachEl.getEditorConfiguration().enableMathEditor();
-		showTips = StringHelper.containsNonWhitespace(ic) || StringHelper.containsNonWhitespace(iu);
-		
 		if(!wizard) {
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add(buttonsLayout);
 			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
 		}
 		
-		updateTips();
 		updateScoreVisibility();
 		updatePassedAndOutputVisibilty();
 	}
@@ -428,19 +408,6 @@ public class CheckListConfigurationController extends FormBasicController {
 		// individual assessment docs
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, assessmentDocsEl.isSelected(0));
 
-		// set info text only if something is in there
-		String iu = tipUserEl.getValue();
-		if (StringHelper.containsNonWhitespace(iu)) {
-			config.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, iu);
-		} else {
-			config.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		}
-		String ic = tipCoachEl.getValue();
-		if (StringHelper.containsNonWhitespace(ic)) {
-			config.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, ic);
-		} else {
-			config.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -548,9 +515,6 @@ public class CheckListConfigurationController extends FormBasicController {
 			updateIncorporateInCourseAssessmentVisibility();
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
-		} else if (source == showTipsLink) {
-			showTips = true;
-			updateTips();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -668,12 +632,6 @@ public class CheckListConfigurationController extends FormBasicController {
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
 				&& incorporateInCourseAssessmentEl.isOn()
 				&& scoreGrantedEl.isOn() && scoreScalingEnabled);
-	}
-	
-	private void updateTips() {
-		showTipsLink.setVisible(!showTips);
-		tipUserEl.setVisible(showTips);
-		tipCoachEl.setVisible(showTips);
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {

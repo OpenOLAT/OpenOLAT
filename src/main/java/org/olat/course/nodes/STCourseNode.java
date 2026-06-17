@@ -41,6 +41,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -194,9 +195,10 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			DeliveryOptions deliveryOptions = (DeliveryOptions)getModuleConfiguration().get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 			Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
+			IFrameSettings securityOptions = IFrameSettings.secure();
+			securityOptions.setRandomizeMapper(courseEnv.isPreview());
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
-					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions, null,
-					courseEnv.isPreview(), courseRepoKey);
+					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions, securityOptions, courseRepoKey);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			GroupRoles role = GroupRoles.owner;
@@ -361,7 +363,11 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			scoreCalculator = new ScoreCalculator();
 			scoreCalculator.setFailedType(FailedEvaluationType.failedAsNotPassedAfterEndDate);
 		}
-		
+		String pe = scoreCalculator.getPassedExpression();
+		if (pe != null && pe.startsWith("null ")) {
+			scoreCalculator.setPassedExpression(null);
+		}
+
 		passedExpression = new Condition();
 		passedExpression.setConditionId("passed");
 		if (scoreCalculator.getPassedExpression() != null) {

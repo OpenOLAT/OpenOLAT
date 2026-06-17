@@ -1,0 +1,10 @@
+<div class="clearfix o_block_large_bottom">
+	<h4><i class="o_icon o_icon_notes"> </i> $notesTitle</h4>
+	#if($hasNotes)
+		<div class="o_app_notes_content o_app_notes_content_full">$r.render("notes")</div>
+	#else
+		<div class="o_app_notes_content o_app_notes_content_empty o_block"><i>$r.translate("add.notes.comment")</i></div>
+	#end
+	
+	$r.render("edit.notes")
+</div>

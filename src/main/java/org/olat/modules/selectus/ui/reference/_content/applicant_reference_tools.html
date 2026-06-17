@@ -1,0 +1,8 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.visible("reactivate"))
+	<li>$r.render("reactivate")</li>
+	#end
+	#if($r.visible("deactivate"))
+	<li>$r.render("deactivate")</li>
+	#end
+</ul>

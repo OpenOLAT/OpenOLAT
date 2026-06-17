@@ -163,7 +163,7 @@ public class InfoMetadataController extends StepFormBasicController {
 			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 					currentSelection,
 					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
-					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+					translate(labelI18nKey));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
 			if (catalogModule.isEnabled()) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);

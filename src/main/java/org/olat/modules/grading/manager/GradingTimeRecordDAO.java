@@ -111,6 +111,16 @@ public class GradingTimeRecordDAO {
 		return time > 0l;
 	}
 	
+	public List<GradingTimeRecord> getRecordedTime(GradingAssignmentRef assignment) {
+		String query = """
+				select record from gradingtimerecord as record
+				where record.assignment.key=:assignmentKey""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, GradingTimeRecord.class)
+				.setParameter("assignmentKey", assignment.getKey())
+				.getResultList();
+	}
+	
 	public void appendTimeInSeconds(GraderToIdentity grader, GradingAssignmentRef assignment, Long addedTime, Date date) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update gradingtimerecordappender set time=time+:addedTime, lastModified=:now")
@@ -152,6 +162,16 @@ public class GradingTimeRecordDAO {
 		String deleteQuery = "delete from gradingtimerecord as timerecord where timerecord.grader.key=:graderKey";
 		int deleted = dbInstance.getCurrentEntityManager().createQuery(deleteQuery)
 				.setParameter("graderKey", grader.getKey())
+				.executeUpdate();
+		if(deleted > 0) {
+			log.info(Tracing.M_AUDIT, "Delete time records {}", deleted);
+		}
+	}
+	
+	public void deleteTimeRecords(GradingAssignment assignment) {
+		String deleteQuery = "delete from gradingtimerecord as timerecord where timerecord.assignment.key=:assignmentKey";
+		int deleted = dbInstance.getCurrentEntityManager().createQuery(deleteQuery)
+				.setParameter("assignmentKey", assignment.getKey())
 				.executeUpdate();
 		if(deleted > 0) {
 			log.info(Tracing.M_AUDIT, "Delete time records {}", deleted);

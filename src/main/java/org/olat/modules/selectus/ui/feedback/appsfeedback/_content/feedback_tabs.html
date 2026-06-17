@@ -1,0 +1,15 @@
+$feedbackTitle
+<div class="o_block">
+	<p>$applicationMsg</p>
+</div>
+<div class="o_sel_reference_overview">
+	<div class="wizard clearfix">
+		<ul class="steps">
+			<li #if($currentStep == "application.details") class='active o_enabled' #end>$r.render("apps.feedback.application.details")<span class="chevron"></span></li>
+			<li #if($currentStep == "feedback.submit") class='active o_enabled' #end>$r.render("apps.feedback.submit")<span class="chevron"></span></li>
+		</ul>
+	</div>
+	<div class="o_segments_content">
+		$r.render("content")
+	</div>
+</div>

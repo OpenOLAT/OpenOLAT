@@ -150,14 +150,14 @@ public class CopyCourseStepsStep extends BasicStep {
 			allOptions = new ArrayList<>();
 			
 			// Copy options
-			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"), "o_primary", true);
-			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"), "o_primary", true);
-			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"), "o_primary", true);
-			SelectionValue customize = new SelectionValue(CopyType.custom.name(), translate("options.customize"), "o_primary", true);
-			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"), "o_primary", true);
-			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"), "o_primary", true);
-			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_primary", true);
-			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_primary", true);
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"));
+			SelectionValue customize = new SelectionValue(CopyType.custom.name(), translate("options.customize"));
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"));
+			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"));
+			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"));
+			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"));
 
 			// Members management
 			FormLayoutContainer memebersManagementLayout = FormLayoutContainer.createDefaultFormLayout_2_10("memebersManagementLayout", getTranslator());
@@ -204,8 +204,8 @@ public class CopyCourseStepsStep extends BasicStep {
 				}
 				
 				if (context.hasTask()) {
-					SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"), "o_primary", true);
-					SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"), "o_primary", true);
+					SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"));
+					SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"));
 					SelectionValues taskSettings = new SelectionValues(copyAssignmentAndSolution, ignoreAssignmentAndSolution);
 					taskSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("tasks", nodeSettingsLayout, taskSettings);
 					taskSettingsEl.addActionListener(FormEvent.ONCHANGE);

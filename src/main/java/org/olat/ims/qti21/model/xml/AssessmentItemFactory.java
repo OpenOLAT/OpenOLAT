@@ -25,6 +25,8 @@ import static org.olat.ims.qti21.QTI21Constants.SCORE_CLX_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.SCORE_IDENTIFIER;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -36,7 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntryAlternative;
 
 import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
 import uk.ac.ed.ph.jqtiplus.group.item.ItemBodyGroup;
@@ -412,6 +414,11 @@ public class AssessmentItemFactory {
 		
 		//map alternatives
 		if(alternatives != null && !alternatives.isEmpty()) {
+			if(alternatives.size() > 1) {
+				// Make sure the best score match first
+				Collections.sort(alternatives, new TextEntryAlternativeComparator());
+			}
+			
 			for(TextEntryAlternative alternative:alternatives) {
 				if(StringHelper.containsNonWhitespace(alternative.getAlternative())) {
 					MapEntry mapEntry = new MapEntry(mapping);
@@ -428,6 +435,15 @@ public class AssessmentItemFactory {
 		}
 		
 		return responseDeclaration;
+	}
+	
+	private static final class TextEntryAlternativeComparator implements Comparator<TextEntryAlternative> {
+		@Override
+		public int compare(TextEntryAlternative o1, TextEntryAlternative o2) {
+			double s1 = o1.getScore();
+			double s2 = o2.getScore();
+			return - Double.compare(s1, s2);
+		}
 	}
 	
 	/**

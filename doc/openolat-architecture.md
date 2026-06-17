@@ -1515,7 +1515,7 @@ I18nManager.getInstance().getLocalizedString(bundleName, key, args, locale, true
 
 ### Glossary
 
-See `doc/openolat-glossary.md` for a glossary of product-specific terms and `doc/openolat-glossary-translations.md` for canonical translations across languages.
+The end-user glossary of product-specific terms lives in the docs repo at `OpenOLAT-docs/sites/manual_user/docs/general/glossary.md` (EN) and `glossary.de.md` (DE). Canonical i18n term mappings across languages live in `doc/i18n-translation-reference.md`.
 
 ---
 
@@ -1951,6 +1951,18 @@ Key conventions from best-practice modules:
 - **Breadcrumb navigation** — `BreadcrumbedStackedPanel` for multi-level drill-down views.
 - **Toolbar actions** — `toolbarPanel.addTool()` for create/export/import at top of lists.
 - **Security callbacks** — pass permission objects to controllers rather than checking roles inline.
+
+### REST API Conventions
+
+Module REST resources live in the `restapi/` sub-package of their module. Each resource class carries both `@Component` (Spring bean) and `@Path` (JAX-RS mount point), and its package must be listed in `src/main/java/org/olat/restapi/_spring/restApiContext.xml` for OpenAPI scanning. The `@Tag(name = "...")` annotation determines the section name in the Swagger UI. Reference pattern: `org.olat.modules.bigbluebutton.restapi`.
+
+Auth convention: call `getRoles(httpRequest)` early and delegate to a local `isAuthorised(Roles)` helper before any business logic. For non-admin roles (`author`, `lecturemanager`, `learnresourcemanager`) results are filtered at the DAO layer via a `SearchParameters.identity` field — the REST resource passes the caller's identity into the search parameters and never re-implements the predicate itself. Fields that must be hidden from non-admins (e.g. `externalId`, internal notes) are masked inside the VO's `valueOf(Entity, Roles)` factory rather than in the endpoint method.
+
+Notable module REST surfaces:
+
+| Package | Root path(s) | Purpose |
+|---------|-------------|---------|
+| `org.olat.modules.roommanagement.restapi` | `GET /rm/buildings`, `GET /rm/rooms` | Read-only search and detail for buildings and rooms; results org-scoped for non-admins. Room booking sub-resource added to `LectureBlockWebService`: `GET / PUT / DELETE .../lectureblocks/{k}/room`. |
 
 ---
 

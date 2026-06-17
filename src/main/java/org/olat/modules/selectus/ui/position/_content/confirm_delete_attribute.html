@@ -1,0 +1,9 @@
+#if($r.isNotEmpty($msg))
+	<div>$msg</div>
+#else
+	<div class="o_error" role="alert">$warningMsg</div>
+#end
+<div class="o_button_group">
+	$r.render("delete")
+	$r.render("cancel")
+</div>

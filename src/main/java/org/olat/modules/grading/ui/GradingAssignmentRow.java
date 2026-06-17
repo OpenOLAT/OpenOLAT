@@ -129,7 +129,10 @@ public class GradingAssignmentRow implements GradingAssignmentRef {
 	}
 	
 	public Date getDoneDate() {
-		return assignment.getClosingDate();
+		GradingAssignmentStatus status = assignment.getAssignmentStatus();
+		return status == GradingAssignmentStatus.done
+				? assignment.getClosingDate()
+				: null;
 	}
 	
 	public Date getDeadline() {

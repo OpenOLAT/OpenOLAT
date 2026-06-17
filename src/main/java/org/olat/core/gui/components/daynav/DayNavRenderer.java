@@ -176,8 +176,12 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 			buttonCssSb.append(" o_day_today");
 		}
 		
-		String buttonText = "<div class=\"o_day_num\">" + DateUtils.dayFromDate(day) + "</div>";
-		renderButton(sb, ubu, cmp, elementId, buttonCssSb.toString(), buttonText, nameValue);
+		StringBuilder btn = new StringBuilder();
+		btn.append("<div class=\"o_day_num\">").append(DateUtils.dayFromDate(day)).append("</div>");
+		if (cmp.isMarked(dayIndex)) {
+			btn.append("<span class=\"o_day_dot\"></span>");
+		}
+		renderButton(sb, ubu, cmp, elementId, buttonCssSb.toString(), btn.toString(), nameValue);
 		sb.append("</li>");
 	}
 	

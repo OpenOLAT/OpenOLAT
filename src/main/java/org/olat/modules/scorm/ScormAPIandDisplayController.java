@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.csp.CSPBuilder;
@@ -52,13 +51,12 @@ import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ConfigurationChangedListener;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -87,17 +85,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  * the sco api calls to the scorm RTE backend. It provides also an navigation to
  * navigate in the tree with "pre" "next" buttons.
  */
-public class ScormAPIandDisplayController extends MainLayoutBasicController implements ConfigurationChangedListener {
+public class ScormAPIandDisplayController extends BasicController implements ConfigurationChangedListener {
 
 	private static final int EXPIRATION_TIME = 10 * 60;// 10 minutes
 	private static final String SCORM_CONTENT_FRAME = "scormContentFrame";
 	private static final String BACK_PSEUDO_SCO = "oo-back";
 	
-	private VelocityContainer displayContent;
+	private Link backLink;
 	private MenuTree menuTree;
-	private Controller columnLayoutCtr;
+	private VelocityContainer displayContent;
 	private ScormCPManifestTreeModel treeModel;
 	private IFrameDisplayController iframeCtr;
+	private final LayoutMain3ColsController columnLayoutCtr;
 
 	private Link nextScoTop;
 	private Link nextScoBottom;
@@ -106,7 +105,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	
 	private String username;
 	private String scormLessonMode;
-	private String scormAgaingCallbackUri;
 
 	private String requestScoId;
 	private ScormSessionController sessionController;
@@ -134,8 +132,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu,
 			File cpRoot, Long scormResourceId, String courseIdNodeId, String lessonMode, String creditMode,
-			String assessableType, boolean activate,  boolean attemptsAlreadyIncremented, ScormDisplayEnum fullWindow,
-			boolean radomizeDelivery, DeliveryOptions deliveryOptions) {
+			String assessableType, boolean withBack,  boolean attemptsAlreadyIncremented, ScormDisplayEnum fullWindow,
+			boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -148,6 +146,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		displayContent = createVelocityContainer("scorm_display", "display");
 		JSAndCSSComponent scormAgain = new JSAndCSSComponent("apiadapter", new String[] { "js/scorm/scorm-again.min.js" }, null);
 		displayContent.put("apiadapter", scormAgain);
+		displayContent.contextPut("serverUri", Settings.createServerURI());
+		
+		VelocityContainer mainVC = createVelocityContainer("display_menu_back");
+		mainVC.setDomReplacementWrapperRequired(false);
 		
 		ICourse course = null;
 		OLATResourceable courseOres = null;
@@ -209,7 +211,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			deliveryOptions.setHeight(DeliveryOptions.CONFIG_HEIGHT_IGNORE);
 		}
 		
-		SecurityOptions securityOptions = new SecurityOptions();
+		IFrameSettings iframeSettings = new IFrameSettings();
 		if(cspModule.isContentSecurityPolicyEnabled() || cspModule.isContentSecurityPolicyReportOnlyEnabled()) {
 			// Most packages need eval()
 			CSPBuilder builder = new CSPBuilder(cspModule);
@@ -220,12 +222,17 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				.allowUnsafeEval()
 				.builder()
 				.build();
-			securityOptions.setContentSecurityPolicy(policy);
+			iframeSettings.setContentSecurityPolicy(policy);
 		}
-		securityOptions.setStrictSanitize(false);
+		iframeSettings.setStrictSanitize(false);
+		iframeSettings.setUseContentDomain(true);
+		iframeSettings.setPersistMapper(true);
+		iframeSettings.setIframeResizer(false);
+		iframeSettings.setRandomizeMapper(randomizeDelivery);
 		
 		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres,
-				deliveryOptions, securityOptions, true, radomizeDelivery);
+				deliveryOptions, iframeSettings);
+		iframeCtr.setRawContent(deliveryOptions == null || deliveryOptions.rawContent());
 
 		listenTo(iframeCtr);
 		displayContent.put("contentpackage", iframeCtr.getInitialComponent());
@@ -237,39 +244,36 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		String bootId = sessionController.getScormLastAccessedItemId();
 		TreeNode bootNode = treeModel.getNodeByScormItemId(bootId);
 		setSco(bootId, bootNode, false);
+		
+		backLink = LinkFactory.createLinkBack(mainVC, this);
+		backLink.setCustomEnabledLinkCSS("o_scorm_back_toolbar");
+		backLink.setCustomDisplayText(translate("scorm.back"));
+		backLink.setVisible(withBack);
 
-		if (activate) {
-			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), (showMenu ? menuTree : null), displayContent, "scorm" + scormResourceId);
-			ctr.setDeactivateOnBack(false);
-			ctr.setBackCSSClass("o_scorm_back_toolbar");
-			ctr.setBackLinkDisplayText(translate("scorm.back"));
-			if(fullWindow == ScormDisplayEnum.fullWindow) {
-				ctr.setAsFullscreen();
-			} else if(fullWindow == ScormDisplayEnum.fullWidthHeight) {
-				ctr.setAsFullscreen();
-				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width");
-			} else if(fullWindow == ScormDisplayEnum.fullWidthHeightWithBack) {
-				ctr.setAsFullscreen();
-				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width");
-				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_with_back");
-				
-				
-			}
-			columnLayoutCtr = ctr;
-		} else {
-			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), (showMenu ? menuTree : null), displayContent, "scorm" + scormResourceId);
-			columnLayoutCtr = ctr;			
-			putInitialPanel(columnLayoutCtr.getInitialComponent());
+		getWindowControl().getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_inner_frame");
+		if(fullWindow == ScormDisplayEnum.fullWidthHeight) {
+			wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_inner_full_width");
+		} else if(fullWindow == ScormDisplayEnum.fullWidthHeightWithBack) {
+			wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_inner_full_width");
+			wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_inner_with_back");
+		} else if(withBack) {
+			wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_inner_with_back");
 		}
+		
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), (showMenu ? menuTree : null), displayContent, "scorm" + scormResourceId);
 		listenTo(columnLayoutCtr);
+		mainVC.put("collayout", columnLayoutCtr.getInitialComponent());
+
+		putInitialPanel(mainVC);
 		
 		//SCORM API calls get handled by this mapper
 		Mapper againMapper = new ScormAgainMapper(sessionController);
 		String mapperId = courseIdNodeId;
-		scormAgaingCallbackUri = registerCacheableMapper(ureq, mapperId, againMapper, EXPIRATION_TIME);
-		displayContent.contextPut("scormAgainCallbackUri", scormAgaingCallbackUri);
+		String scormAgaingCallbackUri = registerCacheableMapper(ureq, mapperId, againMapper, EXPIRATION_TIME);
+		String scormAgaingCallbackUrl = Settings.createContentServerURI() + scormAgaingCallbackUri;
+		displayContent.contextPut("scormAgainCallbackUri", scormAgaingCallbackUrl);
 	}
-	
+
 	private void initButtons() {
 		//previous / next navigation links
 		nextScoTop = LinkFactory.createCustomLink("nextScoTop", "nextsco", "", Link.NONTRANSLATED | Link.BUTTON, displayContent, this);
@@ -345,7 +349,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		getLogger().debug("SCORM Event: {} ", event.getCommand());
-		if (source instanceof Link link) {
+		if(backLink == source) {
+			doBack(ureq);
+		} else if (source instanceof Link link) {
 			doNextOrPreviousSco(link);
 		} else if("LMSInitialize".equals(event.getCommand())) {
 			doLmsInitialize();
@@ -353,19 +359,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			doLmsFinish(ureq);
 		} else if("LMSTimeout".equals(event.getCommand())) {
 			doTimeout(ureq);
-		} else if(source == menuTree) {
-			doGoToSco((TreeEvent) event);
+		} else if(source == menuTree && event instanceof TreeEvent te) {
+			doGoToSco(te);
 		}	 
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == columnLayoutCtr) {
-			if(event == Event.BACK_EVENT) {
-				doBack(ureq);
-			}
-		}
-		super.event(ureq, source, event);
 	}
 	
 	private void doNextOrPreviousSco(Link link) {
@@ -468,11 +464,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	}
 	
 	public void close() {
-		if(columnLayoutCtr instanceof LayoutMain3ColsBackController layoutCtr) {
-			layoutCtr.deactivate();
-			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
-			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
-		}
+		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_inner_full_width");
+		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_inner_with_back");
 	}
 	
 	private void executeBack(UserRequest ureq) {
@@ -548,15 +541,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	
 	@Override
 	public void configurationChanged() {
-		if(columnLayoutCtr instanceof LayoutMain3ColsBackController layoutCtr) {
-			layoutCtr.deactivate();
-			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
-			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
-		} else if(columnLayoutCtr instanceof LayoutMain3ColsController layoutCtr) {
-			layoutCtr.deactivate(null);
-			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
-			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
-		}
+		columnLayoutCtr.deactivate(null);
+		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_inner_full_width");
+		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_inner_with_back");
 	}
 
 	@Override
@@ -601,12 +588,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		} else {
 			previousScoTop.setVisible(false);
 			previousScoBottom.setVisible(false);
-		}
-	}
-	
-	public void activate() {
-		if (columnLayoutCtr instanceof LayoutMain3ColsBackController ctrl) {
-			ctrl.activate();
 		}
 	}
 

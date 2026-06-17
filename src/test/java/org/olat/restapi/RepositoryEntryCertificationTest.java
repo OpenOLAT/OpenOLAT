@@ -193,8 +193,8 @@ public class RepositoryEntryCertificationTest extends OlatRestTestCase {
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI()); 
-		Certificate certificate = certificatesManager
-				.uploadCertificate(assessedIdentity, new Date(), externalId, null, defaultEntry.getOlatResource(), null, certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(assessedIdentity, new Date(), externalId, null,
+				null, defaultEntry.getOlatResource(), null, certificateFile, JunitTestHelper.getDefaultAdministrator());
 		dbInstance.commitAndCloseSession();
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")

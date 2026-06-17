@@ -36,6 +36,7 @@ import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -74,7 +75,7 @@ public class RepositoryEntryRelationDAO {
 	
 	/**
 	 * Get roles in the repository entry, with business groups and curriculums
-	 * too but not the organizations.
+	 * too but not the organisations.
 	 * 
 	 * @param identity The identity
 	 * @param re The repository entry
@@ -91,6 +92,30 @@ public class RepositoryEntryRelationDAO {
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", re.getKey())
+				.getResultList();
+	}
+	
+	/**
+	 * Get memberships in the repository entry, with business groups and curriculums
+	 * but not organisations.
+	 * 
+	 * @param identity The identity
+	 * @param re The repository entry
+	 * @return The list of memberships
+	 */
+	public List<GroupMembership> getMemberships(IdentityRef identity, RepositoryEntryRef re) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select membership from repoentrytogroup as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey and (relGroup.defaultGroup=true or businessGroup.key is not null or curEl is not null)");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GroupMembership.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repoKey", re.getKey())
 				.getResultList();

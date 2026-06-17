@@ -236,9 +236,14 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		if(taxonomyRefs.isEmpty()) return;
 		
 		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
-		Map<String,TaxonomyLevel> levelsMap = levels.stream()
+		Map<TaxonomyKey,TaxonomyLevel> levelsMap = levels.stream()
 				.filter(t -> StringHelper.containsNonWhitespace(t.getMaterializedPathIdentifiers()))
-		        .collect(Collectors.toMap(TaxonomyLevel::getMaterializedPathIdentifiers, t -> t, (u, v) -> u));
+		        .collect(Collectors.toMap(TaxonomyKey::valueOf, t -> t, (u, v) -> u));
+		
+		Map<TaxonomyKey,TaxonomyLevel> anonymLevelsMap = levels.stream()
+				.filter(t -> StringHelper.containsNonWhitespace(t.getMaterializedPathIdentifiers()))
+		        .collect(Collectors.toMap(level -> new TaxonomyKey(null, level.getMaterializedPathIdentifiers()),
+		        		t -> t, (u, v) -> u));
 
 		for(ImportedRow importedRow:importedRows) {
 			String subjects = importedRow.getSubjects();
@@ -246,8 +251,11 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 				String[] subjectsArr = subjects.split(";");
 				for(String subject:subjectsArr) {
 					if(StringHelper.containsNonWhitespace(subject)) {
-						subject = subject.trim();
-						TaxonomyLevel level = levelsMap.get(subject);
+						TaxonomyKey key = TaxonomyKey.valueOf(subject);
+						TaxonomyLevel level = levelsMap.get(key);
+						if(level == null) {
+							level = anonymLevelsMap.get(key);
+						}
 						if(level != null) {
 							importedRow.addTaxonomyLevel(level);
 						}
@@ -381,28 +389,28 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		return elements.size() == 1 ? elements.get(0) : null;
 	}
 	
-	protected static final List<String> loadTaxonomyLevels(ImportedRow importedRow) {
-		List<String> levels;
+	protected static final List<TaxonomyKey> loadTaxonomyLevels(ImportedRow importedRow) {
+		List<TaxonomyKey> levels;
 		if((importedRow.type() == CurriculumExportType.IMPL || importedRow.type() == CurriculumExportType.ELEM)
 				&& importedRow.getCurriculumElement() != null) {
 			levels = importedRow.getCurriculumElement().getTaxonomyLevels().stream()
 					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
+					.map(TaxonomyKey::valueOf)
 					.toList();
 		} else if(importedRow.type() == CurriculumExportType.COURSE && importedRow.getCourse() != null) {
 			levels = importedRow.getCourse().getTaxonomyLevels().stream()
 					.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
+					.map(TaxonomyKey::valueOf)
 					.toList();
 		} else if(importedRow.type() == CurriculumExportType.TMPL && importedRow.getTemplate() != null) {
 			levels = importedRow.getTemplate().getTaxonomyLevels().stream()
 					.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
+					.map(TaxonomyKey::valueOf)
 					.toList();
 		} else if(importedRow.type() == CurriculumExportType.EVENT && importedRow.getLectureBlock() != null) {
 			levels = importedRow.getLectureBlock().getTaxonomyLevels().stream()
 					.map(LectureBlockToTaxonomyLevel::getTaxonomyLevel)
-					.map(TaxonomyLevel::getMaterializedPathIdentifiers)
+					.map(TaxonomyKey::valueOf)
 					.toList();
 		} else {
 			levels = List.of();
@@ -589,7 +597,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 	}
 	
 	private record ElementRoleKey(Long elementKey, CurriculumRoles role) {
-		//
+	
 		@Override
 		public int hashCode() {
 			return (elementKey == null ? 29881 : elementKey.hashCode())
@@ -604,6 +612,48 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			if(obj instanceof ElementRoleKey erk) {
 				return elementKey != null && elementKey.equals(erk.elementKey)
 						&& role != null && role.equals(erk.role);
+			}
+			return false;
+		}
+	}
+	
+	public record TaxonomyKey(String taxonomyIdentifier, String levelPathIdentifiers) {
+
+		public static final TaxonomyKey valueOf(String subject) {
+			if(!StringHelper.containsNonWhitespace(subject)) return null;
+			
+			subject = subject.trim();
+			int taxonomyIndex = subject.indexOf(":/");
+			String taxonomyIdentifier = taxonomyIndex > 0
+					? subject.substring(0, taxonomyIndex)
+					: null;
+			String levelPathIdentifiers = taxonomyIndex > 0
+					? subject.substring(taxonomyIndex + 1)
+					: subject;
+			return new TaxonomyKey(taxonomyIdentifier, levelPathIdentifiers);
+		}
+		
+		public static final TaxonomyKey valueOf(TaxonomyLevel taxonomyLevel) {
+			String taxonomyIdentifier = StringHelper.containsNonWhitespace(taxonomyLevel.getTaxonomy().getIdentifier())
+					? taxonomyLevel.getTaxonomy().getIdentifier()
+					: null;
+			return new TaxonomyKey(taxonomyIdentifier, taxonomyLevel.getMaterializedPathIdentifiers());
+		}
+
+		@Override
+		public int hashCode() {
+			return levelPathIdentifiers == null ? -87887 : levelPathIdentifiers.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof TaxonomyKey tkey) {
+				return ((taxonomyIdentifier == null && tkey.taxonomyIdentifier() == null)
+						|| (taxonomyIdentifier != null && taxonomyIdentifier.equals(tkey.taxonomyIdentifier())))
+						&& levelPathIdentifiers != null && levelPathIdentifiers.equals(tkey.levelPathIdentifiers());
 			}
 			return false;
 		}

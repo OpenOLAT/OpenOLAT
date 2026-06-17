@@ -115,6 +115,7 @@ public enum ActionObject {
 	assessmentmode,
 	assessmentinspection,
 	disadvantagecompensation,
-	certificate
+	certificate,
+	review
 	;
 }

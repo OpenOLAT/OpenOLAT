@@ -1,0 +1,85 @@
+<div class="o_app_details_person o_block_large_bottom">
+	<h4><i class="o_icon o_icon_person"> </i> $r.translate("personal_information")</h4>
+	$r.render("personInfos")
+	#if($r.available("emailAndPhone") && $r.visible("emailAndPhone"))
+		$r.render("emailAndPhone")
+	#end
+	#if($r.available("businessInfos") && $r.visible("businessInfos"))
+		$r.render("businessInfos")
+	#end
+	#if($r.available("singleAddress") && $r.visible("singleAddress"))
+		$r.render("singleAddress")
+	#end
+	#if($r.available("businessAddress") && $r.visible("businessAddress"))
+		$r.render("businessAddress")
+	#end
+	#if($r.available("privateAddress") && $r.visible("privateAddress"))
+		$r.render("privateAddress")
+	#end
+	#if($r.available("additionalPersonalData") && $r.visible("additionalPersonalData"))
+		$r.render("additionalPersonalData")
+	#end
+	#if($r.isNotEmpty($containerspersonalData))
+		#foreach($dcontainer in $containerspersonalData)
+			$r.render(${dcontainer.getComponent().getComponentName()})
+		#end
+	#end
+</div>
+#if($r.isTrue($hasBackgroundValues))
+<div class="o_app_details_background o_block_large_bottom">
+	<h4><i class="o_icon o_icon_certificate"> </i> $r.translate("academical_background")</h4>
+	$r.render("background")
+	#if($r.available("academic.age") && $r.visible("academic.age"))
+		$r.render("academic.age")
+	#end
+	
+	#if($r.available("dissertation.and.co") && $r.visible("dissertation.and.co"))
+		$r.render("dissertation.and.co")
+	#end
+
+	#if($r.isNotEmpty($containersacademicalBackground))
+		#foreach($acontainer in $containersacademicalBackground)
+			$r.render(${acontainer.getComponent().getComponentName()})
+		#end
+	#end
+</div>
+#end
+#if($r.available("project") && $r.isTrue($hasProjectValues))
+<div class="o_app_details_project o_block_large_bottom">
+	<h4><i class="o_icon o_icon_project"> </i> $r.translate("project")</h4>
+	$r.render("project")
+	
+	#if($r.isNotEmpty($containersproject))
+		#foreach($pcontainer in $containersproject)
+			$r.render(${pcontainer.getComponent().getComponentName()})
+		#end
+	#end
+</div>
+#end
+#if($r.isNotEmpty($customTabsIds))
+	#foreach($customTabId in $customTabsIds)
+	<div class="o_app_details_custom o_block_large_bottom">
+		<h4>$r.escapeHtml(${customTabId.title()})</h4>
+		$r.render(${customTabId.componentName()})
+		#foreach($ccontainer in ${customTabId.containers()})
+			$r.render(${ccontainer.getComponent().getComponentName()})
+		#end
+	</div>
+	#end
+#end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

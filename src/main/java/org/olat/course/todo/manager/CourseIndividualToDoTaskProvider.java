@@ -19,7 +19,6 @@
  */
 package org.olat.course.todo.manager;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -44,20 +43,26 @@ import org.olat.course.todo.ui.CourseToDoUIFactory;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
+import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskListController;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +101,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 
 	@Override
 	public String getBusinessPath(ToDoTask toDoTask) {
-		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0]";
+		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 
 	@Override
@@ -125,7 +130,10 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 			String originSubPath) {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(originId);
 		ToDoContext context = ToDoContext.of(TYPE, repositoryEntry.getKey(), repositoryEntry.getDisplayname());
-		return createEditController(ureq, wControl, null, null, true, repositoryEntry, context, MemberSelection.candidatesSingle);
+		ToDoTaskMemberConfig assigneeConfig = buildEditableSingleAssigneeConfig(ureq, repositoryEntry, Set.of());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), Set.of(), Set::of, ureq.getIdentity());
+		return createEditController(ureq, wControl, null, null, true, repositoryEntry, context,
+				assigneeConfig, ToDoTaskMemberConfig.disabled(delegateeSource, false), null);
 	}
 	
 	@Override
@@ -142,16 +150,29 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
 			ToDoTask sourceToDoTask, boolean showContext) {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(sourceToDoTask.getOriginId());
+		ToDoTaskMembers sourceMembers = toDoService.getToDoTaskMembers(sourceToDoTask, ToDoRole.ASSIGNEE_DELEGATEE);
+		Set<Identity> sourceAssignees = sourceMembers.getMembers(ToDoRole.assignee);
+		Set<Identity> sourceDelegatees = sourceMembers.getMembers(ToDoRole.delegatee);
+		ToDoTaskMemberConfig assigneeConfig = buildEditableSingleAssigneeConfig(ureq, repositoryEntry, sourceAssignees);
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), sourceDelegatees, () -> sourceDelegatees, ureq.getIdentity());
 		return createEditController(ureq, wControl, null, sourceToDoTask, true, repositoryEntry, sourceToDoTask,
-				MemberSelection.candidatesSingle);
+				assigneeConfig, ToDoTaskMemberConfig.disabled(delegateeSource, false), null);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
-			boolean showContext, boolean showSingleAssignee) {
+			boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(toDoTask.getOriginId());
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
+		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
+		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees, ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees, ureq.getIdentity());
+		ToDoTaskMemberConfig assigneeConfig = showSingleAssignee
+				? ToDoTaskMemberConfig.readOnly(assigneeSource, true)
+				: ToDoTaskMemberConfig.disabled(assigneeSource, true);
 		return createEditController(ureq, wControl, toDoTask, null, showContext, repositoryEntry, toDoTask,
-				showSingleAssignee ? MemberSelection.readOnly : MemberSelection.disabled);
+				assigneeConfig, ToDoTaskMemberConfig.disabled(delegateeSource, false), members);
 	}
 	
 	/*
@@ -163,19 +184,32 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 	 * assignment of a to-do to participants but not to supervisors and owners is
 	 * implemented, as the to-dos are displayed in the "my course" menu.
 	 */
+	private ToDoTaskMemberConfig buildEditableSingleAssigneeConfig(UserRequest ureq, RepositoryEntry repositoryEntry,
+			Set<Identity> currentAssignees) {
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repositoryEntry);
+		boolean isAdmin = reSecurity.isEntryAdmin();
+		Identity currentUser = ureq.getIdentity();
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(
+				ureq.getLocale(), currentAssignees,
+				() -> isAdmin
+						? repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+						: repositoryService.getCoachedParticipants(currentUser, repositoryEntry),
+				ureq.getIdentity());
+		return ToDoTaskMemberConfig.editableSingle(assigneeSource, true);
+	}
+
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask toDoTaskCopySource, boolean showContext, RepositoryEntry repositoryEntry, ToDoContext context,
-			MemberSelection assigneeSelection) {
-		Collection<Identity> assigneeCandidates = List.of();
-		if (MemberSelection.readOnly != assigneeSelection) {
-			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repositoryEntry);
-			assigneeCandidates = reSecurity.isEntryAdmin()
-					? repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
-					: repositoryService.getCoachedParticipants(ureq.getIdentity(), repositoryEntry);
-		}
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource, showContext, List.of(context),
-				context, courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS,
-				assigneeSelection, assigneeCandidates, List.of(), MemberSelection.disabled, List.of());
+			ToDoTaskMemberConfig assigneeConfig, ToDoTaskMemberConfig delegateeConfig, ToDoTaskMembers preloadedMembers) {
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(List.of(context), context)
+				: ToDoTaskContextConfig.off(context);
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, toDoTaskCopySource,
+				contextConfig,
+				assigneeConfig,
+				delegateeConfig,
+				preloadedMembers, ToDoTaskDateConfig.absoluteOnly(),
+				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS, null);
 	}
 
 	@Override

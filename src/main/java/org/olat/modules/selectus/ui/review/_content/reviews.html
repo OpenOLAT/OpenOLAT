@@ -1,0 +1,149 @@
+<h4><i class="o_icon o_icon_reviews"> </i> $r.translate("reviews.title")</h4>
+#if($visibleNow)
+	#if($noReviewsAvailable)
+		<div class="o_info">$r.translate("no.review.available")</div>
+	#end
+#elseif($visibleAfterSubmission && $noReviewsAvailable)
+	<div class="o_info">$r.translate("no.review.visible.after.submission")</div>			
+#elseif($visibleAfterRating)
+	<div class="o_info">$r.translate("no.review.visible.after.rating")</div>		
+#else
+	<div class="o_info">$r.translate("no.review.visible")</div>		
+#end
+
+#if(($r.isTrue($viewStatistics) || $r.visible("spiderChart")) && $r.isNotEmpty($statisticElements))
+	<div class="panel panel-default o_review_statistics">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseStatistics">
+  			<h4 class="panel-title">
+  				<i id="collapseStatisticsToggler" class="o_icon o_icon-fw #if($r.isTrue($openStatistics)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+  				$r.translate("review.statistics.title")</h4>
+  		</div>
+		<div id="collapseStatistics" class="panel-collapse collapse #if($r.isTrue($openStatistics)) in #end"><div class="panel-body">
+			<div class='col-sm-12'><p>$r.translate("review.reviewers.active", $numOfReviews, $numOfReviewers)</p></div>
+			#if($r.isTrue($viewStatistics))
+			<div class='#if($r.visible("spiderChart")) col-sm-6 #else col-sm-12 #end'>
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">$r.translate("category")</th>
+							<th scope="col">$r.translate("sum")</th>
+							<th scope="col">$r.translate("average")</th>
+							<th scope="col">$r.translate("min")</th>
+							<th scope="col">$r.translate("max")</th>
+							<th scope="col">$r.translate("standard.deviation")</th>
+						</tr>
+					</thead>
+					<tbody>
+					#foreach($statisticElement in $statisticElements)
+						<tr>
+							#if($statisticElement.type == "title")
+							<th colspan="6"><h4>$r.escapeHtml($statisticElement.label)</h4></th>
+							#else
+							<th scope="row">$r.escapeHtml($statisticElement.label)</th>
+							<td>#if($r.isNotNull($statisticElement.sum))${statisticElement.sum}#else - #end</td>
+							<td>$r.formatDouble($statisticElement.average)</td>
+							<td>$statisticElement.min</td>
+							<td>$statisticElement.max</td>
+							<td>$r.formatDouble($statisticElement.standardDeviation)</td>
+							#end
+						</tr>
+					#end
+					</tbody>
+				</table>
+			</div>
+			#end
+			#if($r.visible("spiderChart"))
+				<div class="#if($r.isTrue($viewStatistics)) col-sm-6 #else col-sm-12 #end" style="max-width:600px; min-width:600px; max-height:320px; min-height:320px;">$r.render("spiderChart")</div>
+			#end
+  		</div>
+	</div></div>
+	<script>
+	jQuery('#collapseStatistics').on('hide.bs.collapse', function () {
+		jQuery('#collapseStatisticsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.backgroundCommand("hide","panel","statistics")
+	})
+	jQuery('#collapseStatistics').on('show.bs.collapse', function () {
+		jQuery('#collapseStatisticsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.backgroundCommand("show","panel","statistics")
+	})
+	</script>
+#end
+
+#if($r.isNotEmpty($reviews))
+<div class="o_button_group o_button_group_right">$r.render("order")</div>
+#end
+
+#foreach($review in $reviews)
+	<div id="review_${review.id}" class="panel panel-default o_review #if($r.isNotNull($review.commentsContainer)) o_review_with_comments #end">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseReview${review.id}">
+  			<h4 class="panel-title">
+  				<i id="collapseReviewToggler${review.id}" class="o_icon o_icon-fw #if($r.isTrue($review.open)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+  				$r.translate("review.numbered", $review.reviewNumber)
+  				#if($r.isTrue($reviewName))<small class="o_reviewer_name">$r.translate("review.by") $review.fullName</small>#end
+  				<small class="o_review_date">$r.translate("review.date", $review.creationDate)</small></h4>
+  		</div>
+		<div id="collapseReview${review.id}" class="panel-collapse collapse #if($r.isTrue($review.open)) in #end">
+			<div class="panel-body">
+			#if($r.visible($review.deleteButton) && $r.visible($review.editButton))
+				<div class="o_button_group o_button_group_right"><div class="btn-group">
+					$r.render($review.deleteButton)$r.render($review.editButton)
+				</div></div>
+			#elseif($r.visible($review.deleteButton) || $r.visible($review.editButton))
+				<div class="o_button_group o_button_group_right">
+				#if($r.visible($review.deleteButton))
+					$r.render($review.deleteButton)
+				#end
+				#if($r.visible($review.editButton))
+					$r.render($review.editButton)
+				#end	
+				</div>
+			#end
+			
+			#foreach($element in $review.elements)
+				#if($r.isTrue(${element.hasLabel()}))
+					<div class="form-group o_slider_labels clearfix">
+						<div class="col-sm-9 col-sm-offset-3">
+							<span class="o_slider_left_label">$r.escapeHtml($element.leftLabel)</span>
+							<span class="o_slider_right_label">$r.escapeHtml($element.rightLabel)</span>
+						</div>
+					</div>
+				#end
+			
+				<div class="form-group $f.getElementCssClass($item) clearfix">
+				#if($element.type == "title")
+					<div class="col-sm-12"><h4>$r.escapeHtml($element.label)</h4></div>
+				#elseif($element.type == "text" && $r.available(${element.item.component.componentName}))
+					<div class="col-sm-12">
+					$r.render("${element.item.component.componentName}", "label")
+					<div class="o_tab_override">$r.escapeHtml($element.stringValue)</div></div>
+				#elseif($element.type == "slider" && $r.available(${element.item.component.componentName}))
+					$r.render("${element.item.component.componentName}", "label", "col-sm-3")
+					<div class="col-sm-9">$r.render(${element.item})</div>
+				#end
+				</div>
+			#end
+  			</div>
+			<div class="o_review_comments">
+  			#if($r.isNotNull($review.commentsContainer))
+				$r.render($review.commentsContainer)
+			#end
+			</div>
+		</div>
+	</div>
+	#if($review.scrollTo)
+	<script>
+	o_scrollToElement('#review_$review.id');
+	jQuery('#review_$review.id').addClass("review_glowing");
+	</script> 
+	#end
+	<script>
+	jQuery('#collapseReview${review.id}').on('hide.bs.collapse', function () {
+		jQuery('#collapseReviewToggler${review.id}').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.backgroundCommand("hide","panel","${review.id}")
+	})
+	jQuery('#collapseReview${review.id}').on('show.bs.collapse', function () {
+		jQuery('#collapseReviewToggler${review.id}').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.backgroundCommand("show","panel","${review.id}")
+	})
+	</script>
+#end

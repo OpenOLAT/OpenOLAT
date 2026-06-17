@@ -133,7 +133,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 
 		canEdit = secCallback.canEditCurriculumElementSettings(element);
 		creditPointConfig = creditPointService.getConfiguration(element);
-		systems = creditPointService.getCreditPointSystems();
+		systems = creditPointService.getCreditPointSystems(ureq.getUserSession().getRoles());
 		
 		mediaContainer = curriculumService.getMediaContainer(element);
 		if (mediaContainer != null && mediaContainer.getName().equals("media")) {
@@ -377,7 +377,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element.setRequirements(requirementsEl.getValue());
 			element.setCredits(creditsEl.getValue());
 			element.setTaughtBys(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()));
-			element = curriculumService.updateCurriculumElement(element);
+			element = curriculumService.updateCurriculumElement(getIdentity(), element);
 			
 			commitCreditPointConfiguration();
 		}

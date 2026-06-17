@@ -49,7 +49,7 @@ public class QTI21SettingsController extends RepositoryEntrySettingsController {
 	
 	private Link qtiOptionsLink;
 	
-	private QTI21DeliveryOptionsController deliveryOptionsCtrl;
+	private QTI21DeliveryAndAccessOptionsController deliveryOptionsCtrl;
 	
 	public QTI21SettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry entry) {
 		super(ureq, wControl, stackPanel, entry);
@@ -105,7 +105,7 @@ public class QTI21SettingsController extends RepositoryEntrySettingsController {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
-		deliveryOptionsCtrl = new QTI21DeliveryOptionsController(ureq, swControl, entry, readOnly);
+		deliveryOptionsCtrl = new QTI21DeliveryAndAccessOptionsController(ureq, swControl, entry, readOnly);
 		listenTo(deliveryOptionsCtrl);
 		mainPanel.setContent(deliveryOptionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(qtiOptionsLink);

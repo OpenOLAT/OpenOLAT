@@ -57,6 +57,7 @@ public class CurriculumElementTypeVO {
 			 "lectures(all)",
 			 "composite(all)",
 			 "allowAsRoot(all)",
+			 "implOnly(all)",
 			 "maxEntryRelations(all)",
 			 "subTypes(all)",
 			 "copy(all)",
@@ -85,6 +86,8 @@ public class CurriculumElementTypeVO {
 	private Boolean singleElement;
 	private Integer maxRepositoryEntryRelations;
 	private Boolean allowedAsRootElement;
+	private Boolean implOnly;
+	private String status;
 	
 	public CurriculumElementTypeVO() {
 		//
@@ -104,6 +107,10 @@ public class CurriculumElementTypeVO {
 		vo.setSingleElement(type.isSingleElement());
 		vo.setMaxRepositoryEntryRelations(type.getMaxRepositoryEntryRelations());
 		vo.setAllowedAsRootElement(type.isAllowedAsRootElement());
+		vo.setImplOnly(type.isImplOnly());
+		if(type.getStatus() != null) {
+			vo.setStatus(type.getStatus().name());
+		}
 		return vo;
 	}
 
@@ -210,7 +217,23 @@ public class CurriculumElementTypeVO {
 	public void setAllowedAsRootElement(Boolean allowedAsRootElement) {
 		this.allowedAsRootElement = allowedAsRootElement;
 	}
-	
+
+	public Boolean getImplOnly() {
+		return implOnly;
+	}
+
+	public void setImplOnly(Boolean implOnly) {
+		this.implOnly = implOnly;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 26169661 : getKey().hashCode();

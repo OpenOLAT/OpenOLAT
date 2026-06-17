@@ -20,7 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -34,7 +36,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -47,6 +53,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -56,7 +68,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
+import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumElementTypesTableModel.TypesCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,16 +84,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementTypesEditController extends FormBasicController implements Activateable2 {
 	
-	private FormLink addRootTypeButton;
+	private FormLink addNewImplTypeButton;
+	private FormLink addNewElemTypeButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementTypesTableModel model;
 	
 	private ToolsController toolsCtrl;
+	private TypeNamesCalloutController typeNamesCalloutCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDialog;
 	private EditCurriculumElementTypeController rootElementTypeCtrl;
 	private EditCurriculumElementTypeController editElementTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
+	protected CloseableCalloutWindowController typeNamesCalloutWindowCtrl;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -90,8 +109,10 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addRootTypeButton = uifactory.addFormLink("add.root.type", formLayout, Link.BUTTON);
-		addRootTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addNewImplTypeButton = uifactory.addFormLink("add.new.impl.type", formLayout, Link.BUTTON);
+		addNewImplTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addNewElemTypeButton = uifactory.addFormLink("add.new.elem.type", formLayout, Link.BUTTON);
+		addNewElemTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.key));
@@ -100,6 +121,35 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(displayNameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.status, new LabelCellRenderer() {
+			@Override protected String getCellValue(Object val, Translator translator) {
+				return val instanceof CurriculumElementTypeStatus s ? translator.translate("table.type.status." + s.name()) : null;
+			}
+			@Override protected String getIconCssClass(Object val) {
+				return val == CurriculumElementTypeStatus.active ? "o_icon-fw o_icon_check" : "o_icon-fw o_icon_ban";
+			}
+			@Override protected String getElementCssClass(Object val) {
+				return val == CurriculumElementTypeStatus.active ? "o_cur_el_type_status_active" : "o_cur_el_type_status_inactive";
+			}
+		}));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.forUseAs));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.subelements, new SubelementsRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.content, new IconCssCellRenderer() {
+			@Override protected String getIconCssClass(Object val) {
+				return val instanceof String key ? "o_icon o_icon-fw " + switch (key) {
+					case "table.type.content.no.content"    -> "o_icon_ban";
+					case "table.type.content.single.course" -> "o_icon_courserun";
+					case "table.type.content.course.bundle" -> "o_icon_course_bundle";
+					default -> "";
+				} : null;
+			}
+			@Override protected String getCellValue(Object val) {
+				return val instanceof String key ? translate(key) : null;
+			}
+		}));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.uses));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.parents));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.children));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
@@ -119,15 +169,78 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	
 	private void loadModel() {
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
-		List<CurriculumElementTypeRow> rows = types
-				.stream().map(this::forgeRow)
+		List<CurriculumElementTypeToType> relations = curriculumService.getAllCurriculumElementTypeRelations();
+		Map<Long, List<CurriculumElementType>> parentTypesBySubTypeKey = new HashMap<>();
+		Map<Long, List<CurriculumElementType>> childTypesByParentTypeKey = new HashMap<>();
+		for(CurriculumElementTypeToType relation : relations) {
+			Long subTypeKey = relation.getAllowedSubType().getKey();
+			parentTypesBySubTypeKey
+				.computeIfAbsent(subTypeKey, k -> new ArrayList<>())
+				.add(relation.getType());
+			Long parentTypeKey = relation.getType().getKey();
+			childTypesByParentTypeKey
+				.computeIfAbsent(parentTypeKey, k -> new ArrayList<>())
+				.add(relation.getAllowedSubType());
+		}
+		List<CurriculumElementTypeRow> rows = types.stream()
+				.map(t -> forgeRow(t,
+						parentTypesBySubTypeKey.getOrDefault(t.getKey(), List.of()),
+						childTypesByParentTypeKey.getOrDefault(t.getKey(), List.of())))
 				.collect(Collectors.toList());
 		model.setObjects(rows);
 		tableEl.reset(false, true, true);
 	}
-	
-	private CurriculumElementTypeRow forgeRow(CurriculumElementType type) {
+
+	private CurriculumElementTypeRow forgeRow(CurriculumElementType type, List<CurriculumElementType> parents, List<CurriculumElementType> children) {
 		CurriculumElementTypeRow row = new CurriculumElementTypeRow(type);
+		String forUseAsKey;
+		if(type.isImplOnly()) {
+			forUseAsKey = "table.type.for.use.as.implementation";
+		} else if(!type.isAllowedAsRootElement()) {
+			forUseAsKey = "table.type.for.use.as.element";
+		} else {
+			forUseAsKey = "table.type.for.use.as.implementation.or.element";
+		}
+		row.setForUseAsLabel(translate(forUseAsKey));
+		String contentKey;
+		if(type.getMaxRepositoryEntryRelations() == 0) {
+			contentKey = "table.type.content.no.content";
+		} else if(type.getMaxRepositoryEntryRelations() == 1) {
+			contentKey = "table.type.content.single.course";
+		} else if(type.getMaxRepositoryEntryRelations() == -1) {
+			contentKey = "table.type.content.course.bundle";
+		} else {
+			contentKey = null;
+		}
+		row.setContentLabel(contentKey);
+
+		CurriculumElementSearchParams usesParams = new CurriculumElementSearchParams(getIdentity());
+		usesParams.setElementTypes(List.of(new CurriculumElementTypeRefImpl(type.getKey())));
+		int usesCount = curriculumService.searchCurriculumElements(usesParams).size();
+		row.setNumUses(usesCount);
+		if(usesCount > 0) {
+			FormLink usesLink = uifactory.addFormLink("uses_" + type.getKey(), "uses",
+					String.valueOf(usesCount), null, null, Link.LINK | Link.NONTRANSLATED);
+			usesLink.setUserObject(row);
+			row.setUsesLink(usesLink);
+		}
+
+		row.setParentTypes(parents);
+		row.setNumParents(parents.size());
+		if(!parents.isEmpty()) {
+			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
+					String.valueOf(parents.size()), null, null, Link.NONTRANSLATED);
+			parentsLink.setUserObject(row);
+			row.setParentsLink(parentsLink);
+		}
+		row.setChildTypes(children);
+		row.setNumChildren(children.size());
+		if(!children.isEmpty()) {
+			FormLink childrenLink = uifactory.addFormLink("children_" + type.getKey(), "children",
+					String.valueOf(children.size()), null, null, Link.NONTRANSLATED);
+			childrenLink.setUserObject(row);
+			row.setChildrenLink(childrenLink);
+		}
 		if(isToolsEnable(type)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
@@ -175,13 +288,21 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addRootTypeButton == source) {
-			doAddRootType(ureq);
+		if(addNewImplTypeButton == source) {
+			doAddNewImplType(ureq);
+		} else if(addNewElemTypeButton == source) {
+			doAddNewElemType(ureq);
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+			if("uses".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+				doOpenUsesSearch(ureq, row);
+			} else if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenTools(ureq, row, link);
-			} 
+			} else if("parents".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+				doOpenParents(ureq, row, link);
+			} else if("children".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
+				doOpenChildren(ureq, row, link);
+			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -199,6 +320,14 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		//
 	}
 	
+	private void doOpenUsesSearch(UserRequest ureq, CurriculumElementTypeRow row) {
+		String businessPath = "[CurriculumAdmin:0][Search:0][Type:" + row.getKey() + "]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		if(StringHelper.containsNonWhitespace(url)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		}
+	}
+
 	private void doOpenTools(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -218,11 +347,42 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
-	private void doAddRootType(UserRequest ureq) {
-		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), null);
+	private void doOpenParents(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
+		doOpenTypeNamesCallout(ureq, link, translate("table.type.callout.child.of"), row.getParentTypes());
+	}
+
+	private void doOpenChildren(UserRequest ureq, CurriculumElementTypeRow row, FormLink link) {
+		doOpenTypeNamesCallout(ureq, link, translate("table.type.callout.parent.of"), row.getChildTypes());
+	}
+
+	private void doOpenTypeNamesCallout(UserRequest ureq, FormLink link, String title, List<CurriculumElementType> types) {
+		removeAsListenerAndDispose(typeNamesCalloutCtrl);
+		removeAsListenerAndDispose(typeNamesCalloutWindowCtrl);
+
+		typeNamesCalloutCtrl = new TypeNamesCalloutController(ureq, getWindowControl(), title, types);
+		listenTo(typeNamesCalloutCtrl);
+		typeNamesCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				typeNamesCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(typeNamesCalloutWindowCtrl);
+		typeNamesCalloutWindowCtrl.activate();
+	}
+
+	private void doAddNewImplType(UserRequest ureq) {
+		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), 
+				EditCurriculumElementTypeController.FOR_USE_AS_IMPL);
 		listenTo(rootElementTypeCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), rootElementTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				rootElementTypeCtrl.getInitialComponent(), true, translate("add.new.impl.type"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddNewElemType(UserRequest ureq) {
+		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), 
+				EditCurriculumElementTypeController.FOR_USE_AS_ELEM);
+		listenTo(rootElementTypeCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				rootElementTypeCtrl.getInitialComponent(), true, translate("add.new.elem.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -232,11 +392,22 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		editElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), reloadedType);
 		listenTo(editElementTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editElementTypeCtrl.getInitialComponent(), true, translate("edit"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				editElementTypeCtrl.getInitialComponent(), true, 
+				translate("type.edit.title", reloadedType.getDisplayName()));
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
+	private void doSetStatus(CurriculumElementTypeRow row, CurriculumElementTypeStatus status) {
+		CurriculumElementType type = curriculumService.getCurriculumElementType(row);
+		if(type != null) {
+			type.setStatus(status);
+			curriculumService.updateCurriculumElementType(type);
+			loadModel();
+		}
+	}
+
 	private void doCopy(CurriculumElementTypeRow row) {
 		curriculumService.cloneCurriculumElementType(row);
 		loadModel();
@@ -261,6 +432,22 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		}
 	}
 
+	private static class SubelementsRenderer implements FlexiCellRenderer {
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+		                   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (cellValue instanceof Boolean hasSubelements) {
+				if (hasSubelements) {
+					target.append("<i class='o_icon o_icon-fw o_icon_sitemap'> </i> ")
+					      .append(StringHelper.escapeHtml(translator.translate("yes")));
+				} else {
+					target.append("<i class='o_icon o_icon-fw o_icon_single_element'> </i> ")
+					      .append(StringHelper.escapeHtml(translator.translate("no")));
+				}
+			}
+		}
+	}
+
 	private class ToolsController extends BasicController {
 		
 		private final CurriculumElementTypeRow row;
@@ -277,6 +464,13 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", links);
 			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.copy)) {
 				addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
+			}
+			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.status)) {
+				if(type.getStatus() == CurriculumElementTypeStatus.active) {
+					addLink("type.tools.set.inactive", "setInactive", "o_icon o_icon-fw o_icon_ban", links);
+				} else {
+					addLink("type.tools.set.active", "setActive", "o_icon o_icon-fw o_icon_check", links);
+				}
 			}
 			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.delete)) {
 				links.add("-");
@@ -307,6 +501,12 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 				} else if("copy".equals(cmd)) {
 					close();
 					doCopy(row);
+				} else if("setInactive".equals(cmd)) {
+					close();
+					doSetStatus(row, CurriculumElementTypeStatus.inactive);
+				} else if("setActive".equals(cmd)) {
+					close();
+					doSetStatus(row, CurriculumElementTypeStatus.active);
 				} else if("delete".equals(cmd)) {
 					close();
 					doConfirmDelete(ureq, row);
@@ -317,6 +517,25 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
+		}
+	}
+
+	private class TypeNamesCalloutController extends BasicController {
+
+		private final VelocityContainer mainVC;
+
+		public TypeNamesCalloutController(UserRequest ureq, WindowControl wControl, String title, List<CurriculumElementType> types) {
+			super(ureq, wControl);
+			setTranslator(CurriculumElementTypesEditController.this.getTranslator());
+			mainVC = createVelocityContainer("element_type_names_callout");
+			mainVC.contextPut("title", title);
+			mainVC.contextPut("items", types);
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
 		}
 	}
 }

@@ -1,0 +1,14 @@
+<div class="o_app_jobads">
+	<hr class="b_form_spacer" />
+	<p>$r.translate("jobads.explanation")</p>
+	<div class="form-inline clearfix">
+		#if($r.isTrue($textFieldOnly))
+			$r.render("jobads.other")
+		#else
+			$r.render("jobads.select")
+			#if($r.visible("jobads.other"))
+				&nbsp;&nbsp;&nbsp;$r.translate("jobads.where")&nbsp;&nbsp;&nbsp;$r.render("jobads.other")
+			#end
+		#end
+	</div>
+</div>

@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayValues;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOptionGroup;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -102,17 +102,11 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public String getOptionsLabel(Locale locale) {
-		return translator.translate("class.selection.option");
-	}
-	
-	@Override
-	public List<? extends ObjectOption> getOptions() {
+	public List<ObjectOptionGroup> getOptionGroups(Locale locale) {
 		initOptions();
-		
-		return options;
+		return List.of(ObjectOptionGroup.of(translator.translate("class.selection.option"), options));
 	}
-	
+
 	private void initOptions() {
 		if (options != null) {
 			return;
@@ -132,15 +126,15 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 		String subTitle = translator.translate("class.status." + badgeClass.getStatus().name());
 		String imageSrc = mediaUrl + "/" + badgeClass.getImage();
 		String imageAlt = translator.translate("badge.image");
-		return new BadgeClassOption(badgeClass.getRootId().toString(), title, subTitle, null, imageSrc, imageAlt, badgeClass.getName());
+		return new BadgeClassOption(badgeClass.getRootId().toString(), title, subTitle, imageSrc, imageAlt, badgeClass.getName());
 	}
 	
 	static final class BadgeClassOption extends ObjectOptionValues {
 		
 		private final String displayTitle;
 		
-		public BadgeClassOption(String key, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt, String displayTitle) {
-			super(key, title, subTitle, subTitleFull, imageSrc, imageAlt);
+		public BadgeClassOption(String key, String title, String subTitle, String imageSrc, String imageAlt, String displayTitle) {
+			super(key, null, title, subTitle, imageSrc, imageAlt, null);
 			this.displayTitle = displayTitle;
 		}
 		
@@ -154,10 +148,15 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 	public boolean isBrowserAvailable() {
 		return false;
 	}
-	
+
 	@Override
-	public ControllerCreator getBrowserCreator(boolean multiSelection) {
+	public ControllerCreator getBrowserCreator(boolean multiSelection, Collection<String> selectedKeys) {
 		return null;
+	}
+
+	@Override
+	public void addMissingOptions(Collection<String> keys) {
+		//
 	}
 
 }

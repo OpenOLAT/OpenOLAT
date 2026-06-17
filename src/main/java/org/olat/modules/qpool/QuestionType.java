@@ -42,6 +42,7 @@ public enum QuestionType {
 	HOTTEXT,
 	ORDER,
 	INLINECHOICE,
+	GAPMIXED,
 	UNKOWN
 
 }

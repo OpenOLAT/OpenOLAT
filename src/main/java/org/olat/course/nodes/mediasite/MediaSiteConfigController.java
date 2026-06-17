@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.MediaSiteCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
@@ -56,7 +57,8 @@ public class MediaSiteConfigController extends FormBasicController {
 	
 	private final ModuleConfiguration config;
 	private final CourseEnvironment editCourseEnv;
-	
+	private final UserCourseEnvironment userCourseEnv;
+
 	private MediaSiteCourseNode courseNode;
 	
 	private SingleSelection serverSelection;
@@ -73,12 +75,13 @@ public class MediaSiteConfigController extends FormBasicController {
 	@Autowired
 	private MediaSiteManager mediaSiteManager;
 	
-	public MediaSiteConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course) {
+	public MediaSiteConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		this.config = config;
 		this.courseNode = courseNode;
 		this.editCourseEnv = course.getCourseEnvironment();
+		this.userCourseEnv = userCourseEnv;
 		
 		initForm(ureq);
 		loadConfig(ureq);
@@ -198,14 +201,14 @@ public class MediaSiteConfigController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == previewLink) { // (UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, ModuleConfiguration config, UserCourseEnvironment userCourseEnv, CourseEnvironment courseEnv, boolean showAdministration) {
-			Controller mediaSiteRunCtr = new MediaSiteRunController(ureq, getWindowControl(), courseNode, config, editCourseEnv, false);
+			Controller mediaSiteRunCtr = new MediaSiteRunController(ureq, getWindowControl(), courseNode, config, editCourseEnv, false, userCourseEnv);
 			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 					mediaSiteRunCtr.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(mediaSiteRunCtr);
 			previewLayoutCtr.activate();
 			listenTo(previewLayoutCtr);
 		} else if (source == openMyMediaSiteLink) {
-			Controller mediaSiteRunCtr = new MediaSiteRunController(ureq, getWindowControl(), courseNode, config, editCourseEnv, true);
+			Controller mediaSiteRunCtr = new MediaSiteRunController(ureq, getWindowControl(), courseNode, config, editCourseEnv, true, userCourseEnv);
 			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 					mediaSiteRunCtr.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(mediaSiteRunCtr);

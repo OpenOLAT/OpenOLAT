@@ -99,6 +99,9 @@ public class ConfirmDeleteCurriculumElementListController extends ConfirmationCo
 		impact.append("<li>")
 	          .append(translate("curriculums.implementations.bulk.delete.impacts.members"))
 	          .append("</li>");
+		impact.append("<li>")
+	          .append(translate("curriculums.implementations.bulk.delete.impacts.todos"))
+	          .append("</li>");
 		impact.append("</ul>");
 
 		StaticTextElement impactEl = uifactory.addStaticTextElement("curriculums.elements.bulk.delete.impacts", impact.toString(), confirmCont);

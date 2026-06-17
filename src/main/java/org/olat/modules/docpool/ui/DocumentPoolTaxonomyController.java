@@ -29,6 +29,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
@@ -65,7 +66,7 @@ public class DocumentPoolTaxonomyController extends BasicController {
 		
 		VFSContainer container = docPoolModule.getInfoPageContainer();
 		if(container.resolve("index.html") != null) {
-			indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
+			indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", IFrameSettings.secure());
 			listenTo(indexCtrl);
 			mainVC.put("index", indexCtrl.getInitialComponent());
 		}

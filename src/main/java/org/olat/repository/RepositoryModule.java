@@ -84,7 +84,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String REPOSITORY_STATUS_CHANGED_NOTIFICATIONS_ENABLED = "notification.repository.status.changed";
 	
 	private static final String ALLOW_TO_LEAVE_DEFAULT_OPTION = "repo.allow.to.leave";
-	
+	private static final String FINISHED_ACCESS_DEFAULT_OPTION = "repo.finished.access";
+
 	private static final String LIFECYCLE_AUTO_CLOSE = "repo.lifecycle.auto.close";
 	private static final String LIFECYCLE_AUTO_DELETE = "repo.lifecycle.auto.delete";
 	private static final String LIFECYCLE_AUTO_DEFINITIVELY_DELETE = "repo.lifecycle.auto.definitively.delete";
@@ -142,7 +143,9 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	@Value("${repo.allow.to.leave:atAnyTime}")
 	private String defaultAllowToLeaveOption;
-	
+	@Value("${repo.finished.access:readonly}")
+	private String defaultFinishedAccessOption;
+
 	@Value("${repo.wizards.enabled}")
 	private String wizardTypesEnabledConfig;
 	private Set<String> wizardTypesEnabled;
@@ -270,7 +273,12 @@ public class RepositoryModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(leaveOption)) {
 			defaultAllowToLeaveOption = leaveOption;
 		}
-		
+
+		String finishedAccessOptionObj = getStringPropertyValue(FINISHED_ACCESS_DEFAULT_OPTION, true);
+		if(StringHelper.containsNonWhitespace(finishedAccessOptionObj)) {
+			defaultFinishedAccessOption = finishedAccessOptionObj;
+		}
+
 		String autoClose = getStringPropertyValue(LIFECYCLE_AUTO_CLOSE, true);
 		if(StringHelper.containsNonWhitespace(autoClose)) {
 			lifecycleAutoClose = autoClose;
@@ -492,6 +500,28 @@ public class RepositoryModule extends AbstractSpringModule {
 		} else {
 			defaultAllowToLeaveOption = option.name();
 			setStringProperty(ALLOW_TO_LEAVE_DEFAULT_OPTION, option.name(), true);
+		}
+	}
+
+	public RepositoryEntryFinishedAccessOptions getFinishedAccessDefaultOption() {
+		if(StringHelper.containsNonWhitespace(defaultFinishedAccessOption)) {
+			try {
+				return RepositoryEntryFinishedAccessOptions.valueOf(defaultFinishedAccessOption);
+			} catch (Exception e) {
+				log.error("Unrecognised option for repo.finished.access: {}", defaultFinishedAccessOption);
+				return RepositoryEntryFinishedAccessOptions.readonly;
+			}
+		}
+		return RepositoryEntryFinishedAccessOptions.readonly;
+	}
+
+	public void setFinishedAccessDefaultOption(RepositoryEntryFinishedAccessOptions option) {
+		if(option == null) {
+			defaultFinishedAccessOption = null;
+			setStringProperty(FINISHED_ACCESS_DEFAULT_OPTION, "", true);
+		} else {
+			defaultFinishedAccessOption = option.name();
+			setStringProperty(FINISHED_ACCESS_DEFAULT_OPTION, option.name(), true);
 		}
 	}
 

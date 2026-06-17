@@ -31,6 +31,7 @@ import java.util.UUID;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -303,6 +304,7 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterActiveOnly() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
 				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
@@ -315,12 +317,12 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		((CurriculumElementImpl)inactive).setElementStatus(CurriculumElementStatus.inactive);
-		inactive = curriculumService.updateCurriculumElement(inactive);
+		inactive = curriculumService.updateCurriculumElement(actor, inactive);
 		CurriculumElement deleted = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		((CurriculumElementImpl)deleted).setElementStatus(CurriculumElementStatus.deleted);
-		deleted = curriculumService.updateCurriculumElement(deleted);
+		deleted = curriculumService.updateCurriculumElement(actor, deleted);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();

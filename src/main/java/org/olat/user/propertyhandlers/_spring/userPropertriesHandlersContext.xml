@@ -19,6 +19,11 @@
 		<property name="group" value="personal" />
 	</bean>
 	
+	<bean id="userPropertyTitle" class="org.olat.user.propertyhandlers.TitlePropertyHandler">
+		<property name="name" value="title" />
+		<property name="group" value="account" />
+	</bean>
+	
 	<bean id="userPropertyFirstName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="firstName" />
 		<property name="group" value="account" />

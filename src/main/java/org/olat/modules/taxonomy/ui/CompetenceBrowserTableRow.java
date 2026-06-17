@@ -41,8 +41,11 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	private String displayName;
 	private String description;
 	
+	private boolean preselected;
+	private boolean selected;
+
 	private FormLink detailsLink;
-	
+
 	public CompetenceBrowserTableRow(Taxonomy taxonomy) {
 		this.taxonomy = taxonomy;
 	}
@@ -73,6 +76,22 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 		return taxonomyLevel;
 	}
 	
+	public boolean isPreselected() {
+		return preselected;
+	}
+
+	public void setPreselected(boolean preselected) {
+		this.preselected = preselected;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
 	public FormLink getDetailsLink() {
 		return detailsLink;
 	}

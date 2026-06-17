@@ -1,0 +1,10 @@
+<fieldset class="fx_r_app_dataprotection o_clearfix">
+	<legend>$r.translate("disclaimer.privacy.title") - $r.escapeHtml($positionTitle)</legend>
+	<p>$r.translate("disclaimer.privacy.text", $i18nArguments)</p>
+	<div class="o_clearfix o_sel_accept_terms">
+		$r.render("acceptTerms")
+		#if($f.hasError("acceptTerms") && $r.available("acceptTerms_ERROR"))
+			$r.render("acceptTerms_ERROR")
+		#end
+	</div>
+</fieldset>

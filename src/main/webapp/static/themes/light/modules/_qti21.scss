@@ -239,12 +239,17 @@ img.o_hotspot_responsive[usemap] {
 
 .form-inline.o_qti_gaptext_add_alternative {
 	margin-bottom: 3px;
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	column-gap: 3px;
+	
+	input {
+		width: 100%;
+	}
 }
 
 .o_qti_gaptext_add_alternatives {
-	position: absolute;
-	top: 0px;
-	right: 15px;
+	margin: 15px;
 }
 
 .o_qti_gaptext_alternatives {
@@ -255,9 +260,51 @@ img.o_hotspot_responsive[usemap] {
 	padding: 2px 5px;
 }
 
+.o_qti_gaptext_alternative {
+	background-color: $gray-lighter;
+	color: $gray;
+	border: 1px solid $gray-lighter;
+	border-radius: $border-radius-base;
+	padding: 2px 5px;
+	
+	&.success {
+		background-color: $state-success-bg;
+		border: 1px solid $state-success-bg;
+	}
+	
+	&.danger {
+		background-color: $state-danger-bg;
+		border: 1px solid $state-danger-bg;
+	}
+}
+
 span.o_qti_gaptext_score_alternative {
 	padding-left: 2em;
 	color: $gray;
+}
+
+.o_gap_bounds {
+	label {
+		float:right;
+	}
+	input.form-control {
+		display: inline-block;
+		width: calc(100% - 2em);
+	}
+}
+
+.o_gap_convert {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	columns-gap: 10px;
+}
+
+.o_inlinechoice_choices, .o_inlinechoice_globalchoices {
+	.o_inlinechoice_choice {
+		display: grid;
+		grid-template-columns: 1fr auto auto;
+		column-gap: 3px;
+	}
 }
 
 /* Essay extended text */
@@ -1052,7 +1099,7 @@ tr.choiceinteraction {
 /* Text gap */
 /* there is a copy in _qti21content.scss for TinyMCE */
 .textEntryInteraction {
-	input, span.o_input_value {
+	input, span.o_input_value, span.o_correction_value {
 		margin: -1px 2px;	
 		vertical-align: middle;
 		font-size: ($font-size-base * 0.98);
@@ -1079,10 +1126,18 @@ tr.choiceinteraction {
 	&.has-feedback input {
 		padding-right: 42.5px;
 	}
-	&.has-error input {
+	&.has-feedback span.o_correction_value {
+		padding-right: 26px;
+		vertical-align: baseline;
+		display: inline-block;
+	}
+	
+	&.has-error input,
+	&.has-error span.o_correction_value {
 		border-color: $state-danger-text;
 	}
-	&.has-success input {
+	&.has-success input,
+	&.has-success span.o_correction_value {
 		border-color: $state-success-text;
 	}
 }
@@ -1483,7 +1538,7 @@ table.o_qti_item_kprim {
 	}
 }
 
-.o_qti_inlinechoices_scores_map {
+.o_qti_gap_scores_map {
 	padding: 1em;
 	margin-bottom: 0.5em;
 	border: 1px solid $o-qti-editor-box-border-color;

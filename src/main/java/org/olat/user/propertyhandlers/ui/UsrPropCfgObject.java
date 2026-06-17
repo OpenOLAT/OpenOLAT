@@ -69,6 +69,15 @@ public class UsrPropCfgObject {
 	public List<UserPropertyHandler> getPropertyHandlers() {
 		return allHandlers;
 	}
+	
+	public UserPropertyHandler getPropertyHandler(String name) {
+		for(UserPropertyHandler handler:allHandlers) {
+			if(handler.getName().equals(name)) {
+				return handler;
+			}
+		}
+		return null;
+	}
 
 	public Map<String, UserPropertyUsageContext> getUsageContexts() {
 		return allContexts;

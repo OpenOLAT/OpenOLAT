@@ -54,6 +54,11 @@ public class EdusharingDirectiveProvider implements CSPDirectiveProvider {
 	}
 
 	@Override
+	public Collection<String> getStyleSrcUrls() {
+		return getUrls(); 
+	}
+
+	@Override
 	public Collection<String> getConnectSrcUrls() {
 		return getUrls();
 	}

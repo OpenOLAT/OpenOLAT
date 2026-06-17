@@ -38,10 +38,11 @@ import org.olat.modules.curriculum.ui.CurriculumComposerController;
 public class CopyElementDetailsController extends FormBasicController {
 
 	private final boolean hasTemplate;
-	
+
 	private final CopyElementDetailsResourcesController detailsResourcesCtrl;
 	private final CopyElementDetailsTemplatesController detailsTemplatesCtrl;
 	private final CopyElementDetailsLectureBlocksController lecturesBlocksCtrl;
+	private final CopyElementDetailsToDosController detailsToDosCtrl;
 	
 	public CopyElementDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			CurriculumElement curriculumElement, CopyElementContext context) {
@@ -60,7 +61,11 @@ public class CopyElementDetailsController extends FormBasicController {
 		lecturesBlocksCtrl = new CopyElementDetailsLectureBlocksController(ureq, wControl, rootForm,
 				curriculumElement, context);
 		listenTo(lecturesBlocksCtrl);
-		
+
+		detailsToDosCtrl = new CopyElementDetailsToDosController(ureq, wControl, rootForm,
+				curriculumElement, context);
+		listenTo(detailsToDosCtrl);
+
 		initForm(ureq);
 	}
 
@@ -71,6 +76,11 @@ public class CopyElementDetailsController extends FormBasicController {
 			formLayout.add("templates", detailsTemplatesCtrl.getInitialFormItem());
 		}
 		formLayout.add("lecturesBlocks", lecturesBlocksCtrl.getInitialFormItem());
+		formLayout.add("todos", detailsToDosCtrl.getInitialFormItem());
+	}
+
+	public void saveToContext() {
+		detailsToDosCtrl.saveToContext();
 	}
 
 	@Override

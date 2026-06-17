@@ -82,6 +82,8 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.lti13.LTI13Service;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAO;
 import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
@@ -102,6 +104,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
@@ -110,10 +113,12 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -248,6 +253,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -258,9 +265,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			defaultType.setAllowedAsRootElement(true);
 			defaultType.setMaxRepositoryEntryRelations(-1);
 			defaultType.setSingleElement(false);
+			defaultType.setImplOnly(false);
+			defaultType.setStatus(CurriculumElementTypeStatus.active);
 			defaultType.setManagedFlags(new CurriculumElementTypeManagedFlag[] {
 					CurriculumElementTypeManagedFlag.identifier, CurriculumElementTypeManagedFlag.externalId,
 					CurriculumElementTypeManagedFlag.allowAsRoot, CurriculumElementTypeManagedFlag.composite,
+					CurriculumElementTypeManagedFlag.implOnly, CurriculumElementTypeManagedFlag.status,
 					CurriculumElementTypeManagedFlag.maxEntryRelations });
 			updateCurriculumElementType(defaultType);
 			log.info("Default curriculum element type created.");
@@ -280,7 +290,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public Curriculum updateCurriculum(Curriculum curriculum) {
-		return curriculumDao.update(curriculum);
+		Curriculum updated = curriculumDao.update(curriculum);
+		curriculumElementToDoProvider.onCurriculumUpdated(updated);
+		return updated;
 	}
 	
 	@Override
@@ -420,6 +432,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return curriculumElementTypeDao.createCurriculumElementType(identifier, displayName, description, externalId);
 	}
 	
+	@Override
+	public List<CurriculumElementTypeToType> getAllCurriculumElementTypeRelations() {
+		return curriculumElementTypeToTypeDao.getAllRelations();
+	}
+
 	@Override
 	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType) {
 		return curriculumElementTypeDao.update(elementType);
@@ -562,6 +579,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		copyCurriculumElemenFiles(elementToClone, clone, doer);
 		
+		if(settings.isCopyCertificationProgram()) {
+			CertificationProgram certificationProgram = certificationProgramToCurriculumElementDao.getCertificationProgram(elementToClone);
+			if(certificationProgram != null) {
+				CoreSpringFactory.getImpl(CertificationProgramService.class)
+					.addCurriculumElementToCertificationProgram(certificationProgram, clone, doer);
+			}
+		}
+		
 		if(clone.isShowCreditPointsBenefit()) {
 			CurriculumElementCreditPointConfiguration config = curriculumElementConfigurationDao.loadConfiguration(elementToClone);
 			if(config != null && config.getCreditPointSystem() != null) {
@@ -698,6 +723,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		
 		
+		CopyToDos copyToDos = settings.getCopyToDos();
+		if(copyToDos == CopyToDos.todos || copyToDos == CopyToDos.todosWithAssignments) {
+			Set<Long> includedTaskKeys = settings.getSelectedToDoTaskKeys(elementToClone.getKey());
+			curriculumElementToDoProvider.copyToDoTasks(elementToClone, clone,
+					copyToDos == CopyToDos.todosWithAssignments, includedTaskKeys, doer);
+		}
+
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
 			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth);
@@ -830,6 +862,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						CurriculumRoles.owner.name(), CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name())
 				: List.of();
 		
+		curriculumElementToDoProvider.onCurriculumElementDeletedSoftly(reloadedElement, doer);
+		
 		groupDao.removeMemberships(reloadedElement.getGroup());
 		
 		certificationProgramToCurriculumElementDao.deleteRelation(reloadedElement);
@@ -879,11 +913,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
+	public CurriculumElement updateCurriculumElement(Identity doer, CurriculumElement element) {
 		CurriculumElement updated = curriculumElementDao.update(element);
 		if (updated.getResource() != null) {
 			acService.updateRelativeValidDates(List.of(updated.getResource()), updated.getBeginDate(), updated.getEndDate());
 		}
+		curriculumElementToDoProvider.onCurriculumElementUpdated(doer, updated);
 		return updated;
 	}
 	
@@ -898,7 +933,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		CurriculumElementStatus currentStatus = element.getElementStatus();
 		((CurriculumElementImpl)element).setElementStatus(newStatus);
-		element = updateCurriculumElement(element);
+		element = updateCurriculumElement(doer, element);
 		auditLogChangeStatus(currentStatus, newStatus, element, doer);
 		
 		if (updateChildren) {
@@ -913,7 +948,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				.forEach(childElement -> {
 					CurriculumElementStatus currentChildStatus = childElement.getElementStatus();
 					((CurriculumElementImpl)childElement).setElementStatus(newChildStatus);
-					childElement = updateCurriculumElement(childElement);
+					childElement = updateCurriculumElement(doer, childElement);
 					auditLogChangeStatus(currentChildStatus, newChildStatus, childElement, doer);
 				});
 		}
@@ -1036,8 +1071,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public AccessibleCurriculumObjectKeys getAccessibleCurriculumKeys(Identity identity) {
-		return curriculumElementDao.loadAccessibleCurriculumKeys(identity);
+	public AccessibleCurriculumObjectKeys getAccessibleCurriculumKeys(AccessibleCurriculumSearchParams searchParams) {
+		return curriculumElementDao.loadAccessibleCurriculumKeys(searchParams);
 	}
 
 	@Override
@@ -1434,6 +1469,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					role.name(), reason, false, null, null,
 					actor, adminNote);
 			events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
+			
+			removeTeacher(element, member, role.name());
 		}
 		
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
@@ -1484,10 +1521,59 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						actor, adminNote);
 			}
 			
+			removeTeacher(elementNode.getElement(), member, role);
+			
 			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
 				removeInheritedMembership(child, member, role, reason,  actor, adminNote, force, events);
 			}
 		}
+	}
+	
+	private void removeTeacher(CurriculumElement element, Identity identity, String role) {
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(element, identity);
+		if(!lectureBlocks.isEmpty()) {
+			LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+			List<GroupMembership> memberships = curriculumElementDao.getMemberships(element, identity);
+			if(hasTeacherAnOtherRoles(element, role, memberships)) {
+				return;// Has still an active role
+			}
+
+			for(LectureBlock lectureBlock:lectureBlocks) {
+				if(lectureBlock.getEntry() != null) {
+					List<GroupMembership> entryMemberships = repositoryEntryRelationDao.getMemberships(identity, lectureBlock.getEntry());
+					if(hasTeacherAnOtherRoles(element, role, entryMemberships)) {
+						continue;
+					}
+				}
+				
+				lectureService.removeTeacher(lectureBlock, identity);
+			}
+		}
+	}
+	
+	/**
+	 * Check if in the memberships of a course or an curriculum element, there
+	 * are the following roles, coach, master coach or owner. The current membership
+	 * on the element will be ignored (membership which match element and role).
+	 * 
+	 * @param element The curriculum element
+	 * @param role The role to be removed
+	 * @param memberships A list of memberships
+	 * @return true if has a role like coach, master coach or owner
+	 */
+	private boolean hasTeacherAnOtherRoles(CurriculumElement element, String role, List<GroupMembership> memberships) {
+		for(GroupMembership membership:memberships) {
+			if(membership.getGroup().equals(element.getGroup()) && role.equals(membership.getRole())) {
+				// We are removing this membership, don't take it in account
+				continue;
+			}
+			if(CurriculumRoles.coach.name().equals(membership.getRole())
+					|| CurriculumRoles.mastercoach.name().equals(membership.getRole())
+					|| CurriculumRoles.owner.name().equals(membership.getRole())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -2025,6 +2111,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
 		return curriculumElementDao.getImplementations(curriculum, status);
+	}
+
+	@Override
+	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
+		return curriculumElementDao.hasImplementations(curriculum, status);
 	}
 
 	@Override

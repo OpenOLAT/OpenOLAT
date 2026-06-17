@@ -65,6 +65,7 @@ public enum QTI21QuestionType {
 	hottext(true, "hottext", "o_mi_qtihottext", QuestionType.HOTTEXT),
 	order(true, "order", "o_mi_qtiorder", QuestionType.ORDER),
 	inlinechoice(true, "inlinechoice", "o_mi_qtiinlinechoice", QuestionType.INLINECHOICE),
+	gapmixed(true, "gapmixed", "o_mi_qtigapmixed", QuestionType.GAPMIXED),
 	unkown(false, "unkown", "o_mi_qtiunkown", null);
 	
 	private final String prefix;
@@ -174,6 +175,11 @@ public enum QTI21QuestionType {
 			}	
 		}
 		
+		//TODO gap
+		/*
+		
+		*/
+		
 		if(fUnkown) {
 			return QTI21QuestionType.unkown;
 		} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
@@ -182,7 +188,14 @@ public enum QTI21QuestionType {
 			return getTypeOfMatch(item, interactions);
 		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return getTypeOfTextEntryInteraction(item);
-		} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && fInlineChoice && !fUnkown) {
+			QTI21QuestionType classType = getGapTypeByClassAttr(item);
+			return classType == null
+					? QTI21QuestionType.inlinechoice
+					: classType;
+		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && fInlineChoice && !fUnkown) {
+			return QTI21QuestionType.gapmixed;
+		}  else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.essay;
 		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.upload;
@@ -194,14 +207,16 @@ public enum QTI21QuestionType {
 			return QTI21QuestionType.hottext;
 		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && fOrder && !fInlineChoice && !fUnkown) {
 			return QTI21QuestionType.order;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fHottext && !fOrder && fInlineChoice && !fUnkown) {
-			return QTI21QuestionType.inlinechoice;
-		} else {
-			return QTI21QuestionType.unkown;
-		}
+		} 
+		return QTI21QuestionType.unkown;
 	}
 	
 	private static final QTI21QuestionType getTypeOfTextEntryInteraction(AssessmentItem item) {
+		QTI21QuestionType type = getGapTypeByClassAttr(item);
+		if(type != null) {
+			return type;
+		}
+		
 		if(!item.getResponseDeclarations().isEmpty()) {
 			int foundText = 0;
 			int foundNumerical = 0;
@@ -216,14 +231,35 @@ public enum QTI21QuestionType {
 				}
 			}
 		
-			if(foundText == 0 && foundNumerical > 0 && foundUnkown == 0) {
-				return QTI21QuestionType.numerical;
-			}
-			if(foundText > 0 && foundUnkown == 0) {
-				return QTI21QuestionType.fib;
+			if(foundUnkown == 0) {
+				if(foundText == 0 && foundNumerical > 0) {
+					return QTI21QuestionType.numerical;
+				}
+				if(foundText > 0 && foundNumerical == 0) {
+					return QTI21QuestionType.fib;
+				}
+				if(foundText > 0 && foundNumerical > 0) {
+					return QTI21QuestionType.gapmixed;
+				}
 			}
 		}
 		return QTI21QuestionType.unkown;
+	}
+	
+	public static final QTI21QuestionType getGapTypeByClassAttr(AssessmentItem item) {
+		List<String> classAttr = item.getItemBody().getClassAttr();
+		if(classAttr != null) {
+			if(classAttr.contains(QTI21Constants.CSS_GAP_NUMERICAL)) {
+				return QTI21QuestionType.numerical;
+			} else if(classAttr.contains(QTI21Constants.CSS_GAP_TEXT)) {
+				return QTI21QuestionType.fib;
+			} else if(classAttr.contains(QTI21Constants.CSS_INLINE_CHOICE)) {
+				return QTI21QuestionType.inlinechoice;
+			} else if(classAttr.contains(QTI21Constants.CSS_GAP_MIXED)) {
+				return QTI21QuestionType.gapmixed;
+			}
+		}
+		return null;
 	}
 	
 	public static final QTI21QuestionType getTypeOfMatch(AssessmentItem item, List<Interaction> interactions) {

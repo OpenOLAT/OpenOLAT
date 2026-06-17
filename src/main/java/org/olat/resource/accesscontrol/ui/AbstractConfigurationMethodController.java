@@ -28,6 +28,9 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.date.OffsetDirection;
+import org.olat.core.gui.components.date.RelativeDateElement;
+import org.olat.core.gui.components.date.RelativeDateSelection;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -45,7 +48,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.OLATResource;
@@ -54,6 +56,7 @@ import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferDateConfig;
+import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.resource.accesscontrol.OfferDateRef;
 import org.olat.resource.accesscontrol.OfferDateUnit;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
@@ -84,16 +87,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private MultipleSelectionElement statusEl;
 	private SingleSelection fromModeEl;
 	private DateChooser fromDateEl;
-	private FormLayoutContainer fromRelCont;
-	private TextElement fromValueEl;
-	private SingleSelection fromUnitEl;
-	private SingleSelection fromRefEl;
+	private RelativeDateElement fromDateRelEl;
 	private SingleSelection untilModeEl;
 	private DateChooser untilDateEl;
-	private FormLayoutContainer untilRelCont;
-	private TextElement untilValueEl;
-	private SingleSelection untilUnitEl;
-	private SingleSelection untilRefEl;
+	private RelativeDateElement untilDateRelEl;
 	private ObjectSelectionElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
 	protected SingleSelection confirmationByManagerEl;
@@ -105,6 +102,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private final boolean confirmationByManagerSupported;
 	protected final CatalogInfo catalogInfo;
 	private final boolean edit;
+	private ExecutionPeriodRelativeDateContext relDateContext;
 	
 	@Autowired
 	protected ACService acService;
@@ -126,6 +124,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		this.confirmationByManagerSupported = confirmationByManagerSupported;
 		this.catalogInfo = catalogInfo;
 		this.edit = edit;
+		this.relDateContext = new ExecutionPeriodRelativeDateContext(getTranslator(), catalogInfo.getStartDate(), catalogInfo.getEndDate());
 	}
 	
 	@Override
@@ -215,21 +214,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		modeSV.add(SelectionValues.entry(DATE_MODE_ABSOLUTE, translate("offer.date.mode.absolute")));
 		modeSV.add(SelectionValues.entry(DATE_MODE_RELATIVE, translate("offer.date.mode.relative")));
 
-		SelectionValues unitSV = new SelectionValues();
-		unitSV.add(SelectionValues.entry(OfferDateUnit.SAME_DAY.name(), translate("offer.unit.same.day")));
-		unitSV.add(SelectionValues.entry(OfferDateUnit.DAYS.name(), translate("unit.days")));
-		unitSV.add(SelectionValues.entry(OfferDateUnit.WEEKS.name(), translate("unit.weeks")));
-		unitSV.add(SelectionValues.entry(OfferDateUnit.MONTHS.name(), translate("unit.months")));
-		unitSV.add(SelectionValues.entry(OfferDateUnit.YEARS.name(), translate("unit.years")));
-
-		SelectionValues refSV = new SelectionValues();
-		for (OfferDateRef ref : OfferDateRef.values()) {
-			refSV.add(SelectionValues.entry(ref.name(), translate("offer.relative." + ref.i18nSuffix())));
-		}
-
 		OfferDateConfig dateConfig = offer != null ? offer.getValidDateConfig() : null;
 
-		fromModeEl = uifactory.addRadiosHorizontal("offer.from", "offer.from", catalogCont, modeSV.keys(), modeSV.values());
+		fromModeEl = uifactory.addButtonGroupSingleSelectHorizontal("offer.from", catalogCont, modeSV);
 		fromModeEl.addActionListener(FormEvent.ONCHANGE);
 		String fromMode = DATE_MODE_STATUS;
 		if (dateConfig != null && dateConfig.getFromValue() != null) {
@@ -241,32 +228,16 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 
 		fromDateEl = uifactory.addDateChooser("from_" + link.getKey(), null, offer != null ? offer.getValidFrom() : null, catalogCont);
 
-		fromRelCont = uifactory.addInlineFormLayout("fromRel", null, catalogCont);
-		fromValueEl = uifactory.addTextElement("from.value", null, 6, "", fromRelCont);
-		fromValueEl.setDisplaySize(6);
-		fromUnitEl = uifactory.addDropdownSingleselect("from.unit", null, fromRelCont, unitSV.keys(), unitSV.values());
-		fromUnitEl.addActionListener(FormEvent.ONCHANGE);
-		fromRefEl = uifactory.addDropdownSingleselect("from.ref", null, fromRelCont, refSV.keys(), refSV.values());
-		fromRefEl.addActionListener(FormEvent.ONCHANGE);
-		uifactory.addStaticTextElement("from.period", null, translate("offer.relative.execution.period"), fromRelCont);
+		fromDateRelEl = uifactory.addRelativeDateElement("fromDateRel", null,
+				catalogCont, getWindowControl(), relDateContext);
+		fromDateRelEl.setAriaLabel(translate("offer.from.rel"));
+		fromDateRelEl.setVisible(false);
+		fromDateRelEl.addActionListener(FormEvent.ONCHANGE);
 		if (dateConfig != null && dateConfig.getFromValue() != null) {
-			fromValueEl.setValue(dateConfig.getFromValue().toString());
-			if (dateConfig.getFromUnit() != null && unitSV.containsKey(dateConfig.getFromUnit().name())) {
-				fromUnitEl.select(dateConfig.getFromUnit().name(), true);
-			}
-			if (dateConfig.getFromRef() != null && refSV.containsKey(dateConfig.getFromRef().name())) {
-				fromRefEl.select(dateConfig.getFromRef().name(), true);
-			}
+			fromDateRelEl.setValue(toRelativeDateSelection(dateConfig.getFromRef(), dateConfig.getFromUnit(), dateConfig.getFromValue()));
 		}
-		if (!fromUnitEl.isOneSelected()) {
-			fromUnitEl.select(OfferDateUnit.DAYS.name(), true);
-		}
-		if (!fromRefEl.isOneSelected()) {
-			fromRefEl.select(OfferDateRef.BEFORE_BEGIN.name(), true);
-		}
-		updateRelDateWarning(fromRefEl, fromRelCont);
 
-		untilModeEl = uifactory.addRadiosHorizontal("offer.until", "offer.until", catalogCont, modeSV.keys(), modeSV.values());
+		untilModeEl = uifactory.addButtonGroupSingleSelectHorizontal("offer.until", catalogCont, modeSV);
 		untilModeEl.addActionListener(FormEvent.ONCHANGE);
 		String untilMode = DATE_MODE_STATUS;
 		if (dateConfig != null && dateConfig.getToValue() != null) {
@@ -278,30 +249,14 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 
 		untilDateEl = uifactory.addDateChooser("until_" + link.getKey(), null, offer != null ? offer.getValidTo() : null, catalogCont);
 
-		untilRelCont = uifactory.addInlineFormLayout("untilRel", null, catalogCont);
-		untilValueEl = uifactory.addTextElement("until.value", null, 6, "", untilRelCont);
-		untilValueEl.setDisplaySize(6);
-		untilUnitEl = uifactory.addDropdownSingleselect("until.unit", null, untilRelCont, unitSV.keys(), unitSV.values());
-		untilUnitEl.addActionListener(FormEvent.ONCHANGE);
-		untilRefEl = uifactory.addDropdownSingleselect("until.ref", null, untilRelCont, refSV.keys(), refSV.values());
-		untilRefEl.addActionListener(FormEvent.ONCHANGE);
-		uifactory.addStaticTextElement("until.period", null, translate("offer.relative.execution.period"), untilRelCont);
+		untilDateRelEl = uifactory.addRelativeDateElement("untilDateRel", null,
+				catalogCont, getWindowControl(), relDateContext);
+		untilDateRelEl.setAriaLabel(translate("offer.until.rel"));
+		untilDateRelEl.setVisible(false);
+		untilDateRelEl.addActionListener(FormEvent.ONCHANGE);
 		if (dateConfig != null && dateConfig.getToValue() != null) {
-			untilValueEl.setValue(dateConfig.getToValue().toString());
-			if (dateConfig.getToUnit() != null && unitSV.containsKey(dateConfig.getToUnit().name())) {
-				untilUnitEl.select(dateConfig.getToUnit().name(), true);
-			}
-			if (dateConfig.getToRef() != null && refSV.containsKey(dateConfig.getToRef().name())) {
-				untilRefEl.select(dateConfig.getToRef().name(), true);
-			}
+			untilDateRelEl.setValue(toRelativeDateSelection(dateConfig.getToRef(), dateConfig.getToUnit(), dateConfig.getToValue()));
 		}
-		if (!untilUnitEl.isOneSelected()) {
-			untilUnitEl.select(OfferDateUnit.DAYS.name(), true);
-		}
-		if (!untilRefEl.isOneSelected()) {
-			untilRefEl.select(OfferDateRef.AFTER_END.name(), true);
-		}
-		updateRelDateWarning(untilRefEl, untilRelCont);
 
 		FormLayoutContainer membershipCont = FormLayoutContainer.createDefaultFormLayout("membershipCont", getTranslator());
 		membershipCont.setFormTitle(translate("offer.membership.title"));
@@ -372,22 +327,23 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			updateCatalogUI();
 		} else if (source == fromModeEl || source == untilModeEl) {
 			updateUI();
-		} else if (source == fromUnitEl) {
-			if (fromUnitEl.isOneSelected() && OfferDateUnit.SAME_DAY.name().equals(fromUnitEl.getSelectedKey())) {
-				fromValueEl.setValue("");
+		} else if (source == fromDateRelEl) {
+			if (fromDateRelEl.getValue() == null) {
+				fromModeEl.select(DATE_MODE_STATUS, true);
+				updateUI();
 			}
-			updateUI();
-		} else if (source == untilUnitEl) {
-			if (untilUnitEl.isOneSelected() && OfferDateUnit.SAME_DAY.name().equals(untilUnitEl.getSelectedKey())) {
-				untilValueEl.setValue("");
+		} else if (source == untilDateRelEl) {
+			if (untilDateRelEl.getValue() == null) {
+				untilModeEl.select(DATE_MODE_STATUS, true);
+				updateUI();
 			}
-			updateUI();
-		} else if (source == fromRefEl) {
-			updateRelDateWarning(fromRefEl, fromRelCont);
-		} else if (source == untilRefEl) {
-			updateRelDateWarning(untilRefEl, untilRelCont);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
 	}
 
 	protected void updateUI() {
@@ -408,28 +364,42 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		fromModeEl.setVisible(customCondition);
 		String fromMode = fromModeEl.isOneSelected() ? fromModeEl.getSelectedKey() : DATE_MODE_STATUS;
 		fromDateEl.setVisible(customCondition && DATE_MODE_ABSOLUTE.equals(fromMode));
-		fromRelCont.setVisible(customCondition && DATE_MODE_RELATIVE.equals(fromMode));
+		fromDateRelEl.setVisible(customCondition && DATE_MODE_RELATIVE.equals(fromMode));
 
 		untilModeEl.setVisible(customCondition);
 		String untilMode = untilModeEl.isOneSelected() ? untilModeEl.getSelectedKey() : DATE_MODE_STATUS;
 		untilDateEl.setVisible(customCondition && DATE_MODE_ABSOLUTE.equals(untilMode));
-		untilRelCont.setVisible(customCondition && DATE_MODE_RELATIVE.equals(untilMode));
-
-		fromValueEl.setEnabled(!fromUnitEl.isOneSelected() || !OfferDateUnit.SAME_DAY.name().equals(fromUnitEl.getSelectedKey()));
-		untilValueEl.setEnabled(!untilUnitEl.isOneSelected() || !OfferDateUnit.SAME_DAY.name().equals(untilUnitEl.getSelectedKey()));
+		untilDateRelEl.setVisible(customCondition && DATE_MODE_RELATIVE.equals(untilMode));
 	}
 
-	private void updateRelDateWarning(SingleSelection refEl, FormLayoutContainer relCont) {
-		if (!refEl.isOneSelected()) {
-			relCont.setWarningKey(null);
-			return;
+	private RelativeDateSelection toRelativeDateSelection(OfferDateRef ref, OfferDateUnit unit, Integer value) {
+		if (ref == null || unit == null) {
+			return null;
 		}
-		OfferDateRef ref = OfferDateRef.valueOf(refEl.getSelectedKey());
-		boolean missing = switch (ref) {
-			case BEFORE_BEGIN, AFTER_BEGIN -> !catalogInfo.isStartDateAvailable();
-			case BEFORE_END, AFTER_END -> !catalogInfo.isEndDateAvailable();
-		};
-		relCont.setWarningKey(missing ? "offer.relative.date.missing" : null);
+		if (unit == OfferDateUnit.SAME_DAY) {
+			String refName = ref.name();
+			String refKey = refName.substring(refName.indexOf('_') + 1);
+			return new RelativeDateSelection(refKey, OffsetDirection.BEFORE, null, null, false);
+		}
+		String refName = ref.name();
+		int underscore = refName.indexOf('_');
+		OffsetDirection direction = OffsetDirection.valueOf(refName.substring(0, underscore));
+		String refKey = refName.substring(underscore + 1);
+		String unitKey = unit.name();
+		return new RelativeDateSelection(refKey, direction, unitKey, value, true);
+	}
+
+	private record RelativeDateConfig(OfferDateRef ref, OfferDateUnit unit, int value) {}
+
+	private RelativeDateConfig toRelativeDateConfig(RelativeDateSelection sel) {
+		if (!sel.isOffsetEnabled()) {
+			OfferDateRef ref = "BEGIN".equals(sel.getRefKey()) ? OfferDateRef.BEFORE_BEGIN : OfferDateRef.AFTER_END;
+			return new RelativeDateConfig(ref, OfferDateUnit.SAME_DAY, 0);
+		}
+		return new RelativeDateConfig(
+				OfferDateRef.valueOf(sel.getDirection().name() + "_" + sel.getRefKey()),
+				OfferDateUnit.valueOf(sel.getUnitKey()),
+				sel.getValue() != null ? sel.getValue() : 0);
 	}
 
 	private void updateCatalogUI() {
@@ -465,24 +435,16 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 				allOk = false;
 			}
 
-			fromValueEl.clearError();
-			if (fromRelCont.isVisible()
-					&& fromUnitEl.isOneSelected()
-					&& !OfferDateUnit.SAME_DAY.name().equals(fromUnitEl.getSelectedKey())) {
-				if (!isValidPositiveInteger(fromValueEl.getValue())) {
-					fromValueEl.setErrorKey("form.error.nointeger");
-					allOk = false;
-				}
+			fromDateRelEl.clearError();
+			if (fromDateRelEl.isVisible() && fromDateRelEl.getValue() == null) {
+				fromDateRelEl.setErrorKey("form.mandatory.hover");
+				allOk = false;
 			}
 
-			untilValueEl.clearError();
-			if (untilRelCont.isVisible()
-					&& untilUnitEl.isOneSelected()
-					&& !OfferDateUnit.SAME_DAY.name().equals(untilUnitEl.getSelectedKey())) {
-				if (!isValidPositiveInteger(untilValueEl.getValue())) {
-					untilValueEl.setErrorKey("form.error.nointeger");
-					allOk = false;
-				}
+			untilDateRelEl.clearError();
+			if (untilDateRelEl.isVisible() && untilDateRelEl.getValue() == null) {
+				untilDateRelEl.setErrorKey("form.mandatory.hover");
+				allOk = false;
 			}
 		}
 
@@ -495,17 +457,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		}
 
 		return allOk;
-	}
-
-	private boolean isValidPositiveInteger(String value) {
-		if (!StringHelper.containsNonWhitespace(value)) {
-			return false;
-		}
-		try {
-			return Integer.parseInt(value.trim()) >= 0;
-		} catch (NumberFormatException e) {
-			return false;
-		}
 	}
 
 	@Override
@@ -533,23 +484,23 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			}
 			if (fromModeEl.isKeySelected(DATE_MODE_ABSOLUTE)) {
 				validFrom = fromDateEl.getDate();
-			} else if (fromModeEl.isKeySelected(DATE_MODE_RELATIVE)) {
+			} else if (fromModeEl.isKeySelected(DATE_MODE_RELATIVE) && fromDateRelEl.getValue() != null) {
 				dateConfig = new OfferDateConfig();
-				boolean sameDayFrom = fromUnitEl.isOneSelected() && OfferDateUnit.SAME_DAY.name().equals(fromUnitEl.getSelectedKey());
-				dateConfig.setFromValue(sameDayFrom ? 0 : parseIntValue(fromValueEl.getValue()));
-				dateConfig.setFromUnit(fromUnitEl.isOneSelected() ? OfferDateUnit.valueOf(fromUnitEl.getSelectedKey()) : OfferDateUnit.DAYS);
-				dateConfig.setFromRef(fromRefEl.isOneSelected() ? OfferDateRef.valueOf(fromRefEl.getSelectedKey()) : OfferDateRef.BEFORE_BEGIN);
+				RelativeDateConfig fromConfig = toRelativeDateConfig(fromDateRelEl.getValue());
+				dateConfig.setFromRef(fromConfig.ref());
+				dateConfig.setFromUnit(fromConfig.unit());
+				dateConfig.setFromValue(fromConfig.value());
 			}
 			if (untilModeEl.isKeySelected(DATE_MODE_ABSOLUTE)) {
 				validTo = untilDateEl.getDate();
-			} else if (untilModeEl.isKeySelected(DATE_MODE_RELATIVE)) {
+			} else if (untilModeEl.isKeySelected(DATE_MODE_RELATIVE) && untilDateRelEl.getValue() != null) {
 				if (dateConfig == null) {
 					dateConfig = new OfferDateConfig();
 				}
-				boolean sameDayUntil = untilUnitEl.isOneSelected() && OfferDateUnit.SAME_DAY.name().equals(untilUnitEl.getSelectedKey());
-				dateConfig.setToValue(sameDayUntil ? 0 : parseIntValue(untilValueEl.getValue()));
-				dateConfig.setToUnit(untilUnitEl.isOneSelected() ? OfferDateUnit.valueOf(untilUnitEl.getSelectedKey()) : OfferDateUnit.DAYS);
-				dateConfig.setToRef(untilRefEl.isOneSelected() ? OfferDateRef.valueOf(untilRefEl.getSelectedKey()) : OfferDateRef.AFTER_END);
+				RelativeDateConfig untilConfig = toRelativeDateConfig(untilDateRelEl.getValue());
+				dateConfig.setToRef(untilConfig.ref());
+				dateConfig.setToUnit(untilConfig.unit());
+				dateConfig.setToValue(untilConfig.value());
 			}
 		} else {
 			offer.setValidStatus(null);
@@ -570,14 +521,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		return link;
 	}
 
-	private Integer parseIntValue(String value) {
-		try {
-			return StringHelper.containsNonWhitespace(value) ? Integer.parseInt(value.trim()) : 0;
-		} catch (NumberFormatException e) {
-			return 0;
-		}
-	}
-	
 	public List<Organisation> getOfferOrganisations() {
 		if (organisationsEl == null) {
 			if (offerOrganisations == null) {

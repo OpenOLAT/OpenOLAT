@@ -1,0 +1,1 @@
+alter table o_as_eff_statement drop constraint if exists o_as_eff_statement_fk_identity_fk_resource_id_key;

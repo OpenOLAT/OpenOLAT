@@ -69,7 +69,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.SectionRubrics;
@@ -327,7 +327,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			layoutCont.contextPut("sectionRubrics", sectionRubrics);
 			
 			if(QTI21QuestionType.getTypeRelax(assessmentItem) == QTI21QuestionType.fib
-					&& !(new FIBAssessmentItemBuilder(assessmentItem, qtiService.qtiSerializer()).isAllowDuplicatedAnswers())) {
+					&& !(new GapAssessmentItemBuilder(assessmentItem, qtiService.qtiSerializer()).isAllowDuplicatedAnswers())) {
 				setFormWarning("warning.duplicate.not.allowed");
 			}
 			

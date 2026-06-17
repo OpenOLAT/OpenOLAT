@@ -65,8 +65,9 @@ implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 	public Object getValueAt(LectureBlockParticipantGroupRow row, int col) {
 		return switch(COLS[col]) {
 			case title -> row.getTitleLink();
+			case defaultElement -> Boolean.valueOf(row.isDefaultElement());
 			case numParticipants -> row.getNumOfParticipants();
-			case status -> Boolean.valueOf(row.isExcluded());
+			case status -> Boolean.valueOf(!row.isExcluded());
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};
@@ -75,6 +76,7 @@ implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 	public enum GroupCols implements FlexiSortableColumnDef {
 		title("table.header.for"),
 		status("table.header.status"),
+		defaultElement("table.header.default.element"),
 		numParticipants("table.header.participants"),
 		tools("action.more");
 		

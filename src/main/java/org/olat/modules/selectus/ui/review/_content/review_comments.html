@@ -1,0 +1,75 @@
+<h5>$review.numOfComments $r.translate("review.comments.title")</h5>
+#foreach($comment in $review.comments)
+	#if($r.isTrue($comment.isNewOnly()))
+		#if($r.isTrue($comment.isVisible()))
+			<div>$r.render($comment.newCommentEl)
+				<div class="o_button_group o_button_group_left">
+				$r.render($comment.newCommentButton)
+				$r.render($comment.cancelNewCommentButton)
+				</div>
+			</div>
+		#end
+	#else
+	<div id="comment_$comment.key" class="o_review_comment o_review_comment_l$comment.indent">
+		#if($r.isTrue($comment.deleted))
+			<small>$r.translate("review.comment.deleted")</small>
+		#else
+			<h6>$r.escapeHtml($comment.author) <small><i class="o_icon o_icon_agree"> </i> $comment.numOfAgree $r.translate("comment.num.agree") $r.translate("comment.num.agree.separator") <i class="o_icon o_icon_disagree"> </i> $comment.numOfDisagree $r.translate("comment.num.disagree")</small></h6>
+			#if($r.isTrue($comment.edit))
+			<div>$r.render($comment.newCommentEl)
+				<div class="o_button_group o_button_group_left">
+				$r.render($comment.newCommentButton)
+				$r.render($comment.cancelNewCommentButton)
+				</div>
+			</div>
+			#else
+			<div>$r.xssScan($comment.comment)</div>
+			#end
+			
+			#if($r.isTrue($comment.reply))
+			<h6>$r.translate("reply.title")</h6>
+			<div>$r.render($comment.newCommentEl)
+				<div class="o_button_group o_button_group_left">
+				$r.render($comment.newCommentButton)
+				$r.render($comment.cancelNewCommentButton)
+				</div>
+			</div>
+			#elseif($r.isTrue($comment.edit))
+				## nothing
+			#elseif($r.isNotNull($comment.agreeLink) || $r.isNotNull($comment.disagreeLink) || $r.isNotNull($comment.replyLink) || $r.isNotNull($comment.editLink) || $r.isNotNull($comment.deleteLink))
+			<div class="o_button_group o_button_group_left">
+				#if($r.isNotNull($comment.agreeLink))
+					$r.render($comment.agreeLink)
+				#end
+				#if($r.isNotNull($comment.disagreeLink))
+					$r.render($comment.disagreeLink)
+				#end
+				#if($r.isNotNull($comment.replyLink))
+					$r.render($comment.replyLink)
+				#end
+				#if($r.isNotNull($comment.editLink))
+					$r.render($comment.editLink)
+				#end
+				#if($r.isNotNull($comment.deleteLink))
+					$r.render($comment.deleteLink)
+				#end
+				<small class="o_review_comment_date">$comment.creationDateUntilNow</small>
+			</div>
+			#elseif($r.isFalse($comment.deleted))
+				<div class="o_button_group o_button_group_left">
+					<small class="o_review_comment_date">$comment.creationDateUntilNow</small>
+				</div>
+			#end
+		#end
+		<hr>
+		#if($comment.scrollTo)
+			<script type="text/javascript">
+			/* <![CDATA[ */
+			    o_scrollToElement('#comment_$comment.key');
+			    jQuery('#comment_$comment.key').addClass("comment_glowing");
+			/* ]]> */
+			</script> 
+		#end
+	</div>
+	#end
+#end

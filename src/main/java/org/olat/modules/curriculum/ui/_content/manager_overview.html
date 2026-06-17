@@ -8,26 +8,47 @@
 	</div>
 </div>
 $r.render("searchField")
-<fieldset>
-	<legend>$r.translate("curriculum.management")</legend>
-	<ul class="o_mega_buttons">
-		#if($r.visible("curriculum.browser"))
-		<li>$r.render("curriculum.browser")</li>
-		#end
-		#if($r.visible("curriculum.implementations"))
-		<li>$r.render("curriculum.implementations")</li>
-		#end
-		#if($r.visible("curriculum.lectures"))
-		<li>$r.render("curriculum.lectures")</li>
-		#end
-		#if($r.visible("certification.programs"))
-		<li>$r.render("certification.programs")</li>
-		#end
-		#if($r.visible("curriculum.reports"))
-		<li>$r.render("curriculum.reports")</li>
-		#end
-	</ul>
-</fieldset>
+<div class="o_curriculum_buttons_overview">
+	#if($r.visible("curriculum.browser") || $r.visible("curriculum.implementations") || $r.visible("curriculum.lectures"))
+	<fieldset>
+		<legend>$r.translate("curriculum.products.title")</legend>
+		<ul class="o_mega_buttons">
+			#if($r.visible("curriculum.browser"))
+				<li>$r.render("curriculum.browser")</li>
+			#end
+			#if($r.visible("curriculum.implementations"))
+				<li>$r.render("curriculum.implementations")</li>
+			#end
+			#if($r.visible("curriculum.lectures"))
+				<li>$r.render("curriculum.lectures")</li>
+			#end
+		</ul>
+	</fieldset>
+	#end
+
+	#if($r.visible("curriculum.todos") || $r.visible("curriculum.reports"))
+	<fieldset>
+		<legend>$r.translate("curriculum.productivity.title")</legend>
+		<ul class="o_mega_buttons">
+			#if($r.visible("curriculum.todos"))
+				<li>$r.render("curriculum.todos")</li>
+			#end
+			#if($r.visible("curriculum.reports"))
+				<li>$r.render("curriculum.reports")</li>
+			#end
+		</ul>
+	</fieldset>
+	#end
+
+	#if($r.visible("certification.programs"))
+	<fieldset>
+		<legend>$r.translate("curriculum.tools.title")</legend>
+		<ul class="o_mega_buttons">
+			<li>$r.render("certification.programs")</li>
+		</ul>
+	</fieldset>
+	#end
+</div>
 #if($r.available("dashboard"))
 <div class="o_block">
 	<fieldset>

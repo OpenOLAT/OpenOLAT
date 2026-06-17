@@ -37,6 +37,7 @@ import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.ui.settings.RepositoryEntryFinishedAccessOptionsController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,7 @@ public class CourseOptionsAndInvitationSettingsController extends BasicControlle
 	
 	private final CourseOptionsController courseOptionsCtrl;
 	private CourseInvitationsAndDeploymentsSettingsController invitationSettingsCtrl;
+	private RepositoryEntryFinishedAccessOptionsController finishedAccessCtrl;
 	
 	private LockResult lockEntry;
 	
@@ -82,6 +84,10 @@ public class CourseOptionsAndInvitationSettingsController extends BasicControlle
 			listenTo(invitationSettingsCtrl);
 			mainVC.put("invitations", invitationSettingsCtrl.getInitialComponent());
 		}
+
+		finishedAccessCtrl = new RepositoryEntryFinishedAccessOptionsController(ureq, getWindowControl(), entry, !editable);
+		listenTo(finishedAccessCtrl);
+		mainVC.put("finishedAccess", finishedAccessCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
 		

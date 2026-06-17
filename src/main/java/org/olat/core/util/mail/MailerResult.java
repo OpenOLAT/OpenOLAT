@@ -54,6 +54,7 @@ public class MailerResult {
 
 	private final List<String> invalidAddresses = new ArrayList<>();
 	private final List<Identity> failedIdentites = new ArrayList<>();
+	private final List<Address> failedAddresses = new ArrayList<>();
 	
 	private int returnCode = OK;
 	private String errorMessage;
@@ -64,6 +65,29 @@ public class MailerResult {
 	 */
 	public List<Identity> getFailedIdentites() {
 		return failedIdentites;
+	}
+	
+	public List<Address> getFailedAddresses() {
+		return failedAddresses;
+	}
+	
+	public void addFailedAddresses(Address[] addresses) {
+		if(addresses != null && addresses.length > 0) {
+			for(Address address:addresses) {
+				if(address != null && !failedAddresses.contains(address)) {
+					failedAddresses.add(address);
+				}
+			}
+		}
+	}
+	
+	public String failedAddressesToString() {
+		StringBuilder sb = new StringBuilder(1024);
+		for(Address address:failedAddresses) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(address.toString());
+		}
+		return sb.toString();
 	}
 	
 	public boolean isSuccessful() {
@@ -128,6 +152,13 @@ public class MailerResult {
 		}
 		if(newResult.getInvalidAddresses() != null && newResult.getInvalidAddresses().size() > 0) {
 			invalidAddresses.addAll(newResult.getInvalidAddresses());
+		}
+		if(newResult.getFailedAddresses() != null && !newResult.getFailedAddresses().isEmpty()) {
+			for(Address address:newResult.getFailedAddresses()) {
+				if(address != null && !failedAddresses.contains(address)) {
+					failedAddresses.add(address);
+				}
+			}
 		}
 	}
 	

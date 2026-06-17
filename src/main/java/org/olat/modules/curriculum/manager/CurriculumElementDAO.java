@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
+import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.curriculum.model.AutomationImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -561,7 +562,7 @@ public class CurriculumElementDAO {
 		}
 		
 		if(searchParams.getIdentity() != null) {
-			appendManagerAccess(sb);
+			appendManagerAccess(sb, true);
 		}
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
@@ -618,7 +619,7 @@ public class CurriculumElementDAO {
 		return infos;
 	}
 
-	public AccessibleCurriculumObjectKeys loadAccessibleCurriculumKeys(IdentityRef identity) {
+	public AccessibleCurriculumObjectKeys loadAccessibleCurriculumKeys(AccessibleCurriculumSearchParams params) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select el.key, curriculum.key")
 		  .append(" from curriculumelement el")
@@ -626,12 +627,18 @@ public class CurriculumElementDAO {
 		  .append(" inner join el.group baseGroup")
 		  .append(" left join curriculum.organisation organis")
 		  .where().append(" el.status ").in(CurriculumElementStatus.notDeleted());
-		appendManagerAccess(sb);
+		if (params.getCurriculumKeys() != null && !params.getCurriculumKeys().isEmpty()) {
+			sb.and().append("curriculum.key in (:curriculumKeys)");
+		}
+		appendManagerAccess(sb, params.isIncludeImplementationOwnership());
 
-		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("managerKey", identity.getKey())
-				.getResultList();
+				.setParameter("managerKey", params.getIdentity().getKey());
+		if (params.getCurriculumKeys() != null && !params.getCurriculumKeys().isEmpty()) {
+			query.setParameter("curriculumKeys", params.getCurriculumKeys());
+		}
+		List<Object[]> rawObjects = query.getResultList();
 
 		Set<Long> curriculumElementKeys = new HashSet<>();
 		Set<Long> curriculumKeys = new HashSet<>();
@@ -648,7 +655,7 @@ public class CurriculumElementDAO {
 	 * 
 	 * @param sb The query builder
 	 */
-	private void appendManagerAccess(QueryBuilder sb) {
+	private void appendManagerAccess(QueryBuilder sb, boolean includeImplementationOwnership) {
 		// curriculum administrator at level curriculum
 		sb.and()
 		  .append("(")
@@ -657,7 +664,7 @@ public class CurriculumElementDAO {
 		  .append("  where cMembership.identity.key=:managerKey")
 		  .append("  and cMembership.role ").in(CurriculumRoles.curriculumowner)
 		  .append(" )");
-		
+
 		sb.append(" or baseGroup.key in (select cGroup.key from bgroupmember as cMembership")
 		  .append("  inner join cMembership.group as cGroup")
 		  .append("  where cMembership.identity.key=:managerKey")
@@ -670,13 +677,15 @@ public class CurriculumElementDAO {
 		  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.principal)
 		  .append(" )");
 		// element owner
-		sb.append(" or (el.implementation.key is null and el.key in (select subCurEl.implementation.key from curriculumelement as subCurEl")
-		  .append("  inner join subCurEl.group as scGroup")
-		  .append("  inner join scGroup.members as scMembership")
-		  .append("  where scMembership.identity.key=:managerKey")
-		  .append("  and scMembership.role ").in(CurriculumRoles.curriculumelementowner)
-		  .append(" ))");
-		
+		if(includeImplementationOwnership) {
+			sb.append(" or (el.implementation.key is null and el.key in (select subCurEl.implementation.key from curriculumelement as subCurEl")
+			  .append("  inner join subCurEl.group as scGroup")
+			  .append("  inner join scGroup.members as scMembership")
+			  .append("  where scMembership.identity.key=:managerKey")
+			  .append("  and scMembership.role ").in(CurriculumRoles.curriculumelementowner)
+			  .append(" ))");
+		}
+
 		sb.append(")");
 	}
 	
@@ -1180,6 +1189,38 @@ public class CurriculumElementDAO {
 		return elements;
 	}
 	
+	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select el.key from curriculumelement as el")
+		  .where().append(" el.curriculum.key=:curriculumKey and el.parent.key is null");
+		
+		List<String> statusList = new ArrayList<>();
+		if(status != null && status.length > 0 && status[0] != null) {
+			for(CurriculumElementStatus s:status) {
+				if(s != null) {
+					statusList.add(s.name());
+				}
+			}	
+		}
+		
+		if(!statusList.isEmpty()) {
+			sb.and().append(" el.status in (:status)");
+		}
+		  
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.setParameter("curriculumKey", curriculum.getKey());
+		if(!statusList.isEmpty()) {
+			query.setParameter("status", statusList);
+		}
+		
+		List<Long> elementKeys = query.getResultList();
+		return elementKeys != null && !elementKeys.isEmpty()
+				&& elementKeys.get(0) != null && elementKeys.get(0).longValue() > 0;
+	}
+	
 	public List<CurriculumElement> getDescendants(CurriculumElement curriculumElement) {
 		String sb = """
 				select el from curriculumelement as el
@@ -1364,6 +1405,18 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public List<GroupMembership> getMemberships(CurriculumElementRef element, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select membership from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where el.key=:elementKey and membership.identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GroupMembership.class)
+				.setParameter("elementKey", element.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
 
 	public List<CurriculumElementMembershipHistory> getMembershipInfosAndHistory(CurriculumElementMembershipHistorySearchParameters params) {
 		

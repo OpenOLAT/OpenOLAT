@@ -24,26 +24,25 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.date.OffsetDirection;
+import org.olat.core.gui.components.date.RelativeDateElement;
+import org.olat.core.gui.components.date.RelativeDateSelection;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -51,143 +50,122 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
-import org.olat.user.UserManager;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig.ContextSelection;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig.MemberSelection;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Initial date: 27 Mar 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class ToDoTaskEditForm extends FormBasicController {
-	
-	// read-only: not editable, always displayed
-	// disabled: not editable, displayed if at least one but not me selected
-	public enum MemberSelection { search, candidatesSingle, candidates, readOnly, disabled }
-	
+
+	private static final String MODE_ABSOLUTE = "absolute";
+	private static final String MODE_RELATIVE = "relative";
+
 	private FormToggle doEl;
 	private TextElement titleEl;
 	private SingleSelection contextEl;
+	private TextElement contextStaticEl;
+	private FormLink contextChangeLink;
 	private TagSelection tagsEl;
-	private MultipleSelectionElement assignedEl;
-	private SingleSelection assignedSingleEl;
-	private FormLink assigneeAddLink;
-	private MultipleSelectionElement delegatedEl;
-	private FormLink delegateeAddLink;
+	private ObjectSelectionElement assignedEl;
+	private ObjectSelectionElement delegatedEl;
 	private SingleSelection statusEl;
 	private SingleSelection priorityEl;
+	private FormLayoutContainer startDateRowCont;
+	private SingleSelection startDateModeEl;
 	private DateChooser startDateEl;
+	private RelativeDateElement startDateRelEl;
+	private FormLayoutContainer dueDateRowCont;
+	private SingleSelection dueDateModeEl;
 	private DateChooser dueDateEl;
+	private RelativeDateElement dueDateRelEl;
 	private TextElement expenditureOfWorkEl;
 	private TextAreaElement descriptionEl;
-	
-	private CloseableModalController cmc;
-	private UserSearchController userSearchCtrl;
 
-	private final boolean showContext;
-	private final Collection<ToDoContext> availableContexts;
-	private final ToDoContext currentContext;
-	private final MemberSelection assigneeSelection;
-	private final Collection<Identity> assigneeCandidates;
-	private final Collection<Identity> assigneeCurrent;
-	private final MemberSelection delegateeSelection;
-	private final Collection<Identity> delegateeCandidates;
-	private final Collection<Identity> delegateeCurrent;
+	private CloseableModalController cmc;
+	private Controller contextPickerCtrl;
+
+	private final ToDoTaskContextConfig contextConfig;
+	private ToDoContext selectedContext;
+	private final ToDoTaskMemberConfig assigneeConfig;
+	private final ToDoTaskMemberConfig delegateeConfig;
+	private final ToDoTaskDateConfig datesConfig;
 	private final List<? extends TagInfo> allTags;
 	private final boolean datesEditable;
 	private Map<String, ToDoContext> keyToContext;
-	
+
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private UserManager userManager;
 
-	public ToDoTaskEditForm(UserRequest ureq, WindowControl wControl, Form mainForm, boolean showContext,
-			Collection<ToDoContext> availableContexts, ToDoContext currentContext, MemberSelection assigneeSelection,
-			Collection<Identity> assigneeCandidates, Collection<Identity> assigneeCurrent,
-			MemberSelection delegateeSelection, Collection<Identity> delegateeCandidates,
-			Collection<Identity> delegateeCurrent, List<? extends TagInfo> allTags, boolean datesEditable) {
+	public ToDoTaskEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
+			ToDoTaskContextConfig contextConfig,
+			ToDoTaskMemberConfig assigneeConfig,
+			ToDoTaskMemberConfig delegateeConfig,
+			ToDoTaskDateConfig datesConfig,
+			List<? extends TagInfo> allTags, boolean datesEditable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_task_edit", mainForm);
-		this.showContext = showContext;
-		this.availableContexts = availableContexts;
-		this.currentContext = currentContext;
-		this.assigneeSelection = assigneeSelection;
-		this.assigneeCandidates = assigneeCandidates;
-		this.assigneeCurrent = assigneeCurrent;
-		this.delegateeSelection = delegateeSelection;
-		this.delegateeCandidates = delegateeCandidates;
-		this.delegateeCurrent = delegateeCurrent;
+		this.contextConfig = contextConfig;
+		this.selectedContext = contextConfig.getCurrentContext();
+		this.assigneeConfig = assigneeConfig;
+		this.delegateeConfig = delegateeConfig;
+		this.datesConfig = datesConfig != null ? datesConfig : ToDoTaskDateConfig.absoluteOnly();
 		this.allTags = allTags;
 		this.datesEditable = datesEditable;
-		
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		doEl = uifactory.addToggleButton("task.do", "task.do", null, null, formLayout);
+		doEl = uifactory.addToggleButton("task.do", null, null, null, formLayout);
 		doEl.setPresentation(Presentation.CHECK);
 		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
 		doEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		titleEl = uifactory.addTextElement("task.title", 120, null, formLayout);
 		titleEl.setElementCssClass("o_sel_task_title");
 		titleEl.setMandatory(true);
-		
-		if (showContext) {
+
+		if (contextConfig.getSelection() == ContextSelection.dropdown) {
 			SelectionValues contextSV = createContextSV();
 			contextEl = uifactory.addDropdownSingleselect("task.context", formLayout, contextSV.keys(), contextSV.values());
-			if (currentContext != null) {
-				contextEl.select(getContextKey(currentContext), true);
-				contextEl.setEnabled(availableContexts.size() > 1);
+			if (selectedContext != null) {
+				contextEl.select(getContextKey(selectedContext), true);
+				contextEl.setEnabled(contextConfig.getAvailableContexts().size() > 1);
 			}
+		} else if (contextConfig.getSelection() == ContextSelection.picker) {
+			initContextPickerUI(formLayout);
 		}
-		
+
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);
-		
-		if (MemberSelection.candidatesSingle == assigneeSelection) {
-			assignedSingleEl = createMembersSingleElement(formLayout, "task.assigned", assigneeCandidates, assigneeCurrent);
-		} else {
-			assignedEl = createMembersElement(formLayout, "task.assigned", assigneeSelection, assigneeCandidates, assigneeCurrent);
-		}
-		if (MemberSelection.search == assigneeSelection) {
-			FormLayoutContainer assigneeCont = FormLayoutContainer.createButtonLayout("assigneeCont", getTranslator());
-			assigneeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
-			assigneeCont.setRootForm(mainForm);
-			formLayout.add("assigneeCont", assigneeCont);
-			
-			assigneeAddLink = uifactory.addFormLink("task.assignee.add", assigneeCont, Link.BUTTON);
-		}
-		
-		delegatedEl = createMembersElement(formLayout, "task.delegated", delegateeSelection, delegateeCandidates, delegateeCurrent);
-		if (MemberSelection.search == delegateeSelection) {
-			FormLayoutContainer delegateeCont = FormLayoutContainer.createButtonLayout("delegateeCont", getTranslator());
-			delegateeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
-			delegateeCont.setRootForm(mainForm);
-			formLayout.add("delegateeCont", delegateeCont);
-			
-			delegateeAddLink = uifactory.addFormLink("task.delegatee.add", delegateeCont, Link.BUTTON);
-		}
-		
+
+		assignedEl = createMembersElement(formLayout, "task.assigned", assigneeConfig);
+		delegatedEl = createMembersElement(formLayout, "task.delegated", delegateeConfig);
+
 		SelectionValues statusSV = new SelectionValues();
 		statusSV.add(getSVEntry(ToDoStatus.open));
 		statusSV.add(getSVEntry(ToDoStatus.inProgress));
@@ -195,7 +173,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		statusEl = uifactory.addDropdownSingleselect("task.status", formLayout, statusSV.keys(), statusSV.values(), statusSV.icons());
 		statusEl.addActionListener(FormEvent.ONCHANGE);
 		statusEl.select(ToDoStatus.open.name(), true);
-		
+
 		SelectionValues prioritySV = new SelectionValues();
 		prioritySV.add(getSVEntry(ToDoPriority.urgent));
 		prioritySV.add(getSVEntry(ToDoPriority.high));
@@ -203,34 +181,74 @@ public class ToDoTaskEditForm extends FormBasicController {
 		prioritySV.add(getSVEntry(ToDoPriority.low));
 		priorityEl = uifactory.addDropdownSingleselect("task.priority", formLayout, prioritySV.keys(), prioritySV.values(), prioritySV.icons());
 		priorityEl.enableNoneSelection();
-		
-		startDateEl = uifactory.addDateChooser("task.start.date", null, formLayout);
+
+		startDateRowCont = FormLayoutContainer.createInlineFormLayout("startDateRow", getTranslator());
+		startDateRowCont.setLabel("task.start.date", null);
+		startDateRowCont.setElementCssClass("o_todo_date_row");
+		formLayout.add("startDateRow", startDateRowCont);
+
+		dueDateRowCont = FormLayoutContainer.createInlineFormLayout("dueDateRow", getTranslator());
+		dueDateRowCont.setLabel("task.due.date", null);
+		dueDateRowCont.setElementCssClass("o_todo_date_row");
+		formLayout.add("dueDateRow", dueDateRowCont);
+
+		if (datesConfig.getPicker() != null) {
+			SelectionValues modeSV = new SelectionValues();
+			modeSV.add(SelectionValues.entry(MODE_ABSOLUTE, translate("task.date.mode.absolute")));
+			modeSV.add(SelectionValues.entry(MODE_RELATIVE, translate("task.date.mode.relative")));
+			startDateModeEl = uifactory.addButtonGroupSingleSelectHorizontal("task.start.date.mode", startDateRowCont, modeSV);
+			startDateModeEl.setLabel(null, null);
+			startDateModeEl.setElementCssClass("o_button_group_always_horizontal");
+			startDateModeEl.select(MODE_ABSOLUTE, true);
+			startDateModeEl.addActionListener(FormEvent.ONCHANGE);
+			dueDateModeEl = uifactory.addButtonGroupSingleSelectHorizontal("task.due.date.mode", dueDateRowCont, modeSV);
+			dueDateModeEl.setLabel(null, null);
+			dueDateModeEl.setElementCssClass("o_button_group_always_horizontal");
+			dueDateModeEl.select(MODE_ABSOLUTE, true);
+			dueDateModeEl.addActionListener(FormEvent.ONCHANGE);
+		}
+
+		startDateEl = uifactory.addDateChooser("task.start.date", null, startDateRowCont);
 		startDateEl.setEnabled(datesEditable);
-		
-		dueDateEl = uifactory.addDateChooser("task.due.date", null, formLayout);
+
+		dueDateEl = uifactory.addDateChooser("task.due.date", null, dueDateRowCont);
 		dueDateEl.setDefaultTimeAtEndOfDay(true);
 		dueDateEl.setEnabled(datesEditable);
-		
-		// The input-group does not work very well (Display of errors, round border-radius on the right) 
+
+		if (datesConfig.getPicker() != null) {
+			startDateRelEl = uifactory.addRelativeDateElement("startDateRel", null,
+					startDateRowCont, getWindowControl(), datesConfig.getPicker().getContext());
+			startDateRelEl.setAriaLabel(translate("task.start.date.rel"));
+			startDateRelEl.setVisible(false);
+			startDateRelEl.addActionListener(FormEvent.ONCHANGE);
+
+			dueDateRelEl = uifactory.addRelativeDateElement("dueDateRel", null,
+					dueDateRowCont, getWindowControl(), datesConfig.getPicker().getContext());
+			dueDateRelEl.setAriaLabel(translate("task.due.date.rel"));
+			dueDateRelEl.setVisible(false);
+			dueDateRelEl.addActionListener(FormEvent.ONCHANGE);
+		}
+
+		// The input-group does not work very well (Display of errors, round border-radius on the right)
 		expenditureOfWorkEl = uifactory.addTextElement("task.expenditure.of.work", 30, null, formLayout);
 		expenditureOfWorkEl.setDomReplacementWrapperRequired(false);
 		flc.contextPut("eowId", expenditureOfWorkEl.getForId());
-		
+
 		descriptionEl = uifactory.addTextAreaElement("task.description", "task.description", -1, 3, 40, true, false, null, formLayout);
 	}
 
 	private SelectionValues createContextSV() {
 		SelectionValues contextSV = new SelectionValues();
-		keyToContext = new HashMap<>(availableContexts.size());
-		for (ToDoContext context : availableContexts) {
+		keyToContext = new HashMap<>(contextConfig.getAvailableContexts().size());
+		for (ToDoContext context : contextConfig.getAvailableContexts()) {
 			String contextKey = getContextKey(context);
 			contextSV.add(SelectionValues.entry(contextKey, getContextValue(context)));
 			keyToContext.put(contextKey, context);
 		}
-		if (currentContext != null) {
-			String contextKey = getContextKey(currentContext);
-			contextSV.add(SelectionValues.entry(contextKey, getContextValue(currentContext)));
-			keyToContext.put(contextKey, currentContext);
+		if (selectedContext != null) {
+			String contextKey = getContextKey(selectedContext);
+			contextSV.add(SelectionValues.entry(contextKey, getContextValue(selectedContext)));
+			keyToContext.put(contextKey, selectedContext);
 		}
 		contextSV.sort(SelectionValues.VALUE_ASC);
 		return contextSV;
@@ -246,83 +264,65 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 		return key;
 	}
-	
+
 	private String getContextValue(ToDoContext context) {
 		String displayName = toDoService.getProvider(context.getType()).getDisplayName(getLocale());
 		if (StringHelper.containsNonWhitespace(context.getOriginTitle())) {
 			displayName += " - " + context.getOriginTitle();
+			if (StringHelper.containsNonWhitespace(context.getOriginSubTitle())) {
+				displayName += " - " + context.getOriginSubTitle();
+			}
 		}
 		return displayName;
+	}
+
+	private void initContextPickerUI(FormItemContainer formLayout) {
+		ToDoTaskContextPicker contextPicker = contextConfig.getPicker();
+		String displayValue = selectedContext != null ? getContextValue(selectedContext) : "";
+		contextStaticEl = uifactory.addTextElement("task.context", "task.context", 256, displayValue, formLayout);
+		contextStaticEl.setDomReplacementWrapperRequired(false);
+		contextStaticEl.setEnabled(false);
+		if (contextPicker != null) {
+			contextChangeLink = uifactory.addFormLink("contextChangeLink", "task.context.change", null, formLayout, Link.BUTTON);
+			contextChangeLink.setElementCssClass("input-group-addon");
+			contextChangeLink.setIconLeftCSS("o_icon o_icon_edit");
+		}
 	}
 
 	private SelectionValue getSVEntry(ToDoStatus status) {
 		return new SelectionValue(status.name(), ToDoUIFactory.getDisplayName(getTranslator(), status), null,
 				ToDoUIFactory.getIconCss(status), null, true);
 	}
-	
+
 	private SelectionValue getSVEntry(ToDoPriority prioriry) {
 		return new SelectionValue(prioriry.name(), ToDoUIFactory.getDisplayName(getTranslator(), prioriry), null,
 				ToDoUIFactory.getIconCss(prioriry), null, true);
 	}
-	
-	public MultipleSelectionElement createMembersElement(FormItemContainer formLayout, String name,
-			MemberSelection selection, Collection<Identity> candidateIdentities, Collection<Identity> currentIdentities) {
-		boolean membersEditable = MemberSelection.readOnly != selection && MemberSelection.disabled != selection;
-		
-		SelectionValues membersSV = createMembersSV(candidateIdentities, currentIdentities, membersEditable);
-		
-		MultipleSelectionElement membersEl = uifactory.addCheckboxesDropdown(name, name, formLayout, membersSV.keys(),
-				membersSV.values());
-		currentIdentities.forEach(member -> membersEl.select(member.getKey().toString(), true));
-		membersEl.setEnabled(membersEditable);
-		membersEl.setVisible(MemberSelection.disabled != selection || membersEl.isAtLeastSelected(1));
-		if (MemberSelection.disabled == selection && isMyOrNoneSelected(membersEl)) {
-			membersEl.setVisible(false);
+
+	private ObjectSelectionElement createMembersElement(FormItemContainer formLayout, String name,
+			ToDoTaskMemberConfig config) {
+		ObjectSelectionElement el = uifactory.addObjectSelectionElement(name, name, formLayout,
+				getWindowControl(), config.isMultiSelection(), config.getSource());
+		el.setEnabled(config.getSelection() == MemberSelection.editable);
+		el.setMandatory(config.isMandatory());
+		if (config.getSelection() == MemberSelection.disabled && isMyOrNoneSelected(config.getSource())) {
+			el.setVisible(false);
 		}
-		
-		return membersEl;
+		return el;
 	}
 
-	private SelectionValues createMembersSV(Collection<Identity> candidateIdentities,
-			Collection<Identity> currentIdentities, boolean membersEditable) {
-		Set<Identity> allIdentities = new HashSet<>(currentIdentities);
-		if (membersEditable) {
-			allIdentities.addAll(candidateIdentities);
-		}
-		
-		SelectionValues membersSV = new SelectionValues();
-		allIdentities.forEach(member -> membersSV.add(
-				SelectionValues.entry(
-						member.getKey().toString(),
-						userManager.getUserDisplayName(member.getKey()))));
-		membersSV.sort(SelectionValues.VALUE_ASC);
-		return membersSV;
+	private boolean isMyOrNoneSelected(IdentitySelectionSource source) {
+		if (source == null) return true;
+		Collection<String> keys = source.getDefaultSelectedKeys();
+		if (keys.isEmpty()) return true;
+		return keys.size() == 1 && keys.iterator().next().equals(getIdentity().getKey().toString());
 	}
-	
-	private boolean isMyOrNoneSelected(MultipleSelectionElement membersEl) {
-		return !membersEl.isAtLeastSelected(1)
-				|| (membersEl.getSelectedKeys().size() == 1 && membersEl.getSelectedKeys().contains(getIdentity().getKey().toString()));
-	}
-	
-	public SingleSelection createMembersSingleElement(FormItemContainer formLayout, String name,
-			Collection<Identity> candidateIdentities, Collection<Identity> currentIdentities) {
-		
-		SelectionValues membersSV = createMembersSV(candidateIdentities, currentIdentities, true);
-		SingleSelection membersEl = uifactory.addDropdownSingleselect(name, formLayout, membersSV.keys(), membersSV.values());
-		if (!currentIdentities.isEmpty()) {
-			membersEl.select(currentIdentities.stream().findFirst().get().getKey().toString(), true);
-		} else if (!membersSV.isEmpty()) {
-			membersEl.select(membersEl.getKey(0), true);
-		}
-		
-		return membersEl;
-	}
-	
+
 	public void setValues(ToDoTaskFormValues values) {
 		if (values == null) {
 			return;
 		}
-		
+
 		titleEl.setValue(values.getTitle());
 		descriptionEl.setValue(values.getDescription());
 		if (values.getStatus() != null) {
@@ -337,19 +337,40 @@ public class ToDoTaskEditForm extends FormBasicController {
 			String formattedExpenditureOfWork = ToDoUIFactory.format(eow);
 			expenditureOfWorkEl.setValue(formattedExpenditureOfWork);
 		}
-		startDateEl.setDate(values.getStartDate());
-		dueDateEl.setDate(values.getDueDate());
+
+		ToDoRelativeDates rd = values.getRelativeDates();
+		if (rd != null && datesConfig.getPicker() != null) {
+			if (rd.getStartRef() != null) {
+				startDateModeEl.select(MODE_RELATIVE, true);
+				startDateRelEl.setValue(toRelativeDateSelection(rd.getStartRef(), rd.getStartUnit(), rd.getStartValue()));
+				doSwitchDateMode(true);
+			} else {
+				startDateEl.setDate(values.getStartDate());
+			}
+			if (rd.getDueRef() != null) {
+				dueDateModeEl.select(MODE_RELATIVE, true);
+				dueDateRelEl.setValue(toRelativeDateSelection(rd.getDueRef(), rd.getDueUnit(), rd.getDueValue()));
+				doSwitchDateMode(false);
+			} else {
+				dueDateEl.setDate(values.getDueDate());
+			}
+		} else {
+			startDateEl.setDate(values.getStartDate());
+			dueDateEl.setDate(values.getDueDate());
+		}
 	}
-	
+
 	public void updateUIByAssigneeRight(ToDoTask toDoTask) {
 		if (toDoTask != null) {
 			updateUIByAssigneeRight(toDoTask.getAssigneeRights());
 		}
 	}
-	
+
 	public void updateUIByAssigneeRight(ToDoRight[] assigneeRights) {
-		if (assigneeCurrent == null || !assigneeCurrent.contains(getIdentity())) {
-			// No assignee, no application of assignee rights
+		String myKey = getIdentity().getKey().toString();
+		boolean isAssignee = assigneeConfig.getSource().getDefaultSelectedKeys().contains(myKey);
+		boolean isDelegatee = delegateeConfig.getSource().getDefaultSelectedKeys().contains(myKey);
+		if (!isAssignee && !isDelegatee) {
 			return;
 		}
 		if (doEl != null) {
@@ -382,11 +403,25 @@ public class ToDoTaskEditForm extends FormBasicController {
 		if (priorityEl != null) {
 			priorityEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.priority));
 		}
+		boolean startEnabled = ToDoRight.contains(assigneeRights, ToDoRight.startDate);
 		if (startDateEl != null) {
-			startDateEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.startDate));
+			startDateEl.setEnabled(startEnabled);
 		}
+		if (startDateModeEl != null) {
+			startDateModeEl.setEnabled(startEnabled);
+		}
+		if (startDateRelEl != null) {
+			startDateRelEl.setEnabled(startEnabled);
+		}
+		boolean dueEnabled = ToDoRight.contains(assigneeRights, ToDoRight.dueDate);
 		if (dueDateEl != null) {
-			dueDateEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.dueDate));
+			dueDateEl.setEnabled(dueEnabled);
+		}
+		if (dueDateModeEl != null) {
+			dueDateModeEl.setEnabled(dueEnabled);
+		}
+		if (dueDateRelEl != null) {
+			dueDateRelEl.setEnabled(dueEnabled);
 		}
 		if (expenditureOfWorkEl != null) {
 			expenditureOfWorkEl.setEnabled(ToDoRight.contains(assigneeRights, ToDoRight.expenditureOfWork));
@@ -398,13 +433,13 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (userSearchCtrl == source) {
-			if (event instanceof SingleIdentityChosenEvent) {
-				SingleIdentityChosenEvent singleEvent = (SingleIdentityChosenEvent)event;
-				Identity choosenIdentity = singleEvent.getChosenIdentity();
-				if (choosenIdentity != null) {
-					doAddUser(choosenIdentity, (Boolean)userSearchCtrl.getUserObject());
+		if (contextPickerCtrl == source) {
+			if (event instanceof ToDoContextSelectedEvent tcse) {
+				selectedContext = tcse.getContext();
+				if (contextStaticEl != null) {
+					contextStaticEl.setValue(getContextValue(selectedContext));
 				}
+				doRefreshRelativeDates();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -415,22 +450,34 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(userSearchCtrl);
+		removeAsListenerAndDispose(contextPickerCtrl);
 		removeAsListenerAndDispose(cmc);
-		userSearchCtrl = null;
+		contextPickerCtrl = null;
 		cmc = null;
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == doEl) {
 			doToggleStatus(doEl.isOn());
-		} else if (source == assigneeAddLink) {
-			doSelectAssignee(ureq);
-		} else if (source == delegateeAddLink) {
-			doSelectDelegatee(ureq);
+		} else if (source == contextChangeLink) {
+			doOpenContextPicker(ureq);
 		} else if (source == statusEl) {
 			doToogleDo();
+		} else if (source == startDateModeEl) {
+			doSwitchDateMode(true);
+		} else if (source == dueDateModeEl) {
+			doSwitchDateMode(false);
+		} else if (source == startDateRelEl && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
+			if (startDateRelEl.getValue() == null) {
+				startDateModeEl.select(MODE_ABSOLUTE, true);
+				doSwitchDateMode(true);
+			}
+		} else if (source == dueDateRelEl && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
+			if (dueDateRelEl.getValue() == null) {
+				dueDateModeEl.select(MODE_ABSOLUTE, true);
+				doSwitchDateMode(false);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -438,40 +485,116 @@ public class ToDoTaskEditForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
 		titleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
-		
-		if (assignedEl != null) {
-			assignedEl.clearError();
-			if (assignedEl.isVisible() && assignedEl.getSelectedKeys().isEmpty()) {
-				assignedEl.setErrorKey("form.mandatory.hover");
-				allOk &= false;
-			}
-			
-			delegatedEl.clearError();
-			if (delegatedEl.isVisible() && !delegatedEl.getSelectedKeys().isEmpty() 
-					&& delegatedEl.getSelectedKeys().stream().allMatch(key -> assignedEl.getSelectedKeys().contains(key))) {
-				delegatedEl.setErrorKey("error.delegatee.is.assignee");
-				allOk &= false;
-			}
-		}
-		
-		dueDateEl.clearError();
-		if (startDateEl.getDate() != null && dueDateEl.getDate() != null && startDateEl.getDate().after(dueDateEl.getDate())) {
-			dueDateEl.setErrorKey("error.start.after.due");
+
+		assignedEl.clearError();
+		if (assigneeConfig.isMandatory() && assignedEl.isVisible() && assignedEl.getSelectedKeys().isEmpty()) {
+			assignedEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
-		
+
+		delegatedEl.clearError();
+		Set<String> assignedKeys = assignedEl.getSelectedKeys();
+		Set<String> delegatedKeys = delegatedEl.getSelectedKeys();
+		if (delegatedEl.isVisible() && !delegatedKeys.isEmpty()
+				&& delegatedKeys.stream().allMatch(assignedKeys::contains)) {
+			delegatedEl.setErrorKey("error.delegatee.is.assignee");
+			allOk &= false;
+		}
+
+		boolean startRelative = isRelativeMode(startDateModeEl);
+		boolean dueRelative = isRelativeMode(dueDateModeEl);
+
+		startDateRowCont.clearError();
+		dueDateRowCont.clearError();
+
+		if (startRelative && startDateRelEl != null) {
+			if (startDateRelEl.getValue() == null) {
+				startDateRowCont.setErrorKey("form.mandatory.hover");
+				allOk &= false;
+			}
+		}
+		if (dueRelative && dueDateRelEl != null) {
+			if (dueDateRelEl.getValue() == null) {
+				dueDateRowCont.setErrorKey("form.mandatory.hover");
+				allOk &= false;
+			}
+		}
+
+		if (!startRelative && !dueRelative) {
+			if (startDateEl.getDate() != null && dueDateEl.getDate() != null && startDateEl.getDate().after(dueDateEl.getDate())) {
+				dueDateRowCont.setErrorKey("error.start.after.due");
+				allOk &= false;
+			}
+		} else if (allOk && datesConfig.getPicker() != null) {
+			ToDoTaskDatePicker picker = datesConfig.getPicker();
+			Date resolvedStart;
+			if (startRelative) {
+				RelativeDateSelection startSel = startDateRelEl != null ? startDateRelEl.getValue() : null;
+				resolvedStart = startSel != null ? picker.resolve(toRelativeDates(startSel, true), true) : null;
+			} else {
+				resolvedStart = startDateEl.getDate();
+			}
+			Date resolvedDue;
+			if (dueRelative) {
+				RelativeDateSelection dueSel = dueDateRelEl != null ? dueDateRelEl.getValue() : null;
+				resolvedDue = dueSel != null ? picker.resolve(toRelativeDates(dueSel, false), false) : null;
+			} else {
+				resolvedDue = dueDateEl.getDate();
+			}
+			if (resolvedStart != null && resolvedDue != null && resolvedStart.after(resolvedDue)) {
+				dueDateRowCont.setErrorKey("error.start.after.due");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private boolean isRelativeMode(SingleSelection modeEl) {
+		return modeEl != null && modeEl.isOneSelected()
+				&& MODE_RELATIVE.equals(modeEl.getSelectedKey());
+	}
+
+	private void doSwitchDateMode(boolean forStart) {
+		boolean relativeMode = forStart ? isRelativeMode(startDateModeEl) : isRelativeMode(dueDateModeEl);
+		if (forStart) {
+			startDateEl.setVisible(!relativeMode);
+			if (startDateRelEl != null) {
+				startDateRelEl.setVisible(relativeMode);
+			}
+		} else {
+			dueDateEl.setVisible(!relativeMode);
+			if (dueDateRelEl != null) {
+				dueDateRelEl.setVisible(relativeMode);
+			}
+		}
+	}
+
+	private void doRefreshRelativeDates() {
+		ToDoTaskDatePicker picker = datesConfig.getPicker();
+		if (picker == null) {
+			return;
+		}
+		picker.contextChanged(selectedContext);
+		if (startDateRelEl != null) {
+			startDateRelEl.setContext(picker.getContext());
+			startDateRelEl.refreshDisplay();
+		}
+		if (dueDateRelEl != null) {
+			dueDateRelEl.setContext(picker.getContext());
+			dueDateRelEl.refreshDisplay();
+		}
 	}
 
 	private void doToggleStatus(boolean done) {
@@ -491,107 +614,141 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 	}
 
-	private void doSelectAssignee(UserRequest ureq) {
-		if (guardModalController(userSearchCtrl)) return;
-		
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, false, false);
-		userSearchCtrl.setUserObject(Boolean.TRUE);
-		listenTo(userSearchCtrl);
-		
-		String title = translate("task.assignee.add.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
+	private void doOpenContextPicker(UserRequest ureq) {
+		removeAsListenerAndDispose(contextPickerCtrl);
+		removeAsListenerAndDispose(cmc);
+		contextPickerCtrl = contextConfig.getPicker().createPickerController(ureq, getWindowControl(), selectedContext);
+		if (contextPickerCtrl == null) return;
+		listenTo(contextPickerCtrl);
+		String title = translate("task.context");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contextPickerCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private void doSelectDelegatee(UserRequest ureq) {
-		if (guardModalController(userSearchCtrl)) return;
-		
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, false, false);
-		userSearchCtrl.setUserObject(Boolean.FALSE);
-		listenTo(userSearchCtrl);
-		
-		String title = translate("task.delegatee.add.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();	
-	}
-	
-	private void doAddUser(Identity identity, Boolean assignee) {
-		MultipleSelectionElement mse = assignee.booleanValue()? assignedEl: delegatedEl;
-		
-		Set<String> selectedKeys = new HashSet<>(mse.getSelectedKeys());
-		selectedKeys.add(identity.getKey().toString());
-		
-		SelectionValues identitySV = new SelectionValues();
-		for (String key : mse.getKeys()) {
-			identitySV.add(new SelectionValue(key, mse.getValue(key)));
+private ToDoRelativeDates toRelativeDates(RelativeDateSelection sel, boolean forStart) {
+		String composedRef;
+		ToDoDateUnit unit;
+		Integer value = null;
+		if (!sel.isOffsetEnabled()) {
+			composedRef = "SAME_DAY_" + sel.getRefKey();
+			unit = ToDoDateUnit.SAME_DAY;
+		} else {
+			composedRef = sel.getDirection().name() + "_" + sel.getRefKey();
+			unit = ToDoDateUnit.valueOf(sel.getUnitKey());
+			value = sel.getValue();
 		}
-		identitySV.add(new SelectionValue(identity.getKey().toString(), userManager.getUserDisplayName(identity.getKey())));
-		identitySV.sort(SelectionValues.VALUE_ASC);
-		
-		mse.setKeysAndValues(identitySV.keys(), identitySV.values());
-		for (String key : selectedKeys) {
-			mse.select(key, true);
+		ToDoRelativeDates rd = new ToDoRelativeDates();
+		if (forStart) {
+			rd.setStartRef(composedRef);
+			rd.setStartUnit(unit);
+			rd.setStartValue(value);
+		} else {
+			rd.setDueRef(composedRef);
+			rd.setDueUnit(unit);
+			rd.setDueValue(value);
 		}
+		return rd;
 	}
-	
+
+	private RelativeDateSelection toRelativeDateSelection(String composedRef, ToDoDateUnit unit, Integer value) {
+		if (composedRef == null) {
+			return null;
+		}
+		if (composedRef.startsWith("SAME_DAY_")) {
+			String refKey = composedRef.substring("SAME_DAY_".length());
+			return new RelativeDateSelection(refKey, OffsetDirection.BEFORE, null, null, false);
+		}
+		int underscore = composedRef.indexOf('_');
+		OffsetDirection direction = OffsetDirection.valueOf(composedRef.substring(0, underscore));
+		String refKey = composedRef.substring(underscore + 1);
+		String unitKey = unit != null ? unit.name() : null;
+		return new RelativeDateSelection(refKey, direction, unitKey, value, true);
+	}
+
 	public ToDoContext getContext() {
 		if (contextEl != null && contextEl.isOneSelected()) {
 			return keyToContext.get(contextEl.getSelectedKey());
 		}
+		if (contextConfig.getSelection() == ContextSelection.picker) {
+			return selectedContext;
+		}
 		return null;
 	}
-	
+
 	public String getTitle() {
 		return titleEl.getValue();
 	}
-	
+
 	public List<String> getTagDisplayNames() {
 		return tagsEl.getDisplayNames();
 	}
-	
+
 	public Collection<? extends IdentityRef> getAssignees() {
-		return assignedEl != null
-				? assignedEl.getSelectedKeys().stream().map(Long::valueOf).map(IdentityRefImpl::new).toList()
-				: assignedSingleEl.isOneSelected()
-						? List.of(new IdentityRefImpl(Long.valueOf(assignedSingleEl.getSelectedKey())))
-						: List.of();
+		return IdentitySelectionSource.toRefs(assignedEl.getSelectedKeys());
 	}
-	
+
 	public Collection<? extends IdentityRef> getDelegatees() {
-		return delegatedEl.getSelectedKeys().stream().map(Long::valueOf).map(IdentityRefImpl::new).toList();
+		return IdentitySelectionSource.toRefs(delegatedEl.getSelectedKeys());
 	}
-	
+
 	public ToDoStatus getStatus() {
 		return ToDoStatus.valueOf(statusEl.getSelectedKey());
 	}
-	
+
 	public ToDoPriority getPriority() {
 		return priorityEl.isOneSelected()? ToDoPriority.valueOf(priorityEl.getSelectedKey()): null;
 	}
-	
+
 	public Date getStartDate() {
-		return startDateEl.getDate();
+		if (isRelativeMode(startDateModeEl)) {
+			return null;
+		}
+		return startDateEl.isVisible() ? startDateEl.getDate() : null;
 	}
-	
+
 	public Date getDueDate() {
-		return dueDateEl.getDate();
+		if (isRelativeMode(dueDateModeEl)) {
+			return null;
+		}
+		return dueDateEl.isVisible() ? dueDateEl.getDate() : null;
 	}
-	
+
+	public ToDoRelativeDates getRelativeDates() {
+		boolean startRelative = isRelativeMode(startDateModeEl);
+		boolean dueRelative = isRelativeMode(dueDateModeEl);
+		if (!startRelative && !dueRelative) {
+			return null;
+		}
+		ToDoRelativeDates rd = new ToDoRelativeDates();
+		if (startRelative && startDateRelEl != null && startDateRelEl.getValue() != null) {
+			ToDoRelativeDates startRd = toRelativeDates(startDateRelEl.getValue(), true);
+			rd.setStartRef(startRd.getStartRef());
+			rd.setStartUnit(startRd.getStartUnit());
+			rd.setStartValue(startRd.getStartValue());
+		}
+		if (dueRelative && dueDateRelEl != null && dueDateRelEl.getValue() != null) {
+			ToDoRelativeDates dueRd = toRelativeDates(dueDateRelEl.getValue(), false);
+			rd.setDueRef(dueRd.getDueRef());
+			rd.setDueUnit(dueRd.getDueUnit());
+			rd.setDueValue(dueRd.getDueValue());
+		}
+		return rd;
+	}
+
 	public Long getExpenditureOfWork() {
 		ToDoExpenditureOfWork expenditureOfWork = ToDoUIFactory.parseHours(expenditureOfWorkEl.getValue());
 		return toDoService.getHours(expenditureOfWork);
 	}
-	
+
 	public String getDescription() {
 		return StringHelper.containsNonWhitespace(descriptionEl.getValue())
 				? descriptionEl.getValue()
 				: null;
 	}
-	
+
 	public static interface ToDoTaskFormValues {
-		
+
 		public String getTitle();
 
 		public String getDescription();
@@ -605,12 +762,14 @@ public class ToDoTaskEditForm extends FormBasicController {
 		public Date getStartDate();
 
 		public Date getDueDate();
+
+		public ToDoRelativeDates getRelativeDates();
 	}
-	
+
 	public static final class ToDoTaskValues implements ToDoTaskFormValues {
-		
+
 		private final ToDoTask toDoTask;
-		
+
 		public ToDoTaskValues(ToDoTask toDoTask) {
 			this.toDoTask = toDoTask;
 		}
@@ -649,43 +808,51 @@ public class ToDoTaskEditForm extends FormBasicController {
 		public Date getDueDate() {
 			return toDoTask.getDueDate();
 		}
-		
+
+		@Override
+		public ToDoRelativeDates getRelativeDates() {
+			return toDoTask.getRelativeDates();
+		}
+
 	}
-	
+
 	public static final class CopyValues implements ToDoTaskFormValues {
-		
+
 		private final ToDoTask toDoTask;
 		private final String title;
 		private Date startDate;
 		private Date dueDate;
-		
+
 		public CopyValues(Locale locale, ToDoTask toDoTask) {
 			this.toDoTask = toDoTask;
 			this.title = Util.createPackageTranslator(ToDoUIFactory.class, locale).translate("copy.title", toDoTask.getTitle());
-			this.startDate = toDoTask.getStartDate();
-			this.dueDate = toDoTask.getDueDate();
-			
-			// Move dates at least to now
-			LocalDate now = LocalDate.now();
-			Long diffDays = null;
-			if (toDoTask.getStartDate() != null) {
-				Long startDiffDays = DateUtils.toLocalDate(toDoTask.getStartDate()).until(now, ChronoUnit.DAYS);
-				if (startDiffDays > 0) {
-					diffDays = startDiffDays;
+
+			if (toDoTask.getRelativeDates() == null) {
+				startDate = toDoTask.getStartDate();
+				dueDate = toDoTask.getDueDate();
+
+				// Move dates at least to now
+				LocalDate now = LocalDate.now();
+				Long diffDays = null;
+				if (toDoTask.getStartDate() != null) {
+					Long startDiffDays = DateUtils.toLocalDate(toDoTask.getStartDate()).until(now, ChronoUnit.DAYS);
+					if (startDiffDays > 0) {
+						diffDays = startDiffDays;
+					}
 				}
-			} 
-			if (diffDays == null && toDoTask.getDueDate() != null) {
-				Long dueDiffDays = DateUtils.toLocalDate(toDoTask.getDueDate()).until(now, ChronoUnit.DAYS);
-				if (dueDiffDays > 0) {
-					diffDays = dueDiffDays;
+				if (diffDays == null && toDoTask.getDueDate() != null) {
+					Long dueDiffDays = DateUtils.toLocalDate(toDoTask.getDueDate()).until(now, ChronoUnit.DAYS);
+					if (dueDiffDays > 0) {
+						diffDays = dueDiffDays;
+					}
 				}
-			}
-			if (diffDays != null) {
-				if (startDate != null) {
-					startDate = DateUtils.addDays(startDate, diffDays.intValue());
-				}
-				if (dueDate != null) {
-					dueDate = DateUtils.addDays(dueDate, diffDays.intValue());
+				if (diffDays != null) {
+					if (startDate != null) {
+						startDate = DateUtils.addDays(startDate, diffDays.intValue());
+					}
+					if (dueDate != null) {
+						dueDate = DateUtils.addDays(dueDate, diffDays.intValue());
+					}
 				}
 			}
 		}
@@ -723,6 +890,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 		@Override
 		public Date getDueDate() {
 			return dueDate;
+		}
+
+		@Override
+		public ToDoRelativeDates getRelativeDates() {
+			return toDoTask.getRelativeDates();
 		}
 	}
 

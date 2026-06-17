@@ -269,6 +269,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		int loggedInUsersCount = 0;
 		int restCount = 0;
 		int secureRestCount = 0;
+		int contentCount = 0;
+		int secureContentCount = 0;
 		for (UserSession usess:userSessions) {
 			if(usess == null) {
 				continue;
@@ -286,6 +288,11 @@ public class OpenOLATStatisticsWebService implements Sampler {
 				restCount++;
 				if (sessInfo.isSecure()) {
 					secureRestCount++;
+				}
+			} else if (sessInfo.isContentDelivery()) {
+				contentCount++;
+				if (sessInfo.isSecure()) {
+					secureContentCount++;
 				}
 			} else {
 				authenticatedcount++;
@@ -308,6 +315,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		vo.setSecureWebdavCount(secureWebdavCount);
 		vo.setRestCount(restCount);
 		vo.setSecureRestCount(secureRestCount);
+		vo.setContentCount(contentCount);
+		vo.setSecureContentCount(secureContentCount);
 		// Same as the UI
 		vo.setLoggedInUsersCount(loggedInUsersCount);
 		//Instant messaging

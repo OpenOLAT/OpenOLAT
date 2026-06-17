@@ -1,0 +1,13 @@
+#if($r.isTrue($customSteps))
+	<div class="o_info">$r.translate("custom.steps.descr")</div>
+	#if($r.available("add.step"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.step")
+	</div>
+	#end
+#end
+$r.render("steps")
+<div class="o_button_group">
+	$r.render("save")
+	$r.render("cancel")
+</div>

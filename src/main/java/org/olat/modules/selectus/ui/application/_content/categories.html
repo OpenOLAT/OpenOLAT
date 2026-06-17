@@ -1,0 +1,16 @@
+#if($r.available("categories"))
+<div class="o_clearfix o_block_large_bottom">
+	<h4><i class="o_icon o_icon_tags"> </i> $r.translate("application.categories")</h4>
+	<div class="o_app_details_categories">
+	#if($r.isNotEmpty($hint))
+	<div class="o_app_details_categories_label"><i class='o_form_chelp o_icon o_icon-fw o_icon_help help-block' id='o_help_categories'> </i>
+	<script>
+	jQuery(function () {
+		jQuery('#o_help_categories').tooltip({ placement:"top", container: "body", html:true, title: '$hint' });
+	})
+	</script>
+	</div>
+	#end
+	<div class="o_app_details_categories_input">$r.render("categories")</div> <div class="o_app_details_categories_buttons">$r.render("edit.categories")$r.render("save.categories")</div></div>
+</div>
+#end

@@ -60,11 +60,11 @@ public class ScormSettingsController extends RepositoryEntrySettingsController {
 	
 	@Override
 	protected void initOptions() {
-		super.initOptions();
-		
 		deliveryOptionsLink = LinkFactory.createToolLink("layout", translate("tab.layout"), this);
 		deliveryOptionsLink.setElementCssClass("o_sel_repo_layout");
 		buttonsGroup.addButton(deliveryOptionsLink, false);
+
+		super.initOptions();
 	}
 
 	@Override

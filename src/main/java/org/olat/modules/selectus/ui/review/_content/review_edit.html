@@ -1,0 +1,46 @@
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form o_review  #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+	#if ($off_desc || $off_warn || $off_info)
+	<div class="col-sm-12">
+		#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+	</div>
+	#end
+	
+	#foreach ($uiElement in $uiElements)
+		#if($r.isTrue(${uiElement.hasLabel()}))
+			<div class="form-group o_slider_labels clearfix">
+				<div class="col-sm-8 col-sm-offset-3">
+					<span class="o_slider_left_label">$r.escapeHtml($uiElement.leftLabel)</span>
+					<span class="o_slider_right_label">$r.escapeHtml($uiElement.rightLabel)</span>
+				</div>
+			</div>
+		#end
+		<div class="form-group clearfix">
+		#if($uiElement.type == "text")
+			<div class="col-sm-12">
+				$r.render("${uiElement.item.component.componentName}", "label")
+				<div>$r.render($uiElement.item)</div>
+				#if($f.hasError(${uiElement.item.component.componentName}))
+					$r.render("${uiElement.item.component.componentName}","error")
+				#end
+			</div>
+		#elseif($uiElement.type == "title")
+			<div class="col-sm-12"><h3>$r.escapeHtml($uiElement.label)</h3></div>
+		#else
+			$r.render("${uiElement.item.component.componentName}", "label", "col-sm-3")
+			<div class="col-sm-8">$r.render(${uiElement.item})</div>
+			<div class="col-sm-1">
+			#if($r.isTrue(${uiElement.getItem().getComponent().hasValue()}))
+				<i id='o_val${uiElement.item.component.componentName}' class='o_icon o_icon-lg o_icon_has_value' title='$r.translate("review.hasvalue")' data-has-title='$r.translate("review.hasvalue")'> </i>
+			#else
+				<i id='o_val${uiElement.item.component.componentName}' class='o_icon o_icon-lg o_icon_hasnot_value' title='$r.translate("review.hasnotvalue")' data-has-title='$r.translate("review.hasvalue")'> </i>
+			#end
+			</div>
+		#end
+		</div>
+	#end
+	<div class="o_button_group">
+		$r.render("save")
+		$r.render("cancel")
+	</div>
+</fieldset>
+

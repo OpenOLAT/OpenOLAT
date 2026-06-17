@@ -31,6 +31,7 @@ import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
 import org.olat.core.commons.services.ai.AiImageHelper;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -43,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
@@ -69,6 +69,8 @@ import org.olat.modules.cemedia.ui.medias.AbstractCollectMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingHelper;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +110,10 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private AiModule aiModule;
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
 
 	public MediaUploadController(UserRequest ureq, WindowControl wControl, FileElement fileEl, VFSLeaf selectedLeaf) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
@@ -170,7 +176,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		taxonomyLevelSource = new TaxonomyLevelSelectionSource(getLocale(),
 				List.of(),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
-				translate("taxonomy.levels"), translate("table.header.taxonomy"));
+				translate("table.header.taxonomy"));
 		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, taxonomyLevelSource);
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
@@ -406,22 +412,31 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 
 		// Map AI subject to taxonomy level
 		if (StringHelper.containsNonWhitespace(data.getSubject())) {
-			mapSubjectToTaxonomy(data.getSubject());
+			mapSubjectToTaxonomy(data.getSubject(), usageContext);
 		}
 
 		setFormWarning("ai.generate.metadata.done");
 	}
 
-	private void mapSubjectToTaxonomy(String subject) {
+	private void mapSubjectToTaxonomy(String subject, AiUsageContext context) {
 		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
 			return;
 		}
+		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
+				context, subject, mediaModule.getTaxonomyRefs(), taxonomyService,
+				taxonomyMatchingService, aiModule, getLocale());
+		if (!matches.isEmpty()) {
+			taxonomyLevelEl.select(matches.get(0).getKey().toString());
+			return;
+		}
 		String subjectLower = subject.trim().toLowerCase();
-		for (ObjectOption option : taxonomyLevelSource.getOptions()) {
-			String title = option.getTitle();
-			if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
-				taxonomyLevelEl.select(option.getKey());
-				return;
+		for (var group : taxonomyLevelSource.getOptionGroups(getLocale())) {
+			for (var option : group.getOptions()) {
+				String title = option.getTitle();
+				if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
+					taxonomyLevelEl.select(option.getKey());
+					return;
+				}
 			}
 		}
 	}

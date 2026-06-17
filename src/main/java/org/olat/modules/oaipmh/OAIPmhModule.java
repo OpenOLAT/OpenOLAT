@@ -40,8 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.lyncode.builder.ListBuilder;
-
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
@@ -466,11 +464,11 @@ public class OAIPmhModule extends AbstractSpringModule {
 		setStringProperty(CONFIG_SEO_KEYWORDS, seoKeywords, true);
 	}
 
-	public ListBuilder<String> getSetSpecByRepositoryEntry(
+	public List<String> getSetSpecByRepositoryEntry(
 			RepositoryEntry repositoryEntry,
 			ResourceLicense license,
 			Map<String, String> orgaIdToDescMap) {
-		ListBuilder<String> setSpec = new ListBuilder<>();
+		List<String> setSpec = new ArrayList<>();
 
 		if (isSetTypeTaxonomy()) {
 			List<String> taxonomyLevels =
@@ -506,10 +504,9 @@ public class OAIPmhModule extends AbstractSpringModule {
 	}
 
 	public boolean isIndexingRestricted(ResourceLicense license) {
-		return ((isLicenseAllowOnly() &&
-				(license == null || license.getLicenseType().getName().equals("no.license")))
-				|| (isLicenseSpecificRestrict() &&
-				(license == null || !getLicenseSelectedRestrictions().contains(license.getLicenseType().getKey().toString()))));
+		return (isLicenseAllowOnly() && (license == null || license.getLicenseType().getName().equals("no.license")))
+			||
+			(isLicenseSpecificRestrict() && (license == null || !getLicenseSelectedRestrictions().contains(license.getLicenseType().getKey().toString())));
 	}
 
 	public List<Offer> getOffers(OLATResource olatResource) {

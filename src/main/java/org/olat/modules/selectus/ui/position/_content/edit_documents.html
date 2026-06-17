@@ -1,0 +1,16 @@
+<fieldset>
+	<legend>$r.translate("edit.help.title")</legend>
+	$r.render("helps")
+</fieldset>
+<fieldset class="o_form o_sel_edit_position_documents_form">
+	<legend>$r.translate("edit.step.documents")</legend>
+	<div class="o_desc">$r.translate("edit.form_description.document")</div>
+	$r.render("table")
+	<div class="o_button_group">
+		$r.render("submit")
+		#foreach($previewButton in $previewButtons)
+			$r.render($previewButton)
+		#end
+		$r.render("cancel")
+	</div>
+</fieldset>

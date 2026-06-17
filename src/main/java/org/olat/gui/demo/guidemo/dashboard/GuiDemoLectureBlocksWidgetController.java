@@ -94,7 +94,16 @@ public class GuiDemoLectureBlocksWidgetController extends LectureBlocksWidgetCon
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 19, 0, 0), "PHIL-101", "Critical Thinking and Problem Solving", "A1", false, 45));
 		currentDate = DateUtils.addDays(currentDate, 70);
 		lectureBlocks.add(createLecture(DateUtils.setTime(currentDate, 10, 0, 0), "SPT-100", "Physical Fitness and Health", "Room SPT-Hall 1", false, 5));
-		
+
+		Date bulkDate = DateUtils.getPreviousDay(DateUtils.addDays(dueDate, 30), DayOfWeek.MONDAY);
+		for (int d = 0; d < 7; d++) {
+			for (int h = 7; h <= 19; h++) {
+				lectureBlocks.add(createLecture(DateUtils.setTime(bulkDate, h, 15, 0),
+						"GEN-" + (d * 100 + h), "Generic lecture " + h + ":15", "Room " + (d + 1) + "." + h, false, 30));
+			}
+			bulkDate = DateUtils.addDays(bulkDate, 1);
+		}
+
 		return lectureBlocks;
 	}
 

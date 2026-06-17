@@ -1,0 +1,7 @@
+<fieldset>
+	<legend>$off_title</legend>
+	$r.render("table")
+	#if($f.hasError("table"))
+		$r.render("table","error")
+	#end
+</fieldset>

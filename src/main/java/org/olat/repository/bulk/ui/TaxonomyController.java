@@ -165,7 +165,7 @@ public class TaxonomyController extends StepFormBasicController {
 		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 				List.of(),
 				() -> taxonomyService.getTaxonomyLevels(repositoryModule.getTaxonomyRefs()),
-				translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+				translate(labelI18nKey));
 		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, addCont, getWindowControl(), true, source);
 		
 		FormLayoutContainer addButtonCont = FormLayoutContainer.createButtonLayout("addButtonCont", getTranslator());

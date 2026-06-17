@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
@@ -449,9 +450,24 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(auth);
 
 		List<Authentication> authentications = authenticationDao.getAuthentications(ident.getIdentity());
-		Assert.assertNotNull(authentications);
-		Assert.assertEquals(1, authentications.size());
-		Assert.assertEquals(auth, authentications.get(0));
+		Assertions.assertThat(authentications)
+			.hasSize(1)
+			.containsExactly(auth);
+	}
+	
+	@Test
+	public void getAuthenticationsByIdentitites() {
+		String token = UUID.randomUUID().toString();
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-4b-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER, null,
+				ident.getLogin(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		List<Authentication> authentications = authenticationDao.getAuthentications(ident.getIdentity());
+		Assertions.assertThat(authentications)
+			.hasSize(1)
+			.containsExactly(auth);
 	}
 	
 	@Test

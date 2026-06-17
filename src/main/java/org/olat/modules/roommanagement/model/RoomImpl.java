@@ -34,7 +34,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
-import org.olat.modules.roommanagement.Location;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomStatus;
 
@@ -63,8 +63,8 @@ public class RoomImpl implements Persistable, Room {
 	@Column(name = "r_status", nullable = false, insertable = true, updatable = true)
 	private String status;
 
-	@Column(name = "r_name", nullable = false, insertable = true, updatable = true)
-	private String name;
+	@Column(name = "r_description", nullable = false, insertable = true, updatable = true)
+	private String description;
 
 	@Column(name = "r_ext_id", nullable = true, insertable = true, updatable = true)
 	private String externalId;
@@ -72,8 +72,8 @@ public class RoomImpl implements Persistable, Room {
 	@Column(name = "r_ext_ref", nullable = true, insertable = true, updatable = true)
 	private String externalRef;
 
-	@Column(name = "r_description", nullable = true, insertable = true, updatable = true)
-	private String description;
+	@Column(name = "r_room_info", nullable = true, insertable = true, updatable = true)
+	private String roomInfo;
 
 	@Column(name = "r_seats", nullable = true, insertable = true, updatable = true)
 	private Integer seats;
@@ -81,9 +81,9 @@ public class RoomImpl implements Persistable, Room {
 	@Column(name = "r_admin_info", nullable = true, insertable = true, updatable = true)
 	private String adminInfo;
 
-	@ManyToOne(targetEntity = LocationImpl.class, fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "fk_location", nullable = false, insertable = true, updatable = false)
-	private Location location;
+	@ManyToOne(targetEntity = BuildingImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_building", nullable = false, insertable = true, updatable = false)
+	private Building building;
 
 	@Override
 	public Long getKey() {
@@ -110,13 +110,13 @@ public class RoomImpl implements Persistable, Room {
 	}
 
 	@Override
-	public String getName() {
-		return name;
+	public String getDescription() {
+		return description;
 	}
 
 	@Override
-	public void setName(String name) {
-		this.name = name;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
@@ -140,13 +140,13 @@ public class RoomImpl implements Persistable, Room {
 	}
 
 	@Override
-	public String getDescription() {
-		return description;
+	public String getRoomInfo() {
+		return roomInfo;
 	}
 
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setRoomInfo(String roomInfo) {
+		this.roomInfo = roomInfo;
 	}
 
 	@Override
@@ -170,13 +170,13 @@ public class RoomImpl implements Persistable, Room {
 	}
 
 	@Override
-	public Location getLocation() {
-		return location;
+	public Building getBuilding() {
+		return building;
 	}
 
 	@Override
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setBuilding(Building building) {
+		this.building = building;
 	}
 
 	@Override

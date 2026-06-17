@@ -17,7 +17,6 @@ import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Paramet
 import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Until;
 import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Verb;
 
-import com.lyncode.builder.Builder;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.oaipmh.common.exceptions.InvalidResumptionTokenException;
@@ -25,6 +24,7 @@ import org.olat.modules.oaipmh.common.model.OAIPMH;
 import org.olat.modules.oaipmh.common.model.Request;
 import org.olat.modules.oaipmh.common.services.api.DateProvider;
 import org.olat.modules.oaipmh.common.services.impl.UTCDateProvider;
+import org.olat.modules.oaipmh.dataprovider.builder.OAIBuilder;
 import org.olat.modules.oaipmh.dataprovider.exceptions.BadArgumentException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.BadResumptionToken;
 import org.olat.modules.oaipmh.dataprovider.exceptions.DuplicateDefinitionException;
@@ -71,7 +71,7 @@ public class DataProvider {
 		this.errorsHandler = new ErrorHandler();
 	}
 
-	public OAIPMH handle(Builder<OAIRequest> builder) throws OAIException {
+	public OAIPMH handle(OAIBuilder<OAIRequest> builder) throws OAIException {
 		return handle(builder.build());
 	}
 

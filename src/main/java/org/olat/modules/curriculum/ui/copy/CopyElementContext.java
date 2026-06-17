@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.copy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -30,6 +31,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 
 /**
@@ -50,6 +52,7 @@ public class CopyElementContext {
 			List<OfferAndAccessInfos> offersAndAccessInfos) {
 		copySettings.setCopyOffers(true);
 		copySettings.setCopyResources(CopyResources.relation);
+		copySettings.setCopyToDos(CopyToDos.todosWithAssignments);
 		copySettings.setBaseIdentifier(curriculumElement.getIdentifier());
 		copySettings.setCopyTaxonomy(true);
 		
@@ -149,6 +152,22 @@ public class CopyElementContext {
 
 	public void setStandaloneEventsCopySetting(boolean standaloneEvents) {
 		copySettings.setCopyStandaloneEvents(standaloneEvents);
+	}
+
+	public CopyToDos getToDosCopySetting() {
+		return copySettings.getCopyToDos();
+	}
+
+	public void setToDosCopySetting(CopyToDos copyToDos) {
+		copySettings.setCopyToDos(copyToDos);
+	}
+
+	public Set<Long> getSelectedToDoTaskKeys(Long sourceElementKey) {
+		return copySettings.getSelectedToDoTaskKeys(sourceElementKey);
+	}
+
+	public void setSelectedToDoTaskKeys(Long sourceElementKey, Set<Long> selected) {
+		copySettings.setSelectedToDoTaskKeys(sourceElementKey, selected);
 	}
 	
 	public void setCopyOwnersMemberships(boolean copy) {

@@ -50,7 +50,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
-import org.olat.core.gui.control.generic.iframe.SecurityOptions;
+import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -99,49 +99,37 @@ public class SinglePageController extends BasicController implements Activateabl
 
 	@Autowired
 	MediaServerModule mediaServerModule;
-
-	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			boolean allowRelativeLinks) {
-		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, null, false, null);
-	}
 	
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			SecurityOptions securityOptions) {
+			IFrameSettings securityOptions) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, false, null, null, null, securityOptions, false, null);
+		this(ureq, wControl, rootContainer, fileName, false, null, null, null, securityOptions, null);
 	}
 
-	 /**
-	  * Constructor for the generic single page controller.
-	  * 
-	  * displays the html page (or any file if in iframe mode) and, if not on the first page and not in iframe mode, 
-	  * offers a button to return to the start page. 
-	  * (useful for a "home" button)
- 	  * <p>
-	  * You can call the allowPageEditing after this construtor to allow users to edit the page
-	  * 
-	  * @param folderPath The course folder which contains the single page html file
-	  * @param inIframe if true, the contents are rendered within an iframe
-	  * @param fileName the relative filePath in the material folder starting with a slash, e.g. /welcome.html or /docu/info.html
-	  * @param rootContainer the root from which to resolve the files (like "the htdocs directory")
-	  * @param currentUri if not null, the start page is set to this uri (instead of the fileName arg). relative to the -corrected- rootcontainer if !allowRelativeLinks
-	  * 
-	  * @param allowRelativeLinks if true, an initial uri of /folder/a.html allows navigating till "/", if false, only 
-	  * navigating in /folder/ and subfolders of this folder is allowed
-	  * @param showHomeLink true enables the home link icon and link which is added to the SP, false removes icon and link.
-	  * 
-	  */
-	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
-			boolean randomizeMapper) {
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, null, randomizeMapper, null);
-	}
-	
+	/**
+	 * Constructor for the generic single page controller.
+	 * 
+	 * displays the html page (or any file if in iframe mode) and, if not on the first page and not in iframe mode, 
+	 * offers a button to return to the start page. 
+	 * (useful for a "home" button)
+ 	 * <p>
+	 * You can call the allowPageEditing after this construtor to allow users to edit the page
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param rootContainer The root from which to resolve the files (like "the htdocs directory")
+	 * @param fileName The relative filePath in the material folder starting with a slash, e.g. /welcome.html or /docu/info.html
+	 * @param allowRelativeLinks If true, an initial uri of /folder/a.html allows navigating till "/", if false, only 
+	 * @param frameId
+	 * @param contextResourcable
+	 * @param config
+	 * @param securityOptions
+	 * @param randomizeMapper
+	 * @param courseRepoKey The key of the course (Edusharing)
+	 */
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable,
-			DeliveryOptions config, SecurityOptions securityOptions,
-			boolean randomizeMapper, Long courseRepoKey) {
+			DeliveryOptions config, IFrameSettings securityOptions, Long courseRepoKey) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -197,7 +185,7 @@ public class SinglePageController extends BasicController implements Activateabl
 		
 		// Display in iframe when
 		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
-				frameId, contextResourcable, deliveryOptions, securityOptions, false, randomizeMapper);
+				frameId, contextResourcable, deliveryOptions, securityOptions);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);

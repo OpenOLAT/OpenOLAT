@@ -46,7 +46,7 @@ public class TaxonomyUIFactory {
 	private static String getDisplayNameI18nKey(TaxonomyLevel level) {
 		return PREFIX_DISPLAY_NAME + level.getI18nSuffix();
 	}
-	
+
 	public static String translateDisplayName(Translator translator, TaxonomyLevel level) {
 		return translateDisplayName(translator, level, StringHelper.NULL);
 	}

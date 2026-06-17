@@ -263,7 +263,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 					curriculumService.getTaxonomy(element),
 					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
-					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+					translate(labelI18nKey));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
 			taxonomyLevelEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taxonomyLevel) && canEdit);
 			if (isCatalogCandidate) {
@@ -378,7 +378,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 					null, null, null, parentElement, elementType, null, null, null, selectedCurriculum);
 			if (educationalType != null) {
 				element.setEducationalType(educationalType);
-				element = curriculumService.updateCurriculumElement(element);
+				element = curriculumService.updateCurriculumElement(getIdentity(), element);
 			}
 		} else {
 			currentDisplayName = element.getDisplayName();
@@ -389,7 +389,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			element.setDisplayName(displayNameEl.getValue());
 			element.setType(elementType);
 			element.setEducationalType(educationalType);
-			element = curriculumService.updateCurriculumElement(element);
+			element = curriculumService.updateCurriculumElement(getIdentity(), element);
 		}
 		
 		if (taxonomyLevelEl != null) {

@@ -103,7 +103,7 @@ public interface MailManager {
 	 * @param mail
 	 * @param identity
 	 */
-	public void delete(DBMailLight mail, Identity identity, boolean deleteMetaMail);
+	public void delete(MailRef mail, Identity identity, boolean deleteMetaMail);
 	
 	/**
 	 * Load all mails with the identity as from, mail which are not deleted

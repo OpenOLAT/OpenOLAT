@@ -60,13 +60,11 @@ public class RepositoryCatalogInfoFactory {
 	
 	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath, boolean showRQCode) {
 		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-		boolean startDateAvailable = lifecycle != null && lifecycle.getValidFrom() != null;
-		boolean endDateAvailable = lifecycle != null && lifecycle.getValidTo() != null;
 		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
 		if (catalogV2Module.isEnabled()) {
-			Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
-			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
-			translator = Util.createPackageTranslator(RepositoryService.class, locale, translator);
+			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale,
+					Util.createPackageTranslator(AccessConfigurationController.class, locale,
+					Util.createPackageTranslator(TaxonomyUIFactory.class, locale)));
 			String details;
 			List<TaxonomyLevel> taxonomyLevels = CoreSpringFactory.getImpl(RepositoryService.class).getTaxonomy(entry);
 			if (taxonomyLevels.isEmpty()) {
@@ -79,10 +77,10 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
 			SelectionValues availableStatuses = new SelectionValues();
-			for (RepositoryEntryStatusEnum status : RepositoryEntryStatusEnum.preparationToClosed()) {
-				availableStatuses.add(SelectionValues.entry(status.name(), translator.translate(status.i18nKey()),
-						null, "o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true));
-			}
+			ACService.RESTATUS_AVAILABLE_METHOD.stream()
+					.forEach(status -> availableStatuses.add(
+							SelectionValues.entry(status.name(), translator.translate(status.i18nKey()), null,
+									"o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true)));
 			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
 					.map(RepositoryEntryStatusEnum::name)
 					.collect(Collectors.toSet());
@@ -93,8 +91,8 @@ public class RepositoryCatalogInfoFactory {
 					null, getCatalogStatusEvaluator(entry.getEntryStatus()), translator.translate("offer.available.in.status.course"),
 					availableStatuses, defaultStatuses,
 					false,
-					startDateAvailable,
-					endDateAvailable,
+					lifecycle != null ? lifecycle.getValidFrom() : null,
+					lifecycle != null ? lifecycle.getValidTo() : null,
 					editBusinessPath,
 					translator.translate("access.open.metadata"),
 					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()),
@@ -130,7 +128,10 @@ public class RepositoryCatalogInfoFactory {
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
 					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null,
-					false, startDateAvailable, endDateAvailable, editBusinessPath, translator.translate("access.open.catalog"),
+					false,
+					lifecycle != null ? lifecycle.getValidFrom() : null,
+					lifecycle != null ? lifecycle.getValidTo() : null,
+					editBusinessPath, translator.translate("access.open.catalog"),
 					null, null, null, showRQCode, null);
 		}
 		return CatalogInfo.UNSUPPORTED;

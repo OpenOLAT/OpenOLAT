@@ -22,7 +22,9 @@ package org.olat.modules.oaipmh.common.exceptions;
 
 public class XmlWriteException extends Exception {
 
-    public XmlWriteException() {
+    private static final long serialVersionUID = -3239455298342537607L;
+
+	public XmlWriteException() {
     }
 
     public XmlWriteException(String message) {

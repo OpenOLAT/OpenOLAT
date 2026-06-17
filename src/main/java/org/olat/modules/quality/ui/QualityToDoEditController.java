@@ -20,7 +20,6 @@
 package org.olat.modules.quality.ui;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,10 +45,14 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
+import org.olat.user.IdentityObjectSourceBrowserWrapper;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -110,40 +113,44 @@ public class QualityToDoEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Identity creator = null;
 		Identity modifier = null;
-		Set<Identity> memberCandidates = Set.of(getIdentity());
-		Set<Identity> assignees = Set.of(getIdentity());
-		Set<Identity> delegatees = Set.of();
+		Set<Identity> initialAssignees;
+		Set<Identity> initialDelegatees;
 		List<TagInfo> tagInfos;
 		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
 		tagSearchParams.setTypes(QualityToDoTaskProvider.ALL_TYPES);
-		
+
 		if (toDoTask != null) {
-			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ALL)
-					.get(toDoTask.getBaseGroup().getKey());
-			creator = toDoTaskMembers.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
-			modifier = toDoTaskMembers.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
-			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
-			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
-			memberCandidates = new HashSet<>();
-			memberCandidates.addAll(assignees);
-			memberCandidates.addAll(delegatees);
-			
+			ToDoTaskMembers allMembers = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
+			creator = allMembers.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
+			modifier = allMembers.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
+			initialAssignees = allMembers.getMembers(ToDoRole.assignee);
+			initialDelegatees = allMembers.getMembers(ToDoRole.delegatee);
 			tagInfos = toDoService.getTagInfos(tagSearchParams, toDoTask);
 		} else if (toDoTaskCopySource != null) {
-			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDoTaskCopySource), ToDoRole.ALL)
-					.get(toDoTaskCopySource.getBaseGroup().getKey());
-			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
-			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
+			ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTaskCopySource, ToDoRole.ASSIGNEE_DELEGATEE);
+			initialAssignees = members.getMembers(ToDoRole.assignee);
+			initialDelegatees = members.getMembers(ToDoRole.delegatee);
 			tagInfos = toDoService.getTagInfos(tagSearchParams, toDoTaskCopySource);
 		} else {
+			initialAssignees = Set.of(getIdentity());
+			initialDelegatees = Set.of();
 			tagInfos = toDoService.getTagInfos(tagSearchParams, null);
 		}
-		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
-				availableContexts, currentContext, MemberSelection.search, memberCandidates, assignees,
-				MemberSelection.search, memberCandidates, delegatees, tagInfos, true);
+
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(getLocale(), initialAssignees, List::of,
+				multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w), getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(getLocale(), initialDelegatees, List::of,
+				multi -> (u, w) -> new IdentityObjectSourceBrowserWrapper(u, w), getIdentity());
+
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(availableContexts, currentContext)
+				: ToDoTaskContextConfig.off(currentContext);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
+				contextConfig,
+				ToDoTaskMemberConfig.editable(assigneeSource, true),
+				ToDoTaskMemberConfig.editable(delegateeSource, false),
+				ToDoTaskDateConfig.absoluteOnly(),
+				tagInfos, true);
 		if (toDoTask != null) {
 			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
 			toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);

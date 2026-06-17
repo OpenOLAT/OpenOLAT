@@ -44,10 +44,9 @@ import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.InlineChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -62,13 +61,11 @@ import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.DrawingEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayAiGradingEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
-import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
-import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
+import org.olat.ims.qti21.ui.editor.interactions.GapEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.GapScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.HottextEditorController;
-import org.olat.ims.qti21.ui.editor.interactions.InlineChoiceEditorController;
-import org.olat.ims.qti21.ui.editor.interactions.InlineChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MatchEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MatchScoreController;
@@ -319,8 +316,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 		switch(type) {
 			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
 			case mc: itemBuilder = initMultipleChoiceEditors(ureq, item); break;
-			case fib: itemBuilder = initFIBEditors(ureq, item); break;
-			case numerical: itemBuilder = initFIBEditors(ureq, item); break;
+			case fib, numerical, inlinechoice, gapmixed:
+				itemBuilder = initGapEditors(ureq, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case match: itemBuilder = initMatchChoiceEditors(ureq, item); break;
 			case matchdraganddrop: itemBuilder = initMatchDragAndDropEditors(ureq, item); break;
@@ -331,7 +328,6 @@ public class AssessmentItemEditorController extends BasicController implements A
 			case drawing: itemBuilder = initDrawingEditors(ureq, item); break;
 			case hottext: itemBuilder = initHottextEditors(ureq, item); break;
 			case order: itemBuilder = initOrderEditors(ureq, item); break;
-			case inlinechoice: itemBuilder = initInlineChoiceEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq, item); break;
 		}
 		return type;
@@ -478,13 +474,13 @@ public class AssessmentItemEditorController extends BasicController implements A
 		return matchItemBuilder;
 	}
 	
-	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, AssessmentItem item) {
-		FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new FIBEditorController(ureq, getWindowControl(), fibItemBuilder,
+	private AssessmentItemBuilder initGapEditors(UserRequest ureq, AssessmentItem item) {
+		GapAssessmentItemBuilder fibItemBuilder = new GapAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new GapEditorController(ureq, getWindowControl(), fibItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
 		if (settings.isWithScore()) {
-			scoreEditor = new FIBScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef,
+			scoreEditor = new GapScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef,
 					restrictedEdit, readOnly);
 			listenTo(scoreEditor);
 		}
@@ -493,7 +489,14 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.fib"), "o_sel_assessment_item_fib", itemEditor);
+		String editorTabName = switch(fibItemBuilder.getQuestionType()) {
+			case numerical -> translate("form.numerical");
+			case inlinechoice -> translate("form.inlinechoice");
+			case gapmixed -> translate("form.gapmixed");
+			default -> translate("form.fib");
+		};
+		
+		tabbedPane.addTab(editorTabName, "o_sel_assessment_item_fib", itemEditor);
 		if (settings.isWithScore()) {
 			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
 		}
@@ -646,31 +649,6 @@ public class AssessmentItemEditorController extends BasicController implements A
 		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return orderItemBuilder;
-	}
-	
-	private AssessmentItemBuilder initInlineChoiceEditors(UserRequest ureq, AssessmentItem item) {
-		InlineChoiceAssessmentItemBuilder inlineChoiceItemBuilder = new InlineChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new InlineChoiceEditorController(ureq, getWindowControl(), inlineChoiceItemBuilder,
-				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
-		listenTo(itemEditor);
-		
-		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), inlineChoiceItemBuilder,
-				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
-				restrictedEdit, readOnly);
-		listenTo(feedbackEditor);
-
-		tabbedPane.addTab(translate("form.inlinechoice"), "o_sel_assessment_item_inlinechoice", itemEditor);
-		if (settings.isWithScore()) {
-			tabbedPane.addTabControllerCreator(ureq, translate("form.score"), "o_sel_assessment_item_score", uureq -> {
-				removeAsListenerAndDispose(scoreEditor);
-				scoreEditor = new InlineChoiceScoreController(uureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
-				listenTo(scoreEditor);
-				return scoreEditor;
-			}, true);
-		}
-
-		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
-		return inlineChoiceItemBuilder;
 	}
 
 	@Override

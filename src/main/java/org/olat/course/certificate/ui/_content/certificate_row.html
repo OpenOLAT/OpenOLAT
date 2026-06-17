@@ -1,6 +1,6 @@
 <div class="o_card o_certificate_card">
 	<div class="o_certificate_thumbnail">
-		<div class="o_certificate_img" onclick="javascript:${f.ffXHREvent("select_row","$row.key")}">
+		<div class="o_certificate_img" onclick="javascript:${f.ffXHREvent("select_row","$row.key",false,false)}">
 			#if($row.isThumbnailAvailable())
 				<img src="${mapperThumbnailUrl}/${row.key}/${row.filename}.png" alt=""/>
 			#else
@@ -14,7 +14,10 @@
 		<div class="o_flex_first_grow_vertical">
 			#if($r.isNotEmpty($row.getAwardedBy()))
 				<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
-				<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())</span>
+				<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())
+				#if($r.isNotEmpty($row.getTitle()))
+					&ndash; $r.escapeHtml($row.getTitle())
+				#end</span>
 			#end
 			#if(${row.isRevoked()})
 				<strong class="o_card_title">$r.translate("revoked.on")</strong>

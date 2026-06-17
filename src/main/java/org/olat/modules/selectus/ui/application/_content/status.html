@@ -1,0 +1,39 @@
+#if($submittedByStaff or $r.isNotEmpty($status) or $r.isNotEmpty($statusComment))
+<div class="o_clearfix o_block_large_bottom o_sel_application_status_infos">
+	<h4><i class="o_icon o_icon_certificate"> </i> $r.translate("application.status.title")</h4>
+	#if($submittedByStaff)
+		<div class="o_warning"><span>$submittedByStaff</span></div>
+	#end
+	#if($r.isNotEmpty($status) or $r.isNotEmpty($statusComment))
+		<div class="o_warning">
+			#if($r.isNotEmpty($status))<p>$status</p>#end
+			#if($r.isNotEmpty($statusComment))<p>$r.translate("application.status.comment.title"): $r.xssScan($statusComment)</p>#end
+		</div>
+	#end
+</div>
+#end
+#if($hasMemo)
+<div class="o_clearfix o_block_large_bottom">
+	<h4><i class="o_icon o_icon_memo"> </i> $r.translate("application.memo")</h4>
+	<div class="o_info">$r.xssScan($memo)</div>
+</div>
+#end
+<div class="o_clearfix o_block_large_bottom">
+	<h4><i class="o_icon o_icon_committee"> </i> $r.translate("application.decision")</h4>
+	#if($decision)
+		<div class="o_block fx_r_committee_decision">
+			<span class="">$decision</span>
+		</div>
+	#else
+		<div class="o_block">
+			<span class="sr-only">$r.render("edit.decision","label")</span>
+			$r.render("edit.decision")
+		</div>
+	#end
+</div>
+#if($hasComment)
+<div class="o_clearfix o_block_large_bottom">
+	<h4><i class="o_icon o_icon_committee"> </i> $r.translate("application.comment")</h4>
+	<div class="o_info">$r.xssScan($comment)</div>
+</div>
+#end

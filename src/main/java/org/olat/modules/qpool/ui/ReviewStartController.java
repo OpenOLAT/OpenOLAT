@@ -78,7 +78,7 @@ public class ReviewStartController extends FormBasicController {
 		TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 				selectedTaxonomyLevels,
 				() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
-				translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+				translate("general.taxonomy.level"));
 		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "process.start.review.taxonomy.level",
 				formLayout, getWindowControl(), false, source);
 		taxonomyLevelEl.setMandatory(true);

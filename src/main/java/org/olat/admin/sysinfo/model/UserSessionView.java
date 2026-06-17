@@ -74,6 +74,8 @@ public class UserSessionView {
 				mode = "WebDAV";
 			} else if (sessInfo.isREST()) {
 				mode = "REST";
+			} else if (sessInfo.isContentDelivery()) {
+				mode = "Content";
 			} else {
 				mode = sessInfo.getWebMode();
 			}

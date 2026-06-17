@@ -37,8 +37,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
@@ -129,7 +128,7 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
 		
 		// checked VO
 		OrganisationTypeVO savedVo = conn.parse(response, OrganisationTypeVO.class);

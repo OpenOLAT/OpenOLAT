@@ -28,12 +28,17 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.CaretPosition;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -68,7 +73,10 @@ public class CertificateDetailsController extends BasicController {
 
 
 	private Link courseLink;
+	private final Link deleteLink;
+	private final Dropdown dropdown;
 	private final Link downloadButton;
+	
 	private Link startRecertificationButton;
 	private final VelocityContainer mainVC;
 
@@ -76,6 +84,9 @@ public class CertificateDetailsController extends BasicController {
 	private final RepositoryEntry course;
 	private final Identity assessedIdentity;
 
+	private CloseableModalController cmc;
+	private ConfirmDeleteCertificateController deleteCertificateCtrl;
+	
 	@Autowired
 	private CreditPointService creditPointService;
 	@Autowired
@@ -84,7 +95,7 @@ public class CertificateDetailsController extends BasicController {
 	private VFSRepositoryService vfsRepositoryService;
 	
 	public CertificateDetailsController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, CertificateRow certificateRow) {
+			Identity assessedIdentity, CertificateRow certificateRow, boolean canDelete) {
 		super(ureq, wControl, Util
 				.createPackageTranslator(CertificationProgramCertifiedMembersController.class, ureq.getLocale()));
 		certificate = certificateRow.getCertificate();
@@ -97,7 +108,11 @@ public class CertificateDetailsController extends BasicController {
 		mainVC.contextPut("certificateKey", certificate.getKey());
 		mainVC.contextPut("filename", DownloadCertificateCellRenderer.getName(certificate));
 		mainVC.contextPut("awardedBy", StringHelper.containsNonWhitespace(certificateRow.getAwardedBy()));
+		mainVC.contextPut("awardedByName", certificateRow.getAwardedBy());
 		mainVC.contextPut("awardedByIconCss", certificateRow.getAwardedByIconCSS());
+		if(StringHelper.containsNonWhitespace(certificateRow.getTitle())) {
+			mainVC.contextPut("awardedByTitle", certificateRow.getCourseTitle());
+		}
 		mainVC.contextPut("origin", certificateRow.getOrigin());
 		mainVC.contextPut("creationDate", certificate.getCreationDate());
 		initStatus(ureq);
@@ -105,6 +120,23 @@ public class CertificateDetailsController extends BasicController {
 		downloadButton = LinkFactory.createButton("download.button", mainVC, this);
 		downloadButton.setIconLeftCSS("o_icon o_icon_download");
 		downloadButton.setTarget("_blank");
+		
+		dropdown = new Dropdown("actions", null, false, getTranslator());
+		dropdown.setButton(true);
+		dropdown.setEmbbeded(true);
+		dropdown.setCaretPosition(CaretPosition.none);
+		dropdown.setIconCSS("o_icon o_icon_actions");
+		dropdown.setAriaLabel(translate("actions.more"));
+		dropdown.setOrientation(DropdownOrientation.right);
+		mainVC.put(dropdown.getComponentName(), dropdown);
+		
+		deleteLink = LinkFactory.createCustomLink("delete", "delete", "delete", Link.LINK, mainVC, this);
+		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		dropdown.addComponent(deleteLink);
+		
+		boolean canDeleteCertificate = canDelete && certificate.getUploadedBy() != null;
+		dropdown.setVisible(canDeleteCertificate);
+		deleteLink.setVisible(canDeleteCertificate);
 		
 		course = certificateRow.getCourse();
 		CertificationProgram program = certificateRow.getCertificationProgram();
@@ -275,6 +307,26 @@ public class CertificateDetailsController extends BasicController {
 		}
 		return "";
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(deleteCertificateCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, new DeleteCertificateEvent());
+			}
+		} else if(cmc == source) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(deleteCertificateCtrl);
+		removeAsListenerAndDispose(cmc);
+		deleteCertificateCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -283,6 +335,8 @@ public class CertificateDetailsController extends BasicController {
 		} else if(courseLink == source || startRecertificationButton == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doOpenCourse(ureq);
+		} else if(deleteLink == source) {
+			doConfirmDelete(ureq);
 		}
 	}
 	
@@ -298,6 +352,26 @@ public class CertificateDetailsController extends BasicController {
 		
 		String businessPath = "[RepositoryEntry:" + course.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		removeAsListenerAndDispose(deleteCertificateCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		if(reloadedCertificate == null) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		} else {
+			deleteCertificateCtrl = new ConfirmDeleteCertificateController(ureq, getWindowControl(),
+					translate("confirm.delete.certificate.def.text"), null,
+					translate("delete"), reloadedCertificate);
+			listenTo(deleteCertificateCtrl);
+	
+			String title = translate("confirm.delete.certificate.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCertificateCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private static class ThumbnailMapper implements Mapper {

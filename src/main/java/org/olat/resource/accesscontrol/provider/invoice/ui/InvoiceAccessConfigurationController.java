@@ -186,7 +186,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		cancellingFeeFreeCont = FormLayoutContainer.createCustomFormLayout("freeCont", getTranslator(), velocity_root + "/cancelling_fee_free.html");
 		cancellingFeeFreeCont.setLabel("cancelling.fee.free", null);
 		cancellingFeeFreeCont.setRootForm(mainForm);
-		if (!catalogInfo.isStartDateAvailable()) {
+		if (catalogInfo.getStartDate() == null) {
 			cancellingFeeFreeCont.setWarningKey("cancelling.fee.free.start.missing");
 		}
 		formLayout.add(cancellingFeeFreeCont);

@@ -78,7 +78,7 @@ public class RolesByOrganisation implements Serializable {
 	public static RolesByOrganisation roles(OrganisationRef org,
 			boolean guest, boolean invitee, boolean user, boolean author,
 			boolean groupManager, boolean poolManager, boolean curriculummanager,
-			boolean usermanager, boolean learnresourcemanager,
+			boolean usermanager, boolean learnresourcemanager, boolean selectusManager,
 			boolean admin, boolean sysAdmin) {
 		
 		List<OrganisationRoles> roleList = new ArrayList<>();
@@ -108,6 +108,9 @@ public class RolesByOrganisation implements Serializable {
 			}
 			if(learnresourcemanager) {
 				roleList.add(OrganisationRoles.learnresourcemanager);
+			}
+			if(selectusManager) {
+				roleList.add(OrganisationRoles.selectusmanager);
 			}
 			if(admin) {
 				roleList.add(OrganisationRoles.administrator);
@@ -169,6 +172,10 @@ public class RolesByOrganisation implements Serializable {
 	
 	public boolean isRolesManager() {
 		return hasRole(OrganisationRoles.rolesmanager);
+	}
+	
+	public boolean isSelectusManager() {
+		return hasRole(OrganisationRoles.selectusmanager);
 	}
 	
 	public boolean isPoolManager() {

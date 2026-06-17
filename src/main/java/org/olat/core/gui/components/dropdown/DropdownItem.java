@@ -93,6 +93,14 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setTranslatedLabel(label);
 	}
 	
+	public String getTextReasonForDisabling() {
+		return dropdown.getTextReasonForDisabling();
+	}
+
+	public void setTextReasonForDisabling(String textReasonForDisabling) {
+		dropdown.setTextReasonForDisabling(textReasonForDisabling);
+	}
+	
 	public void setCaretPosition(CaretPosition caretPosition) {
 		dropdown.setCaretPosition(caretPosition);
 	}

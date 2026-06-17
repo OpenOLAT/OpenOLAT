@@ -143,6 +143,23 @@ fieldset.o_validation_result {
 	text-transform: uppercase;
 }
 
+.o_curriculum_buttons_overview {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 20px;
+	row-gap: 10px;
+
+	.o_mega_buttons {
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	}
+}
+
+@media (max-width: $screen-xs-max) {
+	.o_curriculum_buttons_overview {
+		grid-template-columns: 1fr;
+	}
+}
+
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
 	.o_curriculum_widget_course_staff h4 {
@@ -931,3 +948,12 @@ fieldset.o_validation_result {
 	}
 }
 
+
+.o_labeled_light {
+	&.o_cur_el_type_status_active {
+		@extend %o_labeled_light_green;
+	}
+	&.o_cur_el_type_status_inactive {
+		@extend %o_labeled_light_grey;
+	}
+}

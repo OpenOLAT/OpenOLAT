@@ -1,0 +1,13 @@
+<div class="o_sel_org_units_admin">
+#if($r.visible("table"))
+<fieldset>
+	<legend>$r.translate("organisation.admin.list.title")</legend>
+	$r.render("table")
+</fieldset>
+#elseif($warningDisabled)
+<fieldset>
+	<legend>$r.translate("organisation.unit.admin.title")</legend>
+	<div class="o_warning">$r.translate("warning.organisation.unit.disabled")</div>
+</fieldset>
+#end
+</div>

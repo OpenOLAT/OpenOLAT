@@ -43,16 +43,22 @@ import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
+import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskContextConfig;
+import org.olat.modules.todo.ui.ToDoTaskDateConfig;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
-import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskListController;
+import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +93,7 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 
 	@Override
 	public String getBusinessPath(ToDoTask toDoTask) {
-		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0]";
+		return "[RepositoryEntry:" + toDoTask.getOriginId() + "][ToDoTasks:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 
 	@Override
@@ -149,16 +155,29 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee, ToDoRight[] assigneeRightsOverride) {
 		return createEditController(ureq, wControl, toDoTask, showContext, () -> toDoTask.getOriginId(), toDoTask, showSingleAssignee);
 	}
 	
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, RepositoryEntryRef repositoryEntry, ToDoContext context, boolean showSingleAssignee) {
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, showContext, List.of(context), context,
-				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS,
-				showSingleAssignee ? MemberSelection.readOnly : MemberSelection.disabled, List.of(), List.of(),
-				MemberSelection.disabled, List.of());
+		ToDoTaskMembers members = toDoService.getToDoTaskMembers(toDoTask, ToDoRole.ALL);
+		Set<Identity> assignees = members.getMembers(ToDoRole.assignee);
+		Set<Identity> delegatees = members.getMembers(ToDoRole.delegatee);
+		IdentitySelectionSource assigneeSource = new IdentitySelectionSource(ureq.getLocale(), assignees, () -> assignees, ureq.getIdentity());
+		IdentitySelectionSource delegateeSource = new IdentitySelectionSource(ureq.getLocale(), delegatees, () -> delegatees, ureq.getIdentity());
+		ToDoTaskContextConfig contextConfig = showContext
+				? ToDoTaskContextConfig.dropdown(List.of(context), context)
+				: ToDoTaskContextConfig.off(context);
+		ToDoTaskMemberConfig assigneeConfig = showSingleAssignee
+				? ToDoTaskMemberConfig.readOnly(assigneeSource, true)
+				: ToDoTaskMemberConfig.disabled(assigneeSource, true);
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null,
+				contextConfig,
+				assigneeConfig,
+				ToDoTaskMemberConfig.disabled(delegateeSource, false),
+				members, ToDoTaskDateConfig.absoluteOnly(),
+				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS, null);
 	}
 
 	@Override

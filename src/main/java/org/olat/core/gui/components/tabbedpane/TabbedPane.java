@@ -477,7 +477,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @param pane
 	 * @return
 	 */
-	protected boolean isEnabled(int pane) {
+	public boolean isEnabled(int pane) {
 		return tabPanes.get(pane).isEnabled();
 	}
 	

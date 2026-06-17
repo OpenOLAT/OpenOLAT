@@ -1,0 +1,32 @@
+<div class="form-inline">$r.render("rating.deadline.day") $r.render("rating.deadline.month") $r.render("rating.deadline.year") <span class="form-control-static">$r.translate("at")</span> $r.render("rating.deadline.time") <span class="form-control-static fx_dst">$dst</span></div>
+<script>
+jQuery(function() {
+	function ratingDst() {
+		var day = jQuery(".o_sel_rating_day").val();
+		var month = jQuery("#o_fiorating_deadline_month_SELBOX").val();
+		var year = jQuery(".o_sel_rating_year").val();
+		try {
+			var dDay = parseInt(day);
+			var dMonth = parseInt(month);
+			var dYear = parseInt(year);
+			var date = new Date(dYear, dMonth, dDay, 0, 0, 0, 0);
+			var jan = new Date(date.getFullYear(), 0, 1).getTimezoneOffset();
+		    var jul = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
+
+			var dst;
+		    if((dDay == 28 && dMonth == 2 && dYear == 2021)  || (date.getTimezoneOffset() < Math.max(jan, jul))) {
+		    	dst = "CEST";
+		    } else {
+		    	dst = "CET";
+		    }
+		    jQuery(".fx_dst").text(dst);
+		} catch(e) {
+			//console.log(e);
+		}
+	}
+	
+	jQuery(".o_sel_rating_day").on("change", ratingDst);
+	jQuery("#o_fiorating_deadline_month_SELBOX").on("change", ratingDst);
+	jQuery(".o_sel_rating_year").on("change", ratingDst);
+});
+</script>

@@ -69,23 +69,23 @@ public class ShiftDatesController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String date = earliestDate == null ? "-" : Formatter.getInstance(getLocale()).formatDate(earliestDate);
+		uifactory.addStaticTextElement("shift.reference.date", date, formLayout);
+
 		SelectionValues shiftToPK = new SelectionValues();
 		shiftToPK.add(SelectionValues.entry(DATE, translate("shift.to.date")));
 		shiftToPK.add(SelectionValues.entry(DAYS, translate("shift.to.day")));
-		shiftToEl = uifactory.addRadiosHorizontal("shift.to", formLayout, shiftToPK.keys(), shiftToPK.values());
+		shiftToEl = uifactory.addRadiosHorizontal("shift.by", formLayout, shiftToPK.keys(), shiftToPK.values());
 		if(context.getShiftDateByDays() > 0) {
 			shiftToEl.select(DAYS, true);
 		} else {
 			shiftToEl.select(DATE, true);
 		}
-		
+
 		shiftToEl.addActionListener(FormEvent.ONCHANGE);
-		
-		String date = earliestDate == null ? "-" : Formatter.getInstance(getLocale()).formatDate(earliestDate);
-		uifactory.addStaticTextElement("shift.earliest.date", date, formLayout);
-		
+
 		Date start = DateUtils.getStartOfDay(DateUtils.addDays(new Date(), 1));
-		dateShiftEl = uifactory.addDateChooser("shift.start.date", "shift.start.date", start, formLayout);
+		dateShiftEl = uifactory.addDateChooser("shift.new.date", "shift.new.date", start, formLayout);
 		
 		String shift = context.getShiftDateByDays() >= 0 ? Long.toString(context.getShiftDateByDays()) : "1";
 		daysShiftEl = uifactory.addTextElement("shift.num.days", "shift.num.days", 4, shift, formLayout);

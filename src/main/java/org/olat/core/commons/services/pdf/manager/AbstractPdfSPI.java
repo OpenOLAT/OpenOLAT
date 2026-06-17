@@ -78,6 +78,16 @@ public abstract class AbstractPdfSPI extends AbstractSpringModule implements Pdf
 	}
 	
 	@Override
+	public void convert(String htmlContent, PdfOutputOptions options, OutputStream out) {
+		String key = UUID.randomUUID().toString();
+		PdfDelivery delivery = new PdfDelivery(key, options);
+		delivery.setHTMLContent(htmlContent);
+		cache.put(key, delivery);
+		render(key, "index.html", options, out);
+		cache.remove(key);
+	}
+	
+	@Override
 	public void convert(Identity identity, ControllerCreator creator, WindowControl wControl, PdfOutputOptions options, OutputStream out) {
 		String key = UUID.randomUUID().toString();
 		PdfDelivery delivery = new PdfDelivery(key, options);

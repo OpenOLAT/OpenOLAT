@@ -363,9 +363,7 @@ public class ConvertToGTACourseNode {
 			gtaConfig.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, modConfig.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE));
 		}
 		gtaConfig.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, modConfig.getBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
-		gtaConfig.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER));
-		gtaConfig.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH));
-		
+
 		gtaConfig.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, modConfig.getBooleanSafe(TACourseNode.CONF_SOLUTION_ENABLED));
 	}
 	

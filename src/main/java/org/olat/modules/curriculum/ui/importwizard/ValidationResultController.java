@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.CurriculumImportedValue.Level;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 
 /**
  * 
@@ -93,6 +94,11 @@ public class ValidationResultController extends FormBasicController {
 			val = formatter.formatTimeShort(localTime);
 		} else if(obj instanceof LocalTime localTime) {
 			val = formatter.formatTimeShort(localTime);
+		} else if(obj instanceof TaxonomyKey tKey) {
+			val = StringHelper.containsNonWhitespace(tKey.taxonomyIdentifier())
+					? tKey.taxonomyIdentifier() + ":"
+					: "";
+			val += tKey.levelPathIdentifiers();
 		} else if(obj instanceof List<?> list) {
 			List<String> values = list.stream()
 					.map(v -> valueToString(v, formatter, false))

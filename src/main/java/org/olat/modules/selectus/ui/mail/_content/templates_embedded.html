@@ -1,0 +1,7 @@
+<fieldset>
+	<legend>$r.translate("mail.templates.title")</legend>
+	#if($r.isNotEmpty($infos))
+		<div class="o_info">$r.xssScan($infos)</div>
+	#end
+	$r.render("table")
+</fieldset>

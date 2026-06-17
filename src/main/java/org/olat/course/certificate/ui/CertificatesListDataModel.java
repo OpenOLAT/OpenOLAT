@@ -156,7 +156,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 	@Override
 	public Object getValueAt(CertificateRow row, int col) {
 		return switch(COLS[col]) {
-			case awardedBy -> row.getAwardedBy();
+			case awardedBy -> getAwardeBy(row);
 			case origin -> row.getOrigin();
 			case issuedOn -> row.getCreationDate();
 			case validUntil -> row.getValidUntil();
@@ -164,8 +164,21 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 			case dateRevocation -> row.getRevocationDate();
 			case recertificationCount -> row.getRecertificationCount();
 			case status -> row.getStatus();
+			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};
+	}
+	
+	private String getAwardeBy(CertificateRow row) {
+		String awardedBy = row.getAwardedBy();
+		String title = row.getTitle();
+		if(StringHelper.containsNonWhitespace(title)) {
+			if(StringHelper.containsNonWhitespace(awardedBy)) {
+				awardedBy += " \u2013 ";
+			}
+			awardedBy += title;
+		}
+		return awardedBy;
 	}
 	
 	@Override
@@ -183,8 +196,8 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 		dateRecertification("table.header.recertification.date"),
 		dateRevocation("table.header.revocation.date"),
 		recertificationCount("table.header.recertification.count"),
-		status("table.header.status")
-		;
+		status("table.header.status"),
+		tools("action.more");
 
 		private final String i18n;
 

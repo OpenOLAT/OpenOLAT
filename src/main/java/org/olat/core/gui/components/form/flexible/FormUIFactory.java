@@ -93,6 +93,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImp
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElementImpl;
+import org.olat.core.gui.components.date.RelativeDateContext;
+import org.olat.core.gui.components.date.RelativeDateElement;
+import org.olat.core.gui.components.date.RelativeDateElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
@@ -171,7 +174,7 @@ public class FormUIFactory {
 	 * @param i18nLabel the i18n key to set the label, or <code>null</code> to disable the label.
 	 * @param fi
 	 */
-	static FormItem setLabelIfNotNull(String i18nLabel, FormItem fi){
+	public static FormItem setLabelIfNotNull(String i18nLabel, FormItem fi){
 		if (StringHelper.containsNonWhitespace(i18nLabel)) {
 			fi.setLabel(i18nLabel, null);
 			fi.showLabel(true);
@@ -390,6 +393,14 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, ose);
 		formLayout.add(ose);
 		return ose;
+	}
+
+	public RelativeDateElement addRelativeDateElement(String name, String labelI18nKey,
+			FormItemContainer parent, WindowControl wControl, RelativeDateContext context) {
+		RelativeDateElementImpl el = new RelativeDateElementImpl(wControl, name, context);
+		setLabelIfNotNull(labelI18nKey, el);
+		parent.add(el);
+		return el;
 	}
 
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name,

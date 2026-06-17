@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -50,6 +51,11 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockImpl;
+import org.olat.modules.roommanagement.Building;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -99,6 +105,10 @@ public class CopyServiceImplTest extends OlatTestCase {
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDAO;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	
 	@Before
 	public void createCourse() {
@@ -523,6 +533,37 @@ public class CopyServiceImplTest extends OlatTestCase {
 		mode2.setEnd(new Date());
 		
 		assessmentModeManager.persist(mode2);
+	}
+
+	@Test
+	public void copyLectureBlockDetails_copiesRoomBooking() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("rm-copy-lb-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		LectureBlockImpl original = (LectureBlockImpl) lectureService.createLectureBlock(entry);
+		original.setStartDate(new Date());
+		original.setEndDate(new Date());
+		original.setTitle("CopyRmBlock");
+		original.setPlannedLecturesNumber(2);
+		original.setRollCallStatus(LectureRollCallStatus.open);
+		original = (LectureBlockImpl) lectureService.save(original, null);
+
+		Building bld = roomManagementService.createBuilding("CopyRmBld", doer);
+		Room room = roomManagementService.createRoom(bld, "CopyRmRoom", doer);
+		roomManagementService.bookRoom(room, original, original.getStartDate(), original.getEndDate(), 0, 0, doer);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockImpl copy = (LectureBlockImpl) lectureService.createLectureBlock(entry);
+		CopyCourseContext context = new CopyCourseContext();
+		context.setExecutingIdentity(doer);
+
+		LectureBlock result = copyService.copyLectureBlockDetails(copy, original, context,
+				original.getLocation(), original.getStartDate(), original.getEndDate(), null, null);
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> bookings = roomManagementService.getBookings(result);
+		Assert.assertEquals(1, bookings.size());
+		Assert.assertEquals(room.getKey(), bookings.get(0).getRoom().getKey());
 	}
 
 	@Test

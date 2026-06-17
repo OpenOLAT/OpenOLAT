@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -74,6 +75,7 @@ public class Settings {
 	private static int securePort;
 	private static int insecurePort;
 	private static String domainName;
+	private static String contentDomainName;
 	private static String legacyContextPath;
 	
 	private static String loginPath;
@@ -247,6 +249,19 @@ public class Settings {
 		Settings.domainName = domainName;
 	}
 	
+	public static boolean isContentDomainNameEnabled() {
+		return StringHelper.containsNonWhitespace(contentDomainName)
+				&& !Objects.equals(contentDomainName, domainName);
+	}
+	
+	public static String getContentDomainName() {
+		return contentDomainName;
+	}
+
+	public static void setContentDomainName(String contentDomainName) {
+		Settings.contentDomainName = contentDomainName;
+	}
+
 	public static String getLoginPath() {
 		return loginPath;
 	}
@@ -349,6 +364,18 @@ public class Settings {
 		return uri;
 	}
 	
+	public static String createContentServerURI() {
+		String uri;
+		if (isSecurePortAvailable()) {
+			int port = getServerSecurePort();
+			uri = "https://" + getContentDomainName() + createURIPortPartWithDefaultPortCheck(port, 443);
+		} else {
+			int port = getServerInsecurePort();
+			uri = "http://" + getContentDomainName() + createURIPortPartWithDefaultPortCheck(port, 80);
+		}
+		return uri;
+	}
+	
 	/**
 	 * @param configuredPort comes from the spring configuration file, null is converted to ""
 	 * @param defaultPort use 80 for http, 443 for https
@@ -386,6 +413,10 @@ public class Settings {
 			uri = "http://" + getServerDomainName() + createURIPortPartWithDefaultPortCheck(port, 80);
 		}
 		return uri;
+	}
+	
+	public static String getContentServerContextPathURI() {
+		return createContentServerURI() + WebappHelper.getServletContextPath();
 	}
 	
 	/**

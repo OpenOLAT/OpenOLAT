@@ -58,7 +58,6 @@ public class EchoElement implements XmlWritable {
 					}
 
 					// Copy attributes
-					@SuppressWarnings("unchecked")
 					Iterator<Attribute> it = event.asStartElement().getAttributes();
 
 					while (it.hasNext()) {

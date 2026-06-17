@@ -1,0 +1,66 @@
+<div class="o_rm_scheduling_details">
+	<div class="o_flex_header">
+		<div class="o_event_title">
+			<h3>$r.escapeHtml($title)</h3>
+			#if($r.isNotEmpty($externalRef))<h3><small> · $r.escapeHtml($externalRef)</small></h3>#end
+		</div>
+		<div class="o_event_status">
+			$lectureBlockStatusBadge
+		</div>
+		<div class="o_button_group o_button_group_right">
+			$r.render("openInCoursePlanner")
+		</div>
+	</div>
+	#if($r.available("lecture.subjects"))
+	<div class="o_lecture_subjects">
+		$r.render("lecture.subjects")
+	</div>
+	#end
+	#if(!$warnings.isEmpty())
+	<div class="o_warning_with_icon">
+		#foreach($warning in $warnings)
+		<p>$r.escapeHtml($warning)</p>
+		#end
+	</div>
+	#end
+	<div class="o_metadata_horizontal">
+		#if($r.available("lecture.date"))$r.render("lecture.date","vertical")#end
+		#if($r.available("lecture.time"))$r.render("lecture.time","vertical")#end
+		#if($r.available("lecture.location"))$r.render("lecture.location","vertical")#end
+		$r.render("lecture.participants","vertical")
+		#if($r.available("lecture.absences"))$r.render("lecture.absences","vertical")#end
+		$r.render("lecture.compulsory","vertical")
+	</div>
+	<div class="o_lecture_resources">
+		<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
+		#if($r.isNotEmpty($profilesIds))
+			#foreach($profileId in $profilesIds)
+				<div class="o_lecture_resource">$r.render($profileId)</div>
+			#end
+		#end
+		#if($r.available("entry.open"))
+			<label class="o_lecture_course">$r.translate("referenced.courses")</label>
+			<div class="o_lecture_resource">
+				<div class="o_lecture_course_card">
+					<div class="o_thumbnail">
+						<div class="o_thumbnail_file_img">
+							<a href="$entryUrl" title="$r.escapeHtml($entryDisplayName)">
+							#if($r.isNotEmpty($thumbnailUrl))
+								<img src="${thumbnailUrl}" alt="$r.translate("rentry.pic.alt")">
+							#else
+								<div class="o_visual_not_available"></div>
+							#end
+							</a>
+						</div>
+					</div>
+					<div class="o_card_meta">
+						<h4 class="o_card_title">$r.render("entry.open")</h4>
+						#if($r.isNotEmpty(${entryExternalRef}))
+							<small>$r.escapeHtml(${entryExternalRef})</small>
+						#end
+					</div>
+				</div>
+			</div>
+		#end
+	</div>
+</div>

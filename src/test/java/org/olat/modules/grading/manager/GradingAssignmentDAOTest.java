@@ -233,7 +233,7 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(null, entry, assessment, null, new Date());
 		dbInstance.commitAndCloseSession();
 		
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(entry);
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignmentsOfReferenceEntry(entry);
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertTrue(assignments.contains(assignment));
@@ -256,7 +256,7 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, null, new Date());
 		dbInstance.commitAndCloseSession();
 		
-		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(grader);
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGraderAssignments(grader);
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertTrue(assignments.contains(assignment));

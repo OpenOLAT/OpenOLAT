@@ -22,6 +22,7 @@ package org.olat.selenium.page.project;
 import org.olat.core.util.StringHelper;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -44,18 +45,18 @@ public class ProjectPage {
 		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		By organisationBy = By.cssSelector("div.o_sel_proj_project_organisation button.o_selection_display");
+		Point organisationLocation = OOGraphene.getLocation(organisationBy, browser);
 		browser.findElement(organisationBy).click();
 		OOGraphene.waitCallout(browser, ".o_object_selection");
 		
-		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + organisation + "')]]/input[@type='checkbox']");
+		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection_main']//label[div/div[contains(text(),'" + organisation + "')]]/input[@type='checkbox']");
 		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
 		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
 
 		By updateBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//span[contains(@class,'o_expand_button_text')][text()[contains(.,'(1)')]]");
 		OOGraphene.waitElement(updateBy, browser);
 		
-		By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
-		OOGraphene.waitElement(transferBy, browser).click();
+		OOGraphene.click(organisationLocation, browser);
 		OOGraphene.waitElementDisappears(openOlatOrgBy, 5, browser);
 		
 		if(StringHelper.containsNonWhitespace(teaser)) {

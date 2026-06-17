@@ -74,6 +74,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
+import org.olat.modules.grading.manager.GradingAssignmentLogDAO;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.manager.ManifestBuilder;
@@ -111,6 +112,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
   private LoginModule loginModule;
   @Autowired
   private CoordinatorManager coordinatorManager;
+  @Autowired
+  private GradingAssignmentLogDAO gradingAssignmentLogDao;
 
 	private CacheWrapper<Serializable,String> userToFullnameCache;
 	private CacheWrapper<Long,String> userToNameCache;
@@ -644,6 +647,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 				|| roles.contains(OrganisationRoles.curriculummanager.name()) || roles.contains(OrganisationRoles.groupmanager.name())
 				|| roles.contains(OrganisationRoles.learnresourcemanager.name()) || roles.contains(OrganisationRoles.poolmanager.name())
 				|| roles.contains(OrganisationRoles.sysadmin.name()) || roles.contains(OrganisationRoles.usermanager.name()));
+		
+		boolean grader = gradingAssignmentLogDao.hasGradingAssignmentLog(identity);
 
 		User persistedUser = identity.getUser();
 		List<UserPropertyHandler> userPropertyHandlers = getAllUserPropertyHandlers();
@@ -651,15 +656,15 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 			String actualProperty = userPropertyHandler.getName();
 			if (UserConstants.USERNAME.equals(actualProperty)) {
 				// Skip, user name will be anonymised by BaseSecurityManager
-			} else if(isAdministrativeUser && (UserConstants.FIRSTNAME.equals(actualProperty) || UserConstants.LASTNAME.equals(actualProperty))) {
+			} else if((isAdministrativeUser || grader) && (UserConstants.FIRSTNAME.equals(actualProperty) || UserConstants.LASTNAME.equals(actualProperty))) {
 				// Skip first name and last name of user with administrative functions
 			} else {
 				persistedUser.setProperty(actualProperty, null);
-				log.debug("Deleted user-property::" + actualProperty + " for identity::+" + identity.getKey());
+				log.debug("Deleted user-property::{} for identity::{}", actualProperty, identity.getKey());
 			}
 		}
 		updateUserFromIdentity(identity);
-		log.info("deleteUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
+		log.info("deleteUserProperties user::{} from identity::{}", persistedUser.getKey(), identity.getKey());
 		dbInstance.commit();
 	}
 

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="org.olat.modules.selectus,com.frentix.olat" />
+
+	<alias alias="salutationGenerator" name="salutationGenerator${salutation.generator}"/>
+	
+	
+	<!-- The selectus configuration parent node -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
+		<property name="order" value="7300" />
+		<property name="navigationKey" value="selectusconfig" />
+		<property name="nodeIdentifierIfParent" value="selectusParent" />
+		<property name="translationPackage" value="org.olat.modules.selectus.ui" />
+		<property name="i18nActionKey" value="menu.config" />
+		<property name="i18nDescriptionKey" value="menu.config.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Admin -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
+		<property name="order" value="7301" />
+		<property name="navigationKey" value="selectussettings" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.selectus.ui.admin.SelectusAdminController"/>
+			</bean>
+		</property>
+		<property name="i18nActionKey" value="menu.selectus"/>
+		<property name="i18nDescriptionKey" value="menu.selectus.alt"/>
+		<property name="translationPackage" value="org.olat.modules.selectus.ui.admin"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="selectusParent" /> 
+	</bean>	
+	
+	<!-- Reporting -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
+		<property name="order" value="7307" />
+		<property name="navigationKey" value="selectusreporting" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.selectus.ui.report.ReportAdminController"/>
+			</bean>
+		</property>
+		<property name="i18nActionKey" value="menu.reporting"/>
+		<property name="i18nDescriptionKey" value="menu.reporting.alt"/>
+		<property name="translationPackage" value="org.olat.modules.selectus.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="selectusParent" /> 
+	</bean>	
+	
+	<!--  Organisations additional configuration -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
+		<property name="order" value="7308" />
+		<property name="navigationKey" value="orgunits" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.selectus.ui.organisation.OrganisationUnitsAdminController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.modules.selectus.ui" />
+		<property name="i18nActionKey" value="menu.organisation.unit.i18n"/>
+		<property name="i18nDescriptionKey" value="menu.organisation.unit.i18n.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="selectusParent" /> 
+	</bean>
+	
+	<!-- Categories -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+		<property name="enabled" value="#{recruitingModule.moduleAvailable}" />
+		<property name="order" value="7309" />
+		<property name="navigationKey" value="tags" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.selectus.ui.category.CategoryAdminController"/>
+			</bean>
+		</property>
+		<property name="translationPackage" value="org.olat.modules.selectus.ui" />
+		<property name="i18nActionKey" value="menu.category.i18n"/>
+		<property name="i18nDescriptionKey" value="menu.category.i18n.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="selectusParent" />
+	</bean>
+	
+	<alias alias="reportGenerator" name="reportGenerator${report.generator}"/>
+
+	<bean id="changePositionStatusTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="changePositionStatusJob" />
+	    <!-- adjust cron style syntax for your needs 
+	    A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+			Field Name 	  	Allowed Values 	  	Allowed Special Characters
+			Seconds 	  	0-59 	  			, - * /
+			Minutes 	  	0-59 	  			, - * /
+			Hours 	  		0-23 	  			, - * /
+			Day-of-month 	1-31 	  			, - * ? / L W C
+			Month 	  		1-12 or JAN-DEC 	, - * /
+			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+			Year (Optional)	empty, 1970-2099 	, - * /   	
+	    -->
+	    <property name="cronExpression" value="0 * * * * ?" />
+	    <property name="startDelay" value="10000" />
+	</bean>
+	
+	<bean id="changePositionStatusJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+	  <property name="jobClass" value="org.olat.modules.selectus.manager.CloseStatusJob" />
+	</bean>
+	
+	<bean id="changeRefsStatusTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="changePositionStatusJob" />
+	    <property name="cronExpression" value="0 31 */2 * * ?" />
+	    <property name="startDelay" value="15000" />
+	</bean>
+	
+	<bean id="changeRefsStatusJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+	  <property name="jobClass" value="org.olat.modules.selectus.manager.CloseReferencesStatusJob" />
+	</bean>
+	
+	<bean id="sendNotificationsEmailTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="org.olat.notifications.job" />
+	    <property name="cronExpression" value="${recruiting.notification.cronjob.expression}" />
+	    <property name="startDelay" value="10000" />
+	</bean>
+	
+	<bean id="org.olat.notifications.job" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+	  <property name="jobClass" value="org.olat.modules.selectus.manager.EmailNotificationJob" />
+	</bean>
+	
+	<!-- User tools -->
+	<bean class="org.olat.modules.selectus.ui.notifications.tool.ChangeNotificationsSettingsToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="118" />
+		<property name="navigationKey" value="notificationssettings" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_notification" />
+		<property name="translationPackage" value="org.olat.modules.selectus.ui.notifications" />
+		<property name="i18nActionKey" value="change.notifications.settings"/>
+		<property name="i18nDescriptionKey" value="change.notifications.settings"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+
+</beans>

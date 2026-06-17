@@ -528,7 +528,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		int count = 0;
 		int numOfCorrect = 0;
-		int numOfChoices = sourceChoices.size() + targetChoices.size();
+		int numOfChoices = sourceChoices.size() * targetChoices.size();
 		for(SimpleAssociableChoice sourceChoice:sourceChoices) {
 			for(SimpleAssociableChoice targetChoice:targetChoices) {
 				ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());

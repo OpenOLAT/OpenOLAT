@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.lyncode.builder.ListBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.LicenseService;
@@ -75,7 +74,7 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
 			String rights = "";
-			ListBuilder<String> setSpec;
+			List<String> setSpec;
 			List<Organisation> organisationsList = repositoryEntry.getOrganisations().stream().map(RepositoryEntryToOrganisation::getOrganisation).toList();
 			Map<String, String> orgaIdToDescMap = new HashMap<>();
 			for (Organisation orga : organisationsList) {
@@ -119,12 +118,12 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("coverage", repositoryEntry.getTeaser())
 					.with("rights", rights)
 					.with("source", ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
-					.with("sets", setSpec.build().isEmpty() ? setSpec.add("").build() : setSpec.build())
+					.with("sets", setSpec.isEmpty() ? List.of("") : setSpec)
 					.with("deleted", false);
 
 			metadataItems.add(metadataItemsObject);
 
-			for (String spec : setSpec.build()) {
+			for (String spec : setSpec) {
 				if (spec.startsWith("taxon")) {
 					repositoryEntry.getTaxonomyLevels()
 							.stream()

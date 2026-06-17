@@ -38,6 +38,14 @@ import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
+import static org.olat.modules.curriculum.manager.CurriculumElementToDoProvider.DATE_REF_AFTER_BEGIN;
+import static org.olat.modules.curriculum.manager.CurriculumElementToDoProvider.DATE_REF_AFTER_END;
+import static org.olat.modules.curriculum.manager.CurriculumElementToDoProvider.DATE_REF_BEFORE_BEGIN;
+import static org.olat.modules.curriculum.manager.CurriculumElementToDoProvider.DATE_REF_BEFORE_END;
+
+import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
+import org.olat.modules.todo.ToDoRelativeDates;
+import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
@@ -457,7 +465,34 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		searchParams.setAssigneeRightsNull(Boolean.FALSE);
 		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTaskNotNull);
 	}
-	
+
+	@Test
+	public void shouldLoad_filter_assigneeAvailable() {
+		Identity assignee = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		Identity delegatee = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+
+		ToDoTask withAssignee = createRandomToDoTask();
+		toDoService.updateMember(assignee, withAssignee, List.of(assignee), List.of());
+
+		ToDoTask noMembers = createRandomToDoTask();
+
+		ToDoTask onlyDelegatee = createRandomToDoTask();
+		toDoService.updateMember(assignee, onlyDelegatee, List.of(), List.of(delegatee));
+
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setToDoTasks(List.of(withAssignee, noMembers, onlyDelegatee));
+		assertThat(sut.loadToDoTasks(searchParams))
+				.containsExactlyInAnyOrder(withAssignee, noMembers, onlyDelegatee);
+
+		searchParams.setAssigneeAvailable(Boolean.TRUE);
+		assertThat(sut.loadToDoTasks(searchParams))
+				.containsExactlyInAnyOrder(withAssignee);
+
+		searchParams.setAssigneeAvailable(Boolean.FALSE);
+		assertThat(sut.loadToDoTasks(searchParams))
+				.containsExactlyInAnyOrder(noMembers, onlyDelegatee);
+	}
+
 	@Test
 	public void shouldLoad_filter_collectionKeys() {
 		String type = random();
@@ -612,6 +647,100 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		
 		toDoTask.setStatus(ToDoStatus.done);
 		assertThat(toDoTask.getDoneDate()).isNotNull();
+	}
+
+	@Test
+	public void shouldPersistAndLoadRelativeDateConfig() {
+		ToDoTask toDoTask = createRandomToDoTask();
+		ToDoRelativeDates config = new ToDoRelativeDates();
+		config.setStartValue(3);
+		config.setStartUnit(ToDoDateUnit.DAYS);
+		config.setStartRef(DATE_REF_BEFORE_BEGIN);
+		config.setDueValue(7);
+		config.setDueUnit(ToDoDateUnit.WEEKS);
+		config.setDueRef(DATE_REF_AFTER_END);
+		toDoTask.setRelativeDates(config);
+		sut.save(toDoTask);
+		dbInstance.commitAndCloseSession();
+
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setToDoTasks(List.of(toDoTask));
+		ToDoTask reloaded = sut.loadToDoTasks(searchParams).get(0);
+
+		assertThat(reloaded.getRelativeDates()).isNotNull();
+		assertThat(reloaded.getRelativeDates().getStartValue()).isEqualTo(3);
+		assertThat(reloaded.getRelativeDates().getStartUnit()).isEqualTo(ToDoDateUnit.DAYS);
+		assertThat(reloaded.getRelativeDates().getStartRef()).isEqualTo(DATE_REF_BEFORE_BEGIN);
+		assertThat(reloaded.getRelativeDates().getDueValue()).isEqualTo(7);
+		assertThat(reloaded.getRelativeDates().getDueUnit()).isEqualTo(ToDoDateUnit.WEEKS);
+		assertThat(reloaded.getRelativeDates().getDueRef()).isEqualTo(DATE_REF_AFTER_END);
+	}
+
+	@Test
+	public void shouldLoadByRelativeDateConfigNull_true() {
+		String type = random();
+		ToDoTask withConfig = createRandomToDoTask(type, null);
+		ToDoRelativeDates config = new ToDoRelativeDates();
+		config.setStartValue(1);
+		config.setStartUnit(ToDoDateUnit.DAYS);
+		config.setStartRef(DATE_REF_AFTER_BEGIN);
+		withConfig.setRelativeDates(config);
+		sut.save(withConfig);
+		ToDoTask withoutConfig = createRandomToDoTask(type, null);
+		dbInstance.commitAndCloseSession();
+
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		searchParams.setRelativeDatesNull(Boolean.TRUE);
+		List<ToDoTask> result = sut.loadToDoTasks(searchParams);
+
+		assertThat(result).containsExactlyInAnyOrder(withoutConfig);
+	}
+
+	@Test
+	public void shouldLoadByRelativeDateConfigNull_false() {
+		String type = random();
+		ToDoTask withConfig = createRandomToDoTask(type, null);
+		ToDoRelativeDates config = new ToDoRelativeDates();
+		config.setStartValue(1);
+		config.setStartUnit(ToDoDateUnit.DAYS);
+		config.setStartRef(DATE_REF_AFTER_BEGIN);
+		withConfig.setRelativeDates(config);
+		sut.save(withConfig);
+		createRandomToDoTask(type, null);
+		dbInstance.commitAndCloseSession();
+
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		searchParams.setRelativeDatesNull(Boolean.FALSE);
+		List<ToDoTask> result = sut.loadToDoTasks(searchParams);
+
+		assertThat(result).containsExactlyInAnyOrder(withConfig);
+	}
+
+	@Test
+	public void shouldLoadByRelativeDateConfigNull_combinedWithTypes() {
+		String elementKey = String.valueOf(random().hashCode());
+		ToDoTask curriculumWithConfig = sut.create(CurriculumElementToDoProvider.TYPE, null, elementKey, null, null, null);
+		ToDoRelativeDates config = new ToDoRelativeDates();
+		config.setDueValue(5);
+		config.setDueUnit(ToDoDateUnit.DAYS);
+		config.setDueRef(DATE_REF_BEFORE_END);
+		curriculumWithConfig.setRelativeDates(config);
+		sut.save(curriculumWithConfig);
+		sut.create(CurriculumElementToDoProvider.TYPE, null, elementKey, null, null, null);
+		ToDoTask otherTypeWithConfig = createRandomToDoTask(random(), null);
+		otherTypeWithConfig.setRelativeDates(config);
+		sut.save(otherTypeWithConfig);
+		dbInstance.commitAndCloseSession();
+
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
+		searchParams.setOriginSubPaths(List.of(elementKey));
+		searchParams.setRelativeDatesNull(Boolean.FALSE);
+		List<ToDoTask> result = sut.loadToDoTasks(searchParams);
+
+		assertThat(result).containsExactlyInAnyOrder(curriculumWithConfig);
 	}
 
 	private ToDoTask createRandomToDoTask() {

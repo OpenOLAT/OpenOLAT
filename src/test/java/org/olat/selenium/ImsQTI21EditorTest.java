@@ -40,7 +40,6 @@ import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21GapEntriesEditorPage;
 import org.olat.selenium.page.qti.QTI21HotspotEditorPage;
 import org.olat.selenium.page.qti.QTI21HottextEditorPage;
-import org.olat.selenium.page.qti.QTI21InlineChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21LobEditorPage;
 import org.olat.selenium.page.qti.QTI21MatchEditorPage;
@@ -1444,6 +1443,183 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 2 points from the first question, 4 from the second
 	}
+	
+	/**
+	 * An author make a test with 2 questions using fill-in-blank,
+	 * the first with the score set if all answers are correct, the second
+	 * with scoring per answers. Every gap has different settings for
+	 * case sensitive and ignore spaces.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorFib_ignoreSpaces()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+
+		String qtiTestTitle = "Spaces QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single Choice")
+			.deleteNode();
+		
+		//add a gap entry: all answers score
+		QTI21GapEntriesEditorPage fibEditor = qtiEditor
+			.addFib()
+			.appendContent("Usefull for circles ")
+			.addGapEntry("Newyork", "City", false, true, false)
+			.saveGapEntry()
+			.editGapEntry("01239875", "Phone", true, true, false, 2)
+			.saveGapEntry()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.allCorrectAnswers)
+			.setMaxScore("2")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is a usefull hint")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a gap entry: score per answer
+		fibEditor = qtiEditor
+			.addFib()
+			.appendContent("European rocket ")
+			.addGapEntry("Ariane6", "ari", false, true, false)
+			.saveGapEntry()
+			.editGapEntry("Neutron", "neut", false, false, false, 2)
+			.saveGapEntry()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("3")
+			.setScore("Ariane6", "2")
+			.setScore("Neutron", "1")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Think to space")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.settings()
+			.accessConfiguration()
+			.setStandaloneAccessToRegisteredUser()
+			.clickToolbarBack();
+		qtiPage
+			.publish();
+		// show results
+		qtiPage
+			.settings()
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+
+		//a user search the test
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
+		NavigationPage userNavBar = NavigationPage.load(browser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// first user make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI21Page(browser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("Los Angels", "City")
+			.answerGapTextWithPlaceholder("Telefon", "Phone")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerGapTextWithPlaceholder("new york", "City")
+			.answerGapTextWithPlaceholder("01 23 98  75", "Phone")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("Ariane V", "ari")
+			.answerGapTextWithPlaceholder("Neutron", "neut")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3);// 2 points from the first question, 1 from the second
+		
+
+		//a second user search the test
+		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword());
+		NavigationPage reiNavBar = NavigationPage.load(browser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all the correct answers
+		QTI21Page
+			.getQTI21Page(browser)
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("New York", "City")
+			.answerGapTextWithPlaceholder("01 239875 ", "Phone")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("Ariane 6", "ari")
+			.answerGapTextWithPlaceholder("neutron", "neut")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(5);// 2 points from the first question, 3 from the second
+	}
+	
 
 	/**
 	 * An author make a test with 2 questions using numerical input,
@@ -2053,7 +2229,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.deleteNode();
 		
 		// Add an inline choice with score: all answers
-		QTI21InlineChoiceEditorPage inlineChoiceEditor = qtiEditor
+		QTI21GapEntriesEditorPage inlineChoiceEditor = qtiEditor
 			.addInlineChoice()
 			.appendContent("European Rocket ")
 			.addInlineChoice("Falcon")

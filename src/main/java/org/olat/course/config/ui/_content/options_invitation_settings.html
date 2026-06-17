@@ -2,3 +2,6 @@ $r.render("options")
 #if($r.available("invitations"))
 	$r.render("invitations")
 #end
+#if($r.available("finishedAccess"))
+	$r.render("finishedAccess")
+#end

@@ -1544,54 +1544,6 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	return o_viewportHeight();
 };
 
-/**
- * Method to make the center content larger if it contains an element that does not have enough 
- */
-OPOL.adjustContentHeightForAbsoluteElement = function(itemDomSelector) {
-	try {
-		let itemsDom = jQuery(itemDomSelector);
-		if(itemsDom.length == 0) {
-			// Element not found in DOM
-			return;
-		}
-		itemsDom = jQuery(itemsDom[0]);
-		let mainDom = itemsDom.closest('#o_main_center_content_inner');
-		if(mainDom == null) {
-			// Not within center column, nothing to adjust
-			return;
-		}
-		// Current available height
-		mainDom = jQuery(mainDom);
-		let mainOffsetTop = 0;
-		const mainOffset = mainDom.offset();
-		if(mainOffset) {
-			mainOffsetTop = mainOffset.top;
-		}
-		const mainHeight = mainDom.outerHeight(true);
-		const availableHeight = mainOffsetTop + mainHeight;
-
-		// Calculate minimum required height based on the position of the previous DOM element
-		// (e.g. the pull-down button). Absolute positioned element have not offset
-		const prevDom = itemsDom.prev();
-		if (prevDom.length == 0) {
-			// No previous element, don't know what to do
-			return;
-		}
-		const prevOffset = prevDom.offset();
-		const prevHeight = prevDom.outerHeight(true);
-		const itemsHeight = itemsDom.outerHeight(true);
-		const requiredHeight = prevOffset.top + prevHeight + itemsHeight;
-		// Check if entire element fits into main element, if not enlarge
-		const missingHeight = (requiredHeight - availableHeight);
-		if (missingHeight > 0) {
-			const newHeight = (mainHeight + missingHeight) + 'px';
-			mainDom.css('min-height', newHeight);
-		}			
-	} catch (e) {
-		if(window.console)	console.log(e);
-	}
-}
-
 /* Set the container page width to full width of the window or use standard page width */
 OPOL.setContainerFullWidth = function(full) {
 	if (full) {
@@ -2946,7 +2898,7 @@ function o_debounce(func, timeout = 300){
  
  function o_ffTableToggleRowListener(rowId, cssClass) {
   	o_ffTableToggleRowCheck(rowId, cssClass);
-  	const checkEl = jQuery('#' + rowId + ">td.o_multiselect>input");
+  	const checkEl = jQuery('#' + rowId + ">td.o_multiselect>input, #" + rowId + ">td.o_singleselect>input");
  	if(checkEl.length > 0) {
  		const checked = jQuery('#' + rowId).hasClass(cssClass);
  		checkEl.get(0).checked = checked;
@@ -3356,6 +3308,70 @@ function o_animateRadialProgress(radialProgessDomSelector, percent) {
 function b_hideExtMessageBox() {
 	//for compatibility
 }
+
+
+/*
+ * Fit a "/"-separated path into the available width by progressively
+ * collapsing middle segments to "...", then dropping the first segment,
+ * and finally letting CSS ellipsis crop the tail. Example for N=5:
+ *
+ *   A / B / C / D / E /     (full)
+ *   A / ... / C / D / E /
+ *   A / ... / D / E /
+ *   A / ... / E /
+ *   ... / E /
+ *   ... / E...               (CSS ellipsis falls back)
+ */
+function o_fitPathText(element) {
+	const small = element.querySelector(':scope > small');
+	if (!small) { return; }
+	let full = element.dataset.fitPath;
+	if (!full) {
+		full = small.textContent;
+		element.dataset.fitPath = full;
+	}
+	const endDivider = full.endsWith(' /');
+	const base = endDivider ? full.slice(0, -2) : full;
+	const suffix = endDivider ? ' /' : '';
+	const segments = base.split(' / ').filter(s => s.length > 0);
+	const variants = [];
+	variants.push(full);
+	if (segments.length >= 3) {
+		for (let keep = segments.length - 2; keep >= 1; keep--) {
+			const tail = segments.slice(-keep).join(' / ');
+			variants.push(segments[0] + ' / ... / ' + tail + suffix);
+		}
+	}
+	if (segments.length >= 2) {
+		variants.push('... / ' + segments[segments.length - 1] + suffix);
+	}
+	for (const variant of variants) {
+		small.textContent = variant;
+		if (element.scrollWidth <= element.clientWidth) {
+			if (variant === full) {
+				element.removeAttribute('title');
+			} else {
+				element.setAttribute('title', full);
+			}
+			return;
+		}
+	}
+	element.setAttribute('title', full);
+}
+
+const o_fitPathObserver = new ResizeObserver(entries => {
+	entries.forEach(entry => o_fitPathText(entry.target));
+});
+
+function o_initFitPath(scope) {
+	const root = scope || document;
+	const nodes = root.querySelectorAll('.o_fit_path:not([data-fit-observed])');
+	nodes.forEach(el => {
+		el.setAttribute('data-fit-observed', '1');
+		o_fitPathText(el);
+		o_fitPathObserver.observe(el);
+	});
+}
  
  
 /**
@@ -3412,168 +3428,6 @@ const BDebugger = {
 	}
 }
 
-const OOEdusharing = {
-		
-	start: function() {
-		if (o_info.edusharing_enabled) {
-			OOEdusharing.render();
-			jQuery(document).on("oo.dom.replacement.after", OOEdusharing.render);
-			OOEdusharing.enableMetadataToggler();
-		}
-	},
-		
-	replaceWithSpinner: function(node, width, height) {
-		let spinnerHtml = "<div class='BGlossarIgnore' style='";
-		if (width > 0) {
-			spinnerHtml += "width:" + width + "px;";
-		}
-		if (height > 0) {
-			spinnerHtml += "height:" + height + "px;";
-		}
-		spinnerHtml += "'>";
-		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner1'></div></div>";
-		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner2'></div></div>";
-		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner3'></div></div>";
-		spinnerHtml += "</div>";
-		
-		const spinner = jQuery(spinnerHtml);
-		node.before(spinner);
-		node.remove();
-		return spinner;
-	},
-
-	replaceGoTo: function(html, identifier) {
-		const url = o_info.uriprefix.replace("auth", "edusharing") + "goto?identifier=" + identifier;
-		html = html.replace("{{{LMS_INLINE_HELPER_SCRIPT}}}", url)
-		return html;
-	},
-	
-	replaceWithRendered: function(node, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame) {
-		let url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
-		if (version >= 0) {
-			url = url + "&version=" + version;
-		}
-		if (width > 0) {
-			url = url + "&width=" + width;
-		}
-		if (height) {
-			url = url + "&height=" + height;
-		}
-		
-		let containerHtml = "<div class='o_edusharing_container BGlossarIgnore";
-		if (typeof esClass != 'undefined') {
-			containerHtml += " " + esClass;
-		}
-		if (isIFrame) {
-			containerHtml += " o_in_iframe";
-		}
-		if ('hide' === showLicense) {
-			containerHtml += " o_hide_license";
-		}
-		if ('hide' === showInfos) {
-			containerHtml += " o_hide_infos";
-		}
-		containerHtml += "'>";
-		containerHtml += "</div>";
-		
-		const container = jQuery(containerHtml);
-
-		jQuery.ajax({
-			type: "GET",
-			url: url,
-			dataType : 'html',
-			success : function(data){
-				const goToData = OOEdusharing.replaceGoTo(data, identifier);
-				const esNode = container.append(goToData);
-				node.replaceWith(esNode);
-				OPOL.adjustContentHeightForAbsoluteElement('.o_edusharing_container .edusharing_metadata_wrapper');
-			},
-			error : function(xhr) {
-				if (xhr.responseText) {
-					node.replaceWith("<div class='o_warning'>" + xhr.responseText + "</div>");
-				} else {
-					node.replaceWith("<div class='o_warning'>edu-sharing not available</div>");
-				}
-			}
-		})
-	},
-		
-	replace: function(node, isIFrame) {
-		const identifier = node.data("es_identifier");
-		const version = node.data("es_version");
-		const width = node.attr("width");
-		const height = node.attr("height");
-		const esClass = node.attr('class');
-		const showLicense = node.data("es_show_license");
-		const showInfos = node.data("es_show_infos");
-
-		const spinner = OOEdusharing.replaceWithSpinner(node, width, height);
-		OOEdusharing.replaceWithRendered(spinner, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame);
-	},
-	
-	/**
-	 * Replace the edu-sharing nodes with the real resources from the edu-sharing rendering service.
-	 */
-	render: function() {
-		const esNodes = jQuery("[data-es_identifier]");
-		esNodes.addClass("BGlossarIgnore");
-		if (esNodes.length > 0) {
-			esNodes.each(function() {
-				const node = jQuery( this );
-				OOEdusharing.replace(node, false);
-			});
-		}
-		// Handle inside internal iFrames as well
-		const iFrames = jQuery(".o_iframe_rel");
-		if (iFrames.length > 0) {
-			iFrames.each(function() {
-				const iFrame = jQuery( this );
-				iFrame.on('load', function(){
-					iFrame.contents().on('click', OOEdusharing.toggleMetadata);
-					const iFrameEsNodes = iFrame.contents().find("[data-es_identifier]");
-					if (iFrameEsNodes.length > 0) {
-						iFrameEsNodes.each(function() {
-							const iFrameEsNode = jQuery( this );
-							OOEdusharing.replace(iFrameEsNode, true);
-						});
-					}
-				});
-			});
-		}
-	},
-	
-	/**
-	 * Toggle edu-sharing metadata.
-	 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/amd/src/edu.js
-	 */
-	toggleMetadata: function (e) {
-		if (jQuery(e.target).closest(".edusharing_metadata").length) {
-			//clicked inside ".edusharing_metadata" - do nothing
-		} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
-			jQuery(".edusharing_metadata").hide();
-			const toggle_button = jQuery(e.target);
-			const metadata = toggle_button.parent().find(".edusharing_metadata");
-			if (metadata.hasClass('open')) {
-				metadata.toggleClass('open');
-				metadata.hide();
-			} else {
-				jQuery(".edusharing_metadata").removeClass('open');
-				metadata.toggleClass('open');
-				metadata.show();
-			}
-		} else {
-			jQuery(".edusharing_metadata").hide();
-			jQuery(".edusharing_metadata").removeClass('open');
-		}
-	},
-	enableMetadataToggler: function() {
-		jQuery(document).click(OOEdusharing.toggleMetadata);
-	}
-}
-
-jQuery( document ).ready(function() {
-	OOEdusharing.start();
-});
 // Listen to all escape keyboard events
 jQuery( document ).on('keyup', function(event) {
     if (event.key == "Escape") {

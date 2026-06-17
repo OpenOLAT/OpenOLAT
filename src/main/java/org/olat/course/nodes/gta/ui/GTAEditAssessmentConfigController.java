@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -46,8 +45,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapper
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -138,11 +137,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private ComponentWrapperElement referenceEl;
 	private IconPanelLabelTextContent iconPanelContent;
 	private IconPanelLabelTextContent iconPanelSettings;
-	
-	/** Notice for users and coaches */
-	private FormLink showInfoTextsLink;
-	private RichTextElement infotextUser;
-	private RichTextElement infotextCoach;
 
 	private GradeScale gradeScale;
 	private GTACourseNode gtaNode;
@@ -154,7 +148,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private final NodeAccessType nodeAccessType;
 	private final RepositoryEntry courseEntry;
 	
-	private boolean showInfoTexts = false;
 	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	
@@ -416,19 +409,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 			individualAssessmentDocsFlag.select("xx", true);
 		}
 
-		showInfoTextsLink = uifactory.addFormLink("show.infotexts", "show.infotexts", null, formLayout, Link.LINK);
-		showInfoTextsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-
-		// Create the rich text fields.
-		String infoUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		infotextUser = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user", infoUser, 10, -1,
-				formLayout, getWindowControl());
-
-		String infoCoach = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1,
-				formLayout, getWindowControl());
-		showInfoTexts = StringHelper.containsNonWhitespace(infoUser) || StringHelper.containsNonWhitespace(infoCoach);
-
 		update(ureq);
 	}
 	
@@ -551,11 +531,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
 				&& incorporateInCourseAssessmentEl.isOn()
 				&& scoreGranted.isOn() && scoreScalingEnabled);
-		
-		showInfoTextsLink.setVisible(!showInfoTexts);
-		infotextUser.setVisible(showInfoTexts);
-		infotextCoach.setVisible(showInfoTexts);
-		
+
 		validateFormLogic(ureq);
 	}
 	
@@ -669,20 +645,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		// coach info text
-		infotextCoach.clearError();
-		if (infotextCoach.getValue().length() > 4000) {
-			infotextCoach.setErrorKey("input.toolong", "4000");
-			allOk &= false;
-		}
-		
-		// user info text
-		infotextUser.clearError();
-		if (infotextUser.getValue().length() > 4000) {
-			infotextUser.setErrorKey("input.toolong", "4000");
-			allOk &= false;
-		}
-		
 		scoresSumEl.clearError();
 		if(scoresSumEl.isVisible() && scoreGranted.isVisible() && scoreGranted.isOn()
 				&& (!scoreTypeEl.isVisible() || (scoreTypeEl.isOneSelected() && !MSCourseNode.CONFIG_VALUE_SCORE_MANUAL.equals(scoreTypeEl.getSelectedKey())))
@@ -787,9 +749,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
-		} else if (source == showInfoTextsLink) {
-			showInfoTexts = true;
-			update(ureq);
 		} else if(evaluationFormEnabledEl == source) {
 			update(ureq);
 			if(scoresSumEl.isVisible() && evaluationFormEnabledEl.isOn()) {
@@ -932,23 +891,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		// individual assessment docs
 		boolean withAssessmentDocs = individualAssessmentDocsFlag.isVisible() && individualAssessmentDocsFlag.isSelected(0);
 		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, withAssessmentDocs);
-
-		// set info text only if something is in there
-		String iu = infotextUser.getValue();
-		if (StringHelper.containsNonWhitespace(iu)) {
-			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, iu);
-		} else {
-			// remove old config
-			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		}
-
-		String ic = infotextCoach.getValue();
-		if (StringHelper.containsNonWhitespace(ic)) {
-			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, ic);
-		} else {
-			// remove old config
-			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		}
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {

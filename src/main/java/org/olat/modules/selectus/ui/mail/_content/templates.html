@@ -1,0 +1,12 @@
+<fieldset>
+	<legend>$r.translate("mail.templates.title")</legend>
+	<div class="o_info"><p>$r.translate("mail.templates.description")</p>
+	#if($r.isTrue($withLetter))
+		<p>$r.translate("mail.templates.description.with.letter")</p>
+	#end
+	</div>
+	#if($r.visible("add.template"))
+		<div class="o_button_group o_button_group_right">$r.render("add.template")</div>
+	#end
+	$r.render("table")
+</fieldset>

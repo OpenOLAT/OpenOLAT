@@ -169,6 +169,14 @@ public class QTI21Constants {
 	
 	public static final String CSS_ESSAY_RICHTEXT =  "essay-richtext";
 	
+	public static final String CSS_GAP_TEXT =  "gap_text";
+	
+	public static final String CSS_GAP_NUMERICAL =  "gap_numerical";
+	
+	public static final String CSS_INLINE_CHOICE =  "inline_choice";
+	
+	public static final String CSS_GAP_MIXED =  "gap_mixed";
+	
 
 	public static final String QMD_ENTRY_SUMMARY_NONE = "summaryNone";
 	
@@ -204,6 +212,12 @@ public class QTI21Constants {
 	public static final Identifier NPS_NUMINCORRECT_IDENTIFIER = Identifier.assumedLegal(NPS_NUMINCORRECT);
 	
 	public static final ComplexReferenceIdentifier NPS_NUMINCORRECT_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(NPS_NUMINCORRECT);
+	
+	
+	public static final String IGNORE_SPACES_KEY = "oo-ignore-spaces-oo";
+	
+	public static final String WILDCARD_KEY = "oo-wildcard-oo";
+	
 	
 	
 	public enum HotspotLayouts {

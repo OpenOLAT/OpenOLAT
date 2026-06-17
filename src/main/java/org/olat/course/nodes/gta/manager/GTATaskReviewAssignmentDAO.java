@@ -162,6 +162,7 @@ public class GTATaskReviewAssignmentDAO {
 	protected List<TaskReviewAssignment> getAllAssignments(TaskList taskList) {
 		String query = """
 				select assignment from taskreviewasssignment assignment
+				inner join assignment.task as task
 				left join fetch assignment.participation as surveyParticipation
 				where task.taskList.key=:taskListKey""";
 		

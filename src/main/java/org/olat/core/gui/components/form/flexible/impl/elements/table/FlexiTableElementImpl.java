@@ -84,6 +84,8 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
@@ -258,7 +260,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setExternalRenderer(AbstractFlexiTableRenderer externalRenderer, String iconCssSelector) {
 		component.setExternalRenderer(externalRenderer);
-		externalTypeButton.setIconLeftCSS("o_icon " + iconCssSelector);
+		if (externalTypeButton != null) {
+			externalTypeButton.setIconLeftCSS("o_icon " + iconCssSelector);
+		}
 	}
 
 	@Override
@@ -1897,8 +1901,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	protected void customizeCallout(UserRequest ureq) {
 		Choice choice = getColumnListAndTheirVisibility();
+		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, translator.translate("customize.columns"), false);
 		callout = new CloseableCalloutWindowController(ureq, wControl, choice,
-				customButton, translator.translate("customize.columns"), true, "o_sel_flexi_custom_callout");
+				customButton, translator.translate("customize.columns"), true, "o_sel_flexi_custom_callout", settings);
 		callout.activate();
 		callout.addControllerListener(this);
 	}

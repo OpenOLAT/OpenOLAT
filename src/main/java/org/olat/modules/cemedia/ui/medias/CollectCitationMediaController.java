@@ -223,7 +223,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
 				mediaService.getTaxonomyLevels(mediaReference),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
-				translate("taxonomy.levels"), translate("table.header.taxonomy"));
+				translate("table.header.taxonomy"));
 		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", topLayout, getWindowControl(), true, source);
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, topLayout, getWindowControl());

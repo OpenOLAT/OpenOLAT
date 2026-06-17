@@ -1,0 +1,12 @@
+<div class="o_note">
+	$message<br><br>
+	$r.translate("rejection.info.explain")
+	<div class="o_button_group">$r.render("rejection.sendmails")</div>
+</div>
+<fieldset class="o_sel_rejection_log">
+	<legend><strong>$r.translate("rejection.table.log")</strong></legend>
+	$r.render("log")
+	<div class="o_button_group">
+		$r.render("rejection.export.log")
+	</div>
+</fieldset>

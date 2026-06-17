@@ -69,6 +69,7 @@ public class UserProfileInfoController extends UserInfoController {
 			OrganisationRoles.linemanager,
 			OrganisationRoles.learnresourcemanager,
 			OrganisationRoles.educationmanager,
+			OrganisationRoles.selectusmanager,
 			OrganisationRoles.principal,
 			OrganisationRoles.administrator,
 			OrganisationRoles.sysadmin

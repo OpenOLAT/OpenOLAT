@@ -652,17 +652,19 @@
 		.progress {
 			width: 100px;
 			margin-right: 1em;
-			.o_passed_progress_bar {
-				background-color: $o-course-state-passed-color;
-			}
-			.o_failed_progress_bar {
-				background-color: $o-course-state-failed-color;
-			}	
 		}
 		
 		.o_values {
 			flex-shrink: 0;
 		}	
+	}
+}
+.progress-bar {
+	&.o_passed_progress_bar {
+		background-color: $o-course-state-passed-color;
+	}
+	&.o_failed_progress_bar {
+		background-color: $o-course-state-failed-color;
 	}
 }
 .o_assessment_grade_stats {

@@ -189,7 +189,7 @@ public class GradingInformationsController extends FormBasicController {
 		flc.contextPut("firstReminder", configuration.getFirstReminder());
 		flc.contextPut("secondReminder", configuration.getSecondReminder());
 
-		flc.contextPut("externalId", entry.getOlatResource().getResourceableId());
+		flc.contextPut("externalId", entry.getOlatResource().getResourceableId().toString());
 		
 		List<Identity> owners = repositoryService.getMembers(entry, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		contactLink.setVisible(!owners.isEmpty());

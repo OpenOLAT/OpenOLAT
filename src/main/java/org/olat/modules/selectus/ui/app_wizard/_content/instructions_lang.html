@@ -1,0 +1,8 @@
+#if($r.isNotEmpty($languages))
+<div class="o_button_group o_button_group_right"><div class="btn-group">
+	#foreach($language in $languages)
+		$r.render($language)
+	#end
+</div></div>
+#end
+$r.render("instructions")

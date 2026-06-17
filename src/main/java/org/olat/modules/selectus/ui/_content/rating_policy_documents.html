@@ -1,0 +1,5 @@
+<p class="from-static-control"><ul class="list-unstyled">
+#foreach($doc in $documentList)
+	<li><a href="$doc.url" target="_blank"><i class="o_icon $doc.cssClass"> </i> <span>$doc.label</span></a></li>
+#end
+</ul></p>

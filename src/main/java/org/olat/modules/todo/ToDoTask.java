@@ -66,6 +66,10 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 
 	public void setDueDate(Date dueDate);
 
+	public ToDoRelativeDates getRelativeDates();
+
+	public void setRelativeDates(ToDoRelativeDates relativeDates);
+
 	public Date getDoneDate();
 	
 	public Date getDeletedDate();
@@ -80,8 +84,14 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 	
 	public void setAssigneeRights(ToDoRight[] assigneeRights);
 	
+	public void setType(String type);
+
+	public void setOriginId(Long originId);
+
+	public void setOriginSubPath(String originSubPath);
+
 	public void setOriginTitle(String originTiltle);
-	
+
 	public void setOriginSubTitle(String originSubTiltle);
 	
 	public boolean isOriginDeleted();

@@ -29,7 +29,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 
 /**
- * 
+ *
  * Initial date: 24 Mar 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
@@ -69,6 +69,8 @@ public interface ToDoService {
 	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
 	
 	public Map<Long, ToDoTaskMembers> getToDoTaskGroupKeyToMembers(Collection<ToDoTask> toDoTasks, Collection<ToDoRole> roles);
+
+	public ToDoTaskMembers getToDoTaskMembers(ToDoTask toDoTask, Collection<ToDoRole> roles);
 
 	public void updateTags(ToDoTaskRef toDoTask, List<String> displayNames);
 	

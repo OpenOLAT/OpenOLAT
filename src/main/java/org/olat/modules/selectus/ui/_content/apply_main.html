@@ -1,0 +1,18 @@
+<div>
+	#if($r.isTrue($closed))
+	<div class="o_warning">
+		<p><strong>$r.translate("closed_application.text1")</strong></p>
+		<p>$r.translate("closed_application.text2", $i18nArguments)</p>
+	</div>
+	#elseif($r.isTrue($notFound))
+	<div class="o_warning">
+		<p><strong>$r.translate("notfound_application.text1")</strong></p>
+		<p>$r.translate("notfound_application.text2", $i18nArguments) <a href="$positionListUrl">$positionListUrl</a></p>
+	</div>
+	#elseif($r.available("positionList"))
+		$r.render("positionList")
+	#elseif($r.available("simpleContent"))
+		$r.render("simpleContent")
+	#end
+	<div class="clearfix"></div>
+</div>

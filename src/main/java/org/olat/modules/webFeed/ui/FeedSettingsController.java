@@ -55,7 +55,7 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 	
 	private Controller quotaCtrl;
 	private FeedMetadataWrapperController feedMetadataWrapperCtrl;
-	private FeedSettingsOptionsController feedSettingsOptionsCtrl;
+	private FeedSettingsAndAccessOptionsController feedSettingsOptionsCtrl;
 
 	@Autowired
 	private QuotaManager quotaManager;
@@ -66,7 +66,6 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 	
 	@Override
 	protected void initOptions() {
-		super.initOptions();
 		if (quotaManager.hasQuotaEditRights(getIdentity(), roles, getOrganisations())) {
 			quotaLink = LinkFactory.createToolLink("quota", translate("tab.quota.edit"), this);
 			quotaLink.setElementCssClass("o_sel_repo_quota");
@@ -151,7 +150,7 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 		entry = repositoryService.loadByKey(entry.getKey());
 		boolean readOnly = entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || entry.getEntryStatus() == RepositoryEntryStatusEnum.trash;
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Options"), null);
-		feedSettingsOptionsCtrl = new FeedSettingsOptionsController(ureq, swControl, entry, readOnly);
+		feedSettingsOptionsCtrl = new FeedSettingsAndAccessOptionsController(ureq, swControl, entry, readOnly);
 		listenTo(feedSettingsOptionsCtrl);
 		mainPanel.setContent(feedSettingsOptionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(optionsLink);

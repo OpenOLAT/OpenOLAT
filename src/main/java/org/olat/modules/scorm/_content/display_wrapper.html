@@ -1,0 +1,10 @@
+<div id="$r.getCId()" class="o_iframesandbox">
+	<iframe name="$frameId" class="o_iframe_rel" id="$frameId" src="${baseURI}/${currentURI}${token}" frameborder="0" height="" style="" allowfullscreen="true"></iframe>
+	
+	<script src='$r.staticLink("js/openolat/iFrameResizerHelper.js")'></script>
+	<script>
+		## Init the iFrame to the max height possible.
+		jQuery(function() { b_resizeIframeToMainMaxHeight("$frameId"); });
+		registerIFrameAndObserve("$frameId", $debug);
+	</script>
+</div>

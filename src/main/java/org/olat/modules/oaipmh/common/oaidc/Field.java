@@ -10,20 +10,8 @@
 
 package org.olat.modules.oaipmh.common.oaidc;
 
-
-import static com.lyncode.xml.matchers.QNameMatchers.localPart;
-import static com.lyncode.xml.matchers.XmlEventMatchers.aStartElement;
-import static com.lyncode.xml.matchers.XmlEventMatchers.anElement;
-import static com.lyncode.xml.matchers.XmlEventMatchers.anEndElement;
-import static com.lyncode.xml.matchers.XmlEventMatchers.elementName;
-import static com.lyncode.xml.matchers.XmlEventMatchers.text;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.AllOf.allOf;
-
 import javax.xml.stream.XMLStreamException;
 
-import com.lyncode.xml.XmlReader;
-import com.lyncode.xml.exceptions.XmlReaderException;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
@@ -38,26 +26,6 @@ public class Field implements XmlWritable {
 	public Field(String value, String name) {
 		this.value = value;
 		this.name = name;
-	}
-
-	public static Field parse(XmlReader reader) throws XmlReaderException {
-		if (!reader.current(allOf(aStartElement(), elementName(localPart(equalTo("field"))))))
-			throw new XmlReaderException("Invalid XML. Expecting entity 'field'");
-
-		Field field = new Field();
-
-		//if (reader.hasAttribute(attributeName(localPart(equalTo("name")))))
-		//    field.withName(reader.getAttributeValue(localPart(equalTo("name"))));
-
-		if (reader.next(anElement(), text()).current(text())) {
-			field.withValue(reader.getText());
-			reader.next(anElement());
-		}
-
-		if (!reader.current(allOf(anEndElement(), elementName(localPart(equalTo("field"))))))
-			throw new XmlReaderException("Invalid XML. Expecting end of entity 'field'");
-
-		return field;
 	}
 
 	public String getValue() {

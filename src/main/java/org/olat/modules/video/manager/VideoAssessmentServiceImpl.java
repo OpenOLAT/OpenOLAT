@@ -77,6 +77,13 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService, UserD
 	}
 	
 	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		taskSegmentSelectionDao.deleteAllSegmentSelectionsByCourse(re);
+		taskSessionDao.deleteAllTaskSessionsByCourse(re);
+		return true;
+	}
+
+	@Override
 	public VideoTaskSession createTaskSession(Identity identity, String anonymousIdentifier,
 			AssessmentEntry assessmentEntry, RepositoryEntry entry, String subIdent, RepositoryEntry videoEntry,
 			boolean authorMode) {

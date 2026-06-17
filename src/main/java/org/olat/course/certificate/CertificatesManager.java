@@ -263,9 +263,23 @@ public interface CertificatesManager {
 	public PreviewCertificate previewCertificate(CertificateTemplate template, CertificationProgram certificationProgram, Locale locale,
 			String custom1, String custom2, String custom3);
 
+	/**
+	 * 
+	 * @param identity The identity (mandatory)
+	 * @param creationDate The creation date (optional)
+	 * @param externalId The external ID (optional)
+	 * @param managedFlags Managed flags (optional)
+	 * @param certificationProgram The certification program (optional)
+	 * @param resource The resource (mandatory), course resource or program resource
+	 * @param nextRecertificationDate Next certification date (optional)
+	 * @param certificateFile The certificate itself
+	 * @param doer The user which upload the certificate
+	 * @return The certificate object
+	 */
 	public Certificate uploadCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource,
-			Date nextRecertificationDate, File certificateFile);
+			String externalId, CertificateManagedFlag[] managedFlags,
+			CertificationProgram certificationProgram, OLATResource resource,
+			Date nextRecertificationDate, File certificateFile, Identity doer);
 	
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
 			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
