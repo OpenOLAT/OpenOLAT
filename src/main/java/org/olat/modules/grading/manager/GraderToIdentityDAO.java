@@ -459,11 +459,16 @@ public class GraderToIdentityDAO {
 		if(searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("rel.status in (:statusList)");
 		}
-		if(applyFromTo && (searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null)) {
+		if(applyFromTo && (searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null || searchParams.hasAssignmentStatus())) {
 			sb.and()
 			  .append(" exists (select assignment from gradingassignment as assignment")
 			  .append("  where assignment.grader.key=rel.key");
-			GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
+			if(searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null) {
+				GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
+			}
+			if(searchParams.hasAssignmentStatus()) {
+				GradingAssignmentDAO.applyAssignmentSearchStatusParameters(sb, searchParams.getAssignmentStatus());
+			}
 			sb.append(")");
 		}
 		if(searchParams.getAssignmentDateFrom() != null) {

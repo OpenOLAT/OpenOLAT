@@ -19,7 +19,6 @@
  */
 package org.olat.modules.grading.ui;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
@@ -37,7 +36,6 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -51,14 +49,15 @@ import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingAssignmentLog;
+import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.model.GraderWithStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentLogSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
+import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.ui.component.GraderStatusCellRenderer;
-import org.olat.modules.grading.ui.component.GradingDeadlineStatusCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -77,13 +76,14 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	
 	private final Date from;
 	private final Date to;
+	private final Date now;
 	private final Identity grader;
 	private final Identity manager;
+	private final boolean onlyClosedAssignments;
 	private final RepositoryEntry referenceEntry;
 	
 	private final Translator translator;
 	private final List<UserPropertyHandler> graderPropertyHandlers;
-	private final GradingDeadlineStatusCellRenderer statusRenderer;
 	private final List<UserPropertyHandler> assessedUserPropertyHandlers;
 	
 	@Autowired
@@ -101,17 +101,17 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public ReportResource(Roles roles, String label, Date from, Date to,
-			RepositoryEntry referenceEntry, Identity grader, Identity manager,
-			Translator translator) {
+	public ReportResource(Roles roles, String label, Date from, Date to, boolean onlyClosedAssignments,
+			RepositoryEntry referenceEntry, Identity grader, Identity manager, Translator translator) {
 		super(label);
 		this.from = from;
 		this.to = to;
+		this.now = new Date();
 		this.grader = grader;
 		this.manager = manager;
 		this.referenceEntry = referenceEntry;
+		this.onlyClosedAssignments = onlyClosedAssignments;
 		
-		statusRenderer = new GradingDeadlineStatusCellRenderer(translator);
 		this.translator = userManager.getPropertyHandlerTranslator(translator);
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		graderPropertyHandlers = userManager.getUserPropertyHandlersFor(GradersListController.USER_PROPS_ID, isAdministrativeUser);
@@ -193,6 +193,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		searchParams.setManager(manager);
 		searchParams.setGrader(grader);
 		searchParams.setReferenceEntry(referenceEntry);
+		if(onlyClosedAssignments) {
+			searchParams.setAssignmentStatus(List.of(SearchStatus.closed));
+		}
 
 		List<GraderWithStatistics> statistics = gradingService.getGradersWithStatistics(searchParams);
 		dbInstance.commitAndCloseSession();
@@ -212,7 +215,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
 		}
 
-		headerRow.addCell(pos++, translator.translate("table.header.deadline"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.status"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.duedate"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.missed.deadline"), headerStyle);
 		
 		// assessed identities informations
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
@@ -256,15 +261,21 @@ public class ReportResource extends OpenXMLWorkbookResource {
 			}
 		}
 		
+		GradingAssignmentStatus status = assignment.getAssignmentStatus();
+		row.addCell(pos++, translator.translate("assignment.status.".concat(status.name())));
 		// deadline
-		try(StringOutput status = new StringOutput(32)) {
-			statusRenderer.render(null, status, assignment.getDeadline(), assignment.getExtendedDeadline(),
-					assignment.getAssignmentStatus());
-			row.addCell(pos++, status.toString());
-		} catch(IOException e) {
-			pos++;
+		Date deadline = assignment.getDeadline();
+		if(assignment.getExtendedDeadline() != null && !(deadline != null && !deadline.before(assignment.getExtendedDeadline()))) {
+			deadline = assignment.getExtendedDeadline();// @see org.olat.modules.grading.ui.component.GradingDeadlineStatusCellRenderer
 		}
+		row.addCell(pos++, deadline, workbook.getStyles().getDateStyle());
 		
+		boolean missed = (status != GradingAssignmentStatus.unassigned && status != GradingAssignmentStatus.done
+					&& deadline != null && CalendarUtils.endOfDay(deadline).before(now))
+			|| (status == GradingAssignmentStatus.done && deadline != null
+					&& assignment.getClosingDate() != null && deadline.before(assignment.getClosingDate()));
+		row.addCell(pos++, missed ? "x" : null);
+
 		// assessed identities informations
 		Identity assessedIdentity = assignmentWithInfos.getAssessedIdentity();
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
@@ -324,6 +335,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		searchParams.setGrader(grader);
 		searchParams.setManager(manager);
 		searchParams.setReferenceEntry(referenceEntry);
+		if(onlyClosedAssignments) {
+			searchParams.setAssignmentStatus(List.of(SearchStatus.closed));
+		}
 		
 		List<GradingAssignmentWithInfos> assignmentsWithInfos = gradingService.getGradingAssignmentsWithInfos(searchParams, translator.getLocale());
 		List<IdentityRef> assessedIdentities = assignmentsWithInfos.stream()

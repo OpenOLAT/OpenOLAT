@@ -321,10 +321,14 @@ public class GradingAssignmentDAO {
 			sb.and().append("assessmentRe.key=:entryKey");
 		}
 		
-		if(searchParams.getAssignmentStatus() != null && !searchParams.getAssignmentStatus().isEmpty()) {
+		applyAssignmentSearchStatusParameters(sb, searchParams.getAssignmentStatus());
+	}
+	
+	protected static void applyAssignmentSearchStatusParameters(QueryBuilder sb, List<SearchStatus> assignmentStatus) {
+		if(assignmentStatus != null && !assignmentStatus.isEmpty()) {
 			sb.and().append("(");
 			boolean or = false;
-			for(SearchStatus status:searchParams.getAssignmentStatus()) {
+			for(SearchStatus status:assignmentStatus) {
 				if(or) {
 					sb.append(" or ");
 				} else {
@@ -347,7 +351,7 @@ public class GradingAssignmentDAO {
 			}
 			sb.append(")");
 			
-			if(!searchParams.getAssignmentStatus().contains(SearchStatus.closed)) {
+			if(!assignmentStatus.contains(SearchStatus.closed)) {
 				sb.and().append(" not(assignment.status ").in(GradingAssignmentStatus.done).append(")");
 			}
 		} else {

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.grading.GraderStatus;
+import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -43,6 +44,7 @@ public class GradersSearchParameters {
 	private Identity manager;
 	private List<GraderStatus> status;
 	private RepositoryEntry referenceEntry;
+	private List<SearchStatus> assignmentStatus;
 
 	public Date getGradingTo() {
 		return gradingTo;
@@ -116,5 +118,15 @@ public class GradersSearchParameters {
 		this.manager = manager;
 	}
 
+	public List<SearchStatus> getAssignmentStatus() {
+		return assignmentStatus;
+	}
 
+	public void setAssignmentStatus(List<SearchStatus> assignmentStatus) {
+		this.assignmentStatus = assignmentStatus;
+	}
+	
+	public boolean hasAssignmentStatus() {
+		return assignmentStatus != null && !assignmentStatus.isEmpty();
+	}
 }
