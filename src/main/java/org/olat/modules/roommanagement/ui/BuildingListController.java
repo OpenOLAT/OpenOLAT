@@ -128,8 +128,13 @@ public class BuildingListController extends FormBasicController implements Flexi
 		createBuildingButton.setIconLeftCSS("o_icon o_icon_add");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.color, new ColorCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.reference, TOGGLE_DETAILS_CMD));
+
+		DefaultFlexiColumnModel refCol = new DefaultFlexiColumnModel(BuildingCols.reference, TOGGLE_DETAILS_CMD);
+		refCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(refCol);
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.description));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.status, new RoomStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.address));

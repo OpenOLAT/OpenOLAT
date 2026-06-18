@@ -118,7 +118,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		createRoomButton.setIconLeftCSS("o_icon o_icon_add");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.reference, TOGGLE_DETAILS_CMD));
+		
+		DefaultFlexiColumnModel refCol = new DefaultFlexiColumnModel(RoomCols.reference, TOGGLE_DETAILS_CMD);
+		refCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(refCol);
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.description));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.status, new RoomStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.seats));
