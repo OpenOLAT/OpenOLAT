@@ -36,8 +36,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -47,7 +45,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
@@ -55,9 +52,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Admin form to configure which AI provider and model to use for each AI
- * feature. Currently supports: MC Question Generator, Image Description
- * Generator, Essay Question Generator, Essay Grading. Each feature has an
- * enable toggle, a provider dropdown, and a model selector.
+ * feature. Currently supports: Taxonomy Matching, Image Description Generator,
+ * MC Question Generator, Essay Question Generator, Essay Grading. Each feature
+ * has an enable toggle, a provider dropdown, and a model selector.
+ *
+ * All form items are created once in {@link #initForm}, in their final visual
+ * order. The model selector is the only item whose content depends on the
+ * selected provider: a provider that publishes a model list shows a dropdown,
+ * a provider that does not shows a free-text field. Both elements are created
+ * up front; on a provider change the dropdown is repopulated in place
+ * ({@link SingleSelection#setKeysAndValues}) and the active element is toggled
+ * via visibility. No form item is ever removed and re-added, so the rendered
+ * order is fixed by the init order alone.
  *
  * Initial date: 25.02.2026<br>
  *
@@ -66,47 +72,44 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AiFeaturesAdminController extends FormBasicController {
 
-	private FormItemContainer formLayout;
+	// Taxonomy Matching elements
+	private FormToggle taxMatchEnabledEl;
+	private SingleSelection taxMatchSpiEl;
+	private SingleSelection taxMatchModelDropdownEl;
+	private TextElement taxMatchModelTextEl;
+	private FormItem taxMatchModelEl;
+
+	// Image Description Generator elements
+	private FormToggle imgDescEnabledEl;
+	private SingleSelection imgDescSpiEl;
+	private SingleSelection imgDescModelDropdownEl;
+	private TextElement imgDescModelTextEl;
+	private FormItem imgDescModelEl;
+	private FormLink imgDescTestLink;
 
 	// MC Question Generator elements
 	private FormToggle mcEnabledEl;
 	private SingleSelection mcGeneratorSpiEl;
+	private SingleSelection mcModelDropdownEl;
+	private TextElement mcModelTextEl;
 	private FormItem mcGeneratorModelEl;
 	private FormLink mcTestLink;
 
-	// Image Description Generator elements — removed and re-added to maintain ordering
-	private SpacerElement imgDescSpacer;
-	private StaticTextElement imgDescTitle;
-	private FormToggle imgDescEnabledEl;
-	private SingleSelection imgDescSpiEl;
-	private FormItem imgDescModelEl;
-	private FormLink imgDescTestLink;
-
-	// Essay Question Generator elements — removed and re-added to maintain ordering
-	private SpacerElement essayGenSpacer;
-	private StaticTextElement essayGenTitle;
+	// Essay Question Generator elements
 	private FormToggle essayGenEnabledEl;
 	private SingleSelection essayGenSpiEl;
+	private SingleSelection essayGenModelDropdownEl;
+	private TextElement essayGenModelTextEl;
 	private FormItem essayGenModelEl;
 	private FormLink essayGenTestLink;
 
-	// Essay Grading elements — removed and re-added to maintain ordering
-	private SpacerElement essayGradingSpacer;
-	private StaticTextElement essayGradingTitle;
+	// Essay Grading elements
 	private FormToggle essayGradingEnabledEl;
 	private SingleSelection essayGradingSpiEl;
+	private SingleSelection essayGradingModelDropdownEl;
+	private TextElement essayGradingModelTextEl;
 	private FormItem essayGradingModelEl;
 	private FormLink essayGradingTestLink;
-
-	// Taxonomy Matching elements — removed and re-added to maintain ordering
-	private SpacerElement taxMatchSpacer;
-	private StaticTextElement taxMatchTitle;
-	private FormToggle taxMatchEnabledEl;
-	private SingleSelection taxMatchSpiEl;
-	private FormItem taxMatchModelEl;
-
-	// Buttons — removed and re-added to maintain ordering
-	private FormLayoutContainer buttonsCont;
 
 	// Test controller
 	private AiFeaturesTestController testCtrl;
@@ -133,27 +136,28 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.formLayout = formLayout;
 		setFormTitle("ai.features.title");
 		setFormDescription("ai.features.desc");
 
 		// ---- Taxonomy Matching section ----
-		taxMatchSpacer = uifactory.addSpacerElement("taxMatchSpacer", formLayout, false);
-		taxMatchTitle = uifactory.addStaticTextElement("taxMatchTitle", null,
+		uifactory.addSpacerElement("taxMatchSpacer", formLayout, false);
+		uifactory.addStaticTextElement("taxMatchTitle", null,
 				"<h4>" + translate(AiFeature.TaxonomyMatching.getI18nKey()) + "</h4>", formLayout);
-		
+
 		boolean taxMatchEnabled = taxonomyMatchingModule != null && taxonomyMatchingModule.isEnabled();
 		taxMatchEnabledEl = uifactory.addToggleButton("taxMatch.enabled", "ai.feature.enabled",
 				translate("on"), translate("off"), formLayout);
 		taxMatchEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		taxMatchEnabledEl.toggle(taxMatchEnabled);
-		
+
 		String taxMatchSpiId = taxonomyMatchingModule != null ? taxonomyMatchingModule.getSpiId() : null;
 		taxMatchSpiEl = buildEmbeddingSpiDropdown("taxMatch.spi", taxMatchSpiId, formLayout);
+		taxMatchModelDropdownEl = addModelDropdown("taxMatch.model", "ai.feature.taxonomy-matching.model", formLayout);
+		taxMatchModelTextEl = addModelTextElement("taxMatch.model.text", "ai.feature.taxonomy-matching.model", formLayout);
 
 		// ---- Image Description Generator section ----
-		imgDescSpacer = uifactory.addSpacerElement("imgDescSpacer", formLayout, false);
-		imgDescTitle = uifactory.addStaticTextElement("imgDescTitle", null,
+		uifactory.addSpacerElement("imgDescSpacer", formLayout, false);
+		uifactory.addStaticTextElement("imgDescTitle", null,
 				"<h4>" + translate(AiFeature.ImageDescriptionGenerator.getI18nKey()) + "</h4>", formLayout);
 
 		boolean imgDescEnabled = aiModule.isImageDescriptionGeneratorEnabled();
@@ -164,7 +168,10 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout,
 				aiModule.getEnabledProviders());
-		
+		imgDescModelDropdownEl = addModelDropdown("imgDesc.model", "ai.feature.image-description-generator.model", formLayout);
+		imgDescModelTextEl = addModelTextElement("imgDesc.model.text", "ai.feature.image-description-generator.model", formLayout);
+		imgDescTestLink = addTestLink("imgDesc.test", formLayout);
+
 		// ---- MC Question Generator section ----
 		uifactory.addSpacerElement("mcSpacer", formLayout, false);
 		uifactory.addStaticTextElement("mcTitle", null,
@@ -178,10 +185,13 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 		mcGeneratorSpiEl = buildSpiDropdown("mc.spi", aiModule.getMCGeneratorSpiId(), formLayout,
 				aiModule.getEnabledProviders());
-		
+		mcModelDropdownEl = addModelDropdown("mc.model", "ai.feature.model", formLayout);
+		mcModelTextEl = addModelTextElement("mc.model.text", "ai.feature.model", formLayout);
+		mcTestLink = addTestLink("mc.test", formLayout);
+
 		// ---- Essay Question Generator section ----
-		essayGenSpacer = uifactory.addSpacerElement("essayGenSpacer", formLayout, false);
-		essayGenTitle = uifactory.addStaticTextElement("essayGenTitle", null,
+		uifactory.addSpacerElement("essayGenSpacer", formLayout, false);
+		uifactory.addStaticTextElement("essayGenTitle", null,
 				"<h4>" + translate(AiFeature.EssayGeneration.getI18nKey()) + "</h4>", formLayout);
 
 		boolean essayGenEnabled = aiModule.isEssayGenerationEnabled();
@@ -192,10 +202,13 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 		essayGenSpiEl = buildSpiDropdown("essayGen.spi", aiModule.getEssayGenerationSpiId(), formLayout,
 				aiModule.getEnabledProviders());
+		essayGenModelDropdownEl = addModelDropdown("essayGen.model", "ai.feature.model", formLayout);
+		essayGenModelTextEl = addModelTextElement("essayGen.model.text", "ai.feature.model", formLayout);
+		essayGenTestLink = addTestLink("essayGen.test", formLayout);
 
 		// ---- Essay Grading section ----
-		essayGradingSpacer = uifactory.addSpacerElement("essayGradingSpacer", formLayout, false);
-		essayGradingTitle = uifactory.addStaticTextElement("essayGradingTitle", null,
+		uifactory.addSpacerElement("essayGradingSpacer", formLayout, false);
+		uifactory.addStaticTextElement("essayGradingTitle", null,
 				"<h4>" + translate(AiFeature.EssayGrading.getI18nKey()) + "</h4>", formLayout);
 
 		boolean essayGradingEnabled = aiModule.isEssayGradingEnabled();
@@ -206,25 +219,42 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 		essayGradingSpiEl = buildSpiDropdown("essayGrading.spi", aiModule.getEssayGradingSpiId(), formLayout,
 				aiModule.getEnabledProviders());
-
+		essayGradingModelDropdownEl = addModelDropdown("essayGrading.model", "ai.feature.model", formLayout);
+		essayGradingModelTextEl = addModelTextElement("essayGrading.model.text", "ai.feature.model", formLayout);
+		essayGradingTestLink = addTestLink("essayGrading.test", formLayout);
 
 		// Save button
-		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 
-		// Create initial model elements and set visibility
-		doUpdateTaxMatchModelDropdown(getSelectedKey(taxMatchSpiEl));
-		doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
-		doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
-		doUpdateEssayGenModelDropdown(getSelectedKey(essayGenSpiEl));
-		doUpdateEssayGradingModelDropdown(getSelectedKey(essayGradingSpiEl));
-		updateTaxMatchVisibility();
-		updateMcVisibility();
-		updateImgDescVisibility();
-		updateEssayGenVisibility();
-		updateEssayGradingVisibility();
+		// Populate the model selectors and set the initial visibility. The order
+		// of these calls no longer affects the layout, only the item content and
+		// visibility, because nothing is removed or re-added.
+		updateTaxMatchModel(getSelectedKey(taxMatchSpiEl));
+		updateImgDescModel(getSelectedKey(imgDescSpiEl));
+		updateMcModel(getSelectedKey(mcGeneratorSpiEl));
+		updateEssayGenModel(getSelectedKey(essayGenSpiEl));
+		updateEssayGradingModel(getSelectedKey(essayGradingSpiEl));
+	}
+
+	private SingleSelection addModelDropdown(String elName, String labelKey, FormItemContainer container) {
+		SingleSelection dropdown = uifactory.addDropdownSingleselect(elName, labelKey, container,
+				new String[] { "-" }, new String[] { "-" }, null);
+		dropdown.setMandatory(true);
+		return dropdown;
+	}
+
+	private TextElement addModelTextElement(String elName, String labelKey, FormItemContainer container) {
+		return uifactory.addTextElement(elName, labelKey, 256, "", container);
+	}
+
+	private FormLink addTestLink(String elName, FormItemContainer container) {
+		FormLink testLink = uifactory.addFormLink(elName, elName, "ai.feature.test", null, container, Link.BUTTON_SMALL);
+		testLink.setGhost(true);
+		testLink.setIconLeftCSS("o_icon o_icon_ai");
+		return testLink;
 	}
 
 	private SingleSelection buildSpiDropdown(String elName, String currentSpiId, FormItemContainer container,
@@ -268,45 +298,25 @@ public class AiFeaturesAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == mcGeneratorSpiEl) {
-			doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
+			updateMcModel(getSelectedKey(mcGeneratorSpiEl));
 		} else if (source == imgDescSpiEl) {
-			doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
+			updateImgDescModel(getSelectedKey(imgDescSpiEl));
 		} else if (source == essayGenSpiEl) {
-			doUpdateEssayGenModelDropdown(getSelectedKey(essayGenSpiEl));
+			updateEssayGenModel(getSelectedKey(essayGenSpiEl));
 		} else if (source == essayGradingSpiEl) {
-			doUpdateEssayGradingModelDropdown(getSelectedKey(essayGradingSpiEl));
-		} else if (source == mcEnabledEl) {
-			if (mcEnabledEl.isOn()) {
-				doUpdateMcModelDropdown(getSelectedKey(mcGeneratorSpiEl));
-			} else {
-				updateMcVisibility();
-			}
-		} else if (source == imgDescEnabledEl) {
-			if (imgDescEnabledEl.isOn()) {
-				doUpdateImgDescModelDropdown(getSelectedKey(imgDescSpiEl));
-			} else {
-				updateImgDescVisibility();
-			}
-		} else if (source == essayGenEnabledEl) {
-			if (essayGenEnabledEl.isOn()) {
-				doUpdateEssayGenModelDropdown(getSelectedKey(essayGenSpiEl));
-			} else {
-				updateEssayGenVisibility();
-			}
-		} else if (source == essayGradingEnabledEl) {
-			if (essayGradingEnabledEl.isOn()) {
-				doUpdateEssayGradingModelDropdown(getSelectedKey(essayGradingSpiEl));
-			} else {
-				updateEssayGradingVisibility();
-			}
+			updateEssayGradingModel(getSelectedKey(essayGradingSpiEl));
 		} else if (source == taxMatchSpiEl) {
-			doUpdateTaxMatchModelDropdown(getSelectedKey(taxMatchSpiEl));
+			updateTaxMatchModel(getSelectedKey(taxMatchSpiEl));
+		} else if (source == mcEnabledEl) {
+			updateMcVisibility();
+		} else if (source == imgDescEnabledEl) {
+			updateImgDescVisibility();
+		} else if (source == essayGenEnabledEl) {
+			updateEssayGenVisibility();
+		} else if (source == essayGradingEnabledEl) {
+			updateEssayGradingVisibility();
 		} else if (source == taxMatchEnabledEl) {
-			if (taxMatchEnabledEl.isOn()) {
-				doUpdateTaxMatchModelDropdown(getSelectedKey(taxMatchSpiEl));
-			} else {
-				updateTaxMatchVisibility();
-			}
+			updateTaxMatchVisibility();
 		} else if (source == mcTestLink) {
 			doTestMcGenerator(ureq);
 		} else if (source == imgDescTestLink) {
@@ -326,228 +336,52 @@ public class AiFeaturesAdminController extends FormBasicController {
 		super.event(ureq, source, event);
 	}
 
-	private void updateMcVisibility() {
-		boolean on = mcEnabledEl.isOn();
-		mcGeneratorSpiEl.setVisible(on);
-		if (mcGeneratorModelEl != null) {
-			mcGeneratorModelEl.setVisible(on);
-		}
-		if (mcTestLink != null) {
-			mcTestLink.setVisible(on && hasSpiSelected(mcGeneratorSpiEl) && hasModelValue(mcGeneratorModelEl));
-		}
+	// ------ Model update: repopulate content, then set visibility ------
+	//
+	// Each method points the active model element (xxxModelEl) at the dropdown
+	// when the provider publishes a model list, or at the free-text element
+	// otherwise. No item is removed or re-added.
+
+	private void updateTaxMatchModel(String spiId) {
+		String currentModel = taxonomyMatchingModule != null ? taxonomyMatchingModule.getModel() : null;
+		taxMatchModelEl = applyModel(spiId, getEmbeddingModelsForSpi(spiId), currentModel,
+				taxMatchModelDropdownEl, taxMatchModelTextEl);
+		updateTaxMatchVisibility();
 	}
 
-	private void updateImgDescVisibility() {
-		boolean on = imgDescEnabledEl.isOn();
-		imgDescSpiEl.setVisible(on);
-		if (imgDescModelEl != null) {
-			imgDescModelEl.setVisible(on);
-		}
-		if (imgDescTestLink != null) {
-			imgDescTestLink.setVisible(on && hasSpiSelected(imgDescSpiEl) && hasModelValue(imgDescModelEl));
-		}
-	}
-
-	private void updateEssayGenVisibility() {
-		boolean on = essayGenEnabledEl.isOn();
-		essayGenSpiEl.setVisible(on);
-		if (essayGenModelEl != null) {
-			essayGenModelEl.setVisible(on);
-		}
-		if (essayGenTestLink != null) {
-			essayGenTestLink.setVisible(on && hasSpiSelected(essayGenSpiEl) && hasModelValue(essayGenModelEl));
-		}
-	}
-
-	private void updateEssayGradingVisibility() {
-		boolean on = essayGradingEnabledEl.isOn();
-		essayGradingSpiEl.setVisible(on);
-		if (essayGradingModelEl != null) {
-			essayGradingModelEl.setVisible(on);
-		}
-		if (essayGradingTestLink != null) {
-			essayGradingTestLink.setVisible(on && hasSpiSelected(essayGradingSpiEl) && hasModelValue(essayGradingModelEl));
-		}
-	}
-
-	private void doUpdateMcModelDropdown(String spiId) {
-		if (mcGeneratorModelEl != null) {
-			formLayout.remove(mcGeneratorModelEl);
-		}
-		if (mcTestLink != null) {
-			formLayout.remove(mcTestLink);
-		}
-		removeImgDescSection();
-		removeTaxMatchSection();
-		removeEssayGenSection();
-		removeEssayGradingSection();
-		formLayout.remove(buttonsCont);
-
-		mcGeneratorModelEl = buildModelElement(spiId, "ai.feature.model",
-				getModelsForSpi(spiId), aiModule.getMCGeneratorModel());
-
-		mcTestLink = uifactory.addFormLink("mc.test", "mc.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
-		mcTestLink.setGhost(true);
-		mcTestLink.setIconLeftCSS("o_icon o_icon_ai");
-
-		reAddImgDescSection();
-		reAddTaxMatchSection();		
-		reAddEssayGenSection();
-		reAddEssayGradingSection();
-		formLayout.add(buttonsCont);
-		updateMcVisibility();
-	}
-
-	private void doUpdateImgDescModelDropdown(String spiId) {
-		if (imgDescModelEl != null) {
-			formLayout.remove(imgDescModelEl);
-		}
-		if (imgDescTestLink != null) {
-			formLayout.remove(imgDescTestLink);
-		}
-		removeTaxMatchSection();
-		removeEssayGenSection();
-		removeEssayGradingSection();
-		formLayout.remove(buttonsCont);
-
-		imgDescModelEl = buildModelElement(spiId, "ai.feature.image-description-generator.model",
-				getModelsForSpi(spiId), aiModule.getImgDescModel());
-
-		imgDescTestLink = uifactory.addFormLink("imgDesc.test", "imgDesc.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
-		imgDescTestLink.setGhost(true);
-		imgDescTestLink.setIconLeftCSS("o_icon o_icon_ai");
-
-		reAddTaxMatchSection();
-		reAddEssayGenSection();
-		reAddEssayGradingSection();
-		formLayout.add(buttonsCont);
+	private void updateImgDescModel(String spiId) {
+		imgDescModelEl = applyModel(spiId, getModelsForSpi(spiId), aiModule.getImgDescModel(),
+				imgDescModelDropdownEl, imgDescModelTextEl);
 		updateImgDescVisibility();
 	}
 
-	private void doUpdateEssayGenModelDropdown(String spiId) {
-		if (essayGenModelEl != null) {
-			formLayout.remove(essayGenModelEl);
-		}
-		if (essayGenTestLink != null) {
-			formLayout.remove(essayGenTestLink);
-		}
-		removeEssayGradingSection();
-		formLayout.remove(buttonsCont);
+	private void updateMcModel(String spiId) {
+		mcGeneratorModelEl = applyModel(spiId, getModelsForSpi(spiId), aiModule.getMCGeneratorModel(),
+				mcModelDropdownEl, mcModelTextEl);
+		updateMcVisibility();
+	}
 
-		essayGenModelEl = buildModelElement(spiId, "ai.feature.model",
-				getModelsForSpi(spiId), aiModule.getEssayGenerationModel());
-
-		essayGenTestLink = uifactory.addFormLink("essayGen.test", "essayGen.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
-		essayGenTestLink.setGhost(true);
-		essayGenTestLink.setIconLeftCSS("o_icon o_icon_ai");
-
-		reAddEssayGradingSection();
-		formLayout.add(buttonsCont);
+	private void updateEssayGenModel(String spiId) {
+		essayGenModelEl = applyModel(spiId, getModelsForSpi(spiId), aiModule.getEssayGenerationModel(),
+				essayGenModelDropdownEl, essayGenModelTextEl);
 		updateEssayGenVisibility();
 	}
 
-	private void doUpdateEssayGradingModelDropdown(String spiId) {
-		if (essayGradingModelEl != null) {
-			formLayout.remove(essayGradingModelEl);
-		}
-		if (essayGradingTestLink != null) {
-			formLayout.remove(essayGradingTestLink);
-		}
-		formLayout.remove(buttonsCont);
-
-		essayGradingModelEl = buildModelElement(spiId, "ai.feature.model",
-				getModelsForSpi(spiId), aiModule.getEssayGradingModel());
-
-		essayGradingTestLink = uifactory.addFormLink("essayGrading.test", "essayGrading.test", "ai.feature.test", null, formLayout, Link.BUTTON_SMALL);
-		essayGradingTestLink.setGhost(true);
-		essayGradingTestLink.setIconLeftCSS("o_icon o_icon_ai");
-
-		formLayout.add(buttonsCont);
+	private void updateEssayGradingModel(String spiId) {
+		essayGradingModelEl = applyModel(spiId, getModelsForSpi(spiId), aiModule.getEssayGradingModel(),
+				essayGradingModelDropdownEl, essayGradingModelTextEl);
 		updateEssayGradingVisibility();
 	}
 
-	private void removeImgDescSection() {
-		if (imgDescModelEl != null) {
-			formLayout.remove(imgDescModelEl);
-		}
-		if (imgDescTestLink != null) {
-			formLayout.remove(imgDescTestLink);
-		}
-		formLayout.remove(imgDescSpiEl);
-		formLayout.remove(imgDescEnabledEl);
-		formLayout.remove(imgDescTitle);
-		formLayout.remove(imgDescSpacer);
-	}
-
-	private void reAddImgDescSection() {
-		formLayout.add(imgDescSpacer);
-		formLayout.add(imgDescTitle);
-		formLayout.add(imgDescEnabledEl);
-		formLayout.add(imgDescSpiEl);
-		if (imgDescModelEl != null) {
-			formLayout.add(imgDescModelEl);
-		}
-		if (imgDescTestLink != null) {
-			formLayout.add(imgDescTestLink);
-		}
-	}
-
-	private void removeEssayGenSection() {
-		if (essayGenModelEl != null) {
-			formLayout.remove(essayGenModelEl);
-		}
-		if (essayGenTestLink != null) {
-			formLayout.remove(essayGenTestLink);
-		}
-		formLayout.remove(essayGenSpiEl);
-		formLayout.remove(essayGenEnabledEl);
-		formLayout.remove(essayGenTitle);
-		formLayout.remove(essayGenSpacer);
-	}
-
-	private void reAddEssayGenSection() {
-		formLayout.add(essayGenSpacer);
-		formLayout.add(essayGenTitle);
-		formLayout.add(essayGenEnabledEl);
-		formLayout.add(essayGenSpiEl);
-		if (essayGenModelEl != null) {
-			formLayout.add(essayGenModelEl);
-		}
-		if (essayGenTestLink != null) {
-			formLayout.add(essayGenTestLink);
-		}
-	}
-
-	private void removeEssayGradingSection() {
-		if (essayGradingModelEl != null) {
-			formLayout.remove(essayGradingModelEl);
-		}
-		if (essayGradingTestLink != null) {
-			formLayout.remove(essayGradingTestLink);
-		}
-		formLayout.remove(essayGradingSpiEl);
-		formLayout.remove(essayGradingEnabledEl);
-		formLayout.remove(essayGradingTitle);
-		formLayout.remove(essayGradingSpacer);
-	}
-
-	private void reAddEssayGradingSection() {
-		formLayout.add(essayGradingSpacer);
-		formLayout.add(essayGradingTitle);
-		formLayout.add(essayGradingEnabledEl);
-		formLayout.add(essayGradingSpiEl);
-		if (essayGradingModelEl != null) {
-			formLayout.add(essayGradingModelEl);
-		}
-		if (essayGradingTestLink != null) {
-			formLayout.add(essayGradingTestLink);
-		}
-	}
-
-	private FormItem buildModelElement(String spiId, String labelKey, List<String> models, String currentModel) {
-		String elName = labelKey + "." + CodeHelper.getRAMUniqueID();
-		boolean hasSpi = StringHelper.containsNonWhitespace(spiId) && !"-".equals(spiId);
-
+	/**
+	 * Set the model selectors to the desired state for the given provider and
+	 * return the element that is now active. When the provider publishes a model
+	 * list the dropdown is repopulated and selected; otherwise the free-text
+	 * element holds the configured model. Visibility is handled by the caller's
+	 * updateXxxVisibility().
+	 */
+	private FormItem applyModel(String spiId, List<String> models, String currentModel,
+			SingleSelection dropdownEl, TextElement textEl) {
 		if (!models.isEmpty()) {
 			SelectionValues sv = new SelectionValues();
 			for (String model : models) {
@@ -555,30 +389,72 @@ public class AiFeaturesAdminController extends FormBasicController {
 			}
 			sv.sort(SelectionValues.VALUE_ASC);
 			String[] keys = sv.keys();
-			SingleSelection dropdown = uifactory.addDropdownSingleselect(elName, labelKey,
-					formLayout, keys, sv.values(), null);
-			dropdown.setMandatory(true);
+			dropdownEl.setKeysAndValues(keys, sv.values(), null);
+
 			boolean selected = false;
 			if (StringHelper.containsNonWhitespace(currentModel)) {
 				for (String key : keys) {
 					if (key.equals(currentModel)) {
-						dropdown.select(key, true);
+						dropdownEl.select(key, true);
 						selected = true;
 						break;
 					}
 				}
 			}
-			if (!selected) {
-				dropdown.select(keys[0], true);
+			if (!selected && keys.length > 0) {
+				dropdownEl.select(keys[0], true);
 			}
-			return dropdown;
-		} else {
-			TextElement textEl = uifactory.addTextElement(elName, labelKey, 256,
-					hasSpi ? currentModel : "", formLayout);
-			textEl.setMandatory(hasSpi);
-			textEl.setEnabled(hasSpi);
-			return textEl;
+			return dropdownEl;
 		}
+
+		boolean hasSpi = StringHelper.containsNonWhitespace(spiId) && !"-".equals(spiId);
+		textEl.setValue(hasSpi ? currentModel : "");
+		textEl.setMandatory(hasSpi);
+		textEl.setEnabled(hasSpi);
+		return textEl;
+	}
+
+	// ------ Visibility: gate the section on its enable toggle ------
+
+	private void updateTaxMatchVisibility() {
+		boolean on = taxMatchEnabledEl.isOn();
+		taxMatchSpiEl.setVisible(on);
+		setModelVisibility(on, taxMatchModelEl, taxMatchModelDropdownEl, taxMatchModelTextEl);
+	}
+
+	private void updateImgDescVisibility() {
+		boolean on = imgDescEnabledEl.isOn();
+		imgDescSpiEl.setVisible(on);
+		setModelVisibility(on, imgDescModelEl, imgDescModelDropdownEl, imgDescModelTextEl);
+		imgDescTestLink.setVisible(on && hasSpiSelected(imgDescSpiEl) && hasModelValue(imgDescModelEl));
+	}
+
+	private void updateMcVisibility() {
+		boolean on = mcEnabledEl.isOn();
+		mcGeneratorSpiEl.setVisible(on);
+		setModelVisibility(on, mcGeneratorModelEl, mcModelDropdownEl, mcModelTextEl);
+		mcTestLink.setVisible(on && hasSpiSelected(mcGeneratorSpiEl) && hasModelValue(mcGeneratorModelEl));
+	}
+
+	private void updateEssayGenVisibility() {
+		boolean on = essayGenEnabledEl.isOn();
+		essayGenSpiEl.setVisible(on);
+		setModelVisibility(on, essayGenModelEl, essayGenModelDropdownEl, essayGenModelTextEl);
+		essayGenTestLink.setVisible(on && hasSpiSelected(essayGenSpiEl) && hasModelValue(essayGenModelEl));
+	}
+
+	private void updateEssayGradingVisibility() {
+		boolean on = essayGradingEnabledEl.isOn();
+		essayGradingSpiEl.setVisible(on);
+		setModelVisibility(on, essayGradingModelEl, essayGradingModelDropdownEl, essayGradingModelTextEl);
+		essayGradingTestLink.setVisible(on && hasSpiSelected(essayGradingSpiEl) && hasModelValue(essayGradingModelEl));
+	}
+
+	/** Show only the active model element, and only while the section is enabled. */
+	private void setModelVisibility(boolean on, FormItem activeModelEl,
+			SingleSelection dropdownEl, TextElement textEl) {
+		dropdownEl.setVisible(on && activeModelEl == dropdownEl);
+		textEl.setVisible(on && activeModelEl == textEl);
 	}
 
 	private List<String> getModelsForSpi(String spiId) {
@@ -823,48 +699,6 @@ public class AiFeaturesAdminController extends FormBasicController {
 			spiEl.select(keys[0], true);
 		}
 		return spiEl;
-	}
-
-	private void doUpdateTaxMatchModelDropdown(String spiId) {
-		if (taxMatchModelEl != null) {
-			formLayout.remove(taxMatchModelEl);
-		}
-		formLayout.remove(buttonsCont);
-
-		String currentModel = taxonomyMatchingModule != null ? taxonomyMatchingModule.getModel() : null;
-		taxMatchModelEl = buildModelElement(spiId, "ai.feature.taxonomy-matching.model",
-				getEmbeddingModelsForSpi(spiId), currentModel);
-
-		formLayout.add(buttonsCont);
-		updateTaxMatchVisibility();
-	}
-
-	private void updateTaxMatchVisibility() {
-		boolean on = taxMatchEnabledEl.isOn();
-		taxMatchSpiEl.setVisible(on);
-		if (taxMatchModelEl != null) {
-			taxMatchModelEl.setVisible(on);
-		}
-	}
-
-	private void removeTaxMatchSection() {
-		if (taxMatchModelEl != null) {
-			formLayout.remove(taxMatchModelEl);
-		}
-		formLayout.remove(taxMatchSpiEl);
-		formLayout.remove(taxMatchEnabledEl);
-		formLayout.remove(taxMatchTitle);
-		formLayout.remove(taxMatchSpacer);
-	}
-
-	private void reAddTaxMatchSection() {
-		formLayout.add(taxMatchSpacer);
-		formLayout.add(taxMatchTitle);
-		formLayout.add(taxMatchEnabledEl);
-		formLayout.add(taxMatchSpiEl);
-		if (taxMatchModelEl != null) {
-			formLayout.add(taxMatchModelEl);
-		}
 	}
 
 	private List<String> getEmbeddingModelsForSpi(String spiId) {
