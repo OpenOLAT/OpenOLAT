@@ -33,9 +33,16 @@ create table o_ai_usage_log (
    a_req_num_messages int8,
    a_req_text_length int8,
    a_cache_creation_input_tokens int8,
+   a_assessment_item_identifier varchar(64),
+   a_content_hash_at_call varchar(64),
+   a_prompt_template_version varchar(40),
+   a_tier varchar(16),
+   a_assessment_item_session_key int8,
    primary key (id)
 );
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
+create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
+create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 
 -- Taxonomy matching embeddings
 create table o_tax_level_embedding (
@@ -177,16 +184,6 @@ alter table o_rm_module_log add constraint rm_log_to_book_idx foreign key (fk_bo
 alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lecture_block) references o_lecture_block(id);
 create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);
 
-
--- AI usage log essay extension
-alter table o_ai_usage_log add column a_assessment_item_identifier varchar(64);
-alter table o_ai_usage_log add column a_content_hash_at_call varchar(64);
-alter table o_ai_usage_log add column a_prompt_template_version varchar(40);
-alter table o_ai_usage_log add column a_tier varchar(16);
-alter table o_ai_usage_log add column a_assessment_item_session_key int8;
-
-create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
-create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 
 -- AI essay correction result
 create table o_ai_essay_correction (
