@@ -490,7 +490,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 					for(int i=0; i<numOfVariants; i++) {
 						Alternative variant = variants.get(i);
 						if(!variant.isCorrect()) {
-							validateAgainstCorrectVariant(variant, pointsForCorrect.doubleValue());
+							allOk &= validateAgainstCorrectVariant(variant, pointsForCorrect.doubleValue());
 						}
 					}
 				}

@@ -58,14 +58,14 @@ public enum QTI21QuestionType {
 	matchtruefalse(true, "matchtruefalse", "o_mi_qtimatch_truefalse", QuestionType.MATCHTRUEFALSE),
 	fib(true, "fib", "o_mi_qtifib", QuestionType.FIB),
 	numerical(true, "numerical", "o_mi_qtinumerical", QuestionType.NUMERICAL),
+	inlinechoice(true, "inlinechoice", "o_mi_qtiinlinechoice", QuestionType.INLINECHOICE),
+	gapmixed(true, "gapmixed", "o_mi_qtigapmixed", QuestionType.GAPMIXED),
 	hotspot(true, "hotspot", "o_mi_qtihotspot", QuestionType.HOTSPOT),
 	essay(true, "essay", "o_mi_qtiessay", QuestionType.ESSAY),
 	upload(true, "upload", "o_mi_qtiupload", QuestionType.UPLOAD),
 	drawing(true, "drawing", "o_mi_qtidrawing", QuestionType.DRAWING),
 	hottext(true, "hottext", "o_mi_qtihottext", QuestionType.HOTTEXT),
 	order(true, "order", "o_mi_qtiorder", QuestionType.ORDER),
-	inlinechoice(true, "inlinechoice", "o_mi_qtiinlinechoice", QuestionType.INLINECHOICE),
-	gapmixed(true, "gapmixed", "o_mi_qtigapmixed", QuestionType.GAPMIXED),
 	unkown(false, "unkown", "o_mi_qtiunkown", null);
 	
 	private final String prefix;

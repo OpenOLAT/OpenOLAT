@@ -121,7 +121,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		displayCont.setFormLayout("nolayout");
 		
 		SelectionValues shuffleKeyValues = new SelectionValues();
-		shuffleKeyValues.add(SelectionValues.entry(SHUFFLE_KEY, translate("form.imd.order.shuffled")));
+		shuffleKeyValues.add(SelectionValues.entry(SHUFFLE_KEY, translate("form.imd.order.shuffle")));
 		shuffleKeyValues.add(SelectionValues.entry("", translate("form.imd.order.preset")));
 		shuffleEl = uifactory.addRadiosVertical("form.imd.order", "form.imd.order", displayCont,
 				shuffleKeyValues.keys(), shuffleKeyValues.values());

@@ -60,7 +60,8 @@ public class FIBTextEntryAlternativesController extends FormBasicController {
 		variantsEl = uifactory.addTextElement("fib.alternatives", 255, "", formLayout);
 		
 		separatorEl = uifactory.addTextElement("fib.alternatives.separator", 1, ";", formLayout);
-		separatorEl.setElementCssClass("form-inline");
+		separatorEl.setElementCssClass("o_gap_separator");
+		separatorEl.setMaxLength(2);
 		separatorEl.setDisplaySize(1);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

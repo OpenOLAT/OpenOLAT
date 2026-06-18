@@ -186,6 +186,8 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		previewEl.contextPut("text1", translate("fib.expectedLength.numeric.preview1"));
 		previewEl.contextPut("text2", translate("fib.expectedLength.numeric.preview2"));
 		previewEl.contextPut("refId", expectedLengthEl.getFormDispatchId());
+		previewEl.contextPut("placeholderId", placeholderEl.getFormDispatchId());
+		previewEl.contextPut("placeholder", placeholder == null ? "" : placeholder);
 		previewEl.contextPut("size", expectedLengthStr);
 		previewEl.contextPut("type", "numerical");
 

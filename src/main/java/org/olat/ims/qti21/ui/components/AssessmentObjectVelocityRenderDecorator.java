@@ -977,6 +977,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	private final String renderTextEntryAlternativesInCorrectionMode(LinkedHashSet<String> alternatives, TextEntry entryForScore) {
+		if(alternatives.isEmpty()) return "";
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("<span title='").append(translator.translate("correction.alternatives")).append("'>");
 		
@@ -1023,6 +1025,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	private final String renderTextEntryAlternativesInSolutionMode(LinkedHashSet<String> alternatives, TextEntry entryForScore) {
+		if(alternatives.isEmpty()) return "";
+		
 		StringBuilder sb = new StringBuilder();
 		
 		String separator = ", ";
@@ -1043,6 +1047,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			}
 		}
 		
+		if(scoreAndAnswers.isEmpty()) {
+			return "";
+		}
 		if(scoreAndAnswers.size() > 1) {
 			Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
 		}

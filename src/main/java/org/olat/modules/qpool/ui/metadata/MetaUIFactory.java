@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.metadata;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.modules.qpool.QItemTypeComparator;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -111,6 +113,8 @@ public class MetaUIFactory {
 	
 	public static KeyValues getQItemTypeKeyValues(Translator translator, List<QItemType> excludedItemTypes, QPoolService qpoolService) {
 		List<QItemType> types = qpoolService.getAllItemTypes();
+		Collections.sort(types, new QItemTypeComparator());
+		
 		List<String> typeKeys = new ArrayList<>(types.size());
 		List<String> typeValues = new ArrayList<>(types.size());
 		for(QItemType type:types) {

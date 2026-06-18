@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 20.02.2013<br>
@@ -27,22 +29,33 @@ package org.olat.modules.qpool;
  */
 public enum QuestionType {
 
-	MC,
-	FIB,
 	SC,
+	MC,
 	KPRIM,
-	ESSAY,
-	NUMERICAL,
-	HOTSPOT,
-	UPLOAD,
-	DRAWING,
 	MATCH,
 	MATCHDRAGANDDROP,
 	MATCHTRUEFALSE,
-	HOTTEXT,
-	ORDER,
+	FIB,
+	NUMERICAL,
 	INLINECHOICE,
 	GAPMIXED,
-	UNKOWN
+	HOTSPOT,
+	ESSAY,
+	UPLOAD,
+	DRAWING,
+	HOTTEXT,
+	ORDER,
+	UNKOWN;
+	
+	public static final QuestionType typeOf(String itemType) {
+		if(StringHelper.containsNonWhitespace(itemType)) {
+			for(QuestionType type:values()) {
+				if(type.name().equalsIgnoreCase(itemType)) {
+					return type;
+				}
+			}
+		}
+		return QuestionType.UNKOWN;
+	}
 
 }
