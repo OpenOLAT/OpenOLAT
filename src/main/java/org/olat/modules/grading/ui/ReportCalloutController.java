@@ -22,7 +22,7 @@ package org.olat.modules.grading.ui;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.olat.commons.calendar.CalendarUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -140,20 +140,16 @@ public class ReportCalloutController extends FormBasicController {
 
 	private void doLastMonthRange() {
 		Calendar cal = Calendar.getInstance();
-		Date end = CalendarUtils.endOfDay(cal.getTime());
-		dateRangeEl.setSecondDate(end);
+		dateRangeEl.setSecondDate(cal.getTime());
 		cal.add(Calendar.MONTH, -1);
-		Date start = CalendarUtils.startOfDay(cal.getTime());
-		dateRangeEl.setDate(start);
+		dateRangeEl.setDate(cal.getTime());
 	}
 	
 	private void doLastYearRange() {
 		Calendar cal = Calendar.getInstance();
-		Date end = CalendarUtils.endOfDay(cal.getTime());
-		dateRangeEl.setSecondDate(end);
+		dateRangeEl.setSecondDate(cal.getTime());
 		cal.add(Calendar.YEAR, -1);
-		Date start = CalendarUtils.startOfDay(cal.getTime());
-		dateRangeEl.setDate(start);
+		dateRangeEl.setDate(cal.getTime());
 	}
 	
 	private void doReport(UserRequest ureq) {
@@ -164,11 +160,14 @@ public class ReportCalloutController extends FormBasicController {
 		
 		Date start = dateRangeEl.getDate();
 		Date end = dateRangeEl.getSecondDate();
+		Date endInclusive = end == null
+				? null
+				: DateUtils.addDays(end, 1);// full day inclusive
 		boolean onlyClosedAssignments = closedAssignmentEl.isOn();
 
 		String label = getLabel(start, end);
 		Roles roles = ureq.getUserSession().getRoles();
-		ReportResource resource = new ReportResource(roles, label, start, end, onlyClosedAssignments, referenceEntry,
+		ReportResource resource = new ReportResource(roles, label, start, endInclusive, onlyClosedAssignments, referenceEntry,
 				grader, manager, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 		fireEvent(ureq, Event.DONE_EVENT);
