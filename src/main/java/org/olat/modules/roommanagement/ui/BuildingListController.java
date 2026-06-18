@@ -602,15 +602,13 @@ public class BuildingListController extends FormBasicController implements Flexi
 	private static final class RoomsCalloutController extends BasicController {
 
 		private final List<Link> roomLinks = new ArrayList<>();
-		private final String roomsUrl;
 
 		public RoomsCalloutController(UserRequest ureq, WindowControl wControl, List<Room> rooms, Translator translator) {
 			super(ureq, wControl);
 			VelocityContainer mainVC = createVelocityContainer("rooms_callout");
-
-			roomsUrl = Settings.getServerContextPathURI() + "/auth/AdminSite/0/roommanagement/0/Rooms/0";
-
 			mainVC.contextPut("title", translator.translate("building.rooms.callout", String.valueOf(rooms.size())));
+
+			String roomBaseUrl = Settings.getServerContextPathURI() + "/auth/AdminSite/0/roommanagement/0/Rooms/0/Room/";
 
 			List<String> linkNames = new ArrayList<>();
 			for (Room room : rooms) {
@@ -619,11 +617,11 @@ public class BuildingListController extends FormBasicController implements Flexi
 				if (!StringHelper.containsNonWhitespace(label)) {
 					continue;
 				}
-				Link roomLink = LinkFactory.createCustomLink("room_" + room.getKey(), "room_" + room.getKey(), 
-						"roomLink", StringHelper.escapeHtml(label), Link.LINK | Link.NONTRANSLATED, 
+				Link roomLink = LinkFactory.createCustomLink("room_" + room.getKey(), "room_" + room.getKey(),
+						"roomLink", StringHelper.escapeHtml(label), Link.LINK | Link.NONTRANSLATED,
 						mainVC, this);
-				roomLink.setUrl(roomsUrl);
-				roomLink.setNewWindow(true, true);
+				roomLink.setUrl(roomBaseUrl + room.getKey());
+				roomLink.setUserObject(room.getKey());
 				roomLinks.add(roomLink);
 				linkNames.add(roomLink.getComponentName());
 			}
@@ -633,9 +631,9 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 		@Override
 		protected void event(UserRequest ureq, org.olat.core.gui.components.Component source, org.olat.core.gui.control.Event event) {
-			if (roomLinks.contains(source)) {
-				// Add route to exact room once the route is available
-				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(roomsUrl));
+			if (source instanceof Link link && roomLinks.contains(link) && link.getUserObject() instanceof Long roomKey) {
+				String roomUrl = Settings.getServerContextPathURI() + "/auth/AdminSite/0/roommanagement/0/Rooms/0/Room/" + roomKey;
+				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createParentRedirectTo(roomUrl));
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}

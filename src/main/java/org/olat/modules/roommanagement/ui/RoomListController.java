@@ -60,7 +60,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.roommanagement.Building;
@@ -78,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 5 Jun 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RoomListController extends FormBasicController implements FlexiTableComponentDelegate {
+public class RoomListController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
 	private static final String FILTER_STATUS = "status";
 	private static final String TAB_ID_ALL = "all";
@@ -411,6 +414,16 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 
 	private void loadCalendar() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries == null || entries.isEmpty()) return;
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if ("Room".equalsIgnoreCase(type)) {
+			Long roomKey = entries.get(0).getOLATResourceable().getResourceableId();
+			selectRoom(ureq, roomKey);
+		}
 	}
 
 	void selectRoom(UserRequest ureq, Long roomKey) {

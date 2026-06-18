@@ -101,6 +101,10 @@ public class RoomManagementAdminController extends BasicController implements Ac
 		} else if (ORES_TYPE_ROOMS.equalsIgnoreCase(type) && roomsLink.isVisible()) {
 			doOpenRooms(ureq);
 			segmentView.select(roomsLink);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if (!subEntries.isEmpty()) {
+				roomListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if (ORES_TYPE_BUILDINGS.equalsIgnoreCase(type) && buildingsLink.isVisible()) {
 			doOpenBuildings(ureq);
 			segmentView.select(buildingsLink);
