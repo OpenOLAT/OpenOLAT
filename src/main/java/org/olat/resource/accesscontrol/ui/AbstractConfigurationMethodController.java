@@ -50,13 +50,13 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferDateConfig;
-import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.resource.accesscontrol.OfferDateRef;
 import org.olat.resource.accesscontrol.OfferDateUnit;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
@@ -227,6 +227,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		fromModeEl.select(fromMode, true);
 
 		fromDateEl = uifactory.addDateChooser("from_" + link.getKey(), null, offer != null ? offer.getValidFrom() : null, catalogCont);
+		fromDateEl.setAriaLabel(translate("offer.from"));
 
 		fromDateRelEl = uifactory.addRelativeDateElement("fromDateRel", null,
 				catalogCont, getWindowControl(), relDateContext);
@@ -248,6 +249,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		untilModeEl.select(untilMode, true);
 
 		untilDateEl = uifactory.addDateChooser("until_" + link.getKey(), null, offer != null ? offer.getValidTo() : null, catalogCont);
+		untilDateEl.setAriaLabel(translate("offer.until"));
 
 		untilDateRelEl = uifactory.addRelativeDateElement("untilDateRel", null,
 				catalogCont, getWindowControl(), relDateContext);
@@ -331,11 +333,15 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			if (fromDateRelEl.getValue() == null) {
 				fromModeEl.select(DATE_MODE_STATUS, true);
 				updateUI();
+			} else {
+				updateRelDateWarning(fromDateRelEl);
 			}
 		} else if (source == untilDateRelEl) {
 			if (untilDateRelEl.getValue() == null) {
 				untilModeEl.select(DATE_MODE_STATUS, true);
 				updateUI();
+			} else {
+				updateRelDateWarning(untilDateRelEl);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -365,11 +371,46 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		String fromMode = fromModeEl.isOneSelected() ? fromModeEl.getSelectedKey() : DATE_MODE_STATUS;
 		fromDateEl.setVisible(customCondition && DATE_MODE_ABSOLUTE.equals(fromMode));
 		fromDateRelEl.setVisible(customCondition && DATE_MODE_RELATIVE.equals(fromMode));
+		if (fromDateRelEl.isVisible()) {
+			updateRelDateWarning(fromDateRelEl);
+		}
 
 		untilModeEl.setVisible(customCondition);
 		String untilMode = untilModeEl.isOneSelected() ? untilModeEl.getSelectedKey() : DATE_MODE_STATUS;
 		untilDateEl.setVisible(customCondition && DATE_MODE_ABSOLUTE.equals(untilMode));
 		untilDateRelEl.setVisible(customCondition && DATE_MODE_RELATIVE.equals(untilMode));
+		if (untilDateRelEl.isVisible()) {
+			updateRelDateWarning(untilDateRelEl);
+		}
+	}
+
+	private void updateRelDateWarning(RelativeDateElement el) {
+		el.clearWarning();
+		RelativeDateSelection sel = el.getValue();
+		if (sel == null) {
+			return;
+		}
+		boolean missing = "BEGIN".equals(sel.getRefKey())
+				? catalogInfo.getStartDate() == null
+				: catalogInfo.getEndDate() == null;
+		if (missing) {
+			el.setWarningKey("offer.relative.date.missing");
+		}
+	}
+
+	private Date resolveEffectiveDate(SingleSelection modeEl, DateChooser absoluteEl, RelativeDateElement relativeEl) {
+		if (modeEl.isKeySelected(DATE_MODE_ABSOLUTE)) {
+			return absoluteEl.getDate();
+		}
+		if (modeEl.isKeySelected(DATE_MODE_RELATIVE)) {
+			RelativeDateSelection sel = relativeEl.getValue();
+			if (sel == null) {
+				return null;
+			}
+			RelativeDateConfig config = toRelativeDateConfig(sel);
+			return config.ref().computeDate(catalogInfo.getStartDate(), catalogInfo.getEndDate(), config.unit(), config.value());
+		}
+		return null;
 	}
 
 	private RelativeDateSelection toRelativeDateSelection(OfferDateRef ref, OfferDateUnit unit, Integer value) {
@@ -427,11 +468,25 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			}
 
 			fromDateEl.clearError();
+			if (fromDateEl.isVisible() && fromDateEl.getDate() == null) {
+				fromDateEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+
 			untilDateEl.clearError();
-			if (fromDateEl.isVisible() && untilDateEl.isVisible()
-					&& fromDateEl.getDate() != null && untilDateEl.getDate() != null
-					&& fromDateEl.getDate().compareTo(untilDateEl.getDate()) > 0) {
-				fromDateEl.setErrorKey("form.error.first.after.second.date");
+			if (untilDateEl.isVisible() && untilDateEl.getDate() == null) {
+				untilDateEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+
+			Date resolvedFrom = resolveEffectiveDate(fromModeEl, fromDateEl, fromDateRelEl);
+			Date resolvedUntil = resolveEffectiveDate(untilModeEl, untilDateEl, untilDateRelEl);
+			if (resolvedFrom != null && resolvedUntil != null && resolvedFrom.compareTo(resolvedUntil) > 0) {
+				if (fromModeEl.isKeySelected(DATE_MODE_ABSOLUTE)) {
+					fromDateEl.setErrorKey("form.error.first.after.second.date");
+				} else {
+					fromDateRelEl.setErrorKey("form.error.first.after.second.date");
+				}
 				allOk = false;
 			}
 
