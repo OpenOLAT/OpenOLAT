@@ -148,7 +148,8 @@ public class BuildingDetailsController extends FormBasicController {
 			mapCont.put("leafletLoader", leafletLoader);
 		}
 
-		if (StringHelper.containsNonWhitespace(building.getAddress())) {
+		if (building.getGeoLatitude() != null && building.getGeoLongitude() != null
+				&& StringHelper.containsNonWhitespace(building.getAddress())) {
 			String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
 			appleMapsUrl = "https://maps.apple.com/?q=" + query;
 			googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
