@@ -28,39 +28,6 @@
 	}
 }
 
-.o_building_detail {
-	margin-top: 8px;
-	padding: 16px;
-	border: 1px solid $panel-default-border;
-	border-radius: $border-radius-base;
-	background: $panel-bg;
-
-	.o_building_detail_title {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		flex-wrap: wrap;
-	}
-
-	.o_building_detail_ref {
-		font-size: $font-size-large;
-	}
-
-	.o_building_detail_desc {
-		font-size: $font-size-large;
-	}
-
-	.o_building_detail_status {
-		margin-left: 4px;
-	}
-
-	.o_building_edit_cmd {
-		flex-grow: 1;
-		display: flex;
-		justify-content: end;
-	} 
-}
-
 .o_building_detail_body {
 	margin-top: 16px;
 	display: grid;
@@ -215,33 +182,6 @@
 	margin-top: 6px;
 }
 
-.o_rm_detail {
-	margin-top: 8px;
-	padding: 16px;
-	border: 1px solid $panel-default-border;
-	border-radius: $border-radius-base;
-	background: $panel-bg;
-	
-	.o_rm_detail_title {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		flex-wrap: wrap;
-		
-		.o_rm_detail_ref {
-			font-size: $font-size-large;
-			font-weight: bold;
-		}
-	}
-	
-	.o_rm_detail_cmd {
-		flex-grow: 1;
-		display: flex;
-		gap: 16px;
-		justify-content: end;
-	}
-}
-
 .o_rm_detail_attribute_row {
 	margin-top: 12px;
 	display: flex;
@@ -297,30 +237,43 @@
 	font-weight: bold;
 }
 
-.o_rm_scheduling_details {
-	container-type: inline-size;
-	container-name: o-event-details-wrapper;
-	
+.o_rm_details {
 	.o_flex_header {
 		display: flex;
-		gap: 16px;
+		gap: 8px;
 		align-items: center;
-		
-		.o_event_title {
+
+		.o_rm_rect_container {
 			display: flex;
-			gap: 5px;
+			height: 30px;
+
+			align-items: center;
+			justify-content: center;
+
+			.o_rm_rect {
+				width: 3px;
+				height: 100%;
+			}
+		}
+
+		.o_rm_title {
+			display: flex;
+			gap: 4px;
 			align-items: baseline;
-			
+
 			h3 {
-				margin-top: 10px;
+				margin: 0;
 			}
 		}
 		
-		.o_event_status {
+		.o_rm_status {
 			flex-grow: 1;
+			margin-left: 16px;
 		}
 	}
-	
+}
+
+.o_rm_scheduling_details {
 	.o_lecture_subjects {
 		margin-top: -12px;
 

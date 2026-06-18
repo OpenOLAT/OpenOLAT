@@ -65,7 +65,7 @@ public class BuildingDetailsController extends FormBasicController {
 	private RoomManagementService roomManagementService;
 
 	public BuildingDetailsController(UserRequest ureq, WindowControl wControl, Building building, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "building_detail_panel", rootForm);
+		super(ureq, wControl, LAYOUT_CUSTOM, "building_details_view", rootForm);
 		this.building = building;
 		initForm(ureq);
 	}

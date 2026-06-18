@@ -69,7 +69,7 @@ public class RoomDetailsController extends FormBasicController {
 	private RoomManagementService roomManagementService;
 
 	public RoomDetailsController(UserRequest ureq, WindowControl wControl, Room room, Form mainForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "room_detail_panel", mainForm);
+		super(ureq, wControl, LAYOUT_CUSTOM, "room_details_view", mainForm);
 		this.room = room;
 		initForm(ureq);
 	}

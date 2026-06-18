@@ -1,30 +1,31 @@
-<div class="o_building_detail clearfix">
-	<div class="o_building_detail_title">
-		<div class="o_building_rect_container">
-			#if($colorCss)
-			<div class="o_building_rect o_color_background $r.escapeHtml($colorCss)"> </div>
-			#end
+<div class="o_rm_details">
+	<div class="o_flex_header">
+
+		#if($colorCss)
+		<div class="o_rm_rect_container">
+			<div class="o_rm_rect o_color_background $r.escapeHtml($colorCss)"> </div>
 		</div>
-		<div>
-			#if($reference)
-			<strong class="o_building_detail_ref">$r.escapeHtml($reference)</strong>
-			#end
-			#if($description)
-			<span class="o_building_detail_desc text-muted"> &middot; $r.escapeHtml($description)</span>
-			#end
+		#end
+
+		<div class="o_rm_title">
+			#if($reference)<h3>$r.escapeHtml($reference)</h3>#end
+			#if($description)<h3><small> &middot; $r.escapeHtml($description)</small></h3>#end
 		</div>
-		<div>
-			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName) o_building_detail_status">
+		
+		<div class="o_rm_status">
+			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName)" title="$r.escapeHtml($statusLabel)">
 				<i class="o_icon o_icon-fw o_icon_rm_status_$r.escapeHtml($statusName)"> </i>
-				<span>$r.escapeHtml($statusLabel)</span>
+				<span> $r.escapeHtml($statusLabel)</span>
 			</span>
 		</div>
-		<div class="o_building_edit_cmd">
-			#if($r.available("building.detail.edit"))
+
+		#if($r.available("building.detail.edit"))
+		<div class="o_button_group">
 			$r.render("building.detail.edit")
-			#end
 		</div>
+		#end
 	</div>
+	
 	<div class="o_building_detail_body">
 		<div class="o_building_detail_left">
 			#if($address)

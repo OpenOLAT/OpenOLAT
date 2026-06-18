@@ -1,22 +1,27 @@
-<div class="o_rm_detail clearfix">
-	<div class="o_rm_detail_title">
+<div class="o_rm_details">
+	<div class="o_flex_header">
 		#if($reference)
-		<div class="o_rm_detail_ref">$r.escapeHtml($reference)</div>
+		<div class="o_rm_title"><h3>$r.escapeHtml($reference)</h3></div>
 		#end
-		<div>
-			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName)">
+
+		<div class="o_rm_status">
+			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName)" title="$r.escapeHtml($statusLabel)">
 				<i class="o_icon o_icon-fw o_icon_rm_status_$r.escapeHtml($statusName)"> </i>
 				<span>$r.escapeHtml($statusLabel)</span>
 			</span>
 		</div>
-		<div class="o_rm_detail_cmd">
-			#if($r.available("room.detail.view.calendar"))
+
+		#if($r.available("room.detail.view.calendar"))
+		<div class="o_button_group">
 			$r.render("room.detail.view.calendar")
-			#end
-			#if($r.available("room.detail.edit"))
-			$r.render("room.detail.edit")
-			#end
 		</div>
+		#end
+
+		#if($r.available("room.detail.edit"))
+		<div class="o_button_group">
+			$r.render("room.detail.edit")
+		</div>
+		#end
 	</div>
 	<div class="o_rm_detail_attribute_row">
 		<div class="o_rm_detail_attribute_cell">
