@@ -75,7 +75,7 @@ public class GradingAssignmentLogDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(assignmentLog);
-		Assert.assertEquals(assignmentLog.getKey(), assignmentLog.getGradingAssignmentKey());
+		Assert.assertEquals(assignment.getKey(), assignmentLog.getGradingAssignmentKey());
 		Assert.assertEquals(student, assignmentLog.getAssignee());
 		Assert.assertEquals(grader, assignmentLog.getGrader());
 		Assert.assertEquals(entry.getDisplayname(), assignmentLog.getRepositoryEntryDisplayName());
