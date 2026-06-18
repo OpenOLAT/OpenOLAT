@@ -32,6 +32,7 @@ import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingAssignmentLog;
+import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.model.GradingAssignmentLogSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -74,6 +75,12 @@ public class GradingAssignmentLogDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(assignmentLog);
+		Assert.assertEquals(assignmentLog.getKey(), assignmentLog.getGradingAssignmentKey());
+		Assert.assertEquals(student, assignmentLog.getAssignee());
+		Assert.assertEquals(grader, assignmentLog.getGrader());
+		Assert.assertEquals(entry.getDisplayname(), assignmentLog.getRepositoryEntryDisplayName());
+		Assert.assertEquals(entry.getDisplayname(), assignmentLog.getReferenceEntryDisplayName());
+		Assert.assertEquals(GradingAssignmentStatus.assigned, assignmentLog.getStatus());
 	}
 	
 	@Test

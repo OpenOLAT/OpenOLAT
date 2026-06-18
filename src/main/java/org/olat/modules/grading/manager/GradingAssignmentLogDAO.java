@@ -68,6 +68,7 @@ public class GradingAssignmentLogDAO {
 			assignmentLog.setRepositoryEntryExternalRef(entry.getExternalRef());
 		}
 		assignmentLog.setStatus(assignment.getAssignmentStatus());
+		assignmentLog.setClosingDate(assignment.getClosingDate());
 		assignmentLog.setTime(time);
 		assignmentLog.setMetadataTime(metadataTime);
 		dbInstance.getCurrentEntityManager().persist(assignmentLog);
