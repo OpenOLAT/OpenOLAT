@@ -20,6 +20,7 @@
 package org.olat.modules.roommanagement.ui;
 
 import java.math.BigDecimal;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -222,6 +223,16 @@ public class EditBuildingController extends FormBasicController {
 			adminAccessEl.clearError();
 			if (adminAccessEl.getSelectedKeys().isEmpty()) {
 				adminAccessEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+		}
+
+		infoUrlEl.clearError();
+		if (StringHelper.containsNonWhitespace(infoUrlEl.getValue())) {
+			try {
+				new URL(infoUrlEl.getValue()).toURI();
+			} catch (Exception e) {
+				infoUrlEl.setErrorKey("error.url.not.valid");
 				allOk = false;
 			}
 		}
