@@ -5124,7 +5124,6 @@ create table o_ai_essay_correction (
   a_completed          datetime,
   primary key (id)
 );
-alter table o_ai_essay_correction ENGINE = InnoDB;
 
 -- feed tag (blog/podcast)
 create table o_feed_tag (
@@ -6296,6 +6295,9 @@ alter table o_tb_custom_field_definition ENGINE = InnoDB;
 alter table o_tb_custom_field ENGINE = InnoDB;
 alter table o_tb_selection ENGINE = InnoDB;
 alter table o_tb_audit_log ENGINE = InnoDB;
+alter table o_ai_usage_log ENGINE = InnoDB;
+alter table o_ai_essay_correction ENGINE = InnoDB;
+alter table o_feed_tag ENGINE = InnoDB;
 alter table o_selectus_position ENGINE = InnoDB;
 alter table o_selectus_pos_attribute_def ENGINE = InnoDB;
 alter table o_selectus_application ENGINE = InnoDB;
@@ -7505,7 +7507,7 @@ create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_ident
 create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 alter table o_ai_essay_correction add constraint ai_essay_corr_ident_fk foreign key (fk_identity) references o_bs_identity (id);
 create index idx_ai_essay_corr_item_session on o_ai_essay_correction (a_item_session_key);
-create index idx_ai_essay_corr_question on o_ai_essay_correction (a_storage_path, a_question_id);
+create index idx_ai_essay_corr_question on o_ai_essay_correction (a_storage_path(255), a_question_id);
 
 -- feed tags
 alter table o_feed_tag add constraint tag_feed_idx foreign key (fk_feed) references o_feed (id);
