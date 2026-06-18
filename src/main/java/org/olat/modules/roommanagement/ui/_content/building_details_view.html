@@ -29,24 +29,28 @@
 	<div class="o_building_detail_body">
 		<div class="o_building_detail_left">
 			#if($address)
-			<div class="o_building_detail_section o_building_detail_top_left">
+			<div class="o_building_detail_section">
 				<div class="o_building_detail_section_label">$r.translate("building.col.address")</div>
 				<div class="o_building_detail_section_value">$r.escapeHtml($address)</div>
 			</div>
 			#end
-			<div class="o_building_detail_section o_building_detail_top_right">
+			#if($r.available("detail.info.url"))
+			<div class="o_building_detail_section">
 				<div class="o_building_detail_section_label">$r.translate("building.col.info.url")</div>
 				<div class="o_building_detail_section_value">
-					#if($r.available("detail.info.url"))$r.render("detail.info.url")#end
+					$r.render("detail.info.url")
 				</div>
 			</div>
-			<div class="o_building_detail_section o_building_detail_mid_left">
-				<div class="o_building_detail_section_label">$r.translate("building.detail.organisation")</div>
+			#end
+			#if($organisations)
+			<div class="o_building_detail_section">
+				<div class="o_building_detail_section_label">$r.translate("building.org.restriction")</div>
 				<div class="o_building_detail_section_value">
-					#if($organisations)$r.escapeHtml($organisations)#else$r.translate("building.detail.any")#end
+					$r.escapeHtml($organisations)
 				</div>
 			</div>
-			<div class="o_building_detail_section o_building_detail_mid_right">
+			#end
+			<div class="o_building_detail_section">
 				<div class="o_building_detail_section_label">$r.translate("building.col.rooms")</div>
 				<div class="o_building_detail_section_value">
 					#if($hasRooms)
