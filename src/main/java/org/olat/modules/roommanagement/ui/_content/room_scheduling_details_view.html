@@ -62,5 +62,11 @@
 				</div>
 			</div>
 		#end
+		#if($r.isNotEmpty($roomCardIds))
+		<label class="o_rm_scheduling_rooms_label">$r.translate("room.scheduling.details.rooms")</label>
+		  #foreach($roomCardId in $roomCardIds)
+		    $r.render($roomCardId)
+		  #end
+		#end
 	</div>
 </div>

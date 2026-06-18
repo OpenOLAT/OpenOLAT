@@ -1,0 +1,31 @@
+<div class="o_room_visiting_card">
+	<div>
+		$r.render($roomCardMapId)
+	</div>
+	<div class="o_room_visiting_card_info">
+		<div class="o_room_visiting_card_name">
+			#if($colorCss)
+			<div class="o_building_rect_container">
+				<div class="o_building_rect o_color_background $r.escapeHtml($colorCss)"> </div>
+			</div>
+			#end
+			#if($r.isNotEmpty($reference))
+			<span class="o_room_visiting_card_ref">$r.escapeHtml($reference)</span>
+			#end
+			#if($r.isNotEmpty($description))
+			<span class="text-muted">$r.escapeHtml($description)</span>
+			#end
+		</div>
+		#if($r.isNotEmpty($buildingRef) || $r.isNotEmpty($buildingDesc))
+		<div>
+			<span class="text-muted">
+				#if($r.isNotEmpty($buildingRef))$r.escapeHtml($buildingRef)#end
+				#if($r.isNotEmpty($buildingDesc))<span class="text-muted">, $r.escapeHtml($buildingDesc)</span>#end
+			</span>
+		</div>
+		#end
+		#if($r.isNotEmpty($address))
+		<div class="text-muted">$r.escapeHtml($address)</div>
+		#end
+	</div>
+</div>
