@@ -22,6 +22,7 @@ package org.olat.modules.roommanagement.ui;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,9 +73,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.BuildingRefImpl;
+import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.olat.modules.roommanagement.ui.BuildingListDataModel.BuildingCols;
@@ -105,6 +108,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutWindowCtrl;
 	private DialogBoxController confirmDeactivateDialog;
+	private DialogBoxController confirmDeleteDialog;
 	private MapsCalloutController mapsCalloutCtrl;
 	private CloseableCalloutWindowController mapsCalloutWindowCtrl;
 	private RoomsCalloutController roomsCalloutCtrl;
@@ -323,6 +327,13 @@ public class BuildingListController extends FormBasicController implements Flexi
 			}
 			removeAsListenerAndDispose(confirmDeactivateDialog);
 			confirmDeactivateDialog = null;
+		} else if (source == confirmDeleteDialog) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				BuildingRow row = (BuildingRow) confirmDeleteDialog.getUserObject();
+				doDelete(row);
+			}
+			removeAsListenerAndDispose(confirmDeleteDialog);
+			confirmDeleteDialog = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -475,7 +486,9 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 	private void doConfirmDeactivate(UserRequest ureq, BuildingRow row) {
 		String title = translate("building.confirm.deactivate.title");
-		String text = translate("building.confirm.deactivate", String.valueOf(row.getRoomCount()));
+		String text = row.getRoomCount() > 0
+				? translate("building.confirm.deactivate", String.valueOf(row.getRoomCount()))
+				: translate("building.confirm.deactivate.no.rooms");
 		List<String> buttons = List.of(translate("building.tools.deactivate"), translate("cancel"));
 		confirmDeactivateDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
 		listenTo(confirmDeactivateDialog);
@@ -510,10 +523,39 @@ public class BuildingListController extends FormBasicController implements Flexi
 		loadModel();
 	}
 
-	private void doDelete(UserRequest ureq, BuildingRow row) {
-		if (row.getRoomCount() > 0) {
-			showWarning("building.error.has.rooms");
-			return;
+	private void doConfirmDelete(UserRequest ureq, BuildingRow row) {
+		String title = translate("building.confirm.delete.title");
+		String text = row.getRoomCount() > 0 
+				? translate("building.confirm.delete", String.valueOf(row.getRoomCount())) 
+				: translate("building.confirm.delete.no.rooms");
+		List<String> buttons = List.of(translate("delete"), translate("cancel"));
+		confirmDeleteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
+		confirmDeleteDialog.setDanger(0);
+		listenTo(confirmDeleteDialog);
+		confirmDeleteDialog.setUserObject(row);
+		confirmDeleteDialog.activate();
+	}
+
+	private void doDelete(BuildingRow row) {
+		Building building = roomManagementService.getBuilding(new BuildingRefImpl(row.getBuilding().getKey()));
+		if (building == null) return;
+
+		SearchRoomParameters params = new SearchRoomParameters();
+		params.setBuilding(building);
+		params.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+		List<Room> rooms = roomManagementService.searchRooms(params, roles);
+
+		Date now = new Date();
+		for (Room room : rooms) {
+			List<RoomBooking> bookings = roomManagementService.getBookingsForRoom(new RoomRefImpl(room.getKey()), now, null);
+			if (!bookings.isEmpty()) {
+				showError("building.error.has.active.bookings");
+				return;
+			}
+		}
+
+		for (Room room : rooms) {
+			roomManagementService.deleteRoom(new RoomRefImpl(room.getKey()), getIdentity());
 		}
 		roomManagementService.deleteBuilding(new BuildingRefImpl(row.getBuilding().getKey()), getIdentity());
 		loadModel();
@@ -565,8 +607,10 @@ public class BuildingListController extends FormBasicController implements Flexi
 			} else {
 				addLink("building.tools.activate", "activate", "o_icon o_icon-fw o_icon_check", links, mainVC);
 			}
-			links.add("-");
-			addLink("building.tools.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
+			if (row.getBuilding().getStatus() == RoomStatus.inactive) {
+				links.add("-");
+				addLink("delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
+			}
 
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
@@ -587,7 +631,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 					case "edit" -> { close(); doEditBuilding(ureq, row.getBuilding()); }
 					case "deactivate" -> { close(); doConfirmDeactivate(ureq, row); }
 					case "activate" -> { close(); doActivate(row); }
-					case "delete" -> { close(); doDelete(ureq, row); }
+					case "delete" -> { close(); doConfirmDelete(ureq, row); }
 					default -> { /* ignore */ }
 				}
 			}
