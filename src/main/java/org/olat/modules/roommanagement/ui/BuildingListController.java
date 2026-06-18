@@ -501,7 +501,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		loadModel();
 	}
 
-	private void doReactivate(BuildingRow row) {
+	private void doActivate(BuildingRow row) {
 		Building building = roomManagementService.getBuilding(new BuildingRefImpl(row.getBuilding().getKey()));
 		if (building == null) return;
 		building.setStatus(RoomStatus.active);
@@ -563,7 +563,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 			if (row.getBuilding().getStatus() == RoomStatus.active) {
 				addLink("building.tools.deactivate", "deactivate", "o_icon o_icon-fw o_icon_ban", links, mainVC);
 			} else {
-				addLink("building.tools.reactivate", "reactivate", "o_icon o_icon-fw o_icon_check", links, mainVC);
+				addLink("building.tools.activate", "activate", "o_icon o_icon-fw o_icon_check", links, mainVC);
 			}
 			links.add("-");
 			addLink("building.tools.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
@@ -586,7 +586,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 				switch (link.getCommand()) {
 					case "edit" -> { close(); doEditBuilding(ureq, row.getBuilding()); }
 					case "deactivate" -> { close(); doConfirmDeactivate(ureq, row); }
-					case "reactivate" -> { close(); doReactivate(row); }
+					case "activate" -> { close(); doActivate(row); }
 					case "delete" -> { close(); doDelete(ureq, row); }
 					default -> { /* ignore */ }
 				}
