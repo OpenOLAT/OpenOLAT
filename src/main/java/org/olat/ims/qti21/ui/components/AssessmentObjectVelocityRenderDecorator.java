@@ -837,10 +837,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String textEntryType(TextEntryInteraction textEntry) {
 		try {
-			AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(assessmentItem, textEntry);
-			if(correctAnswers instanceof TextEntry) {
+			AbstractEntry entry = CorrectResponsesUtil.getTextEntry(assessmentItem, textEntry);
+			if(entry instanceof TextEntry) {
 				return "text";
-			} else if(correctAnswers instanceof NumericalEntry) {
+			} else if(entry instanceof NumericalEntry) {
 				return "numeric";
 			}
 		} catch (Exception e) {
@@ -860,11 +860,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		}
 		
 		String stringuifiedResponses = toString(val);
-		AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(assessmentItem, textEntry);
-		if(correctAnswers == null) {
+		AbstractEntry entry = CorrectResponsesUtil.getTextEntry(assessmentItem, textEntry);
+		if(entry == null) {
 			return null;
 		}
-		boolean correct = correctAnswers.match(stringuifiedResponses);
+		boolean correct = entry.match(stringuifiedResponses);
 		return Boolean.valueOf(correct);
 	}
 	
@@ -1222,6 +1222,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(responseIdentifier);
 		if (responseDeclaration != null) {
 			if (responseDeclaration.getMapping() != null) {
+				FloatValue targetValue = responseDeclaration.getMapping().computeTargetValue(responseInput);
+				if(targetValue != null && targetValue.doubleValue() > 0.0d) {
+					inputMatchesSolution = true;
+				}
+				
 				List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
 				for (MapEntry mapEntry : mapEntries) {
 					Value referenceValue = mapEntry.getMapKey();

@@ -53,10 +53,10 @@ public class TextEntryInteractionArchive extends DefaultInteractionArchive {
 		String stringuifiedResponses = response == null ? null : response.getStringuifiedResponse();
 		if(StringHelper.containsNonWhitespace(stringuifiedResponses)) {
 			TextEntryInteraction textEntryInteraction = (TextEntryInteraction)interaction;
-			AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(item, textEntryInteraction);
+			AbstractEntry textEntry = CorrectResponsesUtil.getTextEntry(item, textEntryInteraction);
 			stringuifiedResponses = stripResponse(stringuifiedResponses);
 
-			boolean correct = correctAnswers.match(stringuifiedResponses);
+			boolean correct = textEntry.match(stringuifiedResponses);
 			if(correct) {
 				dataRow.addCell(col++, stringuifiedResponses, workbook.getStyles().getCorrectStyle());
 			} else {

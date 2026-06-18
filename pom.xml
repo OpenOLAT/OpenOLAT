@@ -91,7 +91,7 @@
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
-		<qtiworks.version>1.0.35</qtiworks.version>
+		<qtiworks.version>1.0.36</qtiworks.version>
 		<org.commonmark>0.28.0</org.commonmark>
 		<dev.langchain4j>1.16.3</dev.langchain4j>
 		

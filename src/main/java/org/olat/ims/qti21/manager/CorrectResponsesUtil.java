@@ -356,7 +356,7 @@ public class CorrectResponsesUtil {
 		return correctAnswers;
 	}
 	
-	public static final AbstractEntry getCorrectTextResponses(AssessmentItem assessmentItem, TextEntryInteraction interaction) {
+	public static final AbstractEntry getTextEntry(AssessmentItem assessmentItem, TextEntryInteraction interaction) {
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
 		if(responseDeclaration == null) {
 			log.error("Missing declaration for interaction: {} of assessment item: {}", interaction, assessmentItem);

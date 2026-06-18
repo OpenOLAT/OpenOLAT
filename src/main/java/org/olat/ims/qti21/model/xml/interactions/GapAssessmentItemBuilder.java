@@ -1966,6 +1966,12 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 			this.score = score;
 		}
 		
+		/**
+		 * Is the response correct or give some points?
+		 * 
+		 * @param response The proposed response
+		 * @return true if the response is correct or value > 0.0
+		 */
 		public abstract boolean match(String response);
 	}
 	
@@ -2212,13 +2218,19 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		 */
 		@Override
 		public boolean match(String response) {
+			final Double mScore = getScore();
 			if(match(response, solution)) {
 				return true;
 			}
+			
 			if(alternatives != null && !alternatives.isEmpty()) {
 				for(TextEntryAlternative textEntryAlternative:alternatives) {
 					if(match(response, textEntryAlternative.getAlternative())) {
-						return true;
+						// Score all answers don't check score of an alternative (main score set to -1.0)
+						// Score per answer can be negative, only return true if matched and score positive
+						if(mScore == null || mScore.doubleValue() == -1.0d || textEntryAlternative.getScore() > 0.0d) {
+							return true;
+						}
 					}
 				}
 			}
@@ -2226,16 +2238,22 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 
 		private boolean match(String response, String alternative) {
-			if(caseSensitive) {
-				if((alternative != null && alternative.equals(response))
-						|| (alternative != null && response != null && alternative.trim().equals(response.trim()))) {
-					return true;
-				}
-			} else if((alternative != null && alternative.equalsIgnoreCase(response))
-					|| (alternative != null && response != null && alternative.trim().equalsIgnoreCase(response.trim()))) {
-				return true;
+			if(alternative == null) {
+				return false;
 			}
-			return false;
+			if(response == null) {
+				response = ""; // null is not supported by QtiWorks
+			}
+			
+			ResponseDeclaration responseDeclaration = new ResponseDeclaration(null);
+			responseDeclaration.setBaseType(BaseType.STRING);
+			responseDeclaration.setCardinality(Cardinality.SINGLE);
+			
+			Mapping mapping = new Mapping(responseDeclaration);
+			MapEntry mapEntry = new MapEntry(mapping);
+			mapEntry.setCaseSensitive(Boolean.valueOf(caseSensitive));
+			mapEntry.setMapKey(new StringValue(alternative));
+			return mapping.entryCompare(mapEntry, new StringValue(response), ignoreSpaces, wildcard);
 		}
 	}
 	

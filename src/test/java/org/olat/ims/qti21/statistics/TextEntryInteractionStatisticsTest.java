@@ -95,6 +95,7 @@ public class TextEntryInteractionStatisticsTest {
 		for(String alt:alternatives) {
 			TextEntryAlternative alternative = new TextEntryAlternative();
 			alternative.setAlternative(alt);
+			alternative.setScore(0.5d);
 			textEntryAlternatives.add(alternative);
 		}
 		
