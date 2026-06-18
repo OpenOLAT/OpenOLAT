@@ -130,6 +130,8 @@ public class EditBuildingController extends FormBasicController {
 		colorEl.setElementCssClass("o_building_color_picker");
 		if (building != null && StringHelper.containsNonWhitespace(building.getColorCss())) {
 			colorEl.setColor(toColorId(building.getColorCss()));
+		} else {
+			colorEl.setColor(colorService.getDefaultColor());
 		}
 
 		boolean orgRestricted = !currentOrgs.isEmpty();

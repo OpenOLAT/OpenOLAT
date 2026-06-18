@@ -37,10 +37,18 @@ public class ColorServiceImpl implements ColorService {
 
 	@Value("${color.list}")
 	private String colorList;
-
+	
+	@Value("${color.default}")
+	private String defaultColor;
+	
 	@Override
 	public List<String> getColors() {
 		return listStringToList(colorList);
+	}
+
+	@Override
+	public String getDefaultColor() {
+		return defaultColor;
 	}
 
 	@Override

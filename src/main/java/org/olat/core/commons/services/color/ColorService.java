@@ -29,5 +29,7 @@ import java.util.List;
 public interface ColorService {
 	List<String> getColors();
 
+	String getDefaultColor();
+
 	List<String> getColorsForBadges();
 }
