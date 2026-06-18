@@ -38,7 +38,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
@@ -57,8 +56,6 @@ public class BuildingDetailsController extends FormBasicController {
 	private FormLink infoUrlLink;
 	private FormLink appleMapsLink;
 	private FormLink googleMapsLink;
-	private String appleMapsUrl;
-	private String googleMapsUrl;
 	private final Building building;
 
 	@Autowired
@@ -135,10 +132,10 @@ public class BuildingDetailsController extends FormBasicController {
 				"buildingDetailMap", getTranslator(), velocity_root + "/building_detail_map.html");
 		formLayout.add(mapCont);
 
-		if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-			mapCont.contextPut("colorCss", building.getColorCss());
-		}
 		if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
+			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
+				mapCont.contextPut("colorCss", building.getColorCss());
+			}
 			mapCont.contextPut("geoLat", building.getGeoLatitude());
 			mapCont.contextPut("geoLon", building.getGeoLongitude());
 			String leafletCssUri = StaticMediaDispatcher.getStaticURI("js/leaflet/leaflet.css");
@@ -146,25 +143,24 @@ public class BuildingDetailsController extends FormBasicController {
 					new String[] { "js/leaflet/leaflet.min.js" },
 					new String[] { leafletCssUri });
 			mapCont.put("leafletLoader", leafletLoader);
-		}
 
-		if (building.getGeoLatitude() != null && building.getGeoLongitude() != null
-				&& StringHelper.containsNonWhitespace(building.getAddress())) {
-			String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
-			appleMapsUrl = "https://maps.apple.com/?q=" + query;
-			googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
+			if (StringHelper.containsNonWhitespace(building.getAddress())) {
+				String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
+				String appleMapsUrl = "https://maps.apple.com/?q=" + query;
+				String googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
 
-			appleMapsLink = uifactory.addFormLink("detail.apple.maps", "detail.apple.maps",
-					"building.apple.maps", null, mapCont, Link.BUTTON);
-			appleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-			appleMapsLink.setUrl(appleMapsUrl);
-			appleMapsLink.setNewWindow(true, true, false);
+				appleMapsLink = uifactory.addFormLink("detail.apple.maps", "detail.apple.maps",
+						"building.apple.maps", null, mapCont, Link.BUTTON);
+				appleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+				appleMapsLink.setUrl(appleMapsUrl);
+				appleMapsLink.setNewWindow(true, true, false);
 
-			googleMapsLink = uifactory.addFormLink("detail.google.maps", "detail.google.maps",
-					"building.google.maps", null, mapCont, Link.BUTTON);
-			googleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-			googleMapsLink.setUrl(googleMapsUrl);
-			googleMapsLink.setNewWindow(true, true, false);
+				googleMapsLink = uifactory.addFormLink("detail.google.maps", "detail.google.maps",
+						"building.google.maps", null, mapCont, Link.BUTTON);
+				googleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+				googleMapsLink.setUrl(googleMapsUrl);
+				googleMapsLink.setNewWindow(true, true, false);
+			}
 		}
 	}
 
@@ -172,12 +168,6 @@ public class BuildingDetailsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == editLink) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else if (source == appleMapsLink) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(appleMapsUrl));
-		} else if (source == googleMapsLink) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(googleMapsUrl));
-		} else if (source == infoUrlLink) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(building.getInfoUrl()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

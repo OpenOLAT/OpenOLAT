@@ -84,9 +84,11 @@
 
 	<div class="o_rm_detail_preview_label">$r.translate("room.detail.preview")</div>
 	<div class="o_room_visiting_card">
+		#if($r.available("roomVisitingCardMap"))
 		<div>
 			$r.render("roomVisitingCardMap")
 		</div>
+		#end
 		<div class="o_room_visiting_card_info">
 			<div class="o_room_visiting_card_name">
 				#if($colorCss)

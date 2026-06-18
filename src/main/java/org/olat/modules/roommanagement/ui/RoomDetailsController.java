@@ -19,8 +19,6 @@
  */
 package org.olat.modules.roommanagement.ui;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,7 +39,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
@@ -59,10 +56,6 @@ public class RoomDetailsController extends FormBasicController {
 
 	private FormLink editLink;
 	private FormLink calendarLink;
-	private FormLink appleMapsLink;
-	private FormLink googleMapsLink;
-	private String appleMapsUrl;
-	private String googleMapsUrl;
 	private final Room room;
 
 	@Autowired
@@ -165,16 +158,16 @@ public class RoomDetailsController extends FormBasicController {
 			formLayout.contextPut("adminInfo", StringHelper.xssScan(room.getAdminInfo()));
 		}
 
-		// Visiting card map sub-layout (reuse building_detail_map.html)
-		FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
-				"roomVisitingCardMap", getTranslator(), velocity_root + "/building_detail_map.html");
-		formLayout.add(mapCont);
-
 		if (building != null) {
-			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-				mapCont.contextPut("colorCss", building.getColorCss());
-			}
 			if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
+				// Visiting card map sub-layout (reuse building_detail_map.html)
+				FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
+						"roomVisitingCardMap", getTranslator(), velocity_root + "/building_detail_map.html");
+				formLayout.add(mapCont);
+
+				if (StringHelper.containsNonWhitespace(building.getColorCss())) {
+					mapCont.contextPut("colorCss", building.getColorCss());
+				}
 				mapCont.contextPut("geoLat", building.getGeoLatitude());
 				mapCont.contextPut("geoLon", building.getGeoLongitude());
 				String leafletCssUri = StaticMediaDispatcher.getStaticURI("js/leaflet/leaflet.css");
@@ -186,21 +179,6 @@ public class RoomDetailsController extends FormBasicController {
 
 			if (StringHelper.containsNonWhitespace(building.getAddress())) {
 				formLayout.contextPut("address", building.getAddress());
-				String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
-				appleMapsUrl = "https://maps.apple.com/?q=" + query;
-				googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
-
-				appleMapsLink = uifactory.addFormLink("room.detail.apple.maps", "room.detail.apple.maps",
-						"building.apple.maps", null, mapCont, Link.BUTTON);
-				appleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-				appleMapsLink.setUrl(appleMapsUrl);
-				appleMapsLink.setNewWindow(true, true, false);
-
-				googleMapsLink = uifactory.addFormLink("room.detail.google.maps", "room.detail.google.maps",
-						"building.google.maps", null, mapCont, Link.BUTTON);
-				googleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-				googleMapsLink.setUrl(googleMapsUrl);
-				googleMapsLink.setNewWindow(true, true, false);
 			}
 
 			if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
@@ -241,10 +219,6 @@ public class RoomDetailsController extends FormBasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == calendarLink) {
 			fireEvent(ureq, new Event("viewCalendar"));
-		} else if (source == appleMapsLink) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(appleMapsUrl));
-		} else if (source == googleMapsLink) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(googleMapsUrl));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
