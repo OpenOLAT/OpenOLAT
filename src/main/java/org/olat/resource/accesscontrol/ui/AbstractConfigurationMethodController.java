@@ -191,7 +191,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		periodEl = uifactory.addRadiosVertical("offer.available.if", catalogCont, periodSV.keys(), periodSV.values());
 		periodEl.addActionListener(FormEvent.ONCHANGE);
 		Offer offer = link.getOffer();
-		boolean hasCustom = offer != null && offer.getValidStatus() != null && !offer.getValidStatus().isEmpty();
+		boolean hasCustom = offer != null && ((offer.getValidStatus() != null && !offer.getValidStatus().isEmpty())
+				|| offer.getValidFrom() != null || offer.getValidTo() != null || offer.getValidDateConfig() != null);
 		periodEl.select(hasCustom ? PERIOD_CUSTOM : PERIOD_STATUS, true);
 
 		conditionHeaderEl = uifactory.addStaticTextElement("offer.conditions.met", "offer.conditions.met",
@@ -468,14 +469,25 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			}
 
 			fromDateEl.clearError();
+			fromDateRelEl.clearError();
+			untilDateEl.clearError();
+			untilDateRelEl.clearError();
+
 			if (fromDateEl.isVisible() && fromDateEl.getDate() == null) {
 				fromDateEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
+			if (fromDateRelEl.isVisible() && fromDateRelEl.getValue() == null) {
+				fromDateRelEl.setErrorKey("form.mandatory.hover");
+				allOk = false;
+			}
 
-			untilDateEl.clearError();
 			if (untilDateEl.isVisible() && untilDateEl.getDate() == null) {
 				untilDateEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+			if (untilDateRelEl.isVisible() && untilDateRelEl.getValue() == null) {
+				untilDateRelEl.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 
@@ -487,18 +499,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 				} else {
 					fromDateRelEl.setErrorKey("form.error.first.after.second.date");
 				}
-				allOk = false;
-			}
-
-			fromDateRelEl.clearError();
-			if (fromDateRelEl.isVisible() && fromDateRelEl.getValue() == null) {
-				fromDateRelEl.setErrorKey("form.mandatory.hover");
-				allOk = false;
-			}
-
-			untilDateRelEl.clearError();
-			if (untilDateRelEl.isVisible() && untilDateRelEl.getValue() == null) {
-				untilDateRelEl.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
