@@ -163,6 +163,8 @@ public class ImplementationsListController extends FormBasicController implement
 		
 		if(favoriteTab != null && tableModel.hasMarked()) {
 			tableEl.setSelectedFilterTab(ureq, favoriteTab);
+		} else if(relevantTab != null) {
+			tableEl.setSelectedFilterTab(ureq, relevantTab);
 		} else if(allTab != null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
 		}
@@ -192,7 +194,7 @@ public class ImplementationsListController extends FormBasicController implement
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.displayName, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.extRefVisibilityDefault(), ImplementationsCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.curriculum,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.curriculum,
 				new CurriculumCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleStart,
 				new DateFlexiCellRenderer(getLocale())));

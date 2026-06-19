@@ -149,7 +149,7 @@ public class CourseListWrapperController extends BasicController implements Acti
 					.enableId()
 					.enableExtRefVisibilityDefault();
 			if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
-				configBuilder.enableStatus().enableCompletion();
+				configBuilder.enableCompletion();
 			}
 			if (roleSecurityCallback.canViewCalendar()) {
 				configBuilder.enableCalendar();

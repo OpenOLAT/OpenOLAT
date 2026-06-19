@@ -145,6 +145,7 @@ public class CoursesIdentityListController extends FormBasicController implement
 	private static final String FINISHED_TAB_ID = "Finished";
 
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab relevantTab;
 
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
@@ -349,7 +350,7 @@ public class CoursesIdentityListController extends FormBasicController implement
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 						RepositoryEntryStatusEnum.published.name())));
 		relevantTab.setFiltersExpanded(true);
@@ -362,7 +363,7 @@ public class CoursesIdentityListController extends FormBasicController implement
 		tabs.add(finishedTab);
 
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, relevantTab);
 	}
 
 	@Override
