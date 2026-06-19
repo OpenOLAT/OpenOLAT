@@ -19,8 +19,6 @@
  */
 package org.olat.modules.roommanagement.ui;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -118,7 +116,7 @@ public class RoomDetailsController extends FormBasicController {
 		if (!futureBookings.isEmpty()) {
 			RoomBooking next = futureBookings.get(0);
 			if (next.getStartDate() != null && next.getEndDate() != null) {
-				formLayout.contextPut("nextEvent", formatNextEvent(next));
+				formLayout.contextPut("nextEvent", RoomUIHelper.formatNextEvent(next, getLocale()));
 			}
 		}
 
@@ -184,32 +182,6 @@ public class RoomDetailsController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
 				formLayout.contextPut("infoUrl", building.getInfoUrl());
 			}
-		}
-	}
-
-	private String formatNextEvent(RoomBooking booking) {
-		Date startDate = booking.getStartDate();
-		Date endDate = booking.getEndDate();
-
-		String dayOfWeek = new SimpleDateFormat("EEE", getLocale()).format(startDate);
-		String date = DateFormat.getDateInstance(DateFormat.SHORT, getLocale()).format(startDate);
-		String time = DateFormat.getTimeInstance(DateFormat.SHORT, getLocale()).format(startDate);
-
-		long durationMinutes = (endDate.getTime() - startDate.getTime()) / 60000L;
-		String duration = formatDuration(durationMinutes);
-
-		return dayOfWeek + " " + date + ", " + time + " " + duration;
-	}
-
-	private String formatDuration(long minutes) {
-		long hours = minutes / 60;
-		long mins = minutes % 60;
-		if (hours > 0 && mins > 0) {
-			return hours + "h " + mins + "m";
-		} else if (hours > 0) {
-			return hours + "h";
-		} else {
-			return mins + "m";
 		}
 	}
 

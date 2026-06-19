@@ -133,6 +133,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RoomCols.adminInfo));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.building, new BuildingCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.occupancyRate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.nextEvent));
 		DefaultFlexiColumnModel calendarIconCol = new DefaultFlexiColumnModel(RoomCols.calendarIcon);
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
 		columnsModel.addFlexiColumnModel(calendarIconCol);
@@ -299,6 +300,14 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			int availableMinutes = 21 * 9 * 60; // 21 days * 9 hours * 60 min = 11340
 			int pct = (int) Math.round(bookedMinutes * 100.0 / availableMinutes);
 			row.setOccupancyRatePercent(pct);
+		}
+
+		List<RoomBooking> futureBookings = roomManagementService.getBookingsForRoom(roomRef, new Date(), null);
+		if (!futureBookings.isEmpty()) {
+			RoomBooking next = futureBookings.get(0);
+			if (next.getStartDate() != null && next.getEndDate() != null) {
+				row.setNextEvent(RoomUIHelper.formatNextEvent(next, getLocale()));
+			}
 		}
 
 		return row;

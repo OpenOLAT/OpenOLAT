@@ -33,6 +33,7 @@ public class RoomRow {
 	private FormLink buildingLink;   // getUserObject() == Building
 	private FormLink calendarIconLink;
 	private int occupancyRatePercent = -1;  // -1 = N/A
+	private String nextEvent;
 	private RoomDetailsController detailsController;  // stub, null for now
 
 	public RoomRow(Room room) {
@@ -73,6 +74,14 @@ public class RoomRow {
 
 	public void setOccupancyRatePercent(int occupancyRatePercent) {
 		this.occupancyRatePercent = occupancyRatePercent;
+	}
+
+	public String getNextEvent() {
+		return nextEvent;
+	}
+
+	public void setNextEvent(String nextEvent) {
+		this.nextEvent = nextEvent;
 	}
 
 	public RoomDetailsController getDetailsController() {

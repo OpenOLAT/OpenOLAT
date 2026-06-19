@@ -69,6 +69,7 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 				int pct = row.getOccupancyRatePercent();
 				yield pct < 0 ? null : pct + "%";
 			}
+			case nextEvent -> row.getNextEvent();
 			case calendarIcon -> row.getCalendarIconLink();
 		};
 	}
@@ -82,6 +83,12 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 		adminInfo("room.col.admin.info"),
 		building("room.col.building"),
 		occupancyRate("room.col.occupancy.rate"),
+		nextEvent("room.col.next.event") {
+			@Override
+			public boolean sortable() {
+				return false;
+			}
+		},
 		calendarIcon("room.col.calendar") {
 			@Override
 			public String iconHeader() {
