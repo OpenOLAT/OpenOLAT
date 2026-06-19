@@ -480,6 +480,10 @@ body.o_dmz {
 	}
 }
 
+.has-feedback.has-error .o_sel_registration_otp .o_icon_error.form-control-feedback {
+	line-height: var(--otp-fz, 1.5em);
+	margin-block: var(--otp-pb, 1ch);
+}
 
 @media (max-width: $screen-xs-max) { 
 	body.o_dmz {
