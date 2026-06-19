@@ -50,10 +50,10 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_MC_GENERATOR_MODEL = "ai.feature.mc-question-generator.model";
 	private static final String AI_IMG_DESC_SPI = "ai.feature.image-description-generator.spi";
 	private static final String AI_IMG_DESC_MODEL = "ai.feature.image-description-generator.model";
-	private static final String AI_ESSAY_GENERATION_SPI = "ai.feature.essay.generation.spi";
-	private static final String AI_ESSAY_GENERATION_MODEL = "ai.feature.essay.generation.model";
-	private static final String AI_ESSAY_GRADING_SPI = "ai.feature.essay.grading.spi";
-	private static final String AI_ESSAY_GRADING_MODEL = "ai.feature.essay.grading.model";
+	private static final String AI_ESSAY_GENERATION_SPI = "ai.feature.essay-generation.spi";
+	private static final String AI_ESSAY_GENERATION_MODEL = "ai.feature.essay-generation.model";
+	private static final String AI_ESSAY_GRADING_SPI = "ai.feature.essay-grading.spi";
+	private static final String AI_ESSAY_GRADING_MODEL = "ai.feature.essay-grading.model";
 	private static final String AI_TASK_POOL_INTERACTIVE_SIZE = "ai.task.pool.interactive.size";
 	private static final String AI_TASK_POOL_BATCH_SIZE = "ai.task.pool.batch.size";
 
@@ -95,9 +95,13 @@ public class AiModule extends AbstractSpringModule {
 	private String imgDescSpiId;
 	@Value("${ai.feature.image-description-generator.model:}")
 	private String imgDescModel;
+	@Value("${ai.feature.essay-generation.spi:}")
 	private String essayGenerationSpiId;
+	@Value("${ai.feature.essay-generation.model:}")
 	private String essayGenerationModel;
+	@Value("${ai.feature.essay-grading.spi:}")
 	private String essayGradingSpiId;
+	@Value("${ai.feature.essay-grading.model:}")
 	private String essayGradingModel;
 	private int aiTaskPoolInteractiveSize = DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE;
 	private int aiTaskPoolBatchSize = DEFAULT_AI_TASK_POOL_BATCH_SIZE;
