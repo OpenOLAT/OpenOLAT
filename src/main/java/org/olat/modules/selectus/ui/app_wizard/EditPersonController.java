@@ -442,7 +442,7 @@ public class EditPersonController extends FormBasicController {
 		}
 		
 		StaticTextElement headingEl = uifactory.addStaticTextElement("contact-data", "contact.data", "", formLayout);
-		headingEl.setElementCssClass("o_static_heading");
+		headingEl.setElementCssClass("o_static_heading o_sel_edit_contact_data");
 		
 		String phone = person == null ? null : person.getPhone();
 		phoneEl = uifactory.addTextElement("phone", "edit.application.phone", 255, phone, formLayout);
